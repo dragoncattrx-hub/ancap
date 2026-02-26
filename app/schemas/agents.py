@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional, Set
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AgentRole(str, Enum):
@@ -23,6 +23,8 @@ class AgentCreateRequest(BaseModel):
 
 
 class AgentPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     display_name: str
     roles: List[str]
@@ -30,6 +32,3 @@ class AgentPublic(BaseModel):
     status: str = "active"
     activated_at: Optional[datetime] = None  # L3: when stake/attestation activated
     created_at: datetime
-
-    class Config:
-        from_attributes = True

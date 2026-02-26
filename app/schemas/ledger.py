@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.common import Money
 
@@ -43,6 +43,8 @@ class AllocateRequest(BaseModel):
 
 
 class LedgerEventPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     ts: datetime
     type: LedgerEventType
@@ -50,9 +52,6 @@ class LedgerEventPublic(BaseModel):
     src_account_id: Optional[str] = None
     dst_account_id: Optional[str] = None
     metadata: Optional[dict[str, Any]] = None
-
-    class Config:
-        from_attributes = True
 
 
 class BalanceItem(BaseModel):

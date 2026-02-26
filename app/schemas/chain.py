@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnchorCreateRequest(BaseModel):
@@ -13,12 +13,11 @@ class AnchorCreateRequest(BaseModel):
 
 
 class AnchorPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     chain_id: str
     tx_hash: Optional[str] = None
     payload_type: str
     payload_hash: str
     anchored_at: datetime
-
-    class Config:
-        from_attributes = True

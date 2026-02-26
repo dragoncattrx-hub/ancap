@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # Supported challenge types (PLAN L3 §12). Payload shapes:
@@ -16,14 +16,13 @@ class ChallengeCreateRequest(BaseModel):
 
 
 class ChallengePublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     challenge_type: str
     payload: dict[str, Any]
     nonce: str
     expires_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class AttestRequest(BaseModel):
@@ -33,9 +32,8 @@ class AttestRequest(BaseModel):
 
 
 class AttestationPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     challenge_id: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True

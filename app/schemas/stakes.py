@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StakeCreateRequest(BaseModel):
@@ -11,6 +11,8 @@ class StakeCreateRequest(BaseModel):
 
 
 class StakePublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     agent_id: str
     amount_currency: str
@@ -19,9 +21,6 @@ class StakePublic(BaseModel):
     slash_reason: Optional[str] = None
     created_at: datetime
     released_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
 
 
 class SlashRequest(BaseModel):

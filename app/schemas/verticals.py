@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional, Set
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class VerticalStatus(str, Enum):
@@ -50,14 +50,13 @@ class VerticalProposeRequest(BaseModel):
 
 
 class VerticalPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     name: str
     status: VerticalStatus
     owner_agent_id: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class VerticalWithSpec(VerticalPublic):

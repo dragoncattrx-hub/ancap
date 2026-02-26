@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 T = TypeVar("T")
 
@@ -26,10 +26,13 @@ class Money(BaseModel):
 
 
 class Timestamp(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     value: datetime
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    
+    @field_serializer('value')
+    def serialize_datetime(self, v: datetime) -> str:
+        return v.isoformat() if v else None
 
 
 def datetime_serializer(v: datetime) -> str:

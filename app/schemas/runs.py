@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class RunState(str, Enum):
@@ -30,6 +30,8 @@ class RunReplayRequest(BaseModel):
 
 
 class RunPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     strategy_version_id: str
     pool_id: str
@@ -44,6 +46,3 @@ class RunPublic(BaseModel):
     env_hash: Optional[str] = None
     run_mode: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True

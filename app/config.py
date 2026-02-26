@@ -1,10 +1,11 @@
 """Application configuration."""
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
     """Settings loaded from environment."""
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     app_name: str = "ANCAP Core API"
     debug: bool = False
@@ -61,11 +62,6 @@ class Settings(BaseSettings):
     # ROADMAP §5: optional external quality scorer (step-level). If set, POST step payload to URL; expect JSON {"score": float 0..1}. On timeout/error use built-in heuristic.
     quality_scorer_url: str = ""  # e.g. "http://localhost:8080/score"
     quality_scorer_timeout_seconds: int = 5
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
 
 
 @lru_cache

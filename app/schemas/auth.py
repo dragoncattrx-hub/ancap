@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class AuthLoginRequest(BaseModel):
@@ -22,10 +22,9 @@ class UserCreateRequest(BaseModel):
 
 
 class UserPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     email: str
     display_name: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True

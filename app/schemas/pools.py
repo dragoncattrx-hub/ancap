@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PoolStatus(str, Enum):
@@ -19,11 +19,10 @@ class PoolCreateRequest(BaseModel):
 
 
 class PoolPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     name: str
     risk_profile: str
     status: PoolStatus
     created_at: datetime
-
-    class Config:
-        from_attributes = True

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.common import Money
 
@@ -60,6 +60,8 @@ class StrategyPublishVersionRequest(BaseModel):
 
 
 class StrategyPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     name: str
     vertical_id: str
@@ -69,11 +71,10 @@ class StrategyPublic(BaseModel):
     tags: Optional[List[str]] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class StrategyVersionPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     strategy_id: str
     semver: str
@@ -81,6 +82,3 @@ class StrategyVersionPublic(BaseModel):
     param_schema: Optional[dict[str, Any]] = None
     changelog: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
