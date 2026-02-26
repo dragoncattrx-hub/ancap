@@ -1,0 +1,14 @@
+{
+  "vertical_id": "00000000-0000-0000-0000-000000000001",
+  "version": "1.0",
+  "limits": { "max_steps": 40, "max_runtime_ms": 2000, "max_action_calls": 200 },
+  "steps": [
+    { "id": "p_buy", "action": "rand_uniform", "args": { "low": 90, "high": 110 }, "save_as": "bp" },
+    { "id": "buy", "action": "portfolio_buy", "args": { "asset": "DEMO", "amount": 3, "price": { "ref": "bp" } } },
+    { "id": "coin", "action": "rand_uniform", "args": { "low": 0, "high": 1 }, "save_as": "coin" },
+    { "id": "sell_cond", "action": "cmp", "args": { "op": "gt", "a": { "ref": "coin" }, "b": 0.5 }, "save_as": "should_sell" },
+    { "id": "p_sell", "action": "rand_uniform", "args": { "low": 80, "high": 120 }, "save_as": "sp" },
+    { "id": "maybe_sell", "action": "if", "args": { "cond": { "ref": "should_sell" }, "then": { "ref": "sp" }, "else": 0 }, "save_as": "sell_price_or_zero" },
+    { "id": "sell", "action": "portfolio_sell", "args": { "asset": "DEMO", "amount": 3, "price": { "ref": "sell_price_or_zero" } }, "save_as": "sell_receipt" }
+  ]
+}

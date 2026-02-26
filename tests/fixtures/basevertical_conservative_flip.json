@@ -1,0 +1,11 @@
+{
+  "vertical_id": "00000000-0000-0000-0000-000000000001",
+  "version": "1.0",
+  "limits": { "max_steps": 50, "max_runtime_ms": 2000, "max_action_calls": 200 },
+  "steps": [
+    { "id": "p_buy", "action": "rand_uniform", "args": { "low": 95, "high": 105 }, "save_as": "buy_price" },
+    { "id": "buy", "action": "portfolio_buy", "args": { "asset": "DEMO", "amount": 1, "price": { "ref": "buy_price" } }, "save_as": "buy_receipt" },
+    { "id": "p_sell", "action": "rand_uniform", "args": { "low": 98, "high": 108 }, "save_as": "sell_price" },
+    { "id": "sell", "action": "portfolio_sell", "args": { "asset": "DEMO", "amount": 1, "price": { "ref": "sell_price" } }, "save_as": "sell_receipt" }
+  ]
+}

@@ -1,0 +1,14 @@
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\serde-39202044b4274c7d.d: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\build\serde-817624efa677dc92\out/private.rs
+
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\libserde-39202044b4274c7d.rlib: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\build\serde-817624efa677dc92\out/private.rs
+
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\libserde-39202044b4274c7d.rmeta: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\build\serde-817624efa677dc92\out/private.rs
+
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs:
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\build\serde-817624efa677dc92\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\drago\\Desktop\\ANCAP\\ACP-crypto\\acp-crypto\\target\\release\\build\\serde-817624efa677dc92\\out

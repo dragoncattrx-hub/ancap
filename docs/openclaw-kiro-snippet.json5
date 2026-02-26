@@ -1,0 +1,33 @@
+// Вставьте этот блок в ~/.openclaw/openclaw.json.
+// Провайдер kiro + anthropic (оба указывают на Kiro), модель по умолчанию: claude-opus-4.6.
+// anthropic нужен для slug-generator и других внутренних вызовов OpenClaw.
+// Base URL: https://api.kiro.cheap
+
+{
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "kiro": {
+        "baseUrl": "https://api.kiro.cheap/v1",
+        "apiKey": "sk-aw-4900ab96f0a2f10e1996e4f3bc80709c",
+        "api": "openai-completions",
+        "models": [
+          { "id": "claude-opus-4.6", "name": "Claude Opus 4.6", "contextWindow": 200000 }
+        ]
+      },
+      "anthropic": {
+        "baseUrl": "https://api.kiro.cheap/v1",
+        "apiKey": "sk-aw-4900ab96f0a2f10e1996e4f3bc80709c",
+        "api": "openai-completions",
+        "models": [
+          { "id": "claude-opus-4.6", "name": "Claude Opus 4.6", "contextWindow": 200000 }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "kiro/claude-opus-4.6" }
+    }
+  }
+}

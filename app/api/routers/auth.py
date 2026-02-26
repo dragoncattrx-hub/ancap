@@ -1,0 +1,42 @@
+from fastapi import APIRouter, HTTPException, status
+
+from app.schemas import AuthLoginRequest, AuthLoginResponse, UserCreateRequest, UserPublic
+from app.services.auth import create_access_token, hash_password, verify_password
+from app.api.deps import DbSession
+from app.db.models import User
+from sqlalchemy import select
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+@router.post("/login", response_model=AuthLoginResponse)
+async def login(body: AuthLoginRequest, session: DbSession):
+    q = select(User).where(User.email == body.email)
+    r = await session.execute(q)
+    user = r.scalar_one_or_none()
+    if not user or not verify_password(body.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
+    token = create_access_token(str(user.id))
+    return AuthLoginResponse(access_token=token, token_type="bearer", expires_in=3600)
+
+
+@router.post("/users", response_model=UserPublic, status_code=201)
+async def create_user(body: UserCreateRequest, session: DbSession):
+    q = select(User).where(User.email == body.email)
+    r = await session.execute(q)
+    if r.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    user = User(
+        email=body.email,
+        password_hash=hash_password(body.password),
+        display_name=body.display_name,
+    )
+    session.add(user)
+    await session.flush()
+    await session.refresh(user)
+    return UserPublic(
+        id=str(user.id),
+        email=user.email,
+        display_name=user.display_name,
+        created_at=user.created_at,
+    )

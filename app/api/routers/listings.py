@@ -1,0 +1,113 @@
+from decimal import Decimal
+from uuid import UUID
+
+from fastapi import APIRouter, Query, HTTPException
+
+from app.schemas import ListingCreateRequest, ListingPublic, Pagination, ListingStatus
+from app.api.deps import DbSession
+from app.config import get_settings
+from app.db.models import Listing, ListingStatusEnum, Strategy
+from app.services.ledger import get_or_create_account, append_event, balance_for_account
+from app.db.models import LedgerEventTypeEnum
+from app.constants import PLATFORM_ACCOUNT_OWNER_ID
+from app.services.stakes import require_activated_if_stake_required
+from sqlalchemy import select
+
+router = APIRouter(prefix="/listings", tags=["Listings"])
+
+
+@router.post("", response_model=ListingPublic, status_code=201)
+async def create_listing(body: ListingCreateRequest, session: DbSession):
+    strategy_id = UUID(body.strategy_id)
+    strat = await session.get(Strategy, strategy_id)
+    if not strat:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    await require_activated_if_stake_required(session, strat.owner_agent_id)
+    # L3: platform listing fee
+    settings = get_settings()
+    if settings.listing_fee_amount and Decimal(settings.listing_fee_amount) > 0:
+        acc_agent = await get_or_create_account(session, "agent", strat.owner_agent_id)
+        acc_platform = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+        fee_value = Decimal(settings.listing_fee_amount)
+        bal = await balance_for_account(session, acc_agent.id, settings.listing_fee_currency)
+        if (bal.get(settings.listing_fee_currency) or Decimal(0)) < fee_value:
+            raise HTTPException(status_code=402, detail="Insufficient balance for listing fee")
+        await append_event(
+            session,
+            LedgerEventTypeEnum.fee,
+            settings.listing_fee_currency,
+            fee_value,
+            src_account_id=acc_agent.id,
+            dst_account_id=acc_platform.id,
+            metadata={"type": "listing_fee", "strategy_id": str(strategy_id)},
+        )
+    listing = Listing(
+        strategy_id=strategy_id,
+        fee_model=body.fee_model.model_dump(),
+        status=ListingStatusEnum(body.status.value),
+        terms_url=body.terms_url,
+        notes=body.notes,
+    )
+    session.add(listing)
+    await session.flush()
+    await session.refresh(listing)
+    return ListingPublic(
+        id=str(listing.id),
+        strategy_id=str(listing.strategy_id),
+        fee_model=listing.fee_model,
+        status=ListingStatus(listing.status.value),
+        created_at=listing.created_at,
+    )
+
+
+@router.get("", response_model=Pagination[ListingPublic])
+async def list_listings(
+    session: DbSession,
+    limit: int = Query(50, ge=1, le=200),
+    cursor: str | None = Query(None),
+    status: ListingStatus | None = Query(None),
+    strategy_id: UUID | None = Query(None),
+):
+    q = select(Listing).order_by(Listing.created_at.desc()).limit(limit + 1)
+    if cursor:
+        try:
+            q = q.where(Listing.id < UUID(cursor))
+        except ValueError:
+            pass
+    if status:
+        q = q.where(Listing.status == status.value)
+    if strategy_id:
+        q = q.where(Listing.strategy_id == strategy_id)
+    r = await session.execute(q)
+    rows = r.scalars().all()
+    next_cursor = str(rows[-1].id) if len(rows) > limit else None
+    items = rows[:limit]
+    return Pagination(
+        items=[
+            ListingPublic(
+                id=str(l.id),
+                strategy_id=str(l.strategy_id),
+                fee_model=l.fee_model,
+                status=ListingStatus(l.status.value),
+                created_at=l.created_at,
+            )
+            for l in items
+        ],
+        next_cursor=next_cursor,
+    )
+
+
+@router.get("/{listing_id}", response_model=ListingPublic)
+async def get_listing(listing_id: UUID, session: DbSession):
+    q = select(Listing).where(Listing.id == listing_id)
+    r = await session.execute(q)
+    listing = r.scalar_one_or_none()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    return ListingPublic(
+        id=str(listing.id),
+        strategy_id=str(listing.strategy_id),
+        fee_model=listing.fee_model,
+        status=ListingStatus(listing.status.value),
+        created_at=listing.created_at,
+    )

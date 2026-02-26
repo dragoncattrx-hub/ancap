@@ -1,0 +1,188 @@
+{
+  "$id": "https://ancap.local/schemas/basevertical/workflow/v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BaseVertical WorkflowSpec v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["vertical_id", "version", "steps"],
+  "properties": {
+    "vertical_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Must match BaseVertical vertical_id"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20,
+      "description": "Workflow schema version, e.g. '1.0'"
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": { "type": "integer", "minimum": 1, "maximum": 100000 },
+        "max_runtime_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+        "max_action_calls": { "type": "integer", "minimum": 1, "maximum": 100000 }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100000,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "refOrValue": {
+      "description": "Either a literal value or a reference to a context key",
+      "oneOf": [
+        { "type": "number" },
+        { "type": "string" },
+        { "type": "boolean" },
+        { "type": "object", "additionalProperties": true },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ref"],
+          "properties": {
+            "ref": { "type": "string", "minLength": 1, "maxLength": 128 }
+          }
+        }
+      ]
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "action", "args"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "action": {
+          "type": "string",
+          "enum": [
+            "const",
+            "math_add",
+            "math_sub",
+            "math_mul",
+            "math_div",
+            "cmp",
+            "if",
+            "rand_uniform",
+            "portfolio_buy",
+            "portfolio_sell"
+          ]
+        },
+        "args": { "$ref": "#/$defs/actionArgs" },
+        "save_as": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "const": "const" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value"],
+                "properties": { "value": { "$ref": "#/$defs/refOrValue" } }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "action": { "enum": ["math_add", "math_sub", "math_mul", "math_div"] } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["a", "b"],
+                "properties": {
+                  "a": { "$ref": "#/$defs/refOrValue" },
+                  "b": { "$ref": "#/$defs/refOrValue" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "action": { "const": "cmp" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["op", "a", "b"],
+                "properties": {
+                  "op": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq", "neq"] },
+                  "a": { "$ref": "#/$defs/refOrValue" },
+                  "b": { "$ref": "#/$defs/refOrValue" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "action": { "const": "if" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["cond", "then", "else"],
+                "properties": {
+                  "cond": { "$ref": "#/$defs/refOrValue" },
+                  "then": { "$ref": "#/$defs/refOrValue" },
+                  "else": { "$ref": "#/$defs/refOrValue" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "action": { "const": "rand_uniform" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["low", "high"],
+                "properties": {
+                  "low": { "type": "number" },
+                  "high": { "type": "number" },
+                  "seed": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "action": { "enum": ["portfolio_buy", "portfolio_sell"] } } },
+          "then": {
+            "properties": {
+              "args": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["asset", "amount", "price"],
+                "properties": {
+                  "asset": { "type": "string", "minLength": 1, "maxLength": 32 },
+                  "amount": { "$ref": "#/$defs/refOrValue" },
+                  "price": { "$ref": "#/$defs/refOrValue" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "actionArgs": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Overridden by per-action 'then' clauses above"
+    }
+  }
+}

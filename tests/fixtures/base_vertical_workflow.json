@@ -1,0 +1,28 @@
+{
+  "vertical_id": "",
+  "version": "1.0",
+  "steps": [
+    {
+      "id": "s1",
+      "action": "rand_uniform",
+      "args": {"low": 90, "high": 110},
+      "save_as": "buy_price"
+    },
+    {
+      "id": "s2",
+      "action": "portfolio_buy",
+      "args": {"asset": "ASSET", "amount": 100, "price": {"ref": "buy_price"}}
+    },
+    {
+      "id": "s3",
+      "action": "rand_uniform",
+      "args": {"low": 95, "high": 115},
+      "save_as": "sell_price"
+    },
+    {
+      "id": "s4",
+      "action": "portfolio_sell",
+      "args": {"asset": "ASSET", "amount": 100, "price": {"ref": "sell_price"}}
+    }
+  ]
+}

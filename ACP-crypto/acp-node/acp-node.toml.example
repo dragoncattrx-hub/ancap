@@ -1,0 +1,25 @@
+# Full node. Copy to /etc/acp/acp-node.toml on server.
+# Protocol params: see acp-crypto::protocol_params (BASE_SUPPLY_ACP, ANNUAL_EMISSION_ACP, etc.)
+role = "full"
+
+[p2p]
+listen = "0.0.0.0:30333"
+max_peers = 50
+
+[rpc]
+listen = "127.0.0.1:8545"
+
+[metrics]
+listen = "127.0.0.1:9101"
+
+[storage]
+data_dir = "/var/lib/acp-node"
+pruning = true
+db_cache_mb = 512
+
+# Optional: override protocol params (defaults = acp_crypto::protocol_params)
+# [protocol]
+# base_supply_acp = 210_000_000
+# annual_emission_acp = 10_500_000
+# stake_cap_pct = 5
+# unbonding_days = 21

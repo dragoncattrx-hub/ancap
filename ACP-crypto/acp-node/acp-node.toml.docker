@@ -1,0 +1,21 @@
+# Config for Docker: RPC on 0.0.0.0 so indexer and peers can connect.
+# Sync over internet: set peer_rpc_urls to other nodes' RPC URLs (each node relays blocks to peers).
+role = "full"
+
+[p2p]
+listen = "0.0.0.0:30333"
+max_peers = 50
+
+[rpc]
+listen = "0.0.0.0:8545"
+
+[metrics]
+listen = "127.0.0.1:9101"
+
+[storage]
+data_dir = "/var/lib/acp-node"
+pruning = true
+db_cache_mb = 512
+
+# Optional: peer RPC URLs for block relay (sync over internet). Example:
+# peer_rpc_urls = ["http://other-node.example.com:8545/rpc"]

@@ -1,0 +1,11 @@
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\bip39-b2cd83a5ff530a2b.d: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\internal_macros.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\english.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\pbkdf2.rs
+
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\libbip39-b2cd83a5ff530a2b.rlib: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\internal_macros.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\english.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\pbkdf2.rs
+
+C:\Users\drago\Desktop\ANCAP\ACP-crypto\acp-crypto\target\release\deps\libbip39-b2cd83a5ff530a2b.rmeta: C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\lib.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\internal_macros.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\mod.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\english.rs C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\pbkdf2.rs
+
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\lib.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\internal_macros.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\mod.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\language\english.rs:
+C:\Users\drago\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bip39-2.2.2\src\pbkdf2.rs:

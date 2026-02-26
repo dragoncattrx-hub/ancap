@@ -1,0 +1,15 @@
+{
+  "object": "list",
+  "data": [
+    { "id": "claude-sonnet-4-5-20250514", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-opus-4-5-20250514", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-haiku-3-5-20241022", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-sonnet-4-20250514", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-opus-4-20250514", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-sonnet-4", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-haiku-4.5", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-sonnet-4.5", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-opus-4.5", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" },
+    { "id": "claude-opus-4.6", "object": "model", "created": 1771953161, "owned_by": "anthropic", "description": "Claude model via API" }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$id": "https://ancap.local/schemas/basevertical/verticalspec/v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BaseVertical VerticalSpec v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["allowed_actions", "required_resources", "metrics", "risk_spec", "workflow_schema"],
+  "properties": {
+    "allowed_actions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/actionSpec" }
+    },
+    "required_resources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["data_feed", "connector_api", "llm_api", "storage", "payment_rail", "web_request"]
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/metricSpec" }
+    },
+    "risk_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_max_loss_pct": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.25 },
+        "default_max_steps": { "type": "integer", "minimum": 1, "maximum": 100000, "default": 5000 },
+        "default_max_runtime_ms": { "type": "integer", "minimum": 1, "maximum": 600000, "default": 30000 }
+      }
+    },
+    "workflow_schema": {
+      "type": "object",
+      "description": "JSON Schema for validating BaseVertical workflow",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "actionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "args_schema", "output_schema"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "const",
+            "math_add",
+            "math_sub",
+            "math_mul",
+            "math_div",
+            "cmp",
+            "if",
+            "rand_uniform",
+            "portfolio_buy",
+            "portfolio_sell"
+          ]
+        },
+        "description": { "type": "string", "maxLength": 300 },
+        "args_schema": { "type": "object", "additionalProperties": true },
+        "output_schema": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "metricSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value_schema"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["pnl_amount", "return_pct", "max_drawdown_pct", "steps_executed", "runtime_ms", "risk_breaches"]
+        },
+        "description": { "type": "string", "maxLength": 300 },
+        "value_schema": { "type": "object", "additionalProperties": true }
+      }
+    }
+  }
+}

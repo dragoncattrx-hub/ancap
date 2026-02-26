@@ -1,0 +1,13 @@
+{
+  "vertical_id": "00000000-0000-0000-0000-000000000001",
+  "version": "1.0",
+  "limits": { "max_steps": 200, "max_runtime_ms": 3000, "max_action_calls": 500 },
+  "steps": [
+    { "id": "p1", "action": "rand_uniform", "args": { "low": 90, "high": 110 }, "save_as": "p1" },
+    { "id": "b1", "action": "portfolio_buy", "args": { "asset": "DEMO", "amount": 2, "price": { "ref": "p1" } } },
+    { "id": "p2", "action": "rand_uniform", "args": { "low": 85, "high": 115 }, "save_as": "p2" },
+    { "id": "s1", "action": "portfolio_sell", "args": { "asset": "DEMO", "amount": 1, "price": { "ref": "p2" } } },
+    { "id": "p3", "action": "rand_uniform", "args": { "low": 80, "high": 120 }, "save_as": "p3" },
+    { "id": "s2", "action": "portfolio_sell", "args": { "asset": "DEMO", "amount": 1, "price": { "ref": "p3" } } }
+  ]
+}

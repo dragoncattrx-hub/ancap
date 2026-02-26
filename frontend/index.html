@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANCAP — AI-Native Capital Allocation Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --text: #f0f0f5;
+      --text-muted: #8888a0;
+      --accent: #00d4aa;
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --border: #2a2a3a;
+      --node-glow: rgba(0, 212, 170, 0.6);
+      --edge-color: rgba(0, 212, 170, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Fixed canvas behind content */
+    .canvas-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    nav {
+      display: flex;
+      gap: 32px;
+    }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: var(--accent);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: #00e6b8;
+      color: var(--bg);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 120px 0 160px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero .sub {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    .hero .btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Section numbering (Maze-style) */
+    .section-num {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+    section {
+      padding: 100px 0;
+      border-top: 1px solid var(--border);
+    }
+    section h2 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      max-width: 640px;
+    }
+    section p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    /* Cards row */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 40px var(--accent-dim);
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Stats */
+    .stats {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+    .stat {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .stat + .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Footer CTA */
+    .cta {
+      text-align: center;
+      padding: 120px 0 80px;
+    }
+    .cta h2 {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .cta p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+    .cta .btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    footer {
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--accent);
+    }
+
+    /* Language toggle */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 24px;
+    }
+    .lang-toggle button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: color 0.2s, background 0.2s;
+    }
+    .lang-toggle button:hover {
+      color: var(--accent);
+    }
+    .lang-toggle button.active {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .lang-toggle span {
+      color: var(--border);
+      font-weight: 400;
+      user-select: none;
+    }
+    header .header-actions {
+      display: flex;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-wrap" aria-hidden="true">
+    <canvas id="network"></canvas>
+  </div>
+
+  <header class="container">
+    <a href="#" class="logo">ANCAP</a>
+    <nav>
+      <a href="#product" data-i18n="nav.product">Product</a>
+      <a href="#vision" data-i18n="nav.vision">Vision</a>
+      <a href="#docs" data-i18n="nav.docs">Documentation</a>
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <div class="header-actions">
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="en" class="active" aria-pressed="true">EN</button>
+        <span>|</span>
+        <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+      </div>
+      <a href="#contact" class="btn btn-primary" data-i18n="nav.contact">Contact</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1 data-i18n="hero.title">AI-Native Capital Allocation Platform</h1>
+        <p class="sub" data-i18n="hero.sub">A capital allocation platform where AI agents are at the core: strategies, allocation, risk, and system evolution.</p>
+        <div class="btns">
+          <a href="#product" class="btn btn-primary" data-i18n="hero.learnMore">Learn more</a>
+          <a href="/docs" class="btn btn-ghost" data-i18n="nav.docs">Documentation</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="product" class="container">
+      <span class="section-num">01</span>
+      <h2 data-i18n="product.title">Verifiable execution and Ledger</h2>
+      <p data-i18n="product.desc">Every run leaves artifact hashes (inputs, workflow, outputs). Execution verifiability and audit out of the box.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>Strategy Registry</h3>
+          <p data-i18n="product.card1">Versioned workflow specs, not code. Publish and run strategies as declarative plans.</p>
+        </div>
+        <div class="card">
+          <h3>Runs & Sandbox</h3>
+          <p data-i18n="product.card2">Mock execution with limits (steps, time, risk). Dry-run and kill-switch for safety.</p>
+        </div>
+        <div class="card">
+          <h3>Risk Kernel</h3>
+          <p data-i18n="product.card3">Policies, circuit breakers, limits per agent and strategy. Kill switch before moving to L2/L3.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="vision" class="container">
+      <span class="section-num">02</span>
+      <h2 data-i18n="vision.title">From engine to market</h2>
+      <p data-i18n="vision.desc">Reputation 2.0, strategy marketplace, reviews and capital allocation. Then — Proof-of-Agent, stake and multi-vertical.</p>
+      <div class="stats">
+        <div>
+          <div class="stat">L1</div>
+          <div class="stat-label">Core Ledger & Verifiable Execution</div>
+        </div>
+        <div>
+          <div class="stat">L2</div>
+          <div class="stat-label">Market Layer</div>
+        </div>
+        <div>
+          <div class="stat">L3</div>
+          <div class="stat-label">Autonomous Economy</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs" class="container">
+      <span class="section-num">03</span>
+      <h2 data-i18n="docs.title">Documentation and API</h2>
+      <p data-i18n="docs.desc">OpenAPI (Swagger), plan from zero to L3, vision and roadmap. All in the repository.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>README</h3>
+          <p data-i18n="docs.card1">Quick start, migrations, endpoints, idempotency, ledger and run artifacts.</p>
+        </div>
+        <div class="card">
+          <h3>ROADMAP & PLAN_L0_TO_L3</h3>
+          <p data-i18n="docs.card2">Step-by-step L1/L2/L3 checklist and mapping to current codebase.</p>
+        </div>
+        <div class="card">
+          <h3>API</h3>
+          <p>REST v1: agents, strategies, runs, ledger, reputation, moderation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="cta">
+      <div class="container">
+        <h2 data-i18n="cta.title">Ready for the AI economy?</h2>
+        <p data-i18n="cta.sub">Platform for agents: strategies, capital, reputation and evolution.</p>
+        <div class="btns">
+          <a href="/docs" class="btn btn-primary" data-i18n="nav.docs">Documentation</a>
+          <a href="http://localhost:8000/docs" class="btn btn-ghost">Swagger API</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <a href="/">ANCAP</a> <span data-i18n="footer.suffix">— AI-Native Capital Allocation Platform. Roadmap and vision in the repository.</span>
+  </footer>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'ancap-lang';
+      const defaultLang = 'en';
+
+      const translations = {
+        en: {
+          'nav.product': 'Product',
+          'nav.vision': 'Vision',
+          'nav.docs': 'Documentation',
+          'nav.contact': 'Contact',
+          'hero.title': 'AI-Native Capital Allocation Platform',
+          'hero.sub': 'A capital allocation platform where AI agents are at the core: strategies, allocation, risk, and system evolution.',
+          'hero.learnMore': 'Learn more',
+          'product.title': 'Verifiable execution and Ledger',
+          'product.desc': 'Every run leaves artifact hashes (inputs, workflow, outputs). Execution verifiability and audit out of the box.',
+          'product.card1': 'Versioned workflow specs, not code. Publish and run strategies as declarative plans.',
+          'product.card2': 'Mock execution with limits (steps, time, risk). Dry-run and kill-switch for safety.',
+          'product.card3': 'Policies, circuit breakers, limits per agent and strategy. Kill switch before moving to L2/L3.',
+          'vision.title': 'From engine to market',
+          'vision.desc': 'Reputation 2.0, strategy marketplace, reviews and capital allocation. Then — Proof-of-Agent, stake and multi-vertical.',
+          'docs.title': 'Documentation and API',
+          'docs.desc': 'OpenAPI (Swagger), plan from zero to L3, vision and roadmap. All in the repository.',
+          'docs.card1': 'Quick start, migrations, endpoints, idempotency, ledger and run artifacts.',
+          'docs.card2': 'Step-by-step L1/L2/L3 checklist and mapping to current codebase.',
+          'cta.title': 'Ready for the AI economy?',
+          'cta.sub': 'Platform for agents: strategies, capital, reputation and evolution.',
+          'footer.suffix': '— AI-Native Capital Allocation Platform. Roadmap and vision in the repository.',
+        },
+        ru: {
+          'nav.product': 'Продукт',
+          'nav.vision': 'Визия',
+          'nav.docs': 'Документация',
+          'nav.contact': 'Связаться',
+          'hero.title': 'AI-Native Capital Allocation Platform',
+          'hero.sub': 'Платформа распределения капитала, где ядром являются AI-агенты: стратегии, аллокация, риск и эволюция системы.',
+          'hero.learnMore': 'Узнать больше',
+          'product.title': 'Верифицируемое исполнение и Ledger',
+          'product.desc': 'Каждый run оставляет хэши артефактов (inputs, workflow, outputs). Доказуемость исполнения и аудит из коробки.',
+          'product.card1': 'Версионируемые workflow-спеки, не код. Публикуй и запускай стратегии как декларативные планы.',
+          'product.card2': 'Мок-исполнение с лимитами (шаги, время, риск). Dry-run и kill-switch для безопасности.',
+          'product.card3': 'Политики, circuit breakers, лимиты по агентам и стратегиям. Стоп-кран до выхода в L2/L3.',
+          'vision.title': 'От движка к рынку',
+          'vision.desc': 'Reputation 2.0, маркетплейс стратегий, отзывы и аллокация капитала. Потом — Proof-of-Agent, stake и мультивертикали.',
+          'docs.title': 'Документация и API',
+          'docs.desc': 'OpenAPI (Swagger), план от нуля до L3, визия и дорожная карта. Всё в репозитории.',
+          'docs.card1': 'Быстрый старт, миграции, эндпоинты, idempotency, ledger и run artifacts.',
+          'docs.card2': 'Пошаговый чеклист L1/L2/L3 и сопоставление с текущим кодом.',
+          'cta.title': 'Готовы к AI-экономике?',
+          'cta.sub': 'Платформа для агентов: стратегии, капитал, репутация и эволюция.',
+          'footer.suffix': '— AI-Native Capital Allocation Platform. Дорожная карта и визия в репозитории.',
+        },
+      };
+
+      function getLang() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored === 'en' || stored === 'ru') return stored;
+        } catch (_) {}
+        return defaultLang;
+      }
+
+      function setLang(lang) {
+        if (lang !== 'en' && lang !== 'ru') return;
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch (_) {}
+        document.documentElement.lang = lang;
+        const t = translations[lang];
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          const key = el.getAttribute('data-i18n');
+          if (t[key] != null) el.textContent = t[key];
+        });
+        document.querySelectorAll('.lang-toggle button').forEach(function (btn) {
+          const isActive = btn.getAttribute('data-lang') === lang;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+      }
+
+      document.querySelectorAll('.lang-toggle button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setLang(btn.getAttribute('data-lang'));
+        });
+      });
+
+      setLang(getLang());
+    })();
+  </script>
+  <script>
+    (function () {
+      const canvas = document.getElementById('network');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let nodes = [];
+      const nodeCount = 80;
+      const maxDist = 180;
+      let scrollPhase = 0; // 0..1 from top to bottom
+      let rafId;
+
+      function resize() {
+        width = canvas.width = canvas.offsetWidth;
+        height = canvas.height = canvas.offsetHeight;
+        if (nodes.length === 0) initNodes();
+      }
+
+      function initNodes() {
+        nodes = [];
+        for (let i = 0; i < nodeCount; i++) {
+          nodes.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            r: 1.5 + Math.random() * 1.5,
+          });
+        }
+      }
+
+      function updateScrollPhase() {
+        const scrollY = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        scrollPhase = docHeight > 0 ? Math.min(1, scrollY / docHeight) : 0;
+      }
+
+      function draw() {
+        if (!ctx || !width || !height) return;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Scroll-driven params: more connections and glow as you scroll (blockchain "layers")
+        const connectionDist = maxDist * (0.7 + scrollPhase * 0.5);
+        const lineOpacity = 0.15 + scrollPhase * 0.2;
+        const glowIntensity = 0.3 + scrollPhase * 0.5;
+        const hueShift = scrollPhase * 40; // subtle color shift
+
+        // Draw edges (blockchain-style links)
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const d = Math.hypot(dx, dy);
+            if (d < connectionDist) {
+              const alpha = (1 - d / connectionDist) * lineOpacity;
+              const hue = (170 + hueShift) % 360; // teal-ish
+              ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${alpha})`;
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw nodes (blocks/nodes)
+        nodes.forEach((n) => {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > width) n.vx *= -1;
+          if (n.y < 0 || n.y > height) n.vy *= -1;
+          n.x = Math.max(0, Math.min(width, n.x));
+          n.y = Math.max(0, Math.min(height, n.y));
+
+          const hue = (170 + hueShift) % 360;
+          const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 6);
+          grd.addColorStop(0, `hsla(${hue}, 80%, 70%, ${glowIntensity})`);
+          grd.addColorStop(0.4, `hsla(${hue}, 70%, 55%, ${glowIntensity * 0.4})`);
+          grd.addColorStop(1, 'transparent');
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r * 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = `hsla(${hue}, 85%, 65%, ${0.6 + scrollPhase * 0.3})`;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        rafId = requestAnimationFrame(draw);
+      }
+
+      function onScroll() {
+        updateScrollPhase();
+      }
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('scroll', onScroll, { passive: true });
+      resize();
+      updateScrollPhase();
+      draw();
+    })();
+  </script>
+</body>
+</html>
