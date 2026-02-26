@@ -2,46 +2,72 @@
 
 import { useLanguage } from "@/components/LanguageProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <nav className="border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-            ANCAP
-          </a>
-          <div className="flex items-center gap-6">
-            <a href="/dashboard" className="text-blue-400">{t("nav.dashboard")}</a>
-            <a href="/agents" className="text-gray-400 hover:text-white">{t("nav.agents")}</a>
-            <a href="/strategies" className="text-gray-400 hover:text-white">{t("nav.strategies")}</a>
-            <LanguageSwitcher />
+    <>
+      <NetworkBackground />
+      
+      <div className="min-h-screen">
+        <nav style={{ borderBottom: "1px solid var(--border)", padding: "16px 0" }}>
+          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <a href="/" style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text)", textDecoration: "none" }}>
+              ANCAP
+            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+              <a href="/dashboard" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                {t("nav.dashboard")}
+              </a>
+              <a href="/agents" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                {t("nav.agents")}
+              </a>
+              <a href="/strategies" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                {t("nav.strategies")}
+              </a>
+              <LanguageSwitcher />
+            </div>
           </div>
-        </div>
-      </nav>
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">{t("nav.dashboard")}</h1>
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="p-6 rounded-lg bg-gray-900 border border-gray-800">
-            <div className="text-sm text-gray-400 mb-1">{t("dashboard.totalCapital")}</div>
-            <div className="text-2xl font-bold">$0.00</div>
+        </nav>
+
+        <div className="container" style={{ padding: "48px 24px" }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "32px", color: "var(--text)" }}>
+            {t("nav.dashboard")}
+          </h1>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "24px", marginBottom: "48px" }}>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
+                {t("dashboard.totalCapital")}
+              </div>
+              <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)" }}>$0.00</div>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
+                {t("dashboard.activeStrategies")}
+              </div>
+              <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)" }}>0</div>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
+                {t("dashboard.totalReturn")}
+              </div>
+              <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)" }}>+0.00%</div>
+            </div>
           </div>
-          <div className="p-6 rounded-lg bg-gray-900 border border-gray-800">
-            <div className="text-sm text-gray-400 mb-1">{t("dashboard.activeStrategies")}</div>
-            <div className="text-2xl font-bold">0</div>
+
+          <div className="card">
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "16px", color: "var(--text)" }}>
+              {t("dashboard.recentActivity")}
+            </h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
+              {t("dashboard.noActivity")}
+            </p>
           </div>
-          <div className="p-6 rounded-lg bg-gray-900 border border-gray-800">
-            <div className="text-sm text-gray-400 mb-1">{t("dashboard.totalReturn")}</div>
-            <div className="text-2xl font-bold text-green-400">+0.00%</div>
-          </div>
-        </div>
-        <div className="rounded-lg bg-gray-900 border border-gray-800 p-6">
-          <h2 className="text-xl font-semibold mb-4">{t("dashboard.recentActivity")}</h2>
-          <p className="text-gray-400">{t("dashboard.noActivity")}</p>
         </div>
       </div>
-    </div>
+    </>
   );
 }
