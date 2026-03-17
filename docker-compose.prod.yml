@@ -20,11 +20,17 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      CURSOR_SECRET: ${CURSOR_SECRET:-change-me-cursor-secret}
+      CRON_SECRET: ${CRON_SECRET:-}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
       ACP_RPC_URL: ${ACP_RPC_URL:-}
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
+      # ACP custodial hot-wallet helper (optional, required to enable /v1/wallet/acp/*)
+      ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-}
+      ACP_HOT_MNEMONIC_FILE: ${ACP_HOT_MNEMONIC_FILE:-/run/secrets/acp_hot_mnemonic.txt}
+      ACP_WALLET_OPERATOR_SECRET: ${ACP_WALLET_OPERATOR_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy

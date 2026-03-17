@@ -9,17 +9,69 @@ from app.schemas import (
     AllocateRequest,
     LedgerEventPublic,
     LedgerEventType,
+    LedgerAccountPublic,
     BalanceResponse,
     Money,
     Pagination,
     BalanceItem,
 )
 from app.api.deps import DbSession
-from app.db.models import LedgerEvent, LedgerEventTypeEnum
+from app.db.models import LedgerEvent, LedgerEventTypeEnum, Account
 from app.services.ledger import get_or_create_account, append_event, balance_for_account, is_ledger_invariant_halted
 from sqlalchemy import select
 
 router = APIRouter(prefix="/ledger", tags=["Ledger"])
+
+
+@router.get("/accounts", response_model=Pagination[LedgerAccountPublic])
+async def list_accounts(
+    session: DbSession,
+    limit: int = Query(50, ge=1, le=200),
+    cursor: str | None = Query(None),
+    owner_type: str | None = Query(None),
+    owner_id: UUID | None = Query(None),
+):
+    q = select(Account).order_by(Account.created_at.desc()).limit(limit + 1)
+    if cursor:
+        try:
+            q = q.where(Account.id < UUID(cursor))
+        except ValueError:
+            pass
+    if owner_type:
+        q = q.where(Account.owner_type == owner_type)
+    if owner_id:
+        q = q.where(Account.owner_id == owner_id)
+    r = await session.execute(q)
+    rows = r.scalars().all()
+    next_cursor = str(rows[-1].id) if len(rows) > limit else None
+    items = rows[:limit]
+    return Pagination(
+        items=[
+            LedgerAccountPublic(
+                id=str(a.id),
+                owner_type=a.owner_type,
+                owner_id=str(a.owner_id),
+                account_kind=a.account_kind,
+                created_at=a.created_at,
+            )
+            for a in items
+        ],
+        next_cursor=next_cursor,
+    )
+
+
+@router.get("/accounts/{account_id}", response_model=LedgerAccountPublic)
+async def get_account(account_id: UUID, session: DbSession):
+    acc = await session.get(Account, account_id)
+    if not acc:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return LedgerAccountPublic(
+        id=str(acc.id),
+        owner_type=acc.owner_type,
+        owner_id=str(acc.owner_id),
+        account_kind=acc.account_kind,
+        created_at=acc.created_at,
+    )
 
 
 @router.post("/deposit", response_model=LedgerEventPublic, status_code=201)

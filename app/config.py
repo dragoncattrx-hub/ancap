@@ -34,13 +34,13 @@ class Settings(BaseSettings):
     # L3: Proof-of-Agent
     registration_max_agents_per_day: int = 100  # 0 = no limit
     stake_to_activate_amount: str = "0"  # "0" = optional; e.g. "100" requires 100 VUSD stake to activate
-    stake_to_activate_currency: str = "VUSD"
+    stake_to_activate_currency: str = "ACP"
 
     # L3: Fees (platform)
     run_fee_amount: str = "0"
-    run_fee_currency: str = "VUSD"
+    run_fee_currency: str = "ACP"
     listing_fee_amount: str = "0"
-    listing_fee_currency: str = "VUSD"
+    listing_fee_currency: str = "ACP"
 
     # L3: On-chain (mock by default). ACP = ANCAP Chain Protocol (see ACP-crypto/)
     chain_anchor_driver: str = "mock"  # mock | acp | ethereum | solana
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
 
     # L3: Slashing on moderation (0 = disabled)
     moderation_slash_amount: str = "0"
-    moderation_slash_currency: str = "VUSD"
+    moderation_slash_currency: str = "ACP"
 
     # Opaque cursor (reputation events pagination): HMAC secret
     cursor_secret: str = "change-me-cursor-secret"

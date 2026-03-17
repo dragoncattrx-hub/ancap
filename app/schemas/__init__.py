@@ -39,6 +39,7 @@ from app.schemas.ledger import (
     AllocateRequest,
     LedgerEventType,
     LedgerEventPublic,
+    LedgerAccountPublic,
     BalanceResponse,
     BalanceItem,
 )
@@ -70,6 +71,12 @@ from app.schemas.reputation import (
     SubjectType,
 )
 from app.schemas.moderation import ModerationActionRequest
+from app.schemas.wallets import (
+    AcpDepositAddressResponse,
+    AcpBalanceResponse,
+    AcpWithdrawRequest,
+    AcpWithdrawResponse,
+)
 from app.schemas.growth import (
     FaucetClaimRequest,
     FaucetClaimPublic,
@@ -131,6 +138,7 @@ __all__ = [
     "AllocateRequest",
     "LedgerEventType",
     "LedgerEventPublic",
+    "LedgerAccountPublic",
     "BalanceResponse",
     "BalanceItem",
     "RunState",
@@ -159,6 +167,10 @@ __all__ = [
     "ReputationRecomputeRequest",
     "SubjectType",
     "ModerationActionRequest",
+    "AcpDepositAddressResponse",
+    "AcpBalanceResponse",
+    "AcpWithdrawRequest",
+    "AcpWithdrawResponse",
     "FaucetClaimRequest",
     "FaucetClaimPublic",
     "StarterPackAssignRequest",

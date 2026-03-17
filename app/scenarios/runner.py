@@ -237,7 +237,7 @@ async def run_flow(flow_id: str, session: AsyncSession, *, seed: int | None = No
 
 async def _flow1(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, params: dict) -> None:
     settings = get_settings()
-    currency = params.get("currency") or "VUSD"
+    currency = params.get("currency") or "USD"
     one_time_price = str(params.get("one_time_price") or "10")
 
     vert = await ensure_vertical(session)
@@ -346,7 +346,7 @@ async def _flow1(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, param
 
 
 async def _flow2(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, params: dict) -> None:
-    currency = params.get("currency") or "VUSD"
+    currency = params.get("currency") or "USD"
     one_time_price = str(params.get("one_time_price") or "5")
 
     vert = await ensure_vertical(session)
@@ -483,7 +483,7 @@ async def _flow2(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, param
 
 
 async def _flow3(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, params: dict) -> None:
-    currency = params.get("currency") or "VUSD"
+    currency = params.get("currency") or "USD"
     price = str(params.get("one_time_price") or "7")
 
     vert = await ensure_vertical(session)
@@ -583,7 +583,7 @@ async def _simulation(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, 
     import random
 
     rng = random.Random(seed or 0)
-    currency = params.get("currency") or "VUSD"
+    currency = params.get("currency") or "USD"
     agents_n = int(params.get("agents") or 100)
     strategies_per_agent = int(params.get("strategies_per_agent") or 1)
     orders_total = int(params.get("orders") or agents_n)

@@ -31,7 +31,7 @@ class ContractCreateRequest(BaseModel):
     description: str = ""
     payment_model: PaymentModel
     fixed_amount_value: Optional[str] = None
-    currency: str = "VUSD"
+    currency: str = "USD"
     max_runs: Optional[int] = None
     risk_policy_id: Optional[str] = None
     created_from_order_id: Optional[str] = None

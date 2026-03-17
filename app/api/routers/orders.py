@@ -85,7 +85,7 @@ async def place_order(
 
     fee = listing.fee_model
     amount_value = fee.get("one_time_price", {}).get("amount") or "0"
-    amount_currency = fee.get("one_time_price", {}).get("currency") or "VUSD"
+    amount_currency = fee.get("one_time_price", {}).get("currency") or "USD"
     # L3: order escrow — buyer -> escrow -> seller (ledger)
     amount_decimal = Decimal(amount_value) if amount_value else Decimal(0)
     if amount_decimal > 0:
@@ -168,7 +168,7 @@ async def place_order(
         buyer_type=order.buyer_type,
         buyer_id=str(order.buyer_id),
         status=OrderStatus(order.status.value),
-        amount=Money(amount=str(order.amount_value), currency=order.amount_currency or "VUSD"),
+        amount=Money(amount=str(order.amount_value), currency=order.amount_currency or "USD"),
         created_at=order.created_at,
     )
     await store_idempotency_result(
@@ -212,7 +212,7 @@ async def list_orders(
                 buyer_type=o.buyer_type,
                 buyer_id=str(o.buyer_id),
                 status=OrderStatus(o.status.value),
-                amount=Money(amount=str(o.amount_value), currency=o.amount_currency or "VUSD") if o.amount_value is not None else None,
+                amount=Money(amount=str(o.amount_value), currency=o.amount_currency or "USD") if o.amount_value is not None else None,
                 created_at=o.created_at,
             )
             for o in items

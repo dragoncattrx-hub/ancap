@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class StakeCreateRequest(BaseModel):
     amount: str = Field(..., min_length=1)
-    currency: str = Field("VUSD", max_length=10)
+    currency: str = Field("ACP", max_length=10)
 
 
 class StakePublic(BaseModel):
@@ -25,5 +25,5 @@ class StakePublic(BaseModel):
 
 class SlashRequest(BaseModel):
     amount: str = Field(..., min_length=1)
-    currency: str = Field("VUSD", max_length=10)
+    currency: str = Field("ACP", max_length=10)
     reason: str = Field(..., min_length=1, max_length=500)

@@ -26,7 +26,7 @@ function NewContractPageInner() {
     description: "",
     payment_model: "fixed",
     fixed_amount_value: "10",
-    currency: "VUSD",
+    currency: "USD",
     max_runs: "1",
   });
 
@@ -86,7 +86,7 @@ function NewContractPageInner() {
         description: form.description || undefined,
         payment_model: form.payment_model as "fixed" | "per_run",
         fixed_amount_value: form.fixed_amount_value || undefined,
-        currency: form.currency || "VUSD",
+        currency: form.currency || "USD",
         max_runs: form.payment_model === "per_run" ? Number(form.max_runs || "1") : undefined,
       };
       const created = await contracts.create(payload);

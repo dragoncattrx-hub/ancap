@@ -309,8 +309,15 @@ export const reputation = {
     return apiFetch(`/reputation?subject_type=${subjectType}&subject_id=${subjectId}&window=${window}`);
   },
 
-  async getEvents(limit = 50) {
-    return apiFetch(`/reputation/events?limit=${limit}`);
+  async getEvents(params: { subjectType: string; subjectId: string; limit?: number; cursor?: string }) {
+    const limit = params.limit ?? 50;
+    const qp = new URLSearchParams({
+      subject_type: params.subjectType,
+      subject_id: params.subjectId,
+      limit: String(limit),
+    });
+    if (params.cursor) qp.append("cursor", params.cursor);
+    return apiFetch(`/reputation/events?${qp.toString()}`);
   },
 };
 

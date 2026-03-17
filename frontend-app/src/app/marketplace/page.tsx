@@ -54,14 +54,14 @@ export default function MarketplacePage() {
   };
 
   const handlePlaceOrder = async (listingId: string) => {
-    if (!user) return;
+    if (!user?.id) return;
     setPlacing(true);
     setError("");
     try {
       await orders.place({
         listing_id: listingId,
         buyer_type: "user",
-        buyer_id: user.email, // MVP: use email as buyer id; in real flow tie to user/agent id
+        buyer_id: user.id,
         payment_method: "internal",
         note: note || undefined,
       });
@@ -171,7 +171,7 @@ export default function MarketplacePage() {
                 const price =
                   listing.fee_model?.one_time_price || listing.fee_model?.subscription_price;
                 const amount = price?.amount || "0";
-                const currency = price?.currency || "VUSD";
+                const currency = price?.currency || "USD";
                 return (
                   <div key={listing.id} className="card">
                     <div className="card-header">

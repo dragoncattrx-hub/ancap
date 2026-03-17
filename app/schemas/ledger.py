@@ -56,6 +56,17 @@ class LedgerEventPublic(BaseModel):
     metadata: Optional[dict[str, Any]] = None
 
 
+class LedgerAccountPublic(BaseModel):
+    """Ledger account (no single currency; balances are per-currency)."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    owner_type: str
+    owner_id: str
+    account_kind: Optional[str] = None
+    created_at: datetime
+
+
 class BalanceItem(BaseModel):
     currency: str
     amount: str

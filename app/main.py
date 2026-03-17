@@ -29,6 +29,7 @@ from app.api.routers import (
     onboarding,
     stakes_router,
     chain,
+    wallet_acp,
     system,
     flows,
     contracts,
@@ -103,6 +104,7 @@ app.include_router(funds.router, prefix="/v1")
 app.include_router(onboarding.router, prefix="/v1")
 app.include_router(stakes_router.router, prefix="/v1")
 app.include_router(chain.router, prefix="/v1")
+app.include_router(wallet_acp.router, prefix="/v1")
 app.include_router(system.router, prefix="/v1")
 app.include_router(flows.router, prefix="/v1")
 

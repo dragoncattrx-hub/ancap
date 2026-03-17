@@ -759,7 +759,7 @@ class Contract(Base):
     status = Column(SQLEnum(ContractStatusEnum), default=ContractStatusEnum.draft)
     payment_model = Column(SQLEnum(PaymentModelEnum), nullable=False)
     fixed_amount_value = Column(Numeric(36, 18), nullable=True)
-    currency = Column(String(10), nullable=False, default="VUSD")
+    currency = Column(String(10), nullable=False, default="USD")
     max_runs = Column(Integer, nullable=True)
     runs_completed = Column(Integer, nullable=False, default=0)
     risk_policy_id = Column(UUID(as_uuid=False), ForeignKey("risk_policies.id", ondelete="SET NULL"), nullable=True)
@@ -780,7 +780,7 @@ class ContractMilestone(Base):
     status = Column(SQLEnum(ContractMilestoneStatusEnum), nullable=False, default=ContractMilestoneStatusEnum.pending, index=True)
 
     amount_value = Column(Numeric(36, 18), nullable=False)
-    currency = Column(String(10), nullable=False, default="VUSD")
+    currency = Column(String(10), nullable=False, default="USD")
 
     required_runs = Column(Integer, nullable=True)
     completed_runs = Column(Integer, nullable=False, default=0)

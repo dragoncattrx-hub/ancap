@@ -105,7 +105,7 @@ export default function ContractsPage() {
                     <td>
                       {c.payment_model}
                       {c.fixed_amount_value
-                        ? ` ${c.fixed_amount_value} ${c.currency || "VUSD"}`
+                        ? ` ${c.fixed_amount_value} ${c.currency || "USD"}`
                         : null}
                     </td>
                     <td>{c.scope_type}</td>

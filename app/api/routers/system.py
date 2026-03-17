@@ -25,6 +25,25 @@ async def health():
     return {"status": "ok"}
 
 
+@router.get("/diagnostics")
+async def diagnostics():
+    s = get_settings()
+    return {
+        "status": "ok",
+        "currencies": {
+            "stake_to_activate_currency": s.stake_to_activate_currency,
+            "run_fee_currency": s.run_fee_currency,
+            "listing_fee_currency": s.listing_fee_currency,
+            "moderation_slash_currency": s.moderation_slash_currency,
+        },
+        "acp": {
+            "chain_anchor_driver": s.chain_anchor_driver,
+            "acp_rpc_url": s.acp_rpc_url,
+            "walletd_configured": bool(__import__("os").getenv("ACP_WALLETD_PATH", "").strip()),
+        },
+    }
+
+
 @router.get("/ledger-invariant-status")
 async def ledger_invariant_status(session: DbSession):
     """Return whether ledger operations are blocked due to invariant violation (ROADMAP §3)."""

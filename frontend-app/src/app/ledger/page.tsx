@@ -11,17 +11,17 @@ interface LedgerAccount {
   id: string;
   owner_type: string;
   owner_id?: string;
-  currency: string;
-  account_kind: string;
+  account_kind?: string | null;
+  created_at?: string;
 }
 
 interface LedgerEvent {
   id: string;
-  account_id: string;
-  amount: string;
-  currency: string;
-  event_type: string;
-  created_at: string;
+  ts: string;
+  type: string;
+  amount: { amount: string; currency: string };
+  src_account_id?: string | null;
+  dst_account_id?: string | null;
 }
 
 export default function LedgerPage() {
@@ -150,7 +150,7 @@ export default function LedgerPage() {
                         }}
                       >
                         <div>
-                          <strong>{acc.account_kind}</strong> — {acc.currency}
+                          <strong>{acc.account_kind || "participant"}</strong>
                         </div>
                         <div>Owner type: {acc.owner_type}</div>
                         {acc.owner_id && <div>Owner id: {acc.owner_id}</div>}
@@ -206,18 +206,31 @@ export default function LedgerPage() {
                         }}
                       >
                         <div>
-                          <strong>{ev.event_type}</strong> — {ev.amount}{" "}
-                          {ev.currency}
+                          <strong>{ev.type}</strong> — {ev.amount?.amount}{" "}
+                          {ev.amount?.currency}
                         </div>
                         <div>
-                          Account:{" "}
-                          <span style={{ color: "var(--accent)" }}>
-                            {ev.account_id}
-                          </span>
+                          {ev.src_account_id && (
+                            <>
+                              From:{" "}
+                              <span style={{ color: "var(--accent)" }}>
+                                {ev.src_account_id}
+                              </span>
+                              {"  "}
+                            </>
+                          )}
+                          {ev.dst_account_id && (
+                            <>
+                              To:{" "}
+                              <span style={{ color: "var(--accent)" }}>
+                                {ev.dst_account_id}
+                              </span>
+                            </>
+                          )}
                         </div>
                         <div>
                           Time:{" "}
-                          {new Date(ev.created_at).toLocaleString()}
+                          {new Date(ev.ts).toLocaleString()}
                         </div>
                       </div>
                     ))}

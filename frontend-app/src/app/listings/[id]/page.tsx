@@ -72,7 +72,7 @@ export default function ListingDetailPage() {
 
   const price = useMemo(() => {
     const p = listing?.fee_model?.one_time_price || listing?.fee_model?.subscription_price_monthly;
-    return { amount: p?.amount || "0", currency: p?.currency || "VUSD", type: listing?.fee_model?.type || "one_time" };
+    return { amount: p?.amount || "0", currency: p?.currency || "USD", type: listing?.fee_model?.type || "one_time" };
   }, [listing]);
 
   async function buy() {

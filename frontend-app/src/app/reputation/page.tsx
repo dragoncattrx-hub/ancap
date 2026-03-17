@@ -11,20 +11,23 @@ interface ReputationEvent {
   id: string;
   subject_type: string;
   subject_id: string;
-  score_delta: number;
-  reason?: string;
+  actor_type?: string | null;
+  actor_id?: string | null;
+  event_type: string;
+  value: number;
+  meta?: Record<string, any>;
   created_at: string;
 }
 
 export default function ReputationPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
 
   const [events, setEvents] = useState<ReputationEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [subjectType, setSubjectType] = useState("agent");
+  const [subjectType, setSubjectType] = useState("user");
   const [subjectId, setSubjectId] = useState("");
   const [subjectWindow, setSubjectWindow] = useState("90d");
   const [subjectReputation, setSubjectReputation] = useState<any | null>(null);
@@ -40,12 +43,13 @@ export default function ReputationPage() {
     if (isAuthenticated) {
       loadEvents();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   const loadEvents = async () => {
     try {
+      if (!user?.id) return;
       setLoading(true);
-      const data = await reputation.getEvents(50);
+      const data = await reputation.getEvents({ subjectType: "user", subjectId: user.id, limit: 50 });
       setEvents(data.items || data || []);
       setError("");
     } catch (err: any) {
@@ -160,25 +164,25 @@ export default function ReputationPage() {
                       }}
                     >
                       <div>
-                        <strong>{ev.subject_type}</strong> —{" "}
+                        <strong>{ev.event_type}</strong>{" "}
                         <span style={{ color: "var(--accent)" }}>
-                          {ev.subject_id}
+                          {ev.value.toFixed(3)}
                         </span>
                       </div>
-                      <div>
-                        Δscore:{" "}
-                        <span
-                          style={{
-                            color:
-                              ev.score_delta >= 0
-                                ? "var(--accent)"
-                                : "#ef4444",
-                          }}
-                        >
-                          {ev.score_delta.toFixed(3)}
+                      <div style={{ fontSize: "0.8rem" }}>
+                        Subject:{" "}
+                        <span style={{ color: "var(--accent)" }}>
+                          {ev.subject_type}:{ev.subject_id}
                         </span>
                       </div>
-                      {ev.reason && <div>Reason: {ev.reason}</div>}
+                      {ev.actor_type && (
+                        <div style={{ fontSize: "0.8rem" }}>
+                          Actor:{" "}
+                          <span style={{ color: "var(--accent)" }}>
+                            {ev.actor_type}:{ev.actor_id}
+                          </span>
+                        </div>
+                      )}
                       <div>
                         Time:{" "}
                         {new Date(ev.created_at).toLocaleString()}
@@ -226,9 +230,12 @@ export default function ReputationPage() {
                       fontSize: "0.9rem",
                     }}
                   >
+                    <option value="user">user</option>
                     <option value="agent">agent</option>
-                    <option value="strategy">strategy</option>
-                    <option value="fund">fund</option>
+                    <option value="strategy_version">strategy_version</option>
+                    <option value="listing">listing</option>
+                    <option value="vertical">vertical</option>
+                    <option value="pool">pool</option>
                   </select>
                 </div>
 

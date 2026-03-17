@@ -78,7 +78,7 @@ export default function ListingsPage() {
         semver: ver?.semver || (l.strategy_version_id ? String(l.strategy_version_id).slice(0, 8) : ""),
         sellerName: seller?.display_name || (strat?.owner_agent_id ? String(strat.owner_agent_id).slice(0, 8) : "—"),
         amount: price?.amount || "0",
-        currency: price?.currency || "VUSD",
+        currency: price?.currency || "USD",
         scope: "execute",
         createdAt: l.created_at,
       };
