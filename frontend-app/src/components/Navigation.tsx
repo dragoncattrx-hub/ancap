@@ -1,208 +1,372 @@
 "use client";
 
-import { useState } from "react";
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+const primaryNav: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Feed", href: "/feed" },
+  { label: "Agents", href: "/agents" },
+  { label: "Strategies", href: "/strategies" },
+  { label: "Verticals", href: "/verticals" },
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "Reputation", href: "/reputation" },
+  { label: "Ledger", href: "/ledger" },
+];
+
+const secondaryNav: NavItem[] = [
+  { label: "Onboarding", href: "/onboarding" },
+  { label: "Notifications", href: "/notifications" },
+  { label: "Leaderboards", href: "/leaderboards" },
+  { label: "Growth", href: "/growth" },
+  { label: "Pools", href: "/pools" },
+  { label: "Funds", href: "/funds" },
+  { label: "Orders", href: "/orders" },
+  { label: "Access", href: "/access" },
+  { label: "Seller", href: "/dashboard/seller" },
+  { label: "Flows", href: "/flows" },
+  { label: "Runs", href: "/runs" },
+  { label: "Contracts", href: "/contracts" },
+  { label: "Listings", href: "/listings" },
+];
+
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function HeaderLink({
+  item,
+  active,
+  compact = false,
+  onClick,
+}: {
+  item: NavItem;
+  active: boolean;
+  compact?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={cn(
+        "relative rounded-md transition-all duration-200",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30",
+        compact ? "px-2.5 py-1 text-[12px]" : "px-3 py-1.5 text-[13px]",
+        active ? "text-white" : "text-white/58 hover:text-white/90"
+      )}
+    >
+      <span className="relative z-10">{item.label}</span>
+
+      {active && (
+        <>
+          <span className="absolute inset-0 rounded-md bg-white/[0.045]" />
+          <span className="absolute inset-x-2 bottom-0 h-px bg-emerald-400/80" />
+        </>
+      )}
+    </Link>
+  );
+}
 
 export function Navigation() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { t } = useLanguage();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { lang, setLang } = useLanguage();
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
 
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  const userLabel = user?.display_name || user?.email || "";
+
   return (
-    <nav className="nav-root">
-      <div className="container nav-inner">
-        <a href="/" className="nav-brand">
-          ANCAP
-        </a>
+    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#040816]/84 backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent" />
 
-        {/* Mobile Menu Button */}
-        <button
-          className="mobile-menu-button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? "X" : "≡"}
-        </button>
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
+        <div className="flex min-h-[78px] items-center justify-between gap-4 xl:min-h-[92px]">
+          {/* Left: Brand */}
+          <div className="flex min-w-0 items-center gap-6">
+            <Link href="/" className="group inline-flex items-center gap-3">
+              <span className="relative flex items-center justify-center">
+                <span className="absolute h-4 w-4 rounded-full bg-emerald-400/20 blur-md" />
+                <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.85)]" />
+              </span>
+              <span className="text-[26px] font-semibold tracking-[-0.05em] text-white sm:text-[30px]">
+                ANCAP
+              </span>
+            </Link>
+          </div>
 
-        {/* Desktop Navigation (hidden on mobile via CSS) */}
-        <div className="desktop-nav">
-          {isAuthenticated ? (
-            <>
-              <div className="nav-links">
-                <a href="/dashboard" className="nav-link">
-                  {t("nav.dashboard")}
-                </a>
-                <a href="/onboarding" className="nav-link">Onboarding</a>
-                <a href="/feed" className="nav-link">Feed</a>
-                <a href="/notifications" className="nav-link">Notifications</a>
-                <a href="/leaderboards" className="nav-link">Leaderboards</a>
-                <a href="/growth" className="nav-link">Growth</a>
-                <a href="/agents" className="nav-link">{t("nav.agents")}</a>
-                <a href="/strategies" className="nav-link">{t("nav.strategies")}</a>
-                <a href="/verticals" className="nav-link">{t("nav.verticals") || "Verticals"}</a>
-                <a href="/pools" className="nav-link">{t("nav.pools") || "Pools"}</a>
-                <a href="/funds" className="nav-link">{t("nav.funds") || "Funds"}</a>
-                <a href="/ledger" className="nav-link">{t("nav.ledger") || "Ledger"}</a>
-                <a href="/reputation" className="nav-link">{t("nav.reputation") || "Reputation"}</a>
-                <a href="/marketplace" className="nav-link">{t("nav.marketplace") || "Marketplace"}</a>
-                <a href="/listings" className="nav-link">{t("nav.listings") || "Listings"}</a>
-                <a href="/orders" className="nav-link">{t("nav.orders") || "Orders"}</a>
-                <a href="/access" className="nav-link">{t("nav.access") || "Access"}</a>
-                <a href="/dashboard/seller" className="nav-link">{t("nav.sellerDashboard") || "Seller"}</a>
-                <a href="/flows" className="nav-link">{t("nav.flows") || "Flows"}</a>
-                <a href="/runs" className="nav-link">Runs</a>
-                <a href="/contracts" className="nav-link">Contracts</a>
-              </div>
+          {/* Center: Navigation (auth only, xl+) */}
+          <div className="hidden min-w-0 flex-1 xl:flex xl:flex-col xl:justify-center">
+            {isAuthenticated ? (
+              <>
+                <nav className="flex flex-wrap items-center gap-x-1 gap-y-1">
+                  {primaryNav.map((item) => (
+                    <HeaderLink
+                      key={item.href}
+                      item={item}
+                      active={pathname === item.href}
+                    />
+                  ))}
+                </nav>
 
-              <div className="nav-actions">
-                <LanguageSwitcher />
-                <span className="nav-user">
-                  {user?.display_name || user?.email}
-                </span>
-                <button onClick={logout} className="btn btn-ghost nav-logout">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-1">
+                  {secondaryNav.map((item) => (
+                    <HeaderLink
+                      key={item.href}
+                      item={item}
+                      active={pathname === item.href}
+                      compact
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <nav className="flex items-center gap-2 text-[13px]">
+                <Link href="/#product" className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
+                  Product
+                </Link>
+                <Link href="/#vision" className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
+                  Vision
+                </Link>
+                <Link href={acpUrl} className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
+                  ACP Token
+                </Link>
+              </nav>
+            )}
+          </div>
+
+          {/* Right: Controls */}
+          <div className="hidden items-center gap-3 xl:flex">
+            <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  lang === "en"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("ru")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  lang === "ru"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                RU
+              </button>
+            </div>
+
+            <div className="h-6 w-px bg-white/10" />
+
+            {isAuthenticated ? (
+              <>
+                <span className="text-[13px] font-medium text-white/72">{userLabel}</span>
+                <button
+                  onClick={logout}
+                  className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                >
                   Logout
                 </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <a href="/#product" className="nav-link" style={{ fontSize: "0.9rem" }}>
-                {t("nav.product") || "Product"}
-              </a>
-              <a href="/#vision" className="nav-link" style={{ fontSize: "0.9rem" }}>
-                {t("nav.vision") || "Vision"}
-              </a>
-              <a href={acpUrl} className="nav-link" style={{ fontSize: "0.9rem" }}>
-                ACP Token
-              </a>
-              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
-                <LanguageSwitcher />
-                <a href="/login" className="btn btn-ghost" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                >
                   Login
-                </a>
-                <a href="/register" className="btn btn-primary" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-full bg-emerald-400/15 px-4 py-2 text-[13px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/30 transition hover:bg-emerald-400/20"
+                >
                   Register
-                </a>
-              </div>
-            </>
-          )}
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile controls */}
+          <div className="flex items-center gap-2 xl:hidden">
+            <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  lang === "en"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("ru")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  lang === "ru"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                RU
+              </button>
+            </div>
+
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/85 transition hover:bg-white/[0.06]"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? "×" : "≡"}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile panel */}
       {mobileMenuOpen && (
-        <div className="container">
-          <div className="mobile-nav" role="menu">
+        <div className="border-t border-white/8 bg-[#060b18]/98 xl:hidden">
+          <div className="mx-auto max-w-[1440px] px-4 py-4 sm:px-6">
             {isAuthenticated ? (
-              <>
-                <a href="/dashboard" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.dashboard")}
-                </a>
-                <a href="/onboarding" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Onboarding
-                </a>
-                <a href="/feed" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Feed
-                </a>
-                <a href="/notifications" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Notifications
-                </a>
-                <a href="/leaderboards" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Leaderboards
-                </a>
-                <a href="/growth" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Growth
-                </a>
-                <a href="/agents" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.agents")}
-                </a>
-                <a href="/strategies" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.strategies")}
-                </a>
-              <a href="/verticals" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                {t("nav.verticals") || "Verticals"}
-              </a>
-                <a href="/pools" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.pools") || "Pools"}
-                </a>
-                <a href="/funds" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.funds") || "Funds"}
-                </a>
-                <a href="/ledger" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.ledger") || "Ledger"}
-                </a>
-                <a href="/reputation" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.reputation") || "Reputation"}
-                </a>
-                <a href="/marketplace" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.marketplace") || "Marketplace"}
-                </a>
-                <a href="/listings" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.listings") || "Listings"}
-                </a>
-                <a href="/orders" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.orders") || "Orders"}
-                </a>
-                <a href="/access" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.access") || "Access"}
-                </a>
-                <a href="/dashboard/seller" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.sellerDashboard") || "Seller"}
-                </a>
-                <a href="/flows" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.flows") || "Flows"}
-                </a>
-                <a href="/runs" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Runs
-                </a>
-                <a href="/contracts" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  Contracts
-                </a>
-                <div style={{ padding: "8px 0", borderTop: "1px solid var(--border)", marginTop: "8px", paddingTop: "16px" }}>
-                  <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-                    {user?.display_name || user?.email}
+              <div className="grid gap-5">
+                <div>
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    Main
                   </div>
-                  <LanguageSwitcher />
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {primaryNav.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "rounded-xl border px-3 py-2.5 text-[13px] transition",
+                            active
+                              ? "border-emerald-400/30 bg-emerald-400/10 text-white"
+                              : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    System
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {secondaryNav.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "rounded-xl border px-3 py-2.5 text-[13px] transition",
+                            active
+                              ? "border-emerald-400/30 bg-emerald-400/10 text-white"
+                              : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                  <div className="text-[13px] text-white/70">
+                    {userLabel}
+                  </div>
                   <button
-                    onClick={() => { logout(); setMobileMenuOpen(false); }}
-                    className="btn btn-ghost"
-                    style={{ width: "100%", marginTop: "12px" }}
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[13px] text-white/85 transition hover:bg-white/[0.06]"
                   >
                     Logout
                   </button>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <a href="/#product" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.product") || "Product"}
-                </a>
-                <a href="/#vision" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
-                  {t("nav.vision") || "Vision"}
-                </a>
-                <a
-                  href={acpUrl}
-                  style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}
-                >
-                  ACP Token & Chain
-                </a>
-                <div style={{ padding: "8px 0", borderTop: "1px solid var(--border)", marginTop: "8px", paddingTop: "16px" }}>
-                  <LanguageSwitcher />
-                  <a href="/login" className="btn btn-ghost" style={{ width: "100%", marginTop: "12px" }}>
-                    Login
-                  </a>
-                  <a href="/register" className="btn btn-primary" style={{ width: "100%", marginTop: "12px" }}>
-                    Register
-                  </a>
+              <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/#product"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
+                  >
+                    Product
+                  </Link>
+                  <Link
+                    href="/#vision"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
+                  >
+                    Vision
+                  </Link>
+                  <Link
+                    href={acpUrl}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="col-span-2 rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
+                  >
+                    ACP Token & Chain
+                  </Link>
                 </div>
-              </>
+
+                <div className="flex items-center gap-2 border-t border-white/8 pt-3">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-center text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 rounded-full bg-emerald-400/15 px-4 py-2 text-center text-[13px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/30 transition hover:bg-emerald-400/20"
+                  >
+                    Register
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }
