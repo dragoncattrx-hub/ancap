@@ -1,0 +1,32 @@
+.git
+.gitignore
+.github
+
+# Python caches / venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+
+# Node / Next / Playwright
+**/node_modules
+**/.next
+**/dist
+**/out
+frontend-app/test-results
+frontend-app/playwright-report
+
+# Rust
+**/target
+
+# Local secrets / data
+Sicret
+**/Sicret
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+**/*.log

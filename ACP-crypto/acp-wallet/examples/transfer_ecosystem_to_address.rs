@@ -27,7 +27,14 @@ fn rpc(client: &Client, rpc_url: &str, method: &str, params: serde_json::Value) 
         "method": method,
         "params": params
     });
-    let res: serde_json::Value = client.post(rpc_url).json(&body).send()?.json()?;
+    let mut req = client.post(rpc_url).json(&body);
+    if let Ok(t) = std::env::var("ACP_RPC_TOKEN") {
+        let t = t.trim().to_string();
+        if !t.is_empty() {
+            req = req.header("x-acp-rpc-token", t);
+        }
+    }
+    let res: serde_json::Value = req.send()?.json()?;
     if let Some(err) = res.get("error") {
         anyhow::bail!("RPC error: {}", err);
     }

@@ -37,6 +37,8 @@
 - **JWT Authentication**
 - **Internationalization** (EN/RU)
 
+Default language: **EN**.
+
 **Документация фронтенда:** [FRONTEND.md](FRONTEND.md) — полное описание архитектуры, компонентов, дизайн-системы и всех страниц.
 
 **Запуск фронтенда:**
@@ -52,6 +54,7 @@ Production UI: https://ancap.cloud/
 
 **Страницы:**
 - `/` — Landing page с информацией о платформе
+- `/acp` — ACP Token & Chain (landing)
 - `/login` — Вход в систему
 - `/register` — Регистрация
 - `/dashboard` — Панель управления (требуется авторизация)
@@ -82,6 +85,17 @@ Production UI: https://ancap.cloud/
 - **acp-wallet** — примеры: genesis, переводы ACP.
 
 Токен ACP предназначен для: execution/fee, stake для репутации и governance, коллатерал при slashing. Слой Chain anchors (L3) в API может анкорить хэши в сеть ACP. Подробнее: [ACP-crypto/README.md](ACP-crypto/README.md).
+
+### Local ACP nodes (3-node cluster)
+
+Рекомендуемый локальный стенд: 3 ноды на `127.0.0.1` с RPC портами:
+- node1: `http://127.0.0.1:18545/rpc`
+- node2: `http://127.0.0.1:18546/rpc`
+- node3: `http://127.0.0.1:18547/rpc`
+
+Конфиги и данные нод хранятся локально (Desktop `Sicret`) и **не коммитятся**.
+
+Безопасность: для state-changing методов RPC (`submitblock`, `sendrawtransaction`) поддерживается опциональный заголовок `x-acp-rpc-token` (см. `ACP-crypto/acp-node/acp-node.toml.example`).
 
 ## Быстрый старт
 

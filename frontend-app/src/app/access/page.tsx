@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { access } from "@/lib/api";
 
-export default function AccessPage() {
+function AccessPageInner() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -155,7 +155,7 @@ export default function AccessPage() {
                       ? new Date(g.expires_at).toLocaleString()
                       : "never"}
                   </div>
-                  {g.scope === "execute" && (
+                  {/execute|allocate/i.test(String(g.scope)) && (
                     <div style={{ marginTop: 14 }}>
                       <a
                         className="btn btn-primary"
@@ -173,6 +173,15 @@ export default function AccessPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AccessPage() {
+  // Next.js requires a suspense boundary for useSearchParams in production build.
+  return (
+    <Suspense fallback={null}>
+      <AccessPageInner />
+    </Suspense>
   );
 }
 

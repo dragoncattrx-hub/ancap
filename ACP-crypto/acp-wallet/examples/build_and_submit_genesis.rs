@@ -16,19 +16,27 @@ use serde_json::json;
 use std::time::Duration;
 
 const CHAIN_ID: u32 = 1001;
-const RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const DEFAULT_RPC_URL: &str = "http://127.0.0.1:8545/rpc";
 const RPC_TIMEOUT_SECS: u64 = 120;
 /// Детерминированная мнемоника только для подписи genesis-tx (никто не хранит средства на этом ключе).
-const GENESIS_SIGNER_PHRASE: &str = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+const GENESIS_SIGNER_PHRASE: &str =
+    "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
-fn rpc(client: &Client, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+fn rpc(client: &Client, rpc_url: &str, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
     let body = json!({
         "jsonrpc": "2.0",
         "id": 1,
         "method": method,
         "params": params
     });
-    let res: serde_json::Value = client.post(RPC_URL).json(&body).send()?.json()?;
+    let mut req = client.post(rpc_url).json(&body);
+    if let Ok(t) = std::env::var("ACP_RPC_TOKEN") {
+        let t = t.trim().to_string();
+        if !t.is_empty() {
+            req = req.header("x-acp-rpc-token", t);
+        }
+    }
+    let res: serde_json::Value = req.send()?.json()?;
     if let Some(err) = res.get("error") {
         anyhow::bail!("RPC error: {}", err);
     }
@@ -36,6 +44,7 @@ fn rpc(client: &Client, method: &str, params: serde_json::Value) -> anyhow::Resu
 }
 
 fn main() -> anyhow::Result<()> {
+    let rpc_url = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| DEFAULT_RPC_URL.to_string());
     let path = "genesis-addresses.json";
     let genesis: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string(path)?)?;
     if genesis.len() != 4 {
@@ -108,7 +117,7 @@ fn main() -> anyhow::Result<()> {
         .timeout(Duration::from_secs(RPC_TIMEOUT_SECS))
         .build()?;
 
-    match rpc(&client, "getblockcount", json!({})) {
+    match rpc(&client, &rpc_url, "getblockcount", json!({})) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[!] Нода недоступна (getblockcount): {}", e);
@@ -120,7 +129,7 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    let res = match rpc(&client, "submitblock", json!({ "block": block_hex })) {
+    let res = match rpc(&client, &rpc_url, "submitblock", json!({ "block": block_hex })) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("[!] Ошибка отправки блока: {}", e);

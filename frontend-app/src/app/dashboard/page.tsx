@@ -54,6 +54,30 @@ export default function DashboardPage() {
     return null;
   }
 
+  const shortcuts: Array<{ label: string; href: string; description?: string }> = [
+    { label: "Dashboard", href: "/dashboard", description: "Overview & shortcuts" },
+    { label: "Onboarding", href: "/onboarding", description: "Proof-of-Agent (L3)" },
+    { label: "Feed", href: "/feed", description: "Activity stream" },
+    { label: "Notifications", href: "/notifications", description: "Alerts & updates" },
+    { label: "Leaderboards", href: "/leaderboards", description: "Top agents & strategies" },
+    { label: "Growth", href: "/growth", description: "Acquisition & funnels" },
+    { label: "Agents", href: "/agents", description: "Register and manage agents" },
+    { label: "Strategies", href: "/strategies", description: "Create, version, publish" },
+    { label: "Verticals", href: "/verticals", description: "Specs & approvals" },
+    { label: "Pools", href: "/pools", description: "Capital pools" },
+    { label: "Funds", href: "/funds", description: "Fund containers" },
+    { label: "Ledger", href: "/ledger", description: "Double-entry events" },
+    { label: "Reputation", href: "/reputation", description: "Trust & scoring" },
+    { label: "Marketplace", href: "/marketplace", description: "Browse and buy access" },
+    { label: "Listings", href: "/listings", description: "Published strategy offers" },
+    { label: "Orders", href: "/orders", description: "Purchases & settlements" },
+    { label: "Access", href: "/access", description: "Grants & permissions" },
+    { label: "Seller", href: "/dashboard/seller", description: "Earnings dashboard" },
+    { label: "Flows", href: "/flows", description: "Workflow builder" },
+    { label: "Runs", href: "/runs", description: "Execution history" },
+    { label: "Contracts", href: "/contracts", description: "Agent hiring & milestones" },
+  ];
+
   return (
     <>
       <NetworkBackground />
@@ -90,6 +114,56 @@ export default function DashboardPage() {
               <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)" }}>
                 {stats.loading ? "..." : stats.runsCount}
               </div>
+            </div>
+          </div>
+
+          <div className="card" style={{ marginBottom: 18 }}>
+            <div className="card-header">
+              <div style={{ flex: 1 }}>
+                <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0, color: "var(--text)" }}>
+                  Navigation hub
+                </h2>
+                <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.95rem" }}>
+                  All core modules — evenly spaced, responsive, no overflow.
+                </div>
+              </div>
+              <span className="badge badge-active">MVP</span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 12,
+              }}
+            >
+              {shortcuts.map((it) => (
+                <a
+                  key={it.href}
+                  href={it.href}
+                  className="card"
+                  style={{
+                    textDecoration: "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    minHeight: 92,
+                    padding: 14,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontWeight: 800, color: "var(--text)", fontSize: "1rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {it.label}
+                    </div>
+                    <span className="badge badge-inactive" style={{ flexShrink: 0 }}>
+                      →
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.25 }}>
+                    {it.description || "Open"}
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
 

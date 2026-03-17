@@ -10,12 +10,13 @@ type LanguageContextType = {
 };
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
+const LANG_STORAGE_KEY = "ancap-lang-v2";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Language>('en');
 
   useEffect(() => {
-    const stored = localStorage.getItem('ancap-lang') as Language;
+    const stored = localStorage.getItem(LANG_STORAGE_KEY) as Language;
     if (stored === 'en' || stored === 'ru') {
       setLangState(stored);
     }
@@ -23,7 +24,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem('ancap-lang', newLang);
+    localStorage.setItem(LANG_STORAGE_KEY, newLang);
   };
 
   const t = (key: string) => translate(lang, key);

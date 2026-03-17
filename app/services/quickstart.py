@@ -27,8 +27,12 @@ class QuickstartProvision:
 
 
 SAFE_WORKFLOW = {
+    # Must conform to WorkflowSpec used by interpreter.
+    # vertical_id is filled in provision_quickstart().
+    "vertical_id": "",
+    "version": "1.0",
     "steps": [
-        {"id": "hello", "action": "base.echo", "args": {"message": "hello_quickstart"}},
+        {"id": "hello", "action": "const", "args": {"value": "hello_quickstart"}, "save_as": "hello"},
     ]
 }
 
@@ -62,6 +66,8 @@ async def provision_quickstart(
 ) -> QuickstartProvision:
     v = await _ensure_vertical(session)
     p = await _ensure_pool(session)
+    workflow = dict(SAFE_WORKFLOW)
+    workflow["vertical_id"] = str(v.id)
 
     s = Strategy(
         name="Quickstart Strategy",
@@ -77,7 +83,7 @@ async def provision_quickstart(
     ver = StrategyVersion(
         strategy_id=s.id,
         semver="0.1.0",
-        workflow_json=SAFE_WORKFLOW,
+        workflow_json=workflow,
         param_schema=None,
         changelog="Quickstart template",
         strategy_policy={"step_scorers": ["quality"], "record_quality_score": True},

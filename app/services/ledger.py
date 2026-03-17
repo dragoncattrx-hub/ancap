@@ -2,7 +2,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -115,13 +115,25 @@ async def check_ledger_invariant(
 ) -> list[tuple[str, Decimal]]:
     """ROADMAP §3: For each currency, sum(amount_value) must be 0 (double-entry).
     Returns list of (currency, sum) where sum != 0 (violations)."""
-    q = (
-        select(LedgerEvent.amount_currency, func.sum(LedgerEvent.amount_value).label("total"))
-        .group_by(LedgerEvent.amount_currency)
+    # Note: In MVP, deposit/withdraw are modeled as one-sided events (mint/burn-like).
+    # The strict double-entry invariant therefore applies to TRANSFER-like flows only.
+    # (Orders/escrows/settlements are transfers and must net to 0 by currency.)
+    credit_sum = func.coalesce(
+        func.sum(case((LedgerEvent.dst_account_id.is_not(None), LedgerEvent.amount_value), else_=0)),
+        0,
     )
+    debit_sum = func.coalesce(
+        func.sum(case((LedgerEvent.src_account_id.is_not(None), LedgerEvent.amount_value), else_=0)),
+        0,
+    )
+    q = select(
+        LedgerEvent.amount_currency,
+        (credit_sum - debit_sum).label("net"),
+    ).where(LedgerEvent.type == LedgerEventTypeEnum.transfer).group_by(LedgerEvent.amount_currency)
+
     r = await session.execute(q)
-    violations = []
+    violations: list[tuple[str, Decimal]] = []
     for row in r.all():
-        if row.total is not None and row.total != 0:
-            violations.append((row.amount_currency, row.total))
+        if row.net is not None and row.net != 0:
+            violations.append((row.amount_currency, row.net))
     return violations

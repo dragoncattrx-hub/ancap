@@ -91,6 +91,11 @@
 
 **Реализовано:** выбор драйвера по **chain_anchor_driver** (config). **mock** — по-прежнему сохраняет запись в БД с детерминированным tx_hash. **acp** — реальный драйвер: POST на **acp_rpc_url** (config) JSON-RPC метод **ancap_anchor** с параметрами chain_id, payload_type, payload_hash; в ответе ожидается result (строка tx_hash или объект с полем tx_hash/txHash); создаётся ChainAnchor с возвращённым tx_hash. При ошибке RPC или отсутствии acp_rpc_url — 503. Неизвестный драйвер (ethereum, solana) — 501. Регистрация драйверов: **get_anchor_driver(driver_name)** в `app/services/chain_anchor.py`.
 
+### ACP nodes: peering & RPC auth ✅ (dev tooling)
+
+- `acp-node` поддерживает best-effort синхронизацию блоков через `peer_rpc_urls` (пулл по высоте).
+- Для безопасной публикации RPC добавлена опциональная аутентификация через `x-acp-rpc-token` для state-changing методов (`submitblock`, `sendrawtransaction`).
+
 ---
 
 ## Stake-to-activate (L3) ✅

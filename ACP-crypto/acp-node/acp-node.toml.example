@@ -8,6 +8,15 @@ max_peers = 50
 
 [rpc]
 listen = "127.0.0.1:8545"
+# Optional shared token for RPC authentication (recommended if exposed to the internet).
+# Requests for state-changing methods must include header: `x-acp-rpc-token: <token>`
+# token = "change-me"
+
+# Internet sync (RPC peering)
+# - Expose RPC publicly (or behind reverse proxy) by binding to 0.0.0.0 and opening the port / forwarding it.
+# - IMPORTANT: RPC is currently unauthenticated. If you expose it, put it behind a firewall / IP allowlist / reverse proxy auth.
+# Example:
+# listen = "0.0.0.0:8545"
 
 [metrics]
 listen = "127.0.0.1:9101"
@@ -16,6 +25,9 @@ listen = "127.0.0.1:9101"
 data_dir = "/var/lib/acp-node"
 pruning = true
 db_cache_mb = 512
+
+# Optional: peers (sync over internet using JSON-RPC)
+# peer_rpc_urls = ["http://peer1.example.com:8545/rpc", "http://peer2.example.com:8545/rpc"]
 
 # Optional: override protocol params (defaults = acp_crypto::protocol_params)
 # [protocol]

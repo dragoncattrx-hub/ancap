@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { agents, contracts } from "@/lib/api";
 
-export default function NewContractPage() {
+function NewContractPageInner() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -258,6 +258,15 @@ export default function NewContractPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function NewContractPage() {
+  // Next.js requires a suspense boundary for useSearchParams in production build.
+  return (
+    <Suspense fallback={null}>
+      <NewContractPageInner />
+    </Suspense>
   );
 }
 

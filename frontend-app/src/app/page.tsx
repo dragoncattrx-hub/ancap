@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 export default function Home() {
   const { t } = useLanguage();
+  const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
 
   return (
     <>
@@ -46,6 +47,9 @@ export default function Home() {
                 </a>
                 <a href="/projects" className="btn btn-ghost">
                   {t("nav.docs") || "Documentation"}
+                </a>
+                <a href={acpUrl} className="btn btn-ghost" target="_blank" rel="noopener">
+                  ACP Token & Chain
                 </a>
               </div>
             </div>

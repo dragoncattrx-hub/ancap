@@ -13,6 +13,7 @@ mod miner;
 mod score;
 mod rpc;
 mod storage;
+mod sync;
 mod util;
 
 use crate::config::{FileConfig, NodeConfig};
@@ -46,6 +47,12 @@ fn load_config_from_env(mut cfg: NodeConfig) -> NodeConfig {
     if let Ok(v) = env::var("ACP_MINER_INTERVAL_SECS") {
         if let Ok(n) = v.parse::<u64>() {
             cfg.miner_interval_secs = n.max(1);
+        }
+    }
+    if let Ok(v) = env::var("ACP_RPC_TOKEN") {
+        let v = v.trim().to_string();
+        if !v.is_empty() {
+            cfg.rpc_token = Some(v);
         }
     }
     cfg
@@ -89,6 +96,15 @@ async fn main() -> anyhow::Result<()> {
         let ctx_miner = ctx.clone();
         tokio::spawn(async move {
             miner::run_miner_loop(ctx_miner).await;
+        });
+    }
+
+    // Peer sync loop (pull missing blocks over JSON-RPC).
+    // This enables nodes to catch up after downtime and to sync over the public internet using peer_rpc_urls.
+    {
+        let ctx_sync = ctx.clone();
+        tokio::spawn(async move {
+            sync::run_peer_sync_loop(ctx_sync).await;
         });
     }
 

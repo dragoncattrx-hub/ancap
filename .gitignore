@@ -61,9 +61,19 @@ Thumbs.db
 
 # Project specific
 ACP-crypto/target/
+ACP-crypto/**/target/
+
+# ACP wallet local artifacts / secrets (never commit)
+ACP-crypto/acp-wallet/ecosystem.keystore.json
+ACP-crypto/acp-wallet/genesis-addresses.json
+ACP-crypto/acp-wallet/genesis-block.hex
+ACP-crypto/acp-wallet/receive-address.txt
 
 # Local scratch / agent notes
 update.md
+
+# Local secrets (Desktop)
+Sicret/
 
 # Generated/static local docs (not source of truth)
 frontend/*.html

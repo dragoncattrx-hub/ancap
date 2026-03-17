@@ -9,6 +9,7 @@ export function Navigation() {
   const { isAuthenticated, user, logout } = useAuth();
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
 
   return (
     <nav className="nav-root">
@@ -30,98 +31,62 @@ export function Navigation() {
         <div className="desktop-nav">
           {isAuthenticated ? (
             <>
-              <a href="/dashboard" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.dashboard")}
-              </a>
-              <a href="/onboarding" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Onboarding
-              </a>
-              <a href="/feed" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Feed
-              </a>
-              <a href="/notifications" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Notifications
-              </a>
-              <a href="/leaderboards" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Leaderboards
-              </a>
-              <a href="/growth" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Growth
-              </a>
-              <a href="/agents" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.agents")}
-              </a>
-              <a href="/strategies" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.strategies")}
-              </a>
-              <a href="/verticals" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.verticals") || "Verticals"}
-              </a>
-              <a href="/pools" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.pools") || "Pools"}
-              </a>
-              <a href="/funds" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.funds") || "Funds"}
-              </a>
-              <a href="/ledger" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.ledger") || "Ledger"}
-              </a>
-              <a href="/reputation" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.reputation") || "Reputation"}
-              </a>
-              <a href="/marketplace" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.marketplace") || "Marketplace"}
-              </a>
-              <a href="/listings" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.listings") || "Listings"}
-              </a>
-              <a href="/orders" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.orders") || "Orders"}
-              </a>
-              <a href="/access" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.access") || "Access"}
-              </a>
-              <a href="/dashboard/seller" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.sellerDashboard") || "Seller"}
-              </a>
-              <a href="/flows" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.flows") || "Flows"}
-              </a>
-              <a href="/runs" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Runs
-              </a>
-              <a href="/contracts" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Contracts
-              </a>
-              <LanguageSwitcher />
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
+              <div className="nav-links">
+                <a href="/dashboard" className="nav-link">
+                  {t("nav.dashboard")}
+                </a>
+                <a href="/onboarding" className="nav-link">Onboarding</a>
+                <a href="/feed" className="nav-link">Feed</a>
+                <a href="/notifications" className="nav-link">Notifications</a>
+                <a href="/leaderboards" className="nav-link">Leaderboards</a>
+                <a href="/growth" className="nav-link">Growth</a>
+                <a href="/agents" className="nav-link">{t("nav.agents")}</a>
+                <a href="/strategies" className="nav-link">{t("nav.strategies")}</a>
+                <a href="/verticals" className="nav-link">{t("nav.verticals") || "Verticals"}</a>
+                <a href="/pools" className="nav-link">{t("nav.pools") || "Pools"}</a>
+                <a href="/funds" className="nav-link">{t("nav.funds") || "Funds"}</a>
+                <a href="/ledger" className="nav-link">{t("nav.ledger") || "Ledger"}</a>
+                <a href="/reputation" className="nav-link">{t("nav.reputation") || "Reputation"}</a>
+                <a href="/marketplace" className="nav-link">{t("nav.marketplace") || "Marketplace"}</a>
+                <a href="/listings" className="nav-link">{t("nav.listings") || "Listings"}</a>
+                <a href="/orders" className="nav-link">{t("nav.orders") || "Orders"}</a>
+                <a href="/access" className="nav-link">{t("nav.access") || "Access"}</a>
+                <a href="/dashboard/seller" className="nav-link">{t("nav.sellerDashboard") || "Seller"}</a>
+                <a href="/flows" className="nav-link">{t("nav.flows") || "Flows"}</a>
+                <a href="/runs" className="nav-link">Runs</a>
+                <a href="/contracts" className="nav-link">Contracts</a>
+              </div>
+
+              <div className="nav-actions">
+                <LanguageSwitcher />
+                <span className="nav-user">
                   {user?.display_name || user?.email}
                 </span>
-                <button
-                  onClick={logout}
-                  className="btn btn-ghost"
-                  style={{ padding: "6px 16px", fontSize: "0.9rem" }}
-                >
+                <button onClick={logout} className="btn btn-ghost nav-logout">
                   Logout
                 </button>
               </div>
             </>
           ) : (
             <>
-              <a href="/#product" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+              <a href="/#product" className="nav-link" style={{ fontSize: "0.9rem" }}>
                 {t("nav.product") || "Product"}
               </a>
-              <a href="/#vision" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+              <a href="/#vision" className="nav-link" style={{ fontSize: "0.9rem" }}>
                 {t("nav.vision") || "Vision"}
               </a>
-              <LanguageSwitcher />
-              <a href="/login" className="btn btn-ghost" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
-                Login
+              <a href={acpUrl} className="nav-link" style={{ fontSize: "0.9rem" }}>
+                ACP Token
               </a>
-              <a href="/register" className="btn btn-primary" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
-                Register
-              </a>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
+                <LanguageSwitcher />
+                <a href="/login" className="btn btn-ghost" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
+                  Login
+                </a>
+                <a href="/register" className="btn btn-primary" style={{ padding: "6px 16px", fontSize: "0.9rem" }}>
+                  Register
+                </a>
+              </div>
             </>
           )}
         </div>
@@ -217,6 +182,12 @@ export function Navigation() {
                 </a>
                 <a href="/#vision" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
                   {t("nav.vision") || "Vision"}
+                </a>
+                <a
+                  href={acpUrl}
+                  style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}
+                >
+                  ACP Token & Chain
                 </a>
                 <div style={{ padding: "8px 0", borderTop: "1px solid var(--border)", marginTop: "8px", paddingTop: "16px" }}>
                   <LanguageSwitcher />

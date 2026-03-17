@@ -127,6 +127,8 @@ pub struct NodeConfig {
     pub data_dir: String,
 
     pub rpc_listen: String, // "127.0.0.1:8545"
+    /// Optional shared token for RPC authentication (recommended if exposed to the internet).
+    pub rpc_token: Option<String>,
 
     /// URLs of peer RPC endpoints for block relay (POST submitblock). Example: ["http://node2:8545/rpc", "http://node3:8545/rpc"].
     pub peer_rpc_urls: Option<Vec<String>>,
@@ -149,6 +151,7 @@ impl Default for NodeConfig {
             chain_id: 1001,
             data_dir: "/var/lib/acp-node".into(),
             rpc_listen: "127.0.0.1:8545".into(),
+            rpc_token: None,
             peer_rpc_urls: None,
             exports: None,
             protocol: None,
@@ -163,6 +166,7 @@ impl Default for NodeConfig {
 #[serde(default)]
 pub struct RpcSection {
     pub listen: Option<String>,
+    pub token: Option<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -192,6 +196,12 @@ impl FileConfig {
             if let Some(ref listen) = r.listen {
                 if !listen.is_empty() {
                     cfg.rpc_listen = listen.clone();
+                }
+            }
+            if let Some(ref token) = r.token {
+                let t = token.trim();
+                if !t.is_empty() {
+                    cfg.rpc_token = Some(t.to_string());
                 }
             }
         }

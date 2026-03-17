@@ -115,6 +115,7 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
                 if let Some(ref urls) = ctx.config.peer_rpc_urls {
                     let block_hex_relay = block_hex.clone();
                     let urls_relay = urls.clone();
+                    let token = ctx.config.rpc_token.clone();
                     tokio::spawn(async move {
                         let client = reqwest::Client::builder()
                             .timeout(std::time::Duration::from_secs(10))
@@ -127,7 +128,11 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
                                 "params": { "block": block_hex_relay },
                                 "id": 1
                             });
-                            if let Err(e) = client.post(&url).json(&body).send().await {
+                            let mut req = client.post(&url).json(&body);
+                            if let Some(t) = token.as_deref() {
+                                req = req.header("x-acp-rpc-token", t);
+                            }
+                            if let Err(e) = req.send().await {
                                 tracing::warn!(%url, "miner block relay failed: {}", e);
                             }
                         }

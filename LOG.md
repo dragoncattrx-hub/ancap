@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-03-17 — Dev hardening: ACP landing + default EN + ACP nodes + e2e fixes
+
+### Frontend
+- Added **ACP Token & Chain** landing page at `/acp` and linked it from the main landing and navigation.
+- Set default language to **English** by forcing a new `localStorage` language key (existing users are reset to EN once).
+- Fixed Next.js 15 prerender error by wrapping `useSearchParams()` pages with **`<Suspense />`**:
+  - `/contracts/new`
+  - `/access`
+- Access grants UX: expanded the scope check so **Run strategy** shows for both `execute` and `allocate` scopes.
+- Playwright stability: disabled parallel execution locally (single worker).
+
+### Backend
+- Quickstart: fixed workflow validation by replacing non-whitelisted action (`base.echo`) with a whitelisted one (`const`) and adding required metadata fields.
+- Ledger invariant: corrected global double-entry invariant logic by applying it only to **transfer** events (deposit/withdraw are one-sided in MVP), preventing false halts.
+
+### ACP nodes (local cluster + internet sync)
+- Brought up a 3-node local ACP cluster with unique RPC ports `18545-18547` and data dirs under Desktop `Sicret`.
+- Implemented best-effort **peer sync loop** (pull blocks from `peer_rpc_urls`).
+- Added **RPC token authentication** for state-changing RPC methods (`submitblock`, `sendrawtransaction`) via `x-acp-rpc-token`.
+- Verified sync: nodes 2/3 successfully pulled blocks from node 1 to height 2.
+- Verified transfer:
+  - Created a new receive wallet.
+  - Sent **2 ACP** from the Ecosystem wallet.
+  - Height advanced to **2** after the transfer.
+
+### Secrets / safety
+- Added `Sicret/` to `.gitignore` (local-only secrets).
+- Saved operational secrets/artifacts under Desktop `Sicret` (genesis block, allocations, node configs, RPC token, receive wallet info, ecosystem keystore).
+
 ## 2026-03-17 — ACP Token & Chain: end-to-end runnable (dev + prod-like)
 
 ### Цель

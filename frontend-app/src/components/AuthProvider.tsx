@@ -31,6 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem("ancap_user");
       if (storedUser) {
         setUser(JSON.parse(storedUser));
+      } else {
+        // Token present but user profile not cached yet: treat as authenticated
+        // and let users.me() hydrate canonical fields.
+        setUser({ id: "", email: "", display_name: "User" });
       }
       // Fetch canonical profile from backend
       users
