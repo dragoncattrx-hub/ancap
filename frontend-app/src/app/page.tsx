@@ -1,8 +1,8 @@
 "use client";
 
-import { useLanguage } from "@/components/LanguageProvider";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -10,38 +10,17 @@ export default function Home() {
   return (
     <>
       <NetworkBackground />
-      
+
       <div className="min-h-screen">
         {/* Header */}
-        <header className="container" style={{ padding: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <a href="/" style={{ fontWeight: 700, fontSize: "1.25rem", letterSpacing: "-0.02em", color: "var(--text)", textDecoration: "none" }}>
-              ANCAP
-            </a>
-            <nav style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-              <a href="#product" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.product") || "Product"}
-              </a>
-              <a href="#vision" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.vision") || "Vision"}
-              </a>
-              <a href="/dashboard" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.dashboard")}
-              </a>
-              <LanguageSwitcher />
-              <a href="#contact" className="btn btn-primary">
-                {t("nav.contact") || "Contact"}
-              </a>
-            </nav>
-          </div>
-        </header>
+        <Navigation />
 
         <main>
           {/* Hero */}
-          <section style={{ padding: "120px 0 160px", textAlign: "center" }}>
+          <section style={{ padding: "80px 0 100px", textAlign: "center" }}>
             <div className="container">
               <h1 style={{ 
-                fontSize: "clamp(2.5rem, 6vw, 4rem)", 
+                fontSize: "clamp(2rem, 8vw, 4rem)", 
                 fontWeight: 700, 
                 letterSpacing: "-0.03em", 
                 lineHeight: 1.1, 
@@ -53,7 +32,7 @@ export default function Home() {
                 {t("hero.title") || "AI-Native Capital Allocation Platform"}
               </h1>
               <p style={{ 
-                fontSize: "1.25rem", 
+                fontSize: "clamp(1rem, 3vw, 1.25rem)", 
                 color: "var(--text-muted)", 
                 maxWidth: "560px", 
                 margin: "0 auto 40px",
@@ -73,10 +52,10 @@ export default function Home() {
           </section>
 
           {/* Section 01: Product */}
-          <section id="product" className="container" style={{ padding: "100px 24px", borderTop: "1px solid var(--border)" }}>
+          <section id="product" className="container" style={{ padding: "60px 24px", borderTop: "1px solid var(--border)" }}>
             <span className="section-num">01</span>
             <h2 style={{ 
-              fontSize: "clamp(1.75rem, 4vw, 2.5rem)", 
+              fontSize: "clamp(1.5rem, 5vw, 2.5rem)", 
               fontWeight: 700, 
               letterSpacing: "-0.02em", 
               marginBottom: "20px",
@@ -86,18 +65,14 @@ export default function Home() {
             </h2>
             <p style={{ 
               color: "var(--text-muted)", 
-              fontSize: "1.1rem", 
+              fontSize: "clamp(0.95rem, 2vw, 1.1rem)", 
               lineHeight: 1.7, 
-              maxWidth: "560px" 
+              maxWidth: "560px",
+              marginBottom: "48px"
             }}>
               {t("product.desc") || "Every run leaves artifact hashes (inputs, workflow, outputs). Execution verifiability and audit out of the box."}
             </p>
-            <div style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-              gap: "24px", 
-              marginTop: "48px" 
-            }}>
+            <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>Strategy Registry</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
@@ -120,10 +95,10 @@ export default function Home() {
           </section>
 
           {/* Section 02: Vision */}
-          <section id="vision" className="container" style={{ padding: "100px 24px", borderTop: "1px solid var(--border)" }}>
+          <section id="vision" className="container" style={{ padding: "60px 24px", borderTop: "1px solid var(--border)" }}>
             <span className="section-num">02</span>
             <h2 style={{ 
-              fontSize: "clamp(1.75rem, 4vw, 2.5rem)", 
+              fontSize: "clamp(1.5rem, 5vw, 2.5rem)", 
               fontWeight: 700, 
               letterSpacing: "-0.02em", 
               marginBottom: "20px",
@@ -133,42 +108,43 @@ export default function Home() {
             </h2>
             <p style={{ 
               color: "var(--text-muted)", 
-              fontSize: "1.1rem", 
+              fontSize: "clamp(0.95rem, 2vw, 1.1rem)", 
               lineHeight: 1.7, 
-              maxWidth: "560px" 
+              maxWidth: "560px",
+              marginBottom: "32px"
             }}>
               {t("vision.desc") || "Reputation 2.0, strategy marketplace, reviews and capital allocation. Then — Proof-of-Agent, stake and multi-vertical."}
             </p>
-            <div style={{ display: "flex", gap: "48px", flexWrap: "wrap", marginTop: "32px" }}>
+            <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L1</div>
+                <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L1</div>
                 <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Core Ledger & Verifiable Execution</div>
               </div>
               <div>
-                <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L2</div>
+                <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L2</div>
                 <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Market Layer</div>
               </div>
               <div>
-                <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L3</div>
+                <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>L3</div>
                 <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Autonomous Economy</div>
               </div>
             </div>
           </section>
 
           {/* CTA */}
-          <section id="contact" style={{ textAlign: "center", padding: "120px 24px 80px" }}>
+          <section id="contact" style={{ textAlign: "center", padding: "80px 24px 60px" }}>
             <div className="container">
-              <h2 style={{ fontSize: "clamp(1.75rem, 4vw, 2.25rem)", fontWeight: 700, marginBottom: "16px" }}>
+              <h2 style={{ fontSize: "clamp(1.5rem, 5vw, 2.25rem)", fontWeight: 700, marginBottom: "16px" }}>
                 {t("cta.title") || "Ready for the AI economy?"}
               </h2>
-              <p style={{ color: "var(--text-muted)", marginBottom: "32px" }}>
+              <p style={{ color: "var(--text-muted)", marginBottom: "32px", fontSize: "clamp(0.95rem, 2vw, 1.1rem)" }}>
                 {t("cta.sub") || "Platform for agents: strategies, capital, reputation and evolution."}
               </p>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
                 <a href="/projects" className="btn btn-primary">
                   {t("nav.docs") || "Documentation"}
                 </a>
-                <a href="http://localhost:8000/docs" className="btn btn-ghost" target="_blank" rel="noopener">
+                <a href="https://api.ancap.cloud/docs" className="btn btn-ghost" target="_blank" rel="noopener">
                   Swagger API
                 </a>
               </div>

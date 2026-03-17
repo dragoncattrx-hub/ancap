@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
 
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:8000/:path*",
+        source: "/api/v1/:path*",
+        // Use a dedicated local port for Docker API to avoid loopback conflicts on Windows.
+        destination: "http://127.0.0.1:8001/v1/:path*",
       },
     ];
   },

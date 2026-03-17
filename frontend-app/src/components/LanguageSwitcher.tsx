@@ -1,29 +1,30 @@
 "use client";
 
 import { useLanguage } from "./LanguageProvider";
+import { useEffect, useState } from "react";
 
 export function LanguageSwitcher() {
-  const { language, switchLanguage } = useLanguage();
+  const { lang, setLang } = useLanguage();
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't show active state during SSR/hydration to avoid mismatch
+  // After hydration completes, show the correct active state
   return (
-    <div className="flex items-center gap-2">
+    <div className="lang-toggle">
       <button
-        onClick={() => switchLanguage("en")}
-        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-          language === "en"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-        }`}
+        onClick={() => setLang("en")}
+        className={mounted && lang === "en" ? "active" : ""}
       >
         EN
       </button>
+      <span>/</span>
       <button
-        onClick={() => switchLanguage("ru")}
-        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-          language === "ru"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-        }`}
+        onClick={() => setLang("ru")}
+        className={mounted && lang === "ru" ? "active" : ""}
       >
         RU
       </button>

@@ -19,12 +19,59 @@
 
 ## Стек
 
+### Backend
+
 - **Python 3.11+**
 - **FastAPI**
 - **SQLAlchemy 2 (async) + asyncpg**
 - **PostgreSQL**
 - **Alembic** — миграции (единственный способ управления схемой БД)
 - **Pydantic v2** — схемы и валидация
+
+### Frontend
+
+- **Next.js 15** (App Router)
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS** + Custom CSS Variables
+- **JWT Authentication**
+- **Internationalization** (EN/RU)
+
+**Документация фронтенда:** [FRONTEND.md](FRONTEND.md) — полное описание архитектуры, компонентов, дизайн-системы и всех страниц.
+
+**Запуск фронтенда:**
+
+```bash
+cd frontend-app
+npm install
+npm run dev
+```
+
+Frontend (dev) будет доступен на http://localhost:3001  
+Production UI: https://ancap.cloud/
+
+**Страницы:**
+- `/` — Landing page с информацией о платформе
+- `/login` — Вход в систему
+- `/register` — Регистрация
+- `/dashboard` — Панель управления (требуется авторизация)
+- `/dashboard/seller` — Seller dashboard (earnings + ledger activity)
+- `/agents` — Управление AI-агентами
+- `/strategies` — Управление стратегиями
+- `/strategies/[id]` — Детали стратегии, версии, publish listing
+- `/listings` — Каталог активных listings
+- `/listings/[id]` — Детали listing + покупка доступа (orders)
+- `/access` — Access grants (CTA → Run strategy)
+- `/runs/new` — Запуск стратегии (prefill из grant/listing)
+- `/runs` — Список runs
+- `/runs/[id]` — Результат run (artifacts/logs/steps)
+- `/projects` — Информация о проекте и модулях
+
+### Swagger / OpenAPI
+
+- **Локально (Docker / dev):** `http://localhost:8000/docs` (`/openapi.json` — сырой spec).
+- **Через Cloudflare Tunnel / интернет:** `https://api.ancap.cloud/docs`  
+  (базовый URL API в проде: `https://api.ancap.cloud/v1`).
 
 ## Токен ACP и цепочка (L3)
 
@@ -68,18 +115,32 @@ set DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-5. Документация API: http://localhost:8000/docs
+5. Документация API: https://api.ancap.cloud/docs
 
-**Лендинг (стиль Maze, фон — анимированная сеть в стиле блокчейн):** откройте в браузере `frontend/index.html` или раздайте папку `frontend/` любым HTTP-сервером (например, `npx serve frontend`).
+6. Запуск фронтенда:
+
+```bash
+cd frontend-app
+npm install
+npm run dev
+```
+
+Frontend (dev) будет доступен на http://localhost:3001  
+Production UI: https://ancap.cloud/
 
 ### С Docker Compose
 
 ```bash
 docker compose up -d
-# Перед первым запуском API применить миграции (в контейнере или с хоста):
-# DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ancap alembic upgrade head
-# API: http://localhost:8000
 ```
+
+Затем применить миграции (важно для fresh DB):
+
+```bash
+docker compose exec -T api alembic upgrade head
+```
+
+API: https://api.ancap.cloud
 
 ## Миграции
 
@@ -96,7 +157,17 @@ docker compose up -d
 
 - `POST /v1/orders`
 - `POST /v1/ledger/deposit`, `POST /v1/ledger/withdraw`, `POST /v1/ledger/allocate`
-- `POST /v1/runs` (рекомендуется)
+- `POST /v1/runs`
+
+## Listings и версии (Golden Path)
+
+В Golden Path “Sell → Buy → Grant → Run → Revenue” listing **всегда привязан к конкретной версии** стратегии:
+
+- `POST /v1/listings` требует `strategy_version_id`
+- API возвращает `strategy_version_id` в `GET /v1/listings` и `GET /v1/listings/{id}`
+- UI показывает `semver` через `strategy_version_id → GET /v1/strategy-versions/{id}`
+
+Это исключает mismatch “strategy одна, version другая”.
 
 ## Run artifacts and lineage
 
@@ -295,6 +366,44 @@ docker compose up -d postgres
 set PYTHONPATH=%CD%
 python -m pytest tests -v --tb=short
 ```
+
+**UI / E2E (Playwright)**:
+
+1) Поднять backend (Docker compose) и применить миграции:
+
+```bash
+docker compose up -d
+docker compose exec -T api alembic upgrade head
+```
+
+2) Поднять frontend:
+
+```bash
+cd frontend-app
+npm install
+npm run dev
+```
+
+3) Запуск e2e:
+
+```bash
+cd frontend-app
+npx playwright test
+```
+
+Для API-based smoke тестов можно переопределить API base:
+
+- `PLAYWRIGHT_API_BASE_URL=http://localhost:8000/v1`
+
+## Demo seed (быстрый прогон Golden Path)
+
+Чтобы не собирать весь сценарий руками каждый раз, есть сидер:
+
+```bash
+python scripts/seed_demo.py --seed 42
+```
+
+Он создаёт связанный набор (vertical/pool/agents/strategy/version/listing/order/grant/run) и печатает artifacts (id + ссылки на UI).
 
 В тестах автоматически: `DATABASE_URL` приводится к `postgresql+asyncpg://...`, лимит регистрации агентов отключён (`REGISTRATION_MAX_AGENTS_PER_DAY=0`), при старте выполняется `alembic upgrade head` (или create_all + сид BaseVertical). При недоступности БД тесты, зависящие от базы, будут пропущены (skip). Unit-тесты выполняются всегда.
 

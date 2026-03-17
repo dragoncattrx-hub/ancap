@@ -3,17 +3,20 @@ import json
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Header, Depends
 
 from app.schemas import RunRequest, RunReplayRequest, RunPublic, RunState, Pagination
-from app.api.deps import DbSession
+from app.api.deps import DbSession, get_current_user_id
 from app.db.models import (
+    Agent,
     Run, RunLog, RunStep, RunStepScore, MetricRecord, RunStateEnum,
     StrategyVersion, Strategy, Vertical, VerticalSpec,
     RiskPolicy, CircuitBreaker,
     TrustScore, ReputationSnapshot,
+    Contract, ContractStatusEnum,
+    ContractMilestone, ContractMilestoneStatusEnum,
 )
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy import desc
 
 from app.engine.interpreter import run_workflow
@@ -135,8 +138,9 @@ async def _run_workflow_and_persist(
         from app.config import get_settings
         from decimal import Decimal
         from app.services.ledger import get_or_create_account, append_event
-        from app.db.models import LedgerEventTypeEnum
+        from app.db.models import LedgerEventTypeEnum, PaymentModelEnum, LedgerEvent, ContractMilestone
         from app.constants import PLATFORM_ACCOUNT_OWNER_ID
+        from sqlalchemy.exc import IntegrityError
         settings = get_settings()
         if settings.run_fee_amount and Decimal(settings.run_fee_amount) > 0:
             try:
@@ -152,6 +156,66 @@ async def _run_workflow_and_persist(
                     dst_account_id=platform_acc.id,
                     metadata={"type": "run_fee", "run_id": str(run.id), "pool_id": str(pool_id)},
                 )
+            except Exception:
+                pass
+
+        # Per-run contract payouts: one succeeded run -> at most one contract_payout.
+        if run.contract_id:
+            try:
+                contract = await session.get(Contract, run.contract_id)
+                if contract and contract.status == ContractStatusEnum.active and contract.payment_model == PaymentModelEnum.per_run:
+                    if contract.fixed_amount_value and Decimal(contract.fixed_amount_value) > 0:
+                        employer_acc = await get_or_create_account(session, "agent", contract.employer_agent_id)
+                        worker_acc = await get_or_create_account(session, "agent", contract.worker_agent_id)
+                        payout_amount = Decimal(contract.fixed_amount_value)
+
+                        # Milestone budget/cap (v1.1): do not exceed milestone.amount_value total payouts.
+                        milestone_id = getattr(run, "contract_milestone_id", None)
+                        if milestone_id:
+                            ms = await session.get(ContractMilestone, milestone_id)
+                            if ms:
+                                paid_q = select(func.coalesce(func.sum(LedgerEvent.amount_value), 0)).where(
+                                    LedgerEvent.type == LedgerEventTypeEnum.contract_payout,
+                                    LedgerEvent.amount_currency == contract.currency,
+                                    LedgerEvent.metadata_.contains(
+                                        {"contract_id": str(contract.id), "milestone_id": str(ms.id)}
+                                    ),
+                                )
+                                paid_r = await session.execute(paid_q)
+                                already_paid: Decimal = paid_r.scalar_one()
+                                remaining = Decimal(ms.amount_value) - already_paid
+                                payout_amount = min(payout_amount, remaining)
+
+                        if payout_amount <= 0:
+                            payout_amount = Decimal(0)
+
+                        async with session.begin_nested():
+                            try:
+                                if payout_amount > 0:
+                                    meta = {
+                                        "type": "contract_payout",
+                                        "contract_id": str(contract.id),
+                                        "run_id": str(run.id),
+                                        "payment_model": contract.payment_model.value,
+                                    }
+                                    if milestone_id:
+                                        meta["milestone_id"] = str(milestone_id)
+                                    await append_event(
+                                        session,
+                                        LedgerEventTypeEnum.contract_payout,
+                                        contract.currency,
+                                        payout_amount,
+                                        src_account_id=employer_acc.id,
+                                        dst_account_id=worker_acc.id,
+                                        metadata=meta,
+                                    )
+                            except IntegrityError:
+                                # Idempotency: unique index prevents double payout for same (contract_id, run_id).
+                                pass
+                    # Auto-complete when max_runs reached (per_run only).
+                    if contract.max_runs is not None and contract.runs_completed >= contract.max_runs:
+                        contract.status = ContractStatusEnum.completed
+                        await session.flush()
             except Exception:
                 pass
 
@@ -221,7 +285,18 @@ async def _resolve_policy(session, pool_id: UUID, vertical_id: UUID, strategy_id
 
 
 @router.post("", response_model=RunPublic, status_code=201)
-async def request_run(body: RunRequest, session: DbSession):
+async def request_run(
+    body: RunRequest,
+    session: DbSession,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if not idempotency_key:
+        raise HTTPException(status_code=400, detail="Missing Idempotency-Key header")
+    from app.services.idempotency import get_idempotency_hit, store_idempotency_result
+    hit = await get_idempotency_hit(session, scope="runs.create", key=idempotency_key, request_payload=body.model_dump())
+    if hit:
+        return hit.response_json
     version_id = UUID(body.strategy_version_id)
     pool_id = UUID(body.pool_id)
 
@@ -350,10 +425,68 @@ async def request_run(body: RunRequest, session: DbSession):
             parent_run_id = UUID(body.parent_run_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid parent_run_id")
+    contract_id = None
+    milestone_id = None
+    if body.contract_id or body.contract_milestone_id:
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        # Resolve user id (used for worker enforcement)
+        try:
+            uid = UUID(user_id)
+        except ValueError:
+            raise HTTPException(status_code=401, detail="Invalid user")
+
+        # Resolve milestone first (if present) and bind to its contract.
+        if body.contract_milestone_id:
+            try:
+                mid = UUID(body.contract_milestone_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid contract_milestone_id")
+            mr = await session.execute(select(ContractMilestone).where(ContractMilestone.id == mid).with_for_update())
+            milestone = mr.scalar_one_or_none()
+            if not milestone:
+                raise HTTPException(status_code=404, detail="Milestone not found")
+            if milestone.status not in (ContractMilestoneStatusEnum.active, ContractMilestoneStatusEnum.submitted):
+                raise HTTPException(status_code=403, detail="Milestone is not active")
+            if milestone.required_runs is not None and int(milestone.completed_runs or 0) >= milestone.required_runs:
+                raise HTTPException(status_code=403, detail="Milestone required_runs reached")
+            milestone.completed_runs = int(milestone.completed_runs or 0) + 1
+            milestone_id = mid
+            contract_id = UUID(str(milestone.contract_id))
+
+        # Resolve contract (either explicit contract_id, or derived from milestone).
+        if body.contract_id:
+            try:
+                cid = UUID(body.contract_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid contract_id")
+            if contract_id and cid != contract_id:
+                raise HTTPException(status_code=400, detail="contract_id does not match milestone contract")
+            contract_id = cid
+
+        if contract_id:
+            cr = await session.execute(select(Contract).where(Contract.id == contract_id).with_for_update())
+            contract = cr.scalar_one_or_none()
+            if not contract:
+                raise HTTPException(status_code=404, detail="Contract not found")
+            if contract.status != ContractStatusEnum.active:
+                raise HTTPException(status_code=403, detail="Contract is not active")
+            # Worker enforcement: user must own the worker agent of the contract.
+            wr = await session.execute(
+                select(Agent).where(Agent.id == contract.worker_agent_id, Agent.owner_user_id == uid).limit(1)
+            )
+            worker_agent = wr.scalar_one_or_none()
+            if not worker_agent:
+                raise HTTPException(status_code=403, detail="Only contract worker can run under contract")
+            if contract.max_runs is not None and contract.runs_completed >= contract.max_runs:
+                raise HTTPException(status_code=403, detail="Contract max_runs reached")
+            contract.runs_completed = int(contract.runs_completed or 0) + 1
     run = Run(
         strategy_version_id=version_id,
         pool_id=pool_id,
         parent_run_id=parent_run_id,
+        contract_id=contract_id,
+        contract_milestone_id=milestone_id,
         state=RunStateEnum.queued,
         params=body.params,
         limits=body.limits,
@@ -366,7 +499,7 @@ async def request_run(body: RunRequest, session: DbSession):
     run.state = RunStateEnum.running
     await session.flush()
 
-    return await _run_workflow_and_persist(
+    out = await _run_workflow_and_persist(
         session,
         run,
         workflow_json,
@@ -381,6 +514,15 @@ async def request_run(body: RunRequest, session: DbSession):
         initial_context=None,
         step_scorers=step_scorers,
     )
+    await store_idempotency_result(
+        session,
+        scope="runs.create",
+        key=idempotency_key,
+        request_payload=body.model_dump(),
+        status_code=201,
+        response_json=out.model_dump(),
+    )
+    return out
 
 
 @router.post("/replay", response_model=RunPublic, status_code=201)

@@ -20,6 +20,8 @@ class AgentCreateRequest(BaseModel):
     roles: Set[AgentRole] = Field(..., min_length=1)
     metadata: Optional[dict[str, Any]] = None
     attestation_id: Optional[str] = None  # L3: Proof-of-Agent; link to agent_attestations.id
+    created_by_agent_id: Optional[str] = None  # anti-sybil provenance (optional)
+    owner_user_id: Optional[str] = None  # optional override (admin/dev); normally set from auth
 
 
 class AgentPublic(BaseModel):
@@ -29,6 +31,8 @@ class AgentPublic(BaseModel):
     display_name: str
     roles: List[str]
     public_key: Optional[str] = None
+    created_by_agent_id: Optional[str] = None
+    owner_user_id: Optional[str] = None
     status: str = "active"
     activated_at: Optional[datetime] = None  # L3: when stake/attestation activated
     created_at: datetime

@@ -16,6 +16,8 @@ class LedgerEventType(str, Enum):
     fee = "fee"
     refund = "refund"
     transfer = "transfer"
+    contract_escrow = "contract_escrow"
+    contract_payout = "contract_payout"
     stake = "stake"
     unstake = "unstake"
     slash = "slash"

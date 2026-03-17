@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.schemas import AgentCreateRequest, AgentPublic, Pagination
-from app.api.deps import DbSession
+from app.api.deps import DbSession, get_current_user_id
 from app.config import get_settings
 from app.db.models import Agent, AgentStatusEnum, AgentAttestation
 from app.services.agent_graph_metrics import get_agent_graph_metrics
@@ -14,7 +14,11 @@ router = APIRouter(prefix="/agents", tags=["Agents"])
 
 
 @router.post("", response_model=AgentPublic, status_code=201)
-async def register_agent(body: AgentCreateRequest, session: DbSession):
+async def register_agent(
+    body: AgentCreateRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
     settings = get_settings()
     # L3: daily registration limit
     if settings.registration_max_agents_per_day > 0:
@@ -39,6 +43,24 @@ async def register_agent(body: AgentCreateRequest, session: DbSession):
     # L3 stake-to-activate: when required, activation only via stake (not attestation)
     stake_required = float(settings.stake_to_activate_amount or "0") > 0
     activated_at = None if stake_required else (datetime.utcnow() if attestation_id else None)
+    created_by_agent_id = None
+    if body.created_by_agent_id:
+        try:
+            created_by_agent_id = UUID(body.created_by_agent_id)
+        except ValueError:
+            created_by_agent_id = None
+    owner_user_id = None
+    # Prefer authenticated user as owner (golden path). Optional override via body.owner_user_id.
+    if user_id:
+        try:
+            owner_user_id = UUID(user_id)
+        except ValueError:
+            owner_user_id = None
+    elif body.owner_user_id:
+        try:
+            owner_user_id = UUID(body.owner_user_id)
+        except ValueError:
+            owner_user_id = None
     agent = Agent(
         display_name=body.display_name,
         public_key=body.public_key,
@@ -46,6 +68,8 @@ async def register_agent(body: AgentCreateRequest, session: DbSession):
         status=AgentStatusEnum.active,
         metadata_=body.metadata,
         attestation_id=attestation_id,
+        owner_user_id=owner_user_id,
+        created_by_agent_id=created_by_agent_id,
         activated_at=activated_at,
     )
     session.add(agent)
@@ -56,6 +80,8 @@ async def register_agent(body: AgentCreateRequest, session: DbSession):
         display_name=agent.display_name,
         roles=agent.roles,
         public_key=agent.public_key,
+        owner_user_id=str(agent.owner_user_id) if getattr(agent, "owner_user_id", None) else None,
+        created_by_agent_id=str(agent.created_by_agent_id) if agent.created_by_agent_id else None,
         status=agent.status.value,
         activated_at=agent.activated_at,
         created_at=agent.created_at,
@@ -67,8 +93,18 @@ async def list_agents(
     session: DbSession,
     limit: int = Query(50, ge=1, le=200),
     cursor: str | None = Query(None),
+    mine: bool = Query(False),
+    owner_user_id: UUID | None = Query(None),
+    user_id: str | None = Depends(get_current_user_id),
 ):
     q = select(Agent).order_by(Agent.created_at.desc()).limit(limit + 1)
+    if mine and user_id:
+        try:
+            q = q.where(Agent.owner_user_id == UUID(user_id))
+        except ValueError:
+            pass
+    elif owner_user_id:
+        q = q.where(Agent.owner_user_id == owner_user_id)
     if cursor:
         try:
             q = q.where(Agent.id < UUID(cursor))
@@ -85,6 +121,8 @@ async def list_agents(
                 display_name=a.display_name,
                 roles=a.roles,
                 public_key=a.public_key,
+                owner_user_id=str(a.owner_user_id) if getattr(a, "owner_user_id", None) else None,
+                created_by_agent_id=str(a.created_by_agent_id) if getattr(a, "created_by_agent_id", None) else None,
                 status=a.status.value,
                 activated_at=a.activated_at,
                 created_at=a.created_at,
@@ -117,6 +155,8 @@ async def get_agent(agent_id: UUID, session: DbSession):
         display_name=agent.display_name,
         roles=agent.roles,
         public_key=agent.public_key,
+        owner_user_id=str(agent.owner_user_id) if getattr(agent, "owner_user_id", None) else None,
+        created_by_agent_id=str(agent.created_by_agent_id) if getattr(agent, "created_by_agent_id", None) else None,
         status=agent.status.value,
         activated_at=agent.activated_at,
         created_at=agent.created_at,

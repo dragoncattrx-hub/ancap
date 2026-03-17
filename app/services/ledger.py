@@ -13,6 +13,7 @@ OWNER_TYPE_TO_KIND = {
     "system": "fees",
     "order_escrow": "escrow",
     "stake_escrow": "escrow",
+    "contract_escrow": "escrow",
     "pool_treasury": "treasury",
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/components/LanguageProvider";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 
 export default function ProjectsPage() {
@@ -12,28 +12,7 @@ export default function ProjectsPage() {
       <NetworkBackground />
       
       <div className="min-h-screen">
-        <nav style={{ borderBottom: "1px solid var(--border)", padding: "16px 0" }}>
-          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <a href="/" style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text)", textDecoration: "none" }}>
-              ANCAP
-            </a>
-            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-              <a href="/dashboard" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.dashboard")}
-              </a>
-              <a href="/agents" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.agents")}
-              </a>
-              <a href="/strategies" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                {t("nav.strategies")}
-              </a>
-              <a href="/projects" style={{ color: "var(--accent)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
-                Projects
-              </a>
-              <LanguageSwitcher />
-            </div>
-          </div>
-        </nav>
+        <Navigation />
 
         <div className="container" style={{ padding: "48px 24px" }}>
           <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "32px", color: "var(--text)" }}>
@@ -68,7 +47,7 @@ export default function ProjectsPage() {
           <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "24px", color: "var(--text)" }}>
             Core Modules
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginBottom: "48px" }}>
+          <div className="responsive-grid responsive-grid-3" style={{ marginBottom: "48px" }}>
             {[
               { name: "Identity & Agents", desc: "Agent registration, authentication, API keys", status: "Active" },
               { name: "Strategy Registry", desc: "Versioned workflow specifications", status: "Active" },
@@ -80,16 +59,9 @@ export default function ProjectsPage() {
               { name: "ACP Token & Chain", desc: "L3 blockchain for governance", status: "In Development" },
             ].map((module) => (
               <div key={module.name} className="card">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <h3 style={{ fontWeight: 600, fontSize: "1.05rem", color: "var(--text)" }}>{module.name}</h3>
-                  <span style={{ 
-                    padding: "4px 10px", 
-                    borderRadius: "6px", 
-                    fontSize: "0.7rem", 
-                    fontWeight: 600,
-                    background: module.status === "Active" ? "var(--accent-dim)" : "rgba(245, 158, 11, 0.15)",
-                    color: module.status === "Active" ? "var(--accent)" : "#f59e0b"
-                  }}>
+                <div className="card-header">
+                  <h3 style={{ fontWeight: 600, fontSize: "1.05rem", color: "var(--text)", margin: 0 }}>{module.name}</h3>
+                  <span className={`badge ${module.status === "Active" ? "badge-active" : "badge-warning"}`}>
                     {module.status}
                   </span>
                 </div>
@@ -102,22 +74,18 @@ export default function ProjectsPage() {
           <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "24px", color: "var(--text)" }}>
             Quick Links
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+          <div className="responsive-grid responsive-grid-3">
             <a href="https://github.com/dragoncattrx-hub/ancap" target="_blank" rel="noopener noreferrer"
               className="card" style={{ textDecoration: "none", cursor: "pointer" }}>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>GitHub Repository</div>
               <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>View source code</div>
             </a>
-            <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer"
+            <a href="https://api.ancap.cloud/docs" target="_blank" rel="noopener noreferrer"
               className="card" style={{ textDecoration: "none", cursor: "pointer" }}>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>API Documentation</div>
               <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>FastAPI Swagger UI</div>
             </a>
-            <a href="http://localhost:3002" target="_blank" rel="noopener noreferrer"
-              className="card" style={{ textDecoration: "none", cursor: "pointer" }}>
-              <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>ARDO Control Center</div>
-              <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>Project dashboard</div>
-            </a>
+
           </div>
         </div>
       </div>

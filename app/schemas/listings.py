@@ -14,6 +14,7 @@ class ListingStatus(str, Enum):
 
 class ListingCreateRequest(BaseModel):
     strategy_id: str
+    strategy_version_id: str
     fee_model: FeeModel
     status: ListingStatus = ListingStatus.active
     terms_url: str | None = None
@@ -25,6 +26,7 @@ class ListingPublic(BaseModel):
     
     id: str
     strategy_id: str
+    strategy_version_id: str | None = None
     fee_model: dict
     status: ListingStatus
     created_at: datetime

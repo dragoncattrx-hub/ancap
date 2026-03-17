@@ -517,3 +517,226 @@
 
 ### Результат
 - **51 passed** (все тесты, включая новый тест карантина).
+
+---
+
+## 2026-03-17 — Golden Path Hardening + Trust/Abuse & Simulation
+
+### Цели
+
+- Сделать Golden Path seller→listing→buy→grant→run→revenue **демо‑готовым** и покрытым тестами.
+- Закрыть idempotency / self‑dealing / quarantine / risk‑гейты по Golden Path.
+- Добавить observability (`/admin/overview`) и живой demo‑скрипт.
+- Заложить основы trust/abuse‑hardening и симуляции поведения системы под нагрузкой.
+
+### Golden Path: UX и API
+
+- **frontend-app/src/app/listings/[id]/page.tsx**
+  - Success‑экран после покупки прокидывает контекст:
+    - CTA **View access grants** → `/access?grantee_type=agent&grantee_id=<buyer_agent_id>`.
+    - CTA **Run this strategy** → `/runs/new?buyer_agent_id=...&strategy_id=...&strategy_version_id=...` (версия берётся из `listing.strategy_version_id` / загруженной версии).
+- **frontend-app/src/app/access/page.tsx**
+  - Читает `grantee_type`/`grantee_id` из query‑параметров и фильтрует listGrants по ним.
+  - CTA **Run strategy** для scope=execute ведёт на `/runs/new?strategy_id=...&buyer_agent_id=...`.
+- **frontend-app/src/app/runs/new/page.tsx**
+  - Читает из URL `buyer_agent_id`, `strategy_id`, `strategy_version_id`.
+  - При загрузке версий через `strategies.getVersions`:
+    - сохраняет prefilled `strategy_version_id`, если он есть в списке;
+    - не затирает выбранную версию после асинхронной подгрузки.
+- **frontend-app/src/app/runs/[id]/page.tsx**
+  - CTA **View ledger** для быстрого перехода к денежному следу run.
+- **frontend-app/src/app/dashboard/seller/page.tsx**
+  - Агрегация выручки строится по `ledger_events` с `metadata.order_settlement=true`:
+    - суммирует только settlement‑события по агентским аккаунтам;
+    - показывает total выручку и последние события по каждому seller‑агенту.
+
+### Golden Path: backend tests
+
+- **tests/api/test_golden_path_smoke.py**
+  - `test_flow1_smoke_golden_path`:
+    - `POST /v1/agents` → seller/buyer;
+    - `POST /v1/strategies` + `POST /v1/strategies/{id}/versions` (BaseVertical workflow);
+    - `POST /v1/listings` с `strategy_version_id`;
+    - `POST /v1/ledger/deposit` на buyer;
+    - `POST /v1/orders` c `Idempotency-Key` → `status=paid`;
+    - `GET /v1/access/grants` → execute‑grant для buyer/strategy;
+    - `POST /v1/runs` c `Idempotency-Key` → `state ∈ {running, succeeded, completed}`;
+    - `GET /v1/ledger/balance` по seller → баланс вырос ≥ цены листинга.
+  - `test_duplicate_order_same_key_is_idempotent_smoke` и `test_duplicate_run_same_key_is_idempotent_smoke`:
+    - повторные `POST /v1/orders`/`POST /v1/runs` с тем же `Idempotency-Key` возвращают один и тот же `id` без дополнительных побочных эффектов.
+- **tests/api/test_idempotency_and_guards.py**
+  - `test_listing_without_version_rejected` — `POST /v1/listings` без `strategy_version_id` → 400/422.
+  - `test_run_without_grant_forbidden` — попытка `POST /v1/runs` без предварительного access grant → 401/403 (контракт на будущее усиление guard’а).
+  - `test_self_dealing_forbidden` — buyer == owner_agent_id → 403 с `detail` про Self‑dealing.
+  - `test_quarantine_and_graph_gate_return_readable_error`:
+    - повторные заказы молодого агента упираются в quarantine‑лимит (detail содержит "Quarantine");
+    - политика с `max_reciprocity_score` на пуле даёт читабельный `detail` при блокировке run.
+
+### Scenario matrix и simulation
+
+- **tests/api/test_scenarios_matrix.py**
+  - Happy:
+    - `test_happy_buyer_repeat_run` — один buyer дважды запускает run по тому же grant’у (два успешных run с разными Idempotency‑keys).
+    - `test_happy_buyer_buys_two_distinct_listings` — один buyer покупает два разных listing’а.
+  - Fail:
+    - `test_fail_ledger_halted_blocks_order_and_ledger_ops` — при `ledger_invariant_halted` (`/v1/system/jobs/tick` + `/v1/system/ledger-invariant-status`) `POST /v1/orders` возвращает 503.
+- **scripts/simulate_agents.py**
+  - Асинхронный симулятор поведения системы:
+    - создаёт N агентов с разными ролями;
+    - генерирует стратегии/версии/листинги для случайных seller’ов;
+    - делает депозиты, размещает заказы, запускает runs через HTTP API;
+    - периодически запрашивает `/v1/agents/{id}/graph-metrics` для построения реальных graph‑метрик (reciprocity_score, cluster_size, cluster_cohesion, suspicious_density, in_cycle).
+  - Параметры:
+    - `--agents` (50/200/1000), `--steps` (число операций), `--seed` (детерминизм).
+
+### Observability: admin overview
+
+- **frontend-app/src/app/admin/overview/page.tsx**
+  - Новый экран `/admin/overview` (для авторизованных пользователей) собирает:
+    - `system/health` и `system/ledger-invariant-status` (флаг halted).
+    - **Recent orders** (`GET /v1/orders`): id, listing_id, buyer, amount, status.
+    - **Recent access grants** (`GET /v1/access/grants`): strategy, grantee, scope, created_at.
+    - **Recent runs** (`GET /v1/runs`): id, strategy_version_id, state, failure_reason.
+    - **Failed runs**: фильтр `state=failed`.
+    - **Recent order settlement events** (`GET /v1/ledger/events`): события с `metadata.order_settlement=true`.
+  - Цель: за <30 секунд ответить:
+    - создавался ли order;
+    - выдан ли access grant;
+    - создался ли run и его статус;
+    - есть ли проблемы ledger invariant / risk gate.
+
+### Demo‑режим и документация
+
+- **docs/golden-path-bugs.md**
+  - Единый журнал багов по Golden Path: `step`, `expected`, `actual`, `severity`, `endpoint/route`.
+- **docs/DEMO_GOLDEN_PATH.md**
+  - Happy path story:
+    - Seller S / Buyer B (agents), одна стратегия/версия/listing, один успешный run.
+    - Маршрут по UI: `/agents` → `/strategies/[id]` → `/listings/[id]` → `/access` → `/runs/new` → `/runs/[id]` → `/dashboard/seller`.
+    - Ledger trail: какие аккаунты участвуют и на каких страницах смотреть движение денег.
+  - Failure demo:
+    - **Self-dealing blocked** и опционально **Run blocked by risk/graph gate** с описанием поведения API и UI.
+  - Скрипт презентации (5–7 шагов), какие экраны открыть и где подсветить idempotency, risk/reputation, ledger invariant.
+
+### Trust/abuse‑слой (усиление)
+
+- **Agent provenance**
+  - Модель `Agent` уже содержит `created_by_agent_id` (миграция 019), используется в `AgentPublic` и `POST /v1/agents` (принимается из тела запроса и может использоваться для построения “родительского” графа).
+- **Graph‑метрики и risk‑гейты**
+  - В `get_agent_graph_metrics` уже считаются:
+    - `reciprocity_score`, `cluster_cohesion`, `suspicious_density`, `cluster_size`, `in_cycle`.
+  - Политика риска (`policy_json`) поддерживает `max_reciprocity_score`, `max_suspicious_density`, `max_cluster_size`, `block_if_in_cycle`.
+  - `POST /v1/runs` использует эти метрики и возвращает детализированные `detail` при срабатывании гейтов (graph/reputation/cluster).
+
+### Результат
+
+- Golden Path покрыт API‑smoke, regression и UI e2e, контекст не теряется между страницами, seller dashboard и admin overview дают понятный денежный и операционный след.
+- Trust/abuse‑механики (self‑dealing, quarantine, graph‑гейты, idempotency) включены в основной путь и проверяются как отдельными тестами, так и массовой симуляцией через `scripts/simulate_agents.py`.
+
+---
+
+## 2026-03-17 — Contracts v1 hardening: execution container + per_run idempotency + activity
+
+### Цели
+- Превратить контракт в **execution container**: run запускается только внутри активного контракта и только worker’ом.
+- Закрыть **гонки** `max_runs` через атомарный счётчик.
+- Зафиксировать правило **one run → one payout** для per_run на уровне БД.
+- Дать UX‑слой: runs list + activity timeline на `/contracts/[id]`.
+- Добавить минимальные contract reputation events.
+
+### Изменения (backend)
+- **app/api/routers/runs.py**
+  - `POST /v1/runs` с `contract_id`:
+    - требует `Authorization: Bearer ...`;
+    - enforcement: пользователь должен владеть `contract.worker_agent_id`;
+    - `SELECT ... FOR UPDATE` по контракту;
+    - `max_runs` реально режет новые запуски;
+    - `contracts.runs_completed++` атомарно (резервирование слота).
+  - Per-run payout перенесён на succeeded run:
+    - `LedgerEventTypeEnum.contract_payout` с `metadata.contract_id` + `metadata.run_id`;
+    - конфликт уникальности → идемпотентный no-op.
+- **app/db/models.py**
+  - `Contract.runs_completed` (INT, default 0).
+- **alembic/versions/025_contracts_runs_completed.py**
+  - миграция колонки `runs_completed`.
+- **alembic/versions/026_contract_payout_unique_by_contract_and_run.py**
+  - уникальный индекс на `ledger_events`:
+    - `((metadata->>'contract_id'), (metadata->>'run_id')) WHERE type='contract_payout'`
+    - правило uniqueness = `(contract_id, run_id, contract_payout)`.
+- **app/api/routers/contracts.py**
+  - `GET /v1/contracts/{id}/runs` (MVP list).
+  - `GET /v1/contracts/{id}/activity` (timeline из contract+run+ledger).
+- **app/services/reputation_events.py** + **app/api/routers/contracts.py**
+  - события `contract_accepted|contract_completed|contract_cancelled` (минимум v1).
+- **app/schemas/ledger.py**
+  - schema enum `LedgerEventType` расширен: `contract_escrow`, `contract_payout` (для фильтра `/v1/ledger/events?type=...`).
+
+### Изменения (frontend)
+- **frontend-app/src/app/contracts/[id]/page.tsx**
+  - блоки **Payments**, **Runs**, **Activity**.
+- **frontend-app/src/lib/api.ts**
+  - `contracts.getRuns`, `contracts.getActivity`.
+
+### Тесты
+- **tests/api/test_contracts_hardening.py** (новый): auth+worker enforcement, max_runs, one run → one payout.
+- **tests/api/test_contracts_lifecycle.py** обновлён под новую семантику per_run payout (платёж на run, а не на complete).
+
+### Результат
+- Контракт стал главной рамкой исполнения: run нельзя запустить “мимо” worker’а и лимитов, per_run payout идемпотентен на уровне БД, UI показывает runs/timeline.
+
+---
+
+## 2026-03-17 — Contracts v1.1: Milestones / Staged Contracts
+
+### Цели
+- Добавить **staged work** (2–5 milestones на контракт) и частичные выплаты по этапам.
+- Привязать run к milestone: `run → milestone → contract`.
+- Для per_run добавить milestone budget/cap.
+- Дать UI управления milestones и demo‑историю.
+
+### Изменения (backend)
+- **app/db/models.py**
+  - `ContractMilestone` + `ContractMilestoneStatusEnum`.
+  - `Run.contract_milestone_id` (FK).
+- **alembic/versions/028_contract_milestones_and_run_milestone_id.py**
+  - новая таблица `contract_milestones` + колонка `runs.contract_milestone_id`.
+- **app/schemas/contract_milestones.py** (новый)
+  - create/update/public + status enum.
+- **app/schemas/runs.py**
+  - `RunRequest.contract_milestone_id`.
+- **app/api/routers/contract_milestones.py** (новый) + **app/main.py**
+  - CRUD + lifecycle:
+    - `POST /v1/milestones/contracts/{contract_id}`
+    - `GET /v1/milestones/contracts/{contract_id}`
+    - `PATCH /v1/milestones/{id}`
+    - `POST /v1/milestones/{id}/submit|accept|reject|cancel`
+  - Валидации:
+    - milestone currency == contract currency;
+    - fixed: сумма milestones.amount_value <= contract.fixed_amount_value;
+    - роли: employer управляет milestones, worker submit.
+  - `milestone.accept` для fixed делает **частичный payout из escrow** с `metadata.milestone_id`.
+- **app/api/routers/runs.py**
+  - enforcement `contract_milestone_id`:
+    - `FOR UPDATE` по milestone, `required_runs`, `completed_runs++`;
+    - связка contract_id ↔ milestone.contract_id;
+  - per_run payout с milestone budget/cap:
+    - payout = min(per_run_amount, remaining_budget_milestone);
+    - metadata включает `milestone_id`.
+
+### Изменения (frontend)
+- **frontend-app/src/lib/api.ts**
+  - добавлен клиент `milestones.*`.
+  - `runs.create` принимает `contract_milestone_id`.
+- **frontend-app/src/app/contracts/[id]/page.tsx**
+  - блок **Milestones**: список + кнопки submit/accept/reject/cancel + “Run under milestone”.
+- **frontend-app/src/app/runs/new/page.tsx**
+  - пробрасывает `contract_milestone_id` из query в `POST /v1/runs`.
+
+### Тесты и demo
+- **tests/api/test_contracts_milestones.py** (новый):
+  - fixed staged: partial payout + cancel refund;
+  - per_run staged: milestone budget cap (7 + 3) и linkage run→milestone.
+- **docs/DEMO_CONTRACTS_MILESTONES.md** (новый): 2 сценария (fixed escrow partial + per_run budget cap).
+
+### Результат
+- Contracts v1.1 добавил “реалистичность найма”: этапы, частичные выплаты, бюджетирование per_run по milestone и UX‑слой управления milestones на странице контракта.

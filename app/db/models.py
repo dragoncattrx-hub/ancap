@@ -75,6 +75,8 @@ class LedgerEventTypeEnum(str, enum.Enum):
     fee = "fee"
     refund = "refund"
     transfer = "transfer"
+    contract_escrow = "contract_escrow"
+    contract_payout = "contract_payout"
     stake = "stake"
     unstake = "unstake"
     slash = "slash"
@@ -114,11 +116,15 @@ class Agent(Base):
     roles = Column(JSONB, nullable=False)  # list of AgentRoleEnum values
     status = Column(SQLEnum(AgentStatusEnum), default=AgentStatusEnum.active)
     metadata_ = Column("metadata", JSONB, nullable=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     attestation_id = Column(UUID(as_uuid=False), ForeignKey("agent_attestations.id", ondelete="SET NULL"), nullable=True)
+    created_by_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
     activated_at = Column(DateTime(timezone=True), nullable=True)  # when stake/attestation activated
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     strategies = relationship("Strategy", back_populates="owner_agent", foreign_keys="Strategy.owner_agent_id")
+    created_by_agent = relationship("Agent", remote_side="Agent.id", foreign_keys=[created_by_agent_id])
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
 
 
 class AgentProfile(Base):
@@ -242,6 +248,12 @@ class Listing(Base):
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False)
+    strategy_version_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("strategy_versions.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     fee_model = Column(JSONB, nullable=False)
     status = Column(SQLEnum(ListingStatusEnum), default=ListingStatusEnum.active)
     terms_url = Column(String(500), nullable=True)
@@ -345,6 +357,8 @@ class Run(Base):
     strategy_version_id = Column(UUID(as_uuid=False), ForeignKey("strategy_versions.id"), nullable=False)
     pool_id = Column(UUID(as_uuid=False), ForeignKey("pools.id"), nullable=False)
     parent_run_id = Column(UUID(as_uuid=False), ForeignKey("runs.id", ondelete="SET NULL"), nullable=True)
+    contract_id = Column(UUID(as_uuid=False), ForeignKey("contracts.id", ondelete="SET NULL"), nullable=True)
+    contract_milestone_id = Column(UUID(as_uuid=False), ForeignKey("contract_milestones.id", ondelete="SET NULL"), nullable=True, index=True)
     state = Column(SQLEnum(RunStateEnum), default=RunStateEnum.queued)
     params = Column(JSONB, nullable=True)
     limits = Column(JSONB, nullable=True)
@@ -454,6 +468,9 @@ class ReputationEventTypeEnum(str, enum.Enum):
     access_granted = "access_granted"
     run_completed = "run_completed"
     evaluation_scored = "evaluation_scored"
+    contract_accepted = "contract_accepted"
+    contract_completed = "contract_completed"
+    contract_cancelled = "contract_cancelled"
     audit_passed = "audit_passed"
     audit_failed = "audit_failed"
     moderation_penalty = "moderation_penalty"
@@ -606,6 +623,25 @@ class Dispute(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class IdempotencyKey(Base):
+    """Idempotency store for POST endpoints (orders, runs)."""
+
+    __tablename__ = "idempotency_keys"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    scope = Column(String(64), nullable=False)
+    key = Column(String(128), nullable=False)
+    request_hash = Column(String(64), nullable=False)
+    status_code = Column(Integer, nullable=False)
+    response_json = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("uq_idempotency_scope_key", "scope", "key", unique=True),
+        Index("ix_idempotency_scope", "scope"),
+    )
+
 # --- L2: Funds (portfolio-of-strategies) ---
 class Fund(Base):
     __tablename__ = "funds"
@@ -683,3 +719,78 @@ class ChainAnchor(Base):
     payload_json = Column(JSONB, nullable=True)
     anchored_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ContractStatusEnum(str, enum.Enum):
+    draft = "draft"
+    proposed = "proposed"
+    active = "active"
+    paused = "paused"
+    completed = "completed"
+    cancelled = "cancelled"
+    disputed = "disputed"
+
+
+class PaymentModelEnum(str, enum.Enum):
+    fixed = "fixed"
+    per_run = "per_run"
+
+
+class ContractMilestoneStatusEnum(str, enum.Enum):
+    pending = "pending"
+    active = "active"
+    submitted = "submitted"
+    accepted = "accepted"
+    rejected = "rejected"
+    paid = "paid"
+    cancelled = "cancelled"
+
+
+class Contract(Base):
+    __tablename__ = "contracts"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    employer_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=False, index=True)
+    worker_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=False, index=True)
+    scope_type = Column(String(32), nullable=False)
+    scope_ref_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(SQLEnum(ContractStatusEnum), default=ContractStatusEnum.draft)
+    payment_model = Column(SQLEnum(PaymentModelEnum), nullable=False)
+    fixed_amount_value = Column(Numeric(36, 18), nullable=True)
+    currency = Column(String(10), nullable=False, default="VUSD")
+    max_runs = Column(Integer, nullable=True)
+    runs_completed = Column(Integer, nullable=False, default=0)
+    risk_policy_id = Column(UUID(as_uuid=False), ForeignKey("risk_policies.id", ondelete="SET NULL"), nullable=True)
+    created_from_order_id = Column(UUID(as_uuid=False), ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ContractMilestone(Base):
+    __tablename__ = "contract_milestones"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    contract_id = Column(UUID(as_uuid=False), ForeignKey("contracts.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    order_index = Column(Integer, nullable=False, default=0)
+    status = Column(SQLEnum(ContractMilestoneStatusEnum), nullable=False, default=ContractMilestoneStatusEnum.pending, index=True)
+
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    currency = Column(String(10), nullable=False, default="VUSD")
+
+    required_runs = Column(Integer, nullable=True)
+    completed_runs = Column(Integer, nullable=False, default=0)
+
+    accepted_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_contract_milestones_contract_order", "contract_id", "order_index"),
+        Index("ix_contract_milestones_contract_status", "contract_id", "status"),
+        Index("ix_contract_milestones_contract_created", "contract_id", "created_at"),
+    )

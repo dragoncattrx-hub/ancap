@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Header
 
 from app.schemas import OrderPlaceRequest, OrderPublic, OrderStatus, Pagination, Money
 from app.api.deps import DbSession
@@ -20,7 +20,17 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
 @router.post("", response_model=OrderPublic, status_code=201)
-async def place_order(body: OrderPlaceRequest, session: DbSession):
+async def place_order(
+    body: OrderPlaceRequest,
+    session: DbSession,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    if not idempotency_key:
+        raise HTTPException(status_code=400, detail="Missing Idempotency-Key header")
+    from app.services.idempotency import get_idempotency_hit, store_idempotency_result
+    hit = await get_idempotency_hit(session, scope="orders.place", key=idempotency_key, request_payload=body.model_dump())
+    if hit:
+        return hit.response_json
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
     q = select(Listing).where(Listing.id == UUID(body.listing_id))
@@ -152,7 +162,7 @@ async def place_order(body: OrderPlaceRequest, session: DbSession):
         pass  # non-fatal: reputation events best-effort
 
     await session.refresh(order)
-    return OrderPublic(
+    out = OrderPublic(
         id=str(order.id),
         listing_id=str(order.listing_id),
         buyer_type=order.buyer_type,
@@ -161,6 +171,15 @@ async def place_order(body: OrderPlaceRequest, session: DbSession):
         amount=Money(amount=str(order.amount_value), currency=order.amount_currency or "VUSD"),
         created_at=order.created_at,
     )
+    await store_idempotency_result(
+        session,
+        scope="orders.place",
+        key=idempotency_key,
+        request_payload=body.model_dump(),
+        status_code=201,
+        response_json=out.model_dump(),
+    )
+    return out
 
 
 @router.get("", response_model=Pagination[OrderPublic])

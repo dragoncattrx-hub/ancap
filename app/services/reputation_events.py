@@ -143,6 +143,70 @@ async def on_run_completed(
     )
 
 
+async def on_contract_accepted(
+    session: AsyncSession,
+    *,
+    contract_id: UUID,
+    employer_agent_id: UUID,
+    worker_agent_id: UUID,
+    created_at: datetime | None = None,
+) -> None:
+    await emit_reputation_event(
+        session,
+        subject_type="agent",
+        subject_id=_uuid(worker_agent_id),
+        actor_type="agent",
+        actor_id=_uuid(employer_agent_id),
+        event_type=ReputationEventTypeEnum.contract_accepted,
+        value=0.2,
+        meta={"contract_id": str(contract_id), "employer_agent_id": str(employer_agent_id), "worker_agent_id": str(worker_agent_id)},
+        created_at=created_at,
+    )
+
+
+async def on_contract_completed(
+    session: AsyncSession,
+    *,
+    contract_id: UUID,
+    employer_agent_id: UUID,
+    worker_agent_id: UUID,
+    created_at: datetime | None = None,
+) -> None:
+    await emit_reputation_event(
+        session,
+        subject_type="agent",
+        subject_id=_uuid(worker_agent_id),
+        actor_type="agent",
+        actor_id=_uuid(employer_agent_id),
+        event_type=ReputationEventTypeEnum.contract_completed,
+        value=0.5,
+        meta={"contract_id": str(contract_id), "employer_agent_id": str(employer_agent_id), "worker_agent_id": str(worker_agent_id)},
+        created_at=created_at,
+    )
+
+
+async def on_contract_cancelled(
+    session: AsyncSession,
+    *,
+    contract_id: UUID,
+    employer_agent_id: UUID,
+    worker_agent_id: UUID,
+    created_at: datetime | None = None,
+) -> None:
+    # Mild negative for worker to discourage churn; can be refined later with who-cancelled + dispute outcomes.
+    await emit_reputation_event(
+        session,
+        subject_type="agent",
+        subject_id=_uuid(worker_agent_id),
+        actor_type="agent",
+        actor_id=_uuid(employer_agent_id),
+        event_type=ReputationEventTypeEnum.contract_cancelled,
+        value=-0.1,
+        meta={"contract_id": str(contract_id), "employer_agent_id": str(employer_agent_id), "worker_agent_id": str(worker_agent_id)},
+        created_at=created_at,
+    )
+
+
 def normalize_score_0_1(score: float, kind: str = "0_100") -> float:
     """Normalize to 0..1 for evaluation_scored. kind: 0_1 (clamp), 0_100 (score/100), -1_1 ((score+1)/2)."""
     if kind == "0_1":

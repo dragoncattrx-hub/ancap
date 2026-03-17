@@ -61,3 +61,22 @@ Thumbs.db
 
 # Project specific
 ACP-crypto/target/
+
+# Local scratch / agent notes
+update.md
+
+# Generated/static local docs (not source of truth)
+frontend/*.html
+
+# Frontend build artifacts / dependencies
+frontend-app/node_modules/
+frontend-app/.next/
+frontend-app/playwright-report/
+frontend-app/test-results/
+frontend-app/.env.production
+
+# Generic Node/Next artifacts (in case of future structure changes)
+**/node_modules/
+**/.next/
+**/playwright-report/
+**/test-results/

@@ -43,6 +43,19 @@ from app.schemas.ledger import (
     BalanceItem,
 )
 from app.schemas.runs import RunState, RunRequest, RunReplayRequest, RunPublic
+from app.schemas.contracts import (
+    ContractStatus,
+    PaymentModel,
+    ContractCreateRequest,
+    ContractUpdateRequest,
+    ContractPublic,
+)
+from app.schemas.contract_milestones import (
+    ContractMilestoneStatus,
+    ContractMilestoneCreateRequest,
+    ContractMilestoneUpdateRequest,
+    ContractMilestonePublic,
+)
 from app.schemas.metrics import MetricRecordPublic, EvaluationPublic
 from app.schemas.reputation import (
     ReputationPublic,
@@ -106,6 +119,15 @@ __all__ = [
     "RunRequest",
     "RunReplayRequest",
     "RunPublic",
+    "ContractStatus",
+    "PaymentModel",
+    "ContractCreateRequest",
+    "ContractUpdateRequest",
+    "ContractPublic",
+    "ContractMilestoneStatus",
+    "ContractMilestoneCreateRequest",
+    "ContractMilestoneUpdateRequest",
+    "ContractMilestonePublic",
     "MetricRecordPublic",
     "EvaluationPublic",
     "ReputationPublic",

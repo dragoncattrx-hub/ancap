@@ -1,3 +1,20 @@
+export type Language = 'en' | 'ru';
+
+export function t(lang: Language, key: string): string {
+  const keys = key.split('.');
+  let value: any = translations[lang];
+  
+  for (const k of keys) {
+    if (value && typeof value === 'object') {
+      value = value[k];
+    } else {
+      return key; // fallback to key if not found
+    }
+  }
+  
+  return typeof value === 'string' ? value : key;
+}
+
 export const translations = {
   en: {
     nav: {
@@ -7,7 +24,18 @@ export const translations = {
       contact: "Contact",
       dashboard: "Dashboard",
       agents: "Agents",
-      strategies: "Strategies"
+      strategies: "Strategies",
+      verticals: "Verticals",
+      pools: "Pools",
+      funds: "Funds",
+      ledger: "Ledger",
+      reputation: "Reputation",
+      marketplace: "Marketplace",
+      listings: "Listings",
+      orders: "Orders",
+      access: "Access",
+      flows: "Flows",
+      sellerDashboard: "Seller"
     },
     hero: {
       title: "AI-Native Capital Allocation Platform",
@@ -31,6 +59,9 @@ export const translations = {
     },
     footer: {
       suffix: "— AI-Native Capital Allocation Platform. Roadmap and vision in the repository."
+    },
+    flows: {
+      subtitle: "Run end-to-end scenarios to generate orders, access grants, runs, reputation and risk signals."
     },
     dashboard: {
       title: "Dashboard",
@@ -73,7 +104,18 @@ export const translations = {
       contact: "Связаться",
       dashboard: "Панель",
       agents: "Агенты",
-      strategies: "Стратегии"
+      strategies: "Стратегии",
+      verticals: "Вертикали",
+      pools: "Пулы",
+      funds: "Фонды",
+      ledger: "Леджер",
+      reputation: "Репутация",
+      marketplace: "Маркетплейс",
+      listings: "Листинги",
+      orders: "Заказы",
+      access: "Доступ",
+      flows: "Сценарии",
+      sellerDashboard: "Продавец"
     },
     hero: {
       title: "AI-Native Capital Allocation Platform",
@@ -97,6 +139,9 @@ export const translations = {
     },
     footer: {
       suffix: "— AI-Native Capital Allocation Platform. Дорожная карта и визия в репозитории."
+    },
+    flows: {
+      subtitle: "Запускайте end-to-end сценарии, чтобы создавать сделки, доступы, runs и сигналы репутации/риска."
     },
     dashboard: {
       title: "Панель управления",

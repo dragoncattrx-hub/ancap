@@ -30,6 +30,9 @@ from app.api.routers import (
     stakes_router,
     chain,
     system,
+    flows,
+    contracts,
+    contract_milestones,
 )
 
 settings = get_settings()
@@ -71,6 +74,8 @@ app.include_router(access.router, prefix="/v1")
 app.include_router(pools.router, prefix="/v1")
 app.include_router(ledger.router, prefix="/v1")
 app.include_router(runs.router, prefix="/v1")
+app.include_router(contracts.router, prefix="/v1")
+app.include_router(contract_milestones.router, prefix="/v1")
 app.include_router(metrics.router, prefix="/v1")
 app.include_router(evaluations.router, prefix="/v1")
 app.include_router(reputation.router, prefix="/v1")
@@ -83,6 +88,7 @@ app.include_router(onboarding.router, prefix="/v1")
 app.include_router(stakes_router.router, prefix="/v1")
 app.include_router(chain.router, prefix="/v1")
 app.include_router(system.router, prefix="/v1")
+app.include_router(flows.router, prefix="/v1")
 
 
 @app.get("/")

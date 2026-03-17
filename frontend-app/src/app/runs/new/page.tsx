@@ -16,6 +16,8 @@ function RunNewPageInner() {
   const preBuyerAgentId = safeSp.get("buyer_agent_id") || "";
   const preStrategyId = safeSp.get("strategy_id") || "";
   const preStrategyVersionId = safeSp.get("strategy_version_id") || "";
+  const preContractId = safeSp.get("contract_id") || "";
+  const preContractMilestoneId = safeSp.get("contract_milestone_id") || "";
 
   const [poolsList, setPoolsList] = useState<any[]>([]);
   const [versions, setVersions] = useState<any[]>([]);
@@ -35,6 +37,8 @@ function RunNewPageInner() {
     pool_id: "",
     strategy_id: preStrategyId,
     strategy_version_id: preStrategyVersionId,
+    contract_id: preContractId,
+    contract_milestone_id: preContractMilestoneId,
     run_mode: "mock" as "mock" | "backtest",
     dry_run: true,
     paramsJson: JSON.stringify({ _start_equity: 1000 }, null, 2),
@@ -91,6 +95,8 @@ function RunNewPageInner() {
       const created = await runs.create({
         strategy_version_id: form.strategy_version_id,
         pool_id: form.pool_id,
+        contract_id: form.contract_id || undefined,
+        contract_milestone_id: form.contract_milestone_id || undefined,
         params,
         limits: {},
         dry_run: form.dry_run,
@@ -222,6 +228,11 @@ function RunNewPageInner() {
                 {form.buyer_agent_id && (
                   <div style={{ marginTop: 12, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                     Buyer agent: {form.buyer_agent_id}
+                  </div>
+                )}
+                {form.contract_id && (
+                  <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Contract: {form.contract_id}
                   </div>
                 )}
               </form>

@@ -17,6 +17,8 @@ class RunRequest(BaseModel):
     strategy_version_id: str
     pool_id: str
     parent_run_id: Optional[str] = None
+    contract_id: Optional[str] = None
+    contract_milestone_id: Optional[str] = None
     params: Optional[dict[str, Any]] = None
     limits: Optional[dict[str, Any]] = None
     dry_run: bool = False

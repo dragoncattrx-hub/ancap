@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, HTTPException
 from app.schemas import ListingCreateRequest, ListingPublic, Pagination, ListingStatus
 from app.api.deps import DbSession
 from app.config import get_settings
-from app.db.models import Listing, ListingStatusEnum, Strategy
+from app.db.models import Listing, ListingStatusEnum, Strategy, StrategyVersion
 from app.services.ledger import get_or_create_account, append_event, balance_for_account
 from app.db.models import LedgerEventTypeEnum
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
@@ -22,6 +22,12 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
     strat = await session.get(Strategy, strategy_id)
     if not strat:
         raise HTTPException(status_code=404, detail="Strategy not found")
+    version_id = UUID(body.strategy_version_id)
+    ver = await session.get(StrategyVersion, version_id)
+    if not ver:
+        raise HTTPException(status_code=404, detail="Strategy version not found")
+    if str(ver.strategy_id) != str(strategy_id):
+        raise HTTPException(status_code=400, detail="Strategy version does not belong to strategy")
     await require_activated_if_stake_required(session, strat.owner_agent_id)
     # L3: platform listing fee
     settings = get_settings()
@@ -43,6 +49,7 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
         )
     listing = Listing(
         strategy_id=strategy_id,
+        strategy_version_id=version_id,
         fee_model=body.fee_model.model_dump(),
         status=ListingStatusEnum(body.status.value),
         terms_url=body.terms_url,
@@ -54,6 +61,7 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
     return ListingPublic(
         id=str(listing.id),
         strategy_id=str(listing.strategy_id),
+        strategy_version_id=str(listing.strategy_version_id) if listing.strategy_version_id else None,
         fee_model=listing.fee_model,
         status=ListingStatus(listing.status.value),
         created_at=listing.created_at,
@@ -87,6 +95,7 @@ async def list_listings(
             ListingPublic(
                 id=str(l.id),
                 strategy_id=str(l.strategy_id),
+                strategy_version_id=str(l.strategy_version_id) if l.strategy_version_id else None,
                 fee_model=l.fee_model,
                 status=ListingStatus(l.status.value),
                 created_at=l.created_at,
@@ -107,6 +116,7 @@ async def get_listing(listing_id: UUID, session: DbSession):
     return ListingPublic(
         id=str(listing.id),
         strategy_id=str(listing.strategy_id),
+        strategy_version_id=str(listing.strategy_version_id) if listing.strategy_version_id else None,
         fee_model=listing.fee_model,
         status=ListingStatus(listing.status.value),
         created_at=listing.created_at,
