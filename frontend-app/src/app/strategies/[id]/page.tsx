@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
-import { listings, strategies, verticals } from "@/lib/api";
+import { listings, strategies, verticals, growthSocial } from "@/lib/api";
 
 type StrategyPublic = {
   id: string;
@@ -98,6 +98,26 @@ export default function StrategyDetailPage() {
     })();
   }, [isAuthenticated, strategyId]);
 
+  async function followStrategy() {
+    if (!strategyId) return;
+    try {
+      await growthSocial.followStrategy(strategyId);
+      alert("Followed");
+    } catch (e: any) {
+      alert(e.message || "Follow failed");
+    }
+  }
+
+  async function copyStrategy() {
+    if (!strategyId) return;
+    try {
+      const r = await growthSocial.copyStrategy(strategyId);
+      router.push(`/strategies/${r.id}`);
+    } catch (e: any) {
+      alert(e.message || "Copy failed");
+    }
+  }
+
   const latestVersion = useMemo(() => versions[0] || null, [versions]);
 
   async function createVersion(e: React.FormEvent) {
@@ -166,6 +186,15 @@ export default function StrategyDetailPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <a href={`/public/strategies/${strategyId}`} className="btn btn-ghost" style={{ display: "inline-flex", alignItems: "center" }}>
+                Public
+              </a>
+              <button className="btn btn-ghost" onClick={followStrategy} disabled={!strategyId}>
+                Follow
+              </button>
+              <button className="btn btn-ghost" onClick={copyStrategy} disabled={!strategyId}>
+                Copy
+              </button>
               <button className="btn btn-primary" onClick={() => setShowVersionModal(true)} disabled={!strategy || publishing}>
                 Create version
               </button>

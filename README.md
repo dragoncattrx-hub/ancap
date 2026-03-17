@@ -69,7 +69,7 @@ Production UI: https://ancap.cloud/
 
 ### Swagger / OpenAPI
 
-- **Локально (Docker / dev):** `http://localhost:8000/docs` (`/openapi.json` — сырой spec).
+- **Локально (Docker / dev):** `http://127.0.0.1:8001/docs` (`/openapi.json` — сырой spec).
 - **Через Cloudflare Tunnel / интернет:** `https://api.ancap.cloud/docs`  
   (базовый URL API в проде: `https://api.ancap.cloud/v1`).
 
@@ -108,14 +108,14 @@ set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ancap
 alembic upgrade head
 ```
 
-4. Запуск API:
+4. Запуск API (без Docker):
 
 ```bash
 set DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-5. Документация API: https://api.ancap.cloud/docs
+5. Документация API: `http://127.0.0.1:8000/docs` (без Docker) или `http://127.0.0.1:8001/docs` (Docker compose)
 
 6. Запуск фронтенда:
 
@@ -140,7 +140,20 @@ docker compose up -d
 docker compose exec -T api alembic upgrade head
 ```
 
-API: https://api.ancap.cloud
+API (локально): http://127.0.0.1:8001/v1  
+Swagger (локально): http://127.0.0.1:8001/docs
+
+### Prod-like (UI + reverse proxy)
+
+Поднимает Postgres + API + Frontend (Next production) + nginx reverse proxy.
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
+```
+
+UI + API gateway (локально): http://127.0.0.1:8080  
+API через gateway: http://127.0.0.1:8080/api/v1
 
 ## Миграции
 
@@ -393,7 +406,7 @@ npx playwright test
 
 Для API-based smoke тестов можно переопределить API base:
 
-- `PLAYWRIGHT_API_BASE_URL=http://localhost:8000/v1`
+- `PLAYWRIGHT_API_BASE_URL=http://127.0.0.1:8001/v1`
 
 ## Demo seed (быстрый прогон Golden Path)
 

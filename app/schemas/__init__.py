@@ -70,6 +70,24 @@ from app.schemas.reputation import (
     SubjectType,
 )
 from app.schemas.moderation import ModerationActionRequest
+from app.schemas.growth import (
+    FaucetClaimRequest,
+    FaucetClaimPublic,
+    StarterPackAssignRequest,
+    StarterPackAssignmentPublic,
+    QuickstartRunRequest,
+    ReferralCodeCreateRequest,
+    ReferralCodePublic,
+    ReferralAttributeRequest,
+    ReferralAttributionPublic,
+    FollowRequest,
+    CopyStrategyRequest,
+    PublicFeedItem,
+    NotificationPublic,
+    LeaderboardEntryPublic,
+    GrowthMetricItemPublic,
+    TaskFeedItemPublic,
+)
 
 __all__ = [
     "Error",
@@ -141,4 +159,20 @@ __all__ = [
     "ReputationRecomputeRequest",
     "SubjectType",
     "ModerationActionRequest",
+    "FaucetClaimRequest",
+    "FaucetClaimPublic",
+    "StarterPackAssignRequest",
+    "StarterPackAssignmentPublic",
+    "QuickstartRunRequest",
+    "ReferralCodeCreateRequest",
+    "ReferralCodePublic",
+    "ReferralAttributeRequest",
+    "ReferralAttributionPublic",
+    "FollowRequest",
+    "CopyStrategyRequest",
+    "PublicFeedItem",
+    "NotificationPublic",
+    "LeaderboardEntryPublic",
+    "GrowthMetricItemPublic",
+    "TaskFeedItemPublic",
 ]

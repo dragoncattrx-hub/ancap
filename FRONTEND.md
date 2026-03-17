@@ -221,7 +221,11 @@ frontend-app/
 
 ### API Client (lib/api.ts)
 
-**Базовый URL**: `http://localhost:8000/v1`
+**Базовый URL (автовыбор)**:
+- **Dev (по умолчанию)**: `"/api/v1"` (Next.js rewrite → `http://127.0.0.1:8001/v1`)
+- **Dev (явно)**: `NEXT_PUBLIC_API_URL=http://127.0.0.1:8001/v1`
+- **Prod-like (через reverse proxy)**: `NEXT_PUBLIC_API_URL=/api/v1`
+- **Production**: `NEXT_PUBLIC_API_URL=https://ancap.cloud/api/v1` (или `https://api.ancap.cloud/v1`, если UI и API разнесены)
 
 **Модули**:
 - `auth`: login, register
@@ -270,7 +274,7 @@ npm run test:watch  # Watch mode
 ## Требования
 
 - Node.js 18+
-- Backend API должен быть запущен на `http://localhost:8000`
+- Backend API должен быть запущен (локально через Docker) на `http://127.0.0.1:8001`
 - PostgreSQL база данных (для backend)
 
 ## Особенности реализации
@@ -326,4 +330,4 @@ useEffect(() => {
 
 Для вопросов и предложений:
 - GitHub: https://github.com/dragoncattrx-hub/ancap
-- API Docs: http://localhost:8000/docs
+- API Docs (локально): http://127.0.0.1:8001/docs

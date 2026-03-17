@@ -794,3 +794,269 @@ class ContractMilestone(Base):
         Index("ix_contract_milestones_contract_status", "contract_id", "status"),
         Index("ix_contract_milestones_contract_created", "contract_id", "created_at"),
     )
+
+
+# --- Sprint-3 Growth Layer ---
+
+class ReferralAttributionStatusEnum(str, enum.Enum):
+    pending = "pending"
+    eligible = "eligible"
+    rewarded = "rewarded"
+    rejected = "rejected"
+
+
+class FaucetClaimStatusEnum(str, enum.Enum):
+    granted = "granted"
+    held = "held"
+    rejected = "rejected"
+    clawed_back = "clawed_back"
+
+
+class StarterPackAssignmentStatusEnum(str, enum.Enum):
+    assigned = "assigned"
+    activated = "activated"
+    cancelled = "cancelled"
+
+
+class StrategyCopyModeEnum(str, enum.Enum):
+    fork = "fork"
+    mirror_template = "mirror_template"
+
+
+class NotificationPriorityEnum(str, enum.Enum):
+    low = "low"
+    normal = "normal"
+    high = "high"
+
+
+class TaskFeedStatusEnum(str, enum.Enum):
+    open = "open"
+    claimed = "claimed"
+    completed = "completed"
+    expired = "expired"
+
+
+class FeedVisibilityEnum(str, enum.Enum):
+    public = "public"
+    unlisted = "unlisted"
+    private = "private"
+
+
+class ReferralCode(Base):
+    __tablename__ = "referral_codes"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    owner_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    code = Column(String(64), nullable=False, unique=True, index=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    reward_bps = Column(Integer, nullable=False, default=500)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_referral_codes_owner_user", "owner_user_id"),
+        Index("ix_referral_codes_owner_agent", "owner_agent_id"),
+    )
+
+
+class ReferralAttribution(Base):
+    __tablename__ = "referral_attributions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    referral_code_id = Column(UUID(as_uuid=False), ForeignKey("referral_codes.id", ondelete="CASCADE"), nullable=False, index=True)
+    referred_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    referred_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    attributed_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    source = Column(String(32), nullable=False, default="signup")
+    status = Column(String(32), nullable=False, default=ReferralAttributionStatusEnum.pending.value)
+
+
+class ReferralRewardEvent(Base):
+    __tablename__ = "referral_reward_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    referral_attribution_id = Column(UUID(as_uuid=False), ForeignKey("referral_attributions.id", ondelete="CASCADE"), nullable=False, index=True)
+    beneficiary_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    beneficiary_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    trigger_type = Column(String(32), nullable=False)
+    trigger_ref_type = Column(String(32), nullable=False)
+    trigger_ref_id = Column(UUID(as_uuid=False), nullable=False)
+    currency = Column(String(16), nullable=False)
+    amount_value = Column(Numeric(38, 18), nullable=False)
+    ledger_tx_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_ref_reward_benef_user", "beneficiary_user_id"),
+        Index("ix_ref_reward_benef_agent", "beneficiary_agent_id"),
+        Index("ux_ref_reward_dedupe", "referral_attribution_id", "trigger_type", "trigger_ref_type", "trigger_ref_id", unique=True),
+    )
+
+
+class FaucetClaim(Base):
+    __tablename__ = "faucet_claims"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    currency = Column(String(16), nullable=False)
+    amount_value = Column(Numeric(38, 18), nullable=False)
+    claim_status = Column(String(32), nullable=False, default=FaucetClaimStatusEnum.granted.value)
+    risk_flags = Column(JSONB, nullable=False, default=dict)
+    ledger_tx_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class StarterPack(Base):
+    __tablename__ = "starter_packs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    code = Column(String(64), nullable=False, unique=True, index=True)
+    name = Column(String(128), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    config_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class StarterPackAssignment(Base):
+    __tablename__ = "starter_pack_assignments"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    starter_pack_id = Column(UUID(as_uuid=False), ForeignKey("starter_packs.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    assigned_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    activated_at = Column(DateTime(timezone=True), nullable=True)
+    status = Column(String(32), nullable=False, default=StarterPackAssignmentStatusEnum.assigned.value)
+
+
+class StrategyFollow(Base):
+    __tablename__ = "strategy_follows"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False, index=True)
+    follower_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    follower_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+
+class StrategyCopy(Base):
+    __tablename__ = "strategy_copies"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    source_strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False, index=True)
+    copied_strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False, index=True)
+    copier_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    copier_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    copy_mode = Column(String(32), nullable=False, default=StrategyCopyModeEnum.fork.value)
+
+
+class AgentFollow(Base):
+    __tablename__ = "agent_follows"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    target_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=False, index=True)
+    follower_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    follower_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+
+class NotificationEvent(Base):
+    __tablename__ = "notification_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    recipient_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    recipient_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    type = Column(String(64), nullable=False)
+    priority = Column(String(16), nullable=False, default=NotificationPriorityEnum.normal.value)
+    payload_json = Column(JSONB, nullable=False, default=dict)
+    dedupe_key = Column(String(255), nullable=True, unique=True)
+    is_read = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    read_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class PublicActivityFeedEvent(Base):
+    __tablename__ = "public_activity_feed"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    actor_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    actor_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    event_type = Column(String(64), nullable=False, index=True)
+    ref_type = Column(String(32), nullable=False)
+    ref_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    visibility = Column(String(16), nullable=False, default=FeedVisibilityEnum.public.value, index=True)
+    score = Column(Numeric(18, 6), nullable=False, default=0)
+    payload_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+
+    __table_args__ = (
+        Index("ix_public_feed_score_created", "score", "created_at"),
+        Index("ix_public_feed_actor_agent_created", "actor_agent_id", "created_at"),
+    )
+
+
+class LeaderboardSnapshot(Base):
+    __tablename__ = "leaderboard_snapshots"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    board_type = Column(String(32), nullable=False, index=True)
+    subject_type = Column(String(32), nullable=False)
+    subject_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    window = Column(String(16), nullable=False, index=True)
+    rank = Column(Integer, nullable=False)
+    score = Column(Numeric(18, 6), nullable=False)
+    components_json = Column(JSONB, nullable=False, default=dict)
+    snapshot_date = Column(Date, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ux_leaderboard_unique", "board_type", "subject_type", "subject_id", "window", "snapshot_date", unique=True),
+        Index("ix_leaderboard_lookup", "board_type", "window", "snapshot_date", "rank"),
+    )
+
+
+class GrowthMetricRollup(Base):
+    __tablename__ = "growth_metric_rollups"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    metric_date = Column(Date, nullable=False, index=True)
+    metric_key = Column(String(64), nullable=False, index=True)
+    metric_value = Column(Numeric(38, 10), nullable=False)
+    dimensions_json = Column(JSONB, nullable=False, default=dict)
+    dimensions_hash = Column(String(32), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ux_growth_metric_unique", "metric_date", "metric_key", "dimensions_hash", unique=True),
+        Index("ix_growth_metric_key_date", "metric_key", "metric_date"),
+    )
+
+
+class TaskFeedItem(Base):
+    __tablename__ = "task_feed_items"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    source_type = Column(String(32), nullable=False, index=True)
+    source_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    task_type = Column(String(32), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    reward_currency = Column(String(16), nullable=True)
+    reward_amount_value = Column(Numeric(38, 18), nullable=True)
+    target_agent_type = Column(String(64), nullable=True)
+    target_vertical = Column(String(64), nullable=True, index=True)
+    eligibility_json = Column(JSONB, nullable=False, default=dict)
+    score = Column(Numeric(18, 6), nullable=False, default=0)
+    status = Column(String(16), nullable=False, default=TaskFeedStatusEnum.open.value, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_task_feed_open_score", "status", "score", "created_at"),
+        Index("ix_task_feed_vertical", "target_vertical", "status", "score"),
+    )

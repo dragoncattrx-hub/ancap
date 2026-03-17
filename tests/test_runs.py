@@ -46,6 +46,7 @@ def test_request_run(client, base_vertical_id):
     r = client.post(
         "/v1/runs",
         json={"strategy_version_id": version_id, "pool_id": pool_id},
+        headers={"Idempotency-Key": unique_name("idk_run1")},
     )
     assert r.status_code == 201
     data = r.json()
@@ -76,6 +77,7 @@ def test_list_runs_and_logs(client, base_vertical_id):
     client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run2")},
     )
     r = client.get("/v1/runs", params={"limit": 5})
     assert r.status_code == 200
@@ -107,6 +109,7 @@ def test_get_run_by_id(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run3")},
     )
     run_id = create.json()["id"]
     r = client.get(f"/v1/runs/{run_id}")
@@ -139,6 +142,7 @@ def test_get_run_artifacts(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run4")},
     )
     run_id = create.json()["id"]
     r = client.get(f"/v1/runs/{run_id}/artifacts")
@@ -173,6 +177,7 @@ def test_request_run_with_parent_run_id(client, base_vertical_id):
     run1 = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run5")},
     )
     run1_id = run1.json()["id"]
     run2 = client.post(
@@ -182,6 +187,7 @@ def test_request_run_with_parent_run_id(client, base_vertical_id):
             "pool_id": pool.json()["id"],
             "parent_run_id": run1_id,
         },
+        headers={"Idempotency-Key": unique_name("idk_run6")},
     )
     assert run2.status_code == 201
     assert run2.json()["parent_run_id"] == run1_id
@@ -215,6 +221,7 @@ def test_run_allowed_with_graph_gate_max_cluster_size_and_block_if_in_cycle(clie
     r = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run7")},
     )
     assert r.status_code == 201
     assert r.json()["state"] == "succeeded"
@@ -226,6 +233,7 @@ def test_run_404_strategy_version_not_found(client):
     r = client.post(
         "/v1/runs",
         json={"strategy_version_id": str(uuid.uuid4()), "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run_nf")},
     )
     assert r.status_code == 404
     assert "not found" in (r.json().get("detail") or "").lower()
@@ -258,6 +266,7 @@ def test_get_run_steps(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run8")},
     )
     run_id = create.json()["id"]
     r = client.get(f"/v1/runs/{run_id}/steps")
@@ -313,6 +322,7 @@ def test_run_steps_quality_score_when_policy_has_record_quality_score(client, ba
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run9")},
     )
     assert create.status_code == 201
     run_id = create.json()["id"]
@@ -347,6 +357,7 @@ def test_get_run_step_by_index(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run10")},
     )
     run_id = create.json()["id"]
     r = client.get(f"/v1/runs/{run_id}/steps/0")
@@ -379,6 +390,7 @@ def test_replay_run(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"], "params": {"x": 1}},
+        headers={"Idempotency-Key": unique_name("idk_replay_parent")},
     )
     assert create.status_code == 201
     run_id = create.json()["id"]
@@ -415,6 +427,7 @@ def test_replay_from_step_index_success(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_run11")},
     )
     assert create.status_code == 201
     run_id = create.json()["id"]
@@ -452,6 +465,7 @@ def test_replay_from_step_index_no_stored_context(client, base_vertical_id):
     create = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_replay_400_parent")},
     )
     run_id = create.json()["id"]
     # from_step_index=10 but run has only 2 steps -> no step with step_index=9

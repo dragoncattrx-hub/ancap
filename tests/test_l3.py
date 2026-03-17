@@ -64,6 +64,12 @@ def test_onboarding_attest_invalid_solution_rejected(client):
 
 
 def test_chain_anchor_mock(client):
+    from app.config import get_settings
+    os_driver = "mock"
+    # Make the driver explicit to avoid cache leakage from previous tests
+    import os
+    os.environ["CHAIN_ANCHOR_DRIVER"] = os_driver
+    get_settings.cache_clear()
     r = client.post(
         "/v1/chain/anchor",
         json={

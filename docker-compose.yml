@@ -24,9 +24,23 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
       SECRET_KEY: dev-secret-change-in-production
+      # L3 chain anchors (mock | acp | ethereum | solana)
+      CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
+      ACP_RPC_URL: ${ACP_RPC_URL:-}
+      ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/system/health', timeout=3).read()\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   pgdata:

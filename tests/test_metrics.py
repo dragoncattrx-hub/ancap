@@ -19,29 +19,25 @@ BASE_WORKFLOW = {
 }
 
 
-def test_metrics_for_run(client):
+def test_metrics_for_run(client, base_vertical_id):
     agent = client.post(
         "/v1/agents",
         json={"display_name": unique_name("met_agent"), "public_key": "m" * 32, "roles": ["seller"]},
     )
-    vert = client.post(
-        "/v1/verticals/propose",
-        json={"name": unique_name("met_v"), "spec": VERTICAL_SPEC},
-    )
-    vid = vert.json()["id"]
-    client.post(f"/v1/verticals/{vid}/review", json={"decision": "approve"})
+    vid = base_vertical_id
     strat = client.post(
         "/v1/strategies",
         json={"name": unique_name("met_s"), "vertical_id": vid, "owner_agent_id": agent.json()["id"]},
     )
     ver = client.post(
         f"/v1/strategies/{strat.json()['id']}/versions",
-        json={"semver": "0.1.0", "workflow": {"vertical_id": vid, "version": "1.0", "steps": [{"id": "s1", "action": "m", "args": {}}]}},
+        json={"semver": "0.1.0", "workflow": {**BASE_WORKFLOW, "vertical_id": vid}},
     )
     pool = client.post("/v1/pools", json={"name": unique_name("met_p"), "risk_profile": "low"})
     run = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_met_run")},
     )
     run_id = run.json()["id"]
     r = client.get("/v1/metrics", params={"run_id": run_id})
@@ -77,6 +73,7 @@ def test_evaluation_after_successful_run(client, base_vertical_id):
     run_r = client.post(
         "/v1/runs",
         json={"strategy_version_id": version_id, "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_ev_run")},
     )
     assert run_r.status_code == 201
     assert run_r.json()["state"] == "succeeded"

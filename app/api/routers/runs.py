@@ -526,8 +526,14 @@ async def request_run(
 
 
 @router.post("/replay", response_model=RunPublic, status_code=201)
-async def replay_run(body: RunReplayRequest, session: DbSession):
+async def replay_run(
+    body: RunReplayRequest,
+    session: DbSession,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
     """ROADMAP §5: Create a new run with same inputs as the given run. from_step_index=0 or omit: full replay; from_step_index>0: replay from that step using stored context_after of step (from_step_index-1)."""
+    from uuid import uuid4
+
     run_id = UUID(body.run_id)
     parent = await session.get(Run, run_id)
     if not parent:
@@ -535,6 +541,8 @@ async def replay_run(body: RunReplayRequest, session: DbSession):
 
     from_step_index = body.from_step_index if body.from_step_index is not None else 0
     if from_step_index == 0:
+        # request_run enforces idempotency for HTTP callers; replay needs one too.
+        idk = idempotency_key or f"runs.replay:{run_id}:{uuid4().hex}"
         replay_body = RunRequest(
             strategy_version_id=str(parent.strategy_version_id),
             pool_id=str(parent.pool_id),
@@ -544,7 +552,7 @@ async def replay_run(body: RunReplayRequest, session: DbSession):
             dry_run=parent.dry_run,
             run_mode=getattr(parent.run_mode, "value", parent.run_mode) or "mock",
         )
-        return await request_run(replay_body, session)
+        return await request_run(replay_body, session, idk)
 
     # Replay from step N: need context_after from parent's step (N-1)
     step_q = select(RunStep).where(

@@ -7,7 +7,7 @@ function getAmount(bal: any, currency: string): number {
 }
 
 test("golden path flow1: idempotent buy → grant → idempotent run → seller balance increases", async ({ request }) => {
-  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://localhost:8000/v1";
+  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8001/v1";
   const price = 10;
   const currency = "VUSD";
 

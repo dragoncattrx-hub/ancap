@@ -68,6 +68,7 @@ def test_risk_status_success(client, base_vertical_id):
     run_r = client.post(
         "/v1/runs",
         json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+        headers={"Idempotency-Key": unique_name("idk_risk_run")},
     )
     run_id = run_r.json()["id"]
     r = client.get(f"/v1/risk/status/{run_id}")

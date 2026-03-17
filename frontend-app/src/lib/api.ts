@@ -148,10 +148,10 @@ export const strategies = {
   async create(data: {
     name: string;
     description?: string;
-    agent_id: string;
+    owner_agent_id: string;
     vertical_id: string;
-    workflow_json: Record<string, any>;
-    strategy_policy?: Record<string, any>;
+    summary?: string;
+    tags?: string[];
   }) {
     return apiFetch("/strategies", {
       method: "POST",
@@ -529,6 +529,90 @@ export const flows = {
   },
 };
 
+// Growth Layer API
+export const onboardingGrowth = {
+  async faucetClaim(data: { currency?: string; amount?: string; agent_id?: string; user_id?: string }) {
+    return apiFetch("/onboarding/faucet/claim", {
+      method: "POST",
+      body: JSON.stringify({ currency: "USD", amount: "10", ...data }),
+    });
+  },
+  async starterPackAssign(data: { starter_pack_code?: string; agent_id?: string; user_id?: string }) {
+    return apiFetch("/onboarding/starter-pack/assign", {
+      method: "POST",
+      body: JSON.stringify({ starter_pack_code: "default", ...data }),
+    });
+  },
+  async quickstartRun(data: { owner_agent_id: string; idempotency_key?: string }) {
+    const idk = data.idempotency_key || genIdempotencyKey();
+    return apiFetch("/onboarding/quickstart/run", {
+      method: "POST",
+      headers: { "Idempotency-Key": idk },
+      body: JSON.stringify({ owner_agent_id: data.owner_agent_id }),
+    });
+  },
+};
+
+export const growthSocial = {
+  async followStrategy(target_id: string, as_agent_id?: string) {
+    return apiFetch("/social/strategies/follow", { method: "POST", body: JSON.stringify({ target_id, as_agent_id }) });
+  },
+  async unfollowStrategy(target_id: string, as_agent_id?: string) {
+    return apiFetch("/social/strategies/unfollow", { method: "POST", body: JSON.stringify({ target_id, as_agent_id }) });
+  },
+  async followAgent(target_id: string, as_agent_id?: string) {
+    return apiFetch("/social/agents/follow", { method: "POST", body: JSON.stringify({ target_id, as_agent_id }) });
+  },
+  async unfollowAgent(target_id: string, as_agent_id?: string) {
+    return apiFetch("/social/agents/unfollow", { method: "POST", body: JSON.stringify({ target_id, as_agent_id }) });
+  },
+  async copyStrategy(source_strategy_id: string, as_agent_id?: string, new_name?: string) {
+    return apiFetch("/social/strategies/copy", {
+      method: "POST",
+      body: JSON.stringify({ source_strategy_id, as_agent_id, new_name }),
+    });
+  },
+};
+
+export const growthPublic = {
+  async getAgent(id: string) {
+    return apiFetch(`/public/agents/${id}`);
+  },
+  async getStrategy(id: string) {
+    return apiFetch(`/public/strategies/${id}`);
+  },
+  async getFeed(limit = 50) {
+    return apiFetch(`/public/feed/public?limit=${limit}`);
+  },
+};
+
+export const growthNotifications = {
+  async list(limit = 50) {
+    return apiFetch(`/notifications?limit=${limit}`);
+  },
+  async markRead(id: string) {
+    return apiFetch(`/notifications/${id}/read`, { method: "POST" });
+  },
+};
+
+export const growthLeaderboards = {
+  async get(board_type: string, limit = 50) {
+    return apiFetch(`/leaderboards/${board_type}?limit=${limit}`);
+  },
+};
+
+export const growthTasks = {
+  async feed(limit = 50) {
+    return apiFetch(`/tasks/feed?limit=${limit}`);
+  },
+};
+
+export const growthDashboard = {
+  async metrics(days = 7) {
+    return apiFetch(`/system/growth-metrics?days=${days}`);
+  },
+};
+
 // Convenience aggregate export
 export const api = {
   auth,
@@ -547,5 +631,12 @@ export const api = {
   contracts,
   funds,
   flows,
+  onboardingGrowth,
+  growthSocial,
+  growthPublic,
+  growthNotifications,
+  growthLeaderboards,
+  growthTasks,
+  growthDashboard,
 };
 

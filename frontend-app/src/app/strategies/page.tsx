@@ -83,9 +83,8 @@ export default function StrategiesPage() {
       const created = await strategies.create({
         name: formData.name,
         description: formData.description,
-        agent_id: formData.agent_id,
+        owner_agent_id: formData.agent_id,
         vertical_id: formData.vertical_id,
-        workflow_json: { steps: [] },
       });
       setShowCreateModal(false);
       setFormData({ name: "", description: "", agent_id: "", vertical_id: "" });

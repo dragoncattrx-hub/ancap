@@ -63,6 +63,7 @@ def test_run_forbidden_when_stake_required_and_agent_not_activated(client, monke
         r = client.post(
             "/v1/runs",
             json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+            headers={"Idempotency-Key": unique_name("idk_stake_forbid_run")},
         )
         assert r.status_code == 403
         assert "stake to activate" in (r.json().get("detail") or "").lower()
@@ -89,10 +90,16 @@ def test_listing_forbidden_when_stake_required_and_agent_not_activated(client, m
             json={"name": unique_name("stake_ls"), "vertical_id": base_vertical_id, "owner_agent_id": agent_id},
         )
         assert strat.status_code == 201
+        ver = client.post(
+            f"/v1/strategies/{strat.json()['id']}/versions",
+            json={"semver": "0.1.0", "workflow": workflow},
+        )
+        assert ver.status_code == 201
         r = client.post(
             "/v1/listings",
             json={
                 "strategy_id": strat.json()["id"],
+                "strategy_version_id": ver.json()["id"],
                 "fee_model": {"type": "one_time", "one_time_price": {"amount": "0", "currency": "VUSD"}},
                 "status": "active",
             },
@@ -120,6 +127,7 @@ def test_stake_activates_agent_then_run_allowed(client, monkeypatch, base_vertic
                 "account_owner_id": agent_id,
                 "amount": {"amount": "100", "currency": "VUSD"},
             },
+            headers={"Idempotency-Key": unique_name("idk_stake_dep")},
         )
         key = client.post("/v1/keys", json={"agent_id": agent_id})
         assert key.status_code == 201
@@ -153,6 +161,7 @@ def test_stake_activates_agent_then_run_allowed(client, monkeypatch, base_vertic
         run_r = client.post(
             "/v1/runs",
             json={"strategy_version_id": ver.json()["id"], "pool_id": pool.json()["id"]},
+            headers={"Idempotency-Key": unique_name("idk_stake_run_ok")},
         )
         assert run_r.status_code == 201
     finally:

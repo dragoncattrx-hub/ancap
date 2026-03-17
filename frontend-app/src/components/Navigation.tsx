@@ -33,6 +33,21 @@ export function Navigation() {
               <a href="/dashboard" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
                 {t("nav.dashboard")}
               </a>
+              <a href="/onboarding" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                Onboarding
+              </a>
+              <a href="/feed" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                Feed
+              </a>
+              <a href="/notifications" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                Notifications
+              </a>
+              <a href="/leaderboards" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                Leaderboards
+              </a>
+              <a href="/growth" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
+                Growth
+              </a>
               <a href="/agents" style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>
                 {t("nav.agents")}
               </a>
@@ -120,6 +135,21 @@ export function Navigation() {
               <>
                 <a href="/dashboard" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
                   {t("nav.dashboard")}
+                </a>
+                <a href="/onboarding" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
+                  Onboarding
+                </a>
+                <a href="/feed" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
+                  Feed
+                </a>
+                <a href="/notifications" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
+                  Notifications
+                </a>
+                <a href="/leaderboards" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
+                  Leaderboards
+                </a>
+                <a href="/growth" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
+                  Growth
                 </a>
                 <a href="/agents" style={{ color: "var(--text)", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, padding: "8px 0" }}>
                   {t("nav.agents")}

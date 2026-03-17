@@ -62,6 +62,17 @@ export default function RunDetailPage() {
     };
   }, [run]);
 
+  const fmt = (v: any) => {
+    if (v == null) return "";
+    if (typeof v === "string") return v;
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    try {
+      return JSON.stringify(v, null, 2);
+    } catch {
+      return String(v);
+    }
+  };
+
   if (isLoading || !isAuthenticated) return null;
 
   return (
@@ -139,9 +150,9 @@ export default function RunDetailPage() {
                     {logs.slice(0, 50).map((x, i) => (
                       <div key={i} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
                         <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                          {x.ts} · {x.level}
+                          {fmt(x.ts)} · {fmt(x.level)}
                         </div>
-                        <div style={{ color: "var(--text)" }}>{x.message}</div>
+                        <div style={{ color: "var(--text)" }}>{fmt(x.message)}</div>
                       </div>
                     ))}
                   </div>
@@ -163,7 +174,7 @@ export default function RunDetailPage() {
                           <div style={{ color: "var(--text-muted)" }}>{s.state}</div>
                         </div>
                         {s.result_summary && (
-                          <div style={{ marginTop: 6, color: "var(--text-muted)" }}>{s.result_summary}</div>
+                          <div style={{ marginTop: 6, color: "var(--text-muted)" }}>{fmt(s.result_summary)}</div>
                         )}
                       </div>
                     ))}

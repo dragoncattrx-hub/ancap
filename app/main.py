@@ -33,6 +33,14 @@ from app.api.routers import (
     flows,
     contracts,
     contract_milestones,
+    onboarding_growth,
+    referrals,
+    social,
+    public,
+    notifications,
+    tasks,
+    leaderboards,
+    growth_dashboard,
 )
 
 settings = get_settings()
@@ -76,6 +84,14 @@ app.include_router(ledger.router, prefix="/v1")
 app.include_router(runs.router, prefix="/v1")
 app.include_router(contracts.router, prefix="/v1")
 app.include_router(contract_milestones.router, prefix="/v1")
+app.include_router(onboarding_growth.router, prefix="/v1")
+app.include_router(referrals.router, prefix="/v1")
+app.include_router(social.router, prefix="/v1")
+app.include_router(public.router, prefix="/v1")
+app.include_router(notifications.router, prefix="/v1")
+app.include_router(tasks.router, prefix="/v1")
+app.include_router(leaderboards.router, prefix="/v1")
+app.include_router(growth_dashboard.router, prefix="/v1")
 app.include_router(metrics.router, prefix="/v1")
 app.include_router(evaluations.router, prefix="/v1")
 app.include_router(reputation.router, prefix="/v1")

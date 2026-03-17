@@ -66,7 +66,8 @@ export default function AgentsPage() {
     try {
       const created = await agents.create({
         display_name: formData.display_name,
-        public_key: formData.public_key || `pk_${Date.now()}`,
+        // Backend expects a 32+ char key; keep a safe default for demos/tests.
+        public_key: formData.public_key || "x".repeat(32),
         roles: formData.roles,
         metadata: {},
       });

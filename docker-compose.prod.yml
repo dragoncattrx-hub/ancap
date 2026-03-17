@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ancap
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      # L3 chain anchors (mock | acp | ethereum | solana)
+      CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
+      ACP_RPC_URL: ${ACP_RPC_URL:-}
+      ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/system/health', timeout=3).read()\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend-app
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      # In prod-like we go through reverse proxy (/api/v1 → api)
+      NEXT_PUBLIC_API_URL: /api/v1
+    depends_on:
+      api:
+        condition: service_healthy
+
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+

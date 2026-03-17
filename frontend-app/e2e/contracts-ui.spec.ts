@@ -124,8 +124,8 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   await expect(page.getByText(/status:\s*completed/i)).toBeVisible({ timeout: 15000 });
 
   // New UI blocks should be visible (runs list may be empty for fixed contracts)
-  await expect(page.getByText(/^runs$/i)).toBeVisible();
-  await expect(page.getByText(/^activity$/i)).toBeVisible();
+  await expect(page.getByRole("main").getByText(/^runs$/i)).toBeVisible();
+  await expect(page.getByRole("main").getByText(/^activity$/i)).toBeVisible();
 
   const payoutEvents = await request.get(`${apiBase}/ledger/events?limit=200&type=contract_payout`, {
     headers: authHeaders,
