@@ -9,10 +9,17 @@ import { useLanguage } from "./LanguageProvider";
 type NavItem = {
   label: string;
   href: string;
+  /** When set, label text comes from translations (e.g. nav.acpWallet). */
+  i18nKey?: string;
 };
+
+function navItemLabel(item: NavItem, t: (key: string) => string): string {
+  return item.i18nKey ? t(item.i18nKey) : item.label;
+}
 
 const primaryNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "ACP Wallet", href: "/wallet/acp", i18nKey: "nav.acpWallet" },
   { label: "Feed", href: "/feed" },
   { label: "Agents", href: "/agents" },
   { label: "Strategies", href: "/strategies" },
@@ -44,11 +51,13 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 function HeaderLink({
   item,
+  label,
   active,
   compact = false,
   onClick,
 }: {
   item: NavItem;
+  label: string;
   active: boolean;
   compact?: boolean;
   onClick?: () => void;
@@ -64,7 +73,7 @@ function HeaderLink({
         active ? "text-white" : "text-white/58 hover:text-white/90"
       )}
     >
-      <span className="relative z-10">{item.label}</span>
+      <span className="relative z-10">{label}</span>
 
       {active && (
         <>
@@ -78,7 +87,7 @@ function HeaderLink({
 
 export function Navigation() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
@@ -90,13 +99,13 @@ export function Navigation() {
   const userLabel = user?.display_name || user?.email || "";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#040816]/84 backdrop-blur-xl">
+    <header className="sticky top-0 z-[100] border-b border-white/8 bg-[#040816]/84 backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent" />
 
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex min-h-[78px] items-center justify-between gap-4 xl:min-h-[92px]">
+        <div className="flex min-h-[78px] items-center justify-between gap-2 sm:gap-4 lg:min-h-[92px]">
           {/* Left: Brand */}
-          <div className="flex min-w-0 items-center gap-6">
+          <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-6">
             <Link href="/" className="group inline-flex items-center gap-3">
               <span className="relative flex items-center justify-center">
                 <span className="absolute h-4 w-4 rounded-full bg-emerald-400/20 blur-md" />
@@ -108,8 +117,8 @@ export function Navigation() {
             </Link>
           </div>
 
-          {/* Center: Navigation (auth only, xl+) */}
-          <div className="hidden min-w-0 flex-1 xl:flex xl:flex-col xl:justify-center">
+          {/* Center: primary + secondary links (lg+); below lg — compact bar + drawer */}
+          <div className="hidden min-w-0 flex-1 lg:flex lg:flex-col lg:justify-center">
             {isAuthenticated ? (
               <>
                 <nav className="flex flex-wrap items-center gap-x-1 gap-y-1">
@@ -117,6 +126,7 @@ export function Navigation() {
                     <HeaderLink
                       key={item.href}
                       item={item}
+                      label={navItemLabel(item, t)}
                       active={pathname === item.href}
                     />
                   ))}
@@ -127,6 +137,7 @@ export function Navigation() {
                     <HeaderLink
                       key={item.href}
                       item={item}
+                      label={navItemLabel(item, t)}
                       active={pathname === item.href}
                       compact
                     />
@@ -134,7 +145,7 @@ export function Navigation() {
                 </div>
               </>
             ) : (
-              <nav className="flex items-center gap-2 text-[13px]">
+              <nav className="flex flex-wrap items-center gap-2 text-[13px]">
                 <Link href="/#product" className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
                   Product
                 </Link>
@@ -144,12 +155,25 @@ export function Navigation() {
                 <Link href={acpUrl} className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
                   ACP Token
                 </Link>
+                <Link
+                  href="/wallet/acp"
+                  className="rounded-md px-3 py-1.5 text-emerald-200/90 ring-1 ring-inset ring-emerald-400/35 transition hover:bg-emerald-400/10 hover:text-emerald-100"
+                >
+                  {t("nav.acpWallet")}
+                </Link>
               </nav>
             )}
           </div>
 
-          {/* Right: Controls */}
-          <div className="hidden items-center gap-3 xl:flex">
+          {/* Right: wallet + lang + auth (lg+) */}
+          <div className="hidden min-w-0 shrink-0 items-center gap-2 sm:gap-3 lg:flex">
+            <Link
+              href="/wallet/acp"
+              className="whitespace-nowrap rounded-full border border-emerald-400/40 bg-emerald-400/12 px-3 py-2 text-[12px] font-semibold text-emerald-100 shadow-[0_0_20px_rgba(52,211,153,0.12)] transition hover:bg-emerald-400/20 hover:text-white"
+            >
+              {t("nav.acpWallet")}
+            </Link>
+            <div className="h-6 w-px shrink-0 bg-white/10" />
             <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
               <button
                 type="button"
@@ -207,14 +231,21 @@ export function Navigation() {
             )}
           </div>
 
-          {/* Mobile controls */}
-          <div className="flex items-center gap-2 xl:hidden">
-            <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
+          {/* Narrow: wallet + lang + menu; lang tucked in menu on xs to avoid horizontal clip (body overflow-x) */}
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2 lg:hidden">
+            <Link
+              href="/wallet/acp"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-emerald-400/45 bg-emerald-400/14 px-2 py-2 text-[10px] font-semibold text-emerald-50 shadow-[0_0_18px_rgba(52,211,153,0.15)] transition hover:bg-emerald-400/24 sm:min-h-11 sm:px-3 sm:text-[12px]"
+            >
+              <span className="sm:hidden">{t("hero.acpWalletLink")}</span>
+              <span className="hidden sm:inline">{t("nav.acpWallet")}</span>
+            </Link>
+            <div className="flex origin-right scale-[0.92] items-center rounded-full border border-white/10 bg-white/[0.03] p-0.5 sm:scale-100 sm:p-1">
               <button
                 type="button"
                 onClick={() => setLang("en")}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
                   lang === "en"
                     ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
                     : "text-white/50 hover:text-white/85"
@@ -226,7 +257,7 @@ export function Navigation() {
                 type="button"
                 onClick={() => setLang("ru")}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
                   lang === "ru"
                     ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
                     : "text-white/50 hover:text-white/85"
@@ -238,7 +269,7 @@ export function Navigation() {
 
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/85 transition hover:bg-white/[0.06]"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/85 transition hover:bg-white/[0.06] sm:h-11 sm:w-11"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? "×" : "≡"}
@@ -249,7 +280,7 @@ export function Navigation() {
 
       {/* Mobile panel */}
       {mobileMenuOpen && (
-        <div className="border-t border-white/8 bg-[#060b18]/98 xl:hidden">
+        <div className="border-t border-white/8 bg-[#060b18]/98 lg:hidden">
           <div className="mx-auto max-w-[1440px] px-4 py-4 sm:px-6">
             {isAuthenticated ? (
               <div className="grid gap-5">
@@ -272,7 +303,7 @@ export function Navigation() {
                               : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
                           )}
                         >
-                          {item.label}
+                          {navItemLabel(item, t)}
                         </Link>
                       );
                     })}
@@ -298,7 +329,7 @@ export function Navigation() {
                               : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
                           )}
                         >
-                          {item.label}
+                          {navItemLabel(item, t)}
                         </Link>
                       );
                     })}
@@ -306,8 +337,15 @@ export function Navigation() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                  <div className="text-[13px] text-white/70">
-                    {userLabel}
+                  <div className="flex flex-col gap-1">
+                    <div className="text-[13px] text-white/80">{userLabel}</div>
+                    <Link
+                      href="/wallet/acp"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="inline-flex items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 px-3 py-1.5 text-[12px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/40 transition hover:bg-emerald-400/25"
+                    >
+                      {t("nav.acpWallet")}
+                    </Link>
                   </div>
                   <button
                     onClick={() => {
@@ -340,9 +378,16 @@ export function Navigation() {
                   <Link
                     href={acpUrl}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="col-span-2 rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
+                    className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
                   >
                     ACP Token & Chain
+                  </Link>
+                  <Link
+                    href="/wallet/acp"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-emerald-400/25 bg-emerald-400/8 px-3 py-2.5 text-[13px] text-emerald-200/90 transition hover:bg-emerald-400/15 hover:text-emerald-100"
+                  >
+                    {t("nav.acpWallet")}
                   </Link>
                 </div>
 

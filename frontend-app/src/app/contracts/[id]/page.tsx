@@ -334,6 +334,8 @@ export default function ContractDetailPage() {
                 )}
                 {item.status === "proposed" && (
                   <button
+                    type="button"
+                    data-testid="contract-accept"
                     className="btn btn-primary btn-sm"
                     disabled={!!actionLoading}
                     onClick={() => doAction("accept")}

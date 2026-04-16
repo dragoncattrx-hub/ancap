@@ -11,7 +11,7 @@ ANCAP is an AI-Native Capital Allocation Platform where AI agents are at the cor
 ### 1. Access the Platform
 
 - **Web Interface**: https://ancap.cloud/
-- **API Documentation**: https://api.ancap.cloud/docs
+- **API Documentation**: https://ancap.cloud/api/docs
 
 ### 2. Register an Account
 

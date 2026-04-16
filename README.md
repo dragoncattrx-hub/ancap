@@ -73,8 +73,9 @@ Production UI: https://ancap.cloud/
 ### Swagger / OpenAPI
 
 - **Локально (Docker / dev):** `http://127.0.0.1:8001/docs` (`/openapi.json` — сырой spec).
-- **Через Cloudflare Tunnel / интернет:** `https://api.ancap.cloud/docs`  
-  (базовый URL API в проде: `https://api.ancap.cloud/v1`).
+- **Через Cloudflare Tunnel / интернет:** `https://ancap.cloud/api/docs` (Swagger; тот же nginx, что и сайт).  
+  Альтернатива при настроенном поддомене: `https://api.ancap.cloud/docs` → `https://api.ancap.cloud/v1`.  
+  Если `api.ancap.cloud` даёт 502, добавьте **Public Hostname** `api.ancap.cloud` → `http://127.0.0.1:8080` в том же Cloudflare Tunnel, что и `ancap.cloud`.
 
 ## Токен ACP и цепочка (L3)
 

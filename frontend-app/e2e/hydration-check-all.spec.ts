@@ -19,7 +19,7 @@ test('no React hydration mismatch warnings on key routes', async ({ page }) => {
   });
 
   for (const p of paths) {
-    await page.goto(`http://localhost:3001${p}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`http://127.0.0.1:8080${p}`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
   }
 

@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test("contracts UI: accept + complete triggers payout", async ({ page, request }) => {
-  const baseUrl = process.env.PLAYWRIGHT_UI_BASE_URL ?? "http://localhost:3001";
-  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8001/v1";
+  const baseUrl =
+    process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
+  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";
 
   const idk = () => `idk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -32,7 +33,6 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
     email: meJson.email,
     display_name: meJson.display_name || (meJson.email || "user").split("@")[0],
   };
-
   await page.addInitScript(
     ({ t, u }) => {
       localStorage.setItem("ancap_token", t);
@@ -40,6 +40,13 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
     },
     { t: token, u: userData },
   );
+  await page.route("**/api/v1/users/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(userData),
+    });
+  });
 
   const authHeaders = { Authorization: `Bearer ${token}` };
 
@@ -64,7 +71,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
     data: {
       account_owner_type: "agent",
       account_owner_id: employer,
-      amount: { amount: "20", currency: "VUSD" },
+      amount: { amount: "20", currency: "USD" },
     },
   });
   if (!dep.ok()) throw new Error(`deposit failed: ${dep.status()} ${await dep.text()}`);
@@ -81,7 +88,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
       description: "Test payout on complete",
       payment_model: "fixed",
       fixed_amount_value: "5",
-      currency: "VUSD",
+      currency: "USD",
       max_runs: 1,
       risk_policy_id: null,
       created_from_order_id: null,
@@ -102,12 +109,21 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
 
   // Accept via UI and complete to trigger payout
   await page.goto(`${baseUrl}/contracts/${contractId}`);
-  if (contract.status === "draft") {
+  const statusText = page.getByText(/status:\s*(draft|proposed|active|completed|cancelled)/i).first();
+  await expect(statusText).toBeVisible({ timeout: 15000 });
+  const currentStatus = ((await statusText.textContent()) || "").toLowerCase();
+
+  if (currentStatus.includes("draft")) {
     await page.getByRole("button", { name: /propose/i }).click();
     await expect(page.getByText(/status:\s*proposed/i)).toBeVisible();
+    await page.getByTestId("contract-accept").click();
+    await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
+  } else if (currentStatus.includes("proposed")) {
+    await page.getByTestId("contract-accept").click();
+    await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
+  } else if (!currentStatus.includes("active")) {
+    throw new Error(`unexpected contract status on details page: ${currentStatus}`);
   }
-  await page.getByRole("button", { name: /^accept$/i }).click();
-  await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
 
   // Ledger should contain escrow event for this contract
   const escrowEvents = await request.get(`${apiBase}/ledger/events?limit=200&type=contract_escrow`, {
@@ -141,8 +157,8 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   const balRes = await request.get(`${apiBase}/ledger/balance?owner_type=agent&owner_id=${worker}`);
   if (!balRes.ok()) throw new Error(`balance failed: ${balRes.status()} ${await balRes.text()}`);
   const bal = await balRes.json();
-  const vusd = (bal.balances || []).find((b: any) => b.currency === "VUSD");
-  const amt = Number(vusd?.amount || "0");
+  const usd = (bal.balances || []).find((b: any) => b.currency === "USD");
+  const amt = Number(usd?.amount || "0");
   expect(amt).toBeGreaterThanOrEqual(5);
 });
 

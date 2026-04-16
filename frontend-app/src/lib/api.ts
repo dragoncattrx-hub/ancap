@@ -1,3 +1,5 @@
+import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/safeStorage";
+
 // Prefer an explicit URL if provided.
 // Fallbacks:
 // - development: same-origin /api/v1 (proxied to localhost:8000/v1 by next.config.ts)
@@ -26,18 +28,15 @@ function genIdempotencyKey(): string {
 
 // Token management
 function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  return safeGetItem(TOKEN_KEY);
 }
 
 function setToken(token: string): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TOKEN_KEY, token);
+  safeSetItem(TOKEN_KEY, token);
 }
 
 function clearToken(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(TOKEN_KEY);
+  safeRemoveItem(TOKEN_KEY);
 }
 
 // Base fetch wrapper with auth
@@ -55,8 +54,23 @@ async function apiFetch(path: string, options: RequestInit = {}) {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: "Unknown error" }));
-    throw new Error(error.detail || `API error: ${res.status}`);
+    let detail = "";
+    try {
+      const maybeJson = await res.json();
+      detail = String(maybeJson?.detail || maybeJson?.message || "").trim();
+    } catch {
+      // If upstream/proxy returns HTML/plain text, expose short readable snippet.
+      const raw = (await res.text().catch(() => "")).trim();
+      if (raw) {
+        detail = raw
+          .replace(/\s+/g, " ")
+          .replace(/<[^>]+>/g, "")
+          .slice(0, 180)
+          .trim();
+      }
+    }
+    const baseMessage = `API error ${res.status}${res.statusText ? ` ${res.statusText}` : ""}`;
+    throw new Error(detail ? `${baseMessage}: ${detail}` : baseMessage);
   }
 
   return res.json();
@@ -299,6 +313,63 @@ export const ledger = {
         amount: data.amount,
         currency: data.currency,
       }),
+    });
+  },
+};
+
+// ACP Wallet API
+export const walletAcp = {
+  async getDepositAddress() {
+    return apiFetch("/wallet/acp/deposit_address", { method: "POST" });
+  },
+
+  async getHotBalance() {
+    return apiFetch("/wallet/acp/hot/balance");
+  },
+
+  async withdraw(data: { to_address: string; amount_acp: string; wallet_secret?: string }) {
+    const headers: HeadersInit = {};
+    if (data.wallet_secret) headers["X-Wallet-Secret"] = data.wallet_secret;
+    return apiFetch("/wallet/acp/withdraw", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ to_address: data.to_address, amount_acp: data.amount_acp }),
+    });
+  },
+
+  async swapQuote(data: { usdt_trc20_amount: string }) {
+    return apiFetch("/wallet/acp/swap/quote", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async createSwapOrder(data: { usdt_trc20_amount: string; payout_acp_address: string; note?: string }) {
+    return apiFetch("/wallet/acp/swap/orders", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async listSwapOrders() {
+    return apiFetch("/wallet/acp/swap/orders");
+  },
+
+  async getSwapOrder(orderId: string) {
+    return apiFetch(`/wallet/acp/swap/orders/${orderId}`);
+  },
+
+  async confirmSwapOrder(orderId: string, data: { tron_txid?: string }) {
+    return apiFetch(`/wallet/acp/swap/orders/${orderId}/confirm`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async cancelSwapOrder(orderId: string) {
+    return apiFetch(`/wallet/acp/swap/orders/${orderId}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({}),
     });
   },
 };

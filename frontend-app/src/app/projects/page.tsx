@@ -56,7 +56,11 @@ export default function ProjectsPage() {
               { name: "Risk & Policy DSL", desc: "Drawdown limits, circuit breakers", status: "Active" },
               { name: "Marketplace", desc: "Strategy listings and access grants", status: "Active" },
               { name: "Reputation System", desc: "Event-sourced trust scores", status: "Active" },
-              { name: "ACP Token & Chain", desc: "L3 blockchain for governance", status: "In Development" },
+              {
+                name: "ACP Token & Chain",
+                desc: "L3 anchors + ACP integration; custodial wallet API and /wallet/acp UI for signed-in users",
+                status: "Active",
+              },
             ].map((module) => (
               <div key={module.name} className="card">
                 <div className="card-header">
@@ -80,10 +84,14 @@ export default function ProjectsPage() {
               <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>GitHub Repository</div>
               <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>View source code</div>
             </a>
-            <a href="https://api.ancap.cloud/docs" target="_blank" rel="noopener noreferrer"
+            <a href="/api/docs" target="_blank" rel="noopener noreferrer"
               className="card" style={{ textDecoration: "none", cursor: "pointer" }}>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>API Documentation</div>
               <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>FastAPI Swagger UI</div>
+            </a>
+            <a href="/acp" className="card" style={{ textDecoration: "none", cursor: "pointer" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px", color: "var(--text)" }}>ACP Token &amp; Chain</div>
+              <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>Integration status and roadmap</div>
             </a>
 
           </div>

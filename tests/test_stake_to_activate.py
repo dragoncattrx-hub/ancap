@@ -5,6 +5,8 @@ from tests.conftest import unique_name
 
 def _enable_stake_to_activate(monkeypatch, amount: str = "100"):
     monkeypatch.setenv("STAKE_TO_ACTIVATE_AMOUNT", amount)
+    # Match ledger deposits in these tests (VUSD); default app currency for stake-to-activate is ACP.
+    monkeypatch.setenv("STAKE_TO_ACTIVATE_CURRENCY", "VUSD")
     get_settings.cache_clear()
 
 

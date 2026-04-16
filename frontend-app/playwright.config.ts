@@ -1,6 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3001";
+const BASE_URL =
+  process.env.PLAYWRIGHT_BASE_URL ??
+  // Docker prod-like stack: nginx serves Next + /api on one port.
+  "http://127.0.0.1:8080";
 
 export default defineConfig({
   testDir: "./e2e",

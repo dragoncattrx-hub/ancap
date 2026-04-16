@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function AcpLandingPage() {
+  const { t } = useLanguage();
   return (
     <>
       <NetworkBackground />
@@ -28,19 +31,26 @@ export default function AcpLandingPage() {
                     This page summarizes what ACP is and how it fits into the ANCAP L1/L2/L3 roadmap.
                   </p>
                 </div>
-                <span className="badge badge-warning" style={{ alignSelf: "flex-start" }}>
-                  In Development
+                <span className="badge badge-active" style={{ alignSelf: "flex-start" }}>
+                  {t("acpLanding.badge")}
                 </span>
               </div>
 
+              <p style={{ color: "var(--text-muted)", lineHeight: 1.75, maxWidth: 900, margin: "16px 0 0" }}>
+                {t("acpLanding.statusLead")}
+              </p>
+
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
+                <Link href="/wallet/acp" className="btn btn-primary">
+                  {t("acpLanding.walletCta")}
+                </Link>
                 <a href="/projects" className="btn btn-ghost">
                   Platform overview
                 </a>
                 <a href="/#vision" className="btn btn-ghost">
                   L1/L2/L3 vision
                 </a>
-                <a href="https://api.ancap.cloud/docs" className="btn btn-ghost" target="_blank" rel="noopener">
+                <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener">
                   API docs
                 </a>
               </div>
@@ -68,9 +78,7 @@ export default function AcpLandingPage() {
                   <h3 style={{ fontWeight: 700, margin: 0 }}>Chain anchors</h3>
                   <span className="badge badge-active">L3</span>
                 </div>
-                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  Anchor hashes of runs, artifacts, stake/slash and other events on-chain (ACP driver; mock driver exists for dev).
-                </p>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>{t("acpLanding.anchorsCard")}</p>
               </div>
               <div className="card">
                 <div className="card-header">
@@ -174,8 +182,9 @@ export default function AcpLandingPage() {
               <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 700, margin: 0 }}>Token utility goals</h3>
-                  <span className="badge badge-warning">In Progress</span>
+                  <span className="badge badge-active">Live rails</span>
                 </div>
+                <p style={{ color: "var(--text-muted)", margin: "0 0 12px", lineHeight: 1.65 }}>{t("acpLanding.tokenUtilityNote")}</p>
                 <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
                   <li>Execution fees (runs, listings, storage).</li>
                   <li>Staking for reputation/governance access.</li>

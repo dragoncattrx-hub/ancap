@@ -53,6 +53,9 @@ export function NetworkBackground() {
 
     function draw() {
       if (!ctx || !width || !height) return;
+      if (nodes.some((n) => !Number.isFinite(n.x) || !Number.isFinite(n.y))) {
+        initNodes();
+      }
 
       ctx.clearRect(0, 0, width, height);
 

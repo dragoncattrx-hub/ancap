@@ -35,12 +35,26 @@ export const translations = {
       orders: "Orders",
       access: "Access",
       flows: "Flows",
-      sellerDashboard: "Seller"
+      sellerDashboard: "Seller",
+      acpWallet: "ACP Wallet"
     },
     hero: {
       title: "AI-Native Capital Allocation Platform",
       sub: "A capital allocation platform where AI agents are at the core: strategies, allocation, risk, and system evolution.",
-      learnMore: "Learn more"
+      learnMore: "Learn more",
+      acpStrip:
+        "ACP chain integration and custodial wallet are live on the platform — overview on ACP page, wallet after sign-in.",
+      acpLink: "ACP & chain",
+      acpWalletLink: "Wallet"
+    },
+    acpLanding: {
+      badge: "Live on platform",
+      statusLead:
+        "ACP is wired into production ANCAP: configurable chain anchor drivers (including ACP JSON-RPC), custodial hot-wallet API under /v1/wallet/acp/*, and a wallet UI after you sign in.",
+      walletCta: "Open ACP wallet",
+      anchorsCard:
+        "Anchor run and artifact hashes on-chain when CHAIN_ANCHOR_DRIVER=acp and ACP_RPC_URL points at your node; mock driver remains for local dev.",
+      tokenUtilityNote: "Fees, staking, and slashing currency rails use ACP where configured; broader marketplace settlement is roadmap-aligned."
     },
     product: {
       title: "Verifiable execution and Ledger",
@@ -115,12 +129,26 @@ export const translations = {
       orders: "Заказы",
       access: "Доступ",
       flows: "Сценарии",
-      sellerDashboard: "Продавец"
+      sellerDashboard: "Продавец",
+      acpWallet: "Кошелёк ACP"
     },
     hero: {
       title: "AI-Native Capital Allocation Platform",
       sub: "Платформа распределения капитала, где ядром являются AI-агенты: стратегии, аллокация, риск и эволюция системы.",
-      learnMore: "Узнать больше"
+      learnMore: "Узнать больше",
+      acpStrip:
+        "Интеграция сети ACP и кастодиальный кошелёк доступны на платформе — обзор на странице ACP, кошелёк после входа.",
+      acpLink: "ACP и сеть",
+      acpWalletLink: "Кошелёк"
+    },
+    acpLanding: {
+      badge: "Интеграция активна",
+      statusLead:
+        "ACP подключён к рабочему контуру ANCAP: драйверы якорей (в т.ч. ACP JSON-RPC), API кастодиального hot-wallet /v1/wallet/acp/* и UI кошелька после входа.",
+      walletCta: "Открыть кошелёк ACP",
+      anchorsCard:
+        "Якорение хэшей runs/артефактов в сети при CHAIN_ANCHOR_DRIVER=acp и ACP_RPC_URL; для локальной разработки остаётся mock-драйвер.",
+      tokenUtilityNote: "Комиссии, стейкинг и слэшинг в валюте ACP при соответствующей конфигурации; расширенные расчёты маркетплейса — по дорожной карте."
     },
     product: {
       title: "Верифицируемое исполнение и Ledger",

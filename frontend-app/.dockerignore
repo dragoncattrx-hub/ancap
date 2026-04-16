@@ -1,0 +1,7 @@
+# Host artifacts must not overwrite the image build (stale /w basePath, .env.production).
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example

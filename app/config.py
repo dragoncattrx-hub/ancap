@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     # L3: Proof-of-Agent
     registration_max_agents_per_day: int = 100  # 0 = no limit
-    stake_to_activate_amount: str = "0"  # "0" = optional; e.g. "100" requires 100 VUSD stake to activate
+    stake_to_activate_amount: str = "0"  # "0" = optional; e.g. "100" requires 100 USD stake to activate
     stake_to_activate_currency: str = "ACP"
 
     # L3: Fees (platform)
@@ -52,12 +52,23 @@ class Settings(BaseSettings):
     moderation_slash_amount: str = "0"
     moderation_slash_currency: str = "ACP"
 
+    # Wallet swap MVP: USDT TRC20 -> ACP (internal/manual confirmation flow)
+    usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
+    usdt_trc20_to_acp_rate: str = "1"
+
     # Opaque cursor (reputation events pagination): HMAC secret
     cursor_secret: str = "change-me-cursor-secret"
 
     # Cron job protection: optional secret for POST /v1/system/jobs/tick
     # If set, requires X-Cron-Secret header to match. Recommended for production.
     cron_secret: str | None = None
+
+    # CORS: comma-separated browser origins. "*" with allow_credentials=True is invalid; browsers block preflight.
+    cors_origins: str = (
+        "https://ancap.cloud,https://www.ancap.cloud,"
+        "http://localhost:3000,http://localhost:3001,"
+        "http://127.0.0.1:3000,http://127.0.0.1:3001"
+    )
 
     # ROADMAP §5: optional external quality scorer (step-level). If set, POST step payload to URL; expect JSON {"score": float 0..1}. On timeout/error use built-in heuristic.
     quality_scorer_url: str = ""  # e.g. "http://localhost:8080/score"

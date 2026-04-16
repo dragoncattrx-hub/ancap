@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page, request }) => {
-  const baseUrl = process.env.PLAYWRIGHT_UI_BASE_URL ?? "http://localhost:3001";
-  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8001/v1";
+  const baseUrl =
+    process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
+  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";
 
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -20,21 +21,25 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   const me = await request.get(`${apiBase}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
   if (!me.ok()) throw new Error(`me failed: ${me.status()} ${await me.text()}`);
   const meJson = await me.json();
-
+  const userData = {
+    id: meJson.id,
+    email: meJson.email,
+    display_name: meJson.display_name || (meJson.email || "user").split("@")[0],
+  };
   await page.addInitScript(
     ({ t, u }) => {
       localStorage.setItem("ancap_token", t);
       localStorage.setItem("ancap_user", JSON.stringify(u));
     },
-    {
-      t: token,
-      u: {
-        id: meJson.id,
-        email: meJson.email,
-        display_name: meJson.display_name || (meJson.email || "user").split("@")[0],
-      },
-    }
+    { t: token, u: userData },
   );
+  await page.route("**/api/v1/users/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(userData),
+    });
+  });
 
   // Create an agent (needed for quickstart)
   await page.goto(`${baseUrl}/agents`);

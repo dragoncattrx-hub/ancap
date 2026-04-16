@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { auth, users } from "@/lib/api";
+import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/safeStorage";
 
 interface User {
   id: string;
@@ -20,32 +21,49 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function userFromApiPayload(u: { id?: string; email?: string; display_name?: string | null }): User {
+  const email = typeof u.email === "string" ? u.email : "";
+  const display =
+    (u.display_name && String(u.display_name)) ||
+    (email.includes("@") ? email.split("@")[0] : "") ||
+    "User";
+  return { id: String(u.id ?? ""), email, display_name: display };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated on mount
     const token = auth.getToken();
     if (token) {
-      const storedUser = localStorage.getItem("ancap_user");
+      const storedUser = safeGetItem("ancap_user");
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        try {
+          const parsed = JSON.parse(storedUser) as Partial<User>;
+          if (parsed && typeof parsed === "object" && "email" in parsed) {
+            setUser(userFromApiPayload(parsed));
+          } else {
+            safeRemoveItem("ancap_user");
+          }
+        } catch {
+          safeRemoveItem("ancap_user");
+        }
       } else {
-        // Token present but user profile not cached yet: treat as authenticated
-        // and let users.me() hydrate canonical fields.
         setUser({ id: "", email: "", display_name: "User" });
       }
-      // Fetch canonical profile from backend
       users
         .me()
         .then((u) => {
-          const userData = { id: u.id, email: u.email, display_name: u.display_name || u.email.split("@")[0] };
+          const userData = userFromApiPayload(u);
           setUser(userData);
-          localStorage.setItem("ancap_user", JSON.stringify(userData));
+          safeSetItem("ancap_user", JSON.stringify(userData));
         })
         .catch(() => {
-          // token might be stale; keep best-effort local user
+          // Stored token can be expired/revoked; drop stale session to avoid 401 loops.
+          auth.logout();
+          safeRemoveItem("ancap_user");
+          setUser(null);
         });
     }
     setIsLoading(false);
@@ -54,9 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     await auth.login(email, password);
     const me = await users.me();
-    const userData = { id: me.id, email: me.email, display_name: me.display_name || me.email.split("@")[0] };
+    const userData = userFromApiPayload(me);
     setUser(userData);
-    localStorage.setItem("ancap_user", JSON.stringify(userData));
+    safeSetItem("ancap_user", JSON.stringify(userData));
   };
 
   const register = async (email: string, password: string, displayName: string) => {
@@ -68,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     auth.logout();
     setUser(null);
-    localStorage.removeItem("ancap_user");
+    safeRemoveItem("ancap_user");
   };
 
   return (

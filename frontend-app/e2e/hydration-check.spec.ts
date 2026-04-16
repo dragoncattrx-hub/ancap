@@ -15,7 +15,7 @@ test('no React hydration mismatch warnings on home page', async ({ page }) => {
     }
   });
 
-  await page.goto('http://localhost:3001/', { waitUntil: 'domcontentloaded' });
+  await page.goto("http://127.0.0.1:8080/", { waitUntil: "domcontentloaded" });
   // give React time to hydrate + run effects
   await page.waitForTimeout(1500);
 
