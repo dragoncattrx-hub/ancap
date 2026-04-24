@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, desc
-from sqlalchemy import func
+from sqlalchemy import func, case
 
 from app.api.deps import DbSession, require_auth
 from app.schemas import (
@@ -11,6 +11,7 @@ from app.schemas import (
     ReferralAttributeRequest,
     ReferralAttributionPublic,
     ReferralSummaryPublic,
+    ReferralRewardEventPublic,
 )
 from app.db.models import ReferralCode, ReferralAttribution, ReferralRewardEvent
 from app.services.referrals import create_referral_code, attribute_referral
@@ -106,12 +107,70 @@ async def my_referral_summary(session: DbSession, user_id: str = Depends(require
 
     reward_row = (
         await session.execute(
-            select(func.coalesce(func.sum(ReferralRewardEvent.amount_value), 0), func.max(ReferralRewardEvent.currency))
+            select(
+                func.coalesce(func.sum(ReferralRewardEvent.amount_value), 0),
+                func.max(ReferralRewardEvent.currency),
+                func.count(ReferralRewardEvent.id),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (ReferralRewardEvent.currency == "ACP", ReferralRewardEvent.amount_value),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                (ReferralRewardEvent.currency == "ACP")
+                                & (
+                                    ReferralRewardEvent.trigger_type.in_(
+                                        [
+                                            "referral_verified_bonus",
+                                            "verified_referral_bonus",
+                                            "referral_signup_bonus",
+                                        ]
+                                    )
+                                ),
+                                ReferralRewardEvent.amount_value,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                (ReferralRewardEvent.currency == "ACP")
+                                & (
+                                    ReferralRewardEvent.trigger_type.in_(
+                                        [
+                                            "commission_share",
+                                            "referral_commission_share",
+                                        ]
+                                    )
+                                ),
+                                ReferralRewardEvent.amount_value,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ),
+            )
             .where(ReferralRewardEvent.beneficiary_user_id == uid)
         )
     ).first()
     total_reward_amount = str(reward_row[0]) if reward_row else "0"
     reward_currency = str(reward_row[1]) if reward_row and reward_row[1] else "USD"
+    total_reward_events = int(reward_row[2]) if reward_row and reward_row[2] is not None else 0
+    total_reward_acp_amount = str(reward_row[3]) if reward_row else "0"
+    signup_bonus_acp_amount = str(reward_row[4]) if reward_row else "0"
+    commission_share_acp_amount = str(reward_row[5]) if reward_row else "0"
     return ReferralSummaryPublic(
         total_attributions=total_attributions,
         pending=status_map.get("pending", 0),
@@ -120,5 +179,34 @@ async def my_referral_summary(session: DbSession, user_id: str = Depends(require
         rejected=status_map.get("rejected", 0),
         total_reward_amount=total_reward_amount,
         reward_currency=reward_currency,
+        total_reward_events=total_reward_events,
+        total_reward_acp_amount=total_reward_acp_amount,
+        signup_bonus_acp_amount=signup_bonus_acp_amount,
+        commission_share_acp_amount=commission_share_acp_amount,
     )
+
+
+@router.get("/me/rewards", response_model=list[ReferralRewardEventPublic])
+async def my_referral_rewards(session: DbSession, user_id: str = Depends(require_auth), limit: int = 50):
+    uid = UUID(user_id)
+    rows = (
+        await session.execute(
+            select(ReferralRewardEvent)
+            .where(ReferralRewardEvent.beneficiary_user_id == uid)
+            .order_by(desc(ReferralRewardEvent.created_at))
+            .limit(limit)
+        )
+    ).scalars().all()
+    return [
+        ReferralRewardEventPublic(
+            id=str(x.id),
+            trigger_type=x.trigger_type,
+            trigger_ref_type=x.trigger_ref_type,
+            trigger_ref_id=str(x.trigger_ref_id),
+            currency=x.currency,
+            amount_value=str(x.amount_value),
+            created_at=x.created_at,
+        )
+        for x in rows
+    ]
 

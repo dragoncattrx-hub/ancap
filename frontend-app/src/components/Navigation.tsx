@@ -30,6 +30,7 @@ const primaryNav: NavItem[] = [
 
 const secondaryNav: NavItem[] = [
   { label: "AI Console", href: "/ai-console" },
+  { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },
   { label: "Tournaments", href: "/tournaments" },
   { label: "Bounties", href: "/bounties" },

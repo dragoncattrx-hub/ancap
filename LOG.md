@@ -18,6 +18,8 @@ All changes are for memory and reproducibility.
 - Evolution loop: mutation/tournament/bug bounty primitives with dedicated UI.
 - Governance and chain trust: weighted voting, guarded auto-apply, chain receipt signature metadata.
 - Autonomy layer: operations NOC, AI council beta, NL strategy compiler beta, chaos smoke checks.
+- Roadmap refresh: milestones 1–4 explicitly marked as delivered, plus milestone 5 for referral economy and ACP tokenomics.
+- Referral growth policy: 100 ACP one-time per verified referral and 30% lifetime commission share model documented.
 
 ---
 

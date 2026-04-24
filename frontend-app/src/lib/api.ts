@@ -704,6 +704,9 @@ export const referrals = {
   async mySummary() {
     return apiFetch("/referrals/me/summary");
   },
+  async listMyRewards(limit = 50) {
+    return apiFetch(`/referrals/me/rewards?limit=${limit}`);
+  },
 };
 
 export const decisionLogs = {

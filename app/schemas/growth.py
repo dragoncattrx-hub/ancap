@@ -84,6 +84,20 @@ class ReferralSummaryPublic(BaseModel):
     rejected: int
     total_reward_amount: str
     reward_currency: str
+    total_reward_events: int = 0
+    total_reward_acp_amount: str = "0"
+    signup_bonus_acp_amount: str = "0"
+    commission_share_acp_amount: str = "0"
+
+
+class ReferralRewardEventPublic(BaseModel):
+    id: str
+    trigger_type: str
+    trigger_ref_type: str
+    trigger_ref_id: str
+    currency: str
+    amount_value: str
+    created_at: datetime
 
 
 class FollowRequest(BaseModel):

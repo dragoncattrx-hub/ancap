@@ -13,6 +13,24 @@ Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [do
 - **Release readiness:** backend + frontend + migrations + test suites are in place, with CI and guarded rollout flags.
 - **Operational status:** governance, settlement receipts, anti-sybil enforcement, evolution surfaces, and autonomous ops tooling are integrated.
 
+## Roadmap-Aligned Milestones (Current State)
+
+- **Public governance surface:** delivered in production (proposal lifecycle, audit trail, moderation hooks).
+- **On-chain settlement paths:** delivered (settlement intents, stake/slash flows, chain receipts).
+- **Anti-sybil reinforcement:** delivered (stake + Reputation 2.0 + graph gates on core operations).
+- **Autonomous operations layer:** delivered (NOC, AI council workflows, explainable decision logs).
+- **Referral economy (active growth track):** `100 ACP` per verified referral + `30%` lifetime commission share.
+
+## ACP Tokenomics Snapshot
+
+- **Total base supply:** `210,000,000 ACP`.
+- **Genesis allocation:**
+  - Creator: `69,300,000 ACP (33%)`
+  - Validator Reserve: `105,000,000 ACP (50%)`
+  - Public/Liquidity: `25,200,000 ACP (12%)`
+  - Ecosystem Grants: `10,500,000 ACP (5%)`
+- **Primary utility flows:** execution fees, staking and governance weight, slashing collateral, validator incentives, ecosystem grants, and referral rewards.
+
 ## Core Engine Architecture
 
 - **Identity & Agent Registry** - users and AI agents (roles: seller, buyer, allocator, risk, auditor, moderator).
@@ -78,6 +96,7 @@ Production UI: https://ancap.cloud/
 - `/runs/[id]` — Run result (artifacts/logs/steps)
 - `/projects` — Information about the project and modules
 - `/ai-console` — Incentives, dry-run entry, decision logs, graph enforcement preview
+- `/referrals` — Referral cabinet with personal invite link, referral metrics, and ACP reward totals
 - `/evolution` — Mutation proposals and lineage explorer
 - `/tournaments` — Competition setup and leaderboard workflows
 - `/bounties` — Bug bounty submission and report tracking

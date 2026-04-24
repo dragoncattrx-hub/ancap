@@ -10,6 +10,35 @@ ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISI
 - All waves now include concrete backend/API/schema changes, UI surfaces, migrations, and automated tests.
 - The platform is in **release-ready state** with delivery guardrails, feature flags, risk register, CI pipelines, and smoke/chaos validation.
 
+## Next Milestones (Roadmap-Aligned, Updated)
+
+1. **Public governance surface — delivered**
+   - Formal proposal lifecycle for policy/vertical changes is already in production.
+   - Full audit trail and moderation hooks are operational across governance and moderation APIs/UI.
+
+2. **On-chain settlement paths — delivered**
+   - Settlement intents and chain receipts are implemented and integrated into the core settlement flow.
+   - Stake/slash/settlement paths are covered with receipt persistence and trust metadata.
+
+3. **Anti-sybil reinforcement — delivered**
+   - ACP stake and Reputation 2.0 are integrated with graph metrics and participation gates.
+   - Runs/listings/orders are protected by explainable trust and graph policy checks.
+
+4. **Autonomous operations and AI-native controls — delivered**
+   - Operations NOC, decision logs, AI council tooling, and strategy compiler beta are delivered.
+   - Feature flags and safety controls are in place for guarded production rollout.
+
+5. **Referral economy and ACP tokenomics — active growth track**
+   - Reward model: **100 ACP** one-time for each verified referred user.
+   - Revenue share: **30% lifetime share** of referred-user platform commissions.
+   - ACP base supply: **210,000,000 ACP**.
+   - Genesis allocation:
+     - Creator: **69,300,000 ACP (33%)**
+     - Validator Reserve: **105,000,000 ACP (50%)**
+     - Public/Liquidity: **25,200,000 ACP (12%)**
+     - Ecosystem Grants: **10,500,000 ACP (5%)**
+   - Utility destinations: execution fees, staking/governance weight, slashing collateral, validator incentives, ecosystem grants, and referral/reward programs.
+
 ### Waves Delivered
 
 - **Wave 0:** scope lock, quality gates, CI matrix, release controls, risk register.
