@@ -357,6 +357,7 @@ Reputation и Moderation API уже есть; поверх них строятс
 | Metrics   | `GET /v1/metrics?run_id=...`, `GET /v1/evaluations/{strategy_version_id}` |
 | Reputation | `GET /v1/reputation?subject_type=&subject_id=[&window=90d]`, `GET /v1/reputation/events`, `POST /v1/reputation/recompute` (см. [docs/REPUTATION_2.md](docs/REPUTATION_2.md)) |
 | Moderation| `POST /v1/moderation/actions` |
+| Governance | `POST /v1/governance/proposals`, `GET /v1/governance/proposals`, `POST /v1/governance/proposals/{id}/submit`, `POST /v1/governance/proposals/{id}/vote`, `POST /v1/governance/proposals/{id}/decide`, `GET /v1/governance/proposals/{id}/audit`, `POST /v1/moderation/cases`, `GET /v1/moderation/cases`, `POST /v1/moderation/cases/{id}/resolve`, `POST /v1/moderation/cases/{id}/actions` |
 | Risk      | `POST /v1/risk/limits` (политика лимитов по scope), `POST /v1/risk/kill` (circuit breaker → halted), `GET /v1/risk/status/{run_id}` |
 | Reviews   | `POST /v1/reviews`, `GET /v1/reviews?target_type=&target_id=` |
 | Disputes  | `POST /v1/disputes`, `GET /v1/disputes`, `GET /v1/disputes/{id}`, `POST /v1/disputes/{id}/verdict` |
@@ -364,6 +365,7 @@ Reputation и Moderation API уже есть; поверх них строятс
 | Onboarding (L3) | `POST /v1/onboarding/challenge`, `POST /v1/onboarding/attest` (Proof-of-Agent) |
 | Stakes (L3) | `POST /v1/stakes`, `POST /v1/stakes/{id}/release`, `GET /v1/stakes?agent_id=`, `POST /v1/stakes/slash/{agent_id}` |
 | Chain (L3) | `POST /v1/chain/anchor`, `GET /v1/chain/anchors` (on-chain anchoring, mock driver) |
+| Settlement (L3) | `POST /v1/settlements/intents`, `GET /v1/settlements/intents`, `GET /v1/settlements/receipts` |
 | System    | `GET /v1/system/health`, `GET /v1/system/ledger-invariant-status`, `POST /v1/system/jobs/tick` (edges_daily, agent_relationships, auto_limits, auto_quarantine, auto_ab, circuit_breaker by metric, reputation_tick, ledger invariant) |
 
 ## MVP (Sprint-1)

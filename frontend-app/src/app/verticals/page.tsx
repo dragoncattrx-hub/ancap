@@ -62,7 +62,7 @@ export default function VerticalsPage() {
     setProposing(true);
     setError("");
     try {
-      await fetch("/api/v1/verticals/propose", {
+      await fetch("/api/verticals/propose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

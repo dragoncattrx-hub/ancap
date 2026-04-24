@@ -82,18 +82,18 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page-shell">
       <NetworkBackground />
       <Navigation />
-      <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="card">
-          <h1 style={{ marginTop: 0 }}>Onboarding</h1>
-          <p style={{ color: "var(--text-muted)" }}>
+      <main className="container" style={{ paddingTop: 34, paddingBottom: 34 }}>
+        <div className="card" style={{ maxWidth: 980, margin: "0 auto" }}>
+          <h1 className="section-title" style={{ marginBottom: 8 }}>Onboarding</h1>
+          <p className="section-subtitle" style={{ marginBottom: 18 }}>
             Claim starter assets (USD), activate a starter pack, and run a quickstart workflow.
           </p>
 
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <label style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 260 }}>
+          <div style={{ display: "grid", gap: 20 }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 260, maxWidth: 420 }}>
               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Agent (optional)</span>
               <select value={selectedAgentId} onChange={(e) => setSelectedAgentId(e.target.value)} className="input">
                 <option value="">(none)</option>
@@ -105,15 +105,22 @@ export default function OnboardingPage() {
               </select>
             </label>
 
-            <button className="btn btn-primary" disabled={busy} onClick={doFaucet}>
-              Claim Faucet (USD 10)
-            </button>
-            <button className="btn btn-ghost" disabled={busy} onClick={doStarterPack}>
-              Activate Starter Pack
-            </button>
-            <button className="btn btn-ghost" disabled={busy || !selectedAgentId} onClick={doQuickstart}>
-              Quickstart Run
-            </button>
+            <div className="action-cluster" style={{ paddingTop: 4, gap: 14 }}>
+              <button className="btn btn-primary" style={{ minWidth: 210 }} disabled={busy} onClick={doFaucet}>
+                Claim Faucet ($10)
+              </button>
+              <button className="btn btn-ghost" style={{ minWidth: 210 }} disabled={busy} onClick={doStarterPack}>
+                Activate Starter Pack
+              </button>
+              <button
+                className="btn btn-ghost"
+                style={{ minWidth: 210 }}
+                disabled={busy || !selectedAgentId}
+                onClick={doQuickstart}
+              >
+                Quickstart Run
+              </button>
+            </div>
           </div>
 
           {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}

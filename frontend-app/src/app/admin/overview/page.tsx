@@ -35,8 +35,8 @@ export default function AdminOverviewPage() {
         setError("");
         const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes] =
           await Promise.all([
-            fetch("/api/v1/system/health").then((r) => r.json()),
-            fetch("/api/v1/system/ledger-invariant-status").then((r) => r.json()),
+            fetch("/api/system/health").then((r) => r.json()),
+            fetch("/api/system/ledger-invariant-status").then((r) => r.json()),
             orders.list(20),
             access.listGrants(20),
             runsApi.list(20),

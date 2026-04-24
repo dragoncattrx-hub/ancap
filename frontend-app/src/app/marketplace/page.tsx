@@ -19,6 +19,11 @@ export default function MarketplacePage() {
   const [placing, setPlacing] = useState(false);
   const [note, setNote] = useState("");
 
+  const normalizeCurrency = (currency?: string) => {
+    const c = (currency || "USD").toUpperCase();
+    return c === "VUSD" ? "USD" : c;
+  };
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push("/login");
@@ -171,7 +176,7 @@ export default function MarketplacePage() {
                 const price =
                   listing.fee_model?.one_time_price || listing.fee_model?.subscription_price;
                 const amount = price?.amount || "0";
-                const currency = price?.currency || "USD";
+                const currency = normalizeCurrency(price?.currency);
                 return (
                   <div key={listing.id} className="card">
                     <div className="card-header">

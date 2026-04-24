@@ -27,6 +27,7 @@ from app.services.evaluation import update_evaluation_for_version
 from app.services.reputation_events import on_run_completed, on_evaluation_scored
 from app.services.agent_graph_metrics import get_agent_graph_metrics
 from app.services.stakes import require_activated_if_stake_required
+from app.services.participation_gates import evaluate_agent_gate
 from app.db.models import Evaluation
 
 router = APIRouter(prefix="/runs", tags=["Runs"])
@@ -323,6 +324,16 @@ async def request_run(
         raise HTTPException(status_code=404, detail="Strategy not found")
     if strat.owner_agent_id:
         await require_activated_if_stake_required(session, strat.owner_agent_id)
+        gate = await evaluate_agent_gate(session, strat.owner_agent_id)
+        if not gate.ok:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "reason_code": gate.reason_code,
+                    "message": gate.detail,
+                    "metrics": gate.metrics,
+                },
+            )
     vert = await session.get(Vertical, strat.vertical_id)
     if not vert:
         raise HTTPException(status_code=404, detail="Vertical not found")

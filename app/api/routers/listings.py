@@ -11,6 +11,7 @@ from app.services.ledger import get_or_create_account, append_event, balance_for
 from app.db.models import LedgerEventTypeEnum
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
 from app.services.stakes import require_activated_if_stake_required
+from app.services.participation_gates import evaluate_agent_gate
 from sqlalchemy import select
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
@@ -29,6 +30,16 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
     if str(ver.strategy_id) != str(strategy_id):
         raise HTTPException(status_code=400, detail="Strategy version does not belong to strategy")
     await require_activated_if_stake_required(session, strat.owner_agent_id)
+    gate = await evaluate_agent_gate(session, strat.owner_agent_id)
+    if not gate.ok:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "reason_code": gate.reason_code,
+                "message": gate.detail,
+                "metrics": gate.metrics,
+            },
+        )
     # L3: platform listing fee
     settings = get_settings()
     if settings.listing_fee_amount and Decimal(settings.listing_fee_amount) > 0:

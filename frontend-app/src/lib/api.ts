@@ -691,6 +691,71 @@ export const growthDashboard = {
   },
 };
 
+export const governance = {
+  async listProposals(status?: string, limit = 100) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (status && status !== "all") params.append("status", status);
+    return apiFetch(`/governance/proposals?${params.toString()}`);
+  },
+  async createProposal(data: {
+    kind: string;
+    target_type: string;
+    target_id?: string;
+    payload_json: Record<string, any>;
+  }) {
+    return apiFetch("/governance/proposals", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async submitProposal(id: string) {
+    return apiFetch(`/governance/proposals/${id}/submit`, { method: "POST" });
+  },
+  async voteProposal(id: string, vote: "approve" | "reject" | "abstain", reason?: string) {
+    return apiFetch(`/governance/proposals/${id}/vote`, {
+      method: "POST",
+      body: JSON.stringify({ vote, reason }),
+    });
+  },
+  async decideProposal(id: string, decision: "active" | "rejected" | "appealed", reason?: string) {
+    return apiFetch(`/governance/proposals/${id}/decide`, {
+      method: "POST",
+      body: JSON.stringify({ decision, reason }),
+    });
+  },
+  async getProposalAudit(id: string, limit = 200) {
+    return apiFetch(`/governance/proposals/${id}/audit?limit=${limit}`);
+  },
+  async listModerationCases(status?: string, limit = 100) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (status && status !== "all") params.append("status", status);
+    return apiFetch(`/moderation/cases?${params.toString()}`);
+  },
+  async openModerationCase(data: { subject_type: string; subject_id: string; reason_code: string }) {
+    return apiFetch("/moderation/cases", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async resolveModerationCase(id: string, status: "resolved" | "appealed" | "rejected", resolution?: string) {
+    return apiFetch(`/moderation/cases/${id}/resolve`, {
+      method: "POST",
+      body: JSON.stringify({ status, resolution }),
+    });
+  },
+  async applyModerationAction(data: {
+    target_type: "agent" | "strategy" | "listing" | "vertical" | "pool";
+    target_id: string;
+    action: "suspend" | "unsuspend" | "quarantine" | "unquarantine" | "halt" | "unhalt" | "reject";
+    reason?: string;
+  }) {
+    return apiFetch("/moderation/actions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 // Convenience aggregate export
 export const api = {
   auth,
@@ -716,5 +781,6 @@ export const api = {
   growthLeaderboards,
   growthTasks,
   growthDashboard,
+  governance,
 };
 

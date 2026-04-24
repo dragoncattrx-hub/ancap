@@ -623,6 +623,66 @@ class Dispute(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class GovernanceProposal(Base):
+    __tablename__ = "governance_proposals"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    kind = Column(String(32), nullable=False, index=True)  # policy_update | vertical_update | moderation_rule
+    target_type = Column(String(32), nullable=False, index=True)  # policy | vertical | system
+    target_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    payload_json = Column(JSONB, nullable=False)
+    status = Column(String(32), nullable=False, default="draft", index=True)  # draft|review|active|rejected|appealed
+    created_by = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    reviewed_by = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    decision_reason = Column(Text, nullable=True)
+    decided_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class GovernanceVote(Base):
+    __tablename__ = "governance_votes"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    proposal_id = Column(UUID(as_uuid=False), ForeignKey("governance_proposals.id", ondelete="CASCADE"), nullable=False, index=True)
+    voter_type = Column(String(20), nullable=False, default="user")  # user | agent
+    voter_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    vote = Column(String(16), nullable=False)  # approve | reject | abstain
+    reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("uq_governance_vote_unique_voter", "proposal_id", "voter_type", "voter_id", unique=True),
+    )
+
+
+class GovernanceAuditLog(Base):
+    __tablename__ = "governance_audit_log"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    proposal_id = Column(UUID(as_uuid=False), ForeignKey("governance_proposals.id", ondelete="CASCADE"), nullable=False, index=True)
+    event_type = Column(String(48), nullable=False, index=True)
+    actor_type = Column(String(20), nullable=False, default="user")
+    actor_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    event_json = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ModerationCase(Base):
+    __tablename__ = "moderation_cases"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    subject_type = Column(String(32), nullable=False, index=True)  # agent | strategy | listing | vertical | policy
+    subject_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    reason_code = Column(String(64), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="open", index=True)  # open|resolved|appealed|rejected
+    opened_by = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    resolved_by = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    resolution = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+
+
 class IdempotencyKey(Base):
     """Idempotency store for POST endpoints (orders, runs)."""
 
@@ -720,6 +780,60 @@ class ChainAnchor(Base):
     anchored_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
+
+class SettlementIntentStatusEnum(str, enum.Enum):
+    pending = "pending"
+    executed = "executed"
+    failed = "failed"
+
+
+class ChainReceiptStatusEnum(str, enum.Enum):
+    submitted = "submitted"
+    finalized = "finalized"
+    failed = "failed"
+
+
+class SettlementIntent(Base):
+    __tablename__ = "settlement_intents"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    intent_type = Column(String(32), nullable=False, index=True)  # escrow_open|escrow_release|stake_lock|stake_unlock|slash
+    source_owner_type = Column(String(32), nullable=False)
+    source_owner_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    target_owner_type = Column(String(32), nullable=False)
+    target_owner_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    amount_currency = Column(String(10), nullable=False, index=True)
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    status = Column(String(24), nullable=False, default=SettlementIntentStatusEnum.pending.value, index=True)
+    correlation_id = Column(String(128), nullable=False, index=True)
+    metadata_json = Column(JSONB, nullable=True)
+    error_message = Column(Text, nullable=True)
+    executed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("uq_settlement_intents_correlation_id", "correlation_id", unique=True),
+    )
+
+
+class ChainReceipt(Base):
+    __tablename__ = "chain_receipts"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    settlement_intent_id = Column(
+        UUID(as_uuid=False), ForeignKey("settlement_intents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chain_id = Column(String(32), nullable=False, index=True)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    status = Column(String(24), nullable=False, default=ChainReceiptStatusEnum.submitted.value, index=True)
+    correlation_id = Column(String(128), nullable=False, index=True)
+    payload_hash = Column(String(64), nullable=False)
+    receipt_json = Column(JSONB, nullable=True)
+    error_message = Column(Text, nullable=True)
+    finalized_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class ContractStatusEnum(str, enum.Enum):
     draft = "draft"

@@ -19,7 +19,6 @@ function navItemLabel(item: NavItem, t: (key: string) => string): string {
 
 const primaryNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "ACP Wallet", href: "/wallet/acp", i18nKey: "nav.acpWallet" },
   { label: "Feed", href: "/feed" },
   { label: "Agents", href: "/agents" },
   { label: "Strategies", href: "/strategies" },
@@ -30,6 +29,7 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
+  { label: "Governance", href: "/governance" },
   { label: "Onboarding", href: "/onboarding" },
   { label: "Notifications", href: "/notifications" },
   { label: "Leaderboards", href: "/leaderboards" },
@@ -154,12 +154,6 @@ export function Navigation() {
                 </Link>
                 <Link href={acpUrl} className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
                   ACP Token
-                </Link>
-                <Link
-                  href="/wallet/acp"
-                  className="rounded-md px-3 py-1.5 text-emerald-200/90 ring-1 ring-inset ring-emerald-400/35 transition hover:bg-emerald-400/10 hover:text-emerald-100"
-                >
-                  {t("nav.acpWallet")}
                 </Link>
               </nav>
             )}

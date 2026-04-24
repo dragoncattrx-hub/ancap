@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 export function HomePage() {
   const { t } = useLanguage();
@@ -10,6 +11,7 @@ export function HomePage() {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg)]">
+      <NetworkBackground />
       <div
         className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[radial-gradient(ellipse_85%_55%_at_50%_-25%,rgba(52,211,153,0.11),transparent_55%)]"
         aria-hidden

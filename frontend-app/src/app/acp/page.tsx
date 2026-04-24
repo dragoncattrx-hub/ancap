@@ -66,8 +66,8 @@ export default function AcpLandingPage() {
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 700, margin: 0 }}>Native token</h3>
-                  <span className="badge badge-info">ACP</span>
+                  <h3 style={{ fontWeight: 700, margin: 0, color: "#34d399" }}>Native token</h3>
+                  <span className="badge badge-active">ACP</span>
                 </div>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
                   Used as execution fees (gas), staking for responsibility & reputation, governance weight, and collateral for slashing.

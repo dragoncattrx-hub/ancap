@@ -3,15 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0a0a0f;
-  --bg-card: #12121a;
-  --text: #f0f0f5;
-  --text-muted: #a0a0b8;
-  --accent: #00d4aa;
-  --accent-dim: rgba(0, 212, 170, 0.15);
-  --border: #2a2a3a;
-  --node-glow: rgba(0, 212, 170, 0.6);
-  --edge-color: rgba(0, 212, 170, 0.25);
+  --bg: #070b16;
+  --bg-elev-1: #0f1526;
+  --bg-card: #121a2d;
+  --text: #ecf4ff;
+  --text-muted: #9fb3cc;
+  --accent: #19c38a;
+  --accent-strong: #31d79f;
+  --accent-dim: rgba(25, 195, 138, 0.18);
+  --border: #24324b;
+  --border-strong: #33486b;
+  --node-glow: rgba(25, 195, 138, 0.65);
+  --edge-color: rgba(25, 195, 138, 0.28);
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --shadow-soft: 0 10px 28px rgba(3, 9, 20, 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -61,6 +67,47 @@ body {
   padding: 0 24px;
 }
 
+/* Shared page patterns */
+.page-shell {
+  min-height: 100vh;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 0 0 20px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
@@ -75,9 +122,9 @@ body {
   padding: 12px 24px;
   font-weight: 600;
   font-size: 0.9rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.12s;
   border: none;
   cursor: pointer;
   min-height: 44px;
@@ -97,33 +144,37 @@ body {
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: var(--bg);
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color: #032216;
+  box-shadow: 0 8px 20px rgba(25, 195, 138, 0.25);
 }
 
 .btn-primary:hover {
-  background: #00e6b8;
-  color: var(--bg);
+  background: linear-gradient(180deg, #43e2ab, var(--accent-strong));
+  color: #032216;
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.015);
   color: var(--text);
   border: 1px solid var(--border);
 }
 
 .btn-ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--border-strong);
+  color: var(--accent-strong);
+  background: rgba(25, 195, 138, 0.08);
 }
 
 /* Cards */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 28px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 @media (max-width: 768px) {
@@ -134,8 +185,8 @@ body {
 }
 
 .card:hover {
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 40px var(--accent-dim);
+  border-color: rgba(49, 215, 159, 0.24);
+  box-shadow: 0 0 0 1px rgba(49, 215, 159, 0.08), 0 16px 34px rgba(3, 9, 20, 0.48);
 }
 
 /* Section numbering */
@@ -397,6 +448,30 @@ textarea {
   font-size: 16px !important;
 }
 
+/* Keep form fields readable across all pages/components (including daisyUI inputs). */
+:where(input, select, textarea, .input, .select, .textarea) {
+  color: var(--text) !important;
+  background: var(--bg-elev-1) !important;
+  border-color: var(--border) !important;
+  border-radius: 10px !important;
+  min-height: 42px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+:where(input, textarea, .input, .textarea)::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1;
+}
+
+:where(label, .label, .form-control > span) {
+  color: var(--text) !important;
+}
+
+:where(input, select, textarea, .input, .select, .textarea):focus {
+  border-color: rgba(49, 215, 159, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(49, 215, 159, 0.14) !important;
+}
+
 @media (max-width: 768px) {
   input,
   select,
@@ -435,7 +510,7 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
@@ -445,7 +520,7 @@ textarea {
 
 .badge-active {
   background: var(--accent-dim);
-  color: var(--accent);
+  color: #7ef0c6;
 }
 
 .badge-warning {
@@ -459,13 +534,60 @@ textarea {
 }
 
 .badge-info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  background: rgba(56, 189, 248, 0.14);
+  color: #67d8ff;
 }
 
 .badge-success {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  background: rgba(25, 195, 138, 0.18);
+  color: #68ebbc;
+}
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(11, 17, 31, 0.72);
+}
+
+.table thead th {
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td,
+.table th {
+  padding: 12px 14px;
+}
+
+.table tbody tr {
+  transition: background 0.15s;
+}
+
+.table tbody tr:hover {
+  background: rgba(25, 195, 138, 0.07);
+}
+
+/* Alerts */
+.alert {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.alert-error {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
 }
 
 /* Card Header with Badge */

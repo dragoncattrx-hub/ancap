@@ -15,6 +15,7 @@ from sqlalchemy import select, or_, func
 from app.services.ledger import is_ledger_invariant_halted
 from app.services.reputation_events import on_order_fulfilled, upsert_edge_daily
 from app.db.models import EdgeTypeEnum
+from app.services.participation_gates import evaluate_agent_gate
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -46,6 +47,16 @@ async def place_order(
 
     # Anti-self-dealing: buyer must not be owner or linked to owner
     if body.buyer_type == "agent":
+        gate = await evaluate_agent_gate(session, buyer_id)
+        if not gate.ok:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "reason_code": gate.reason_code,
+                    "message": gate.detail,
+                    "metrics": gate.metrics,
+                },
+            )
         if str(buyer_id) == str(owner_agent_id):
             raise HTTPException(status_code=403, detail="Self-dealing: buyer cannot be strategy owner")
         link_q = select(AgentLink).where(

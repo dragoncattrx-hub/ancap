@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("contracts UI: accept + complete triggers payout", async ({ page, request }) => {
   const baseUrl =
     process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
-  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";
+  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api";
 
   const idk = () => `idk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -40,7 +40,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
     },
     { t: token, u: userData },
   );
-  await page.route("**/api/v1/users/me", async (route) => {
+  await page.route("**/api/users/me", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -100,7 +100,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   expect(["draft", "proposed"]).toContain(contract.status);
 
   // Sanity: frontend proxy should be able to read the contract
-  const proxyGet = await request.get(`${baseUrl}/api/v1/contracts/${contractId}`, {
+  const proxyGet = await request.get(`${baseUrl}/api/contracts/${contractId}`, {
     headers: authHeaders,
   });
   if (!proxyGet.ok()) {

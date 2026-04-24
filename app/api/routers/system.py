@@ -15,6 +15,7 @@ from app.jobs.leaderboard_recompute_tick import leaderboard_recompute_tick
 from app.jobs.activity_feed_materialize_tick import activity_feed_materialize_tick
 from app.jobs.growth_metrics_rollup_tick import growth_metrics_rollup_tick
 from app.jobs.faucet_abuse_check_tick import faucet_abuse_check_tick
+from app.jobs.governance_checks_tick import governance_checks_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
 
 router = APIRouter(prefix="/system", tags=["System"])
@@ -77,6 +78,7 @@ async def jobs_tick(request: Request, session: DbSession):
     growth_feed = await activity_feed_materialize_tick(session, limit=200)
     growth_metrics = await growth_metrics_rollup_tick(session)
     growth_faucet_abuse = await faucet_abuse_check_tick(session, max_items=500)
+    governance_checks = await governance_checks_tick(session, commit=False)
     ledger_violations = await check_ledger_invariant(session)
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     return {
@@ -94,5 +96,6 @@ async def jobs_tick(request: Request, session: DbSession):
         "growth_feed": growth_feed,
         "growth_metrics": growth_metrics,
         "growth_faucet_abuse": growth_faucet_abuse,
+        "governance_checks": governance_checks,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
     }

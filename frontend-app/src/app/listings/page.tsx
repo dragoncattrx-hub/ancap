@@ -18,6 +18,11 @@ export default function ListingsPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string>("");
 
+  const normalizeCurrency = (currency?: string) => {
+    const c = (currency || "USD").toUpperCase();
+    return c === "VUSD" ? "USD" : c;
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push("/login");
   }, [isAuthenticated, isLoading, router]);
@@ -78,7 +83,7 @@ export default function ListingsPage() {
         semver: ver?.semver || (l.strategy_version_id ? String(l.strategy_version_id).slice(0, 8) : ""),
         sellerName: seller?.display_name || (strat?.owner_agent_id ? String(strat.owner_agent_id).slice(0, 8) : "—"),
         amount: price?.amount || "0",
-        currency: price?.currency || "USD",
+        currency: normalizeCurrency(price?.currency),
         scope: "execute",
         createdAt: l.created_at,
       };

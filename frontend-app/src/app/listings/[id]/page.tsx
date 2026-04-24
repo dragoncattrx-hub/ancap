@@ -23,6 +23,18 @@ export default function ListingDetailPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string>("");
+  const normalizeCurrency = (currency?: string) => {
+    const c = (currency || "USD").toUpperCase();
+    return c === "VUSD" ? "USD" : c;
+  };
+
+  const formatAmount = (amount?: string) => {
+    if (!amount) return "0";
+    const n = Number(amount);
+    if (Number.isNaN(n)) return amount;
+    return n % 1 === 0 ? String(n) : n.toFixed(2);
+  };
+
   const [success, setSuccess] = useState<{ orderId: string; grantId?: string } | null>(null);
   const [buyIdk] = useState(() => {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -72,7 +84,11 @@ export default function ListingDetailPage() {
 
   const price = useMemo(() => {
     const p = listing?.fee_model?.one_time_price || listing?.fee_model?.subscription_price_monthly;
-    return { amount: p?.amount || "0", currency: p?.currency || "USD", type: listing?.fee_model?.type || "one_time" };
+    return {
+      amount: formatAmount(p?.amount || "0"),
+      currency: normalizeCurrency(p?.currency),
+      type: listing?.fee_model?.type || "one_time",
+    };
   }, [listing]);
 
   async function buy() {

@@ -68,7 +68,7 @@ export default function FundsPage() {
     setError("");
 
     try {
-      await fetch("/api/v1/funds", {
+      await fetch("/api/funds", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

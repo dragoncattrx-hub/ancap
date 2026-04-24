@@ -16,6 +16,18 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const normalizeCurrency = (currency?: string) => {
+    const c = (currency || "USD").toUpperCase();
+    return c === "VUSD" ? "USD" : c;
+  };
+
+  const formatAmount = (amount?: string) => {
+    if (!amount) return "0";
+    const n = Number(amount);
+    if (Number.isNaN(n)) return amount;
+    return n % 1 === 0 ? String(n) : n.toFixed(2);
+  };
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push("/login");
@@ -170,7 +182,7 @@ export default function OrdersPage() {
                             fontWeight: 600,
                           }}
                         >
-                          {price.amount} {price.currency}
+                          {formatAmount(price.amount)} {normalizeCurrency(price.currency)}
                         </span>
                       </div>
                     )}

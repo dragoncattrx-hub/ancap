@@ -26,7 +26,7 @@ services:
       ACP_RPC_URL: ${ACP_RPC_URL:-http://127.0.0.1:8545/rpc}
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
-      # ACP custodial hot-wallet helper (optional, required to enable /v1/wallet/acp/*)
+      # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)
       ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-walletd}
       ACP_HOT_MNEMONIC_FILE: ${ACP_HOT_MNEMONIC_FILE:-/run/secrets/acp_hot_mnemonic.txt}
       ACP_WALLET_OPERATOR_SECRET: ${ACP_WALLET_OPERATOR_SECRET:-}
@@ -52,12 +52,12 @@ services:
       context: ./frontend-app
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: /api/v1
+        NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_ACP_URL: /acp
     environment:
       NODE_ENV: production
-      # In prod-like we go through reverse proxy (/api/v1 → api)
-      NEXT_PUBLIC_API_URL: /api/v1
+      # In prod-like we go through reverse proxy (/api → api)
+      NEXT_PUBLIC_API_URL: /api
     depends_on:
       api:
         condition: service_healthy

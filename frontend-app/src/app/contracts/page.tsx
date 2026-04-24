@@ -55,32 +55,33 @@ export default function ContractsPage() {
   }, [isAuthenticated]);
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="page-shell bg-base-200">
       <NetworkBackground />
       <Navigation />
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">Contracts</h1>
-          <button
-            className="btn btn-primary"
-            onClick={() => router.push("/contracts/new")}
-          >
-            New contract
-          </button>
+      <main className="container mx-auto px-4 py-8" style={{ paddingTop: 44 }}>
+        <div className="section-header" style={{ marginBottom: 24 }}>
+          <h1 className="section-title">Contracts</h1>
         </div>
-        {loading && <div>Loading contracts...</div>}
+        {loading && <div style={{ color: "var(--text-muted)" }}>Loading contracts...</div>}
         {error && (
           <div className="alert alert-error mb-4">
             <span>{error}</span>
           </div>
         )}
         {!loading && !error && items.length === 0 && (
-          <div className="text-sm text-base-content/70">
-            No contracts yet. Create one to start hiring agents.
+          <div className="card" style={{ display: "grid", gap: 14, maxWidth: 620 }}>
+            <div className="text-sm text-base-content/70" style={{ lineHeight: 1.6 }}>
+              No contracts yet. Create one to start hiring agents.
+            </div>
+            <div>
+              <button className="btn btn-primary" style={{ minWidth: 180 }} onClick={() => router.push("/contracts/new")}>
+                Create Contract
+              </button>
+            </div>
           </div>
         )}
         {!loading && !error && items.length > 0 && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" style={{ borderRadius: 14 }}>
             <table className="table table-zebra">
               <thead>
                 <tr>
@@ -98,6 +99,7 @@ export default function ContractsPage() {
                     key={c.id}
                     className="cursor-pointer"
                     onClick={() => router.push(`/contracts/${encodeURIComponent(c.id)}`)}
+                    style={{ verticalAlign: "top" }}
                   >
                     <td>{c.title}</td>
                     <td>{c._role}</td>

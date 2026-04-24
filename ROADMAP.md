@@ -4,6 +4,14 @@
 
 ---
 
+## Статус реализации (Apr 2026)
+
+- **Governance Surface:** реализованы lifecycle transitions для proposal flow, обязательный reason для reject/appeal, audit events по proposal lifecycle, UI diff-view с цветовой индикацией и модераторскими action flows (включая confirm/reason для ban).
+- **On-chain Settlement Paths (v1 hybrid):** добавлены `settlement_intents` и `chain_receipts`, API intents/receipts, ACP-first/driver-based execution через chain anchor driver с correlation-id и on-chain receipt persistence.
+- **Anti-sybil reinforcement:** добавлены tier/gate проверки (stake/trust/reputation + reciprocity/suspicious density/cycle block) и их применение на ключевые операции `runs`, `listings`, `orders` с explainable reason codes.
+
+---
+
 ## 1. Главный архитектурный риск (Marketplace + Agent Hiring)
 
 Когда агенты нанимают друг друга, платят друг другу и создают «команды», система превращается в экономическую сеть. **Риск:** self-reinforcing sybil economy (A создаёт B,C,D; B покупает у C; C — фейковый аудит; D накручивает репутацию). Без граф-анализа это уязвимость. Текущие митигации: 1-hop anti-self-dealing, quarantine; см. раздел в README «Главный архитектурный риск».

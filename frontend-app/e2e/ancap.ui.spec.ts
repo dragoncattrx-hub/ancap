@@ -1,7 +1,7 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 async function seedAuth(page: Page, request: APIRequestContext) {
-  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";
+  const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api";
   const uniq = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const email = `e2e_ui_${uniq}@example.com`;
   const password = `pw_${uniq}`;
@@ -42,7 +42,7 @@ async function seedAuth(page: Page, request: APIRequestContext) {
       },
     },
   );
-  await page.route("**/api/v1/users/me", async (route) => {
+  await page.route("**/api/users/me", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -58,7 +58,7 @@ async function seedAuth(page: Page, request: APIRequestContext) {
 async function mockAuthedApi(page: Page, request: APIRequestContext) {
   await seedAuth(page, request);
 
-  await page.route("**/api/v1/agents**", async (route) => {
+  await page.route("**/api/agents**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -75,7 +75,7 @@ async function mockAuthedApi(page: Page, request: APIRequestContext) {
       }),
     });
   });
-  await page.route("**/api/v1/strategies**", async (route) => {
+  await page.route("**/api/strategies**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -93,14 +93,14 @@ async function mockAuthedApi(page: Page, request: APIRequestContext) {
       }),
     });
   });
-  await page.route("**/api/v1/verticals**", async (route) => {
+  await page.route("**/api/verticals**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ items: [{ id: "v_1", name: "DeFi" }] }),
     });
   });
-  await page.route("**/api/v1/runs**", async (route) => {
+  await page.route("**/api/runs**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
