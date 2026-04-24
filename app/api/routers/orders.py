@@ -16,6 +16,7 @@ from app.services.ledger import is_ledger_invariant_halted
 from app.services.reputation_events import on_order_fulfilled, upsert_edge_daily
 from app.db.models import EdgeTypeEnum
 from app.services.participation_gates import evaluate_agent_gate
+from app.services.decision_logs import log_reject_decision
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -49,6 +50,17 @@ async def place_order(
     if body.buyer_type == "agent":
         gate = await evaluate_agent_gate(session, buyer_id)
         if not gate.ok:
+            await log_reject_decision(
+                session,
+                reason_code=gate.reason_code or "agent_gate_rejected",
+                message=gate.detail,
+                scope="orders.place",
+                actor_type="agent",
+                actor_id=buyer_id,
+                subject_type="agent",
+                subject_id=buyer_id,
+                metadata=gate.metrics,
+            )
             raise HTTPException(
                 status_code=403,
                 detail={

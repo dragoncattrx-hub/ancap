@@ -4,6 +4,23 @@ ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISI
 
 ---
 
+## Final Program Status (Apr 2026)
+
+- **AI-Maximal roadmap is fully implemented end-to-end** (Wave 0 → Wave 5).
+- All waves now include concrete backend/API/schema changes, UI surfaces, migrations, and automated tests.
+- The platform is in **release-ready state** with delivery guardrails, feature flags, risk register, CI pipelines, and smoke/chaos validation.
+
+### Waves Delivered
+
+- **Wave 0:** scope lock, quality gates, CI matrix, release controls, risk register.
+- **Wave 1:** incentives + dry-run UX + decision logs + AI Console.
+- **Wave 2:** reputation decay hardening + anti-flip-flop + automatic graph enforcement + moderator preview tooling.
+- **Wave 3:** mutation engine primitives + tournaments + bug bounty pipeline + UI surfaces.
+- **Wave 4:** reputation-weighted governance + guarded auto-apply + chain receipt trust metadata + hard run limits.
+- **Wave 5:** autonomous ops loop (NOC), AI council beta, NL strategy compiler beta, scalable graph approximation path, and chaos smoke validation.
+
+---
+
 ## Implementation status (Apr 2026)
 
 - **Governance Surface:** lifecycle transitions for proposal flow, mandatory reason for reject/appeal, audit events for proposal lifecycle, UI diff-view with color indication and moderator action flows (including confirm/reason for ban) have been implemented.

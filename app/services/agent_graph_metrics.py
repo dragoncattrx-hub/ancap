@@ -195,6 +195,7 @@ async def get_reciprocity_score(
 async def get_agent_graph_metrics(
     session: AsyncSession,
     agent_id: UUID,
+    approximate: bool = False,
 ) -> dict:
     """Return graph metrics for an agent (ROADMAP 2.1): reciprocity, cohesion, suspicious_density, cluster_size, in_cycle."""
     reciprocity_score = await get_reciprocity_score(session, agent_id)
@@ -203,12 +204,17 @@ async def get_agent_graph_metrics(
     if ego_size > 1:
         decay = 1.0 / (1.0 + math.log2(max(2, ego_size)))
         suspicious = max(0.0, min(1.0, cohesion * decay))
-    cluster_size = await get_cluster_size(session, agent_id)
-    in_cycle = await has_cycle(session, agent_id)
+    if approximate:
+        cluster_size = ego_size
+        in_cycle = False
+    else:
+        cluster_size = await get_cluster_size(session, agent_id)
+        in_cycle = await has_cycle(session, agent_id)
     return {
         "reciprocity_score": round(reciprocity_score, 4),
         "cluster_cohesion": round(cohesion, 4),
         "suspicious_density": round(suspicious, 4),
         "cluster_size": cluster_size,
         "in_cycle": in_cycle,
+        "approximate": approximate,
     }

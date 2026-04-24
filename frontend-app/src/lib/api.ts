@@ -11,7 +11,7 @@ const isLoopback =
   /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i.test(rawApiBase);
 
 const API_BASE =
-  (!isProd && rawApiBase) || // в dev можно явно указывать localhost
+  (!isProd && rawApiBase) || // V dev can be explicitly specified localhost
   (isProd && rawApiBase && !isLoopback ? rawApiBase : undefined) ||
   (process.env.NODE_ENV === "development"
     ? "/api/v1"
@@ -691,6 +691,30 @@ export const growthDashboard = {
   },
 };
 
+export const referrals = {
+  async createCode(owner_agent_id?: string) {
+    return apiFetch("/referrals/codes/create", {
+      method: "POST",
+      body: JSON.stringify({ owner_agent_id }),
+    });
+  },
+  async listMyAttributions(limit = 50) {
+    return apiFetch(`/referrals/me/attributions?limit=${limit}`);
+  },
+  async mySummary() {
+    return apiFetch("/referrals/me/summary");
+  },
+};
+
+export const decisionLogs = {
+  async list(limit = 100, scope?: string, reason_code?: string) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (scope) params.append("scope", scope);
+    if (reason_code) params.append("reason_code", reason_code);
+    return apiFetch(`/system/decision-logs?${params.toString()}`);
+  },
+};
+
 export const governance = {
   async listProposals(status?: string, limit = 100) {
     const params = new URLSearchParams({ limit: String(limit) });
@@ -754,6 +778,83 @@ export const governance = {
       body: JSON.stringify(data),
     });
   },
+  async graphEnforcementPreview(limit = 50) {
+    return apiFetch(`/moderation/graph-enforcement/preview?limit=${limit}`);
+  },
+};
+
+export const evolution = {
+  async createMutation(data: { parent_strategy_id: string; mutation_type?: string; diff_spec?: Record<string, any> }) {
+    return apiFetch("/evolution/mutations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async lineage(strategy_id: string, limit = 100) {
+    return apiFetch(`/evolution/strategies/${strategy_id}/lineage?limit=${limit}`);
+  },
+};
+
+export const competitions = {
+  async createTournament(data: { name: string; scoring_metric?: string }) {
+    return apiFetch("/competitions/tournaments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async addEntry(tournament_id: string, data: { strategy_id: string; agent_id?: string }) {
+    return apiFetch(`/competitions/tournaments/${tournament_id}/entries`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async leaderboard(tournament_id: string, limit = 100) {
+    return apiFetch(`/competitions/tournaments/${tournament_id}/leaderboard?limit=${limit}`);
+  },
+};
+
+export const bounties = {
+  async createReport(data: { reporter_agent_id?: string; title: string; description: string; severity?: string }) {
+    return apiFetch("/bounties/reports", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listReports(limit = 100) {
+    return apiFetch(`/bounties/reports?limit=${limit}`);
+  },
+};
+
+export const settlements = {
+  async listReceipts(limit = 100, status?: string) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (status) params.append("status", status);
+    return apiFetch(`/settlements/receipts?${params.toString()}`);
+  },
+};
+
+export const autonomy = {
+  async anomalies() {
+    return apiFetch("/autonomy/ops/anomalies");
+  },
+  async applyRemediation(action: string) {
+    return apiFetch("/autonomy/ops/remediations/apply", {
+      method: "POST",
+      body: JSON.stringify({ action }),
+    });
+  },
+  async councilRecommend(subject: string, evidence: string) {
+    return apiFetch("/autonomy/ai-council/recommend", {
+      method: "POST",
+      body: JSON.stringify({ subject, evidence }),
+    });
+  },
+  async compileStrategy(prompt: string) {
+    return apiFetch("/autonomy/strategy-compiler/compile", {
+      method: "POST",
+      body: JSON.stringify({ prompt }),
+    });
+  },
 };
 
 // Convenience aggregate export
@@ -781,6 +882,13 @@ export const api = {
   growthLeaderboards,
   growthTasks,
   growthDashboard,
+  referrals,
+  decisionLogs,
   governance,
+  evolution,
+  competitions,
+  bounties,
+  settlements,
+  autonomy,
 };
 

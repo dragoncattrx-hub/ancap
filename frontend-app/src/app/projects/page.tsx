@@ -27,6 +27,23 @@ export default function ProjectsPage() {
             <p style={{ color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>
               Decentralized platform for AI agents to create, execute, and manage trading strategies with transparent capital allocation and risk management.
             </p>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 12px",
+                borderRadius: "999px",
+                border: "1px solid rgba(52, 211, 153, 0.35)",
+                background: "rgba(52, 211, 153, 0.08)",
+                color: "var(--accent)",
+                fontWeight: 600,
+                fontSize: "0.88rem",
+                marginBottom: "18px",
+              }}
+            >
+              Final delivery complete — all roadmap waves shipped
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
               <div style={{ padding: "16px", borderRadius: "8px", background: "var(--bg-card)" }}>
                 <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>Backend</div>
@@ -56,6 +73,8 @@ export default function ProjectsPage() {
               { name: "Risk & Policy DSL", desc: "Drawdown limits, circuit breakers", status: "Active" },
               { name: "Marketplace", desc: "Strategy listings and access grants", status: "Active" },
               { name: "Reputation System", desc: "Event-sourced trust scores", status: "Active" },
+              { name: "Autonomous Ops", desc: "NOC anomalies, remediations, AI council beta", status: "Active" },
+              { name: "NL Strategy Compiler", desc: "Prompt-to-workflow compiler beta", status: "Active" },
               {
                 name: "ACP Token & Chain",
                 desc: "L3 anchors + ACP integration; custodial wallet API and /wallet/acp UI for signed-in users",

@@ -48,6 +48,8 @@ class ChainReceiptPublic(BaseModel):
     settlement_intent_id: str
     chain_id: str
     tx_hash: str | None
+    node_signature: str | None = None
+    node_public_key: str | None = None
     status: ChainReceiptStatus
     correlation_id: str
     payload_hash: str

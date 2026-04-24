@@ -3,14 +3,20 @@ from uuid import UUID
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.api.deps import DbSession, require_auth
+from app.config import get_settings
 from app.db.models import (
     GovernanceProposal,
     GovernanceVote,
     GovernanceAuditLog,
     ModerationCase,
+    Agent,
+    ReputationSnapshot,
+    Stake,
+    StakeStatusEnum,
+    RiskPolicy,
 )
 from app.schemas.common import Pagination
 from app.schemas.governance import (
@@ -88,6 +94,92 @@ def _moderation_case_public(row: ModerationCase) -> ModerationCasePublic:
         created_at=row.created_at,
         resolved_at=row.resolved_at,
     )
+
+
+async def _compute_user_vote_weight(session: DbSession, user_id: UUID) -> float:
+    """
+    Reputation-weighted vote for user:
+    base 1.0 + avg(agent rep score/100) + log1p(active stake ACP)/10.
+    """
+    agent_rows = (
+        await session.execute(
+            select(Agent.id).where(Agent.owner_user_id == user_id).limit(50)
+        )
+    ).all()
+    agent_ids = [x[0] for x in agent_rows]
+    if not agent_ids:
+        return 1.0
+
+    rep_q = (
+        select(func.coalesce(func.avg(ReputationSnapshot.score), 0))
+        .where(
+            ReputationSnapshot.subject_type == "agent",
+            ReputationSnapshot.subject_id.in_(agent_ids),
+            ReputationSnapshot.window == "90d",
+            ReputationSnapshot.algo_version == "rep2-v1",
+        )
+    )
+    rep_avg = float((await session.execute(rep_q)).scalar() or 0.0)
+
+    stake_q = (
+        select(func.coalesce(func.sum(Stake.amount_value), 0))
+        .where(
+            Stake.agent_id.in_(agent_ids),
+            Stake.status == StakeStatusEnum.active,
+            Stake.amount_currency == "ACP",
+        )
+    )
+    stake_sum = float((await session.execute(stake_q)).scalar() or 0.0)
+    stake_bonus = 0.0
+    if stake_sum > 0:
+        import math
+        stake_bonus = math.log1p(stake_sum) / 10.0
+    return max(1.0, 1.0 + (rep_avg / 100.0) + stake_bonus)
+
+
+async def _auto_apply_proposal_if_enabled(session: DbSession, proposal: GovernanceProposal, actor_id: UUID) -> dict:
+    settings = get_settings()
+    if not settings.ff_governance_auto_apply:
+        return {"applied": False, "reason": "feature_flag_disabled"}
+    if proposal.status != "active":
+        return {"applied": False, "reason": "proposal_not_active"}
+
+    payload = proposal.payload_json or {}
+    # Guarded scope: policy target only (risk_policies upsert)
+    if proposal.target_type != "policy":
+        return {"applied": False, "reason": "unsupported_target_type"}
+    scope_type = str(payload.get("scope_type") or "global")
+    scope_id_raw = payload.get("scope_id") or "00000000-0000-0000-0000-000000000000"
+    policy_json = payload.get("policy_json")
+    if not isinstance(policy_json, dict):
+        return {"applied": False, "reason": "missing_policy_json"}
+    try:
+        scope_id = UUID(str(scope_id_raw))
+    except ValueError:
+        return {"applied": False, "reason": "invalid_scope_id"}
+
+    row = (
+        await session.execute(
+            select(RiskPolicy).where(RiskPolicy.scope_type == scope_type, RiskPolicy.scope_id == scope_id).limit(1)
+        )
+    ).scalar_one_or_none()
+    if row:
+        row.policy_json = policy_json
+    else:
+        row = RiskPolicy(scope_type=scope_type, scope_id=scope_id, policy_json=policy_json)
+        session.add(row)
+
+    session.add(
+        GovernanceAuditLog(
+            proposal_id=proposal.id,
+            event_type="proposal_auto_applied",
+            actor_type="user",
+            actor_id=actor_id,
+            event_json={"scope_type": scope_type, "scope_id": str(scope_id)},
+        )
+    )
+    await session.flush()
+    return {"applied": True, "scope_type": scope_type, "scope_id": str(scope_id)}
 
 
 @router.post("/proposals", response_model=GovernanceProposalPublic, status_code=201)
@@ -186,6 +278,7 @@ async def vote_proposal(
     if row.status != "review":
         raise HTTPException(status_code=409, detail="Votes are allowed only in review status")
     voter_id = UUID(user_id)
+    vote_weight = await _compute_user_vote_weight(session, voter_id)
     existing = (
         await session.execute(
             select(GovernanceVote).where(
@@ -198,12 +291,14 @@ async def vote_proposal(
     if existing:
         existing.vote = body.vote
         existing.reason = body.reason
+        existing.vote_weight = vote_weight
     else:
         session.add(
             GovernanceVote(
                 proposal_id=proposal_id,
                 voter_type="user",
                 voter_id=voter_id,
+                vote_weight=vote_weight,
                 vote=body.vote,
                 reason=body.reason,
             )
@@ -214,7 +309,7 @@ async def vote_proposal(
             event_type="proposal_voted",
             actor_type="user",
             actor_id=voter_id,
-            event_json={"vote": body.vote, "reason": body.reason},
+            event_json={"vote": body.vote, "reason": body.reason, "vote_weight": vote_weight},
         )
     )
     await session.flush()
@@ -252,6 +347,9 @@ async def decide_proposal(
             event_json={"decision": body.decision, "reason": body.reason},
         )
     )
+    auto_apply = await _auto_apply_proposal_if_enabled(session, row, UUID(user_id))
+    if auto_apply.get("applied"):
+        row.decision_reason = ((row.decision_reason or "").strip() + " [auto-applied]").strip()
     await session.flush()
     await session.refresh(row)
     return _proposal_public(row)

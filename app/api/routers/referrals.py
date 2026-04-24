@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, desc
+from sqlalchemy import func
 
 from app.api.deps import DbSession, require_auth
 from app.schemas import (
@@ -9,8 +10,9 @@ from app.schemas import (
     ReferralCodePublic,
     ReferralAttributeRequest,
     ReferralAttributionPublic,
+    ReferralSummaryPublic,
 )
-from app.db.models import ReferralCode, ReferralAttribution
+from app.db.models import ReferralCode, ReferralAttribution, ReferralRewardEvent
 from app.services.referrals import create_referral_code, attribute_referral
 
 
@@ -86,4 +88,37 @@ async def my_attributions(session: DbSession, user_id: str = Depends(require_aut
             )
         )
     return items
+
+
+@router.get("/me/summary", response_model=ReferralSummaryPublic)
+async def my_referral_summary(session: DbSession, user_id: str = Depends(require_auth)):
+    uid = UUID(user_id)
+    rows = (
+        await session.execute(
+            select(ReferralAttribution.status, func.count(ReferralAttribution.id))
+            .join(ReferralCode, ReferralCode.id == ReferralAttribution.referral_code_id)
+            .where(ReferralCode.owner_user_id == uid)
+            .group_by(ReferralAttribution.status)
+        )
+    ).all()
+    status_map = {str(status): int(cnt) for status, cnt in rows}
+    total_attributions = sum(status_map.values())
+
+    reward_row = (
+        await session.execute(
+            select(func.coalesce(func.sum(ReferralRewardEvent.amount_value), 0), func.max(ReferralRewardEvent.currency))
+            .where(ReferralRewardEvent.beneficiary_user_id == uid)
+        )
+    ).first()
+    total_reward_amount = str(reward_row[0]) if reward_row else "0"
+    reward_currency = str(reward_row[1]) if reward_row and reward_row[1] else "USD"
+    return ReferralSummaryPublic(
+        total_attributions=total_attributions,
+        pending=status_map.get("pending", 0),
+        eligible=status_map.get("eligible", 0),
+        rewarded=status_map.get("rewarded", 0),
+        rejected=status_map.get("rejected", 0),
+        total_reward_amount=total_reward_amount,
+        reward_currency=reward_currency,
+    )
 

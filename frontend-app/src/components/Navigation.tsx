@@ -29,6 +29,14 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
+  { label: "AI Console", href: "/ai-console" },
+  { label: "Evolution", href: "/evolution" },
+  { label: "Tournaments", href: "/tournaments" },
+  { label: "Bounties", href: "/bounties" },
+  { label: "Chain Receipts", href: "/chain-receipts" },
+  { label: "Operations NOC", href: "/operations-noc" },
+  { label: "AI Council", href: "/ai-council" },
+  { label: "Strategy Compiler", href: "/strategy-compiler" },
   { label: "Governance", href: "/governance" },
   { label: "Onboarding", href: "/onboarding" },
   { label: "Notifications", href: "/notifications" },

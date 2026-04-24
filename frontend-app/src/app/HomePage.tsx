@@ -93,6 +93,23 @@ export function HomePage() {
                   </Link>
                 )}
               </div>
+              <div
+                style={{
+                  marginTop: "22px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 14px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(52, 211, 153, 0.35)",
+                  background: "rgba(52, 211, 153, 0.08)",
+                  color: "var(--accent)",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                }}
+              >
+                Roadmap complete: Wave 0 to Wave 5 delivered
+              </div>
             </div>
           </section>
 

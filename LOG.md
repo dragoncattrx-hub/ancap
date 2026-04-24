@@ -4,6 +4,23 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-04-24 — AI-Maximal roadmap finalized (Wave 0 → Wave 5)
+
+### Program completion
+- Completed all roadmap waves from setup guardrails to autonomous operations.
+- Delivered synchronized backend + frontend + migrations + tests for each wave.
+- Updated release documentation and website surfaces to reflect production-ready completion state.
+
+### Key additions in this final pass
+- Delivery controls: CI workflows, quality gates, risk register, release feature flags.
+- Explainability: decision logs API + AI Console sections for incentive visibility and gating transparency.
+- Trust hardening: reputation decay controls, anti-flip-flop scoring, automatic graph enforcement.
+- Evolution loop: mutation/tournament/bug bounty primitives with dedicated UI.
+- Governance and chain trust: weighted voting, guarded auto-apply, chain receipt signature metadata.
+- Autonomy layer: operations NOC, AI council beta, NL strategy compiler beta, chaos smoke checks.
+
+---
+
 ## 2026-03-17 — Dev hardening: ACP landing + default EN + ACP nodes + e2e fixes
 
 ### Frontend

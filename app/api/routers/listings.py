@@ -12,6 +12,7 @@ from app.db.models import LedgerEventTypeEnum
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
 from app.services.stakes import require_activated_if_stake_required
 from app.services.participation_gates import evaluate_agent_gate
+from app.services.decision_logs import log_reject_decision
 from sqlalchemy import select
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
@@ -32,6 +33,17 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
     await require_activated_if_stake_required(session, strat.owner_agent_id)
     gate = await evaluate_agent_gate(session, strat.owner_agent_id)
     if not gate.ok:
+        await log_reject_decision(
+            session,
+            reason_code=gate.reason_code or "agent_gate_rejected",
+            message=gate.detail,
+            scope="listings.create",
+            actor_type="agent",
+            actor_id=strat.owner_agent_id,
+            subject_type="agent",
+            subject_id=strat.owner_agent_id,
+            metadata=gate.metrics,
+        )
         raise HTTPException(
             status_code=403,
             detail={

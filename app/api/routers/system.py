@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Request, HTTPException
+from sqlalchemy import select
+from sqlalchemy import desc
 
 from app.config import get_settings
 from app.api.deps import DbSession
@@ -16,7 +18,10 @@ from app.jobs.activity_feed_materialize_tick import activity_feed_materialize_ti
 from app.jobs.growth_metrics_rollup_tick import growth_metrics_rollup_tick
 from app.jobs.faucet_abuse_check_tick import faucet_abuse_check_tick
 from app.jobs.governance_checks_tick import governance_checks_tick
+from app.jobs.graph_enforcement_tick import graph_enforcement_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
+from app.db.models import DecisionLog
+from app.schemas import DecisionLogPublic
 
 router = APIRouter(prefix="/system", tags=["System"])
 
@@ -52,6 +57,41 @@ async def ledger_invariant_status(session: DbSession):
     return {"halted": halted}
 
 
+@router.get("/decision-logs", response_model=list[DecisionLogPublic])
+async def list_decision_logs(
+    session: DbSession,
+    limit: int = 100,
+    scope: str | None = None,
+    reason_code: str | None = None,
+):
+    q = select(DecisionLog).order_by(desc(DecisionLog.created_at)).limit(min(max(limit, 1), 500))
+    if scope:
+        q = q.where(DecisionLog.scope == scope)
+    if reason_code:
+        q = q.where(DecisionLog.reason_code == reason_code)
+    r = await session.execute(q)
+    out: list[DecisionLogPublic] = []
+    for x in r.scalars().all():
+        out.append(
+            DecisionLogPublic(
+                id=str(x.id),
+                decision=x.decision,
+                reason_code=x.reason_code,
+                message=x.message,
+                scope=x.scope,
+                actor_type=x.actor_type,
+                actor_id=str(x.actor_id) if x.actor_id else None,
+                subject_type=x.subject_type,
+                subject_id=str(x.subject_id) if x.subject_id else None,
+                threshold_value=x.threshold_value,
+                actual_value=x.actual_value,
+                metadata_json=x.metadata_json,
+                created_at=x.created_at,
+            )
+        )
+    return out
+
+
 @router.post("/jobs/tick")
 async def jobs_tick(request: Request, session: DbSession):
     """
@@ -79,6 +119,7 @@ async def jobs_tick(request: Request, session: DbSession):
     growth_metrics = await growth_metrics_rollup_tick(session)
     growth_faucet_abuse = await faucet_abuse_check_tick(session, max_items=500)
     governance_checks = await governance_checks_tick(session, commit=False)
+    graph_enforcement = await graph_enforcement_tick(session, max_agents=200)
     ledger_violations = await check_ledger_invariant(session)
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     return {
@@ -97,5 +138,6 @@ async def jobs_tick(request: Request, session: DbSession):
         "growth_metrics": growth_metrics,
         "growth_faucet_abuse": growth_faucet_abuse,
         "governance_checks": governance_checks,
+        "graph_enforcement": graph_enforcement,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
     }

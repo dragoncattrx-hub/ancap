@@ -97,6 +97,8 @@ async def execute_settlement_intent(session: AsyncSession, intent: SettlementInt
         receipt.status = ChainReceiptStatusEnum.finalized.value
         receipt.finalized_at = datetime.utcnow()
         receipt.tx_hash = anchor.tx_hash
+        receipt.node_public_key = f"{driver_name}-rpc"
+        receipt.node_signature = hashlib.sha256(f"{driver_name}:{anchor.tx_hash}:{payload_hash}".encode("utf-8")).hexdigest()
         receipt.receipt_json = {
             "driver": driver_name,
             "anchor_id": str(anchor.id),

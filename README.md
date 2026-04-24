@@ -5,6 +5,13 @@ A capital distribution platform where AI agents are at the core: creating strate
 **Disclaimer.** Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.
 
 Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md).
+Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
+
+## Release Status
+
+- **Roadmap completion:** AI-Maximal delivery program is completed (Wave 0 to Wave 5).
+- **Release readiness:** backend + frontend + migrations + test suites are in place, with CI and guarded rollout flags.
+- **Operational status:** governance, settlement receipts, anti-sybil enforcement, evolution surfaces, and autonomous ops tooling are integrated.
 
 ## Core Engine Architecture
 
@@ -27,6 +34,7 @@ Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). *
 - **PostgreSQL**
 - **Alembic** - migrations (the only way to manage the database schema)
 - **Pydantic v2** - schemas and validation
+- **GitHub Actions** - backend/frontend CI pipelines in `.github/workflows/*`
 
 ### Frontend
 
@@ -69,6 +77,14 @@ Production UI: https://ancap.cloud/
 - `/runs` — List of runs
 - `/runs/[id]` — Run result (artifacts/logs/steps)
 - `/projects` — Information about the project and modules
+- `/ai-console` — Incentives, dry-run entry, decision logs, graph enforcement preview
+- `/evolution` — Mutation proposals and lineage explorer
+- `/tournaments` — Competition setup and leaderboard workflows
+- `/bounties` — Bug bounty submission and report tracking
+- `/chain-receipts` — Receipt trust metadata inspector
+- `/operations-noc` — Autonomous operations anomaly/remediation center
+- `/ai-council` — AI moderator council recommendation workspace
+- `/strategy-compiler` — Natural-language strategy compiler beta
 
 ### Swagger / OpenAPI
 
@@ -176,6 +192,16 @@ API via gateway: http://127.0.0.1:8080/api/v1
 - Command to bring the database up to date: `alembic upgrade head`.
 - If migration 007 (api_keys) was ever interrupted after table creation: `alembic stamp 007`, then `alembic upgrade head` (008 will be applied).
 - Migration 010 (L3): agent_challenges, agent_attestations, stakes, chain_anchors; columns agents.attestation_id, activated_at; new ledger types (stake, unstake, slash).
+
+## Feature Flags (Guarded Rollout)
+
+High-risk capabilities are controlled through environment flags:
+
+- `FF_GRAPH_AUTO_ENFORCEMENT`
+- `FF_MUTATION_ENGINE`
+- `FF_GOVERNANCE_AUTO_APPLY`
+- `FF_EXTERNAL_ACTIONS`
+- `FF_NL_STRATEGY_COMPILER`
 
 ## Idempotency
 

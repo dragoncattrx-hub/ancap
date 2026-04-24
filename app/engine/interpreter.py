@@ -45,6 +45,13 @@ def _sha256(s: str) -> str:
     return hashlib.sha256(s.encode()).hexdigest()
 
 
+def _json_size_bytes(obj: Any) -> int:
+    try:
+        return len(_normalize_json(obj).encode("utf-8"))
+    except Exception:
+        return 0
+
+
 def validate_workflow(workflow_dict: dict, allowed_actions: frozenset | None = None) -> WorkflowSpec:
     """Validate against base WorkflowSpec; allowed_actions = vertical whitelist."""
     steps = []
@@ -100,6 +107,8 @@ def run_workflow(
     max_steps = (limits or {}).get("max_steps") or (spec.limits or {}).get("max_steps") or 1000
     max_runtime_ms = (limits or {}).get("max_runtime_ms") or (spec.limits or {}).get("max_runtime_ms") or 60_000
     max_action_calls = (limits or {}).get("max_action_calls") or 500
+    max_context_size_bytes = (limits or {}).get("max_context_size_bytes") or (spec.limits or {}).get("max_context_size_bytes") or 10_485_760
+    max_step_output_size_bytes = (limits or {}).get("max_step_output_size_bytes") or (spec.limits or {}).get("max_step_output_size_bytes") or 524_288
     start_wall = time.perf_counter()
     step_logs: list[StepLog] = []
     steps_executed = 0
@@ -136,6 +145,8 @@ def run_workflow(
 
             try:
                 value = execute_base_vertical_action(step.action, step.args or {}, context, run_id=run_id)
+                if _json_size_bytes(value) > int(max_step_output_size_bytes):
+                    raise ValueError("step_output_size_limit_exceeded")
                 duration_ms = int((time.perf_counter() - step_start) * 1000)
                 if step_logs:
                     step_logs[-1].event = "step_succeeded"
@@ -143,6 +154,11 @@ def run_workflow(
                 save_key = (step.args or {}).get("save_as") or step.save_as
                 if save_key:
                     context[save_key] = value
+                    if _json_size_bytes(context) > int(max_context_size_bytes):
+                        result.state = "killed"
+                        result.failure_reason = "context_size_limit_exceeded"
+                        risk_breaches += 1
+                        break
                 steps_executed += 1
                 if context_after_step_callback:
                     context_after_step_callback(i, copy.deepcopy(context))

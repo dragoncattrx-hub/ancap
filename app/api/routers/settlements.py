@@ -44,6 +44,8 @@ def _receipt_public(row: ChainReceipt) -> ChainReceiptPublic:
         settlement_intent_id=str(row.settlement_intent_id),
         chain_id=row.chain_id,
         tx_hash=row.tx_hash,
+        node_signature=row.node_signature,
+        node_public_key=row.node_public_key,
         status=row.status,
         correlation_id=row.correlation_id,
         payload_hash=row.payload_hash,

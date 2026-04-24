@@ -587,6 +587,23 @@ class JobWatermark(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class DecisionLog(Base):
+    __tablename__ = "decision_logs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    decision = Column(String(32), nullable=False, index=True)  # allow | reject
+    reason_code = Column(String(64), nullable=False, index=True)
+    message = Column(Text, nullable=True)
+    scope = Column(String(64), nullable=False, index=True)  # runs.create | listings.create | orders.place
+    actor_type = Column(String(32), nullable=True, index=True)  # user | agent | system
+    actor_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    subject_type = Column(String(32), nullable=True, index=True)  # agent | strategy | listing | pool
+    subject_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    threshold_value = Column(String(64), nullable=True)
+    actual_value = Column(String(64), nullable=True)
+    metadata_json = Column(JSONB, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+
 # --- L2: Reviews ---
 class Review(Base):
     __tablename__ = "reviews"
@@ -647,6 +664,7 @@ class GovernanceVote(Base):
     proposal_id = Column(UUID(as_uuid=False), ForeignKey("governance_proposals.id", ondelete="CASCADE"), nullable=False, index=True)
     voter_type = Column(String(20), nullable=False, default="user")  # user | agent
     voter_id = Column(UUID(as_uuid=False), nullable=False, index=True)
+    vote_weight = Column(Numeric(12, 6), nullable=False, default=1)
     vote = Column(String(16), nullable=False)  # approve | reject | abstain
     reason = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -826,6 +844,8 @@ class ChainReceipt(Base):
     )
     chain_id = Column(String(32), nullable=False, index=True)
     tx_hash = Column(String(128), nullable=True, index=True)
+    node_signature = Column(Text, nullable=True)
+    node_public_key = Column(Text, nullable=True)
     status = Column(String(24), nullable=False, default=ChainReceiptStatusEnum.submitted.value, index=True)
     correlation_id = Column(String(128), nullable=False, index=True)
     payload_hash = Column(String(64), nullable=False)
@@ -1066,6 +1086,63 @@ class StrategyCopy(Base):
     copier_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     copy_mode = Column(String(32), nullable=False, default=StrategyCopyModeEnum.fork.value)
+
+
+class StrategyMutation(Base):
+    __tablename__ = "strategy_mutations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    parent_strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False, index=True)
+    child_strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="SET NULL"), nullable=True, index=True)
+    mutation_type = Column(String(32), nullable=False, index=True)  # add_step | change_param | crossover
+    diff_spec = Column(JSONB, nullable=False, default=dict)
+    evaluation_score = Column(Numeric(12, 6), nullable=True)
+    status = Column(String(32), nullable=False, default="proposed", index=True)  # proposed|evaluating|accepted|rejected
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Tournament(Base):
+    __tablename__ = "tournaments"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    name = Column(String(160), nullable=False)
+    status = Column(String(32), nullable=False, default="scheduled", index=True)  # scheduled|running|completed
+    scoring_metric = Column(String(64), nullable=False, default="evaluation_score")
+    starts_at = Column(DateTime(timezone=True), nullable=True)
+    ends_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class TournamentEntry(Base):
+    __tablename__ = "tournament_entries"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    tournament_id = Column(UUID(as_uuid=False), ForeignKey("tournaments.id", ondelete="CASCADE"), nullable=False, index=True)
+    strategy_id = Column(UUID(as_uuid=False), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False, index=True)
+    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    score = Column(Numeric(12, 6), nullable=False, default=0)
+    rank = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("uq_tournament_strategy", "tournament_id", "strategy_id", unique=True),
+    )
+
+
+class BugBountyReport(Base):
+    __tablename__ = "bug_bounty_reports"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    reporter_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    reporter_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    severity = Column(String(24), nullable=False, default="medium", index=True)  # low|medium|high|critical
+    status = Column(String(32), nullable=False, default="submitted", index=True)  # submitted|validated|rejected|rewarded
+    reward_currency = Column(String(16), nullable=True)
+    reward_amount = Column(Numeric(38, 18), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class AgentFollow(Base):

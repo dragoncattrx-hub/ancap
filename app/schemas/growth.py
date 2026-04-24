@@ -76,6 +76,16 @@ class ReferralAttributionPublic(BaseModel):
     status: str
 
 
+class ReferralSummaryPublic(BaseModel):
+    total_attributions: int
+    pending: int
+    eligible: int
+    rewarded: int
+    rejected: int
+    total_reward_amount: str
+    reward_currency: str
+
+
 class FollowRequest(BaseModel):
     target_id: str
     as_agent_id: Optional[str] = None

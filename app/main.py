@@ -44,6 +44,8 @@ from app.api.routers import (
     growth_dashboard,
     governance,
     settlements,
+    evolution,
+    autonomy,
 )
 
 settings = get_settings()
@@ -113,6 +115,10 @@ app.include_router(flows.router, prefix="")
 app.include_router(governance.router, prefix="")
 app.include_router(governance.moderation_cases_router, prefix="")
 app.include_router(settlements.router, prefix="")
+app.include_router(evolution.router, prefix="")
+app.include_router(evolution.tournaments_router, prefix="")
+app.include_router(evolution.bounties_router, prefix="")
+app.include_router(autonomy.router, prefix="")
 
 
 @app.get("/")

@@ -28,6 +28,7 @@ from app.services.reputation_events import on_run_completed, on_evaluation_score
 from app.services.agent_graph_metrics import get_agent_graph_metrics
 from app.services.stakes import require_activated_if_stake_required
 from app.services.participation_gates import evaluate_agent_gate
+from app.services.decision_logs import log_reject_decision
 from app.db.models import Evaluation
 
 router = APIRouter(prefix="/runs", tags=["Runs"])
@@ -326,6 +327,17 @@ async def request_run(
         await require_activated_if_stake_required(session, strat.owner_agent_id)
         gate = await evaluate_agent_gate(session, strat.owner_agent_id)
         if not gate.ok:
+            await log_reject_decision(
+                session,
+                reason_code=gate.reason_code or "agent_gate_rejected",
+                message=gate.detail,
+                scope="runs.create",
+                actor_type="agent",
+                actor_id=strat.owner_agent_id,
+                subject_type="agent",
+                subject_id=strat.owner_agent_id,
+                metadata=gate.metrics,
+            )
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -367,6 +379,18 @@ async def request_run(
             trust_row = tr.scalar_one_or_none()
             trust_val = float(trust_row.trust_score) if trust_row and trust_row.trust_score is not None else 0.0
             if trust_val < gate["min_trust_score"]:
+                await log_reject_decision(
+                    session,
+                    reason_code="min_trust_score",
+                    message="Strategy owner trust score below policy threshold",
+                    scope="runs.create",
+                    actor_type="agent",
+                    actor_id=strat.owner_agent_id,
+                    subject_type="agent",
+                    subject_id=strat.owner_agent_id,
+                    threshold_value=str(gate["min_trust_score"]),
+                    actual_value=f"{trust_val:.4f}",
+                )
                 raise HTTPException(
                     status_code=403,
                     detail=f"Reputation gate: strategy owner trust_score {trust_val:.2f} below min_trust_score {gate['min_trust_score']}",
@@ -387,6 +411,18 @@ async def request_run(
             snap_row = sr.scalar_one_or_none()
             score_val = float(snap_row.score) if snap_row and snap_row.score is not None else 0.0
             if score_val < gate["min_reputation_score"]:
+                await log_reject_decision(
+                    session,
+                    reason_code="min_reputation_score",
+                    message="Strategy owner reputation below policy threshold",
+                    scope="runs.create",
+                    actor_type="agent",
+                    actor_id=strat.owner_agent_id,
+                    subject_type="agent",
+                    subject_id=strat.owner_agent_id,
+                    threshold_value=str(gate["min_reputation_score"]),
+                    actual_value=f"{score_val:.4f}",
+                )
                 raise HTTPException(
                     status_code=403,
                     detail=f"Reputation gate: strategy owner reputation score {score_val:.1f} below min_reputation_score {gate['min_reputation_score']}",
@@ -399,6 +435,19 @@ async def request_run(
             rec = metrics.get("reciprocity_score", 0.0)
             cap = graph_gate["max_reciprocity_score"]
             if rec >= cap:
+                await log_reject_decision(
+                    session,
+                    reason_code="max_reciprocity_score",
+                    message="Reciprocity score exceeded policy cap",
+                    scope="runs.create",
+                    actor_type="agent",
+                    actor_id=strat.owner_agent_id,
+                    subject_type="agent",
+                    subject_id=strat.owner_agent_id,
+                    threshold_value=str(cap),
+                    actual_value=f"{rec:.4f}",
+                    metadata=metrics,
+                )
                 raise HTTPException(
                     status_code=403,
                     detail=f"Graph gate: strategy owner reciprocity_score {rec:.2f} >= max_reciprocity_score {cap}",
@@ -407,6 +456,19 @@ async def request_run(
             sus = metrics.get("suspicious_density", 0.0)
             cap = graph_gate["max_suspicious_density"]
             if sus >= cap:
+                await log_reject_decision(
+                    session,
+                    reason_code="max_suspicious_density",
+                    message="Suspicious density exceeded policy cap",
+                    scope="runs.create",
+                    actor_type="agent",
+                    actor_id=strat.owner_agent_id,
+                    subject_type="agent",
+                    subject_id=strat.owner_agent_id,
+                    threshold_value=str(cap),
+                    actual_value=f"{sus:.4f}",
+                    metadata=metrics,
+                )
                 raise HTTPException(
                     status_code=403,
                     detail=f"Graph gate: strategy owner suspicious_density {sus:.2f} >= max_suspicious_density {cap}",
@@ -415,11 +477,35 @@ async def request_run(
             size = metrics.get("cluster_size", 0)
             cap = graph_gate["max_cluster_size"]
             if size > cap:
+                await log_reject_decision(
+                    session,
+                    reason_code="max_cluster_size",
+                    message="Cluster size exceeded policy cap",
+                    scope="runs.create",
+                    actor_type="agent",
+                    actor_id=strat.owner_agent_id,
+                    subject_type="agent",
+                    subject_id=strat.owner_agent_id,
+                    threshold_value=str(cap),
+                    actual_value=str(size),
+                    metadata=metrics,
+                )
                 raise HTTPException(
                     status_code=403,
                     detail=f"Graph gate: strategy owner cluster_size {size} > max_cluster_size {cap}",
                 )
         if graph_gate.get("block_if_in_cycle") and metrics.get("in_cycle"):
+            await log_reject_decision(
+                session,
+                reason_code="block_if_in_cycle",
+                message="Owner is in a directed cycle and policy blocks it",
+                scope="runs.create",
+                actor_type="agent",
+                actor_id=strat.owner_agent_id,
+                subject_type="agent",
+                subject_id=strat.owner_agent_id,
+                metadata=metrics,
+            )
             raise HTTPException(
                 status_code=403,
                 detail="Graph gate: strategy owner is in a directed cycle (block_if_in_cycle)",

@@ -24,6 +24,7 @@ from app.db.models import (
     ReputationEvent,
     EdgeTypeEnum,
 )
+from app.config import get_settings
 
 ALGO_TRUST_VERSION = "trust2-v1"
 ALGO_REP_VERSION = "rep2-v1"
@@ -50,10 +51,12 @@ class WindowSpec:
     half_life_days: float
 
 
-WINDOWS = [
-    WindowSpec("30d", 30, 10.0),
-    WindowSpec("90d", 90, 30.0),
-]
+def _windows_from_settings() -> list[WindowSpec]:
+    s = get_settings()
+    return [
+        WindowSpec("30d", 30, float(s.reputation_half_life_30d)),
+        WindowSpec("90d", 90, float(s.reputation_half_life_90d)),
+    ]
 
 
 async def recompute_for_subject(
@@ -66,12 +69,14 @@ async def recompute_for_subject(
     """Compute trust_score and reputation_snapshot for each window; upsert into DB. Set commit=False if caller commits."""
     now = now or datetime.utcnow()
     today = now.date()
+    settings = get_settings()
+    windows = _windows_from_settings()
 
     trust_by_window: dict[str, float] = {}
     trust_components_by_window: dict[str, dict[str, Any]] = {}
     trust_inputs_hash_by_window: dict[str, str] = {}
 
-    for w in WINDOWS:
+    for w in windows:
         start_day = today - timedelta(days=w.days)
 
         # Edges: subject as seller (dst)
@@ -189,7 +194,7 @@ async def recompute_for_subject(
         await session.execute(stmt)
 
     # Reputation snapshots: quality from events * trust
-    for w in WINDOWS:
+    for w in windows:
         start_ts = now - timedelta(days=w.days)
 
         q_events = (
@@ -241,6 +246,37 @@ async def recompute_for_subject(
         final01 = _clamp(quality01 * trust, 0.0, 1.0)
         final_score = 100.0 * final01
 
+        # Anti-flip-flop guardrail: clamp score movement per recompute window.
+        prev_q = (
+            select(ReputationSnapshot.score)
+            .where(
+                ReputationSnapshot.subject_type == subject_type,
+                ReputationSnapshot.subject_id == subject_id,
+                ReputationSnapshot.window == w.name,
+                ReputationSnapshot.algo_version == ALGO_REP_VERSION,
+            )
+            .limit(1)
+        )
+        prev_r = await session.execute(prev_q)
+        prev_score = prev_r.scalar_one_or_none()
+        if prev_score is not None:
+            max_delta = float(settings.reputation_max_score_delta_per_recompute)
+            lower = float(prev_score) - max_delta
+            upper = float(prev_score) + max_delta
+            clamped = _clamp(final_score, lower, upper)
+            if clamped != final_score:
+                comp_out_guard = {
+                    "previous_score": float(prev_score),
+                    "max_delta": max_delta,
+                    "raw_score": float(final_score),
+                    "clamped_score": float(clamped),
+                }
+            else:
+                comp_out_guard = None
+            final_score = clamped
+        else:
+            comp_out_guard = None
+
         comp_out: dict[str, Any] = {
             "quality": quality01,
             "trust": trust,
@@ -252,6 +288,8 @@ async def recompute_for_subject(
             },
             "event_count": len(events),
         }
+        if comp_out_guard:
+            comp_out["flipflop_guard"] = comp_out_guard
         inputs_hash = _sha256_hex(
             f"{subject_type}:{subject_id}:{w.name}:{ALGO_REP_VERSION}:{trust_inputs_hash_by_window[w.name]}:{len(events)}"
         )

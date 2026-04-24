@@ -74,6 +74,21 @@ class Settings(BaseSettings):
     quality_scorer_url: str = ""  # e.g. "http://localhost:8080/score"
     quality_scorer_timeout_seconds: int = 5
 
+    # Delivery Wave feature flags (guard high-risk capabilities)
+    ff_graph_auto_enforcement: bool = False
+    ff_mutation_engine: bool = False
+    ff_governance_auto_apply: bool = False
+    ff_external_actions: bool = False
+    ff_nl_strategy_compiler: bool = False
+
+    # Wave 2: reputation and graph enforcement tuning
+    reputation_half_life_30d: float = 10.0
+    reputation_half_life_90d: float = 30.0
+    reputation_max_score_delta_per_recompute: float = 15.0  # points on 0..100 scale
+    graph_enforcement_suspicious_density: float = 0.5
+    graph_enforcement_max_cluster_size: int = 10
+    graph_enforcement_block_if_in_cycle: bool = True
+
 
 @lru_cache
 def get_settings() -> Settings:
