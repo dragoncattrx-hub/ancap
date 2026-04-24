@@ -28,16 +28,14 @@ ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISI
    - Operations NOC, decision logs, AI council tooling, and strategy compiler beta are delivered.
    - Feature flags and safety controls are in place for guarded production rollout.
 
-5. **Referral economy and ACP tokenomics — active growth track**
-   - Reward model: **100 ACP** one-time for each verified referred user.
-   - Revenue share: **30% lifetime share** of referred-user platform commissions.
+5. **ACP tokenomics and distribution — active governance track**
    - ACP base supply: **210,000,000 ACP**.
    - Genesis allocation:
      - Creator: **69,300,000 ACP (33%)**
      - Validator Reserve: **105,000,000 ACP (50%)**
      - Public/Liquidity: **25,200,000 ACP (12%)**
      - Ecosystem Grants: **10,500,000 ACP (5%)**
-   - Utility destinations: execution fees, staking/governance weight, slashing collateral, validator incentives, ecosystem grants, and referral/reward programs.
+   - Utility destinations: execution fees, staking/governance weight, slashing collateral, validator incentives, and ecosystem grants.
 
 ### Waves Delivered
 

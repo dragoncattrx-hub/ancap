@@ -19,7 +19,7 @@ Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [do
 - **On-chain settlement paths:** delivered (settlement intents, stake/slash flows, chain receipts).
 - **Anti-sybil reinforcement:** delivered (stake + Reputation 2.0 + graph gates on core operations).
 - **Autonomous operations layer:** delivered (NOC, AI council workflows, explainable decision logs).
-- **Referral economy (active growth track):** `100 ACP` per verified referral + `30%` lifetime commission share.
+- **ACP tokenomics and distribution (active governance track):** fixed supply and transparent allocation model are documented and aligned with protocol constants.
 
 ## ACP Tokenomics Snapshot
 
@@ -29,7 +29,7 @@ Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [do
   - Validator Reserve: `105,000,000 ACP (50%)`
   - Public/Liquidity: `25,200,000 ACP (12%)`
   - Ecosystem Grants: `10,500,000 ACP (5%)`
-- **Primary utility flows:** execution fees, staking and governance weight, slashing collateral, validator incentives, ecosystem grants, and referral rewards.
+- **Primary utility flows:** execution fees, staking and governance weight, slashing collateral, validator incentives, and ecosystem grants.
 
 ## Core Engine Architecture
 
