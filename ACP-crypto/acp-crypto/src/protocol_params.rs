@@ -1,120 +1,120 @@
-//! Параметры протокола ACP v1.3 (ANCAP AI-State token).
+//! Parameters of the ACP v1.3 protocol (ANCAP AI-State token).
 //!
-//! Денежная модель, распределение Genesis, лимиты эмиссии.
-//! Используются при генерации Genesis, расчёте эмиссии и валидации правил.
+//! Monetary model, Genesis distribution, emission limits.
+//! Used in Genesis generation, emission calculations and rule validation.
 
-/// В одной целой ACP столько минимальных единиц (1 ACP = 10^8 units). Суммы в транзакциях и комиссии — в единицах.
+/// There are so many minimal units in one whole ACP (1 ACP = 10^8 units). Amounts in transactions and commissions are in units.
 pub const UNITS_PER_ACP: u64 = 100_000_000; // 10^8
 
-/// Base supply на момент Genesis (ACP).
+/// Base supply at the time of Genesis (ACP).
 pub const BASE_SUPPLY_ACP: u64 = 210_000_000;
 
-/// Номинальная годовая ставка распределения (5% от base supply). Не минт: выплаты из Validator Emission Reserve.
+/// Nominal annual distribution rate (5% of base supply). Not mint: payments from Validator Emission Reserve.
 pub const ANNUAL_INFLATION_PCT: u8 = 5;
 
-/// Годовая выплата из резерва валидаторам/делегаторам (ACP). Не новый минт; после ~10 лет резерв исчерпан, доход — из комиссий.
+/// Annual payment from the reserve to validators/delegators (ACP). Not a new mint; after ~10 years the reserve is exhausted, income comes from commissions.
 pub const ANNUAL_EMISSION_ACP: u64 = 10_500_000;
 
-// --- Распределение Genesis (доли в процентах) ---
+// --- Genesis distribution (percentage shares) ---
 
-/// Доля создателя (vesting 7 лет, non-stakeable в lock).
+/// Creator's share (vesting 7 years, non-stakeable in lock).
 pub const GENESIS_PCT_CREATOR: u8 = 33;
-/// Доля Validator Emission Reserve.
+/// Share Validator Emission Reserve.
 pub const GENESIS_PCT_VALIDATOR_RESERVE: u8 = 50;
-/// Доля Public & Liquidity.
+/// Share of Public & Liquidity.
 pub const GENESIS_PCT_PUBLIC: u8 = 12;
-/// Доля Ecosystem Grants.
+/// The fate of Ecosystem Grants.
 pub const GENESIS_PCT_ECOSYSTEM: u8 = 5;
 
-// --- Genesis в ACP (абсолютные суммы) ---
+// --- Genesis in ACP (absolute amounts) ---
 
 pub const GENESIS_ACP_CREATOR: u64 = 69_300_000;
 pub const GENESIS_ACP_VALIDATOR_RESERVE: u64 = 105_000_000;
 pub const GENESIS_ACP_PUBLIC: u64 = 25_200_000;
 pub const GENESIS_ACP_ECOSYSTEM: u64 = 10_500_000;
 
-// --- Вестинг создателя ---
+// --- Creator's Vesting ---
 
-/// Cliff в месяцах перед началом линейной разблокировки.
+/// Cliff in months before the start of linear unlocking.
 pub const CREATOR_VESTING_CLIFF_MONTHS: u32 = 12;
-/// Линейная разблокировка в месяцах после cliff.
+/// Linear unlocking in months after cliff.
 pub const CREATOR_VESTING_LINEAR_MONTHS: u32 = 72;
-/// Полный срок вестинга в месяцах (cliff + linear).
-pub const CREATOR_VESTING_TOTAL_MONTHS: u32 = 12 + 72; // 84 = 7 лет
-/// ACP в месяц при линейной разблокировке.
+/// Full vesting period in months (cliff + linear).
+pub const CREATOR_VESTING_TOTAL_MONTHS: u32 = 12 + 72; // 84 = 7 years
+/// ACP per month for linear unlocking.
 pub const CREATOR_VESTING_PER_MONTH: u64 = 962_500;
 
-// --- Консенсус PoS (референс для реализации) ---
+// --- PoS consensus (reference for implementation) ---
 
-/// Максимальная доля total staked на одного валидатора (проценты).
+/// Maximum total staked share per validator (percentage).
 pub const STAKE_CAP_PCT: u8 = 5;
-/// Минимальный slashing (проценты).
+/// Minimum slashing (percentage).
 pub const SLASHING_MIN_PCT: u8 = 5;
-/// Максимальный slashing (проценты).
+/// Maximum slashing (percentage).
 pub const SLASHING_MAX_PCT: u8 = 10;
-/// Unbonding в днях.
+/// Unbonding in days.
 pub const UNBONDING_DAYS: u16 = 21;
 
-// --- Governance (референс) ---
+// --- Governance (reference) ---
 
-/// Кворум голосования (проценты).
+/// Voting quorum (percentage).
 pub const GOVERNANCE_QUORUM_PCT: u8 = 15;
-/// Большинство для принятия (проценты).
+/// Majority to accept (percentage).
 pub const GOVERNANCE_MAJORITY_PCT: u8 = 51;
-/// Период голосования в днях.
+/// Voting period in days.
 pub const GOVERNANCE_VOTING_DAYS: u8 = 7;
-/// Задержка исполнения в часах.
+/// Execution delay in hours.
 pub const GOVERNANCE_EXECUTION_DELAY_HOURS: u16 = 48;
-/// Депозит за предложение в ACP.
+/// Offer deposit in ACP.
 pub const GOVERNANCE_PROPOSAL_DEPOSIT_ACP: u64 = 5_000;
 
-// --- Блоки ---
+// --- Blocks ---
 
-/// Целевое время блока (секунды). Баланс скорости финализации и нагрузки на валидаторов.
+/// Target block time (seconds). Balance finalization speed and load on validators.
 pub const TARGET_BLOCK_TIME_SEC: u32 = 5;
-/// Максимальный размер блока (байты). 2 MB — throughput, контроль роста state, анти-спам. Может регулироваться через governance.
+/// Maximum block size (bytes). 2 MB - throughput, state growth control, anti-spam. Can be regulated through governance.
 pub const MAX_BLOCK_BYTES: u32 = 2 * 1024 * 1024; // 2 MB
 
-// --- Стейкинг ---
+// --- Staking ---
 
-/// Минимальный стейк для валидатора (ACP). Экономическая ответственность, отсечение спам-валидаторов.
+/// Minimum stake for a validator (ACP). Economic responsibility, cutting off spam validators.
 pub const MIN_VALIDATOR_STAKE_ACP: u64 = 50_000;
-/// Минимальное делегирование (ACP). Доступность участия для широкой аудитории.
+/// Minimum delegation (ACP). Availability of participation to a wide audience.
 pub const MIN_DELEGATION_ACP: u64 = 100;
-/// Длительность эпохи в секундах (6 часов). Награды, slashing, обновление набора валидаторов.
+/// Epoch duration in seconds (6 hours). Rewards, slashing, validator set update.
 pub const EPOCH_DURATION_SEC: u32 = 6 * 3600; // 6 hours
-/// Длина эпохи в блоках при целевом времени блока 5 сек (4320 блоков ≈ 6 ч).
+/// Epoch length in blocks with a target block time of 5 seconds (4320 blocks ≈ 6 hours).
 pub const EPOCH_BLOCKS: u32 = 4320;
 
-// --- Транзакции ---
+// --- Transactions ---
 
-/// Максимальное количество inputs или outputs в одной транзакции (protocol constant).
+/// The maximum number of inputs or outputs in one transaction (protocol constant).
 pub const MAX_TX_INPUTS_OUTPUTS: u32 = 10_000;
 
-// --- Сеть и комиссии ---
+// --- Network and commissions ---
 
-/// Chain ID по умолчанию (mainnet). Защита от replay; нода может переопределить в конфиге.
+/// Default Chain ID (mainnet). Replay protection; the node can override it in the config.
 pub const DEFAULT_CHAIN_ID: u32 = 1001;
-/// Минимальная комиссия за транзакцию в единицах. 0.00000100 ACP = 100 units. Анти-спам.
+/// Minimum transaction fee in units. 0.00000100 ACP = 100 units. Anti-spam.
 pub const MIN_FEE_UNITS: u64 = 100; // 0.00000100 ACP
 
-// --- Токен (листинг, кошельки, API) ---
+// --- Token (listing, wallets, API) ---
 
 pub const TOKEN_NAME: &str = "ACP";
 pub const TOKEN_TICKER: &str = "ACP";
-/// Decimals для отображения (1 ACP = 10^DECIMALS наименьших единиц).
+/// Decimals to display (1 ACP = 10^DECIMALS smallest units).
 pub const TOKEN_DECIMALS: u8 = 8;
-/// Наименьшая единица в ACP: 10⁻⁸ ACP.
+/// Smallest unit in ACP: 10⁻⁸ ACP.
 pub const SMALLEST_UNIT_ACP: f64 = 0.000_000_01;
 
-// --- Ключи и деривация ---
+// --- Keys and derivation ---
 
-/// Мнемоника: BIP-39.
+/// Mnemonic: BIP-39.
 pub const MNEMONIC_STANDARD: &str = "BIP-39";
-/// Деривационный путь (chain index можно зафиксировать после SLIP-44). Совместимость с аппаратными кошельками.
+/// Derivation path (chain index can be fixed after SLIP-44). Compatible with hardware wallets.
 pub const DERIVATION_PATH: &str = "m/44'/ACP'/0'/0/0";
 
-// --- Chain ID (строковые имена для отображения) ---
+// --- Chain ID (string names to display) ---
 
 pub const CHAIN_ID_MAINNET: &str = "acp-mainnet-1";
 pub const CHAIN_ID_TESTNET: &str = "acp-testnet-1";

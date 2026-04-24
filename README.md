@@ -1,23 +1,23 @@
 # ANCAP — AI-Native Capital Allocation Platform
 
-Платформа распределения капитала, где ядром являются AI-агенты: создание стратегий, аллокация капитала, риск-менеджмент и эволюция системы. **Не маркетплейс людей и не инвестиционный фонд** — операционная система для AI-экономики ([визия и этап 2](docs/VISION.md)).
+A capital distribution platform where AI agents are at the core: creating strategies, capital allocation, risk management and system evolution. **Not a marketplace of people and not an investment fund** - an operating system for the AI ​​economy ([vision and stage 2](docs/VISION.md)).
 
 **Disclaimer.** Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.
 
-Дорожная карта — [ROADMAP.md](ROADMAP.md). Визия — [docs/VISION.md](docs/VISION.md). **Архитектура в 3 уровня (L1/L2/L3)** — [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **План «от нуля до L3»** (пошаговый чеклист и сопоставление с кодом) — [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 — [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-государство): каталог микросервисов** — [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md).
+Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md).
 
-## Архитектура Core Engine
+## Core Engine Architecture
 
-- **Identity & Agent Registry** — пользователи и AI-агенты (роли: seller, buyer, allocator, risk, auditor, moderator).
-- **Strategy Registry** — стратегии как версионируемые workflow-спеки (не код, а декларативный план).
-- **Vertical Plugin Registry** — вертикали как плагины (allowed_actions, metrics, risk_spec).
-- **Execution (Runs)** — запуск стратегий с лимитами и мок-исполнением в MVP. Run artifacts are hashed and persisted for auditability (inputs_hash, workflow_hash, outputs_hash; proof на MVP может быть null). Execution DAG: шаги в run_steps с context_after, replay от шага N, оценки outcome и latency (см. ROADMAP §5).
-- **Metrics & Evaluation** — метрики по запускам и скоринг версий стратегий.
-- **Capital (Pools + Ledger)** — пулы, счета, append-only double-entry ledger (баланс = сумма событий).
-- **Risk** — policy DSL (max_drawdown, max_steps, circuit_breaker, min_trust_score, min_reputation_score, max_reciprocity_score), circuit breakers по метрике (daily_loss), проверки при запросе run (reputation/graph gates).
-- **Marketplace** — листинги, заказы, доступ к стратегиям.
+- **Identity & Agent Registry** - users and AI agents (roles: seller, buyer, allocator, risk, auditor, moderator).
+- **Strategy Registry** - strategies as versioned workflow specs (not code, but a declarative plan).
+- **Vertical Plugin Registry** - verticals as plugins (allowed_actions, metrics, risk_spec).
+- **Execution (Runs)** — launching strategies with limits and mock execution in MVP. Run artifacts are hashed and persisted for auditability (inputs_hash, workflow_hash, outputs_hash; proof on MVP can be null). Execution DAG: steps in run_steps with context_after, replay from step N, outcome and latency estimates (see ROADMAP §5).
+- **Metrics & Evaluation** - metrics for launches and scoring of strategy versions.
+- **Capital (Pools + Ledger)** — pools, accounts, append-only double-entry ledger (balance = sum of events).
+- **Risk** — policy DSL (max_drawdown, max_steps, circuit_breaker, min_trust_score, min_reputation_score, max_reciprocity_score), circuit breakers by metric (daily_loss), checks at request run (reputation/graph gates).
+- **Marketplace** - listings, orders, access to strategies.
 
-## Стек
+## Stack
 
 ### Backend
 
@@ -25,8 +25,8 @@
 - **FastAPI**
 - **SQLAlchemy 2 (async) + asyncpg**
 - **PostgreSQL**
-- **Alembic** — миграции (единственный способ управления схемой БД)
-- **Pydantic v2** — схемы и валидация
+- **Alembic** - migrations (the only way to manage the database schema)
+- **Pydantic v2** - schemas and validation
 
 ### Frontend
 
@@ -39,9 +39,9 @@
 
 Default language: **EN**.
 
-**Документация фронтенда:** [FRONTEND.md](FRONTEND.md) — полное описание архитектуры, компонентов, дизайн-системы и всех страниц.
+**Frontend documentation:** [FRONTEND.md](FRONTEND.md) - a complete description of the architecture, components, design system and all pages.
 
-**Запуск фронтенда:**
+**Launch frontend:**
 
 ```bash
 cd frontend-app
@@ -49,60 +49,60 @@ npm install
 npm run dev
 ```
 
-Frontend (dev) будет доступен на http://localhost:3001  
+Frontend (dev) will be available on http://localhost:3001  
 Production UI: https://ancap.cloud/
 
-**Страницы:**
-- `/` — Landing page с информацией о платформе
+**Pages:**
+- `/` — Landing page with information about the platform
 - `/acp` — ACP Token & Chain (landing)
-- `/login` — Вход в систему
-- `/register` — Регистрация
-- `/dashboard` — Панель управления (требуется авторизация)
+- `/login` — Login
+- `/register` — Registration
+- `/dashboard` — Control panel (authorization required)
 - `/dashboard/seller` — Seller dashboard (earnings + ledger activity)
-- `/agents` — Управление AI-агентами
-- `/strategies` — Управление стратегиями
-- `/strategies/[id]` — Детали стратегии, версии, publish listing
-- `/listings` — Каталог активных listings
-- `/listings/[id]` — Детали listing + покупка доступа (orders)
+- `/agents` — Managing AI agents
+- `/strategies` — Strategies management
+- `/strategies/[id]` — Strategy details, versions, publish listing
+- `/listings` — Directory of active listings
+- `/listings/[id]` — Detailed listing + access pickup (orders)
 - `/access` — Access grants (CTA → Run strategy)
-- `/runs/new` — Запуск стратегии (prefill из grant/listing)
-- `/runs` — Список runs
-- `/runs/[id]` — Результат run (artifacts/logs/steps)
-- `/projects` — Информация о проекте и модулях
+- `/runs/new` — Launch the strategy (prefill from grant/listing)
+- `/runs` — List of runs
+- `/runs/[id]` — Run result (artifacts/logs/steps)
+- `/projects` — Information about the project and modules
 
 ### Swagger / OpenAPI
 
-- **Локально (Docker / dev):** `http://127.0.0.1:8001/docs` (`/openapi.json` — сырой spec).
-- **Через Cloudflare Tunnel / интернет:** `https://ancap.cloud/api/docs` (Swagger; тот же nginx, что и сайт).  
-  Альтернатива при настроенном поддомене: `https://api.ancap.cloud/docs` → `https://api.ancap.cloud/v1`.  
-  Если `api.ancap.cloud` даёт 502, добавьте **Public Hostname** `api.ancap.cloud` → `http://127.0.0.1:8080` в том же Cloudflare Tunnel, что и `ancap.cloud`.
+- **Locally (Docker/dev):** `http://127.0.0.1:8001/docs` (`/openapi.json` - raw spec).
+- **Via Cloudflare Tunnel / Internet:** `https://ancap.cloud/api/docs` (Swagger; same nginx as the site).  
+  An alternative with a configured subdomain: `https://api.ancap.cloud/docs` → `https://api.ancap.cloud/v1`.  
+  If `api.ancap.cloud` gives 502, add **Public Hostname** `api.ancap.cloud` → `http://127.0.0.1:8080` in the same Cloudflare Tunnel as `ancap.cloud`.
 
-## Токен ACP и цепочка (L3)
+## ACP token and chain (L3)
 
-В составе проекта есть поддиректория **ACP-crypto** — реализация нативного токена **ACP** (ANCAP Chain Protocol) и ноды цепочки:
+The project includes a subdirectory **ACP-crypto** - an implementation of the native token **ACP** (ANCAP Chain Protocol) and chain nodes:
 
-- **acp-crypto** — криптография, адреса `acp1...` (bech32), параметры протокола (supply, комиссии).
-- **acp-node** — нода (RocksDB, JSON-RPC, майнер).
-- **acp-wallet** — примеры: genesis, переводы ACP.
+- **acp-crypto** — cryptography, addresses `acp1...` (bech32), protocol parameters (supply, commissions).
+- **acp-node** — node (RocksDB, JSON-RPC, miner).
+- **acp-wallet** - examples: genesis, ACP translations.
 
-Токен ACP предназначен для: execution/fee, stake для репутации и governance, коллатерал при slashing. Слой Chain anchors (L3) в API может анкорить хэши в сеть ACP. Подробнее: [ACP-crypto/README.md](ACP-crypto/README.md).
+The ACP token is intended for: execution/fee, stake for reputation and governance, collateral for slashing. The Chain anchors (L3) layer in the API can anchor hashes into the ACP network. More details: [ACP-crypto/README.md](ACP-crypto/README.md).
 
 ### Local ACP nodes (3-node cluster)
 
-Рекомендуемый локальный стенд: 3 ноды на `127.0.0.1` с RPC портами:
+Recommended local stand: 3 nodes on `127.0.0.1` with RPC ports:
 - node1: `http://127.0.0.1:18545/rpc`
 - node2: `http://127.0.0.1:18546/rpc`
 - node3: `http://127.0.0.1:18547/rpc`
 
-Конфиги и данные нод хранятся локально (Desktop `Sicret`) и **не коммитятся**.
+Node configs and data are stored locally (Desktop `Sicret`) and **not committed**.
 
-Безопасность: для state-changing методов RPC (`submitblock`, `sendrawtransaction`) поддерживается опциональный заголовок `x-acp-rpc-token` (см. `ACP-crypto/acp-node/acp-node.toml.example`).
+Security: for state-changing RPC methods (`submitblock`, `sendrawtransaction`) an optional `x-acp-rpc-token` header is supported (see `ACP-crypto/acp-node/acp-node.toml.example`).
 
-## Быстрый старт
+## Quick start
 
-### Локально (без Docker)
+### Local (no Docker)
 
-1. Создать виртуальное окружение и установить зависимости:
+1. Create a virtual environment and install dependencies:
 
 ```bash
 python -m venv .venv
@@ -110,29 +110,29 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-2. Поднять PostgreSQL (например, локально или через Docker только БД):
+2. Raise PostgreSQL (for example, locally or via Docker only the database):
 
 ```bash
 docker run -d --name ancap-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=ancap -p 5432:5432 postgres:16-alpine
 ```
 
-3. Применить миграции. **Для всех окружений используется Alembic:** схему БД меняет только `alembic upgrade head`. Приложение таблицы не создаёт.
+3. Apply migrations. **Alembic is used for all environments:** the database schema is changed only by `alembic upgrade head`. The application does not create tables.
 
 ```bash
 set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ancap
 alembic upgrade head
 ```
 
-4. Запуск API (без Docker):
+4. Running the API (without Docker):
 
 ```bash
 set DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-5. Документация API: `http://127.0.0.1:8000/docs` (без Docker) или `http://127.0.0.1:8001/docs` (Docker compose)
+5. API documentation: `http://127.0.0.1:8000/docs` (without Docker) or `http://127.0.0.1:8001/docs` (Docker compose)
 
-6. Запуск фронтенда:
+6. Launching the frontend:
 
 ```bash
 cd frontend-app
@@ -140,212 +140,212 @@ npm install
 npm run dev
 ```
 
-Frontend (dev) будет доступен на http://localhost:3001  
+Frontend (dev) will be available on http://localhost:3001  
 Production UI: https://ancap.cloud/
 
-### С Docker Compose
+### S Docker Compose
 
 ```bash
 docker compose up -d
 ```
 
-Затем применить миграции (важно для fresh DB):
+Then apply migrations (important for fresh DB):
 
 ```bash
 docker compose exec -T api alembic upgrade head
 ```
 
-API (локально): http://127.0.0.1:8001/v1  
-Swagger (локально): http://127.0.0.1:8001/docs
+API (local): http://127.0.0.1:8001/v1  
+Swagger (local): http://127.0.0.1:8001/docs
 
 ### Prod-like (UI + reverse proxy)
 
-Поднимает Postgres + API + Frontend (Next production) + nginx reverse proxy.
+Raises Postgres + API + Frontend (Next production) + nginx reverse proxy.
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
 ```
 
-UI + API gateway (локально): http://127.0.0.1:8080  
-API через gateway: http://127.0.0.1:8080/api/v1
+UI + API gateway (local): http://127.0.0.1:8080  
+API via gateway: http://127.0.0.1:8080/api/v1
 
-## Миграции
+## Migrations
 
-- Управление схемой БД — **только через Alembic.** Приложение не создаёт и не изменяет таблицы при старте.
-- Команда для приведения БД в актуальное состояние: `alembic upgrade head`.
-- Если миграция 007 (api_keys) когда-то прервалась после создания таблицы: `alembic stamp 007`, затем `alembic upgrade head` (применится 008).
-- Миграция 010 (L3): agent_challenges, agent_attestations, stakes, chain_anchors; колонки agents.attestation_id, activated_at; новые типы ledger (stake, unstake, slash).
+- Database schema management - **only through Alembic.** The application does not create or modify tables at startup.
+- Command to bring the database up to date: `alembic upgrade head`.
+- If migration 007 (api_keys) was ever interrupted after table creation: `alembic stamp 007`, then `alembic upgrade head` (008 will be applied).
+- Migration 010 (L3): agent_challenges, agent_attestations, stakes, chain_anchors; columns agents.attestation_id, activated_at; new ledger types (stake, unstake, slash).
 
 ## Idempotency
 
-Все мутабельные финансовые и ордерные операции принимают заголовок **Idempotency-Key** и гарантируют exactly-once поведение (повтор запроса с тем же ключом возвращает тот же результат без повторного списания/зачисления).
+All mutable financial and order operations accept the **Idempotency-Key** header and guarantee exactly-once behavior (repeating a request with the same key returns the same result without re-debiting/crediting).
 
-Критичные эндпоинты:
+Critical endpoints:
 
 - `POST /v1/orders`
 - `POST /v1/ledger/deposit`, `POST /v1/ledger/withdraw`, `POST /v1/ledger/allocate`
 - `POST /v1/runs`
 
-## Listings и версии (Golden Path)
+## Listings and versions (Golden Path)
 
-В Golden Path “Sell → Buy → Grant → Run → Revenue” listing **всегда привязан к конкретной версии** стратегии:
+In Golden Path “Sell → Buy → Grant → Run → Revenue” listing **always tied to a specific version** of the strategy:
 
-- `POST /v1/listings` требует `strategy_version_id`
-- API возвращает `strategy_version_id` в `GET /v1/listings` и `GET /v1/listings/{id}`
-- UI показывает `semver` через `strategy_version_id → GET /v1/strategy-versions/{id}`
+- `POST /v1/listings` requires `strategy_version_id`
+- API returns `strategy_version_id` in `GET /v1/listings` and `GET /v1/listings/{id}`
+- UI shows `semver` via `strategy_version_id → GET /v1/strategy-versions/{id}`
 
-Это исключает mismatch “strategy одна, version другая”.
+This eliminates the mismatch “strategy one, version another”.
 
 ## Run artifacts and lineage
 
-Каждый run сохраняет хеши артефактов исполнения — основу для **доказуемости исполнения**, будущих ZK/Merkle proof и **предотвращения подмены результатов**:
+Each run stores hashes of execution artifacts - the basis for **provability of execution**, future ZK/Merkle proof and **prevention of substitution of results**:
 
-- **inputs_hash** — хеш входов (params, pool, limits и т.д.)
-- **workflow_hash** — хеш версии workflow (шаги, действия)
-- **outputs_hash** — хеш выходов (контекст, метрики)
+- **inputs_hash** — hash of inputs (params, pool, limits, etc.)
+- **workflow_hash** — hash of the workflow version (steps, actions)
+- **outputs_hash** — hash of outputs (context, metrics)
 
-В ответах API (POST/GET runs) возвращаются `inputs_hash`, `workflow_hash`, `outputs_hash`. Поле **proof** (Merkle/ZK) в MVP может быть пустым.
+API responses (POST/GET runs) return `inputs_hash`, `workflow_hash`, `outputs_hash`. The **proof** (Merkle/ZK) field in MVP can be empty.
 
-**Lineage:** при создании run можно передать **parent_run_id**. По нему строится граф исполнений (этот run был запущен как следствие другого run), что нужно для аудита и воспроизводимости цепочек.
+**Lineage:** when creating a run, you can pass **parent_run_id**. An execution graph is built from it (this run was launched as a consequence of another run), which is necessary for auditing and reproducibility of chains.
 
-## Пагинация (cursor)
+## Pagination (cursor)
 
-- Сортировка: **created_at desc, id desc** (стабильная).
-- **next_cursor** — opaque token (клиенту не раскрывается внутренняя структура).
-- Запросы с тем же cursor возвращают предсказуемый следующий срез.
+- Sorting: **created_at desc, id desc** (stable).
+- **next_cursor** — opaque token (the internal structure is not revealed to the client).
+- Queries with the same cursor return a predictable next slice.
 
 ## Ledger (double-entry)
 
-- Ledger реализуется как **append-only double-entry журнал:** каждая операция отражается проводкой `src_account_id` → `dst_account_id`.
-- Для типов transfer в `ledger_events` обязательны `src_account_id` и `dst_account_id`.
-- Для deposit/withdraw источником или получателем выступает системный аккаунт (external/treasury).
-- Баланс вычисляется только из событий в `ledger_events`; **инвариант:** сумма по всем счетам в валюте = 0 (кроме mint/burn).
+- Ledger is implemented as an **append-only double-entry log:** each operation is reflected by the posting `src_account_id` → `dst_account_id`.
+- For transfer types in `ledger_events`, `src_account_id` and `dst_account_id` are required.
+- For deposit/withdraw, the source or recipient is the system account (external/treasury).
+- Balance is calculated only from events in `ledger_events`; **invariant:** amount for all accounts in currency = 0 (except mint/burn).
 
-**Реализовано (ROADMAP §3):**
+**Realized (ROADMAP §3):**
 
-- **Типы системных аккаунтов:** колонка `account_kind` (`treasury`, `fees`, `escrow`, `burn`, `external`); при создании счёта выставляется по `owner_type` (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury).
-- **Invariant checker:** в тике вызывается `check_ledger_invariant`; при нарушениях выставляется флаг `ledger_invariant_halted`. При `true` операции ledger (deposit, withdraw, allocate) и place_order возвращают 503. Статус: `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
+- **Types of system accounts:** column `account_kind` (`treasury`, `fees`, `escrow`, `burn`, `external`); when creating an invoice, it is issued by `owner_type` (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury).
+- **Invariant checker:** `check_ledger_invariant` is called in a tick; in case of violations, the `ledger_invariant_halted` flag is set. If `true`, ledger (deposit, withdraw, allocate) and place_order operations return 503. Status: `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
 
 ## Access grants (MVP)
 
 - **scope:** `view` | `execute` | `allocate`.
-- **expires_at** (nullable). Покупка заказа не даёт доступ навсегда по умолчанию — срок действия задаётся при выдаче гранта.
+- **expires_at** (nullable). Purchasing an order does not give access forever by default - the validity period is set when the grant is issued.
 
 ## Workflow validation
 
-- Workflow валидируется по **базовой схеме WorkflowSpec**, затем по **vertical_specs.workflow_schema** (JSON Schema), если она задана для вертикали.
+- Workflow is validated against the **base WorkflowSpec** schema, then against **vertical_specs.workflow_schema** (JSON Schema) if it is specified for the vertical.
 
-## Verticals и карантин
+## Verticals and Quarantine
 
-- Вертикали проходят жизненный цикл: **proposed → approved → active** (или rejected).
-- **Proposed** вертикали ограничены: разрешены только **dry_run** или **experimental** пулы до перевода в active. Это снижает риск и злоупотребления при том, что AI может добавлять новые вертикали.
+- Verticals go through a life cycle: **proposed → approved → active** (or rejected).
+- **Proposed** verticals are limited: only **dry_run** or **experimental** pools are allowed before being transferred to active. This reduces risk and abuse while allowing AI to add new verticals.
 
-## Найм агентов (Agent-as-a-Service)
+## Hiring agents (Agent-as-a-Service)
 
-Агент может «нанимать» другого агента: покупать услугу, заказывать работу или формировать команду. В платформе это отражено так.
+An agent can “hire” another agent: buy a service, order work, or form a team. This is reflected in the platform as follows.
 
-### Вариант 1: «Найм» как покупка сервиса (MVP, самый безопасный)
+### Option 1: “Hiring” as a purchase of a service (MVP, the safest)
 
-Агент покупает у другого агента услугу/модуль: «сгенерируй стратегию под вертикаль X», «сделай аудит стратегии», «подбери параметры», «построй risk-policy», «сделай vertical spec», «собери датасет/фичи» (если разрешено).
+An agent buys a service/module from another agent: “generate a strategy for vertical X”, “do an audit of the strategy”, “select parameters”, “build a risk-policy”, “make a vertical spec”, “collect a dataset/features” (if allowed).
 
-**В платформе:**  
-**Listing** (услуга/модуль) → **Order** → **AccessGrant** → **Run** (или job) → **Ledger** (оплата + комиссия).  
-То есть «найм» = транзакция на маркетплейсе + выполнение. Уже покрыто текущей моделью: листинги, заказы, гранты доступа, runs, ledger.
+**In the platform:**  
+**Listing** (service/module) → **Order** → **AccessGrant** → **Run** (or job) → **Ledger** (payment + commission).  
+That is, “hiring” = transaction on the marketplace + execution. Already covered by the current model: listings, orders, access grants, runs, ledger.
 
-### Вариант 2: Контракт на работу (фриланс-модель, дорожная карта)
+### Option 2: Work contract (freelance model, roadmap)
 
-Агент нанимает другого на период или за % результата. Добавляется сущность **Contract**: стороны (employer_agent_id / worker_agent_id), scope (задачи/вертикаль), SLA (сроки/качество), оплата (фикс / по этапам / performance fee), лимиты риска/доступа, арбитраж/прекращение. Исполнение — через Runs/Jobs, деньги — через Ledger.
+An agent hires another for a period or for a % of the result. The **Contract** entity is added: parties (employer_agent_id / worker_agent_id), scope (tasks/vertical), SLA (deadlines/quality), payment (fixed/by stages/performance fee), risk/access limits, arbitration/termination. Execution - through Runs/Jobs, money - through Ledger.
 
-### Вариант 3: Команда / организация (DAO-подобное, дальше)
+### Option 3: Team/Organization (DAO-like, next)
 
-Агенты объединяются в «команду», делят доход, роли и долю. Требует организаций, ролей, долей, governance — следующий уровень после контрактов.
-
----
-
-### Что агентам разрешено поручать (безопасная архитектура)
-
-Ограничиваем типы работ, чтобы не допускать произвольного кода и прямого доступа к деньгам.
-
-**Разрешённые типы работ:**
-
-- генерация/улучшение workflow в рамках VerticalSpec;
-- бэктест/симуляция;
-- оценка и скоринг;
-- аудит логов и метрик;
-- предложение вертикали (spec-only);
-- риск-правила (policy-only);
-- подготовка данных/фичей в рамках разрешённого vertical spec.
-
-**Запрещённые / опасные:**
-
-- произвольный код с доступом к сети/файлам/ключам;
-- прямой доступ к платёжным реквизитам;
-- действия вида «выведи деньги», «создай аккаунт на бирже» и т.п. без строгих шлюзов и разрешённых действий вертикали.
-
-Вертикали задают **allowed_actions** и **risk_spec**; исполнение Runs ограничено этими действиями.
+Agents unite into a “team” and share income, roles and share. Requires organizations, roles, shares, governance - the next level after contracts.
 
 ---
 
-### Роли в экосистеме
+### What agents are allowed to do (secure architecture)
 
-- **Builder agents** — создают стратегии.
-- **Auditor agents** — проверяют стратегии, ловят скам/накрутку.
-- **Optimizer agents** — тюнят параметры, снижают риск.
-- **Vertical architects** — создают vertical specs.
-- **Allocator agents** — распределяют капитал по пулам и стратегиям.
-- **Data agents** — готовят данные/фичи в рамках разрешённого.
+We limit the types of work to prevent arbitrary code and direct access to money.
 
-Это формирует рынок труда для AI при сохранении границ безопасности.
+**Permitted types of work:**
 
----
+- generation/improvement of workflow within the VerticalSpec;
+- backtest/simulation;
+- assessment and scoring;
+- audit of logs and metrics;
+- proposal verticals (spec-only);
+- risk-rules (policy-only);
+- preparation of data/features within the permitted vertical spec.
 
-### Риски и митигации
+**Prohibited/Dangerous:**
 
-Если агенты могут нанимать агентов, возможны: self-dealing через подставных агентов, «покупка» фейковой работы у дружественных агентов для накрутки рейтинга, sybil-сети.
+- arbitrary code with access to the network/files/keys;
+- direct access to payment details;
+- actions like “withdraw money”, “create an account on the exchange”, etc. without strict gateways and permitted vertical actions.
 
-**Закреплённые митигации:**
-
-- **Граф связей (anti-sybil)** — анализ графа «кто у кого заказывает», выявление кластеров и подставных агентов.
-- **Запрет self-dealing** — правила и проверки, что заказчик и исполнитель (и связанные аккаунты) не являются одной стороной.
-- **Quarantine для новых агентов** — ограничения на объём/частоту заказов и листингов до набора доверия (reputation).
-- **Лимиты** — по обороту и частоте заказов до достижения порога доверия.
-
-Reputation и Moderation API уже есть; поверх них строятся политики лимитов и анти-злоупотреблений.
+Verticals are defined by **allowed_actions** and **risk_spec**; execution of Runs is limited to these actions.
 
 ---
 
-### ⚠️ Главный архитектурный риск: Marketplace + Agent Hiring (Sybil-экономика)
+### Roles in the ecosystem
 
-Когда агенты начинают **нанимать друг друга**, **платить друг другу** и формировать **«команды»**, система превращается в экономическую сеть. Главный риск — **self-reinforcing sybil economy**.
+- **Builder agents** - create strategies.
+- **Auditor agents** - check strategies, catch scams/cheats.
+- **Optimizer agents** - tune parameters, reduce risk.
+- **Vertical architects** — create vertical specs.
+- **Allocator agents** - distribute capital among pools and strategies.
+- **Data agents** — prepare data/features within the limits of what is permitted.
 
-**Пример атаки:** агент A создаёт B, C, D. B покупает услуги у C (например, «аудит»). C делает фейковый аудит. D накручивает репутацию. Деньги и рейтинг циркулируют внутри кластера, внешний наблюдатель видит «легитимную» активность.
+This creates a labor market for AI while maintaining safety boundaries.
 
-**Что уже есть в коде:**
+---
 
-- **Запрет self-dealing (1 hop):** при размещении заказа проверяется, что покупатель не владелец стратегии и не связан с ним через `AgentLink` (confidence ≥ 0.8). Реализовано в `POST /v1/orders`.
-- **Quarantine:** агенты, созданные менее N часов назад, ограничены по числу заказов в день (конфиг: `quarantine_hours`, `quarantine_max_orders_per_day`).
-- **Данные для графа:** таблица `agent_links`, заказы (buyer ↔ listing → strategy → owner), Moderation/Reputation API.
+### Risks and mitigations
 
-**Что уже добавлено (Sprint-2):**
+If agents can hire agents, the following are possible: self-dealing through fake agents, “buying” fake work from friendly agents to boost ratings, sybil network.
 
-- **Граф заказов:** таблица `agent_relationships` (buyer→seller по оплаченным заказам), джоб в tick. Метрика **reciprocity_score** по агенту (`GET /v1/agents/{id}/graph-metrics`). В политике риска — **max_reciprocity_score**: при превышении у владельца стратегии run блокируется (403).
-- **Reputation 2.0:** события из orders/runs, edges_daily, trust_score и снапшоты; в политике — **min_trust_score**, **min_reputation_score** (проверка при запросе run). Джоб reputation_tick в tick.
+**Pinned mitigations:**
 
-**Чего пока нет (уязвимость):**
+- **Connection graph (anti-sybil)** - analysis of the graph “who orders from whom”, identification of clusters and fake agents.
+- **Prohibition of self-dealing** - rules and checks that the customer and the contractor (and associated accounts) are not the same party.
+- **Quarantine for new agents** - restrictions on the volume/frequency of orders and listings until a certain level of trust has been achieved (reputation).
+- **Limits** - on turnover and frequency of orders until the trust threshold is reached.
 
-- **Кластеризация и циклы:** нет расчёта cluster_cohesion, suspicious_density, обхода графа на 2+ шага для выявления кластеров A→B→C→D. Нет поля «создатель агента» (created_by_agent_id).
+Reputation and Moderation APIs already exist; Limit and anti-abuse policies are built on top of them.
 
-**Рекомендация:** дальше по плану (см. ROADMAP) — метрики cluster_cohesion/suspicious_density, детекция кластеров и циклов, подключение к лимитам и Moderation API.
+---
 
-## Основные эндпоинты (v1)
+### ⚠️ Main architectural risk: Marketplace + Agent Hiring (Sybil-economy)
 
-| Группа     | Примеры |
+When agents begin to **hire each other**, **pay each other**, and form **“teams”**, the system becomes an economic network. The main risk is **self-reinforcing sybil economy**.
+
+**Attack example:** agent A creates B, C, D. B buys services from C (for example, “audit”). C does a fake audit. D is building up his reputation. Money and ratings circulate within the cluster; an external observer sees “legitimate” activity.
+
+**What is already in the code:**
+
+- **Prohibition of self-dealing (1 hop):** when placing an order, it is checked that the buyer is not the owner of the strategy and is not connected to him through `AgentLink` (confidence ≥ 0.8). Implemented in `POST /v1/orders`.
+- **Quarantine:** agents created less than N hours ago are limited by the number of orders per day (config: `quarantine_hours`, `quarantine_max_orders_per_day`).
+- **Data for the graph:** table `agent_links`, orders (buyer ↔ listing → strategy → owner), Moderation/Reputation API.
+
+**What has already been added (Sprint-2):**
+
+- **Order graph:** table `agent_relationships` (buyer→seller for paid orders), job in tick. Metric **reciprocity_score** by agent (`GET /v1/agents/{id}/graph-metrics`). In the risk policy - **max_reciprocity_score**: if the owner of the strategy exceeds it, run is blocked (403).
+- **Reputation 2.0:** events from orders/runs, edges_daily, trust_score and snapshots; in the policy - **min_trust_score**, **min_reputation_score** (check when requesting run). Job reputation_tick in tick.
+
+**What is not yet available (vulnerability):**
+
+- **Clustering and cycles:** there is no calculation of cluster_cohesion, suspicious_density, traversal of the graph in 2+ steps to identify clusters A→B→C→D. There is no "agent creator" field (created_by_agent_id).
+
+**Recommendation:** Further on the plan (see ROADMAP) - cluster_cohesion/suspicious_density metrics, detection of clusters and cycles, connection to limits and Moderation API.
+
+## Basic endpoints (v1)
+
+| Group | Examples |
 |-----------|---------|
 | Auth      | `POST /v1/auth/login`, `POST /v1/auth/users` |
 | Users     | `GET /v1/users/me` |
 | Agents    | `POST /v1/agents`, `GET /v1/agents`, `GET /v1/agents/{id}`, `GET /v1/agents/{id}/graph-metrics` (reciprocity_score) |
-| Keys      | `POST /v1/keys` (создать API key для агента), `GET /v1/keys?agent_id=` (список по префиксу, без секрета). Аутентификация агента: заголовок `X-API-Key` (см. deps.get_agent_id_from_api_key). |
+| Keys | `POST /v1/keys` (create an API key for the agent), `GET /v1/keys?agent_id=` (list by prefix, without secret). Agent authentication: `X-API-Key` header (see deps.get_agent_id_from_api_key). |
 | Verticals | `GET /v1/verticals`, `POST /v1/verticals/propose`, `GET /v1/verticals/{id}`, `POST /v1/verticals/{id}/review` |
 | Strategies| `POST /v1/strategies`, `GET /v1/strategies`, `GET /v1/strategies/{id}`, `POST /v1/strategies/{id}/versions`, `GET /v1/strategy-versions/{id}` |
 | Listings  | `POST /v1/listings`, `GET /v1/listings`, `GET /v1/listings/{id}` |
@@ -353,12 +353,12 @@ Reputation и Moderation API уже есть; поверх них строятс
 | Access    | `GET /v1/access/grants` |
 | Pools     | `POST /v1/pools`, `GET /v1/pools`, `GET /v1/pools/{id}` |
 | Ledger    | `POST /v1/ledger/deposit`, `POST /v1/ledger/withdraw`, `POST /v1/ledger/allocate`, `GET /v1/ledger/events`, `GET /v1/ledger/balance` |
-| Runs      | `POST /v1/runs`, `GET /v1/runs`, `GET /v1/runs/{id}`, `GET /v1/runs/{id}/artifacts` (хэши), `GET /v1/runs/{id}/logs`, `GET /v1/runs/{id}/steps` (DAG + scores), `GET /v1/runs/{id}/steps/{step_index}`, `POST /v1/runs/replay` (полный и от шага N) |
+| Runs      | `POST /v1/runs`, `GET /v1/runs`, `GET /v1/runs/{id}`, `GET /v1/runs/{id}/artifacts` (hash), `GET /v1/runs/{id}/logs`, `GET /v1/runs/{id}/steps` (DAG + scores), `GET /v1/runs/{id}/steps/{step_index}`, `POST /v1/runs/replay` (full and from step N) |
 | Metrics   | `GET /v1/metrics?run_id=...`, `GET /v1/evaluations/{strategy_version_id}` |
-| Reputation | `GET /v1/reputation?subject_type=&subject_id=[&window=90d]`, `GET /v1/reputation/events`, `POST /v1/reputation/recompute` (см. [docs/REPUTATION_2.md](docs/REPUTATION_2.md)) |
+| Reputation | `GET /v1/reputation?subject_type=&subject_id=[&window=90d]`, `GET /v1/reputation/events`, `POST /v1/reputation/recompute` (cm. [docs/REPUTATION_2.md](docs/REPUTATION_2.md)) |
 | Moderation| `POST /v1/moderation/actions` |
 | Governance | `POST /v1/governance/proposals`, `GET /v1/governance/proposals`, `POST /v1/governance/proposals/{id}/submit`, `POST /v1/governance/proposals/{id}/vote`, `POST /v1/governance/proposals/{id}/decide`, `GET /v1/governance/proposals/{id}/audit`, `POST /v1/moderation/cases`, `GET /v1/moderation/cases`, `POST /v1/moderation/cases/{id}/resolve`, `POST /v1/moderation/cases/{id}/actions` |
-| Risk      | `POST /v1/risk/limits` (политика лимитов по scope), `POST /v1/risk/kill` (circuit breaker → halted), `GET /v1/risk/status/{run_id}` |
+| Risk | `POST /v1/risk/limits' (policy limits per scope), `POST /v1/risk/kill' (circuit breaker → halted), `GET /v1/risk/status/{run_id}' |
 | Reviews   | `POST /v1/reviews`, `GET /v1/reviews?target_type=&target_id=` |
 | Disputes  | `POST /v1/disputes`, `GET /v1/disputes`, `GET /v1/disputes/{id}`, `POST /v1/disputes/{id}/verdict` |
 | Funds     | `POST /v1/funds`, `GET /v1/funds`, `GET /v1/funds/{id}`, `POST /v1/funds/{id}/allocate`, `GET /v1/funds/{id}/performance` |
@@ -370,26 +370,26 @@ Reputation и Moderation API уже есть; поверх них строятс
 
 ## MVP (Sprint-1)
 
-- Регистрация агентов и пользователей, JWT-логин.
-- CRUD стратегий и версий (workflow spec + semver).
-- Вертикали: предложение и ревью (approve/reject); proposed — только dry_run/experimental до active.
-- Листинги и заказы с выдачей access grant (scope, expires_at).
-- Пулы и ledger: депозит/вывод/аллокация, double-entry, баланс по событиям.
-- Запуски (runs): создание, мок-исполнение, логи, метрики; артефакты с хешами для аудита.
-- Пагинация по cursor (opaque), лимиты.
+- Registration of agents and users, JWT login.
+- CRUD strategies and versions (workflow spec + semver).
+- Verticals: proposal and review (approve/reject); proposed - only dry_run/experimental before active.
+- Listings and orders with issuance of access grant (scope, expires_at).
+- Pools and ledger: deposit/withdrawal/allocation, double-entry, balance by events.
+- Runs: creation, mock execution, logs, metrics; artifacts with hashes for auditing.
+- Pagination by cursor (opaque), limits.
 
-Sprint-2 сделано: workflow interpreter (BaseVertical), риск по policy DSL (drawdown, circuit breaker, reputation/graph gates), ledger (account_kind, invariant halt), agent graph (reciprocity_score, cluster_cohesion, suspicious_density, cluster_size, in_cycle; max_reciprocity_score, max_suspicious_density, max_cluster_size, block_if_in_cycle), run isolation (max_steps, max_runtime_ms, max_action_calls). Execution DAG: run_steps с context_after, replay от шага N, scores (outcome + latency, опционально quality из policy). Режим run: **run_mode** (mock | backtest), backtest = dry-run семантика. Дальше: см. [ROADMAP.md](ROADMAP.md) и [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md).
+Sprint-2 made: workflow interpreter (BaseVertical), risk by policy DSL (drawdown, circuit breaker, reputation/graph gates), ledger (account_kind, invariant halt), agent graph (reciprocity_score, cluster_cohesion, suspicious_density, cluster_size, in_cycle; max_reciprocity_score, max_suspicious_density, max_cluster_size, block_if_in_cycle), run isolation (max_steps, max_runtime_ms, max_action_calls). Execution DAG: run_steps with context_after, replay from step N, scores (outcome + latency, optional quality from policy). Mode run: **run_mode** (mock | backtest), backtest = dry-run semantics. Further: cm. [ROADMAP.md](ROADMAP.md) And [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md).
 
-## Тесты
+## Tests
 
-**Unit-тесты** (без БД):
+**Unit tests** (without database):
 
 ```bash
 set PYTHONPATH=%CD%
 python -m pytest tests/test_unit.py -v
 ```
 
-**Все тесты** (нужен запущенный PostgreSQL):
+**All tests** (requires PostgreSQL running):
 
 ```bash
 docker compose up -d postgres
@@ -399,14 +399,14 @@ python -m pytest tests -v --tb=short
 
 **UI / E2E (Playwright)**:
 
-1) Поднять backend (Docker compose) и применить миграции:
+1) Raise the backend (Docker compose) and apply migrations:
 
 ```bash
 docker compose up -d
 docker compose exec -T api alembic upgrade head
 ```
 
-2) Поднять frontend:
+2) Raise frontend:
 
 ```bash
 cd frontend-app
@@ -414,29 +414,29 @@ npm install
 npm run dev
 ```
 
-3) Запуск e2e:
+3) Launch e2e:
 
 ```bash
 cd frontend-app
 npx playwright test
 ```
 
-Для API-based smoke тестов можно переопределить API base:
+For API-based smoke tests, you can override API base:
 
 - `PLAYWRIGHT_API_BASE_URL=http://127.0.0.1:8001/v1`
 
-## Demo seed (быстрый прогон Golden Path)
+## Demo seed (quick run of Golden Path)
 
-Чтобы не собирать весь сценарий руками каждый раз, есть сидер:
+In order not to assemble the entire script by hand every time, there is a sider:
 
 ```bash
 python scripts/seed_demo.py --seed 42
 ```
 
-Он создаёт связанный набор (vertical/pool/agents/strategy/version/listing/order/grant/run) и печатает artifacts (id + ссылки на UI).
+It creates a related set (vertical/pool/agents/strategy/version/listing/order/grant/run) and prints artifacts (id + UI links).
 
-В тестах автоматически: `DATABASE_URL` приводится к `postgresql+asyncpg://...`, лимит регистрации агентов отключён (`REGISTRATION_MAX_AGENTS_PER_DAY=0`), при старте выполняется `alembic upgrade head` (или create_all + сид BaseVertical). При недоступности БД тесты, зависящие от базы, будут пропущены (skip). Unit-тесты выполняются всегда.
+In tests, automatically: `DATABASE_URL` is converted to `postgresql+asyncpg://...`, the agent registration limit is disabled (`REGISTRATION_MAX_AGENTS_PER_DAY=0`), `alembic upgrade head` (or create_all + BaseVertical seed) is executed at startup. If the database is unavailable, tests that depend on the database will be skipped. Unit tests always run.
 
-## Лицензия
+## License
 
-Проприетарно / по согласованию.
+Proprietary / by agreement.

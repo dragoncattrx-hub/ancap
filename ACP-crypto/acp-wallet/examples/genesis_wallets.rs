@@ -1,9 +1,9 @@
-//! Генерация кошельков для распределения Genesis (Whitepaper v1.0).
+//! Generation of wallets for Genesis distribution (Whitepaper v1.0).
 //!
-//! Создаёт 4 кошелька: Creator (вестинг), Validator Reserve, Public & Liquidity, Ecosystem.
-//! Запуск из корня репо: cargo run -p acp-wallet --example genesis_wallets
+//! Creates 4 wallets: Creator (vesting), Validator Reserve, Public & Liquidity, Ecosystem.
+//! Run from the repo root: cargo run -p acp-wallet --example genesis_wallets
 //!
-//! ВАЖНО: мнемоники нужно сохранить в безопасном месте. Кто владеет мнемоникой — владеет средствами.
+//! IMPORTANT: Mnemonics must be kept in a safe place. Whoever owns mnemonics owns the means.
 
 use acp_crypto::{
     protocol_params::{
@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wallets: Vec<GenesisWallet> = Vec::with_capacity(4);
 
     let roles: [(&str, u64); 4] = [
-        ("Creator (vesting 7 лет)", GENESIS_ACP_CREATOR),
+        ("Creator (vesting 7 years)", GENESIS_ACP_CREATOR),
         ("Validator Emission Reserve", GENESIS_ACP_VALIDATOR_RESERVE),
         ("Public & Liquidity", GENESIS_ACP_PUBLIC),
         ("Ecosystem Grants", GENESIS_ACP_ECOSYSTEM),
@@ -40,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let id = WalletIdentity::new_from_seed(&seed, OsRng)?;
         let receive_addr = id.receive_address_v0()?;
 
-        // Ecosystem (4-й): сохраняем keystore для переводов (одна и та же мнемоника даёт разный адрес из‑за случайного Dilithium)
+        // Ecosystem (4th): save the keystore for translations (the same mnemonic gives a different address due to random Dilithium)
         if idx == 3 {
             let path = "ecosystem.keystore.json";
             let _ = std::fs::remove_file(path); // remove stale keystore from previous run
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    // Вывод в консоль
+    // Output to console
     println!();
     println!("==============================================");
     println!("  ACP Genesis Wallets (ANCAP token)");
@@ -66,20 +66,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     for (i, w) in wallets.iter().enumerate() {
-        println!("--- Кошелёк {}: {} ---", i + 1, w.role);
+        println!("--- Wallet {}: {} ---", i + 1, w.role);
         println!("  ACP: {} ({} units)", w.amount_acp, w.amount_acp * UNITS_PER_ACP);
-        println!("  Адрес:  {}", w.address);
-        println!("  Мнемоника: {}", w.mnemonic);
+        println!(" Address: {}", w.address);
+        println!(" Mnemonic: {}", w.mnemonic);
         println!();
     }
 
     println!("==============================================");
-    println!("  ВАЖНО: сохраните мнемоники в безопасном месте!");
-    println!("  Потеря мнемоники = потеря доступа к средствам.");
+    println!("IMPORTANT: Keep the mnemonics in a safe place!");
+    println!(" Loss of mnemonics = loss of access to tools.");
     println!("==============================================");
     println!();
 
-    // Записать адреса в JSON (без мнемоник) для сборки Genesis
+    // Write addresses in JSON (without mnemonics) for the Genesis build
     let out: Vec<serde_json::Value> = wallets
         .iter()
         .map(|w| {
@@ -93,8 +93,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
     let path = "genesis-addresses.json";
     std::fs::write(path, serde_json::to_string_pretty(&out)?)?;
-    println!("Адреса записаны в: {}", path);
-    println!("(Мнемоники только выше — сохраните их вручную.)");
+    println!("Addresses are written in: {}", path);
+    println!("(Mnemonics above only - save them manually.)");
 
     Ok(())
 }

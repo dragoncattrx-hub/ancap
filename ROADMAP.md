@@ -1,146 +1,146 @@
 # Roadmap & Architecture Notes
 
-Дорожная карта и архитектурные решения ANCAP. Визия — [docs/VISION.md](docs/VISION.md). **Финальная архитектура в 3 уровня (L1/L2/L3)** — [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Пошаговый план «от нуля до L3»** с сопоставлением плана и текущего кода — [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Здесь — приоритеты спринтов; в README — текущее состояние и запуск.
+ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISION.md). **Final architecture in 3 levels (L1/L2/L3)** — [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Step by step plan «zero to L3»** with a comparison of the plan and the current code — [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Here — sprint priorities; in README — current state and launch.
 
 ---
 
-## Статус реализации (Apr 2026)
+## Implementation status (Apr 2026)
 
-- **Governance Surface:** реализованы lifecycle transitions для proposal flow, обязательный reason для reject/appeal, audit events по proposal lifecycle, UI diff-view с цветовой индикацией и модераторскими action flows (включая confirm/reason для ban).
-- **On-chain Settlement Paths (v1 hybrid):** добавлены `settlement_intents` и `chain_receipts`, API intents/receipts, ACP-first/driver-based execution через chain anchor driver с correlation-id и on-chain receipt persistence.
-- **Anti-sybil reinforcement:** добавлены tier/gate проверки (stake/trust/reputation + reciprocity/suspicious density/cycle block) и их применение на ключевые операции `runs`, `listings`, `orders` с explainable reason codes.
-
----
-
-## 1. Главный архитектурный риск (Marketplace + Agent Hiring)
-
-Когда агенты нанимают друг друга, платят друг другу и создают «команды», система превращается в экономическую сеть. **Риск:** self-reinforcing sybil economy (A создаёт B,C,D; B покупает у C; C — фейковый аудит; D накручивает репутацию). Без граф-анализа это уязвимость. Текущие митигации: 1-hop anti-self-dealing, quarantine; см. раздел в README «Главный архитектурный риск».
+- **Governance Surface:** lifecycle transitions for proposal flow, mandatory reason for reject/appeal, audit events for proposal lifecycle, UI diff-view with color indication and moderator action flows (including confirm/reason for ban) have been implemented.
+- **On-chain Settlement Paths (v1 hybrid):** added `settlement_intents` And `chain_receipts`, API intents/receipts, ACP-first/driver-based execution through chain anchor driver with correlation-id And on-chain receipt persistence.
+- **Anti-sybil reinforcement:** added tier/gate checks (stake/trust/reputation + reciprocity/suspicious density/cycle block) and their application to key operations `runs`, `listings`, `orders` with explainable reason codes.
 
 ---
 
-## 2. Sprint-2: что критично добавить
+## 1. Main Architectural Risk (Marketplace + Agent Hiring)
 
-### 2.1 Agent Graph Index (ядро anti-sybil) ✅
+When agents hire each other, pay each other and create «teams», the system turns into an economic network. **Risk:** self-reinforcing sybil economy (A creates B,C,D; B buys from C; C — fake audit; D builds up reputation). Without graph analysis, this is a vulnerability. Current mitigations: 1-hop anti-self-dealing, quarantine; see section in README «Main architectural risk».
 
-**Таблица `agent_relationships`** (миграция 011):
+---
+
+## 2. Sprint-2: what is critical to add
+
+### 2.1 Agent Graph Index (anti-sybil core) ✅
+
+**Table `agent_relationships`** (migration 011):
 - `source_agent_id`, `target_agent_id`
 - `relation_type`: order, review, contract, grant, same_owner, …
 - `weight`, `ref_type`, `ref_id`, `created_at`
 
-**Фоновый процесс:** джоб `upsert_agent_relationships_from_orders` (инкрементально по watermark) заполняет рёбра из оплаченных заказов (buyer → seller); вызывается из `POST /v1/system/jobs/tick` вместе с edges_daily. Anti-self-dealing: пропуск при buyer_id == seller_id.
+**Background process:** pocket `upsert_agent_relationships_from_orders` (incrementally by watermark) fills the edges from paid orders (buyer → seller); called from `POST /v1/system/jobs/tick` along with edges_daily. Anti-self-dealing: pass for buyer_id == seller_id.
 
-**Метрики графа:** `GET /v1/agents/{agent_id}/graph-metrics` возвращает **reciprocity_score**, **cluster_cohesion**, **suspicious_density**, **cluster_size**, **in_cycle**. Сервис: `get_cluster_size`, `has_cycle`, `get_agent_graph_metrics`. **Ограничение по политике:** **max_reciprocity_score**, **max_suspicious_density**, **max_cluster_size**, **block_if_in_cycle**. **Интеграция с Moderation API:** **GET /v1/moderation/agents/{agent_id}/graph-context** — metrics + flags (in_cycle, suspicious_density_high, large_cluster) для модерации.
+**Graph metrics:** `GET /v1/agents/{agent_id}/graph-metrics` returns **reciprocity_score**, **cluster_cohesion**, **suspicious_density**, **cluster_size**, **in_cycle**. Service: `get_cluster_size`, `has_cycle`, `get_agent_graph_metrics`. **Policy Limit:** **max_reciprocity_score**, **max_suspicious_density**, **max_cluster_size**, **block_if_in_cycle**. **Integration with Moderation API:** **GET /v1/moderation/agents/{agent_id}/graph-context** — metrics + flags (in_cycle, suspicious_density_high, large_cluster) for moderation.
 
-### 2.2 Reputation 2.0 (версионируемое, аудируемое, anti-sybil)
+### 2.2 Reputation 2.0 (versioning, auditing, anti-sybil)
 
-**Спецификация:** [docs/REPUTATION_2.md](docs/REPUTATION_2.md) — цели, слои (Event Sourcing → Graph & Trust → Scoring), сигналы качества, anti-sybil факторы F1–F7, схема БД, алгоритм, политики, API, план Sprint-2.
+**Specification:** [docs/REPUTATION_2.md](docs/REPUTATION_2.md) — goals, layers (Event Sourcing → Graph & Trust → Scoring), quality signals, anti-sybil factors F1–F7, database schema, algorithm, policies, API, Sprint-2 plan.
 
-**Уже сделано (Sprint-2 фундамент):**
-- Таблицы: `reputation_events`, `relationship_edges_daily`, `trust_scores`, `reputation_snapshots` (миграция 004).
-- API: `GET /v1/reputation?subject_type=&subject_id=&window=90d` — возвращает снапшот с компонентами и algo_version; без `window` — legacy одно число. `GET /v1/reputation/events` — аудит событий. `POST /v1/reputation/recompute` — заглушка пересчёта.
+**Already done (Sprint-2 foundation):**
+- Tables: `reputation_events`, `relationship_edges_daily`, `trust_scores`, `reputation_snapshots` (migration 004).
+- API: `GET /v1/reputation?subject_type=&subject_id=&window=90d` — returns a snapshot with components and algo_version; without `window` — legacy one number. `GET /v1/reputation/events` — event audit. `POST /v1/reputation/recompute` — recount stub.
 
-**Жёсткое правило (не ML):** если buyer и seller принадлежат одному user_id или identity_cluster_id → interaction weight = 0, событие не даёт репутацию; в заказах уже есть 1-hop anti-self-dealing (orders.py). Это самый высокий ROI контроль.
+**Hard rule (not ML):** if buyer and seller belong to the same user_id or identity_cluster_id → interaction weight = 0, the event does not give reputation; orders already have 1-hop anti-self-dealing (orders.py). This is the highest ROI control.
 
-**Подключение политик лимитов по trust/score:** в policy_json (risk) добавлены опциональные ключи **min_trust_score** (0..1), **min_reputation_score** (0..100), **reputation_window** (по умолчанию 90d). При запросе run (POST /v1/runs) проверяется владелец стратегии (agent): если в политике задан порог, загружаются TrustScore и/или ReputationSnapshot для окна; при несоответствии — 403 с сообщением. **Дальше (уже сделано):** заполнение `reputation_events` из orders (on_order_fulfilled в place_order) и runs (on_run_completed, on_evaluation_scored); агрегация в `relationship_edges_daily` — джоб edges_daily_upsert; расчёт trust_score и снапшотов — `recompute_for_subject` в reputation_recompute.py. **Периодический пересчёт:** джоб `reputation_tick` (app/jobs/reputation_tick.py) — выбирает до 50 субъектов с событиями за последние 7 дней, для каждого вызывает recompute_for_subject (trust + snapshot); вызывается из `POST /v1/system/jobs/tick` (поле `reputation_recomputed`).
+**Connecting limit policies by trust/score:** optional keys added to policy_json (risk) **min_trust_score** (0..1), **min_reputation_score** (0..100), **reputation_window** (default 90d). When requesting run (POST /v1/runs), the owner of the strategy (agent) is checked: if a threshold is specified in the policy, TrustScore and/or ReputationSnapshot for the window are loaded; in case of discrepancy — 403 with a message. **Next (already done):** filling `reputation_events` from orders (on_order_fulfilled v place_order) and runs (on_run_completed, on_evaluation_scored); aggregation v `relationship_edges_daily` — pocket edges_daily_upsert; trust_score and snapshot calculation — `recompute_for_subject` in reputation_recompute.py. **Periodic recalculation:** pocket `reputation_tick` (app/jobs/reputation_tick.py) — selects up to 50 subjects with events for the last 7 days, for each calls recompute_for_subject (trust + snapshot); called from `POST /v1/system/jobs/tick` (field `reputation_recomputed`).
 
-### 2.3 Run Isolation Model ✅ (базово)
+### 2.3 Run Isolation Model ✅ (basic)
 
-**Реализовано через policy DSL и interpreter:** лимиты передаются в run и применяются в `app/engine/interpreter.py`:
-- **max_steps** — макс. число шагов (по умолчанию 1000); при превышении run переводится в killed.
-- **max_runtime_ms** — макс. время выполнения в мс (по умолчанию 60_000).
-- **max_action_calls** — макс. число вызовов действий (по умолчанию 500).
+**Implemented via policy DSL and interpreter:** limits are passed to run and applied in `app/engine/interpreter.py`:
+- **max_steps** — Max. number of steps (default 1000); when exceeded, run is converted to killed.
+- **max_runtime_ms** — Max. execution time in ms (default 60_000).
+- **max_action_calls** — Max. number of action calls (default 500).
 
-В policy_json и get_effective_limits добавлен **max_external_calls** (reserved) — при появлении внешних вызовов в interpreter его можно будет учитывать. CPU/memory budget — при появлении контейнерного раннера.
+Added to policy_json and get_effective_limits **max_external_calls** (reserved) — when external calls appear in the interpreter, it can be taken into account. CPU/memory budget — when the container runner appears.
 
-### 2.4 Risk Engine как policy DSL ✅
+### 2.4 Risk Engine how policy DSL ✅
 
-**Реализовано:** в `app/services/risk.py` — интерпретируемый слой по `policy_json`:
-- **max_drawdown** / **max_loss_pct** (оба допустимы) → kill run при drawdown ≥ порога;
-- **max_position_size_pct** — ключ в limits (резерв для интерпретатора);
-- **circuit_breaker**: `{ "metric", "threshold" }` — `get_circuit_breaker_spec(policy)` для джобов;
-- **max_steps**, **max_runtime_ms**, **max_action_calls** — как раньше.
+**Realized:** V `app/services/risk.py` — interpretable layer by `policy_json`:
+- **max_drawdown** / **max_loss_pct** (both are acceptable) → kill run at drawdown ≥ threshold;
+- **max_position_size_pct** — key in limits (reserve for interpreter);
+- **circuit_breaker**: `{ "metric", "threshold" }` — `get_circuit_breaker_spec(policy)` for jobs;
+- **max_steps**, **max_runtime_ms**, **max_action_calls** — as before.
 
-Таблицы `risk_policies` и circuit breakers уже есть; запуск run проверяет pool halted (409). **Джоб по метрике:** `circuit_breaker_by_metric_tick` в `app/jobs/circuit_breaker_by_metric.py` — по политикам с `circuit_breaker: { metric, threshold }` (пока только scope_type=pool, metric=daily_loss) считает средний return_pct по run’ам за последние 24ч; при loss ≥ threshold выставляет CircuitBreaker state=halted. Вызывается из `POST /v1/system/jobs/tick` (поле `circuit_breaker_by_metric: { evaluated, tripped }`).
-
----
-
-## 3. Ledger — архитектурное усиление ✅ (базово)
-
-- **Инвариант:** ∑ balance(currency) = 0 по каждой валюте (кроме mint/burn). Это уже задекларировано.
-- **Типы системных аккаунтов:** введены в модели и миграции: колонка `account_kind` (`treasury`, `external`, `fees`, `escrow`, `burn`); enum `AccountKindEnum`; при создании счёта по `owner_type` выставляется kind (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury). Миграция 012 + backfill.
-- **Invariant checker:** в `app/services/ledger.py` — `check_ledger_invariant(session)` возвращает список нарушений (currency, sum) где sum(amount_value) ≠ 0 по валюте. Вызывается из `POST /v1/system/jobs/tick`; в ответе поле `ledger_invariant_violations`. **Блокировка при нарушении:** тик выставляет флаг `ledger_invariant_halted` (job_watermarks); при `true` операции ledger (deposit, withdraw, allocate) и place_order возвращают 503. Статус флага: `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
+Tables `risk_policies` and circuit breakers already exist; running run checks for pool halted (409). **Metric pocket:** `circuit_breaker_by_metric_tick` V `app/jobs/circuit_breaker_by_metric.py` — by politicians with `circuit_breaker: { metric, threshold }` (so far only scope_type=pool, metric=daily_loss) calculates the average return_pct by run’am for the last 24 hours; at loss ≥ threshold sets CircuitBreaker state=halted. Called from `POST /v1/system/jobs/tick` (field `circuit_breaker_by_metric: { evaluated, tripped }`).
 
 ---
 
-## 4. Что делает ANCAP по-настоящему AI-native
+## 3. Ledger — architectural reinforcement ✅ (basic)
 
-Не API и не маркетплейс сами по себе, а то, что **стратегии — это declarative workflow spec**. При корректном interpreter возможны:
-- автоматическая эволюция стратегий;
-- A/B версионирование;
+- **Invariant:** ∑ balance(currency) = 0 for each currency (except mint/burn). This has already been declared.
+- **Types of system accounts:** entered into models and migrations: column `account_kind` (`treasury`, `external`, `fees`, `escrow`, `burn`); enum `AccountKindEnum`; when creating an account `owner_type` kind (system) is set→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury). Migration 012 + backfill.
+- **Invariant checker:** V `app/services/ledger.py` — `check_ledger_invariant(session)` returns a list of violations (currency, sum) where sum(amount_value) ≠ 0 by currency. Called from `POST /v1/system/jobs/tick`; in the response field `ledger_invariant_violations`. **Blocking in case of violation:** tick puts up a flag `ledger_invariant_halted` (job_watermarks); at `true` ledger (deposit, withdraw, allocate) and place_order operations return 503. Flag status: `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
+
+---
+
+## 4. What makes ANCAP truly AI-native
+
+Not the API or the marketplace themselves, but the fact that **strategies — This declarative workflow spec**. With the correct interpreter the following are possible:
+- automatic evolution of strategies;
+- A/B versioning;
 - mutation engine, auto-optimization, evolutionary search.
 
-Итог: **self-evolving capital allocator**.
+Result: **self-evolving capital allocator**.
 
 ---
 
-## 5. Execution DAG ✅ (базово)
+## 5. Execution DAG ✅ (basic)
 
-**Реализовано:** таблица **run_steps** (… artifact_hash, **score_value**, **score_type**, context_after). Таблица **run_step_scores** (run_step_id, score_type, score_value) — альтернативные типы оценок: **outcome** (в run_steps), **latency** (из duration_ms: max(0, 1 − duration_ms/10000)), **quality** — встроенный scorer в `app/services/step_quality.py`: `compute_step_quality(...)` = 0.6×outcome + 0.4×latency (0..1). **Внешний scorer (опция):** при заданном **quality_scorer_url** (config) для каждого шага выполняется POST с payload `{ step_id, action, state, duration_ms, result_summary }`; ожидается JSON `{ "score": float }` в [0,1]; при таймауте/ошибке используется встроенная эвристика. Конфиг: `quality_scorer_url`, `quality_scorer_timeout_seconds`. При policy `record_quality_score: true` или `step_scorers: ["quality"]` в run_step_scores пишется вычисленное значение; прочие типы из step_scorers — placeholder 0.5. **GET /v1/runs/{run_id}/steps** и по индексу возвращают **scores**: [{ score_type, score_value }, …]. **POST /v1/runs/replay** — полный и от шага N.
+**Realized:** table **run_steps** (… artifact_hash, **score_value**, **score_type**, context_after). Table **run_step_scores** (run_step_id, score_type, score_value) — alternative types of assessments: **outcome** (V run_steps), **latency** (from duration_ms: max(0, 1 − duration_ms/10000)), **quality** — built-in scorer `app/services/step_quality.py`: `compute_step_quality(...)` = 0.6×outcome + 0.4×latency (0..1). **External scorer (optional):** for a given **quality_scorer_url** (config) for each step a POST is performed with payload `{ step_id, action, state, duration_ms, result_summary }`; JSON expected `{ "score": float }` V [0,1]; When there is a timeout/error, the built-in heuristics are used. Config: `quality_scorer_url`, `quality_scorer_timeout_seconds`. At policy `record_quality_score: true` or `step_scorers: ["quality"]` the calculated value is written to run_step_scores; other types from step_scorers — placeholder 0.5. **GET /v1/runs/{run_id}/steps** and return by index **scores**: [{ score_type, score_value }, …]. **POST /v1/runs/replay** — full and from step N.
 
 ---
 
 ## Challenge types (L3) ✅
 
-**Реализовано:** типы **reasoning** и **tool_use** формализованы в схемах (`ChallengeType = Literal["reasoning", "tool_use"]`) и в сервисе onboarding. Формат payload: reasoning — `{ "prompt", "nonce" }`; tool_use — `{ "task", "input", "nonce" }`. При attest проверяется **solution_hash**: для reasoning — клиент присылает SHA256(первые 8 hex-символов SHA256(nonce)); для tool_use — SHA256(input). Неверное solution → 400 Invalid solution.
+**Realized:** types **reasoning** And **tool_use** formalized in diagrams (`ChallengeType = Literal["reasoning", "tool_use"]`) and in service onboarding. Format payload: reasoning — `{ "prompt", "nonce" }`; tool_use — `{ "task", "input", "nonce" }`. When attest is checked **solution_hash**: for reasoning — the client sends SHA256(first 8 hex characters SHA256(nonce)); for tool_use — SHA256(input). Wrong solution → 400 Invalid solution.
 
 ---
 
 ## Chain drivers (L3) ✅
 
-**Реализовано:** выбор драйвера по **chain_anchor_driver** (config). **mock** — по-прежнему сохраняет запись в БД с детерминированным tx_hash. **acp** — реальный драйвер: POST на **acp_rpc_url** (config) JSON-RPC метод **ancap_anchor** с параметрами chain_id, payload_type, payload_hash; в ответе ожидается result (строка tx_hash или объект с полем tx_hash/txHash); создаётся ChainAnchor с возвращённым tx_hash. При ошибке RPC или отсутствии acp_rpc_url — 503. Неизвестный драйвер (ethereum, solana) — 501. Регистрация драйверов: **get_anchor_driver(driver_name)** в `app/services/chain_anchor.py`.
+**Realized:** driver selection by **chain_anchor_driver** (config). **mock** — still saves the entry to the database with a deterministic tx_hash. **acp** — real driver: POST on **acp_rpc_url** (config) JSON-RPC method **ancap_anchor** with parameters chain_id, payload_type, payload_hash; the response expects result (a tx_hash string or an object with the tx_hash/txHash field); a ChainAnchor is created with tx_hash returned. If RPC error or missing acp_rpc_url — 503. Unknown driver (ethereum, solana) — 501. Driver registration: **get_anchor_driver(driver_name)** V `app/services/chain_anchor.py`.
 
 ### ACP nodes: peering & RPC auth ✅ (dev tooling)
 
-- `acp-node` поддерживает best-effort синхронизацию блоков через `peer_rpc_urls` (пулл по высоте).
-- Для безопасной публикации RPC добавлена опциональная аутентификация через `x-acp-rpc-token` для state-changing методов (`submitblock`, `sendrawtransaction`).
+- `acp-node` supports best-effort block synchronization via `peer_rpc_urls` (pull in height).
+- For secure RPC publishing, added optional authentication via `x-acp-rpc-token` for state-changing methods (`submitblock`, `sendrawtransaction`).
 
 ---
 
 ## Stake-to-activate (L3) ✅
 
-**Реализовано:** при `STAKE_TO_ACTIVATE_AMOUNT` > 0: регистрация агента не выставляет `activated_at` (активация только через стейк). При первом стейке с суммой ≥ порога и валютой `STAKE_TO_ACTIVATE_CURRENCY` агент получает `activated_at`. Эндпоинты **POST /v1/runs** и **POST /v1/listings** проверяют владельца стратегии через **require_activated_if_stake_required** — при неактивированном агенте возвращают 403 с сообщением о необходимости стейка. Сервис `app/services/stakes.py`: `require_activated_if_stake_required(session, agent_id)`.
+**Realized:** at `STAKE_TO_ACTIVATE_AMOUNT` > 0: agent registration does not expose `activated_at` (activation only through stake). At the first steak with the amount ≥ threshold and currency `STAKE_TO_ACTIVATE_CURRENCY` agent receives `activated_at`. Endpoints **POST /v1/runs** And **POST /v1/listings** check the owner of the strategy through **require_activated_if_stake_required** — if the agent is not activated, they return 403 with a message about the need for a steak. Service `app/services/stakes.py`: `require_activated_if_stake_required(session, agent_id)`.
 
 ---
 
 ## Chain drivers ethereum / solana (L3) ✅
 
-**Реализовано:** драйверы **ethereum** и **solana** по аналогии с ACP: конфиг **ethereum_rpc_url**, **solana_rpc_url**; при `chain_anchor_driver=ethereum` или `solana` вызывается тот же JSON-RPC метод **ancap_anchor** (params: chain_id, payload_type, payload_hash). Ответ: **result** — строка tx_hash/signature или объект с полем tx_hash/txHash/signature. Пустой RPC URL → 503. Общая логика вынесена в **_anchor_via_rpc**; **get_anchor_driver** возвращает anchor_ethereum / anchor_solana.
+**Realized:** drivers **ethereum** And **solana** similar to ACP: config **ethereum_rpc_url**, **solana_rpc_url**; at `chain_anchor_driver=ethereum` or `solana` the same JSON-RPC method is called **ancap_anchor** (params: chain_id, payload_type, payload_hash). Answer: **result** — a string tx_hash/signature or an object with a field tx_hash/txHash/signature. Empty RPC URL → 503. The general logic is carried out in **_anchor_via_rpc**; **get_anchor_driver** returns anchor_ethereum / anchor_solana.
 
 ---
 
-## Дальше по плану (потом)
+## Further according to plan (later)
 
-- Нет критичных пунктов; при расширении — кастомные RPC-методы или подписание транзакций на стороне узла.
-
----
-
-## 6. Стратегический фокус
-
-ANCAP на пересечении:
-- **B) Экономика AI-агентов** (маркетплейс, найм, репутация, граф);
-- **E) Meta-allocator layer** (распределение капитала по стратегиям и пулам, эволюция стратегий).
-
-Эта позиция задаёт приоритеты: граф и anti-sybil, версионируемая репутация, policy-based risk, изоляция runs.
+- There are no critical points; when expanding — custom RPC methods or signing transactions on the node side.
 
 ---
 
-## 7. Зрелость MVP (Sprint-1)
+## 6. Strategic Focus
 
-Для первого спринта заложен сильный фундамент:
-- модульность (вертикали, стратегии, пулы, ledger, runs);
-- финтех-инварианты (double-entry, идемпотентность);
-- карантин вертикалей и агентов;
-- версионирование стратегий и хеши артефактов runs;
-- lineage по `parent_run_id`.
+ANCAP at the intersection:
+- **B) Economy of AI Agents** (marketplace, hiring, reputation, graph);
+- **E) Meta-allocator layer** (distribution of capital across strategies and pools, evolution of strategies).
 
-Уровень выше среднего для типичных стартап-архитектур; следующий шаг — закрыть риски Marketplace (граф, репутация) и формализовать Risk и Run isolation.
+This position sets the priorities: graph and anti-sybil, versioned reputation, policy-based risk, isolation runs.
+
+---
+
+## 7. MVP maturity (Sprint-1)
+
+A strong foundation has been laid for the first sprint:
+- modularity (verticals, strategies, pools, ledger, runs);
+- fintech invariants (double-entry, idempotency);
+- quarantine of verticals and agents;
+- versioning strategies and artifact hashes;
+- lineage by `parent_run_id`.
+
+Above average for typical startup architectures; next step — close Marketplace risks (graph, reputation) and formalize Risk and Run isolation.

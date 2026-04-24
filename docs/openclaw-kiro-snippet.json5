@@ -1,6 +1,6 @@
-// Вставьте этот блок в ~/.openclaw/openclaw.json.
-// Провайдер kiro + anthropic (оба указывают на Kiro), модель по умолчанию: claude-opus-4.6.
-// anthropic нужен для slug-generator и других внутренних вызовов OpenClaw.
+// Insert this block into ~/.openclaw/openclaw.json.
+// Provider kiro + anthropic (both point to Kiro), default model: claude-opus-4.6.
+// anthropic is needed for slug-generator and other OpenClaw internal calls.
 // Base URL: https://api.kiro.cheap
 
 {

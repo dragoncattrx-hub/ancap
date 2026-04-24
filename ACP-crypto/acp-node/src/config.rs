@@ -1,7 +1,7 @@
 //! Node config (chain_id, data_dir, rpc_listen, [exports], [protocol]).
 //!
-//! При реализации Genesis и PoS: лимиты эмиссии и правила по умолчанию берутся из
-//! `acp_crypto::protocol_params`. Опциональные переопределения — через секцию `[protocol]` в TOML.
+//! When implementing Genesis and PoS: emission limits and default rules are taken from
+//! `acp_crypto::protocol_params`. Optional overrides are via the `[protocol]` section of TOML.
 //!
 //! Config file (--config path): supports [rpc] listen, [storage] data_dir, top-level peer_rpc_urls.
 

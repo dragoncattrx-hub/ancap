@@ -4,7 +4,7 @@ use anyhow::Context;
 use fs2::FileExt;
 
 pub struct ExportLock {
-    _file: File, // держим хэндл, пока жив guard
+    _file: File, // hold the handle while guard is alive
 }
 
 impl ExportLock {

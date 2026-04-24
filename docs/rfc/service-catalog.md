@@ -1,21 +1,21 @@
 # RFC: ANCAP v2 — Service Catalog v1.0
 
-Каталог сервисов для ANCAP v2 (AI-государство), микросервисная архитектура.  
-Нотация: **CMD** — синхронная команда (REST/gRPC), **EVT** — событие (Kafka/NATS).  
-Все сервисы обязаны: Outbox, Idempotency-Key, mTLS, OPA policy check, structured logging + tracing.
+Service catalog for ANCAP v2 (AI-state), microservice architecture.  
+Notation: **CMD** is a synchronous command (REST/gRPC), **EVT** is an event (Kafka/NATS).  
+All services are required: Outbox, Idempotency-Key, mTLS, OPA policy check, structured logging + tracing.
 
 ---
 
-## 0. Общие стандарты
+## 0. General standards
 
-### 0.1 Идентификаторы
+### 0.1 ID
 
 - `citizen_id` (UUID)
 - `strategy_id`, `version_id`, `run_id`, `pool_id`, `listing_id`, `order_id`, `case_id`, `policy_id`
 - `artifact_hash` (hex, sha256)
 - `event_id` (UUID)
 
-### 0.2 Событийная оболочка (обязательна для всех EVT)
+### 0.2 Event wrapper (required for all EVTs)
 
 ```json
 {
@@ -30,13 +30,13 @@
 }
 ```
 
-### 0.3 SLO базовые
+### 0.3 SLO basic
 
 - Read APIs: p95 < 200ms, availability 99.9%
 - Write CMD: p95 < 400ms, availability 99.9%
-- Critical pipelines (runs/settlement): end-to-end p95 < 60s (в MVP может быть выше)
+- Critical pipelines (runs/settlement): end-to-end p95 < 60s (may be higher in MVP)
 
-### 0.4 Хранилища
+### 0.4 Storage
 
 - Postgres (OLTP)
 - Object store (MinIO/S3)
@@ -47,15 +47,15 @@
 
 ## 1) edge/api-gateway
 
-**Назначение:** единая точка входа: auth, routing, rate-limit, versioning.
+**Purpose:** single entry point: auth, routing, rate-limit, versioning.
 
-**CMD (публичные):**
+**CMD (public):**
 
 - `GET /health`
-- `POST /auth/token` (делегирует в id-citizenship/agent-sdk)
+- `POST /auth/token` (delegates to id-citizenship/agent-sdk)
 - `/*` proxy to internal services
 
-**EVT:** none (не владелец данных)
+**EVT:** none (not data owner)
 
 **SLO:** availability 99.95%
 
@@ -63,9 +63,9 @@
 
 ## 2) core-state/id-citizenship
 
-**Назначение:** гражданство, роли, аттестации, AI-onboarding evidence.
+**Purpose:** citizenship, roles, certifications, AI-onboarding evidence.
 
-**Владеет данными:** citizens, roles, attestations, api_keys (если без отдельного agent-sdk).
+**Owns data:** citizens, roles, attestations, api_keys (if without a separate agent-sdk).
 
 **CMD:**
 
@@ -75,13 +75,13 @@
 - `POST /citizens/{id}/roles/revoke`
 - `GET /citizens/{id}`
 - `GET /citizens/{id}/roles`
-- `POST /auth/issue` (выпуск JWT по ключу агента)
+- `POST /auth/issue` (issue JWT using agent key)
 
 **EVT out:** CitizenRegistered, CitizenAttested, RoleGranted, RoleRevoked
 
-**EVT in:** ReputationUpdated (для claims/tiers, опционально как read-model)
+**EVT in:** ReputationUpdated (for claims/tiers, optional as read-model)
 
-**Таблицы (DDL-скелет):**
+**Tables (DDL skeleton):**
 
 - `citizens(id, kind, status, created_at, metadata_jsonb)`
 - `citizen_roles(citizen_id, role, granted_at, granted_by)`
@@ -95,36 +95,36 @@
 
 ## 3) core-state/treasury-stake
 
-**Назначение:** Stake/Collateral ledger, locks, slashing, balance projections.
+**Purpose:** Stake/Collateral ledger, locks, slashing, balance projections.
 
 **CMD:**
 
 - `POST /stake/deposit`
-- `POST /stake/withdraw` (если разрешено политикой)
+- `POST /stake/withdraw` (if allowed by policy)
 - `POST /stake/lock`
 - `POST /stake/unlock`
-- `POST /stake/slash` (только COURT/RISK/PROTOCOL)
+- `POST /stake/slash` (only COURT/RISK/PROTOCOL)
 - `GET /stake/balances/{citizen_id}`
 - `GET /stake/locks/{citizen_id}`
 
 **EVT out:** StakeDeposited, StakeWithdrawn, StakeLocked, StakeUnlocked, StakeSlashed
 
-**EVT in:** SanctionApplied, GovParamsApplied (обновление min stake/lock periods)
+**EVT in:** SanctionApplied, GovParamsApplied (renew min stake/lock periods)
 
-**Таблицы:**
+**Tables:**
 
 - `ledger(id, citizen_id, type, amount, asset, ref_type, ref_id, created_at)` (append-only)
 - `balances(citizen_id, asset, available, locked, updated_at)` (projection)
 - `locks(id, citizen_id, asset, amount, reason, unlock_at, status)`
 - `outbox(...)`
 
-**SLO:** write p95 < 500ms; balances p95 < 150ms; консистентность ledger→balances < 5s
+**SLO:** write p95 < 500ms; balances p95 < 150ms; consistency ledger→balances < 5s
 
 ---
 
 ## 4) core-state/reputation-engine
 
-**Назначение:** репутация: скоринг, decay, penalties, tiers.
+**Purpose:** reputation: scoring, decay, penalties, tiers.
 
 **CMD:**
 
@@ -137,7 +137,7 @@
 
 **EVT in:** MetricsComputed, StakeLocked, StakeSlashed, RulingIssued, GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `reputation_snapshots(citizen_id, score, tier, components_jsonb, as_of)`
 - `reputation_events(id, citizen_id, type, delta, reason_ref, created_at)`
@@ -149,7 +149,7 @@
 
 ## 5) core-state/trust-graph
 
-**Назначение:** web-of-trust, collusion graph, relationship evidence.
+**Description:** web-of-trust, collusion graph, relationship evidence.
 
 **CMD:**
 
@@ -170,7 +170,7 @@
 
 ## 6) core-state/governance
 
-**Назначение:** AI-DAO: proposals, votes, params registry, signed config bundle.
+**Purpose:** AI-DAO: proposals, votes, params registry, signed config bundle.
 
 **CMD:**
 
@@ -185,7 +185,7 @@
 
 **EVT in:** ReputationUpdated (vote weight), StakeLocked (vote eligibility), StakeSlashed (disqualify)
 
-**Таблицы:**
+**Tables:**
 
 - `proposals(id, type, payload_jsonb, status, created_by, created_at, closes_at)`
 - `votes(id, proposal_id, voter_id, weight, choice, created_at)`
@@ -198,7 +198,7 @@
 
 ## 7) core-state/proof-registry
 
-**Назначение:** registry доказательств: hashes, pointers, merkle index, chain anchor interface.
+**Purpose:** evidence registry: hashes, pointers, merkle index, chain anchor interface.
 
 **CMD:**
 
@@ -211,7 +211,7 @@
 
 **EVT in:** RunFinalized, StrategyVersionReleased, DatasetRegistered
 
-**Таблицы:**
+**Tables:**
 
 - `artifacts(hash, kind, ref_jsonb, created_at, created_by)`
 - `run_artifacts(run_id, inputs_hash, workflow_hash, outputs_hash, created_at)`
@@ -224,7 +224,7 @@
 
 ## 8) core-state/court
 
-**Назначение:** диспуты и санкции. Оркестрирует slashing/rep penalty/delist.
+**Purpose:** disputes and sanctions. Orchestrates slashing/rep penalty/delist.
 
 **CMD:**
 
@@ -236,9 +236,9 @@
 
 **EVT out:** CaseOpened, EvidenceSubmitted, RulingIssued, SanctionApplied
 
-**EVT in:** RiskAlertRaised, CollusionSignalRaised, ArtifactsRegistered, OrderFilled (если спор маркетплейса)
+**EVT in:** RiskAlertRaised, CollusionSignalRaised, ArtifactsRegistered, OrderFilled (if marketplace dispute)
 
-**Таблицы:**
+**Tables:**
 
 - `cases(id, type, status, opened_by, subject_ref_jsonb, created_at)`
 - `evidence(id, case_id, submitter_id, proof_refs_jsonb, created_at)`
@@ -246,7 +246,7 @@
 - `sanctions(id, case_id, actions_jsonb, applied_at, status)`
 - `outbox(...)`
 
-**Интеграции (CMD calls):**
+**Integrations (CMD calls):**
 
 - → treasury-stake `/stake/slash`
 - → reputation-engine `/reputation/apply`
@@ -258,7 +258,7 @@
 
 ## 9) economy/strategy-registry
 
-**Назначение:** стратегии и версии (workflow-spec декларативный), risk_spec, licensing.
+**Purpose:** strategies and versions (workflow-spec declarative), risk_spec, licensing.
 
 **CMD:**
 
@@ -273,7 +273,7 @@
 
 **EVT in:** GovParamsApplied (compliance rules), SanctionApplied (freeze strategy)
 
-**Таблицы:**
+**Tables:**
 
 - `strategies(id, owner_id, status, metadata_jsonb, created_at)`
 - `strategy_versions(id, strategy_id, semver, spec_ref, risk_spec_jsonb, status, created_at)`
@@ -286,7 +286,7 @@
 
 ## 10) economy/vertical-registry
 
-**Назначение:** вертикали/плагины: schema метрик, schema риска, allow_actions.
+**Purpose:** verticals/plugins: metrics schema, risk schema, allow_actions.
 
 **CMD:**
 
@@ -300,7 +300,7 @@
 
 **EVT in:** GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `verticals(id, name, status, created_at)`
 - `vertical_versions(id, vertical_id, spec_ref, status, created_at)`
@@ -310,7 +310,7 @@
 
 ## 11) economy/market
 
-**Назначение:** listings, orders, subscriptions, royalties.
+**Purpose:** listings, orders, subscriptions, royalties.
 
 **CMD:**
 
@@ -326,7 +326,7 @@
 
 **EVT in:** StrategyVersionReleased, SanctionApplied, StakeSlashed (risk gating)
 
-**Таблицы:**
+**Tables:**
 
 - `listings(id, kind, ref_jsonb, price_jsonb, status, seller_id, created_at)`
 - `orders(id, listing_id, buyer_id, terms_jsonb, status, created_at)`
@@ -338,7 +338,7 @@
 
 ## 12) economy/capital-pools
 
-**Назначение:** пулы капитала, ограничения, аллокации, NAV.
+**Purpose:** capital pools, restrictions, allocations, NAV.
 
 **CMD:**
 
@@ -353,7 +353,7 @@
 
 **EVT in:** RunFinalized (update NAV), SettlementCompleted, GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `pools(id, owner_id, type, status, created_at)`
 - `constraints(id, pool_id, spec_jsonb, version, applied_at)`
@@ -365,7 +365,7 @@
 
 ## 13) economy/risk-engine
 
-**Назначение:** pre-run checks, post-run monitoring, alerts, circuit breakers.
+**Purpose:** pre-run checks, post-run monitoring, alerts, circuit breakers.
 
 **CMD:**
 
@@ -379,7 +379,7 @@
 
 **EVT in:** GovParamsApplied, ReputationUpdated, PoolPaused, CollusionSignalRaised
 
-**Таблицы:**
+**Tables:**
 
 - `risk_limits(key, value_jsonb, version, applied_at)`
 - `alerts(id, severity, ref_jsonb, status, created_at)`
@@ -391,7 +391,7 @@
 
 ## 14) economy/insurance
 
-**Назначение:** policies, quotes, claims, pools.
+**Purpose:** policies, quotes, claims, pools.
 
 **CMD:**
 
@@ -405,7 +405,7 @@
 
 **EVT in:** RulingIssued (adjudication), RunFinalized, GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `insurance_pools(id, collateral_spec_jsonb, status, created_at)`
 - `policies(id, pool_id, holder_id, coverage_jsonb, premium, status, created_at)`
@@ -416,7 +416,7 @@
 
 ## 15) economy/payments-settlement
 
-**Назначение:** fee rules, settlement routing, revenue splits, write to treasury ledger.
+**Purpose:** fee rules, settlement routing, revenue splits, write to treasury ledger.
 
 **CMD:**
 
@@ -429,20 +429,20 @@
 
 **EVT in:** RunFinalized, OrderFilled, GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `fee_rules(key, value_jsonb, version, applied_at)`
 - `fees(id, ref_jsonb, amount, asset, status, created_at)`
 - `settlements(id, ref_jsonb, routing_jsonb, status, created_at)`
 - `outbox(...)`
 
-**Интеграции:** → treasury-stake (lock/transfer/slash as bookkeeping)
+**Integrations:** → treasury-stake (lock/transfer/slash as bookkeeping)
 
 ---
 
 ## 16) runtime/execution-orchestrator
 
-**Назначение:** run lifecycle, orchestration, state machine, produces artifacts.
+**Purpose:** run lifecycle, orchestration, state machine, produces artifacts.
 
 **CMD:**
 
@@ -456,7 +456,7 @@
 
 **EVT in:** RunPrechecked (from risk-engine), ComputeLeaseGranted, DataGrantIssued, SanctionApplied (kill/freeze)
 
-**Таблицы:**
+**Tables:**
 
 - `runs(id, requester_id, strategy_ref_jsonb, pool_ref, status, created_at, updated_at)`
 - `run_steps(id, run_id, step, status, started_at, ended_at)`
@@ -469,7 +469,7 @@
 
 ## 17) runtime/sandbox-runner
 
-**Назначение:** worker layer. Выполняет задания в sandbox (containers/wasm). Не владеет OLTP данными.
+**Purpose:** worker layer. Performs tasks in the sandbox (containers/wasm). Does not own OLTP data.
 
 **CMD:**
 
@@ -481,13 +481,13 @@
 
 **Storage:** ephemeral + object store via signed URLs
 
-**SLO:** start job p95 < 5s (зависит от K8s scheduling)
+**SLO:** start job p95 < 5s (depends on K8s scheduling)
 
 ---
 
 ## 18) runtime/data-provenance
 
-**Назначение:** datasets registry, versioning, hashing, access grants.
+**Designation:** datasets registry, versioning, hashing, access grants.
 
 **CMD:**
 
@@ -501,7 +501,7 @@
 
 **EVT in:** OrderFilled (data purchase grants), SanctionApplied (revoke grants if needed)
 
-**Таблицы:**
+**Tables:**
 
 - `datasets(id, owner_id, status, metadata_jsonb, created_at)`
 - `dataset_versions(id, dataset_id, spec_ref, hash, created_at)`
@@ -512,7 +512,7 @@
 
 ## 19) runtime/compute-market-scheduler
 
-**Назначение:** providers, leases, scheduling decisions.
+**Purpose:** providers, leases, scheduling decisions.
 
 **CMD:**
 
@@ -526,7 +526,7 @@
 
 **EVT in:** ReputationUpdated (provider ranking), SanctionApplied
 
-**Таблицы:**
+**Tables:**
 
 - `providers(id, owner_id, capabilities_jsonb, price_jsonb, status, created_at)`
 - `leases(id, provider_id, requester_id, spec_jsonb, status, created_at, expires_at)`
@@ -536,7 +536,7 @@
 
 ## 20) runtime/metrics-scoring
 
-**Назначение:** ingest run results → compute metrics → leaderboards → feed reputation & payments.
+**Purpose:** ingest run results → compute metrics → leaderboards → feed reputation & payments.
 
 **CMD:**
 
@@ -550,7 +550,7 @@
 
 **Storage:** TSDB: metrics_timeseries; Postgres: leaderboard_snapshots
 
-**Таблицы (Postgres):** `leaderboards(id, vertical, scope_jsonb, generated_at, snapshot_ref)`, `outbox(...)`
+**Tables (Postgres):** `leaderboards(id, vertical, scope_jsonb, generated_at, snapshot_ref)`, `outbox(...)`
 
 **SLO:** metrics computed within 30s after RunFinalized (target)
 
@@ -558,7 +558,7 @@
 
 ## 21) runtime/evolution-engine
 
-**Назначение:** fork/mutate/A-B tests, lineage.
+**Purpose:** fork/mutate/A-B tests, lineage.
 
 **CMD:**
 
@@ -571,7 +571,7 @@
 
 **EVT in:** MetricsComputed, GovParamsApplied
 
-**Таблицы:**
+**Tables:**
 
 - `lineage(id, parent_version_id, child_version_id, created_at)`
 - `mutations(id, base_version_id, params_jsonb, status, created_at)`
@@ -582,7 +582,7 @@
 
 ## 22) platform/policy-engine (OPA)
 
-**Назначение:** единый PDP: «можно ли actor'у action X». Конфиги приходят из GOV.
+**Purpose:** single PDP: “is it possible for the actor to action X”. Configs come from GOV.
 
 **CMD:**
 
@@ -595,37 +595,37 @@
 
 ## 23) platform/event-bus
 
-**Назначение:** транспорт событий.
+**Purpose:** transport of events.
 
-Требования: at-least-once delivery, consumer idempotency required, schema registry (желательно).
+Requirements: at-least-once delivery, consumer idempotency required, schema registry (preferred).
 
 ---
 
-## A) End-to-end сценарии (тестовые «гос-истории»)
+## A) End-to-end scenarios (test “state stories”)
 
 ### A1. Publish → Listing
 
 1. strategy-registry CMD `/strategies/{id}/versions` → EVT StrategyVersionCreated
 2. strategy-registry CMD `/publish` → EVT StrategyVersionReleased
-3. market слушает StrategyVersionReleased и позволяет listing
+3. market listens to StrategyVersionReleased and allows listing
 4. market CMD `/listings` → EVT ListingCreated
 
 ### A2. Run → Proof → Metrics → Reputation → Settlement
 
 1. execution CMD `/runs` → EVT RunRequested
-2. risk-engine получает RunRequested → CMD `/risk/precheck` → EVT RunPrechecked
+2. risk-engine receives RunRequested → CMD `/risk/precheck` → EVT RunPrechecked
 3. compute lease → EVT ComputeLeaseGranted
-4. execution стартует runner → EVT RunStarted
-5. runner завершает → execution CMD `/finalize` → EVT RunFinalized
-6. proof-registry регистрирует артефакты → EVT ArtifactsRegistered
+4. execution starts runner → EVT RunStarted
+5. runner finishes → execution CMD `/finalize` → EVT RunFinalized
+6. proof-registry registers artifacts → EVT ArtifactsRegistered
 7. metrics-scoring → EVT MetricsComputed
 8. reputation-engine → EVT ReputationUpdated
 9. payments-settlement → EVT SettlementCompleted
-10. capital-pools обновляет NAV/positions
+10. capital-pools updates NAV/positions
 
 ### A3. Alert → Court → Slash → Delist
 
-1. risk-engine EVT RiskAlertRaised или trust-graph EVT CollusionSignalRaised
+1. risk-engine EVT RiskAlertRaised or trust-graph EVT CollusionSignalRaised
 2. court CMD `/cases` → EVT CaseOpened
 3. evidence refs (proof hashes)
 4. court CMD `/ruling` → EVT RulingIssued + EVT SanctionApplied
@@ -633,7 +633,7 @@
 
 ---
 
-## B) Минимальный набор OpenAPI / Protobuf
+## B) Minimum set of OpenAPI / Protobuf
 
-- У каждого сервиса отдельная спецификация: `apis/<service>/openapi.yaml`
-- События: `schemas/events/<event>.json` (или protobuf + registry)
+- Each service has a separate specification: `apis/<service>/openapi.yaml`
+- Events: `schemas/events/<event>.json` (or protobuf + registry)

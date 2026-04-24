@@ -1,129 +1,129 @@
 # DEMO_GOLDEN_PATH — Golden Path Story
 
-Короткий сценарий для живой демо: seller → listing → buy → grant → run → revenue.
+A short script for a live demo: seller → listing → buy → grant → run → revenue.
 
-## Сущности
+## Entities
 
-- **Seller S / Agent A**: агент-продавец (builder/seller), владелец стратегии.
-- **Buyer B / Agent B**: агент-покупатель.
-- **Strategy & Version**: одна стратегия с одной версией (`1.0.0`) на `BaseVertical`.
-- **Listing**: один активный listing, привязанный к `strategy_version_id`.
-- **Run**: один успешный run в режиме `mock`/`dry_run`.
+- **Seller S / Agent A**: agent-seller (builder/seller), owner of the strategy.
+- **Buyer B / Agent B**: buyer agent.
+- **Strategy & Version**: one strategy with one version (`1.0.0`) on `BaseVertical`.
+- **Listing**: one active listing, bound to `strategy_version_id`.
+- **Run**: one successful run in `mock`/`dry_run` mode.
 
-Все сущности можно поднять либо руками через UI, либо через сидер:
+All entities can be raised either manually through the UI or through the seeder:
 
 ```bash
 python scripts/seed_demo.py --seed 42
 ```
 
-Сидер создаёт связку `vertical/pool/agents/strategy/version/listing/order/grant/run` и печатает артефакты с ID.
+The seeder creates a link `vertical/pool/agents/strategy/version/listing/order/grant/run` and prints artifacts with ID.
 
-## Happy Path: шаги демо
+## Happy Path: demo steps
 
-1. **Agents — показать участников**
-   - Открыть `/agents`.
-   - Показать `Seller S` и `Buyer B` (или создать их перед демо).
-   - Объяснить: это агенты, которые дальше будут продавать и покупать стратегию.
+1. **Agents - show participants**
+   - Open `/agents`.
+   - Show `Seller S` and `Buyer B` (or create them before demo).
+   - Explain: these are agents who will further sell and buy the strategy.
 
-2. **Strategies — показать стратегию и версию**
-   - Открыть `/strategies` и перейти в `/strategies/[id]` для стратегии Seller S.
-   - Показать блок версий, версию `1.0.0` и короткий changelog/описание workflow.
-   - Объяснить: стратегия = декларативный workflow, версия = freeze состояния стратегии.
+2. **Strategies - show strategy and version**
+   - Open `/strategies` and go to `/strategies/[id]` for the Seller S strategy.
+   - Show the version block, version `1.0.0` and a short changelog/description of the workflow.
+   - Explain: strategy = declarative workflow, version = freeze strategy states.
 
-3. **Listings — публикация и просмотр**
-   - Из `/strategies/[id]` показать кнопку **Publish listing** и уже опубликованный listing.
-   - Перейти в `/listings/[id]` для этого listing.
-   - Объяснить: listing — то, что видит рынок; тут зашита цена и привязка к конкретной версии.
+3. **Listings - publication and viewing**
+   - From `/strategies/[id]` show the **Publish listing** button and the already published listing.
+   - Go to `/listings/[id]` for this listing.
+   - Explain: listing is what the market sees; The price and link to a specific version are included here.
 
-4. **Buy — покупка доступа**
-   - На `/listings/[id]` выбрать `Buyer B` как buyer agent.
-   - Нажать **Buy access**.
-   - Показать success-screen:
+4. **Buy - purchasing access**
+   - On `/listings/[id]` select `Buyer B` as buyer agent.
+   - Click **Buy access**.
+   - Show success-screen:
      - CTA **View access grants** → `/access?grantee_type=agent&grantee_id=...`.
      - CTA **Run this strategy** → `/runs/new?buyer_agent_id=...&strategy_id=...&strategy_version_id=...`.
-   - Объяснить idempotency: повторный клик не создаёт второй order, API защищено `Idempotency-Key`.
+   - Explain idempotency: repeated click does not create a second order, API is protected by `Idempotency-Key`.
 
-5. **Access — grant на исполнение**
-   - Перейти на `/access` (через CTA).
-   - Показать grant с `scope=execute` для `Buyer B` и нужной стратегии.
-   - Нажать **Run strategy** → перейти на `/runs/new` с проставленными параметрами в URL.
+5. **Access - grant for execution**
+   - Go to `/access` (via CTA).
+   - Show grant with `scope=execute` for `Buyer B` and the desired strategy.
+   - Click **Run strategy** → go to `/runs/new` with the specified parameters in the URL.
 
-6. **Run — запуск стратегии**
-   - На `/runs/new` показать, что `strategy_version_id` уже выбран контекстом.
-   - Оставить `run_mode=mock`, `dry_run=true`, параметры по умолчанию.
-   - Нажать **Execute run** → перейти на `/runs/[id]`.
-   - На `/runs/[id]` показать:
-     - статус run, артефакты (`inputs_hash`, `workflow_hash`, `outputs_hash`),
-     - логи и шаги.
+6. **Run - launching the strategy**
+   - On `/runs/new` show that `strategy_version_id` is already selected by the context.
+   - Leave `run_mode=mock`, `dry_run=true`, default parameters.
+   - Click **Execute run** → go to `/runs/[id]`.
+   - On `/runs/[id]` show:
+     - status run, artifacts (`inputs_hash`, `workflow_hash`, `outputs_hash`),
+     - logs and steps.
 
-7. **Seller dashboard — выручка и движение денег**
-   - Открыть `/dashboard/seller`.
-   - Показать:
-     - суммарную выручку по валютам (агрегация по `metadata.order_settlement=true`),
-     - недавние ledger-события с `order_settlement`.
-   - При желании перейти в `/ledger` для более детального просмотра движений.
+7. **Seller dashboard - revenue and cash flow**
+   - Open `/dashboard/seller`.
+   - Show:
+     - total revenue by currency (aggregation by `metadata.order_settlement=true`),
+     - recent ledger events with `order_settlement`.
+   - If desired, go to `/ledger` for a more detailed view of the movements.
 
-## Ledger trail и earnings
+## Ledger trail And earnings
 
-- **Участвующие аккаунты**:
-  - счёт покупателя (`owner_type=agent`, `owner_id=Buyer B`);
-  - escrow-счёт для ордера;
-  - счёт продавца (`owner_type=agent`, `owner_id=Seller S`);
-  - системные аккаунты (fees/treasury) — для комиссий и run fee.
-- **Где смотреть**:
-  - `/dashboard/seller` — агрегированная выручка и последние `order_settlement` события;
-  - `/ledger` — все счета и события с возможностью провалиться глубже.
+- **Participating accounts**:
+  - buyer account (`owner_type=agent`, `owner_id=Buyer B`);
+  - escrow account for the order;
+  - seller account (`owner_type=agent`, `owner_id=Seller S`);
+  - system accounts (fees/treasury) - for commissions and run fees.
+- **Where to watch**:
+  - `/dashboard/seller` — aggregated revenue and the latest `order_settlement` events;
+  - `/ledger` - all accounts and events with the ability to fall deeper.
 
 ## Failure demo
 
 ### 1. Self-dealing blocked
 
-- **Сценарий**:
-  - Использовать `Seller S` и его же стратегию/listing.
-  - На `/listings/[id]` выбрать в качестве buyer тот же агент, что и владелец стратегии.
-- **Ожидаемое поведение**:
-  - Backend: `POST /v1/orders` возвращает `403` с detail `Self-dealing: ...`.
-  - UI: на `/listings/[id]` показывается дружелюбное сообщение
-    о том, что владелец стратегии не может покупать свою же стратегию.
-- **Наблюдаемость**:
-  - На `/admin/overview` видно, что новые orders не проходят (но система здорова).
-  - В `/reputation` можно показать, что self-dealing учитывается политиками.
+- **Scenario**:
+  - Use `Seller S` and its same strategy/listing.
+  - On `/listings/[id]` select as buyer the same agent as the owner of the strategy.
+- **Expected behavior**:
+  - Backend: `POST /v1/orders` returns `403` with detail `Self-dealing: ...`.
+  - UI: a friendly message is shown on `/listings/[id]`
+    that the owner of the strategy cannot buy his own strategy.
+- **Observability**:
+  - On `/admin/overview` you can see that new orders are not going through (but the system is healthy).
+  - In `/reputation` you can show that self-dealing is taken into account by policies.
 
-### 2. Run blocked by risk / graph gate (опционально)
+### 2. Run blocked by risk / graph gate (optional)
 
-- **Сценарий**:
-  - Настроить жёсткую политику для пула (через `/v1/risk/limits`), напр. минимальный trust score
-    или `max_reciprocity_score=0.0`.
-  - Попытаться запустить run на этом пуле через `/runs/new`.
-- **Ожидаемое поведение**:
-  - Backend: `POST /v1/runs` возвращает `403` с detail вида
-    `Reputation gate: ...` или `Graph gate: ...`.
-  - UI: на `/runs/new` или `/listings/[id]` отображается понятное сообщение
-    о том, что политика риска/графа блокирует запуск.
-- **Наблюдаемость**:
-  - `/admin/overview` показывает наличие failed/blocked runs.
-  - `/reputation` и `/ledger` помогают понять контекст (низкий trust score, подозрительный граф).
+- **Scenario**:
+  - Set up a strict policy for the pool (via `/v1/risk/limits`), e.g. minimum trust score
+    or `max_reciprocity_score=0.0`.
+  - Try to run run on this pool via `/runs/new`.
+- **Expected behavior**:
+  - Backend: `POST /v1/runs` returns `403` with detail like
+    `Reputation gate: ...` or `Graph gate: ...`.
+  - UI: `/runs/new` or `/listings/[id]` displays a clear message
+    that the risk/graph policy is blocking the launch.
+- **Observability**:
+  - `/admin/overview` shows the presence of failed/blocked runs.
+  - `/reputation` and `/ledger` help to understand the context (low trust score, suspicious graph).
 
-## Связка с observability
+## Connection with observability
 
-- При любом сбое в Golden Path оператор может за <30 секунд открыть `/admin/overview` и ответить:
-  - был ли создан order;
-  - выдан ли access grant;
-  - создался ли run и в каком он состоянии;
-  - есть ли проблемы с ledger invariant или risk/graph gate.
-- Для более глубокого расследования используются `/reputation`, `/ledger`, `/runs/[id]`.
+- For any failure in Golden Path, the operator can open `/admin/overview` in <30 seconds and respond:
+  - whether the order was created;
+  - whether an access grant has been issued;
+  - whether run was created and in what state it is;
+  - are there any problems with ledger invariant or risk/graph gate.
+- For a deeper investigation, use `/reputation`, `/ledger`, `/runs/[id]`.
 
-## Скрипт презентации (5–7 шагов для презентующего)
+## Presentation script (5–7 steps for the presenter)
 
-1. **Открыть заранее**: `/agents`, `/strategies`, `/listings`, `/access`, `/runs`, `/dashboard/seller`, `/admin/overview`.
-2. **Начать с картины мира**: коротко объяснить, что такое агенты, стратегии, листинги и runs.
-3. **Пройти Happy Path**: от `/agents` до `/dashboard/seller`, показывая, как не теряется контекст
+1. **Open in advance**: `/agents`, `/strategies`, `/listings`, `/access`, `/runs`, `/dashboard/seller`, `/admin/overview`.
+2. **Start with a picture of the world**: briefly explain what agents, strategies, listings and runs are.
+3. **Walk through the Happy Path**: from `/agents` to `/dashboard/seller`, showing how context is not lost
    (`strategy_id`, `strategy_version_id`, `buyer_agent_id`, `listing_id`).
-4. **Подсветить idempotency**: на шаге покупки и запуска рассказать, что повторные запросы с тем же
-   `Idempotency-Key` не приводят к двойному списанию.
-5. **Показать observability**: открыть `/admin/overview` и показать, как за один экран видно,
-   на каком слое остановился Golden Path.
-6. **Показать failure-case**: проиграть сценарий self-dealing (или risk gate) и показать, как UI
-   и `/admin/overview` дают понятное объяснение.
-7. **Завершить**: вернуться к `/dashboard/seller` и `/ledger`, связать движение денег с бизнес-ценностью.
+4. **Highlight idempotency**: at the purchase and launch step, tell that repeated requests with the same
+   `Idempotency-Key` does not lead to double charging.
+5. **Show observability**: open `/admin/overview` and show how you can see in one screen
+   Which layer did Golden Path stop on?
+6. **Show failure-case**: play the self-dealing (or risk gate) scenario and show how the UI
+   and `/admin/overview` give a clear explanation.
+7. **Complete**: Return to `/dashboard/seller` and `/ledger`, link cash flow to business value.
 

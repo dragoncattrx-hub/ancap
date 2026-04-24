@@ -1,6 +1,6 @@
 # acp-wallet
 
-CLI (и в перспективе Web) для ACP: ключи, подпись, транзакции.
+CLI (and in the future Web) for ACP: keys, signature, transactions.
 
-- **Сборка:** `cargo build --release`
-- Спеки: [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).
+- **Assembly:** `cargo build --release`
+- Heats: [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).

@@ -1,8 +1,8 @@
-//! Сборка блока 2 из первой tx в мемпуле и отправка (submitblock).
-//! Нода сама не создаёт блоки — блок 2 появится только после этого шага.
+//! Assembling block 2 from the first tx in the mempool and sending (submitblock).
+//! Node itself does not create blocks - block 2 will only appear after this step.
 //!
-//! Запуск: cargo run -p acp-wallet --example build_and_submit_block2
-//! Или из Docker: см. run-submit-block2-via-docker.bat
+//! Launch: cargo run -p acp-wallet --example build_and_submit_block2
+//! Or from Docker: see run-submit-block2-via-docker.bat
 
 use acp_crypto::{Block, BlockHeader, Transaction, TxHex};
 use reqwest::blocking::Client;
@@ -32,9 +32,9 @@ fn main() -> anyhow::Result<()> {
 
     let height: u64 = rpc(&client, &rpc_url, "getblockcount", json!([]))?
         .as_u64()
-        .ok_or_else(|| anyhow::anyhow!("getblockcount не вернул число"))?;
+        .ok_or_else(|| anyhow::anyhow!("getblockcount did not return a number"))?;
     if height != 1 {
-        anyhow::bail!("Ожидалась высота 1 (только genesis). Сейчас: {}. Запустите на пустой ноде после genesis.", height);
+        anyhow::bail!("Expected height 1 (genesis only). Now: {}. Run on an empty node after genesis.", height);
     }
 
     let mempool: Vec<serde_json::Value> = rpc(&client, &rpc_url, "getrawmempool", json!([]))?
@@ -44,7 +44,7 @@ fn main() -> anyhow::Result<()> {
     let txid_str = mempool
         .first()
         .and_then(|v| v.as_str())
-        .ok_or_else(|| anyhow::anyhow!("Мемпул пуст. Сначала отправьте tx (например run-transfer-500-via-docker.bat)."))?;
+        .ok_or_else(|| anyhow::anyhow!("The mempool is empty. Send tx first (for example run-transfer-500-via-docker.bat)."))?;
 
     let tx_hex: String = rpc(
         &client,
@@ -53,14 +53,14 @@ fn main() -> anyhow::Result<()> {
         json!({ "txid": txid_str, "verbose": 0 }),
     )?
     .as_str()
-    .ok_or_else(|| anyhow::anyhow!("getrawtransaction не вернул hex"))?
+    .ok_or_else(|| anyhow::anyhow!("getrawtransaction did not return hex"))?
     .to_string();
     let tx_wire = hex::decode(tx_hex.trim()).map_err(|e| anyhow::anyhow!("decode tx hex: {}", e))?;
     let tx = Transaction::from_wire(&tx_wire).map_err(|e| anyhow::anyhow!("from_wire: {}", e))?;
 
     let prev_hash_hex: String = rpc(&client, &rpc_url, "getblockhash", json!({ "height": 1 }))?
         .as_str()
-        .ok_or_else(|| anyhow::anyhow!("getblockhash не вернул строку"))?
+        .ok_or_else(|| anyhow::anyhow!("getblockhash did not return a string"))?
         .to_string();
     let prev_blockhash = TxHex::decode_blockhash(prev_hash_hex.trim())
         .map_err(|e| anyhow::anyhow!("decode blockhash: {}", e))?;
@@ -87,16 +87,16 @@ fn main() -> anyhow::Result<()> {
     if accepted {
         println!();
         println!("==============================================");
-        println!("  Блок 2 принят нодой.");
+        println!("Block 2 accepted by node.");
         println!("==============================================");
         println!("  blockhash: {:?}", res.get("blockhash"));
         println!("  height: 2");
         println!();
-        println!("Проверьте баланс: run-check-ecosystem-and-recipient-via-docker.bat");
+        println!("Check balance: run-check-ecosystem-and-recipient-via-docker.bat");
         println!();
     } else {
         let reason = res.get("reason").and_then(|v| v.as_str()).unwrap_or("?");
-        anyhow::bail!("Нода отклонила блок 2: {}", reason);
+        anyhow::bail!("Noda debugged block 2: {}", reason);
     }
     Ok(())
 }

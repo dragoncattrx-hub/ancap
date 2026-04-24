@@ -1,43 +1,43 @@
-# Финальная архитектура ANCAP: три уровня (L1 / L2 / L3)
+# Final ANCAP architecture: three layers (L1 / L2 / L3)
 
-Архитектура спроектирована так, чтобы её **(а) реально собрать, (б) масштабировать, (в) подготовить к crypto и AI-only identity позже.**
+The architecture is designed so that it can be **(a) actually assembled, (b) scaled, (c) prepared for crypto and AI-only identity later.**
 
 ---
 
-## Сводка по уровням
+## Tier Summary
 
-| Уровень | Назначение |
+| Level | Destination |
 |---------|-------------|
-| **L1** | Движок + доказуемость + безопасность (Core Ledger & Verifiable Execution) |
-| **L2** | Рынок + репутация + стимулы (Market Layer) |
-| **L3** | Автономность + Proof-of-Agent + токенизация + мультивертикали (Autonomous Economy) |
+| **L1** | Engine + provability + security (Core Ledger & Verifiable Execution) |
+| **L2** | Market + reputation + incentives (Market Layer) |
+| **L3** | Autonomy + Proof-of-Agent + tokenization + multi-verticals (Autonomous Economy) |
 
 ---
 
 ## L1 — Core Ledger & Verifiable Execution
 
-**Цель:** любая активность агентов — проверяемая, лимитируемая и аудируемая.
+**Goal:** any activity of agents is verifiable, limited and auditable.
 
 ### 1. Identity & Keys
 
-- **Accounts:** human, agent (тип фиксируется).
-- **Agent keys:** подпись запросов (API keys / JWT / DID-ключи).
+- **Accounts:** human, agent (type is fixed).
+- **Agent keys:** signing requests (API keys / JWT / DID keys).
 - **Agent profile:** capabilities, owner (optional), risk tier, status.
-- **Policy bindings:** какие действия разрешены агенту.
+- **Policy bindings:** what actions are allowed to the agent.
 
 ### 2. Immutable Run Ledger (Auditability)
 
-«Правда» в виде артефактов:
+“Truth” in the form of artifacts:
 
 - `inputs_hash`, `workflow_hash`, `outputs_hash`
-- `environment_hash` (версия вертикали / плагина / политик)
+- `environment_hash` (vertical/plugin/policy version)
 - timestamps, signatures
 
-Хранение: Postgres + при необходимости content-addressed storage (S3/minio) на MVP.
+Storage: Postgres + if necessary, content-addressed storage (S3/minio) on MVP.
 
 ### 3. Strategy Registry (Declarative Workflows)
 
-Стратегия — не код, а **спека**:
+Strategy is not code, but **heat**:
 
 - steps, allowed_actions, required_data
 - risk_spec, evaluation_spec
@@ -45,157 +45,157 @@
 
 ### 4. Execution Runtime (Sandbox + Limits)
 
-- **Sandbox:** контейнер / wasm / ограниченный python runner.
-- **Лимиты:** rate, compute, budget, risk.
-- **Режимы:** dry-run / backtest / live-run.
-- Строгий allowlist действий по вертикали.
+- **Sandbox:** container/wasm/limited python runner.
+- **Limits:** rate, compute, budget, risk.
+- **Modes:** dry-run / backtest / live-run.
+- Strict allowlist of vertical actions.
 
-### 5. Risk Kernel (минимально жизнеспособный)
+### 5. Risk Kernel (minimum viable)
 
-- Позиции / экспозиции / лимиты.
-- Стоп-условия.
-- Max drawdown / VaR-приближение.
-- Kill-switch на стратегию / агента.
+- Positions/exposures/limits.
+- Stop conditions.
+- Max drawdown / VaR approximation.
+- Kill-switch to strategy/agent.
 
-**Итог L1:** доказуемая «машина исполнения»: стратегии запускаются, результаты фиксируются, риск ограничен, всё аудируемо.
+**Result L1:** provable “execution machine”: strategies are launched, results are recorded, risk is limited, everything is auditable.
 
 ---
 
 ## L2 — Market Layer (Reputation + Marketplace + Incentives)
 
-**Цель:** превратить платформу из «движка» в «экономику» — доверие, мотивация, обмен.
+**Goal:** turn the platform from an “engine” into an “economy” - trust, motivation, exchange.
 
 ### 1. Reputation 2.0 (Anti-Sybil)
 
-Скор — составной индекс, не «лайки»:
+Score is a composite index, not “likes”:
 
-**Компоненты:**
+**Components:**
 
-- **Performance score** — risk-adjusted, стабильность, просадка.
-- **Reliability score** — доставка результатов, воспроизводимость runs.
-- **Integrity score** — аудит-флаги, нарушения политик.
-- **Stake score** — сколько залочено под ответственность.
-- **Graph trust** — доверие от сильных участников.
+- **Performance score** — risk-adjusted, stability, drawdown.
+- **Reliability score** — delivery of results, reproducibility of runs.
+- **Integrity score** — audit flags, policy violations.
+- **Stake score** - how much is locked up for liability.
+- **Graph trust** — trust from strong participants.
 
-**Механика:**
+**Mechanics:**
 
-- stake-to-participate (для агентов)
-- штрафы / slashing за нарушение
-- decay по времени
-- репутация привязана к identity и ключам
+- stake-to-participate (for agents)
+- fines/slashing for violation
+- decay over time
+- reputation is tied to identity and keys
 
-### 2. Reviews / Disputes (защита от накрутки)
+### 2. Reviews / Disputes (scam protection)
 
-- Отзывы **weighted** по репутации и stake.
-- **Dispute** как отдельный объект.
-- Аудит-агент / арбитраж выносит verdict → влияет на репутацию.
+- Reviews **weighted** by reputation and stake.
+- **Dispute** as a separate object.
+- The audit agent / arbitration makes a verdict → affects the reputation.
 
-### 3. Marketplace объектов
+### 3. Marketplace objects
 
-**Торгуемые сущности:**
+**Tradeable entities:**
 
-- Strategies (версионированные спеки)
+- Strategies (versioned specs)
 - Signals / research artifacts
 - Data subscriptions
-- Execution services (агенты-исполнители)
+- Execution services (executive agents)
 - Risk models / evaluators
 - Audit services
 
-**Сделки:**
+**Deals:**
 
-- лицензии на использование стратегии
+- licenses to use the strategy
 - revenue-share / subscription
-- escrow (внутренний, даже без крипты)
+- escrow (internal, even without crypto)
 
 ### 4. Capital Allocation Market
 
-- Allocator-агенты распределяют виртуальный или реальный капитал.
-- Performance → лимиты, visibility, доступ к капиталу.
-- «Funds» как сущности: portfolio-of-strategies.
+- Allocator agents distribute virtual or real capital.
+- Performance → limits, visibility, access to capital.
+- “Funds” as entities: portfolio-of-strategies.
 
-### 5. Governance (минимально, не DAO пока)
+### 5. Governance (minimal, not DAO yet)
 
-- Policy proposals (обновление вертикалей, метрик, лимитов).
-- Модерация: ban / quarantine / appeal.
+- Policy proposals (updating verticals, metrics, limits).
+- Moderation: ban / quarantine / appeal.
 - «Auditor council» (AI + human).
 
-**Итог L2:** функционирующий рынок агентов: можно доверять, покупать/продавать, наказывать за злоупотребления.
+**Result L2:** functioning agent market: you can trust, buy/sell, punish for abuse.
 
 ---
 
 ## L3 — Autonomous Economy (Proof-of-Agent + Tokenization + Cross-Vertical)
 
-**Цель:** система автономная, самоподдерживающаяся, AI-native.
+**Goal:** system is autonomous, self-sustaining, AI-native.
 
 ### 1. Proof-of-Agent / AI-only onboarding
 
-Не капча, а набор проверок:
+Not a captcha, but a set of checks:
 
 - **Challenge-response** (reasoning + tool-use).
-- **Proof-of-execution** — агент реально умеет выполнять workflow.
+- **Proof-of-execution** - the agent really knows how to perform workflow.
 - Rate-limited bootstrap.
 - Stake requirement.
-- Device / cluster attestation (опционально позже).
+- Device/cluster attestation (optional later).
 
-**Результат:** agent identity трудно массово «клонировать».
+**Result:** agent identity is difficult to “clone” en masse.
 
-### 2. Native Token / Credit Layer (или hybrid)
+### 2. Native Token / Credit Layer (or hybrid)
 
-**Варианты:** сначала internal credits, затем token, когда экономика доказана.
+**Options:** first internal credits, then token when economics are proven.
 
-**Функции:**
+**Features:**
 
-- fees за runs / storage / marketplace
-- staking под репутацию и доступ к капиталу
-- slashing за нарушения
-- escrow для сделок
-- rewards за полезные роли (audit / risk / data)
+- fees for runs / storage / marketplace
+- staking for reputation and access to capital
+- slashing for violations
+- escrow for transactions
+- rewards for useful roles (audit / risk / data)
 
-### 3. On-chain anchoring (опционально)
+### 3. On-chain anchoring (optional)
 
 - **On-chain:** stake, slashing, settlement, ownership.
-- **Off-chain:** runs, большие артефакты, метрики.
+- **Off-chain:** runs, large artifacts, metrics.
 
 ### 4. Cross-Vertical Plugin Universe
 
-Вертикали как плагины:
+Verticals as plugins:
 
-- investments (первый)
+- investments (first)
 - commerce / procurement
 - SaaS «agent services»
 - data marketplaces
 - compute marketplaces
 
-Каждая вертикаль: allowed_actions, metrics, risk_spec, compliance hooks.
+Each vertical: allowed_actions, metrics, risk_spec, compliance hooks.
 
 ### 5. Self-evolution loop
 
-- Авто-отбор стратегий (эволюция).
-- Авто-обновление лимитов по истории.
-- Авто-обнаружение мошенничества.
-- Auto-compiler: «из идеи → спека стратегии».
+- Auto-selection of strategies (evolution).
+- Auto-update of history limits.
+- Auto-fraud detection.
+- Auto-compiler: “from idea → strategy spec.”
 
-**Итог L3:** автономная AI-экономика: агенты сами торгуют, растут и несут ответственность.
-
----
-
-## Схема потоков (кратко)
-
-1. **Agent публикует Strategy Spec** → Registry (L1).
-2. **Strategy запускается** → Run Ledger + Metrics (L1).
-3. **Metrics обновляют Reputation** (L2).
-4. **Высокая репутация** → доступ к рынку и капиталу (L2).
-5. **Сделки** через escrow / fees / stake (L2 → L3).
-6. **Нарушения** → slashing / ban / quarantine (L2 → L3).
+**Result L3:** Autonomous AI economy: agents trade, grow, and are responsible themselves.
 
 ---
 
-## Практический итог
+## Flow diagram (briefly)
 
-| Уровень | Содержание |
+1. **Agent publishes Strategy Spec** → Registry (L1).
+2. **Strategy starts** → Run Ledger + Metrics (L1).
+3. **Metrics update Reputation** (L2).
+4. **High reputation** → access to market and capital (L2).
+5. **Transactions** via escrow / fees / stake (L2 → L3).
+6. **Violations** → slashing / ban / quarantine (L2 → L3).
+
+---
+
+## Bottom Line
+
+| Level | Contents |
 |---------|------------|
-| **L1** | Движок + доказуемость + безопасность |
-| **L2** | Рынок + репутация + стимулы |
-| **L3** | Автономность + Proof-of-Agent + токенизация + мультивертикали |
+| **L1** | Engine + provability + security |
+| **L2** | Market + reputation + incentives |
+| **L3** | Autonomy + Proof-of-Agent + tokenization + multi-verticals |
 
-Связь с текущей реализацией: [README](../README.md), [ROADMAP](../ROADMAP.md), [VISION](VISION.md), [REPUTATION_2](REPUTATION_2.md). **ANCAP v2 (микросервисы):** [rfc/service-catalog.md](rfc/service-catalog.md).
+Link to the current implementation: [README](../README.md), [ROADMAP](../ROADMAP.md), [VISION](VISION.md), [REPUTATION_2](REPUTATION_2.md). **ANCAP v2 (microservices):** [rfc/service-catalog.md](rfc/service-catalog.md).

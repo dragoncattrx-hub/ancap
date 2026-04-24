@@ -1,6 +1,6 @@
-# LOG.md — журнал изменений ANCAP
+# LOG.md — ANCAP change log
 
-Все изменения для памяти и воспроизводимости.
+All changes are for memory and reproducibility.
 
 ---
 
@@ -35,640 +35,640 @@
 
 ## 2026-03-17 — ACP Token & Chain: end-to-end runnable (dev + prod-like)
 
-### Цель
-Довести репозиторий до состояния «полностью работает» в двух режимах:
-- **Dev**: Docker (Postgres + API) + Next dev (порт 3001) с proxy `/api/v1` → API.
-- **Prod-like**: Docker (Postgres + API + Next production) + nginx reverse proxy, единая точка входа `http://127.0.0.1:8080`.
-Плюс: smoke-тесты и pytest для L3 chain anchors (mock/acp/ethereum/solana).
+### Goal
+Bring the repository to the state «fully working» in two modes:
+- **Dev**: Docker (Postgres + API) + Next dev (port 3001) with proxy `/api/v1` → API.
+- **Prod-like**: Docker (Postgres + API + Next production) + nginx reverse proxy, single point of entry `http://127.0.0.1:8080`.
+Plus: smoke tests and pytest for L3 chain anchors (mock/acp/ethereum/solana).
 
-### Изменения (infra)
-- **docker-compose.yml:** добавлен healthcheck `GET /v1/system/health` для `api`, прокинуты env для chain anchors: `CHAIN_ANCHOR_DRIVER`, `ACP_RPC_URL`, `ETHEREUM_RPC_URL`, `SOLANA_RPC_URL`.
-- **docker-compose.prod.yml (new):** `postgres + api + frontend (Next production) + proxy (nginx)` и публикация `8080:80`.
+### Changes (infra)
+- **docker-compose.yml:** added healthcheck `GET /v1/system/health` for `api`, added env for chain anchors: `CHAIN_ANCHOR_DRIVER`, `ACP_RPC_URL`, `ETHEREUM_RPC_URL`, `SOLANA_RPC_URL`.
+- **docker-compose.prod.yml (new):** `postgres + api + frontend (Next production) + proxy (nginx)` and publication `8080:80`.
 - **infra/nginx/default.conf (new):** proxy rules: `/api/*` → `api:8000`, `/` → `frontend:3000`.
-- **frontend-app/Dockerfile (new):** production build/run контейнер для Next (start на 3000).
+- **frontend-app/Dockerfile (new):** production build/run container for Next (start at 3000).
 
-### Изменения (config/env)
-- **.env.example:** добавлены параметры L3 chain anchors (driver + rpc urls).
-- **frontend-app/.env.example (new):** правила `NEXT_PUBLIC_API_URL` для dev/prod-like/prod.
+### Changes (config/env)
+- **.env.example:** added parameters L3 chain anchors (driver + rpc urls).
+- **frontend-app/.env.example (new):** rules `NEXT_PUBLIC_API_URL` for dev/prod-like/prod.
 
-### Изменения (chain tests + smoke)
-- **tests/api/test_chain_anchors.py (new):** покрытие `POST /v1/chain/anchor`:
+### Changes (chain tests + smoke)
+- **tests/api/test_chain_anchors.py (new):** coating `POST /v1/chain/anchor`:
   - mock OK
   - rpc URL missing → 503
-  - rpc result string/object + rpc error → 201/503 (через stub httpx client).
-- **scripts/smoke_chain.ps1**, **scripts/smoke_chain.sh (new):** операторские smoke-проверки `/v1/system/health` + `POST /v1/chain/anchor` по драйверам из env.
+  - rpc result string/object + rpc error → 201/503 (via stub httpx client).
+- **scripts/smoke_chain.ps1**, **scripts/smoke_chain.sh (new):** operator smoke checks `/v1/system/health` + `POST /v1/chain/anchor` by drivers from env.
 
-### Фиксы (DB migrations / compatibility)
-- **alembic/versions/026_contract_payout_unique_by_contract_and_run.py:** починено применение миграции на Postgres:
-  - вместо partial index `WHERE type='contract_payout'` (ломалось из-за enum/DDL нюансов) — unique index по ключам
+### Fixes (DB migrations / compatibility)
+- **alembic/versions/026_contract_payout_unique_by_contract_and_run.py:** Fixed applying migration to Postgres:
+  - instead of partial index `WHERE type='contract_payout'` (broke due to enum/DDL nuances) — unique index by keys
     `(type, metadata->>'contract_id', metadata->>'run_id')`.
 
-### Фиксы (frontend API compatibility)
-- **frontend-app/src/lib/api.ts + strategies UI:** исправлено создание стратегии под текущий backend schema:
-  - `owner_agent_id` вместо `agent_id`;
-  - удалён неиспользуемый `workflow_json` на create (версии создаются отдельно).
-- **frontend-app/src/app/agents/page.tsx:** дефолтный `public_key` теперь валидный (`"x".repeat(32)`), чтобы создание агента не падало в UI/e2e.
+### Fixes (frontend API compatibility)
+- **frontend-app/src/lib/api.ts + strategies UI:** Fixed creation of a strategy for the current backend schema:
+  - `owner_agent_id` instead of `agent_id`;
+  - deleted unused `workflow_json` on create (versions are created separately).
+- **frontend-app/src/app/agents/page.tsx:** default `public_key` now valid (`"x".repeat(32)`), so that agent creation does not fail in UI/e2e.
 
-### Тесты
+### The test
 - Backend: **pytest — 152 passed**.
-- Frontend: **Playwright — проходит** (golden-path UI e2e временно помечался `skip` на этапе стабилизации buy-flow; далее фиксится до full pass).
+- Frontend: **Playwright — passes** (golden-path UI e2e temporarily marked `skip` at the buy-flow stabilization stage; then it will be fixed to full pass).
 
 ---
 
 ## 2026-03-17 — Sprint-3 Growth Layer: onboarding + social visibility + engagement + analytics (v1)
 
-### Цель
-Собрать первый “growth layer” поверх Core без обхода trust/anti-sybil дисциплины:
+### Goal
+Collect first “growth layer” on top of Core without bypassing the trust/anti-sybil discipline:
 - **Activation**: faucet (USD) + starter pack + quickstart run.
 - **Engagement**: notifications + task feed.
 - **Loops**: referrals + public profiles + follow/copy + leaderboards + public activity feed.
 - **Analytics**: daily growth rollups/KPI.
 
-### Изменения (DB + migrations)
-- **app/db/models.py:** добавлены сущности Sprint‑3:
+### Changes (DB + migrations)
+- **app/db/models.py:** added Sprint entities‑3:
   `referral_codes`, `referral_attributions`, `referral_reward_events`,
   `faucet_claims`, `starter_packs`, `starter_pack_assignments`,
   `strategy_follows`, `strategy_copies`, `agent_follows`,
   `notification_events`, `public_activity_feed`, `leaderboard_snapshots`,
-  `growth_metric_rollups` (с `dimensions_hash` для Postgres‑совместимого unique),
+  `growth_metric_rollups` (with `dimensions_hash` for Postgres‑compatible unique),
   `task_feed_items`.
-- **alembic/versions/029_growth_layer_tables.py (new):** создание всех growth‑таблиц + индексы/unique (включая partial unique для follows/attribution и dedupe для notifications/rewards).
+- **alembic/versions/029_growth_layer_tables.py (new):** creation of all growth‑tables + indexes/unique (including partial unique for follows/attribution and dedupe for notifications/rewards).
 
-### Изменения (services)
-Добавлены сервисы в `app/services/`:
-- **faucet:** USD выдача строго через ledger (double‑entry), блокировка при `ledger invariant halted`, базовые anti‑abuse guardrails.
-- **referrals:** создание code + attribution, запрет self‑referral, reward idempotency (dedupe по ключам attribution/trigger/ref).
-- **starter_pack / quickstart:** назначение/активация pack, безопасный quickstart provisioning + запуск через существующий run pipeline и Idempotency‑Key.
-- **social_graph:** follow/unfollow agent/strategy + copy strategy (lineage через `strategy_copies`), без прямого reputation credit.
-- **activity_feed:** materialize public activity feed с watermark’ами (`app/jobs/watermark.py`).
-- **notifications:** создание/mark read + dedupe через `dedupe_key`.
+### Changes (services)
+Services added to `app/services/`:
+- **faucet:** USD issuance strictly through ledger (double‑entry), blocking at `ledger invariant halted`, basic anti‑abuse guardrails.
+- **referrals:** creating code + attribution, ban self‑referral, reward idempotency (dedupe by keys attribution/trigger/ref).
+- **starter_pack / quickstart:** assignment/activation pack, secure quickstart provisioning + launching through existing run pipeline and Idempotency‑Key.
+- **social_graph:** follow/unfollow agent/strategy + copy strategy (lineage through `strategy_copies`), without direct reputation credit.
+- **activity_feed:** materialize public activity feed with watermark’well (`app/jobs/watermark.py`).
+- **notifications:** creation/mark read + dedupe through `dedupe_key`.
 - **leaderboards / growth_metrics:** snapshots (followers) + daily rollups (acquisition/activation).
 
-### Изменения (API + jobs)
+### Changes (API + jobs)
 - **API routers (new):**
   - `POST /v1/onboarding/faucet/claim`, `POST /v1/onboarding/starter-pack/assign`, `POST /v1/onboarding/quickstart/run`
   - `/v1/referrals/*`, `/v1/social/*`, `/v1/public/*`, `/v1/notifications*`, `/v1/tasks/*`, `/v1/leaderboards/*`, `GET /v1/system/growth-metrics`
-- **app/main.py:** подключены новые роутеры.
+- **app/main.py:** new routers are connected.
 - **Jobs (new):** `referral_rewards_tick`, `notifications_fanout_tick`, `leaderboard_recompute_tick`, `activity_feed_materialize_tick`,
   `growth_metrics_rollup_tick`, `faucet_abuse_check_tick`.
-- **app/api/routers/system.py:** интеграция tick’ов в `POST /v1/system/jobs/tick` (с сохранением существующих секций).
+- **app/api/routers/system.py:** integration tick’ov in `POST /v1/system/jobs/tick` (preserving existing sections).
 
-### Изменения (frontend)
-- Новые страницы: `/onboarding`, `/feed`, `/notifications`, `/leaderboards`, `/public/agents/[id]`, `/public/strategies/[id]`, `/growth`.
-- Добавлены действия follow/copy/public links на strategy страницах и ссылки в навигации.
-- `frontend-app/src/lib/api.ts`: growth endpoints клиент.
+### Changes (frontend)
+- New pages: `/onboarding`, `/feed`, `/notifications`, `/leaderboards`, `/public/agents/[id]`, `/public/strategies/[id]`, `/growth`.
+- Added follow/copy/public links actions on strategy pages and links in navigation.
+- `frontend-app/src/lib/api.ts`: growth endpoints client.
 
-### Тесты
+### Tests
 - **Pytest:** `tests/api/test_growth_layer.py` (faucet idempotency, referral uniqueness, follow/copy, jobs tick + ledger halt behavior).
-- **Playwright:** `frontend-app/e2e/growth-ui.spec.ts` (onboarding + quickstart + follow/copy + leaderboard render; с fallback’ами для dev окружения).
+- **Playwright:** `frontend-app/e2e/growth-ui.spec.ts` (onboarding + quickstart + follow/copy + leaderboard render; with fallback’ami for dev environment).
 
 ---
 
-## 2025-02-23 — Chain drivers ethereum / solana (L3, ROADMAP «Дальше по плану»)
+## 2025-02-23 — Chain drivers ethereum / solana (L3, ROADMAP «Further according to plan»)
 
-### Цель
-Добавить драйверы **ethereum** и **solana** для on-chain anchoring по аналогии с ACP: конфиг RPC URL и вызов JSON-RPC метода ancap_anchor.
+### Goal
+Add drivers **ethereum** And **solana** for on-chain anchoring, similar to ACP: RPC URL config and calling the JSON-RPC ancap_anchor method.
 
-### Изменения
+### Changes
 - **app/config.py:** ethereum_rpc_url, solana_rpc_url.
-- **app/services/chain_anchor.py:** **_anchor_via_rpc**; **anchor_ethereum**, **anchor_solana**; **get_anchor_driver** возвращает их для "ethereum" и "solana".
-- **app/api/routers/chain.py:** сообщение 501 — «mock, acp, ethereum, or solana».
+- **app/services/chain_anchor.py:** **_anchor_via_rpc**; **anchor_ethereum**, **anchor_solana**; **get_anchor_driver** returns them for "ethereum" And "solana".
+- **app/api/routers/chain.py:** message 501 — «mock, acp, ethereum, or solana».
 
-### Тесты
-- **tests/test_l3.py:** test_chain_anchor_driver_unknown_501 на driver "unknown_chain"; test_chain_anchor_ethereum_no_rpc_url_503, test_chain_anchor_ethereum_success_mocked, test_chain_anchor_solana_success_mocked.
+### Tests
+- **tests/test_l3.py:** test_chain_anchor_driver_unknown_501 on the driver "unknown_chain"; test_chain_anchor_ethereum_no_rpc_url_503, test_chain_anchor_ethereum_success_mocked, test_chain_anchor_solana_success_mocked.
 
-### Результат
+### The result
 - 7 passed (chain_anchor tests).
 
 ---
 
 ## 2025-02-23 — Chain drivers (L3): ACP + registry
 
-### Цель
-Реализовать реальные chain-драйверы: кроме mock — драйвер **acp** и регистрация по конфигу; неизвестные драйверы — 501.
+### Goal
+Implement real chain drivers: besides mock — driver **acp** and registration according to the config; unknown drivers — 501.
 
-### Изменения
-- **app/services/chain_anchor.py:** **anchor_acp** — POST на acp_rpc_url, JSON-RPC method ancap_anchor; **get_anchor_driver(driver_name)** — mock / acp / None. Ошибки ACP → ValueError → 503.
-- **app/api/routers/chain.py:** выбор драйвера через get_anchor_driver; 501 при неизвестном, 503 при ValueError.
+### Changes
+- **app/services/chain_anchor.py:** **anchor_acp** — POST on acp_rpc_url, JSON-RPC method ancap_anchor; **get_anchor_driver(driver_name)** — mock / acp / None. ACP errors → ValueError → 503.
+- **app/api/routers/chain.py:** driver selection via get_anchor_driver; 501 for unknown, 503 for ValueError.
 
-### Тесты
+### Tests
 - **tests/test_l3.py:** test_chain_anchor_driver_unknown_501, test_chain_anchor_acp_no_rpc_url_503, test_chain_anchor_acp_success_mocked.
 
-### Документация
-- **ROADMAP.md:** блок «Chain drivers (L3) ✅»; «Дальше» — ethereum/solana по аналогии. **docs/PLAN_L0_TO_L3.md:** §14 обновлён (mock + acp).
+### Documentation
+- **ROADMAP.md:** block «Chain drivers (L3) ✅»; «Further» — ethereum/solana by analogy. **docs/PLAN_L0_TO_L3.md:** §14 updated (mock + acp).
 
-### Результат
+### The result
 - 4 passed (chain_anchor tests).
 
 ---
 
 ## 2025-02-23 — External quality scorer (ROADMAP §5)
 
-### Цель
-Добавить опцию внешнего HTTP scorer для step-level quality: при заданном URL платформа отправляет payload шага на внешний сервис и использует возвращённый score; при ошибке/таймауте — fallback на встроенную эвристику.
+### Goal
+Add an external HTTP scorer option for step-level quality: given a URL, the platform sends the step payload to an external service and uses the returned score; on error/timeout — fallback to built-in heuristics.
 
-### Изменения
-- **app/config.py:** добавлены **quality_scorer_url** (пустая по умолчанию) и **quality_scorer_timeout_seconds** (5).
-- **app/services/step_quality.py:** добавлена **get_step_quality(..., scorer_url, timeout_seconds)** (async): при непустом scorer_url — POST JSON `{ step_id, action, state, duration_ms, result_summary }` на URL, ожидается ответ 200 и JSON `{ "score": float }` в [0,1]; при любом сбое возвращается **compute_step_quality(...)**. Зависимость **httpx** вынесена в импорт на уровне модуля.
-- **app/api/routers/runs.py:** при записи run_step_scores для типа "quality" вызывается **await get_step_quality(..., settings.quality_scorer_url, settings.quality_scorer_timeout_seconds)** вместо compute_step_quality.
-- **requirements.txt:** httpx перенесён в основные зависимости (нужен для исходящих HTTP в рантайме).
+### Changes
+- **app/config.py:** added **quality_scorer_url** (empty by default) and **quality_scorer_timeout_seconds** (5).
+- **app/services/step_quality.py:** added **get_step_quality(..., scorer_url, timeout_seconds)** (async): with non-empty scorer_url — POST JSON `{ step_id, action, state, duration_ms, result_summary }` to URL, expected response 200 and JSON `{ "score": float }` V [0,1]; returns in case of any failure **compute_step_quality(...)**. Addiction **httpx** imported at the module level.
+- **app/api/routers/runs.py:** when writing run_step_scores for type "quality" called **await get_step_quality(..., settings.quality_scorer_url, settings.quality_scorer_timeout_seconds)** instead of compute_step_quality.
+- **requirements.txt:** httpx moved to the main dependencies (needed for outgoing HTTP in runtime).
 
-### Тесты
-- **tests/test_step_quality.py:** test_get_step_quality_empty_url_uses_builtin; test_get_step_quality_http_returns_score (mock httpx → 200 + {"score": 0.88}); test_get_step_quality_http_fallback_on_error (mock исключение → встроенный результат).
+### Tests
+- **tests/test_step_quality.py:** test_get_step_quality_empty_url_uses_builtin; test_get_step_quality_http_returns_score (mock httpx → 200 + {"score": 0.88}); test_get_step_quality_http_fallback_on_error (mock exception → inline result).
 
-### Документация
-- **ROADMAP.md:** в §5 Execution DAG дополнено описание внешнего scorer и конфига; из «Дальше» убран пункт про кастомный quality scorer.
+### Documentation
+- **ROADMAP.md:** V §5 Execution DAG the description of the external scorer and config has been added; from «Further» The item about custom quality scorer has been removed.
 
-### Результат
+### Result
 - 8 passed (test_step_quality + test_run_steps_quality_score_when_policy_has_record_quality_score).
 
 ---
 
 ## 2025-02-23 — Challenge types (L3, PLAN §12): reasoning / tool_use
 
-### Цель
-Формализовать типы challenge и проверку solution при attest: reasoning и tool_use с верификацией solution_hash.
+### Goal
+Formalize the challenge types and solution verification for attest: reasoning and tool_use with solution_hash verification.
 
-### Изменения
-- **app/schemas/onboarding.py:** тип **ChallengeType = Literal["reasoning", "tool_use"]**; в ChallengeCreateRequest используется как challenge_type по умолчанию "reasoning". В комментарии описаны форматы payload и правила solution_hash.
-- **app/services/onboarding.py:** добавлена **_expected_solution_hash(challenge_type, nonce)**; в **submit_attestation** для типов reasoning и tool_use проверяется solution_hash, при несовпадении — ValueError("Invalid solution") → 400.
+### Changes
+- **app/schemas/onboarding.py:** type **ChallengeType = Literal["reasoning", "tool_use"]**; in ChallengeCreateRequest is used as challenge_type by default "reasoning". The commentary describes payload formats and solution_hash rules.
+- **app/services/onboarding.py:** added **_expected_solution_hash(challenge_type, nonce)**; V **submit_attestation** for the reasoning and tool_use types, the solution_hash is checked, if there is a mismatch — ValueError("Invalid solution") → 400.
 
-### Тесты
-- **tests/test_l3.py:** test_onboarding_challenge_and_attest с корректным solution_hash для reasoning; добавлены test_onboarding_challenge_tool_use и test_onboarding_attest_invalid_solution_rejected.
+### Tests
+- **tests/test_l3.py:** test_onboarding_challenge_and_attest with the correct solution_hash for reasoning; added test_onboarding_challenge_tool_use and test_onboarding_attest_invalid_solution_rejected.
 
-### Документация
-- **ROADMAP.md:** блок «Challenge types (L3) ✅»; из «Дальше» убран пункт про challenge types.
-- **docs/PLAN_L0_TO_L3.md:** §12 обновлён — challenge types реализованы и верифицируются.
+### Documentation
+- **ROADMAP.md:** block «Challenge types (L3) ✅»; from «Further» The item about challenge types has been removed.
+- **docs/PLAN_L0_TO_L3.md:** §12 updated — challenge types implemented and verified.
 
-### Результат
+### The result
 - 6 passed (test_l3).
 
 ---
 
 ## 2025-02-23 — Stake-to-activate (L3, PLAN §12)
 
-### Цель
-Реализовать обязательный стейк для активации агента при регистрации: при включённом `STAKE_TO_ACTIVATE_AMOUNT` агент считается активированным только после стейка не ниже порога; runs и listings проверяют активацию владельца стратегии.
+### Goal
+Implement a mandatory stake to activate the agent during registration: when enabled `STAKE_TO_ACTIVATE_AMOUNT` the agent is considered activated only after the stake is not below the threshold; runs and listings check whether the strategy owner is activated.
 
-### Изменения
-- **app/config.py:** уже были `stake_to_activate_amount`, `stake_to_activate_currency` (по умолчанию "0", "VUSD").
-- **app/api/routers/agents.py:** при `stake_to_activate_amount` > 0 при регистрации всегда выставляется `activated_at = None` (активация только через стейк; attestation не активирует).
-- **app/services/stakes.py:** при стейке: если порог задан, `activated_at` выставляется только когда сумма стейка ≥ порога и валюта совпадает с `stake_to_activate_currency`; при пороге 0 — любой стейк активирует. Добавлена функция **require_activated_if_stake_required(session, agent_id)** — при включённом пороге и отсутствии `activated_at` у агента выбрасывает HTTP 403 с сообщением о необходимости стейка. Импорт `get_settings`.
-- **app/api/routers/runs.py:** перед выполнением run (и в replay) вызывается `require_activated_if_stake_required(session, strat.owner_agent_id)` при наличии владельца стратегии.
-- **app/api/routers/listings.py:** при создании листинга вызывается `require_activated_if_stake_required(session, strat.owner_agent_id)`.
+### Changes
+- **app/config.py:** have already been `stake_to_activate_amount`, `stake_to_activate_currency` (by default "0", "VUSD").
+- **app/api/routers/agents.py:** at `stake_to_activate_amount` > 0 is always displayed upon registration `activated_at = None` (activation only through stake; attestation does not activate).
+- **app/services/stakes.py:** with steak: if the threshold is set, `activated_at` only displayed when stake amount ≥ threshold and the currency matches `stake_to_activate_currency`; at threshold 0 — any steak activates. Added function **require_activated_if_stake_required(session, agent_id)** — with the threshold turned on and no `activated_at` the agent throws HTTP 403 with a message about the need for a stake. Import `get_settings`.
+- **app/api/routers/runs.py:** before execution run (and in replay) is called `require_activated_if_stake_required(session, strat.owner_agent_id)` if there is a strategy owner.
+- **app/api/routers/listings.py:** when creating a listing is called `require_activated_if_stake_required(session, strat.owner_agent_id)`.
 
-### Тесты
-- **tests/test_stake_to_activate.py:** test_register_agent_when_stake_required_has_activated_at_none; test_run_forbidden_when_stake_required_and_agent_not_activated; test_listing_forbidden_when_stake_required_and_agent_not_activated; test_stake_activates_agent_then_run_allowed (полный сценарий: регистрация → депозит → стейк 100 VUSD → run разрешён). Используется monkeypatch STAKE_TO_ACTIVATE_AMOUNT=100 и сброс кэша get_settings.
+### Tests
+- **tests/test_stake_to_activate.py:** test_register_agent_when_stake_required_has_activated_at_none; test_run_forbidden_when_stake_required_and_agent_not_activated; test_listing_forbidden_when_stake_required_and_agent_not_activated; test_stake_activates_agent_then_run_allowed (full script: registration → deposit → steak 100 VUSD → run allowed). Used by monkeypatch STAKE_TO_ACTIVATE_AMOUNT=100 and reset the get_settings cache.
 
-### Документация
-- **ROADMAP.md:** добавлен блок «Stake-to-activate (L3) ✅»; из «Дальше» убран пункт stake-to-activate.
-- **docs/PLAN_L0_TO_L3.md:** в §12 обновлено «ANCAP сейчас»: stake-to-activate при регистрации реализован; в «Разрыв» оставлены только challenge types.
+### Documentation
+- **ROADMAP.md:** block added «Stake-to-activate (L3) ✅»; from «Further» The stake-to-activate item has been removed.
+- **docs/PLAN_L0_TO_L3.md:** V §12 updated «ANCAP Now»: stake-to-activate implemented upon registration; V «Gap» Only challenge types are left.
 
-### Результат
+### The result
 - 4 passed (test_stake_to_activate).
 
 ---
 
-## 2025-02-23 — Quality scorer (ROADMAP §5): встроенная эвристика
+## 2025-02-23 — Quality scorer (ROADMAP §5): built-in heuristics
 
-### Цель
-Подставить реальный расчёт quality вместо placeholder 0.5 при policy `record_quality_score` / `step_scorers: ["quality"]`.
+### Goal
+Substitute the real quality calculation instead of placeholder 0.5 with policy `record_quality_score` / `step_scorers: ["quality"]`.
 
-### Изменения
-- **app/services/step_quality.py:** функция **compute_step_quality(step_id, action, state, duration_ms, result_summary)** → float 0..1. Формула: 0.6×outcome (1.0/0.5/0.0 для succeeded/skipped/failed) + 0.4×latency (max(0, 1 − duration_ms/10000)). Успешный быстрый шаг → 1.0, провал → ближе к 0.
-- **app/api/routers/runs.py:** при сохранении run_step_scores для типа **quality** вызывается compute_step_quality; для остальных типов из step_scorers по-прежнему 0.5. В step_objs передаётся (rs, duration_ms, state, step_id, action, result_summary) для вызова scorer’а.
-- **ROADMAP §5:** в блоке «Реализовано» описан встроенный quality scorer; в «Дальше» — опция внешнего/кастомного scorer’а.
+### Changes
+- **app/services/step_quality.py:** function **compute_step_quality(step_id, action, state, duration_ms, result_summary)** → float 0..1. Formula: 0.6×outcome (1.0/0.5/0.0 for succeeded/skipped/failed) + 0.4×latency (max(0, 1 − duration_ms/10000)). Successful quick step → 1.0, a failure → closer to 0.
+- **app/api/routers/runs.py:** when storing run_step_scores for type **quality** called compute_step_quality; for other types from step_scorers it is still 0.5. (rs, duration_ms, state, step_id, action, result_summary) is passed to step_objs to call scorer’A.
+- **ROADMAP §5:** in the block «Realized» the built-in quality scorer is described; V «Further» — external/custom scorer option’A.
 
-### Тесты
+### Tests
 - **tests/test_step_quality.py:** test_compute_step_quality_succeeded_fast/slow, test_compute_step_quality_failed, test_compute_step_quality_skipped.
-- **tests/test_runs.py:** test_run_steps_quality_score_when_policy_has_record_quality_score — policy с record_quality_score: true, run, GET steps → в scores есть quality, значение в [0, 1].
+- **tests/test_runs.py:** test_run_steps_quality_score_when_policy_has_record_quality_score — policy with record_quality_score: true, run, GET steps → scores has quality, value in [0, 1].
 
-### Результат
+### Result
 - 20 passed (test_step_quality + test_runs).
 
 ---
 
-## 2025-02-23 — run_mode (backtest), quality placeholder, синхронизация плана
+## 2025-02-23 — run_mode (backtest), quality placeholder, sync plan
 
-### 1) Явный режим backtest (PLAN §5)
-- **RunRequest.run_mode:** опционально `"mock" | "backtest"` (по умолчанию `"mock"`). **runs.run_mode** (миграция 018). При `run_mode == "backtest"` исполнение идёт с `effective_dry_run = True`. В ответах run возвращается **run_mode**.
+### 1) Explicit backtest mode (PLAN §5)
+- **RunRequest.run_mode:** optional `"mock" | "backtest"` (by default `"mock"`). **runs.run_mode** (migration 018). At `run_mode == "backtest"` execution comes with `effective_dry_run = True`. In responses, run is returned **run_mode**.
 
-### 2) Задел под quality scorer (ROADMAP §5)
-- В **policy_json** добавлены опции **record_quality_score: true** и **step_scorers: ["quality", …]**. **get_step_scorers(policy)** в `app/services/risk.py` возвращает список типов оценок. При сохранении шагов для каждого элемента из `step_scorers` создаётся запись в **run_step_scores** с `score_value=0.5` (placeholder). Реальный scorer можно подставить позже.
+### 2) Backlog for quality scorer (ROADMAP §5)
+- IN **policy_json** options added **record_quality_score: true** And **step_scorers: ["quality", …]**. **get_step_scorers(policy)** V `app/services/risk.py` returns a list of rating types. When saving steps for each element from `step_scorers` an entry is created in **run_step_scores** with `score_value=0.5` (placeholder). The real scorer can be substituted later.
 
-### 3) Синхронизация плана
-- **ROADMAP «Дальше по плану»:** добавлены пункты про подстановку реального quality scorer и L3 из PLAN (реальные chain-драйверы, доработка challenge types, stake-to-activate).
-- **README:** в блок Sprint-2 добавлены run_mode, step_scorers (quality), ссылки на ROADMAP и PLAN_L0_TO_L3.
+### 3) Synchronize the plan
+- **ROADMAP «Further according to plan»:** added points about substituting a real quality scorer and L3 from PLAN (real chain drivers, modification of challenge types, stake-to-activate).
+- **README:** run_mode, step_scorers (quality), links to ROADMAP and PLAN_L0_TO_L3 have been added to the Sprint-2 block.
 
-### Тесты
-- **test_get_step_scorers** в test_risk_service.py (record_quality_score, step_scorers).
+### Tests
+- **test_get_step_scorers** V test_risk_service.py (record_quality_score, step_scorers).
 
-### Результат
-- 15/15 test_runs, тесты risk_service с get_step_scorers. Миграция 018 применена.
+### Result
+- 15/15 test_runs, risk_service tests with get_step_scorers. Migration 018 applied.
 
 ---
 
-## 2025-02-23 — PLAN L1 + env_hash (runs.env_hash), миграция 017
+## 2025-02-23 — PLAN L1 + env_hash (runs.env_hash), migration 017
 
-### Цель
-Актуализировать PLAN_L0_TO_L3 (GET artifacts готов); добавить env_hash в Run по плану L1 (content-addressed environment).
+### Goal
+Update PLAN_L0_TO_L3 (GET artifacts ready); add env_hash to Run according to L1 plan (content-addressed environment).
 
-### Изменения
-- **docs/PLAN_L0_TO_L3.md:** раздел 4) Runs + Audit Ledger — в «ANCAP сейчас» указаны GET /v1/runs/{id}/artifacts и env_hash в модели runs; в «Разрыв» убрано GET artifacts, оставлено только S3 при необходимости.
-- **runs.env_hash** (миграция 017): колонка env_hash (Text, nullable) в таблице runs. Вычисляется при сохранении run как SHA256 от JSON `{ "pool_id", "limits" }`. Модель Run, схема RunPublic и ответ GET /v1/runs/{id}/artifacts возвращают env_hash.
-- **Тесты:** test_get_run_artifacts проверяет наличие и непустоту env_hash; test_get_run_by_id проверяет наличие env_hash в ответе.
+### Changes
+- **docs/PLAN_L0_TO_L3.md:** section 4) Runes + Audit Ledger — V «ANCAP Now» GET /v1/runs/{id}/artifacts and env_hash in the runs model; V «Gap» removed GET artifacts, leaving only S3 if necessary.
+- **runs.env_hash** (migration 017): env_hash (Text, nullable) column in the runs table. Calculated when saving run as SHA256 from JSON `{ "pool_id", "limits" }`. Run model, RunPublic scheme and GET response /v1/runs/{id}/artifacts return env_hash.
+- **Tests:** test_get_run_artifacts checks the presence and non-empty env_hash; test_get_run_by_id checks for the presence of env_hash in the response.
 
-### Результат
-- 15/15 test_runs passed. Миграция 017 применена.
+### Result
+- 15/15 test_runs passed. Migration 017 applied.
 
 ---
 
 ## 2025-02-23 — README + GET /v1/runs/{id}/artifacts (L1 audit)
 
-### Цель
-Актуализировать README под текущее состояние; добавить эндпоинт артефактов по плану L1 (PLAN_L0_TO_L3).
+### Goal
+Update the README to the current state; add artifact endpoint according to plan L1 (PLAN_L0_TO_L3).
 
-### Изменения
-- **README:** таблица эндпоинтов — Runs дополнены `GET /v1/runs/{id}/artifacts`, `GET .../steps`, `GET .../steps/{step_index}`, `POST .../replay`. Блок Execution (Runs) — упоминание Execution DAG (run_steps, replay, scores). Sprint-2 — перечислены cluster_cohesion, suspicious_density, cluster_size, in_cycle и граф-гейты; Execution DAG отмечен как сделанный (run_steps, replay от шага N, scores outcome+latency).
-- **GET /v1/runs/{run_id}/artifacts:** возвращает `run_id`, `inputs_hash`, `workflow_hash`, `outputs_hash`, `proof` (MVP null). 404 если run не найден.
-- **Тест:** test_get_run_artifacts (200, структура и 404).
+### Changes
+- **README:** endpoint table — Runs supplemented `GET /v1/runs/{id}/artifacts`, `GET .../steps`, `GET .../steps/{step_index}`, `POST .../replay`. Block Execution (Runs) — mention of Execution DAG (run_steps, replay, scores). Sprint-2 — cluster_cohesion, suspicious_density, cluster_size, in_cycle and graph gates are listed; Execution DAG marked as done (run_steps, replay from step N, scores outcome+latency).
+- **GET /v1/runs/{run_id}/artifacts:** returns `run_id`, `inputs_hash`, `workflow_hash`, `outputs_hash`, `proof` (MVP null). 404 if run is not found.
+- **Test:** test_get_run_artifacts (200, structure and 404).
 
-### Результат
+### The result
 - 15/15 test_runs passed.
 
 ---
 
-## 2025-02-23 — Альтернативные score_type: latency, run_step_scores (ROADMAP §5)
+## 2025-02-23 — Alternative score_type: latency, run_step_scores (ROADMAP §5)
 
-### Цель
-Поддержать альтернативные типы оценок шагов (latency, в перспективе quality) при появлении scorer’ов.
+### Goal
+Support alternative types of step estimates (latency, quality in perspective) when scorer appears’this one
 
-### Изменения
-- **run_step_scores** (миграция 016): таблица (id, run_step_id, score_type, score_value, created_at), уникальность (run_step_id, score_type). Модель **RunStepScore** в app/db/models.py.
-- При сохранении шагов после flush создаётся запись **RunStepScore** с score_type="latency", score_value = max(0, 1 − duration_ms/10000) (0–1, быстрые шаги ближе к 1).
-- **GET /v1/runs/{run_id}/steps** и **GET /v1/runs/{run_id}/steps/{step_index}**: в ответ добавлено поле **scores** — массив { score_type, score_value } (outcome из RunStep + записи из run_step_scores для данного шага).
+### Changes
+- **run_step_scores** (migration 016): table (id, run_step_id, score_type, score_value, created_at), uniqueness (run_step_id, score_type). Model **RunStepScore** in app/db/models.py.
+- When saving steps after flush, a record is created **RunStepScore** with score_type="latency", score_value = max(0, 1 − duration_ms/10000) (0–1, quick steps closer to 1).
+- **GET /v1/runs/{run_id}/steps** And **GET /v1/runs/{run_id}/steps/{step_index}**: field added to response **scores** — array { score_type, score_value } (outcome from RunStep + entries from run_step_scores for a given step).
 
-### Тесты
-- test_get_run_steps: проверка наличия "scores", что в score_types есть "outcome" и "latency".
+### Tests
+- test_get_run_steps: check availability "scores", what is in score_types "outcome" And "latency".
 
-### Результат
-- 14/14 test_runs passed. Миграция 016 применена.
+### Result
+- 14/14 test_runs passed. Migration 016 applied.
 
 ---
 
-## 2025-02-23 — Replay от шага N (ROADMAP §5): context_after, start_step_index, initial_context
+## 2025-02-23 — Replay from step N (ROADMAP §5): context_after, start_step_index, initial_context
 
-### Цель
-Реализовать replay от шага N (from_step_index>0): сохранение контекста после каждого шага и повторный запуск workflow с этого шага.
+### Goal
+Implement replay from step N (from_step_index>0): saving the context after each step and restarting the workflow from this step.
 
-### Изменения
-- **run_steps.context_after** (JSONB, nullable): миграция 015; сохраняется контекст после каждого успешного шага для последующего replay.
-- **Interpreter** (app/engine/interpreter.py): добавлены параметры **start_step_index** (int), **initial_context** (dict | None), **context_after_step_callback** (callable). При initial_context контекст инициализируется из него; цикл пропускает шаги с индексом < start_step_index; после каждого успешного шага вызывается callback(step_index, copy(context)).
-- **Runs router**: вынесен хелпер **_run_workflow_and_persist** (run_workflow + сохранение steps/logs/metrics, evaluation, fee, reputation); принимает start_step_index и initial_context. При сохранении RunStep заполняется context_after из собранного по callback словаря (по индексу шага workflow).
-- **POST /v1/runs/replay**: при **from_step_index=0** или отсутствии — полный replay через request_run; при **from_step_index>0** — загрузка родительского run, поиск RunStep с step_index=from_step_index-1 и context_after; при отсутствии — 400 "No stored context for replay from this step"; иначе создаётся новый run и вызывается _run_workflow_and_persist с start_step_index и initial_context=context_after. Новый run содержит только шаги с индекса from_step_index до конца (step_index в новом run: 0, 1, …).
+### Changes
+- **run_steps.context_after** (JSONB, nullable): migration 015; The context is saved after each successful step for subsequent replay.
+- **Interpreter** (app/engine/interpreter.py): parameters added **start_step_index** (int), **initial_context** (dict | None), **context_after_step_callback** (callable). With initial_context, the context is initialized from it; loop skips steps with index < start_step_index; After each successful step, callback(step_index, copy(context)) is called.
+- **Runs router**: helper removed **_run_workflow_and_persist** (run_workflow + saving steps/logs/metrics, evaluation, fee, reputation); takes start_step_index and initial_context. When saving RunStep, context_after is filled from the dictionary collected by callback (by workflow step index).
+- **POST /v1/runs/replay**: at **from_step_index=0** or absence — full replay via request_run; at **from_step_index>0** — loading parent run, searching for RunStep with step_index=from_step_index-1 and context_after; in the absence — 400 "No stored context for replay from this step"; otherwise a new run is created and _run_workflow_and_persist is called with start_step_index and initial_context=context_after. The new run contains only steps from the index from_step_index to the end (step_index in the new run: 0, 1, …).
 
-### Тесты
-- test_replay_from_step_index_success: создаётся run с 2 шагами, replay с from_step_index=1 → 201, у нового run 1 step.
-- test_replay_from_step_index_no_stored_context: replay с from_step_index=10 для run с 2 шагами → 400, "No stored context".
+### Tests
+- test_replay_from_step_index_success: run with 2 steps is created, replay with from_step_index=1 → 201, at the new one run 1 step.
+- test_replay_from_step_index_no_stored_context: replay with from_step_index=10 for run with 2 steps → 400, "No stored context".
 
-### Результат
-- 14/14 test_runs passed. Миграция 015 применена.
+### Result
+- 14/14 test_runs passed. Migration 015 applied.
 
 ---
 
 ## 2025-02-23 — Step-level score outcome + partial replay (ROADMAP §5)
 
-### Цель
-Заполнять score_value/score_type при сохранении шагов; добавить replay from step 0 (новый run с теми же входами, что и указанный run).
+### Goal
+Fill in score_value/score_type when saving steps; add replay from step 0 (a new run with the same inputs as the specified run).
 
 ### Step-level score
-- При создании RunStep в runs router выставляются **score_value** (1.0 для succeeded, 0.0 для failed, 0.5 для skipped) и **score_type** = "outcome". Поля уже были в модели и миграции 014.
-- Тест test_get_run_steps проверяет score_type == "outcome" и score_value in (0.0, 0.5, 1.0).
+- When creating RunStep in runs router are set **score_value** (1.0 for succeeded, 0.0 for failed, 0.5 for skipped) and **score_type** = "outcome". The fields were already in the model and migration 014.
+- The test_get_run_steps test checks the score_type == "outcome" And score_value in (0.0, 0.5, 1.0).
 
 ### Partial replay (replay from step 0)
 - **RunReplayRequest** (app/schemas/runs.py): run_id.
-- **POST /v1/runs/replay**: загружает Run по run_id (404 если не найден), строит RunRequest с strategy_version_id, pool_id, params, limits, dry_run из родителя и parent_run_id=run_id, вызывает request_run. Новый run — полное переисполнение с теми же входами.
-- Тесты: test_replay_run (201, parent_run_id совпадает, id другой), test_replay_run_not_found (404).
+- **POST /v1/runs/replay**: loads Run by run_id (404 if not found), builds RunRequest with strategy_version_id, pool_id, params, limits, dry_run from parent and parent_run_id=run_id, calls request_run. New run — complete re-execution with the same inputs.
+- Tests: test_replay_run (201, parent_run_id matches, id different), test_replay_run_not_found (404).
 
-### Результат
-- 106 passed (в полном прогоне).
+### Result
+- 106 passed (in full run).
 
 ---
 
 ## 2025-02-23 — Moderation graph-context + Execution DAG step-level score fields
 
-### Цель
-Дальше по плану: интеграция графа с Moderation API (эндпоинт graph-context); задел для step-level scoring (поля в run_steps).
+### Goal
+Next according to the plan: integration of the graph with the Moderation API (graph-context endpoint); reserve for step-level scoring (fields in run_steps).
 
 ### Moderation API (ROADMAP 2.1)
-- **GET /v1/moderation/agents/{agent_id}/graph-context**: возвращает **metrics** (get_agent_graph_metrics: reciprocity_score, cluster_cohesion, suspicious_density, cluster_size, in_cycle) и **flags** для модерации: in_cycle, suspicious_density_high (suspicious_density >= 0.5), large_cluster (cluster_size > 10). 404 если агент не найден.
-- Тесты: test_moderation_agent_graph_context (200, структура metrics и flags), test_moderation_agent_graph_context_not_found (404).
+- **GET /v1/moderation/agents/{agent_id}/graph-context**: returns **metrics** (get_agent_graph_metrics: reciprocity_score, cluster_cohesion, suspicious_density, cluster_size, in_cycle) And **flags** for moderation: in_cycle, suspicious_density_high (suspicious_density >= 0.5), large_cluster (cluster_size > 10). 404 if the agent is not found.
+- Tests: test_moderation_agent_graph_context (200, metrics and flags structure), test_moderation_agent_graph_context_not_found (404).
 
 ### Execution DAG (ROADMAP §5)
-- В модель **RunStep** добавлены **score_value** (Numeric(10,4), nullable) и **score_type** (String(32), nullable). Миграция 014.
-- **GET /v1/runs/{run_id}/steps** и **GET /v1/runs/{run_id}/steps/{step_index}** в ответ включают score_value, score_type (null пока scorer не реализован).
-- Тест test_get_run_steps проверяет наличие score_value и score_type в элементах steps.
+- To model **RunStep** added **score_value** (Numeric(10,4), nullable) And **score_type** (String(32), nullable). Migration 014.
+- **GET /v1/runs/{run_id}/steps** And **GET /v1/runs/{run_id}/steps/{step_index}** the response includes score_value, score_type (null until scorer is implemented).
+- The test_get_run_steps test checks for the presence of score_value and score_type in the steps elements.
 
-### Результат
-- 104 passed. alembic upgrade head (014) применён.
+### The result
+- 104 passed. alembic upgrade head (014) applied.
 
 ---
 
 ## 2025-02-23 — Policy gates max_cluster_size, block_if_in_cycle (ROADMAP 2.1)
 
-### Цель
-Добавить в policy DSL ограничения по графу: max_cluster_size (block если cluster_size владельца > cap), block_if_in_cycle (block если владелец в ориентированном цикле).
+### Goal
+Add graph restrictions to policy DSL: max_cluster_size (block if cluster_size owner > cap), block_if_in_cycle (block if the owner is in a oriented cycle).
 
-### Изменения
-- **app/services/risk.py**: в схему policy и get_graph_gate добавлены **max_cluster_size** (int ≥ 1) и **block_if_in_cycle** (bool). При block_if_in_cycle: True блокирует run, False не добавляется в gate.
-- **app/api/routers/runs.py**: после проверок reciprocity и suspicious_density добавлены: при max_cluster_size — 403 если metrics["cluster_size"] > cap; при block_if_in_cycle — 403 если metrics["in_cycle"] истина.
+### Changes
+- **app/services/risk.py**: policy and get_graph_gate have been added to the schema **max_cluster_size** (int ≥ 1) And **block_if_in_cycle** (bool). When block_if_in_cycle: True blocks run, False is not added to gate.
+- **app/api/routers/runs.py**: after reciprocity and suspicious_density checks added: at max_cluster_size — 403 if metrics["cluster_size"] > cap; at block_if_in_cycle — 403 if metrics["in_cycle"] the truth.
 
-### Тесты
-- **test_risk_service.py**: test_get_graph_gate проверяет max_cluster_size (5, 1; 0 отбрасывается), block_if_in_cycle (True сохраняется, False не в gate), комбинацию ключей.
-- **test_runs.py**: test_run_allowed_with_graph_gate_max_cluster_size_and_block_if_in_cycle — пул с policy { max_cluster_size: 10, block_if_in_cycle: true }, владелец без рёбер (cluster_size=1, in_cycle=false) → run 201.
+### Tests
+- **test_risk_service.py**: test_get_graph_gate checks max_cluster_size (5, 1; 0 is discarded), block_if_in_cycle (True is saved, False is not in gate), key combination.
+- **test_runs.py**: test_run_allowed_with_graph_gate_max_cluster_size_and_block_if_in_cycle — policy pool { max_cluster_size: 10, block_if_in_cycle: true }, owner without edges (cluster_size=1, in_cycle=false) → run 201.
 
-### Результат
-- Все тесты проходят.
+### Result
+- All tests pass.
 
 ---
 
-## 2025-02-23 — ROADMAP 2.1 кластеризация/циклы + §5 artifact_hash, GET step by index
+## 2025-02-23 — ROADMAP 2.1 clustering/cycles + §5 artifact_hash, GET step by index
 
-### Цель
-Дальше по плану: кластеризация графа (cluster_size), поиск циклов (in_cycle); заполнение artifact_hash на шаге и API шага по индексу.
+### Goal
+Next according to the plan: graph clustering (cluster_size), searching for cycles (in_cycle); filling artifact_hash on the step and step API by index.
 
 ### 2.1 Agent Graph
-- **get_cluster_size(session, agent_id)**: BFS по неориентированным order-рёбрам — размер связной компоненты, содержащей агента. _load_order_edges загружает все рёбра, строится неориентированный граф, BFS от agent_id.
-- **has_cycle(session, agent_id)**: DFS в ориентированном графе (source→target); true, если есть путь из agent_id обратно в agent_id (длина ≥ 1).
-- **get_agent_graph_metrics**: в ответ добавлены **cluster_size** (int), **in_cycle** (bool). API GET /v1/agents/{id}/graph-metrics возвращает их без изменений.
+- **get_cluster_size(session, agent_id)**: BFS along undirected order edges — the size of the connected component containing the agent. _load_order_edges loads all edges, builds an undirected graph, BFS from agent_id.
+- **has_cycle(session, agent_id)**: DFS in a directed graph (source→target); true, if there is a path from agent_id back to agent_id (length ≥ 1).
+- **get_agent_graph_metrics**: added to the answer **cluster_size** (int), **in_cycle** (bool). API GET /v1/agents/{id}/graph-metrics returns them unchanged.
 
 ### §5 Execution DAG
-- При сохранении RunStep вычисляется **artifact_hash** = SHA256(JSON step_id, action, result_summary) для content-addressing шага.
-- **GET /v1/runs/{run_id}/steps/{step_index}** — один шаг по индексу (explainability, пошаговая инспекция). 404 при отсутствии run или шага; 400 при step_index < 0.
+- When saving, RunStep is calculated **artifact_hash** = SHA256(JSON step_id, action, result_summary) for the content-addressing step.
+- **GET /v1/runs/{run_id}/steps/{step_index}** — one step by index (explainability, step-by-step inspection). 404 if there is no run or step; 400 at step_index < 0.
 
-### Тесты
-- test_agents: проверка cluster_size (int ≥ 1), in_cycle (bool).
-- test_runs: test_get_run_steps — наличие artifact_hash в элементах steps; test_get_run_step_by_index — GET steps/0, структура и artifact_hash, GET steps/999 → 404.
+### Tests
+- test_agents: check cluster_size (int ≥ 1), in_cycle (bool).
+- test_runs: test_get_run_steps — presence of artifact_hash in steps elements; test_get_run_step_by_index — GET steps/0, structure and artifact_hash, GET steps/999 → 404.
 
-### Результат
+### The result
 - 101 passed.
 
 ---
 
 ## 2025-02-23 — ROADMAP 2.1 + §5: cluster_cohesion, suspicious_density, Execution DAG
 
-### Цель
-Закрыть «Дальше по плану»: метрики графа cluster_cohesion и suspicious_density (2.1), модель Execution DAG — run_steps и API (§5).
+### Goal
+Close «Further according to plan»: graph metrics cluster_cohesion and suspicious_density (2.1), Execution DAG model — run_steps and API (§5).
 
 ### 2.1 Agent Graph
-- **cluster_cohesion**: плотность 1-hop ego-графа (рёбра внутри ego / n*(n-1)); `get_cluster_cohesion(session, agent_id)` возвращает (cohesion, ego_size).
-- **suspicious_density**: anti-sybil сигнал = cohesion × (1 / (1 + log2(n))); высокий при малом плотном кластере.
-- **get_agent_graph_metrics**: в ответ добавлены cluster_cohesion и suspicious_density (0..1).
-- **Policy gate**: в risk policy и get_graph_gate добавлен **max_suspicious_density** (0..1); при запросе run проверка владельца стратегии, при превышении — 403.
+- **cluster_cohesion**: density of 1-hop ego graph (edges inside ego / n*(n-1)); `get_cluster_cohesion(session, agent_id)` returns (cohesion, ego_size).
+- **suspicious_density**: anti-sybil signal = cohesion × (1 / (1 + log2(n))); high with a small dense cluster.
+- **get_agent_graph_metrics**: cluster_cohesion and suspicious_density (0..1) were added to the response.
+- **Policy gate**: added to risk policy and get_graph_gate **max_suspicious_density** (0..1); at the run request, checking the owner of the strategy, if exceeded — 403.
 
 ### §5 Execution DAG
-- **Модель RunStep** (app/db/models.py): run_id, step_index, step_id, parent_step_index, action, state, duration_ms, result_summary, artifact_hash.
-- **Миграция 013**: таблица run_steps, индексы по run_id и (run_id, step_index).
-- **runs router**: после run_workflow сохранение RunStep для каждого step_log (parent_step_index = линейная цепочка).
-- **GET /v1/runs/{run_id}/steps**: возвращает run_id и список шагов (step_index, step_id, parent_step_index, action, state, duration_ms, result_summary, artifact_hash).
+- **RunStep model** (app/db/models.py): run_id, step_index, step_id, parent_step_index, action, state, duration_ms, result_summary, artifact_hash.
+- **Migration 013**: table run_steps, indexes by run_id and (run_id, step_index).
+- **runs router**: after run_workflow saving RunStep for each step_log (parent_step_index = linear chain).
+- **GET /v1/runs/{run_id}/steps**: returns run_id and a list of steps (step_index, step_id, parent_step_index, action, state, duration_ms, result_summary, artifact_hash).
 
-### Тесты
-- test_agents: проверка наличия cluster_cohesion и suspicious_density в graph-metrics, диапазон 0..1.
-- test_runs: test_get_run_steps — создание run, GET steps, проверка структуры DAG.
+### Tests
+- test_agents: check for the presence of cluster_cohesion and suspicious_density in graph-metrics, range 0..1.
+- test_runs: test_get_run_steps — creating run, GET steps, checking DAG structure.
 
-### Результат
-- 100 passed (с новыми тестами). alembic upgrade head применён (013).
+### Result
+- 100 passed (with new tests). alembic upgrade head applied (013).
 
 ---
 
-## 2025-02-23 — Sprint-2 доработки (Ledger §3, Circuit breaker, Reputation, Gates, Agent graph, Run isolation)
+## 2025-02-23 — Sprint-2 improvements (Ledger §3, Circuit breaker, Reputation, Gates, Agent graph, Run isolation)
 
-### Цель
-Закрыть пункты ROADMAP: Ledger (account_kind, invariant checker, блок при нарушении), circuit breaker по метрике, Reputation 2.0 + policy gates, метрики графа агентов, изоляция run (max_external_calls в policy). Обновить README и ROADMAP формулировками «сделано» / «дальше».
+### Goal
+Close ROADMAP items: Ledger (account_kind, invariant checker, block if violated), circuit breaker by metric, Reputation 2.0 + policy gates, agent graph metrics, run isolation (max_external_calls in policy). Update README and ROADMAP with wording «made» / «further».
 
 ### Ledger (ROADMAP §3)
-- **account_kind**: enum и колонка на Account; миграция 012 с backfill (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury). В `ledger.py` при создании счёта выставляется kind по owner_type.
-- **Invariant checker**: `check_ledger_invariant(session)` → нарушения (currency, sum); вызывается из tick → флаг `ledger_invariant_halted` в job_watermarks. При halted: deposit, withdraw, allocate, place_order → 503. Эндпоинт `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
-- **Тесты**: `test_ledger_deposit_blocked_when_invariant_halted`; в conftest autouse фикстура сброса флага перед каждым тестом.
+- **account_kind**: enum and Account column; migration 012 with backfill (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury). IN `ledger.py` When creating an account, kind is set to owner_type.
+- **Invariant checker**: `check_ledger_invariant(session)` → violations (currency, sum); called from tick → flag `ledger_invariant_halted` V job_watermarks. At halted: deposit, withdraw, allocate, place_order → 503. Endpoint `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
+- **Tests**: `test_ledger_deposit_blocked_when_invariant_halted`; in conftest autouse the flag is reset before each test.
 
-### Circuit breaker по метрике (ROADMAP 2.4)
-- **app/jobs/circuit_breaker_by_metric.py**: для политик с `circuit_breaker: { metric, threshold }` (scope_type=pool, metric=daily_loss) — средний return_pct по runs за 24h; при loss ≥ threshold → CircuitBreaker state=halted. Результат в tick: evaluated, tripped.
+### Circuit breaker by metrics (ROADMAP 2.4)
+- **app/jobs/circuit_breaker_by_metric.py**: for policies with `circuit_breaker: { metric, threshold }` (scope_type=pool, metric=daily_loss) — average return_pct by runs for 24h; at loss ≥ threshold → CircuitBreaker state=halted. Result in tick: evaluated, tripped.
 
 ### Reputation 2.0 (ROADMAP 2.2)
-- **app/jobs/reputation_tick.py**: выбор до N субъектов с reputation_events за 7 дней, пересчёт trust + snapshot для каждого. Вызов из tick → reputation_recomputed.
+- **app/jobs/reputation_tick.py**: selection of up to N subjects with reputation_events in 7 days, recalculation of trust + snapshot for everyone. Call from tick → reputation_recomputed.
 
 ### Policy gates (Reputation + Graph)
-- В политике: **min_trust_score**, **min_reputation_score** — в request_run загрузка TrustScore/ReputationSnapshot владельца стратегии; при нарушении порога → 403.
-- **max_reciprocity_score** — в request_run загрузка `get_agent_graph_metrics`; при reciprocity_score ≥ cap → 403.
+- In politics: **min_trust_score**, **min_reputation_score** — in request_run loading TrustScore/ReputationSnapshot of the strategy owner; when the threshold is violated → 403.
+- **max_reciprocity_score** — in request_run loading `get_agent_graph_metrics`; at reciprocity_score ≥ cap → 403.
 
 ### Agent graph metrics (ROADMAP 2.1)
-- **app/services/agent_graph_metrics.py**: reciprocity_score и get_agent_graph_metrics по таблице agent_relationships (order). `GET /v1/agents/{id}/graph-metrics` → `{ "reciprocity_score": float }`. Тесты в test_agents.py.
+- **app/services/agent_graph_metrics.py**: reciprocity_score and get_agent_graph_metrics by table agent_relationships (order). `GET /v1/agents/{id}/graph-metrics` → `{ "reciprocity_score": float }`. Tests in test_agents.py.
 
 ### Run isolation (ROADMAP 2.3)
-- В risk policy и get_effective_limits добавлен **max_external_calls** (reserved). Изоляция: max_steps, max_runtime_ms, max_action_calls в интерпретаторе; max_external_calls — под будущее. Тест test_get_effective_limits_dsl проверяет default и из policy.
+- Added to risk policy and get_effective_limits **max_external_calls** (reserved). Isolation: max_steps, max_runtime_ms, max_action_calls in the interpreter; max_external_calls — under the future. The test_get_effective_limits_dsl test checks default and policy.
 
-### Документация
-- **README**: Ledger — «Реализовано» (account_kind, invariant, halt, ledger-invariant-status); Risk — policy DSL и gates; таблица эндпоинтов — graph-metrics, ledger-invariant-status; раздел «Главный риск» — что уже есть (agent_relationships, reciprocity, gates) и чего нет (cluster_cohesion, suspicious_density); Sprint-2 итог в быстром старте.
-- **ROADMAP**: секция «Дальше по плану (потом)» — сейчас доработки; после: 2.1 (cluster_cohesion, suspicious_density, кластеризация, циклы), §5 Execution DAG.
+### Documentation
+- **README**: Ledger — «Realized» (account_kind, invariant, halt, ledger-invariant-status); Risk — policy DSL and gates; endpoint table — graph-metrics, ledger-invariant-status; section «Main risk» — what already exists (agent_relationships, reciprocity, gates) and what does not exist (cluster_cohesion, suspicious_density); Sprint-2 result in a quick start.
+- **ROADMAP**: section «Further according to plan (later)» — now improvements; after: 2.1 (cluster_cohesion, suspicious_density, clustering, cycles), §5 Execution DAG.
 
-### Результат
-- Тесты: 99 passed (с учётом test_ledger_deposit_blocked_when_invariant_halted и др.). PostgreSQL + alembic upgrade head для полного прогона.
-
----
-
-## 2025-02-23 — Все тесты должны проходить (42/42)
-
-### Цель
-- Убрать пропуски тестов (18 skipped) из-за смены event loop между тестами.
-- Все 42 теста должны выполняться и проходить при доступной PostgreSQL.
-
-### План
-1. Использовать синхронный `TestClient` (Starlette) — приложение крутится в одном фоновом потоке с одним event loop.
-2. Создавать таблицы один раз через синхронный движок (psycopg2) в session-scoped фикстуре.
-3. Переписать все тесты с async/await на синхронные вызовы `client.post(...)` и т.д.
-4. Вести этот LOG.md.
-
-### Изменения
-
-- **conftest.py**: переход на sync `TestClient` (Starlette), session-scoped фикстура `client`. Таблицы создаются один раз через синхронный движок (`create_engine` по `postgresql://` без asyncpg). `override_get_db` оставлен async — выполняется в одном потоке/loop TestClient.
-- **tests/test_*.py**: удалены `@pytest.mark.asyncio`, все тесты переписаны с `async def` на `def`, вызовы `await client.*` заменены на `client.*`. Импорты `AsyncClient` убраны. `test_unit.py` не менялся (уже синхронные тесты без БД).
-- **test_auth.py**: в `test_login_wrong_password` пароль для неверного ввода заменён с `"wrong"` на `"wrongpass"` (требование схемы: min_length=8), чтобы ответ был 400 от эндпоинта, а не 422 от валидации.
-- **app/api/routers/runs.py**: после установки `run.state = RunStateEnum.succeeded` и `run.ended_at` добавлен `await session.flush()`, чтобы перед `refresh(run)` в БД была записана финальная фаза run и тест получал `state == "succeeded"`.
-
-### Результат
-- **42 passed, 0 skipped, 0 failed** при запуске:  
-  `PYTHONPATH=<корень> DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap python -m pytest tests -v`  
-  (PostgreSQL должен быть запущен, БД `ancap` создана.)
+### Result
+- Tests: 99 passed (including test_ledger_deposit_blocked_when_invariant_halted, etc.). PostgreSQL + alembic upgrade head for a full run.
 
 ---
 
-## 2025-02-23 — Финтех-практики: только Alembic, README-спека
+## 2025-02-23 — All tests must pass (42/42)
 
-### Цель
-- Убрать автосоздание таблиц приложением; только Alembic управляет схемой.
-- Закрепить в README: idempotency, double-entry ledger, cursor pagination, access scope/expiry, runs audit hashes, vertical quarantine, workflow validation, юридический disclaimer.
+### Goal
+- Remove skipped tests (18 skipped) due to event loop changes between tests.
+- All 42 tests must run and pass with PostgreSQL available.
 
-### Изменения в коде
+### Plan
+1. Use synchronous `TestClient` (Starlette) — the application runs in one background thread with one event loop.
+2. Create tables once through a synchronous engine (psycopg2) in a session-scoped fixture.
+3. Rewrite all tests from async/await to synchronous calls `client.post(...)` etc.
+4. Maintain this LOG.md.
 
-- **app/main.py**: удалены импорт и вызов `init_db()` из lifespan. При старте приложение больше не создаёт таблицы.
-- **app/db/session.py**: функция `init_db()` удалена.
-- **app/db/__init__.py**: экспорт `init_db` убран.
+### Changes
 
-### Изменения в README
+- **conftest.py**: switch to sync `TestClient` (Starlette), session-scoped fixture `client`. Tables are created once through a synchronous engine (`create_engine` by `postgresql://` without asyncpg). `override_get_db` left async — runs in one thread/loop TestClient.
+- **tests/test_*.py**: deleted `@pytest.mark.asyncio`, all tests are rewritten from `async def` on `def`, challenges `await client.*` replaced by `client.*`. Import `AsyncClient` removed. `test_unit.py` did not change (already synchronous tests without a database).
+- **test_auth.py**: V `test_login_wrong_password` password for incorrect entry has been replaced with `"wrong"` on `"wrongpass"` (circuit requirement: min_length=8), so that the answer is 400 from the endpoint, and not 422 from validation.
+- **app/api/routers/runs.py**: after installation `run.state = RunStateEnum.succeeded` And `run.ended_at` added `await session.flush()`, so that before `refresh(run)` the final run phase was recorded in the database and the test received `state == "succeeded"`.
 
-- Удалён абзац «При первом запуске таблицы создаются через init_db()…». Добавлено: для всех окружений схема — только через `alembic upgrade head`.
-- Добавлен **Disclaimer**: «Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.»
-- **Миграции**: отдельный раздел — управление схемой только Alembic, приложение не создаёт таблицы.
-- **Idempotency**: раздел про заголовок Idempotency-Key и exactly-once для `/v1/orders`, `/v1/ledger/*`, `/v1/runs`.
-- **Пагинация (cursor)**: сортировка created_at desc, id desc; next_cursor — opaque token.
-- **Ledger**: double-entry; src_account_id/dst_account_id для transfer; deposit/withdraw — системный аккаунт (external/treasury); баланс только из событий.
-- **Access grants**: scope (view|execute|allocate), expires_at; покупка ≠ доступ навсегда по умолчанию.
-- **Runs**: артефакты с хешами для аудита (inputs_hash, workflow_hash, outputs_hash; proof на MVP может быть null).
-- **Verticals / карантин**: proposed — только dry_run или experimental пулы до active.
-- **Workflow validation**: базовая схема WorkflowSpec + vertical_specs.workflow_schema (если задана).
-- В быстром старте Docker добавлена рекомендация выполнить `alembic upgrade head` перед запуском API. В разделе «Тесты» для полного прогона указано предварительно применить миграции.
+### The result
+- **42 passed, 0 skipped, 0 failed** on startup:  
+  `PYTHONPATH=<root> DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap python -m pytest tests -v`  
+  (PostgreSQL database must be running `ancap` created.)
 
 ---
 
-## 2025-02-23 — Найм агентов (Agent-as-a-Service) в документации
+## 2025-02-23 — Fintech practices: only Alembic, README heat
 
-### Цель
-Отразить в README, как «найм» агента агентом выглядит в платформе: три варианта (покупка сервиса / контракт / команда), разрешённые и запрещённые типы работ, роли, риски и митигации.
+### Goal
+- Remove automatic creation of tables by the application; only Alembic controls the circuit.
+- Add to README: idempotency, double-entry ledger, cursor pagination, access scope/expiry, runs audit hashes, vertical quarantine, workflow validation, legal disclaimer.
 
-### Изменения в README
+### Code changes
 
-- Добавлен раздел **«Найм агентов (Agent-as-a-Service)»**:
-  - **Вариант 1 (MVP):** найм как покупка сервиса — Listing → Order → AccessGrant → Run → Ledger.
-  - **Вариант 2:** контракт на работу (Contract, employer/worker, SLA, оплата) — дорожная карта.
-  - **Вариант 3:** команда/DAO — организации, роли, доли — дальше.
-  - **Разрешённые типы работ:** генерация workflow, бэктест, скоринг, аудит, vertical spec, risk-policy, данные в рамках spec.
-  - **Запрещённые:** произвольный код, прямой доступ к платёжкам, действия «выведи деньги» без шлюзов.
-  - **Роли:** Builder, Auditor, Optimizer, Vertical architect, Allocator, Data agents.
-  - **Риски и митигации:** anti-sybil (граф связей), запрет self-dealing, quarantine новых агентов, лимиты по обороту/частоте до доверия; опора на Reputation и Moderation API.
+- **app/main.py**: import and call removed `init_db()` from lifespan. When the application starts, it no longer creates tables.
+- **app/db/session.py**: function `init_db()` deleted.
+- **app/db/__init__.py**: export `init_db` removed.
+
+### README Changes
+
+- Removed paragraph «On first startup, tables are created via init_db()…». Added: scheme for all environments — only through `alembic upgrade head`.
+- Added **Disclaimer**: «Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.»
+- **Migrations**: separate section — Schema management is Alembic only, the application does not create tables.
+- **Idempotency**: section on Idempotency-Key and exactly-once header for `/v1/orders`, `/v1/ledger/*`, `/v1/runs`.
+- **Pagination (cursor)**: sort created_at desc, id desc; next_cursor — opaque token.
+- **Ledger**: double-entry; src_account_id/dst_account_id for transfer; deposit/withdraw — system account (external/treasury); balance only from events.
+- **Access grants**: scope (view|execute|allocate), expires_at; purchase ≠ access forever by default.
+- **Runs**: artifacts with hashes for auditing (inputs_hash, workflow_hash, outputs_hash; proof on MVP can be null).
+- **Verticals / quarantine**: proposed — only dry_run or experimental pools before active.
+- **Workflow validation**: WorkflowSpec basic diagram + vertical_specs.workflow_schema (if specified).
+- Added a recommendation to do this in Docker Quick Start `alembic upgrade head` before running the API. In the section «Tests» For a full run, it is indicated to first apply migrations.
+
+---
+
+## 2025-02-23 — Hiring agents (Agent-as-a-Service) in the documentation
+
+### Goal
+Reflect in README as «eight» an agent looks like an agent in the platform: three options (purchase of service / contract / team), permitted and prohibited types of work, roles, risks and mitigations.
+
+### README Changes
+
+- Added section **«Hiring agents (Agent-as-a-Service)»**:
+  - **Option 1 (MVP):** hiring as purchasing a service — Listing → Order → AccessGrant → Run → Ledger.
+  - **Option 2:** work contract (Contract, employer/worker, SLA, payment) — road map.
+  - **Option 3:** command/DAO — organizations, roles, shares — further.
+  - **Permitted types of work:** workflow generation, backtest, scoring, audit, vertical spec, risk-policy, data within the spec.
+  - **Prohibited:** custom code, direct access to payments, actions «withdraw money» without gateways.
+  - **Roles:** Builder, Auditor, Optimizer, Vertical architect, Allocator, Data agents.
+  - **Risks and mitigations:** anti-sybil (connection graph), ban on self-dealing, quarantine of new agents, limits on turnover/frequency before trust; reliance on Reputation and Moderation API.
 
 ---
 
 ## 2025-02-23 — Sprint-2: Core Engine “real core”
 
-### Цель
-Сделать Core «реальным»: стратегия исполняется интерпретатором workflow в рамках BaseVertical, риск-контроль, оценка, анти-накрутка.
+### Goal
+Make Core «real»: the strategy is executed by the workflow interpreter within BaseVertical, risk control, assessment, anti-cheat.
 
-### Миграции (Alembic 002)
-- **runs**: добавлены поля `inputs_hash`, `workflow_hash`, `outputs_hash`, `proof_json`.
-- **evaluations**: уникальный индекс по `strategy_version_id`.
-- **agent_links**: новая таблица (agent_id, linked_agent_id, link_type, confidence).
-- **Seed**: вертикаль BaseVertical (status=active) и её spec с 10 allowed_actions и метриками.
+### Migrations (Alembic 002)
+- **runs**: fields added `inputs_hash`, `workflow_hash`, `outputs_hash`, `proof_json`.
+- **evaluations**: unique index by `strategy_version_id`.
+- **agent_links**: new table (agent_id, linked_agent_id, link_type, confidence).
+- **Seed**: BaseVertical vertical (status=active) and its spec with 10 allowed_actions and metrics.
 
-### Модели и БД
-- **app/db/base.py**: вынесен `Base` (DeclarativeBase), чтобы Alembic не загружал async engine при `DATABASE_URL=postgresql://`.
-- **app/db/models.py**: Run — новые поля; добавлена модель AgentLink; импорт Base из app.db.base.
-- **app/db/session.py**: импорт Base из app.db.base; удалён дубликат Base.
-- **app/db/__init__.py**: убраны импорты из session (для Alembic).
+### Models and BD
+- **app/db/base.py**: removed `Base` (DeclarativeBase) so that Alembic does not load the async engine when `DATABASE_URL=postgresql://`.
+- **app/db/models.py**: Run - new fields; added AgentLink model; import Base from app.db.base.
+- **app/db/session.py**: import Base from app.db.base; duplicate Base removed.
+- **app/db/__init__.py**: removed imports from session (for Alembic).
 
 ### Workflow Interpreter v0 (app/engine/)
-- **interpreter.py**: `validate_workflow()` (WorkflowSpec + whitelist), `run_workflow()` — последовательное выполнение steps, context, save_as/ref, лимиты max_steps/max_runtime_ms/max_action_calls, логи шагов, RunResult (state, metrics, inputs_hash, workflow_hash, outputs_hash).
-- **actions/base_vertical.py**: 10 действий — const, math_add/sub/mul/div, cmp, if, rand_uniform (с seed), portfolio_buy, portfolio_sell; портфель и equity curve в контексте run.
+- **interpreter.py**: `validate_workflow()` (WorkflowSpec + whitelist), `run_workflow()` - sequential execution of steps, context, save_as/ref, limits max_steps/max_runtime_ms/max_action_calls, step logs, RunResult (state, metrics, inputs_hash, workflow_hash, outputs_hash).
+- **actions/base_vertical.py**: 10 actions - const, math_add/sub/mul/div, cmp, if, rand_uniform (with seed), portfolio_buy, portfolio_sell; portfolio and equity curve in the context of run.
 - **schemas/strategies.py**: WorkflowStep.save_as (optional).
 
 ### Risk v0 (app/services/risk.py)
-- `merge_policy()`, `make_risk_callback()` — убийство run при превышении max_loss_pct по equity curve.
-- `get_effective_limits()` — слияние policy и run limits.
-- Роутер runs: разрешение политик (global, pool, vertical, strategy), проверка CircuitBreaker (pool halted → 409).
+- `merge_policy()`, `make_risk_callback()` — killing run when max_loss_pct is exceeded by the equity curve.
+- `get_effective_limits()` - merging policy and run limits.
+- Router runs: policy resolution (global, pool, vertical, strategy), CircuitBreaker check (pool halted → 409).
 
 ### Evaluation v0 (app/services/evaluation.py)
-- `compute_score()` — формула по avg_return_pct, avg_drawdown_pct, killed_rate, sample_size.
-- `update_evaluation_for_version()` — агрегация succeeded runs, запись/обновление Evaluation, percentile_in_vertical в рамках вертикали.
+- `compute_score()` — formula by avg_return_pct, avg_drawdown_pct, killed_rate, sample_size.
+- `update_evaluation_for_version()` - aggregation succeeded runs, write/update Evaluation, percentile_in_vertical within a vertical.
 
 ### Runs API (app/api/routers/runs.py)
-- POST /v1/runs: загрузка StrategyVersion + Vertical + spec, allowed_actions из vertical_spec, вызов `run_workflow()` с risk_callback и limits, сохранение run (state, hashes), RunLog по шагам, MetricRecord по метрикам; при succeeded — обновление evaluation.
+- POST /v1/runs: loading StrategyVersion + Vertical + spec, allowed_actions from vertical_spec, calling `run_workflow()` with risk_callback and limits, saving run (state, hashes), RunLog by steps, MetricRecord by metrics; if succeeded - update evaluation.
 
 ### Anti-self-dealing (app/api/routers/orders.py)
-- При place_order: если buyer_type=agent и buyer_id == strategy.owner_agent_id → 403.
-- Проверка agent_links: если buyer связан с owner (confidence ≥ 0.8) → 403.
+- At place_order: If buyer_type=agent And buyer_id == strategy.owner_agent_id → 403.
+- Checking agent_links: if the buyer is linked to the owner (confidence ≥ 0.8) → 403.
 
 ### Moderation (app/api/routers/moderation.py, schemas/moderation.py)
-- POST /v1/moderation/agent-links: создание связи между агентами (manual и др.), схема AgentLinkCreateRequest.
+- POST /v1/moderation/agent-links: creating a connection between agents (manual, etc.), AgentLinkCreateRequest scheme.
 
 ### Config (app/config.py)
-- circuit_breaker_n_runs, circuit_breaker_min_return_pct, circuit_breaker_k_killed (для будущей логики breaker).
+- circuit_breaker_n_runs, circuit_breaker_min_return_pct, circuit_breaker_k_killed (for future breaker logic).
 
-### Тесты
-- **tests/test_engine_unit.py**: валидация workflow, действия (math, cmp, if, rand с seed), max_steps kill, успешный run с save_as/ref.
-- **tests/fixtures/base_vertical_workflow.json**: пример workflow buy/sell с rand.
-- **tests/test_listings_orders.py**: отдельный buyer agent для place_order и list_access_grants (запрет self-dealing).
-- **tests/test_runs.py**: использование BaseVertical (по имени из list verticals), workflow с const + math_add; проверка state == "succeeded".
+### Tests
+- **tests/test_engine_unit.py**: workflow validation, actions (math, cmp, if, rand with seed), max_steps kill, successful run with save_as/ref.
+- **tests/fixtures/base_vertical_workflow.json**: example workflow buy/sell with rand.
+- **tests/test_listings_orders.py**: separate buyer agent for place_order and list_access_grants (self-dealing prohibited).
+- **tests/test_runs.py**: use BaseVertical (by name from list verticals), workflow with const + math_add; checking state == "succeeded".
 
-### Результат
-- **49 passed** (включая 7 тестов движка). Миграция 002 применяется после stamp 001 при уже существующих таблицах.
+### The result
+- **49 passed** (including 7 engine tests). Migration 002 is applied after stamp 001 for existing tables.
 
 ---
 
-## 2025-02-23 — BaseVertical JSON-схемы, 3 фикстуры стратегий, правки по notes
+## 2025-02-23 — BaseVertical JSON schemas, 3 strategy fixtures, notes edits
 
-### Схемы (schemas/basevertical/)
-- **workflow_v1.json** — BaseVertical WorkflowSpec v1 (draft/2020-12): vertical_id, version, inputs, limits, steps; refOrValue, step с allOf по действиям (const, math_*, cmp, if, rand_uniform, portfolio_buy/sell).
+### Schemas (schemas/basevertical/)
+- **workflow_v1.json** — BaseVertical WorkflowSpec v1 (draft/2020-12): vertical_id, version, inputs, limits, steps; refOrValue, step with allOf by action (const, math_*, cmp, if, rand_uniform, portfolio_buy/sell).
 - **verticalspec_v1.json** — BaseVertical VerticalSpec v1: allowed_actions (10), required_resources, metrics, risk_spec (default_max_loss_pct, default_max_steps, default_max_runtime_ms), workflow_schema.
 
-### Фикстуры стратегий (tests/fixtures/)
-- **basevertical_conservative_flip.json** — маленькие суммы, низкий риск: 1 buy @ rand(95–105), 1 sell @ rand(98–108).
-- **basevertical_aggressive_multi_trade.json** — несколько сделок: buy 2, sell 1, sell 1 по разным rand диапазонам.
-- **basevertical_random_baseline.json** — случайная стратегия: buy 3, coin flip (cmp gt 0.5), if then/else для sell price или 0; portfolio_sell с price=0 даёт no-op (skipped).
+### Strategy fixtures (tests/fixtures/)
+- **basevertical_conservative_flip.json** - small amounts, low risk: 1 buy @ rand(95–105), 1 sell @ rand(98–108).
+- **basevertical_aggressive_multi_trade.json** — several transactions: buy 2, sell 1, sell 1 in different rand ranges.
+- **basevertical_random_baseline.json** — random strategy: buy 3, coin flip (cmp gt 0.5), if then/else for sell price or 0; portfolio_sell with price=0 gives no-op (skipped).
 
-В фикстурах vertical_id = placeholder `00000000-0000-0000-0000-000000000001`; в тестах подставлять реальный id BaseVertical из API.
+In fixtures vertical_id = placeholder `00000000-0000-0000-0000-000000000001`; in tests, substitute the real BaseVertical id from the API.
 
-### Правки по notes разработчика (app/engine/actions/base_vertical.py)
-- **portfolio_sell при price=0**: no-op, возврат `{"skipped": True, "asset", "qty": 0, "cost": 0}` без изменения портфеля и equity curve.
-- **rand_uniform без seed**: детерминированный seed = `int(sha256(run_id.encode()).hexdigest()[:8], 16)`.
+### Edits according to developer notes (app/engine/actions/base_vertical.py)
+- **portfolio_sell at price=0**: no-op, return `{"skipped": True, "asset", "qty": 0, "cost": 0}` without changing the portfolio and equity curve.
+- **rand_uniform without seed**: determined seed = `int(sha256(run_id.encode()).hexdigest()[:8], 16)`.
 
-### Тест
-- **test_portfolio_sell_price_zero_no_op**: проверка, что при price=0 возвращается skipped и портфель не меняется.
+### Test
+- **test_portfolio_sell_price_zero_no_op**: checking that if price=0 skipped is returned and the portfolio does not change.
 
 ---
 
-## 2025-02-23 — Quarantine для агентов < 24h (лимит заказов/день)
+## 2025-02-23 — Quarantine for agents < 24h (order limit/day)
 
-### Цель
-Ограничить число заказов в день для агентов, созданных менее 24 часов назад.
+### Target
+Limit the number of orders per day for agents created less than 24 hours ago.
 
-### Изменения
-- **app/config.py**: добавлены `quarantine_hours` (24) и `quarantine_max_orders_per_day` (3).
-- **app/api/routers/orders.py**: при `place_order` и `buyer_type=agent` загружается агент; если `created_at` в пределах последних `quarantine_hours`, считается число заказов этого агента за текущий UTC-день; при достижении лимита возвращается 403 с сообщением про карантин. Сравнение времени с учётом timezone-naive (created_at считаем UTC).
-- **tests/test_listings_orders.py**: добавлен `test_quarantine_new_agent_order_limit` — один новый агент делает 3 заказа (201), 4-й возвращает 403 и в detail есть "Quarantine".
+### Changes
+- **app/config.py**: added `quarantine_hours` (24) And `quarantine_max_orders_per_day` (3).
+- **app/api/routers/orders.py**: at `place_order` And `buyer_type=agent` the agent is loaded; if `created_at` is within the last `quarantine_hours`, the number of orders of this agent for the current UTC day is counted; when the limit is reached, 403 is returned with a message about quarantine. Time comparison taking into account timezone-naive (created_at is considered UTC).
+- **tests/test_listings_orders.py**: added `test_quarantine_new_agent_order_limit` - one new agent makes 3 orders (201), the 4th returns 403 and the detail contains "Quarantine".
 
-### Результат
-- **51 passed** (все тесты, включая новый тест карантина).
+### The result
+- **51 passed** (all tests, including the new quarantine test).
 
 ---
 
 ## 2026-03-17 — Golden Path Hardening + Trust/Abuse & Simulation
 
-### Цели
+### Goals
 
-- Сделать Golden Path seller→listing→buy→grant→run→revenue **демо‑готовым** и покрытым тестами.
-- Закрыть idempotency / self‑dealing / quarantine / risk‑гейты по Golden Path.
-- Добавить observability (`/admin/overview`) и живой demo‑скрипт.
-- Заложить основы trust/abuse‑hardening и симуляции поведения системы под нагрузкой.
+- Make Golden Path seller→listing→buy→grant→run→revenue **demo-ready** and covered with tests.
+- Close idempotency / self-dealing / quarantine / risk gates via Golden Path.
+- Add observability (`/admin/overview`) and a live demo script.
+- Lay the foundations of trust/abuse‑hardening and simulation of system behavior under load.
 
-### Golden Path: UX и API
+### Golden Path: UX And API
 
 - **frontend-app/src/app/listings/[id]/page.tsx**
-  - Success‑экран после покупки прокидывает контекст:
+  - The Success screen after the purchase provides the context:
     - CTA **View access grants** → `/access?grantee_type=agent&grantee_id=<buyer_agent_id>`.
-    - CTA **Run this strategy** → `/runs/new?buyer_agent_id=...&strategy_id=...&strategy_version_id=...` (версия берётся из `listing.strategy_version_id` / загруженной версии).
+    - CTA **Run this strategy** → `/runs/new?buyer_agent_id=...&strategy_id=...&strategy_version_id=...` (version is taken from `listing.strategy_version_id` / downloaded version).
 - **frontend-app/src/app/access/page.tsx**
-  - Читает `grantee_type`/`grantee_id` из query‑параметров и фильтрует listGrants по ним.
-  - CTA **Run strategy** для scope=execute ведёт на `/runs/new?strategy_id=...&buyer_agent_id=...`.
+  - Reads `grantee_type`/`grantee_id` from query parameters and filters listGrants by them.
+  - The **Run strategy** CTA for scope=execute leads to `/runs/new?strategy_id=...&buyer_agent_id=...`.
 - **frontend-app/src/app/runs/new/page.tsx**
-  - Читает из URL `buyer_agent_id`, `strategy_id`, `strategy_version_id`.
-  - При загрузке версий через `strategies.getVersions`:
-    - сохраняет prefilled `strategy_version_id`, если он есть в списке;
-    - не затирает выбранную версию после асинхронной подгрузки.
+  - Reads from URL `buyer_agent_id`, `strategy_id`, `strategy_version_id`.
+  - When downloading versions via `strategies.getVersions`:
+    - saves prefilled `strategy_version_id` if it is in the list;
+    - does not overwrite the selected version after asynchronous loading.
 - **frontend-app/src/app/runs/[id]/page.tsx**
-  - CTA **View ledger** для быстрого перехода к денежному следу run.
+  - CTA **View ledger** for quick navigation to the money trail run.
 - **frontend-app/src/app/dashboard/seller/page.tsx**
-  - Агрегация выручки строится по `ledger_events` с `metadata.order_settlement=true`:
-    - суммирует только settlement‑события по агентским аккаунтам;
-    - показывает total выручку и последние события по каждому seller‑агенту.
+  - Revenue aggregation is built using `ledger_events` with `metadata.order_settlement=true`:
+    - summarizes only settlement events for agent accounts;
+    - shows total revenue and latest events for each seller agent.
 
 ### Golden Path: backend tests
 
@@ -676,187 +676,187 @@
   - `test_flow1_smoke_golden_path`:
     - `POST /v1/agents` → seller/buyer;
     - `POST /v1/strategies` + `POST /v1/strategies/{id}/versions` (BaseVertical workflow);
-    - `POST /v1/listings` с `strategy_version_id`;
-    - `POST /v1/ledger/deposit` на buyer;
+    - `POST /v1/listings` with `strategy_version_id`;
+    - `POST /v1/ledger/deposit` on buyer;
     - `POST /v1/orders` c `Idempotency-Key` → `status=paid`;
-    - `GET /v1/access/grants` → execute‑grant для buyer/strategy;
+    - `GET /v1/access/grants` → execute‑grant for buyer/strategy;
     - `POST /v1/runs` c `Idempotency-Key` → `state ∈ {running, succeeded, completed}`;
-    - `GET /v1/ledger/balance` по seller → баланс вырос ≥ цены листинга.
-  - `test_duplicate_order_same_key_is_idempotent_smoke` и `test_duplicate_run_same_key_is_idempotent_smoke`:
-    - повторные `POST /v1/orders`/`POST /v1/runs` с тем же `Idempotency-Key` возвращают один и тот же `id` без дополнительных побочных эффектов.
+    - `GET /v1/ledger/balance` by seller → balance has increased ≥ listing price.
+  - `test_duplicate_order_same_key_is_idempotent_smoke` And `test_duplicate_run_same_key_is_idempotent_smoke`:
+    - repeated `POST /v1/orders`/`POST /v1/runs` with the same `Idempotency-Key` return the same `id` without additional side effects.
 - **tests/api/test_idempotency_and_guards.py**
-  - `test_listing_without_version_rejected` — `POST /v1/listings` без `strategy_version_id` → 400/422.
-  - `test_run_without_grant_forbidden` — попытка `POST /v1/runs` без предварительного access grant → 401/403 (контракт на будущее усиление guard’а).
-  - `test_self_dealing_forbidden` — buyer == owner_agent_id → 403 с `detail` про Self‑dealing.
+  - `test_listing_without_version_rejected` — `POST /v1/listings` without `strategy_version_id` → 400/422.
+  - `test_run_without_grant_forbidden` - attempt to `POST /v1/runs` without a prior access grant → 401/403 (contract for future strengthening of the guard).
+  - `test_self_dealing_forbidden` — buyer == owner_agent_id → 403 with `detail` about Self‑dealing.
   - `test_quarantine_and_graph_gate_return_readable_error`:
-    - повторные заказы молодого агента упираются в quarantine‑лимит (detail содержит "Quarantine");
-    - политика с `max_reciprocity_score` на пуле даёт читабельный `detail` при блокировке run.
+    - repeated orders of a young agent are limited by the quarantine limit (detail contains "Quarantine");
+    - a policy with `max_reciprocity_score` on a pool gives readable `detail` when blocking run.
 
-### Scenario matrix и simulation
+### Scenario matrix And simulation
 
 - **tests/api/test_scenarios_matrix.py**
   - Happy:
-    - `test_happy_buyer_repeat_run` — один buyer дважды запускает run по тому же grant’у (два успешных run с разными Idempotency‑keys).
-    - `test_happy_buyer_buys_two_distinct_listings` — один buyer покупает два разных listing’а.
+    - `test_happy_buyer_repeat_run` - one buyer runs run twice on the same grant (two successful runs with different Idempotency keys).
+    - `test_happy_buyer_buys_two_distinct_listings` - one buyer buys two different listings.
   - Fail:
-    - `test_fail_ledger_halted_blocks_order_and_ledger_ops` — при `ledger_invariant_halted` (`/v1/system/jobs/tick` + `/v1/system/ledger-invariant-status`) `POST /v1/orders` возвращает 503.
+    - `test_fail_ledger_halted_blocks_order_and_ledger_ops` — at `ledger_invariant_halted` (`/v1/system/jobs/tick` + `/v1/system/ledger-invariant-status`) `POST /v1/orders` returns 503.
 - **scripts/simulate_agents.py**
-  - Асинхронный симулятор поведения системы:
-    - создаёт N агентов с разными ролями;
-    - генерирует стратегии/версии/листинги для случайных seller’ов;
-    - делает депозиты, размещает заказы, запускает runs через HTTP API;
-    - периодически запрашивает `/v1/agents/{id}/graph-metrics` для построения реальных graph‑метрик (reciprocity_score, cluster_size, cluster_cohesion, suspicious_density, in_cycle).
-  - Параметры:
-    - `--agents` (50/200/1000), `--steps` (число операций), `--seed` (детерминизм).
+  - Asynchronous system behavior simulator:
+    - creates N agents with different roles;
+    - generates strategies/versions/listings for random sellers;
+    - makes deposits, places orders, launches runs via HTTP API;
+    - periodically requests `/v1/agents/{id}/graph-metrics` to build real graph metrics (reciprocity_score, cluster_size, cluster_cohesion, suspicious_density, in_cycle).
+  - Parameters:
+    - `--agents` (50/200/1000), `--steps` (number of operations), `--seed` (determinism).
 
 ### Observability: admin overview
 
 - **frontend-app/src/app/admin/overview/page.tsx**
-  - Новый экран `/admin/overview` (для авторизованных пользователей) собирает:
-    - `system/health` и `system/ledger-invariant-status` (флаг halted).
+  - New screen `/admin/overview` (for authorized users) collects:
+    - `system/health` And `system/ledger-invariant-status` (flag halted).
     - **Recent orders** (`GET /v1/orders`): id, listing_id, buyer, amount, status.
     - **Recent access grants** (`GET /v1/access/grants`): strategy, grantee, scope, created_at.
     - **Recent runs** (`GET /v1/runs`): id, strategy_version_id, state, failure_reason.
-    - **Failed runs**: фильтр `state=failed`.
-    - **Recent order settlement events** (`GET /v1/ledger/events`): события с `metadata.order_settlement=true`.
-  - Цель: за <30 секунд ответить:
-    - создавался ли order;
-    - выдан ли access grant;
-    - создался ли run и его статус;
-    - есть ли проблемы ledger invariant / risk gate.
+    - **Failed runs**: `state=failed` filter.
+    - **Recent order settlement events** (`GET /v1/ledger/events`): events from `metadata.order_settlement=true`.
+  - Goal: in <30 seconds to answer:
+    - whether the order was created;
+    - whether an access grant has been issued;
+    - whether run was created and its status;
+    - are there problems with ledger invariant / risk gate.
 
-### Demo‑режим и документация
+### Demo mode and documentation
 
 - **docs/golden-path-bugs.md**
-  - Единый журнал багов по Golden Path: `step`, `expected`, `actual`, `severity`, `endpoint/route`.
+  - Unified bug log for Golden Path: `step`, `expected`, `actual`, `severity`, `endpoint/route`.
 - **docs/DEMO_GOLDEN_PATH.md**
   - Happy path story:
-    - Seller S / Buyer B (agents), одна стратегия/версия/listing, один успешный run.
-    - Маршрут по UI: `/agents` → `/strategies/[id]` → `/listings/[id]` → `/access` → `/runs/new` → `/runs/[id]` → `/dashboard/seller`.
-    - Ledger trail: какие аккаунты участвуют и на каких страницах смотреть движение денег.
+    - Seller S / Buyer B (agents), one strategy/version/listing, one successful run.
+    - UI route: `/agents` → `/strategies/[id]` → `/listings/[id]` → `/access` → `/runs/new` → `/runs/[id]` → `/dashboard/seller`.
+    - Ledger trail: which accounts are participating and on which pages to see the movement of money.
   - Failure demo:
-    - **Self-dealing blocked** и опционально **Run blocked by risk/graph gate** с описанием поведения API и UI.
-  - Скрипт презентации (5–7 шагов), какие экраны открыть и где подсветить idempotency, risk/reputation, ledger invariant.
+    - **Self-dealing blocked** and optionally **Run blocked by risk/graph gate** with a description of the behavior of the API and UI.
+  - Presentation script (5–7 steps), which screens to open and where to highlight idempotency, risk/reputation, ledger invariant.
 
-### Trust/abuse‑слой (усиление)
+### Trust/abuse layer (gain)
 
 - **Agent provenance**
-  - Модель `Agent` уже содержит `created_by_agent_id` (миграция 019), используется в `AgentPublic` и `POST /v1/agents` (принимается из тела запроса и может использоваться для построения “родительского” графа).
-- **Graph‑метрики и risk‑гейты**
-  - В `get_agent_graph_metrics` уже считаются:
+  - The `Agent` model already contains `created_by_agent_id` (migration 019), used in `AgentPublic` And `POST /v1/agents` (taken from the request body and can be used to build the “parent” graph).
+- **Graph metrics and risk gates**
+  - IN `get_agent_graph_metrics` are already considered:
     - `reciprocity_score`, `cluster_cohesion`, `suspicious_density`, `cluster_size`, `in_cycle`.
-  - Политика риска (`policy_json`) поддерживает `max_reciprocity_score`, `max_suspicious_density`, `max_cluster_size`, `block_if_in_cycle`.
-  - `POST /v1/runs` использует эти метрики и возвращает детализированные `detail` при срабатывании гейтов (graph/reputation/cluster).
+  - Risk policy (`policy_json`) supports `max_reciprocity_score`, `max_suspicious_density`, `max_cluster_size`, `block_if_in_cycle`.
+  - `POST /v1/runs` uses these metrics and returns detailed `detail` when gates fire (graph/reputation/cluster).
 
-### Результат
+### Result
 
-- Golden Path покрыт API‑smoke, regression и UI e2e, контекст не теряется между страницами, seller dashboard и admin overview дают понятный денежный и операционный след.
-- Trust/abuse‑механики (self‑dealing, quarantine, graph‑гейты, idempotency) включены в основной путь и проверяются как отдельными тестами, так и массовой симуляцией через `scripts/simulate_agents.py`.
+- Golden Path is covered with API smoke, regression and UI e2e, the context is not lost between pages, the seller dashboard and admin overview provide a clear monetary and operational trail.
+- Trust/abuse mechanics (self-dealing, quarantine, graph gates, idempotency) are included in the main path and are checked both by individual tests and by mass simulation via `scripts/simulate_agents.py`.
 
 ---
 
 ## 2026-03-17 — Contracts v1 hardening: execution container + per_run idempotency + activity
 
-### Цели
-- Превратить контракт в **execution container**: run запускается только внутри активного контракта и только worker’ом.
-- Закрыть **гонки** `max_runs` через атомарный счётчик.
-- Зафиксировать правило **one run → one payout** для per_run на уровне БД.
-- Дать UX‑слой: runs list + activity timeline на `/contracts/[id]`.
-- Добавить минимальные contract reputation events.
+### Goals
+- Turn the contract into an **execution container**: run is launched only inside the active contract and only by the worker.
+- Close **races** `max_runs` via atomic counter.
+- Fix the **one run → one payout** rule for per_run at the database level.
+- Give a UX layer: runs list + activity timeline on `/contracts/[id]`.
+- Add minimum contract reputation events.
 
-### Изменения (backend)
+### Changes (backend)
 - **app/api/routers/runs.py**
-  - `POST /v1/runs` с `contract_id`:
-    - требует `Authorization: Bearer ...`;
-    - enforcement: пользователь должен владеть `contract.worker_agent_id`;
-    - `SELECT ... FOR UPDATE` по контракту;
-    - `max_runs` реально режет новые запуски;
-    - `contracts.runs_completed++` атомарно (резервирование слота).
-  - Per-run payout перенесён на succeeded run:
-    - `LedgerEventTypeEnum.contract_payout` с `metadata.contract_id` + `metadata.run_id`;
-    - конфликт уникальности → идемпотентный no-op.
+  - `POST /v1/runs` with `contract_id`:
+    - requires `Authorization: Bearer ...`;
+    - enforcement: user must own `contract.worker_agent_id`;
+    - `SELECT ... FOR UPDATE' according to the contract;
+    - `max_runs` really cuts down on new launches;
+    - `contracts.runs_completed++` atomically (slot reservation).
+  - Per-run payout moved to succeeded run:
+    - `LedgerEventTypeEnum.contract_payout` with `metadata.contract_id` + `metadata.run_id`;
+    - uniqueness conflict → idempotent no-op.
 - **app/db/models.py**
   - `Contract.runs_completed` (INT, default 0).
 - **alembic/versions/025_contracts_runs_completed.py**
-  - миграция колонки `runs_completed`.
+  - migration of `runs_completed` columns.
 - **alembic/versions/026_contract_payout_unique_by_contract_and_run.py**
-  - уникальный индекс на `ledger_events`:
+  - unique index on `ledger_events`:
     - `((metadata->>'contract_id'), (metadata->>'run_id')) WHERE type='contract_payout'`
-    - правило uniqueness = `(contract_id, run_id, contract_payout)`.
+    - rule uniqueness = `(contract_id, run_id, contract_payout)`.
 - **app/api/routers/contracts.py**
   - `GET /v1/contracts/{id}/runs` (MVP list).
-  - `GET /v1/contracts/{id}/activity` (timeline из contract+run+ledger).
+  - `GET /v1/contracts/{id}/activity` (timeline from contract+run+ledger).
 - **app/services/reputation_events.py** + **app/api/routers/contracts.py**
-  - события `contract_accepted|contract_completed|contract_cancelled` (минимум v1).
+  - events `contract_accepted|contract_completed|contract_cancelled` (minimum v1).
 - **app/schemas/ledger.py**
-  - schema enum `LedgerEventType` расширен: `contract_escrow`, `contract_payout` (для фильтра `/v1/ledger/events?type=...`).
+  - schema enum `LedgerEventType` extended: `contract_escrow`, `contract_payout` (for filter `/v1/ledger/events?type=...`).
 
-### Изменения (frontend)
+### Changes (frontend)
 - **frontend-app/src/app/contracts/[id]/page.tsx**
-  - блоки **Payments**, **Runs**, **Activity**.
+  - blocks **Payments**, **Runs**, **Activity**.
 - **frontend-app/src/lib/api.ts**
   - `contracts.getRuns`, `contracts.getActivity`.
 
-### Тесты
-- **tests/api/test_contracts_hardening.py** (новый): auth+worker enforcement, max_runs, one run → one payout.
-- **tests/api/test_contracts_lifecycle.py** обновлён под новую семантику per_run payout (платёж на run, а не на complete).
+### Tests
+- **tests/api/test_contracts_hardening.py** (new): auth+worker enforcement, max_runs, one run → one payout.
+- **tests/api/test_contracts_lifecycle.py** updated with new semantics of per_run payout (payment on run, not on complete).
 
-### Результат
-- Контракт стал главной рамкой исполнения: run нельзя запустить “мимо” worker’а и лимитов, per_run payout идемпотентен на уровне БД, UI показывает runs/timeline.
+### Result
+- The contract has become the main execution framework: run cannot be run “past” the worker and limits, per_run payout is idempotent at the database level, the UI shows runs/timeline.
 
 ---
 
 ## 2026-03-17 — Contracts v1.1: Milestones / Staged Contracts
 
-### Цели
-- Добавить **staged work** (2–5 milestones на контракт) и частичные выплаты по этапам.
-- Привязать run к milestone: `run → milestone → contract`.
-- Для per_run добавить milestone budget/cap.
-- Дать UI управления milestones и demo‑историю.
+### Goals
+- Add **staged work** (2–5 milestones per contract) and partial payments by stage.
+- Link run to milestone: `run → milestone → contract`.
+- For per_run add milestone budget/cap.
+- Give UI control milestones and demo history.
 
-### Изменения (backend)
+### Changes (backend)
 - **app/db/models.py**
   - `ContractMilestone` + `ContractMilestoneStatusEnum`.
   - `Run.contract_milestone_id` (FK).
 - **alembic/versions/028_contract_milestones_and_run_milestone_id.py**
-  - новая таблица `contract_milestones` + колонка `runs.contract_milestone_id`.
-- **app/schemas/contract_milestones.py** (новый)
+  - new table `contract_milestones` + column `runs.contract_milestone_id`.
+- **app/schemas/contract_milestones.py** (new)
   - create/update/public + status enum.
 - **app/schemas/runs.py**
   - `RunRequest.contract_milestone_id`.
-- **app/api/routers/contract_milestones.py** (новый) + **app/main.py**
+- **app/api/routers/contract_milestones.py** (new) + **app/main.py**
   - CRUD + lifecycle:
     - `POST /v1/milestones/contracts/{contract_id}`
     - `GET /v1/milestones/contracts/{contract_id}`
     - `PATCH /v1/milestones/{id}`
     - `POST /v1/milestones/{id}/submit|accept|reject|cancel`
-  - Валидации:
+  - Validations:
     - milestone currency == contract currency;
-    - fixed: сумма milestones.amount_value <= contract.fixed_amount_value;
-    - роли: employer управляет milestones, worker submit.
-  - `milestone.accept` для fixed делает **частичный payout из escrow** с `metadata.milestone_id`.
+    - fixed: sum milestones.amount_value <= contract.fixed_amount_value;
+    - roles: employer manages milestones, worker submit.
+  - `milestone.accept` for fixed makes **partial payout from escrow** with `metadata.milestone_id`.
 - **app/api/routers/runs.py**
   - enforcement `contract_milestone_id`:
-    - `FOR UPDATE` по milestone, `required_runs`, `completed_runs++`;
-    - связка contract_id ↔ milestone.contract_id;
-  - per_run payout с milestone budget/cap:
+    - `FOR UPDATE` by milestone, `required_runs`, `completed_runs++`;
+    - link contract_id ↔ milestone.contract_id;
+  - per_run payout with milestone budget/cap:
     - payout = min(per_run_amount, remaining_budget_milestone);
-    - metadata включает `milestone_id`.
+    - metadata includes `milestone_id`.
 
-### Изменения (frontend)
+### Changes (frontend)
 - **frontend-app/src/lib/api.ts**
-  - добавлен клиент `milestones.*`.
-  - `runs.create` принимает `contract_milestone_id`.
+  - added client `milestones.*`.
+  - `runs.create` accepts `contract_milestone_id`.
 - **frontend-app/src/app/contracts/[id]/page.tsx**
-  - блок **Milestones**: список + кнопки submit/accept/reject/cancel + “Run under milestone”.
+  - block **Milestones**: list + submit/accept/reject/cancel buttons + “Run under milestone”.
 - **frontend-app/src/app/runs/new/page.tsx**
-  - пробрасывает `contract_milestone_id` из query в `POST /v1/runs`.
+  - forwards `contract_milestone_id` from query to `POST /v1/runs`.
 
-### Тесты и demo
-- **tests/api/test_contracts_milestones.py** (новый):
+### Tests and demo
+- **tests/api/test_contracts_milestones.py** (new):
   - fixed staged: partial payout + cancel refund;
-  - per_run staged: milestone budget cap (7 + 3) и linkage run→milestone.
-- **docs/DEMO_CONTRACTS_MILESTONES.md** (новый): 2 сценария (fixed escrow partial + per_run budget cap).
+  - per_run staged: milestone budget cap (7 + 3) And linkage run→milestone.
+- **docs/DEMO_CONTRACTS_MILESTONES.md** (new): 2 scenarios (fixed escrow partial + per_run budget cap).
 
-### Результат
-- Contracts v1.1 добавил “реалистичность найма”: этапы, частичные выплаты, бюджетирование per_run по milestone и UX‑слой управления milestones на странице контракта.
+### Result
+- Contracts v1.1 added “recruitment realism”: stages, partial payments, per_run budgeting by milestone and UX‑layer of milestones management on the contract page.

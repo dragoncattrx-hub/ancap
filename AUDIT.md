@@ -1,108 +1,108 @@
-# Аудит проекта ANCAP
+#Audit of the ANCAP project
 
-**Дата:** 24 февраля 2025  
-**Проект:** ANCAP — AI-Native Capital Allocation Platform
-
----
-
-## 1. Резюме
-
-Проект — зрелая платформа для распределения капитала с AI-агентами: FastAPI, PostgreSQL, Alembic, декларативные workflow-стратегии, маркетплейс, ledger, репутация, L3 (стейки, онбординг, chain anchors). Документация и план развития (ROADMAP, PLAN_L0_TO_L3, LOG) на высоком уровне. Тесты проходят (130 passed). Ниже — структурированные выводы и рекомендации.
+**Date:** February 24, 2025  
+**Project:** ANCAP — AI-Native Capital Allocation Platform
 
 ---
 
-## 2. Сильные стороны
+## 1. Summary
 
-### 2.1 Архитектура и документация
-- **Чёткая визия:** README, VISION, ARCHITECTURE_LAYERS, PLAN_L0_TO_L3 — уровни L1/L2/L3 и соответствие коду описаны явно.
-- **Единый монолит:** `app/` (api, db, engine, jobs, services, schemas) — понятная структура, без лишней фрагментации.
-- **Миграции только через Alembic** — схема БД не создаётся приложением при старте; финтех-подход соблюдён.
-- **Журнал изменений (LOG.md)** — изменения с датами, целями и результатами тестов; удобно для онбординга и отладки.
-
-### 2.2 Финтех и безопасность модели
-- **Double-entry ledger:** append-only события, баланс = сумма событий; типы счетов (treasury, fees, escrow, burn, external); проверка инварианта и остановка операций при нарушении.
-- **Анти-злоупотребления:** anti-self-dealing (1-hop), quarantine новых агентов, граф (reciprocity_score, cluster_cohesion, suspicious_density, in_cycle), policy gates (max_reciprocity_score, block_if_in_cycle и др.).
-- **Reputation 2.0:** event sourcing, trust_scores, reputation_snapshots, окно и algo_version.
-- **Run audit:** inputs_hash, workflow_hash, outputs_hash, env_hash; lineage по parent_run_id; run_steps с context_after и replay от шага N.
-
-### 2.3 Стек и зависимости
-- **Актуальные версии:** FastAPI 0.115, SQLAlchemy 2.0 (async), Pydantic v2, asyncpg, Alembic.
-- **requirements.txt** — фиксированные версии, отдельная секция для тестов (pytest, pytest-asyncio).
-
-### 2.4 Тестирование
-- **130 тестов**, все проходят (pytest с sync TestClient, один event loop — без skip из-за loop).
-- Покрытие: auth, agents, keys, ledger, runs, reputation, moderation, risk, L3 (onboarding, stakes, chain anchors), step_quality, engine unit.
-- conftest: единая БД (alembic upgrade head или create_all + seed BaseVertical), сброс ledger_invariant_halted перед каждым тестом.
-
-### 2.5 Конфигурация
-- **pydantic-settings** из env + `.env`; класс `Settings` с разумными дефолтами; `get_settings()` с `lru_cache`.
-- `.env.example` есть — перечислены DATABASE_URL, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, DEBUG.
+The project is a mature platform for capital distribution with AI agents: FastAPI, PostgreSQL, Alembic, declarative workflow strategies, marketplace, ledger, reputation, L3 (stakes, onboarding, chain anchors). Documentation and development plan (ROADMAP, PLAN_L0_TO_L3, LOG) at a high level. Tests pass (130 passed). Below are structured conclusions and recommendations.
 
 ---
 
-## 3. Замечания и риски
+## 2. Strengths
 
-### 3.1 Безопасность и секреты (критично для продакшена)
-- **SECRET_KEY** по умолчанию `"change-me-in-production-use-long-random-string"` — в продакшене обязан переопределяться через env; в docker-compose для api указан `SECRET_KEY: dev-secret-change-in-production` — этого недостаточно для production.
-- **cursor_secret** по умолчанию `"change-me-cursor-secret"` — используется для HMAC в cursor pagination; в production должен быть отдельный случайный секрет.
-- **CORS:** `allow_origins=["*"]` — для production нужно ограничить домены.
-- **POST /v1/system/jobs/tick** — в коде указано: «In production, protect (e.g. internal only / cron secret)» — защита не реализована; без этого любой может дергать тик и влиять на watermark/reputation/ledger invariant.
+### 2.1 Architecture and documentation
+- **Clear vision:** README, VISION, ARCHITECTURE_LAYERS, PLAN_L0_TO_L3 - L1/L2/L3 levels and code compliance are described explicitly.
+- **Single monolith:** `app/` (api, db, engine, jobs, services, schemas) - a clear structure, without unnecessary fragmentation.
+- **Migrations only through Alembic** - the database schema is not created by the application at startup; The fintech approach is followed.
+- **Log of changes (LOG.md)** - changes with dates, goals and test results; convenient for onboarding and debugging.
 
-**Рекомендации:**  
-- В README или деплой-доке явно требовать задание SECRET_KEY, CURSOR_SECRET и ограничение CORS в production.  
-- Добавить опциональную проверку заголовка/ключа для `/v1/system/jobs/tick` (например, X-Cron-Secret из env).
+### 2.2 Fintech and security model
+- **Double-entry ledger:** append-only events, balance = sum of events; types of accounts (treasury, fees, escrow, burn, external); checking the invariant and stopping operations if violated.
+- **Anti-abuse:** anti-self-dealing (1-hop), quarantine of new agents, graph (reciprocity_score, cluster_cohesion, suspicious_density, in_cycle), policy gates (max_reciprocity_score, block_if_in_cycle, etc.).
+- **Reputation 2.0:** event sourcing, trust_scores, reputation_snapshots, window and algo_version.
+- **Run audit:** inputs_hash, workflow_hash, outputs_hash, env_hash; lineage by parent_run_id; run_steps with context_after And replay from step N.
 
-### 3.2 Идемпотентность (расхождение с README)
-- В README заявлено: мутабельные финансовые и ордерные операции принимают **Idempotency-Key** и гарантируют exactly-once для:
+### 2.3 Stack and dependencies
+- **Current versions:** FastAPI 0.115, SQLAlchemy 2.0 (async), Pydantic v2, asyncpg, Alembic.
+- **requirements.txt** - fixed versions, separate section for tests (pytest, pytest-asyncio).
+
+### 2.4 Testing
+- **130 tests**, all pass (pytest with sync TestClient, one event loop - no skip due to loop).
+- Coating: auth, agents, keys, ledger, runs, reputation, moderation, risk, L3 (onboarding, stakes, chain anchors), step_quality, engine unit.
+- conftest: single database (alembic upgrade head or create_all + seed BaseVertical), reset ledger_invariant_halted before each test.
+
+### 2.5 Configuration
+- **pydantic-settings** from env + `.env`; class `Settings` with reasonable defaults; `get_settings()` with `lru_cache`.
+- `.env.example` is - DATABASE_URL, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, DEBUG are listed.
+
+---
+
+## 3. Notes and risks
+
+### 3.1 Security and secrets (critical for production)
+- **SECRET_KEY** by default `"change-me-in-production-use-long-random-string"` - must be redefined via env in production; in docker-compose for the api, `SECRET_KEY: dev-secret-change-in-production` is specified - this is not enough for production.
+- **cursor_secret** default `"change-me-cursor-secret"` - used for HMAC in cursor pagination; in production there should be a separate random secret.
+- **CORS:** `allow_origins=["*"]` - for production you need to limit domains.
+- **POST /v1/system/jobs/tick** - the code states: “In production, protect (e.g. internal only / cron secret)” - protection is not implemented; without this, anyone can pull the tick and affect the watermark/reputation/ledger invariant.
+
+**Recommendations:**  
+- In the README or deployment doc, explicitly require the SECRET_KEY, CURSOR_SECRET and CORS limit in production.  
+- Add optional header/key check for `/v1/system/jobs/tick` (e.g. X-Cron-Secret from env).
+
+### 3.2 Idempotency (divergence from README)
+- The README states: mutable financial and order transactions accept **Idempotency-Key** and guarantee exactly-once for:
   - `POST /v1/orders`
   - `POST /v1/ledger/deposit`, `withdraw`, `allocate`
   - `POST /v1/runs`
-- В коде **нет** обработки заголовка Idempotency-Key (grep по idempotency / Idempotency-Key в `app/` — пусто).
+- There is **no** processing of the Idempotency-Key header in the code (grep by idempotency / Idempotency-Key in `app/` is empty).
 
-**Рекомендация:**  
-Либо реализовать приём Idempotency-Key и сохранение результата по ключу (с возвратом сохранённого ответа при повторе), либо убрать/ослабить формулировку в README до «рекомендуется к реализации».
+**Recommendation:**  
+Either implement the Idempotency-Key technique and save the result by key (with the return of the saved response when repeated), or remove/weaken the wording in the README to “recommended for implementation.”
 
-### 3.3 Версии и предупреждения
-- **alembic.ini:** `sqlalchemy.url` задан по умолчанию в ini. В `alembic/env.py` URL берётся из `get_settings().database_url` (env), так что в production используется переменная окружения. Имеет смысл не коммитить реальные пароли в ini и полагаться на env.
-- **Pydantic:** 19 предупреждений (class-based `config` deprecated, `json_encoders` deprecated) — исходят из зависимостей (pydantic internal), но при появлении своих моделей с `Config` лучше перейти на ConfigDict и актуальный способ сериализации.
+### 3.3 Versions and warnings
+- **alembic.ini:** `sqlalchemy.url` is set by default in ini. In `alembic/env.py` the URL is taken from `get_settings().database_url` (env), so in production an environment variable is used. It makes sense not to commit real passwords to ini and rely on env.
+- **Pydantic:** 19 warnings (class-based `config` deprecated, `json_encoders` deprecated) - come from dependencies (pydantic internal), but when your models with `Config` appear, it is better to switch to ConfigDict and the current serialization method.
 
-### 3.4 Инфраструктура и репозиторий
-- **.gitignore:** в корне не найден (найден только `.pytest_cache/.gitignore`). Стоит добавить корневой `.gitignore` с: `.env`, `__pycache__/`, `.venv/`, `*.pyc`, `.pytest_cache/`, `*.egg-info/`, `ACP-crypto/target/`, и т.п., чтобы не коммитить секреты и артефакты.
-- **Git:** репозиторий не инициализирован (No git repo) — для истории и CI имеет смысл инициализировать git и при необходимости добавить CI (например, запуск pytest при push).
+### 3.4 Infrastructure and Repository
+- **.gitignore:** not found in root (only `.pytest_cache/.gitignore` found). It is worth adding a root `.gitignore` with: `.env`, `__pycache__/`, `.venv/`, `*.pyc`, `.pytest_cache/`, `*.egg-info/`, `ACP-crypto/target/`, etc., so as not to commit secrets and artifacts.
+- **Git:** the repository is not initialized (No git repo) - for history and CI, it makes sense to initialize git and add CI if necessary (for example, running pytest on push).
 
-### 3.5 Масштабирование и надёжность
-- **Очереди:** в PLAN указано «Очередь: нет» — все операции синхронные. Для тяжёлых джобов (reputation_tick, agent_relationships, circuit_breaker_by_metric и т.д.) в будущем может понадобиться очередь (Redis/NATS) и воркеры.
-- **S3/артефакты:** большие артефакты runs не сохраняются (только хэши); при появлении требований к хранению логов/дампов — заложить object storage.
-- **Rate limiting:** на уровне API не видно глобального rate limit — при публичном API стоит рассмотреть лимиты по IP/ключу.
-
----
-
-## 4. Структура кода (кратко)
-
-- **Роутеры** — в `app/api/routers/`, зависимости через `deps.py` (get_db, get_current_user_id, get_agent_id_from_api_key).
-- **Сервисы** — в `app/services/` (ledger, risk, auth, api_keys, reputation, onboarding, stakes, chain_anchor, step_quality и др.).
-- **Джобы** — в `app/jobs/` (reputation_tick, circuit_breaker_by_metric, agent_relationships_upsert, edges_daily_upsert, watermark и т.д.); запуск централизован через `POST /v1/system/jobs/tick`.
-- **Модели** — в `app/db/models.py`; enum’ы и связи аккуратно заданы.
-- **Конфиг** — один класс в `app/config.py`, без дублирования секретов в коде.
-
-Замечаний по грубым антипаттернам или дублированию не выявлено.
+### 3.5 Scaling and reliability
+- **Queues:** PLAN states “Queue: no” - all operations are synchronous. For heavy jobs (reputation_tick, agent_relationships, circuit_breaker_by_metric, etc.) in the future you may need a queue (Redis/NATS) and workers.
+- **S3/artifacts:** large artifact runs are not saved (only hashes); when there are requirements for storing logs/dumps, set up object storage.
+- **Rate limiting:** the global rate limit is not visible at the API level - with a public API it is worth considering IP/key limits.
 
 ---
 
-## 5. Чек-лист рекомендаций
+## 4. Code structure (briefly)
 
-| Приоритет | Действие |
+- **Routers** - in `app/api/routers/`, dependencies via `deps.py` (get_db, get_current_user_id, get_agent_id_from_api_key).
+- **Services** — V `app/services/` (ledger, risk, auth, api_keys, reputation, onboarding, stakes, chain_anchor, step_quality etc..).
+- **Jobs** - in `app/jobs/` (reputation_tick, circuit_breaker_by_metric, agent_relationships_upsert, edges_daily_upsert, watermark, etc.); launch is centralized via `POST /v1/system/jobs/tick`.
+- **Models** - in `app/db/models.py`; enums and connections are carefully defined.
+- **Config** - one class in `app/config.py`, without duplicating secrets in the code.
+
+There were no comments regarding gross antipatterns or duplication.
+
+---
+
+## 5. Checklist of recommendations
+
+| Priority | Action |
 |-----------|----------|
-| Высокий   | Защитить `POST /v1/system/jobs/tick` (внутренний доступ или секрет). |
-| Высокий   | Реализовать Idempotency-Key для orders/ledger/runs или скорректировать README. |
-| Высокий   | Добавить корневой `.gitignore` и не коммитить `.env` и артефакты. |
-| Средний   | В деплой-документации зафиксировать обязательную смену SECRET_KEY, CURSOR_SECRET и CORS в production. |
-| Средний   | Проверить, что Alembic в production использует URL из env (env.py), а не из alembic.ini. |
-| Низкий    | Устранить Pydantic deprecation в своих моделях (ConfigDict, сериализация). |
-| Низкий    | Рассмотреть rate limiting и очередь для фоновых джобов при росте нагрузки. |
+| Tall | Protect `POST /v1/system/jobs/tick` (internal access or secret). |
+| Tall | Implement Idempotency-Key for orders/ledger/runs or adjust the README. |
+| Tall | Add root `.gitignore` and don't commit `.env` and artifacts. |
+| Medium | In the deployment documentation, record the mandatory change of SECRET_KEY, CURSOR_SECRET and CORS in production. |
+| Medium | Check that Alembic in production uses the URL from env (env.py) and not from alembic.ini. |
+| Low | Eliminate Pydantic deprecation in their models (ConfigDict, serialization). |
+| Low | Consider rate limiting and a queue for background jobs as the load increases. |
 
 ---
 
-## 6. Итог
+## 6. Summary
 
-Проект в хорошем состоянии: сильная архитектурная база, продуманная модель рисков и репутации, актуальный стек, проходящие тесты и полезная документация. Основные точки роста — приведение безопасности (tick, секреты, CORS) и идемпотентности в соответствие с заявленным в README и подготовка к production (git, .gitignore, env для Alembic). После этого платформа готова к использованию в контролируемой среде и к дальнейшему развитию по ROADMAP.
+The project is in good condition: a strong architectural foundation, a well-thought-out risk and reputation model, an up-to-date stack, passing tests and useful documentation. The main points of growth are bringing security (tick, secrets, CORS) and idempotency in line with what is stated in the README and preparing for production (git, .gitignore, env for Alembic). After this, the platform is ready for use in a controlled environment and for further development using ROADMAP.

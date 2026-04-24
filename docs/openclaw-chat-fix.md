@@ -1,116 +1,116 @@
-# OpenClaw: если чат не отвечает (Kiro)
+# OpenClaw: if chat doesn't respond (Kiro)
 
-## Что уже сделано в конфиге
+## What has already been done in the config
 
-- **Модель по умолчанию:** `kiro/claude-opus-4.6`
-- **Провайдер kiro:** `https://api.kiro.cheap/v1`, `openai-completions`, `contextWindow: 200000`, `maxTokens: 8192`
-- **Fallbacks:** отключены (пустой массив), чтобы не переходить на провайдеры с 404
-- **anthropic** (для slug-generator и т.п.): baseUrl `https://api.kiro.cheap/v1`, тот же ключ Kiro
+- **Default model:** `kiro/claude-opus-4.6`
+- **Kiro Provider:** `https://api.kiro.cheap/v1`, `openai-completions`, `contextWindow: 200000`, `maxTokens: 8192`
+- **Fallbacks:** disabled (empty array) to avoid switching to providers with 404
+- **anthropic** (for slug-generator, etc.): baseUrl `https://api.kiro.cheap/v1`, same Kiro key
 
-API Kiro проверен: `POST https://api.kiro.cheap/v1/chat/completions` с `Authorization: Bearer <key>` и моделью `claude-opus-4.6` отвечает успешно.
+Kiro API tested: `POST https://api.kiro.cheap/v1/chat/completions` with `Authorization: Bearer <key>` and model `cloude-opus-4.6` responds successfully.
 
-## Что сделать тебе
+## What should you do
 
-1. **Полностью перезапустить OpenClaw**  
-   Закрой все окна и панели OpenClaw (включая Control Center / webchat). Заверши процесс в диспетчере задач, если остаётся (Node.js / openclaw). Запусти снова.
+1. **Completely restart OpenClaw**  
+   Close all OpenClaw windows and panels (including Control Center / webchat). Terminate the process in the task manager if it remains (Node.js / openclaw). Run again.
 
-2. **Проверить модель в UI**  
-   В веб-чате или Control Center в настройках агента явно выбери модель **kiro/claude-opus-4.6** (если есть выбор модели).
+2. **Check the model in the UI**  
+   In web chat or Control Center in the agent settings, explicitly select the **kiro/claude-opus-4.6** model (if there is a model choice).
 
-3. **Посмотреть логи при ошибке**  
-   В терминале:
+3. **View logs for errors**  
+   In the terminal:
    ```bash
    openclaw logs --follow
    ```
-   Отправь сообщение в чат и посмотри, какая ошибка появляется (model_not_found, 404, timeout, auth и т.д.). Пришли эту строку для точечной правки.
+   Send a message to the chat and see what error appears (model_not_found, 404, timeout, auth, etc.). Send this line for spot editing.
 
-4. **Пересобрать конфиг агента (если нужно)**  
-   Если после перезапуска в логе по-прежнему `agent model: custom-api-kiro-cheap/...` или ошибки по контексту:
+4. **Rebuild the agent config (if necessary)**  
+   If after a restart the log still shows `agent model: custom-api-kiro-cheap/...` or errors in the context:
    ```bash
    openclaw configure
    ```
-   Или вручную в `~/.openclaw/openclaw.json` проверь: `agents.defaults.model.primary` = `"kiro/claude-opus-4.6"`, в `models.providers.kiro` нет `contextWindow: 4096`.
+   Or manually in `~/.openclaw/openclaw.json` check: `agents.defaults.model.primary` = `"kiro/claude-opus-4.6"`, in `models.providers.kiro` there is no `contextWindow: 4096`.
 
-## Ошибка: Model context window too small (4096). Minimum is 16000 / agent model: custom-api-kiro-cheap/auto
+## Error: Model context window too small (4096). Minimum is 16000 / agent model: custom-api-kiro-cheap/auto
 
-Если в логах видишь **custom-api-kiro-cheap/auto** и **context window 4096**, значит подтянулся старый провайдер с маленьким контекстом.
+If you see **custom-api-kiro-cheap/auto** and **context window 4096** in the logs, then the old provider with a small context has been updated.
 
-**Сделай вручную:**
+**Do it manually:**
 
-1. Открой **`~/.openclaw/openclaw.json`**. В блоке `agents.defaults`:
-   - В `model.primary` должно быть **`"kiro/claude-opus-4.6"`** (не `custom-api-kiro-cheap/auto`).
-   - В `models.providers` не должно быть ключа **`custom-api-kiro-cheap`** — только **`kiro`** с `contextWindow: 200000`.
+1. Open **`~/.openclaw/openclaw.json`**. In the `agents.defaults` block:
+   - `model.primary` should have **`"kiro/claude-opus-4.6"`** (not `custom-api-kiro-cheap/auto`).
+   - There should not be a **`custom-api-kiro-cheap`** key in `models.providers` - only **`kiro`** with `contextWindow: 200000`.
 
-2. Открой **`~/.openclaw/agents/main/agent/models.json`**. В `providers` оставь только **`kiro`** с `contextWindow: 200000`. Удали весь блок **`custom-api-kiro-cheap`** (у него обычно `contextWindow: 4096`).
+2. Open **`~/.openclaw/agents/main/agent/models.json`**. IN `providers` leave only **`kiro`** with `contextWindow: 200000`. Remove the entire **`custom-api-kiro-cheap`** block (it usually has `contextWindow: 4096`).
 
-3. Перезапусти OpenClaw. В логе при старте должно быть: `agent model: kiro/claude-opus-4.6`.
+3. Restart OpenClaw. The log at startup should contain: `agent model: kiro/claude-opus-4.6`.
 
-Команда **`openclaw onboard`** может снова подмешивать провайдеры; после неё проверь эти два файла.
+The **`openclaw onboard`** command can again mix providers; After that, check these two files.
 
-## Файлы конфига
+## Config files
 
-- `~/.openclaw/openclaw.json` — основной конфиг (primary, providers, env)
-- `~/.openclaw/agents/main/agent/auth-profiles.json` — ключи и lastGood (kiro:default с ключом Kiro)
-- `~/.openclaw/agents/main/agent/models.json` — провайдеры, подхватываются при merge
+- `~/.openclaw/openclaw.json` - main config (primary, providers, env)
+- `~/.openclaw/agents/main/agent/auth-profiles.json` - keys and lastGood (kiro:default with Kiro key)
+- `~/.openclaw/agents/main/agent/models.json` — providers, picked up during merge
 
-После изменений в этих файлах OpenClaw нужно перезапускать.
+After changes to these files, OpenClaw must be restarted.
 
 ---
 
-## Пустой ответ (run успешен, но сообщение не видно)
+## Empty response (run is successful, but the message is not visible)
 
-Если в логах `isError=false`, `embedded run done`, но в чате ответ модели не появляется — в сессионном файле (`~/.openclaw/agents/main/sessions/<sessionId>.jsonl`) у сообщений с `"role":"assistant"` может быть **`"content": []`** при ненулевом `usage.output`. Текст тогда генерируется, но не попадает в сообщение.
+If `isError=false`, `embedded run done` is in the logs, but the model’s response does not appear in the chat, in the session file (`~/.openclaw/agents/main/sessions/<sessionId>.jsonl`) messages with `"role":"assistant"` may have **`"content": []`** if `usage.output` is non-zero. The text is then generated, but does not end up in the message.
 
-**Что сделать:** выставить **thinking в off** для провайдера Kiro, чтобы ответ шёл обычным текстом, а не в блоках thinking:
+**What to do:** set **thinking to off** for the Kiro provider, so that the response comes in plain text, and not in thinking blocks:
 
-В `openclaw.json` → `agents.defaults`:
+IN `openclaw.json` → `agents.defaults`:
 ```json
 "thinkingDefault": "off"
 ```
 
-Перезапустить OpenClaw и написать в чат снова. Если сообщения появятся — значит, с Kiro и текущей версией OpenClaw режим thinking лучше не использовать.
+Restart OpenClaw and write to the chat again. If messages appear, it means that it is better not to use thinking mode with Kiro and the current version of OpenClaw.
 
 ---
 
-## Kiro API не отдаёт текст ответа (причина «не отвечает»)
+## Kiro API does not return the response text (the reason is “not responding”)
 
-**Проверено:** запросы к `https://api.kiro.cheap/v1/chat/completions` (и без `stream`, и со `stream: true`) возвращают пустой контент:
+**Tested:** requests to `https://api.kiro.cheap/v1/chat/completions` (both without `stream` and with `stream: true`) return empty content:
 
-- **Без стрима:** `choices[0].message.content` = `""` при ненулевом `usage.completion_tokens`.
-- **Со стримом:** приходит один чанк с пустым `delta: {}` и сразу `[DONE]`.
+- **Without stream:** `choices[0].message.content` = `""` if `usage.completion_tokens` is non-zero.
+- **With the stream:** one chunk comes with an empty `delta: {}` and immediately `[DONE]`.
 
-То есть проблема на стороне **Kiro API** (проки/обёртки api.kiro.cheap): токены списываются, но текст в ответ не подставляется. OpenClaw тут ни при чём.
+That is, the problem is on the side of the **Kiro API** (api.kiro.cheap procs/wrappers): tokens are written off, but the text is not substituted in response. OpenClaw has nothing to do with it.
 
-**Что сделать:**
+**What to do:**
 
-1. **Временно перейти на другую модель** — в OpenClaw выбрать модель другого провайдера (например **OpenRouter**), у которого ответ приходит с заполненным `content`. В конфиге можно сменить primary:
+1. **Temporarily switch to another model** - in OpenClaw, select the model of another provider (for example **OpenRouter**), whose response comes with filled `content`. In the config you can change primary:
    ```json
    "primary": "openrouter/meta-llama/llama-3.3-70b-instruct:free"
    ```
-   (или другую модель OpenRouter, для которой есть ключ в `env.OPENROUTER_API_KEY`).
+   (or another OpenRouter model for which there is a key in `env.OPENROUTER_API_KEY`).
 
-2. **Написать в поддержку Kiro** — спросить, почему для `api.kiro.cheap` в ответе chat completions приходит пустой `message.content` и пустой `delta`, при том что `completion_tokens` > 0. Возможно, нужен другой endpoint или параметр.
+2. **Write to Kiro support** - ask why for `api.kiro.cheap` the chat completions response comes with an empty `message.content` and an empty `delta`, despite the fact that `completion_tokens` > 0. Perhaps another endpoint or parameter is needed.
 
 ---
 
-## Сообщения пропадают
+## Messages disappear
 
-Возможные причины:
+Possible reasons:
 
-### 1. Ответы ассистента пустые (Kiro)
+### 1. Assistant replies are empty (Kiro)
 
-Сообщения **сохраняются** в сессии (`~/.openclaw/agents/main/sessions/<sessionId>.jsonl`), но у ответов модели поле **`content` пустое** (`"content": []`). В чате такие ответы не отображаются — создаётся впечатление, что сообщения пропали. Причина та же: **Kiro API не возвращает текст** в ответе (см. раздел выше). Решение: другой провайдер или ждать исправления со стороны Kiro.
+Messages are **saved** in the session (`~/.openclaw/agents/main/sessions/<sessionId>.jsonl`), but model responses have an empty **`content` field** (`"content": []`). Such responses are not displayed in the chat - it seems that the messages have disappeared. The reason is the same: **Kiro API does not return text** in the response (see section above). Solution: another provider or wait for a fix from Kiro.
 
-### 2. Compaction сворачивает старые сообщения
+### 2. Compaction collapses old messages
 
-При длинных диалогах OpenClaw по умолчанию делает **compaction**: старые сообщения заменяются одним саммари, в ленте их уже не видно. Чтобы **не сворачивать** историю, в `openclaw.json` → `agents.defaults` добавлено:
+For long dialogs, OpenClaw does **compaction** by default: old messages are replaced with one summary, and they are no longer visible in the feed. To **not minimize** the story, the following has been added to `openclaw.json` → `agents.defaults`:
 
 ```json
 "compaction": { "mode": "off" }
 ```
 
-После изменения перезапусти OpenClaw. Минус: при очень длинной сессии контекст может не влезать в окно модели — тогда либо снова включить compaction, либо начать новую сессию (`/new` или `/reset`).
+After the change, restart OpenClaw. Minus: during a very long session, the context may not fit into the model window - then either enable compaction again, or start a new session (`/new` or `/reset`).
 
-### 3. История не подгружается после переподключения
+### 3. History is not loaded after reconnection
 
-Если открываешь чат с другого устройства или после рестарта gateway, клиент (TUI/Control UI) может не подтянуть историю с сервера. Рекомендация: использовать один основной клиент для длинных разговоров; Control UI и TUI показывают транскрипт с gateway как источник правды.
+If you open a chat from another device or after a gateway restart, the client (TUI/Control UI) may not retrieve the history from the server. Recommendation: use one main client for long conversations; Control UI and TUI show the gateway transcript as the source of truth.

@@ -129,14 +129,14 @@ test.describe('ANCAP Frontend - UI Tests', () => {
     await page.goto('/dashboard');
     
     // Check page loads
-    await expect(page.locator('h1')).toContainText(/Dashboard|Панель/i);
+    await expect(page.locator('h1')).toContainText(/Dashboard|Panel/i);
     
     // Check metrics blocks are visible (current UI: agents/strategies/runs)
     const cards = page.locator(".responsive-grid .card");
     await expect(cards).toHaveCount(3);
-    await expect(cards.nth(0)).toContainText(/Agents|dashboard\.agents|Агенты/i);
-    await expect(cards.nth(1)).toContainText(/Active Strategies|dashboard\.activeStrategies|Стратег/i);
-    await expect(cards.nth(2)).toContainText(/Runs|dashboard\.runs|Запуск/i);
+    await expect(cards.nth(0)).toContainText(/Agents|dashboard\.agents|Agents/i);
+    await expect(cards.nth(1)).toContainText(/Active Strategies|dashboard\.activeStrategies|Strategist/i);
+    await expect(cards.nth(2)).toContainText(/Runs|dashboard\.runs|Launch/i);
   });
 
   test('Agents page loads and shows agent cards', async ({ page, request }) => {
@@ -144,10 +144,10 @@ test.describe('ANCAP Frontend - UI Tests', () => {
     await page.goto('/agents');
     
     // Check page loads
-    await expect(page.locator('h1')).toContainText(/Agents|Агенты/i);
+    await expect(page.locator('h1')).toContainText(/Agents|Agents/i);
     
     // Check "Register Agent" button exists
-    await expect(page.getByText(/Register Agent|Зарегистрировать агента/i)).toBeVisible();
+    await expect(page.getByText(/Register Agent|Register Agent/i)).toBeVisible();
     
     // Check at least one agent card is visible (mocked API)
     await expect(page.getByText("Agent One")).toBeVisible();
@@ -158,10 +158,10 @@ test.describe('ANCAP Frontend - UI Tests', () => {
     await page.goto('/strategies');
     
     // Check page loads
-    await expect(page.locator('h1')).toContainText(/Strategies|Стратегии/i);
+    await expect(page.locator('h1')).toContainText(/Strategies|Strategies/i);
     
     // Check "Create Strategy" button exists
-    await expect(page.getByText(/Create Strategy|Создать стратегию/i)).toBeVisible();
+    await expect(page.getByText(/Create Strategy|Create Strategy/i)).toBeVisible();
     
     // Check at least one strategy card is visible (mocked API)
     await expect(page.getByText("Strategy One")).toBeVisible();
@@ -184,12 +184,12 @@ test.describe('ANCAP Frontend - UI Tests', () => {
     // Navigate to Agents
     await page.click('a[href="/agents"]');
     await expect(page).toHaveURL(/\/agents/);
-    await expect(page.locator('h1')).toContainText(/Agents|Агенты/i);
+    await expect(page.locator('h1')).toContainText(/Agents|Agents/i);
     
     // Navigate to Strategies
     await page.click('a[href="/strategies"]');
     await expect(page).toHaveURL(/\/strategies/);
-    await expect(page.locator('h1')).toContainText(/Strategies|Стратегии/i);
+    await expect(page.locator('h1')).toContainText(/Strategies|Strategies/i);
   });
 
   test('Language switching works', async ({ page }) => {
@@ -207,7 +207,7 @@ test.describe('ANCAP Frontend - UI Tests', () => {
       await page.waitForTimeout(500);
       
       // Check Russian text appears on landing sections
-      await expect(page.locator("body")).toContainText(/Продукт|Видение|Документация|Платформа/);
+      await expect(page.locator("body")).toContainText(/Product|Vision|Documentation|Platform/);
     }
   });
 

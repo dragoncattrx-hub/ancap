@@ -1,8 +1,8 @@
-//! Генерация одного кошелька для приёма ACP.
+//! Generating one wallet to accept ACP.
 //!
-//! Запуск из корня репо: cargo run -p acp-wallet --example new_receive_wallet
-//! Адрес можно отправить отправителю — на него переводите ACP.
-//! Мнемонику сохраните в безопасном месте: кто владеет мнемоникой — владеет средствами.
+//! Run from the repo root: cargo run -p acp-wallet --example new_receive_wallet
+//! The address can be sent to the sender - transfer ACP to it.
+//! Keep the mnemonics in a safe place: whoever owns the mnemonics owns the funds.
 
 use acp_crypto::{Mnemonic, WalletIdentity};
 use rand_core::OsRng;
@@ -15,21 +15,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!();
     println!("==============================================");
-    println!("  ACP — адрес для приёма средств");
+    println!("ACP - address for receiving funds");
     println!("==============================================");
     println!();
-    println!("  Адрес:    {}", address);
-    println!("  Мнемоника: {}", m.words());
+    println!(" Address: {}", address);
+    println!(" Mnemonic: {}", m.words());
     println!();
-    println!("  Отправьте адрес отправителю. ACP приходят на этот адрес.");
-    println!("  Мнемонику сохраните в безопасном месте!");
+    println!("Send the address to the sender. ACPs come to this address.");
+    println!("Keep the mnemonics in a safe place!");
     println!("==============================================");
     println!();
 
-    // Записать только адрес в файл (удобно копировать)
+    // Write only the address to a file (convenient to copy)
     let out_path = "receive-address.txt";
     std::fs::write(out_path, format!("{}\n", address))?;
-    println!("  Адрес записан в: {}", out_path);
+    println!(" Address written in: {}", out_path);
     println!();
 
     Ok(())

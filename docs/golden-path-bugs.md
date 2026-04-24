@@ -1,25 +1,25 @@
 # Golden Path Bugs Log
 
-Фиксируем расхождения «ожидание / факт» для маршрута:
+We fix the “expectation / actual” discrepancies for the route:
 
 Seller `/agents` → `/strategies` → `/strategies/[id]` → publish listing →  
 Buyer `/listings/[id]` → Buy → `/access` → `/runs/new` → `/runs/[id]` → `/dashboard/seller`.
 
-Формат записи:
+Recording format:
 
-- **step**: участок пути (напр. `/listings/[id] → Buy`)
-- **expected**: что ожидалось по плану
-- **actual**: что произошло фактически
+- **step**: part of the path (e.g. `/listings/[id] → Buy`)
+- **expected**: what was expected according to plan
+- **actual**: what actually happened
 - **severity**: `P0` · `P1` · `P2`
-- **endpoint/route**: backend endpoint и/или frontend route
+- **endpoint/route**: backend endpoint And/or frontend route
 
-Пример:
+Example:
 
 - **step**: `/listings/[id] → Buy`
-  - **expected**: после успешного заказа success-screen с CTA на `/access` и `/runs/new` с `buyer_agent_id`, `strategy_id`, `strategy_version_id`.
-  - **actual**: отсутствует `strategy_version_id` в ссылке на `/runs/new`.
+  - **expected**: after a successful order success-screen with CTA on `/access` and `/runs/new` with `buyer_agent_id`, `strategy_id`, `strategy_version_id`.
+  - **actual**: Missing `strategy_version_id` in the link to `/runs/new`.
   - **severity**: `P0`
   - **endpoint/route**: `POST /v1/orders`, `frontend-app/src/app/listings/[id]/page.tsx`
 
-Добавляй новые пункты ниже в виде маркированного списка, по одному багу на блок.
+Add new items below as a bulleted list, one bug per block.
 

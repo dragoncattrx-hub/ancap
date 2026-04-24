@@ -1,24 +1,24 @@
-# ACP Chain — репозитории и план «под ключ»
+# ACP Chain - repositories and turnkey plan
 
-Собственная анонимная криптовалюта ACP (ANCAP Chain Protocol). Полный пошаговый план (этапы 0–10): [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).
+Own anonymous cryptocurrency ACP (ANCAP Chain Protocol). Full step-by-step plan (stages 0–10): [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).
 
-## Репозитории (планируется)
+## Repositories (planned)
 
-| Репозиторий           | Назначение                                      |
+| Repository | Destination |
 |-----------------------|--------------------------------------------------|
-| **acp-node**          | Нода (Rust): блокчейн, консенсус PoS, P2P, RPC  |
-| **acp-wallet**        | CLI (Rust/Go) + Web (TS): ключи, подпись, tx    |
-| **acp-exchange-kit** | RPC, indexer, webhooks, docker для бирж         |
-| **acp-docs**          | Спеки (protocol, crypto, consensus), гайды     |
+| **acp-node** | Noda (Rust): blockchain, consensus PoS, P2P, RPC |
+| **acp-wallet** | CLI (Rust/Go) + Web (TS): keys, signature, tx |
+| **acp-exchange-kit** | RPC, indexer, webhooks, docker for exchanges |
+| **acp-docs** | Heats (protocol, crypto, consensus), guides |
 
-## Стек
+## Stack
 
-- **Нода**: Rust. CI/CD, линтеры, reproducible builds.
-- **Кошелёк**: CLI + Web; ключи на клиенте.
-- **Обменники**: RPC + индекс входящих + webhook confirmed.
+- **Node**: Rust. CI/CD, linters, reproducible builds.
+- **Wallet**: CLI + Web; keys on the client.
+- **Exchangers**: RPC + incoming index + webhook confirmed.
 
-## Практический порядок разработки
+## Practical development procedure
 
-1. Спека + Crypto Spec → 2. acp-crypto → 3. Нода single-node → 4. PoS (локальная сеть) → 5. P2P → 6. Приватность → 7. Wallet CLI/Web → 8. Exchange kit → 9. Testnet → mainnet.
+1. Spec + Crypto Spec → 2. acp-crypto → 3. Single-node node → 4. PoS (local network) → 5. P2P → 6. Privacy → 7. Wallet CLI/Web → 8. Exchange kit → 9. Testnet → mainnet.
 
-Подробно — в [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).
+Detailed — V [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).

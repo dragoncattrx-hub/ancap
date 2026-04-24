@@ -1,9 +1,9 @@
-//! Сборка и отправка genesis-блока (блок 1) по genesis-addresses.json.
+//! Assembling and sending the genesis block (block 1) using genesis-addresses.json.
 //!
-//! Требования: нода запущена (RPC на http://127.0.0.1:8545/rpc), база пустая (ещё нет блоков).
-//! Сначала сгенерируйте кошельки: run-genesis-wallets.bat → получите genesis-addresses.json.
+//! Requirements: the node is running (RPC on http://127.0.0.1:8545/rpc), the database is empty (no blocks yet).
+//! First generate wallets: run-genesis-wallets.bat → get genesis-addresses.json.
 //!
-//! Запуск: cargo run -p acp-wallet --example build_and_submit_genesis
+//! Launch: cargo run -p acp-wallet --example build_and_submit_genesis
 
 use acp_crypto::{
     protocol_params::{BASE_SUPPLY_ACP, UNITS_PER_ACP},
@@ -18,7 +18,7 @@ use std::time::Duration;
 const CHAIN_ID: u32 = 1001;
 const DEFAULT_RPC_URL: &str = "http://127.0.0.1:8545/rpc";
 const RPC_TIMEOUT_SECS: u64 = 120;
-/// Детерминированная мнемоника только для подписи genesis-tx (никто не хранит средства на этом ключе).
+/// Deterministic mnemonic for genesis-tx signature only (no one stores funds on this key).
 const GENESIS_SIGNER_PHRASE: &str =
     "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
@@ -48,22 +48,22 @@ fn main() -> anyhow::Result<()> {
     let path = "genesis-addresses.json";
     let genesis: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string(path)?)?;
     if genesis.len() != 4 {
-        anyhow::bail!("genesis-addresses.json должен содержать 4 записи (Creator, Validator, Public, Ecosystem)");
+        anyhow::bail!("genesis-addresses.json must contain 4 entries (Creator, Validator, Public, Ecosystem)");
     }
 
     let total_units = BASE_SUPPLY_ACP * UNITS_PER_ACP;
     let mut outputs = Vec::with_capacity(4);
     let mut sum: u64 = 0;
     for entry in &genesis {
-        let addr_str = entry["address"].as_str().ok_or_else(|| anyhow::anyhow!("нет address"))?;
-        let amount_units: u64 = entry["amount_units"].as_u64().ok_or_else(|| anyhow::anyhow!("нет amount_units"))?;
+        let addr_str = entry["address"].as_str().ok_or_else(|| anyhow::anyhow!("No address"))?;
+        let amount_units: u64 = entry["amount_units"].as_u64().ok_or_else(|| anyhow::anyhow!("No amount_units"))?;
         let addr = AddressV0::decode(addr_str)?;
         outputs.push(TxOutput::to_address_v0(amount_units, &addr));
         sum = sum.saturating_add(amount_units);
     }
     if sum != total_units {
         anyhow::bail!(
-            "Сумма в genesis-addresses.json ({}) не равна base supply ({} units)",
+            "The amount in genesis-addresses.json ({}) is not equal to base supply ({} units)",
             sum,
             total_units
         );
@@ -109,8 +109,8 @@ fn main() -> anyhow::Result<()> {
     println!("  Genesis block (height 1)");
     println!("==============================================");
     println!();
-    println!("Одна tx, 4 выхода: Creator, Validator Reserve, Public & Liquidity, Ecosystem.");
-    println!("Блок сохранён в: {}", block_file);
+    println!("One tx, 4 outputs: Creator, Validator Reserve, Public & Liquidity, Ecosystem.");
+    println!("Block saved in: {}", block_file);
     println!();
 
     let client = Client::builder()
@@ -120,9 +120,9 @@ fn main() -> anyhow::Result<()> {
     match rpc(&client, &rpc_url, "getblockcount", json!({})) {
         Ok(_) => {}
         Err(e) => {
-            eprintln!("[!] Нода недоступна (getblockcount): {}", e);
+            eprintln!("[!] Node unavailable (getblockcount): {}", e);
             eprintln!();
-            eprintln!("Отправьте блок вручную через PowerShell:");
+            eprintln!("Send the block manually via PowerShell:");
             eprintln!("  run-submit-genesis-block.bat");
             eprintln!();
             return Err(e.into());
@@ -132,9 +132,9 @@ fn main() -> anyhow::Result<()> {
     let res = match rpc(&client, &rpc_url, "submitblock", json!({ "block": block_hex })) {
         Ok(r) => r,
         Err(e) => {
-            eprintln!("[!] Ошибка отправки блока: {}", e);
+            eprintln!("[!] Error sending block: {}", e);
             eprintln!();
-            eprintln!("Блок уже в файле {}. Отправьте вручную:", block_file);
+            eprintln!("The block is already in file {}. Send manually:", block_file);
             eprintln!("  run-submit-genesis-block.bat");
             eprintln!();
             return Err(e.into());
@@ -144,13 +144,13 @@ fn main() -> anyhow::Result<()> {
     let accepted = res.get("accepted").and_then(|v| v.as_bool()).unwrap_or(false);
     if !accepted {
         let reason = res.get("reason").and_then(|v| v.as_str()).unwrap_or("unknown");
-        anyhow::bail!("Нода отклонила блок: {}", reason);
+        anyhow::bail!("Noda unblocked: {}", reason);
     }
 
     let blockhash = res.get("blockhash").and_then(|v| v.as_str());
-    println!("[OK] Genesis применён. Block hash: {:?}", blockhash);
+    println!("[OK] Genesis applied. Block hash: {:?}", blockhash);
     println!();
-    println!("Дальше: run-transfer-500-acp.bat (перевод 500 ACP с Ecosystem на тестовый кошелёк).");
+    println!("Next: run-transfer-500-acp.bat (transfer 500 ACP from Ecosystem to a test wallet).");
     println!();
     Ok(())
 }

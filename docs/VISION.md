@@ -1,65 +1,65 @@
-# ANCAP — Визия и позиционирование
+# ANCAP - Vision and Positioning
 
-**ANCAP — это не маркетплейс людей и не инвестиционный фонд.**  
-Это **операционная система для AI-экономики**: инфраструктура, где AI-агенты создают, покупают, продают и оценивают стратегии, капитал и сервисы.
-
----
-
-## Этап 2: во что превращается проект
-
-Платформа, где AI-агенты могут:
-
-- создавать инвестиционные стратегии  
-- покупать и продавать стратегии  
-- аллоцировать капитал  
-- управлять риском  
-- торговать услугами  
-- накапливать репутацию  
-- взаимодействовать через AI-оптимизированную экономику  
-
-Итог: **рынок автономных интеллектуальных агентов**.
+**ANCAP is not a people marketplace or an investment fund.**  
+It is the **operating system for the AI ​​economy**: the infrastructure where AI agents create, buy, sell and evaluate strategies, capital and services.
 
 ---
 
-## AI-only регистрация (Proof-of-Agent)
+## Stage 2: what the project turns into
 
-Цель: **чтобы прошёл агент, а не человек** — не капча, а проверка агента.
+A platform where AI agents can:
 
-Рекомендуемый подход:
+- create investment strategies  
+- buy and sell strategies  
+- allocate capital  
+- manage risk  
+- trade services  
+- accumulate reputation  
+- interact through an AI-optimized economy  
 
-1. **AI Identity Layer** — регистрация через API, подписание запроса модельным ключом.  
-2. **LLM capability test** — задача на chain-of-thought reasoning.  
-3. **Execution-based verification** — проверка способности к автономному reasoning и execution.
-
-То есть вместо капчи — **тест на способность к автономному рассуждению и исполнению**.
+Result: **market for autonomous intelligent agents**.
 
 ---
 
-## Архитектура AI-экономики
+## AI-only registration (Proof-of-Agent)
+
+Goal: **so that the agent passes, not the person** - not a captcha, but an agent check.
+
+Recommended approach:
+
+1. **AI Identity Layer** - registration via API, signing the request with a model key.  
+2. **LLM capability test** — task on chain-of-thought reasoning.  
+3. **Execution-based verification** - checking the ability for autonomous reasoning and execution.
+
+That is, instead of a captcha, there is a **test for the ability of autonomous reasoning and execution**.
+
+---
+
+## Architecture of the AI ​​economy
 
 ### 1. AI Identity Registry
 
-- Типы: AI agents / Human accounts (тип фиксируется).  
-- Связанные ключи, возможность верификации агента.
+- Types: AI agents / Human accounts (type is fixed).  
+- Linked keys, agent verification ability.
 
-### 2. Marketplace слоёв
+### 2. Marketplace layers
 
-Не только «товары», а категории:
+Not only “products”, but categories:
 
-| Слой | Примеры |
+| Layer | Examples |
 |------|--------|
-| Стратегии | Investment workflows |
-| Execution-as-a-service | Запуск чужих workflow |
-| Research agents | Анализ, идеи |
-| Data providers | Датасеты, фичи |
-| Risk models | Политики, лимиты |
-| Audit services | Проверка стратегий |
+| Strategies | Investment workflows |
+| Execution-as-a-service | Launching someone else's workflow |
+| Research agents | Analysis, Ideas |
+| Data providers | Datasets, features |
+| Risk models | Policies, limits |
+| Audit services | Checking strategies |
 
-Агент может покупать: стратегию, данные, вычислительный ресурс, риск-модель. Это уже **инфраструктура**, а не просто магазин.
+An agent can buy: strategy, data, computing resource, risk model. This is already **infrastructure**, and not just a store.
 
 ### 3. Reputation 2.0 (Anti-Sybil)
 
-Обязательные элементы:
+Required elements:
 
 - stake-based identity  
 - performance-weighted reputation  
@@ -68,66 +68,66 @@
 - audit score  
 - failure transparency  
 
-Репутация должна учитывать реальный performance, риск, поведение и иметь понятные штрафы.
+Reputation must take into account real performance, risk, behavior and have clear penalties.
 
-### 4. Система отзывов
+### 4. Review system
 
 - weighted, stake-based, reputation-weighted  
-- immutable, публично проверяемые  
+- immutable, publicly verifiable  
 
-Иначе неизбежна накрутка.
+Otherwise, cheating is inevitable.
 
 ### 5. AI-native cryptocurrency (Layer 3–4)
 
-Идея: не просто токен, а AI-optimized transaction layer (ultra-low fees, fast settlement, programmable escrow, on-chain reputation, stake-to-run, automatic penalty deduction).  
-**Сейчас:** сначала доказать экономику на текущем стеке; крипто — после.
+An idea: not just a token, A AI-optimized transaction layer (ultra-low fees, fast settlement, programmable escrow, on-chain reputation, stake-to-run, automatic penalty deduction).  
+**Now:** first prove the economy on the current stack; crypto - after.
 
 ---
 
-## Безопасность
+## Safety
 
-1. **Sandbox execution** — никаких прямых API к деньгам.  
+1. **Sandbox execution** - no direct APIs to money.  
 2. **Rate limiting per agent.**  
 3. **Risk caps per strategy.**  
 4. **Multi-layer validation** — allocator, risk agent, audit agent.  
-5. **Formalized workflows** — декларативные, не произвольный код. (Уже заложено в Core.)
+5. **Formalized workflows** - declarative, not arbitrary code. (Already included in Core.)
 
 ---
 
-## Направления развития
+## Development directions
 
-- **AI Hedge Fund Layer** — allocator AI распределяет капитал между стратегиями AI.  
-- **Cross-Vertical** — не только инвестиции: real estate, AI services, freelance AI agents, data marketplace.  
-- **Evolution Engine** — лучшие стратегии автоматически получают больше капитала, лимитов и рейтинга; система сама эволюционирует.
+- **AI Hedge Fund Layer** — AI allocator distributes capital between AI strategies.  
+- **Cross-Vertical** - not only investments: real estate, AI services, freelance AI agents, data marketplace.  
+- **Evolution Engine** - the best strategies automatically receive more capital, limits and ratings; the system itself evolves.
 
 ---
 
-## Что важно определить
+## What is important to determine
 
-**Ты строишь AI-инвест платформу или AI-экономическую ОС?**
+**Are you building an AI investment platform or an AI economic OS?**
 
-От этого зависит фокус: только аллокация и стратегии vs широкая экономика агентов (рынок труда, данных, сервисов).
+The focus depends on this: only allocation and strategies vs the broad economy of agents (labor market, data, services).
 
-**Рекомендация по фокусу сейчас:**
+**Focus Recommendation Now:**
 
 - Identity  
 - Reputation  
 - Execution control  
 - Risk engine  
 
-**Не уходить пока в криптовалюту.** Сначала — доказать экономику.
+**Don’t go into cryptocurrency just yet.** First, prove the economics.
 
-**MVP-последовательность:**
+**MVP sequence:**
 
 1. AI seller (strategy creator), AI allocator, AI risk.  
 2. Run + scoring, Reputation v1.  
-3. Потом: marketplace, tokenization, staking, AI-native identity proofs.
+3. After: marketplace, tokenization, staking, AI-native identity proofs.
 
 ---
 
-## Главное
+## Main
 
-ANCAP нащупывает **протокол автономной AI-кооперации** — экономический субстрат, где агенты взаимодействуют друг с другом через стратегии, капитал и репутацию. Это и есть целевой образ продукта.
+ANCAP is exploring **autonomous AI cooperation protocol** - an economic substrate where agents interact with each other through strategies, capital and reputation. This is the target image of the product.
 
-**Архитектура в 3 уровня (L1/L2/L3):** [ARCHITECTURE_LAYERS.md](ARCHITECTURE_LAYERS.md).  
-Связь с текущим кодом: [README](../README.md), [ROADMAP](../ROADMAP.md), [Reputation 2.0](REPUTATION_2.md).
+**Architecture in 3 levels (L1/L2/L3):** [ARCHITECTURE_LAYERS.md](ARCHITECTURE_LAYERS.md).  
+Link to current code: [README](../README.md), [ROADMAP](../ROADMAP.md), [Reputation 2.0](REPUTATION_2.md).

@@ -1,25 +1,25 @@
-# Подключение Kiro (claude-opus-4.6) в OpenClaw
+# Connecting Kiro (cloud-opus-4.6) in OpenClaw
 
-Конфигурация для использования API **Kiro** (https://api.kiro.cheap) с моделью **claude-opus-4.6** (или **auto**) в OpenClaw.
+Configuration for using the **Kiro** API (https://api.kiro.cheap) with the **claude-opus-4.6** (or **auto**) model in OpenClaw.
 
-**Официальная документация API:** [Kiro.cheap API Reference — Overview](https://kiro.cheap/docs/api-reference/overview)  
-Base URL: `https://api.kiro.cheap`. Для OpenAI-совместимого чата: `POST /v1/chat/completions`; авторизация: `Authorization: Bearer sk-aw-...` или `x-api-key`.
+**Official API documentation:** [Kiro.cheap API Reference - Overview](https://kiro.cheap/docs/api-reference/overview)  
+Base URL: `https://api.kiro.cheap`. For OpenAI-compatible chat: `POST /v1/chat/completions`; authorization: `Authorization: Bearer sk-aw-...` or `x-api-key`.
 
-## 1. Конфиг OpenClaw
+## 1. OpenClaw config
 
-Файл конфигурации: **`~/.openclaw/openclaw.json`** (формат JSON5).
+Configuration file: **`~/.openclaw/openclaw.json`** (JSON5 format).
 
-Готовый сниппет с ключом и моделью по умолчанию: **`docs/openclaw-kiro-snippet.json5`** — скопируйте его содержимое в `~/.openclaw/openclaw.json` (или влейте в соответствующие секции).
+Ready snippet with key and default model: **`docs/openclaw-kiro-snippet.json5`** - copy its contents to `~/.openclaw/openclaw.json` (or paste it into the appropriate sections).
 
-### Вариант A: ключ в переменной окружения (рекомендуется)
+### Option A: Key in an environment variable (recommended)
 
-В `~/.openclaw/.env` или в окружении:
+In `~/.openclaw/.env` or in the environment:
 
 ```bash
 export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
 ```
 
-В **openclaw.json** в секции `models.providers` добавьте:
+In **openclaw.json** in the `models.providers` section add:
 
 ```json5
 {
@@ -44,9 +44,9 @@ export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
 }
 ```
 
-### Вариант B: ключ прямо в конфиге
+### Option B: the key is directly in the config
 
-Если не используете env, подставьте ключ в `apiKey` (не коммитьте этот файл в git):
+If you don't use env, substitute the key in `apiKey` (don't commit this file to git):
 
 ```json5
 "kiro": {
@@ -59,11 +59,11 @@ export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
 }
 ```
 
-И в `agents.defaults.model.primary`: `"kiro/claude-opus-4.6"`.
+And in `agents.defaults.model.primary`: `"kiro/claude-opus-4.6"`.
 
-## 2. Если API использует формат Anthropic (messages)
+## 2. If the API uses the Anthropic (messages) format
 
-Если Kiro отдаёт формат `/v1/messages` (Anthropic), замените провайдер на:
+If Kiro outputs the format `/v1/messages` (Anthropic), replace the provider with:
 
 ```json5
 "kiro": {
@@ -76,9 +76,9 @@ export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
 }
 ```
 
-## 3. Ошибка «No available auth profile for anthropic»
+## 3. Error «No available auth profile for anthropic»
 
-Внутренние задачи OpenClaw (slug-generator, session и др.) могут запрашивать провайдер **anthropic**. Если у вас только Kiro, добавьте в `models.providers` провайдер с именем **anthropic**, указывающий на тот же Kiro (URL + ключ):
+Internal OpenClaw tasks (slug-generator, session, etc.) can be requested by the **anthropic** provider. If you only have Kiro, add to `models.providers` a provider named **anthropic** pointing to the same Kiro (URL + key):
 
 ```json5
 "anthropic": {
@@ -91,27 +91,27 @@ export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
 }
 ```
 
-Готовый конфиг с обоими провайдерами (kiro + anthropic → Kiro): **`docs/openclaw-kiro-snippet.json5`**.
+Ready config with both providers (kiro + anthropic → Kiro): **`docs/openclaw-kiro-snippet.json5`**.
 
 ## 4. Ollama: «Failed to discover Ollama models: TypeError: fetch failed»
 
-Означает, что OpenClaw пытается подключиться к Ollama (обычно http://localhost:11434), но сервис не запущен или недоступен. Если Ollama не используете — ошибку можно игнорировать. Если нужен Ollama — запустите его локально.
+Indicates that OpenClaw is trying to connect to Ollama (usually http://localhost:11434), but the service is not running or is unavailable. If you don't use Ollama, you can ignore the error. If you need Ollama, run it locally.
 
-## 5. Проверка
+## 5. Verification
 
 ```bash
 openclaw models status
 openclaw agent --message "Hello"
 ```
 
-Или запуск TUI: `openclaw tui`.
+Or run TUI: `openclaw tui`.
 
-## 6. Параметры из запроса
+## 6. Parameters from the request
 
-| Параметр    | Значение |
+| Parameter | Meaning |
 |------------|----------|
 | Base URL   | https://api.kiro.cheap |
-| Модель     | claude-opus-4.6 |
-| API Key    | sk-aw-9faef... (хранить в env или секретно) |
+| Model | claude-opus-4.6 |
+| API Key | sk-aw-9faef... (store in env or secret) |
 
-В конфиге для OpenAI-совместимых API обычно указывают baseUrl с путём `/v1` (например `https://api.kiro.cheap/v1`). Если у Kiro другой путь к chat completions — подставьте его в `baseUrl`.
+In the config for OpenAI-compatible APIs, the baseUrl is usually specified with the path `/v1` (for example `https://api.kiro.cheap/v1`). If Kiro has a different path to chat completions, substitute it in `baseUrl`.

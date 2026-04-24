@@ -1,7 +1,7 @@
 # acp-exchange-kit
 
-RPC, indexer, webhooks, docker-compose для бирж и обменников.
+RPC, indexer, webhooks, docker-compose for exchanges and exchangers.
 
-- **Планируется:** node + indexer + prometheus + grafana в `docker-compose.yml`
-- На сервере 6 GB RAM: сначала node + минимум мониторинга, grafana — позже.
-- См. [../docs/UBUNTU-SERVER-SETUP.md](../docs/UBUNTU-SERVER-SETUP.md).
+- **Planned:** node + indexer + prometheus + grafana V `docker-compose.yml`
+- The server has 6 GB RAM: node first + minimum monitoring, grafana later.
+- See [../docs/UBUNTU-SERVER-SETUP.md](../docs/UBUNTU-SERVER-SETUP.md).

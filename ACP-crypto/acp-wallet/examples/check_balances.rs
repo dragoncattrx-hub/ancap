@@ -1,7 +1,7 @@
-//! Проверка балансов ACP по адресам (сканирование блоков через RPC).
+//! Checking ACP balances by address (scanning blocks via RPC).
 //!
-//! Запуск: cargo run -p acp-wallet --example check_balances -- [адрес1] [адрес2] ...
-//! Или без аргументов — читает genesis-addresses.json и показывает балансы всех четырёх genesis-адресов.
+//! Run: cargo run -p acp-wallet --example check_balances -- [address1] [address2] ...
+//! Or without arguments - reads genesis-addresses.json and shows the balances of all four genesis addresses.
 
 use std::collections::{HashMap, HashSet};
 
@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     if addresses.is_empty() {
-        eprintln!("Укажите адреса или запустите из корня репо с genesis-addresses.json");
+        eprintln!("Specify addresses or run from the root of the repo with genesis-addresses.json");
         std::process::exit(1);
     }
 
@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let best_height: u64 = rpc(&client, &rpc_url, "getblockcount", json!([]))?
         .as_u64()
-        .ok_or("getblockcount не вернул число")?;
+        .ok_or("getblockcount did not return a number"?);
 
     // UTXO: (txid_hex, vout_index) -> (amount, recipient_address)
     let mut utxo: HashMap<(String, u32), (u64, String)> = HashMap::new();
@@ -60,13 +60,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for height in 1..=best_height {
         let block_hash: String = rpc(&client, &rpc_url, "getblockhash", json!({ "height": height }))?
             .as_str()
-            .ok_or("getblockhash не вернул строку")?
+            .ok_or("getblockhash did not return a string")?
             .to_string();
         let block = rpc(&client, &rpc_url, "getblock", json!({ "blockhash": block_hash, "verbose": 2 }))?;
-        let txs = block["tx"].as_array().ok_or("getblock: нет tx")?;
+        let txs = block["tx"].as_array().ok_or("getblock: No tx")?;
 
         for tx in txs {
-            let txid_hex: String = tx["txid"].as_str().ok_or("нет txid")?.to_string();
+            let txid_hex: String = tx["txid"].as_str().ok_or("No txid")?.to_string();
 
             for (idx, inp) in tx["vin"].as_array().unwrap_or(&vec![]).iter().enumerate() {
                 let prev = inp["prev_txid"].as_str().map(|s| s.to_string());
@@ -97,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     const UNITS_PER_ACP: u64 = 100_000_000;
     println!();
     println!("==============================================");
-    println!("  Балансы ACP (высота {})", best_height);
+    println!(" ACP balances (height {})", best_height);
     println!("==============================================");
     println!();
     for addr in &addresses {

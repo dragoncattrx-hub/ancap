@@ -2,9 +2,9 @@
 
 ## Overview
 
-ANCAP Frontend - современный веб-интерфейс для AI-Native Capital Allocation Platform, построенный на Next.js 15 и React 19 с использованием TypeScript.
+ANCAP Frontend is a modern web interface for the AI-Native Capital Allocation Platform, built on Next.js 15 and React 19 using TypeScript.
 
-## Технологический стек
+## Technology stack
 
 - **Framework**: Next.js 15.5.12 (App Router)
 - **UI Library**: React 19
@@ -14,9 +14,9 @@ ANCAP Frontend - современный веб-интерфейс для AI-Nati
 - **Internationalization**: Custom LanguageProvider (EN/RU)
 - **API Client**: Custom API wrapper with fetch
 
-## Архитектура
+## Architecture
 
-### Структура проекта
+### Project structure
 
 ```
 frontend-app/
@@ -45,189 +45,189 @@ frontend-app/
 └── package.json
 ```
 
-## Дизайн-система
+## Design-system
 
-### Цветовая палитра
+### Color palette
 
 ```css
 :root {
-  --bg: #0a0a0f;              /* Основной фон */
-  --bg-card: #12121a;         /* Фон карточек */
-  --text: #f0f0f5;            /* Основной текст */
-  --text-muted: #8888a0;      /* Приглушенный текст */
-  --accent: #00d4aa;          /* Акцентный цвет (teal) */
-  --accent-dim: rgba(0, 212, 170, 0.15); /* Приглушенный акцент */
-  --border: #2a2a3a;          /* Границы */
+  --bg: #0a0a0f;              /* Main background */
+  --bg-card: #12121a;         /* Card background */
+  --text: #f0f0f5;            /* Main text */
+  --text-muted: #8888a0;      /* Muted text */
+  --accent: #00d4aa;          /* Accent color (teal) */
+  --accent-dim: rgba(0, 212, 170, 0.15); /* Muted accent */
+  --border: #2a2a3a;          /* Boundaries */
 }
 ```
 
-### Компоненты
+### Components
 
-#### Кнопки
+#### Buttons
 
-- **btn-primary**: Основная кнопка с акцентным цветом
-- **btn-ghost**: Прозрачная кнопка с границей
+- **btn-primary**: Primary button with accent color
+- **btn-ghost**: Transparent button with border
 
-#### Карточки
+#### Cards
 
-- **card**: Карточка с фоном, границей и hover-эффектом
-- Используется для отображения агентов, стратегий, runs и другого контента
+- **card**: Card with background, border and hover effect
+- Used to display agents, strategies, runs and other content
 
-#### Формы
+#### Forms
 
-- Единый стиль для всех input, select, textarea
-- Темный фон с границей
-- Фокус на акцентном цвете
+- Single style for all input, select, textarea
+- Dark background with border
+- Focus on accent color
 
-### Анимации
+### Animations
 
-- **NetworkBackground**: Анимированная сеть узлов на фоне (blockchain-стиль)
-- **Card hover**: Плавное изменение границы и тени при наведении
-- **Button hover**: Плавное изменение цвета
+- **NetworkBackground**: Animated network of nodes in the background (blockchain style)
+- **Card hover**: Smooth border and shadow changes when hovering
+- **Button hover**: Smooth color change
 
-## Страницы
+## Pages
 
 ### 1. Landing Page (/)
 
-**Описание**: Главная страница с информацией о платформе
+**Description**: Home page with information about the platform
 
-**Секции**:
-- Hero: Заголовок, описание, CTA кнопки
-- Product (01): Информация о продукте, карточки с функциями
-- Vision (02): Архитектура L1/L2/L3
-- CTA: Призыв к действию
-- Footer: Ссылки и информация
+**Sections**:
+- Hero: Title, description, CTA buttons
+- Product (01): Product information, feature cards
+- Vision (02): L1/L2/L3 architecture
+- CTA: Call to action
+- Footer: Links and information
 
-**Навигация**: Для неавторизованных пользователей (Product, Vision, Login, Register)
+**Navigation**: For unauthorized users (Product, Vision, Login, Register)
 
 ### 2. Login Page (/login)
 
-**Описание**: Страница входа в систему
+**Description**: Login page
 
-**Функции**:
-- Форма с email и password
-- Валидация и обработка ошибок
-- Ссылка на регистрацию
-- Редирект на dashboard после успешного входа
+**Features**:
+- Form with email and password
+- Validation and error handling
+- Registration link
+- Redirect to dashboard after successful login
 
 ### 3. Register Page (/register)
 
-**Описание**: Страница регистрации
+**Description**: Registration page
 
-**Функции**:
-- Форма с display name, email, password
-- Валидация (минимум 8 символов для пароля)
-- Обработка ошибок
-- Ссылка на вход
-- Редирект на dashboard после успешной регистрации
+**Features**:
+- Shape with display name, email, password
+- Validation (minimum 8 characters for password)
+- Error handling
+- Login Link
+- Redirect to dashboard after successful registration
 
 ### 4. Dashboard (/dashboard)
 
-**Описание**: Главная панель пользователя
+**Description**: Main user panel
 
-**Функции**:
-- Статистика: количество агентов, стратегий, runs
-- Секция "Recent Activity" (в разработке)
-- Защита: требуется авторизация
+**Features**:
+- Statistics: number of agents, strategies, runs
+- Section "Recent Activity" (under development)
+- Security: authorization required
 
 ### 5. Agents Page (/agents)
 
-**Описание**: Управление AI-агентами
+**Description**: Managing AI agents
 
-**Функции**:
-- Список агентов в виде карточек
-- Кнопка "Register Agent"
-- Модальное окно для создания агента
-- Поля: display name, public key, roles
-- Пустое состояние с CTA
+**Features**:
+- List of agents in the form of cards
+- "Register Agent" button
+- Modal window for creating an agent
+- fields: display name, public key, roles
+- Blank state with CTA
 
 ### 6. Strategies Page (/strategies)
 
-**Описание**: Управление стратегиями
+**Description**: Strategy Management
 
-**Функции**:
-- Список стратегий в виде карточек
-- Кнопка "Create Strategy"
-- Модальное окно для создания стратегии
-- Поля: name, description, agent, vertical
-- Предупреждение если нет агентов
+**Features**:
+- List of strategies in the form of cards
+- "Create Strategy" button
+- Modal window for creating a strategy
+- fields: name, description, agent, vertical
+- Warning if there are no agents
 
 ### 7. Runs Page (/runs)
 
-**Описание**: Выполнение стратегий
+**Description**: Execution of strategies
 
-**Функции**:
-- Список runs с статусами (completed, running, failed, killed)
-- Кнопка "Create Run"
-- Модальное окно для создания run
-- Поля: strategy, pool, dry_run checkbox
-- Цветовая индикация статусов
+**Features**:
+- List of runs with statuses (completed, running, failed, killed)
+- "Create Run" button
+- Modal window for creating run
+- fields: strategy, pool, dry_run checkbox
+- Color indication of statuses
 
 ### 8. Projects Page (/projects)
 
-**Описание**: Информация о платформе
+**Description**: Information about the platform
 
-**Функции**:
-- Описание платформы
-- Технологический стек
-- Список модулей с статусами
-- Быстрые ссылки (GitHub, API Docs, ARDO)
+**Features**:
+- Description of the platform
+- Technology stack
+- List of modules with statuses
+- Quick links (GitHub, API Docs, ARDO)
 
-## Компоненты
+## Components
 
 ### AuthProvider
 
-**Назначение**: Управление аутентификацией
+**Purpose**: Authentication Management
 
 **API**:
-- `isAuthenticated`: boolean - статус авторизации
-- `isLoading`: boolean - загрузка
-- `user`: User | null - данные пользователя
-- `login(email, password)`: Promise - вход
-- `register(email, password, displayName)`: Promise - регистрация
-- `logout()`: void - выход
+- `isAuthenticated`: boolean - authorization status
+- `isLoading`: boolean - loading
+- `user`: User | null - user data
+- `login(email, password)`: Promise - entrance
+- `register(email, password, displayName)`: Promise - registration
+- `logout()`: void - exit
 
 ### LanguageProvider
 
-**Назначение**: Интернационализация (EN/RU)
+**Purpose**: Internationalization (EN/RU)
 
 **API**:
-- `language`: 'en' | 'ru' - текущий язык
-- `setLanguage(lang)`: void - смена языка
-- `t(key)`: string - перевод по ключу
+- `language`: 'en' | 'ru' - current language
+- `setLanguage(lang)`: void - change language
+- `t(key)`: string - translation by key
 
 ### Navigation
 
-**Назначение**: Главная навигация
+**Purpose**: Main navigation
 
-**Функции**:
-- Адаптивная навигация в зависимости от авторизации
-- Для авторизованных: Dashboard, Agents, Strategies, Runs, Logout
-- Для неавторизованных: Product, Vision, Login, Register
-- Переключатель языка
-- Отображение имени пользователя
+**Features**:
+- Adaptive navigation depending on authorization
+- For authorized users: Dashboard, Agents, Strategies, Runs, Logout
+- For unauthorized: Product, Vision, Login, Register
+- Language switch
+- Username display
 
 ### NetworkBackground
 
-**Назначение**: Анимированный фон
+**Purpose**: Animated background
 
-**Функции**:
-- Canvas с анимированными узлами
-- Связи между узлами (blockchain-стиль)
-- Адаптивный размер
-- Низкая непрозрачность (не отвлекает от контента)
+**Features**:
+- Canvas with animated nodes
+- Connections between nodes (blockchain style)
+- Adaptive size
+- Low opacity (does not distract from the content)
 
 ## API Integration
 
 ### API Client (lib/api.ts)
 
-**Базовый URL (автовыбор)**:
-- **Dev (по умолчанию)**: `"/api/v1"` (Next.js rewrite → `http://127.0.0.1:8001/v1`)
-- **Dev (явно)**: `NEXT_PUBLIC_API_URL=http://127.0.0.1:8001/v1`
-- **Prod-like (через reverse proxy)**: `NEXT_PUBLIC_API_URL=/api/v1`
-- **Production**: `NEXT_PUBLIC_API_URL=https://ancap.cloud/api/v1` (или `https://api.ancap.cloud/v1`, если UI и API разнесены)
+**Base URL (auto-select)**:
+- **Dev (default)**: `"/api/v1"` (Next.js rewrite → `http://127.0.0.1:8001/v1`)
+- **Dev (clearly)**: `NEXT_PUBLIC_API_URL=http://127.0.0.1:8001/v1`
+- **Prod-like (through reverse proxy)**: `NEXT_PUBLIC_API_URL=/api/v1`
+- **Production**: `NEXT_PUBLIC_API_URL=https://ancap.cloud/api/v1` (or `https://api.ancap.cloud/v1`, if the UI and API are separate)
 
-**Модули**:
+**Modules**:
 - `auth`: login, register
 - `agents`: list, create, get
 - `strategies`: list, create, get, getVersions
@@ -235,53 +235,53 @@ frontend-app/
 - `pools`: list, create
 - `verticals`: list
 
-**Обработка ошибок**:
-- Автоматический парсинг JSON
-- Выброс ошибок с сообщениями
-- Обработка HTTP статусов
+**Error handling**:
+- Automatic JSON parsing
+- Throwing errors with messages
+- Processing HTTP statuses
 
-## Запуск и разработка
+## Launch and development
 
-### Установка зависимостей
+### Installing dependencies
 
 ```bash
 cd frontend-app
 npm install
 ```
 
-### Запуск dev-сервера
+### Starting the dev server
 
 ```bash
 npm run dev
 ```
 
-Приложение будет доступно на `http://localhost:3001`
+The application will be available on `http://localhost:3001`
 
-### Сборка для production
+###Build for production
 
 ```bash
 npm run build
 npm run start
 ```
 
-### Тестирование
+### Testing
 
 ```bash
-npm run test        # Запуск тестов
+npm run test # Run tests
 npm run test:watch  # Watch mode
 ```
 
-## Требования
+## Requirements
 
 - Node.js 18+
-- Backend API должен быть запущен (локально через Docker) на `http://127.0.0.1:8001`
-- PostgreSQL база данных (для backend)
+- Backend API must be running (locally via Docker) on `http://127.0.0.1:8001`
+- PostgreSQL database (for backend)
 
-## Особенности реализации
+## Implementation features
 
-### Защита маршрутов
+### Route protection
 
-Все страницы кроме landing, login и register защищены:
+All pages except landing, login and register are protected:
 
 ```typescript
 useEffect(() => {
@@ -291,43 +291,43 @@ useEffect(() => {
 }, [isAuthenticated, authLoading, router]);
 ```
 
-### Модальные окна
+### Modal windows
 
-Все формы создания (агенты, стратегии, runs) используют модальные окна:
-- Фон с затемнением
-- Центрирование
-- Кнопки "Create" и "Cancel"
-- Обработка ошибок внутри модала
+All creation forms (agents, strategies, runs) use modal windows:
+- Background with dimming
+- Centering
+- Buttons "Create" and "Cancel"
+- Error handling inside the modal
 
-### Пустые состояния
+### Empty states
 
-Все списки имеют пустые состояния с CTA:
-- Информативное сообщение
-- Кнопка для создания первого элемента
-- Предупреждения о зависимостях (например, "создайте агента сначала")
+All listings have empty states with CTA:
+- Informative message
+- Button to create the first element
+- Dependency warnings (e.g. "create agent first")
 
-### Загрузка данных
+### Loading data
 
-Все страницы показывают состояние загрузки:
-- "Loading..." текст с центрированием
-- Загрузка при монтировании компонента
-- Обновление после создания/изменения
+All pages show loading status:
+- "Loading..." text with centering
+- Loading when mounting a component
+- Update after creation/change
 
-## Будущие улучшения
+## Future improvements
 
-- [ ] Добавить пагинацию для списков
-- [ ] Добавить фильтры и поиск
-- [ ] Добавить детальные страницы для агентов/стратегий/runs
-- [ ] Добавить графики и визуализации
-- [ ] Добавить real-time обновления (WebSocket)
-- [ ] Добавить темную/светлую тему
-- [ ] Добавить больше языков
-- [ ] Добавить unit и e2e тесты
-- [ ] Оптимизировать производительность
-- [ ] Добавить PWA поддержку
+- [ ] Add pagination for lists
+- [ ] Add filters and search
+- [ ] Add detailed pages for agents/strategies/runs
+- [ ] Add graphs and visualizations
+- [ ] Add real-time updates (WebSocket)
+- [ ] Add dark/light theme
+- [ ] Add more languages
+- [ ] Add unit and e2e tests
+- [ ] Optimize performance
+- [ ] Add PWA support
 
-## Контакты и поддержка
+## Contacts and support
 
-Для вопросов и предложений:
+For questions and suggestions:
 - GitHub: https://github.com/dragoncattrx-hub/ancap
-- API Docs (локально): http://127.0.0.1:8001/docs
+- API Docs (local): http://127.0.0.1:8001/docs

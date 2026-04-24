@@ -1,9 +1,9 @@
-//! Пример: первая транзакция в сети ACP (ANCAP).
+//! Example: First transaction on the ACP network (ANCAP).
 //!
-//! Запуск (из корня репо, где есть acp-crypto и acp-wallet):
+//! Run (from the root of the repo, where there is acp-crypto and acp-wallet):
 //!   cargo run -p acp-wallet --example first_tx
 //!
-//! Требования: нода запущена, RPC на http://127.0.0.1:8545/rpc
+//! Requirements: node is running, RPC to http://127.0.0.1:8545/rpc
 
 use acp_crypto::{
     AddressV0, Block, BlockHeader, Mnemonic, Transaction, TxHex, TxInput, TxOutput,
@@ -25,10 +25,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = AddressV0::decode(&receive_addr)?;
 
     println!("=== ACP First transaction ===\n");
-    println!("Мнемоника (сохраните!): {}", m.words());
-    println!("Адрес получения: {}\n", receive_addr);
+    println!("Mnemonic (save!): {}", m.words());
+    println!("Receive address: {}\n", receive_addr);
 
-    // 1) Genesis tx: один вход (условный «монетбаз»), один выход на наш адрес
+    // 1) Genesis tx: one input (conditional “coinbase”), one output to our address
     let genesis_tx = {
         let mut tx = Transaction::new_unsigned(
             CHAIN_ID,
@@ -60,12 +60,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let genesis_block = Block::build(genesis_header, vec![genesis_tx.clone()])?;
     let genesis_block_hex = hex::encode(genesis_block.to_wire()?);
 
-    println!("--- Шаг 1: отправить genesis block (submitblock) ---");
+    println!("--- Step 1: submit genesis block (submitblock) ---");
     println!(
         "curl -s -X POST {RPC_URL} -H \"Content-Type: application/json\" -d '{{\"jsonrpc\":\"2.0\",\"method\":\"submitblock\",\"params\":{{\"block\":\"{genesis_block_hex}\"}},\"id\":1}}'\n"
     );
 
-    // 3) Вторая транзакция: тратим выход genesis
+    // 3) Second transaction: spend the genesis output
     let tx2 = {
         let mut tx = Transaction::new_unsigned(
             CHAIN_ID,
@@ -81,12 +81,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let tx2_hex = TxHex::encode_tx(&tx2)?;
 
-    println!("--- Шаг 2: отправить вторую tx в mempool (sendrawtransaction) ---");
+    println!("--- Step 2: send second tx to mempool (sendrawtransaction) ---");
     println!(
         "curl -s -X POST {RPC_URL} -H \"Content-Type: application/json\" -d '{{\"jsonrpc\":\"2.0\",\"method\":\"sendrawtransaction\",\"params\":{{\"tx\":\"{tx2_hex}\"}},\"id\":2}}'\n"
     );
 
-    // 4) Блок 2 с этой tx
+    // 4) Block 2 with this tx
     let best_hash = genesis_block.header.blockhash();
     let block2_header = BlockHeader {
         version: 1,
@@ -103,11 +103,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let block2 = Block::build(block2_header, vec![tx2.clone()])?;
     let block2_hex = hex::encode(block2.to_wire()?);
 
-    println!("--- Шаг 3: отправить блок 2 (submitblock) ---");
+    println!("--- Step 3: submit block 2 (submitblock) ---");
     println!(
         "curl -s -X POST {RPC_URL} -H \"Content-Type: application/json\" -d '{{\"jsonrpc\":\"2.0\",\"method\":\"submitblock\",\"params\":{{\"block\":\"{block2_hex}\"}},\"id\":3}}'\n"
     );
 
-    println!("Порядок: 1 → 2 → 3. Нода должна быть запущена (run-acp-docker-local.bat).");
+    println!("Order: 1 → 2 → 3. The node must be running (run-acp-docker-local.bat).");
     Ok(())
 }
