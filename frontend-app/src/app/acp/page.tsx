@@ -198,25 +198,38 @@ export default function AcpLandingPage() {
           <section style={{ padding: "34px 0 0", borderTop: "1px solid var(--border)" }}>
             <span className="section-num">04</span>
             <h2 style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 12 }}>
-              Next milestones (roadmap-aligned)
+              Roadmap-aligned milestones (current state)
             </h2>
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <h3 style={{ fontWeight: 700, marginBottom: 10 }}>Public governance surface</h3>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  Formalize proposals for policies/verticals, with audit trail and clear moderation hooks.
+                  Delivered: proposals for policies/verticals are formalized with audit trail and moderation hooks.
                 </p>
               </div>
               <div className="card">
                 <h3 style={{ fontWeight: 700, marginBottom: 10 }}>On-chain settlement paths</h3>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  Expand beyond anchoring: escrow, stake/slash settlement, and optional on-chain receipts.
+                  Delivered: anchoring is extended with settlement intents, escrow/stake/slash flows, and chain receipts.
                 </p>
               </div>
               <div className="card">
                 <h3 style={{ fontWeight: 700, marginBottom: 10 }}>Anti-sybil reinforcement</h3>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  Tie ACP staking deeper into Reputation 2.0 + graph metrics, and enforce stronger participation gates.
+                  Delivered: ACP staking is tied into Reputation 2.0 and graph gates for stronger participation controls.
+                </p>
+              </div>
+              <div className="card">
+                <h3 style={{ fontWeight: 700, marginBottom: 10 }}>Autonomous operations and AI-native controls</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
+                  Delivered: Operations NOC, decision logs, AI council tooling, and guarded rollout controls are live.
+                </p>
+              </div>
+              <div className="card">
+                <h3 style={{ fontWeight: 700, marginBottom: 10 }}>ACP tokenomics and distribution</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
+                  Total supply: <strong>210,000,000 ACP</strong>. Distribution: Creator 33% (69.3M), Validator Reserve 50% (105M),
+                  Public/Liquidity 12% (25.2M), Ecosystem Grants 5% (10.5M).
                 </p>
               </div>
             </div>
