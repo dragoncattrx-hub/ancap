@@ -30,6 +30,20 @@ type SwapOrder = {
   updated_at: string;
 };
 
+type AcpTransaction = {
+  txid: string;
+  block_height: number;
+  block_time: string;
+  confirmations: number;
+  direction: "in" | "out" | "self";
+  sent_units: string;
+  sent_acp: string;
+  received_units: string;
+  received_acp: string;
+  net_units: string;
+  net_acp: string;
+};
+
 export default function AcpWalletPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -37,6 +51,10 @@ export default function AcpWalletPage() {
   const [tab, setTab] = useState<"wallet" | "swap">("wallet");
   const [depositAddress, setDepositAddress] = useState<string>("");
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
+  const [transactions, setTransactions] = useState<AcpTransaction[]>([]);
+  const [txAddressInput, setTxAddressInput] = useState("");
+  const [txAddressActive, setTxAddressActive] = useState("");
+  const [txAddressBalance, setTxAddressBalance] = useState<BalanceResponse | null>(null);
   const [swapOrders, setSwapOrders] = useState<SwapOrder[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
 
@@ -75,15 +93,23 @@ export default function AcpWalletPage() {
     [swapOrders, selectedOrderId],
   );
 
+  useEffect(() => {
+    const resolved = (depositAddress || balance?.address || "").trim();
+    if (!resolved) return;
+    setTxAddressInput((prev) => (prev ? prev : resolved));
+    setTxAddressActive((prev) => (prev ? prev : resolved));
+  }, [depositAddress, balance?.address]);
+
   async function refreshAll() {
     setBusy(true);
     setError("");
     setLoadWarnings([]);
     try {
-      const [addrRes, balRes, ordersRes] = await Promise.allSettled([
+      const [addrRes, balRes, ordersRes, txRes] = await Promise.allSettled([
         walletAcp.getDepositAddress(),
         walletAcp.getHotBalance(),
         walletAcp.listSwapOrders(),
+        walletAcp.listTransactions({ limit: 50 }),
       ]);
 
       const warnings: string[] = [];
@@ -110,7 +136,17 @@ export default function AcpWalletPage() {
         warnings.push(`Swap history unavailable: ${ordersRes.reason?.message || "unknown error"}`);
       }
 
-      const any401 = [addrRes, balRes, ordersRes].some(
+      if (txRes.status === "fulfilled") {
+        const items = Array.isArray(txRes.value) ? txRes.value : [];
+        setTransactions(items);
+      } else {
+        warnings.push(`On-chain history unavailable: ${txRes.reason?.message || "unknown error"}`);
+      }
+      if (balRes.status === "fulfilled") {
+        setTxAddressBalance(balRes.value || null);
+      }
+
+      const any401 = [addrRes, balRes, ordersRes, txRes].some(
         (res) =>
           res.status === "rejected" &&
           String((res.reason as any)?.message || "").includes("API error 401"),
@@ -135,6 +171,26 @@ export default function AcpWalletPage() {
       await navigator.clipboard.writeText(v);
     } catch {
       // ignore clipboard errors
+    }
+  }
+
+  async function refreshTransactionsByAddress(address: string) {
+    const target = address.trim();
+    if (!target) return;
+    setBusy(true);
+    setError("");
+    try {
+      const [items, bal] = await Promise.all([
+        walletAcp.listTransactions({ address: target, limit: 50 }),
+        walletAcp.getBalance({ address: target }),
+      ]);
+      setTransactions(Array.isArray(items) ? items : []);
+      setTxAddressBalance((bal as BalanceResponse) || null);
+      setTxAddressActive(target);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load on-chain history");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -310,8 +366,9 @@ export default function AcpWalletPage() {
           )}
 
           {tab === "wallet" ? (
-            <div className="responsive-grid responsive-grid-3">
-              <div className="card">
+            <div style={{ display: "grid", gap: 16 }}>
+              <div className="responsive-grid responsive-grid-3">
+                <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Deposit address</h3>
                   <span className="badge badge-info">ACP</span>
@@ -323,9 +380,9 @@ export default function AcpWalletPage() {
                 <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>Copy</button>
                 </div>
-              </div>
+                </div>
 
-              <div className="card">
+                <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Hot balance</h3>
                   <span className="badge badge-active">Live</span>
@@ -334,9 +391,9 @@ export default function AcpWalletPage() {
                   {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
-              </div>
+                </div>
 
-              <div className="card">
+                <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Operator withdraw</h3>
                   <span className="badge badge-warning">Operator</span>
@@ -348,6 +405,92 @@ export default function AcpWalletPage() {
                   <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Sending..." : "Withdraw"}</button>
                 </form>
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="card-header">
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>On-chain transaction history</h3>
+                  <span className="badge badge-active">Explorer</span>
+                </div>
+                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address</label>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <input
+                      className="input input-bordered w-full"
+                      value={txAddressInput}
+                      onChange={(e) => setTxAddressInput(e.target.value)}
+                      placeholder="acp1..."
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => refreshTransactionsByAddress(txAddressInput)}
+                      disabled={busy || !txAddressInput.trim()}
+                    >
+                      Load history
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        const hot = (singleWalletAddress || "").trim();
+                        if (!hot) return;
+                        setTxAddressInput(hot);
+                        refreshTransactionsByAddress(hot);
+                      }}
+                      disabled={busy || !singleWalletAddress}
+                    >
+                      Use hot wallet
+                    </button>
+                  </div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span>
+                  </div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                    Balance:{" "}
+                    <strong style={{ color: "var(--text)" }}>
+                      {txAddressBalance?.acp ?? "0"} ACP
+                    </strong>
+                    {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
+                  </div>
+                </div>
+
+                {transactions.length === 0 ? (
+                  <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
+                ) : (
+                  <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                    {transactions.map((tx) => (
+                      <div
+                        key={`${tx.txid}-${tx.block_height}`}
+                        style={{
+                          padding: 10,
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: "var(--bg)",
+                          display: "grid",
+                          gap: 6,
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                          <strong>{tx.direction.toUpperCase()}</strong>
+                          <span style={{ color: "var(--text-muted)" }}>
+                            block {tx.block_height} • {tx.confirmations} conf
+                          </span>
+                        </div>
+                        <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>{tx.txid}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                          <span style={{ color: "var(--text-muted)" }}>Sent: {tx.sent_acp} ACP</span>
+                          <span style={{ color: "var(--text-muted)" }}>Received: {tx.received_acp} ACP</span>
+                          <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>
+                            Net: {tx.net_acp} ACP
+                          </strong>
+                        </div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{tx.block_time}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : (

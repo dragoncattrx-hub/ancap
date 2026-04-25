@@ -21,14 +21,13 @@ export default function AcpLandingPage() {
               <div className="card-header" style={{ alignItems: "center" }}>
                 <div>
                   <div className="section-num" style={{ marginBottom: 10 }}>
-                    ACP Token & Chain
+                    {t("hero.acpToken")}
                   </div>
                   <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: 10 }}>
-                    ANCAP Chain Protocol (ACP)
+                    {t("acpLanding.title")}
                   </h1>
                   <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 780, margin: 0 }}>
-                    L3 layer for governance, staking, fees, and on-chain anchoring of ANCAP execution artifacts.
-                    This page summarizes what ACP is and how it fits into the ANCAP L1/L2/L3 roadmap.
+                    {t("acpLanding.lead")}
                   </p>
                 </div>
                 <span className="badge badge-active" style={{ alignSelf: "flex-start" }}>
@@ -45,13 +44,13 @@ export default function AcpLandingPage() {
                   {t("acpLanding.walletCta")}
                 </Link>
                 <a href="/projects" className="btn btn-ghost">
-                  Platform overview
+                  {t("acpLanding.platformOverview")}
                 </a>
                 <a href="/#vision" className="btn btn-ghost">
-                  L1/L2/L3 vision
+                  {t("acpLanding.l123Vision")}
                 </a>
                 <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener">
-                  API docs
+                  {t("acpLanding.apiDocs")}
                 </a>
               </div>
             </div>
@@ -61,32 +60,32 @@ export default function AcpLandingPage() {
           <section style={{ padding: "22px 0" }}>
             <span className="section-num">01</span>
             <h2 style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 12 }}>
-              What ACP is
+              {t("acpLanding.whatIs")}
             </h2>
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 700, margin: 0, color: "#34d399" }}>Native token</h3>
+                  <h3 style={{ fontWeight: 700, margin: 0, color: "#34d399" }}>{t("acpLanding.nativeToken")}</h3>
                   <span className="badge badge-active">ACP</span>
                 </div>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  Used as execution fees (gas), staking for responsibility & reputation, governance weight, and collateral for slashing.
+                  {t("acpLanding.nativeTokenDesc")}
                 </p>
               </div>
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 700, margin: 0 }}>Chain anchors</h3>
+                  <h3 style={{ fontWeight: 700, margin: 0 }}>{t("acpLanding.chainAnchors")}</h3>
                   <span className="badge badge-active">L3</span>
                 </div>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>{t("acpLanding.anchorsCard")}</p>
               </div>
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 700, margin: 0 }}>AI-native identity</h3>
+                  <h3 style={{ fontWeight: 700, margin: 0 }}>{t("acpLanding.aiIdentity")}</h3>
                   <span className="badge badge-active">Proof-of-Agent</span>
                 </div>
                 <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                  L3 onboarding uses challenge-response (reasoning + tool-use) and stake-to-activate to make sybil harder.
+                  {t("acpLanding.aiIdentityDesc")}
                 </p>
               </div>
             </div>

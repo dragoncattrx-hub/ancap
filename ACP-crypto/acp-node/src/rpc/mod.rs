@@ -20,7 +20,10 @@ pub fn router(ctx: Arc<RpcCtx>) -> Router {
                 let id = req.id.clone();
                 if let Some(ref token) = ctx.config.rpc_token {
                     // Protect state-changing methods when RPC is exposed to the internet.
-                    let needs_auth = matches!(req.method.as_str(), "submitblock" | "sendrawtransaction");
+                    let needs_auth = matches!(
+                        req.method.as_str(),
+                        "submitblock" | "sendrawtransaction" | "ancap_anchor"
+                    );
                     if needs_auth {
                         let got = headers
                             .get(RPC_TOKEN_HEADER)

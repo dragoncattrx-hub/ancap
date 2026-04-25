@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +44,7 @@ export function LoginForm() {
             <Link href="/" style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text)", textDecoration: "none" }}>
               ANCAP
             </Link>
-            <h1 style={{ fontSize: "1.5rem", fontWeight: 600, marginTop: "16px", color: "var(--text)" }}>Login</h1>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 600, marginTop: "16px", color: "var(--text)" }}>{t("nav.login")}</h1>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -51,7 +53,7 @@ export function LoginForm() {
                 htmlFor="email"
                 style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}
               >
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -76,7 +78,7 @@ export function LoginForm() {
                 htmlFor="password"
                 style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}
               >
-                Password
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -112,13 +114,13 @@ export function LoginForm() {
             )}
 
             <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", marginBottom: "16px" }}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? t("auth.loggingIn") : t("nav.login")}
             </button>
 
             <div style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-              Don&apos;t have an account?{" "}
+              {t("auth.noAccount")}{" "}
               <Link href="/register" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
-                Register
+                {t("nav.register")}
               </Link>
             </div>
           </form>

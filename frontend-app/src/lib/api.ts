@@ -327,6 +327,21 @@ export const walletAcp = {
     return apiFetch("/wallet/acp/hot/balance");
   },
 
+  async getBalance(params?: { address?: string }) {
+    const qp = new URLSearchParams();
+    if (params?.address) qp.append("address", params.address);
+    const suffix = qp.toString();
+    return apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`);
+  },
+
+  async listTransactions(params?: { address?: string; limit?: number }) {
+    const qp = new URLSearchParams();
+    if (params?.address) qp.append("address", params.address);
+    if (params?.limit != null) qp.append("limit", String(params.limit));
+    const suffix = qp.toString();
+    return apiFetch(`/wallet/acp/transactions${suffix ? `?${suffix}` : ""}`);
+  },
+
   async withdraw(data: { to_address: string; amount_acp: string; wallet_secret?: string }) {
     const headers: HeadersInit = {};
     if (data.wallet_secret) headers["X-Wallet-Secret"] = data.wallet_secret;

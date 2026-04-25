@@ -66,3 +66,17 @@ class AcpSwapOrderPublic(BaseModel):
 class AcpSwapCompleteResponse(BaseModel):
     order: AcpSwapOrderPublic
     transfer: AcpWithdrawResponse
+
+
+class AcpTransactionPublic(BaseModel):
+    txid: str
+    block_height: int
+    block_time: str
+    confirmations: int
+    direction: Literal["in", "out", "self"]
+    sent_units: str
+    sent_acp: str
+    received_units: str
+    received_acp: str
+    net_units: str
+    net_acp: str

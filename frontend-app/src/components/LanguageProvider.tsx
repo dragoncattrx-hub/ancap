@@ -14,11 +14,11 @@ const LanguageContext = createContext<LanguageContextType | null>(null);
 const LANG_STORAGE_KEY = "ancap-lang-v2";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>('en');
+  const [lang, setLangState] = useState<Language>("en");
 
   useEffect(() => {
     const stored = safeGetItem(LANG_STORAGE_KEY) as Language;
-    if (stored === "en" || stored === "ru") {
+    if (stored === "en" || stored === "ru" || stored === "uk") {
       setLangState(stored);
     }
   }, []);
@@ -39,6 +39,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   const ctx = useContext(LanguageContext);
-  if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
+  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");
   return ctx;
 }

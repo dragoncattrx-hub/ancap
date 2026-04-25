@@ -156,13 +156,13 @@ export function Navigation() {
             ) : (
               <nav className="flex flex-wrap items-center gap-2 text-[13px]">
                 <Link href="/#product" className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
-                  Product
+                  {t("nav.product")}
                 </Link>
                 <Link href="/#vision" className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
-                  Vision
+                  {t("nav.vision")}
                 </Link>
                 <Link href={acpUrl} className="rounded-md px-3 py-1.5 text-white/60 transition hover:text-white/90">
-                  ACP Token
+                  {t("hero.acpToken")}
                 </Link>
               </nav>
             )}
@@ -202,6 +202,18 @@ export function Navigation() {
               >
                 RU
               </button>
+              <button
+                type="button"
+                onClick={() => setLang("uk")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  lang === "uk"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                UK
+              </button>
             </div>
 
             <div className="h-6 w-px bg-white/10" />
@@ -213,7 +225,7 @@ export function Navigation() {
                   onClick={logout}
                   className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                 >
-                  Logout
+                  {t("nav.logout")}
                 </button>
               </>
             ) : (
@@ -222,13 +234,13 @@ export function Navigation() {
                   href="/login"
                   className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                 >
-                  Login
+                  {t("nav.login")}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-full bg-emerald-400/15 px-4 py-2 text-[13px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/30 transition hover:bg-emerald-400/20"
                 >
-                  Register
+                  {t("nav.register")}
                 </Link>
               </>
             )}
@@ -268,6 +280,18 @@ export function Navigation() {
               >
                 RU
               </button>
+              <button
+                type="button"
+                onClick={() => setLang("uk")}
+                className={cn(
+                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
+                  lang === "uk"
+                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                    : "text-white/50 hover:text-white/85"
+                )}
+              >
+                UK
+              </button>
             </div>
 
             <button
@@ -289,7 +313,7 @@ export function Navigation() {
               <div className="grid gap-5">
                 <div>
                   <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    Main
+                    {t("nav.main")}
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {primaryNav.map((item) => {
@@ -315,7 +339,7 @@ export function Navigation() {
 
                 <div>
                   <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    System
+                    {t("nav.system")}
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {secondaryNav.map((item) => {
@@ -357,7 +381,7 @@ export function Navigation() {
                     }}
                     className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[13px] text-white/85 transition hover:bg-white/[0.06]"
                   >
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </div>
               </div>
@@ -369,21 +393,21 @@ export function Navigation() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
                   >
-                    Product
+                    {t("nav.product")}
                   </Link>
                   <Link
                     href="/#vision"
                     onClick={() => setMobileMenuOpen(false)}
                     className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
                   >
-                    Vision
+                    {t("nav.vision")}
                   </Link>
                   <Link
                     href={acpUrl}
                     onClick={() => setMobileMenuOpen(false)}
                     className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[13px] text-white/70 transition hover:bg-white/[0.04] hover:text-white"
                   >
-                    ACP Token & Chain
+                    {t("hero.acpToken")}
                   </Link>
                   <Link
                     href="/wallet/acp"
@@ -400,14 +424,14 @@ export function Navigation() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex-1 rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-center text-[13px] font-medium text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                   >
-                    Login
+                    {t("nav.login")}
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex-1 rounded-full bg-emerald-400/15 px-4 py-2 text-center text-[13px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/30 transition hover:bg-emerald-400/20"
                   >
-                    Register
+                    {t("nav.register")}
                   </Link>
                 </div>
               </div>

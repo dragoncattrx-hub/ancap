@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +46,7 @@ export default function RegisterPage() {
               ANCAP
             </a>
             <h1 style={{ fontSize: "1.5rem", fontWeight: 600, marginTop: "16px", color: "var(--text)" }}>
-              Register
+              {t("nav.register")}
             </h1>
           </div>
 
@@ -54,7 +56,7 @@ export default function RegisterPage() {
                 htmlFor="display_name"
                 style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}
               >
-                Display Name
+                {t("auth.displayName")}
               </label>
               <input
                 id="display_name"
@@ -79,7 +81,7 @@ export default function RegisterPage() {
                 htmlFor="email"
                 style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}
               >
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -104,7 +106,7 @@ export default function RegisterPage() {
                 htmlFor="password"
                 style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}
               >
-                Password
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -124,7 +126,7 @@ export default function RegisterPage() {
                 }}
               />
               <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                Minimum 8 characters
+                {t("auth.minPassword")}
               </div>
             </div>
 
@@ -147,13 +149,13 @@ export default function RegisterPage() {
               className="btn btn-primary"
               style={{ width: "100%", marginBottom: "16px" }}
             >
-              {loading ? "Creating account..." : "Register"}
+              {loading ? t("auth.creatingAccount") : t("nav.register")}
             </button>
 
             <div style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-              Already have an account?{" "}
+              {t("auth.haveAccount")}{" "}
               <a href="/login" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
-                Login
+                {t("nav.login")}
               </a>
             </div>
           </form>
