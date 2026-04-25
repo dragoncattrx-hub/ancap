@@ -21,9 +21,9 @@ services:
       CURSOR_SECRET: ${CURSOR_SECRET:-change-me-cursor-secret}
       CRON_SECRET: ${CRON_SECRET:-}
       # L3 chain anchors (mock | acp | ethereum | solana)
-      CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
+      CHAIN_ANCHOR_DRIVER: acp
       # Keep non-empty default to avoid silent runtime failures in wallet endpoints.
-      ACP_RPC_URL: ${ACP_RPC_URL:-http://127.0.0.1:8545/rpc}
+      ACP_RPC_URL: http://host.docker.internal:18545/rpc
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)

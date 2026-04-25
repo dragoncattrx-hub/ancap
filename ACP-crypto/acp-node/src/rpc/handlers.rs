@@ -1,7 +1,7 @@
 //! JSON-RPC method handlers (getblock, sendrawtransaction, etc.).
 
 use anyhow::Result;
-use acp_crypto::{Block, Hex, Transaction, TxHex};
+use acp_crypto::{merkle::hash256, Block, Hex, Transaction, TxHex};
 use serde_json::json;
 
 use crate::chain::Chain;
@@ -93,6 +93,34 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
             "version": ctx.node_version,
             "mempool_size": ctx.mempool.len()
         })),
+
+        "ancap_anchor" => {
+            let chain_id = params
+                .get("chain_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("acp");
+            let payload_type = params
+                .get("payload_type")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| anyhow::anyhow!("missing payload_type"))?;
+            let payload_hash = params
+                .get("payload_hash")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| anyhow::anyhow!("missing payload_hash"))?;
+
+            if payload_hash.len() != 64 || !payload_hash.chars().all(|c| c.is_ascii_hexdigit()) {
+                return Err(anyhow::anyhow!("invalid payload_hash: expected 64 hex chars"));
+            }
+
+            // Deterministic anchor receipt hash from request payload fields.
+            let material = format!("{chain_id}|{payload_type}|{}", payload_hash.to_ascii_lowercase());
+            let tx_hash = hash256(material.as_bytes());
+            Ok(json!({
+                "tx_hash": Hex::encode(&tx_hash),
+                "chain_id": chain_id,
+                "payload_type": payload_type
+            }))
+        }
 
         "getblockcount" => {
             let h = ctx.chain.storage.best_height()?;

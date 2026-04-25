@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let best_height: u64 = rpc(&client, &rpc_url, "getblockcount", json!([]))?
         .as_u64()
-        .ok_or("getblockcount did not return a number"?);
+        .ok_or_else(|| anyhow::anyhow!("getblockcount did not return a number"))?;
 
     // UTXO: (txid_hex, vout_index) -> (amount, recipient_address)
     let mut utxo: HashMap<(String, u32), (u64, String)> = HashMap::new();

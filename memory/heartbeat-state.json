@@ -1,0 +1,98 @@
+﻿{
+    "lastChecks":  {
+                       "ConwayWallet":  {
+                                            "ok":  true,
+                                            "timestamp":  "2026-04-25 12:41:39",
+                                            "ethBalance":  0,
+                                            "address":  "0x71Dbd459568A024893AB2CeD679aF088AF8a647E"
+                                        },
+                       "Swagger":  {
+                                       "ok":  true,
+                                       "status":  200,
+                                       "timestamp":  "2026-04-25 12:41:39"
+                                   },
+                       "API Health":  {
+                                          "ok":  true,
+                                          "status":  200,
+                                          "timestamp":  "2026-04-25 12:41:39"
+                                      },
+                       "OpenAPI":  {
+                                       "ok":  true,
+                                       "status":  200,
+                                       "timestamp":  "2026-04-25 12:41:39"
+                                   },
+                       "Protected":  {
+                                         "ok":  true,
+                                         "status":  401,
+                                         "timestamp":  "2026-04-25 12:41:39"
+                                     },
+                       "Docker":  {
+                                      "timestamp":  "2026-04-25 12:41:39",
+                                      "ok":  true
+                                  },
+                       "SecurityHeaders":  {
+                                               "timestamp":  "2026-04-25 12:41:39",
+                                               "ok":  true
+                                           },
+                       "Frontend":  {
+                                        "ok":  true,
+                                        "status":  200,
+                                        "timestamp":  "2026-04-25 12:41:39"
+                                    },
+                       "SearXNG":  {
+                                       "ok":  true,
+                                       "status":  200,
+                                       "timestamp":  "2026-04-25 12:41:39"
+                                   }
+                   },
+    "errors":  [
+
+               ],
+    "lastRun":  "2026-04-25 12:59:24",
+    "checks":  {
+                   "ConwayWallet":  {
+                                        "ok":  true,
+                                        "timestamp":  "2026-04-25 12:59:24",
+                                        "ethBalance":  0,
+                                        "address":  "0x71Dbd459568A024893AB2CeD679aF088AF8a647E"
+                                    },
+                   "Swagger":  {
+                                   "ok":  true,
+                                   "status":  200,
+                                   "timestamp":  "2026-04-25 12:59:24"
+                               },
+                   "API Health":  {
+                                      "ok":  true,
+                                      "status":  200,
+                                      "timestamp":  "2026-04-25 12:59:24"
+                                  },
+                   "OpenAPI":  {
+                                   "ok":  true,
+                                   "status":  200,
+                                   "timestamp":  "2026-04-25 12:59:24"
+                               },
+                   "Protected":  {
+                                     "ok":  true,
+                                     "status":  401,
+                                     "timestamp":  "2026-04-25 12:59:24"
+                                 },
+                   "Docker":  {
+                                  "timestamp":  "2026-04-25 12:59:24",
+                                  "ok":  true
+                              },
+                   "SecurityHeaders":  {
+                                           "timestamp":  "2026-04-25 12:59:24",
+                                           "ok":  true
+                                       },
+                   "Frontend":  {
+                                    "ok":  true,
+                                    "status":  200,
+                                    "timestamp":  "2026-04-25 12:59:24"
+                                },
+                   "SearXNG":  {
+                                   "ok":  true,
+                                   "status":  200,
+                                   "timestamp":  "2026-04-25 12:59:24"
+                               }
+               }
+}

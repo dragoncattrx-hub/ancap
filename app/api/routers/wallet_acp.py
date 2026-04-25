@@ -7,7 +7,8 @@ import shutil
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
-from fastapi import APIRouter, Header, HTTPException, Depends
+import httpx
+from fastapi import APIRouter, Header, HTTPException, Depends, Query
 
 from app.config import get_settings
 from app.api.deps import require_auth
@@ -16,6 +17,7 @@ from app.schemas import (
     AcpDepositAddressResponse,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
+    AcpTransactionPublic,
     AcpSwapQuoteRequest,
     AcpSwapQuoteResponse,
     AcpSwapOrderCreateRequest,
@@ -114,6 +116,32 @@ def _decimal_to_api_str(value: Decimal, scale: str = "0.00000001") -> str:
     return s or "0"
 
 
+def _units_to_acp_str(units: int) -> str:
+    return _decimal_to_api_str(Decimal(units) / Decimal(100_000_000))
+
+
+def _acp_timestamp(ts: int) -> str:
+    return datetime.fromtimestamp(ts, timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _rpc_call(rpc_url: str, method: str, params: list | None = None):
+    body = {"jsonrpc": "2.0", "id": "wallet-acp-history", "method": method, "params": params or []}
+    try:
+        r = httpx.post(rpc_url, json=body, timeout=30.0)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"ACP RPC request failed: {exc}")
+    try:
+        payload = r.json()
+    except Exception:
+        raise HTTPException(status_code=502, detail=f"ACP RPC returned non-JSON response: {(r.text or '')[:160]}")
+    if r.status_code != 200:
+        detail = payload.get("error") if isinstance(payload, dict) else None
+        raise HTTPException(status_code=502, detail=f"ACP RPC status {r.status_code}: {detail or 'unknown'}")
+    if payload.get("error"):
+        raise HTTPException(status_code=502, detail=f"ACP RPC error: {payload['error']}")
+    return payload.get("result")
+
+
 def _to_public_order(order: dict) -> AcpSwapOrderPublic:
     return AcpSwapOrderPublic(**order)
 
@@ -171,6 +199,78 @@ def _load_or_create_valid_hot_mnemonic() -> str:
         return new_mnemonic
 
 
+def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
+    rpc_url = _require_acp_rpc_url()
+    best_height = int(_rpc_call(rpc_url, "getblockcount", []) or 0)
+    if best_height <= 0:
+        return []
+
+    # Track outputs while scanning chain to resolve vin ownership.
+    out_index: dict[tuple[str, int], tuple[str, int]] = {}
+    rows: list[AcpTransactionPublic] = []
+
+    for height in range(1, best_height + 1):
+        block_hash = _rpc_call(rpc_url, "getblockhash", {"height": height})
+        block = _rpc_call(rpc_url, "getblock", {"blockhash": block_hash, "verbose": 2}) or {}
+        block_time = int(block.get("time") or 0)
+        txs = block.get("tx") or []
+
+        for tx in txs:
+            txid = str(tx.get("txid") or "")
+            if not txid:
+                continue
+
+            sent_units = 0
+            received_units = 0
+
+            for vin in tx.get("vin") or []:
+                prev_txid = vin.get("prev_txid")
+                prev_vout = vin.get("vout")
+                if prev_txid is None or prev_vout is None:
+                    continue
+                key = (str(prev_txid), int(prev_vout))
+                prev_out = out_index.pop(key, None)
+                if prev_out and prev_out[0] == address:
+                    sent_units += int(prev_out[1])
+
+            for idx, vout in enumerate(tx.get("vout") or []):
+                out_addr = str(vout.get("recipient_address") or "")
+                out_amount = int(vout.get("amount") or 0)
+                out_index[(txid, idx)] = (out_addr, out_amount)
+                if out_addr == address:
+                    received_units += out_amount
+
+            if sent_units == 0 and received_units == 0:
+                continue
+
+            net_units = received_units - sent_units
+            if sent_units > 0 and received_units > 0 and net_units == 0:
+                direction = "self"
+            elif net_units < 0:
+                direction = "out"
+            else:
+                direction = "in"
+
+            rows.append(
+                AcpTransactionPublic(
+                    txid=txid,
+                    block_height=height,
+                    block_time=_acp_timestamp(block_time) if block_time > 0 else _utc_now_iso(),
+                    confirmations=(best_height - height + 1),
+                    direction=direction,
+                    sent_units=str(sent_units),
+                    sent_acp=_units_to_acp_str(sent_units),
+                    received_units=str(received_units),
+                    received_acp=_units_to_acp_str(received_units),
+                    net_units=str(net_units),
+                    net_acp=_units_to_acp_str(net_units),
+                )
+            )
+
+    rows.sort(key=lambda x: (x.block_height, x.txid), reverse=True)
+    return rows[:limit]
+
+
 @router.post("/deposit_address", response_model=AcpDepositAddressResponse)
 def get_deposit_address():
     mnemonic = _load_or_create_valid_hot_mnemonic()
@@ -189,6 +289,33 @@ def hot_balance():
     except HTTPException:
         # Keep wallet UI operational even when RPC is temporarily unavailable.
         return AcpBalanceResponse(address=addr, units="0", acp="0", utxo_count=0)
+
+
+@router.get("/balance", response_model=AcpBalanceResponse)
+def balance(address: str | None = Query(default=None)):
+    target = (address or "").strip()
+    if not target:
+        mnemonic = _load_or_create_valid_hot_mnemonic()
+        target = str(_run_walletd(["address", "--mnemonic", mnemonic])["address"]).strip()
+    if len(target) < 16:
+        raise HTTPException(status_code=400, detail="address looks invalid")
+    rpc_url = _require_acp_rpc_url()
+    res = _run_walletd(["balance", "--rpc", rpc_url, "--address", target], timeout_s=180)
+    return AcpBalanceResponse(**res)
+
+
+@router.get("/transactions", response_model=list[AcpTransactionPublic])
+def list_transactions(
+    address: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=500),
+):
+    target = (address or "").strip()
+    if not target:
+        mnemonic = _load_or_create_valid_hot_mnemonic()
+        target = str(_run_walletd(["address", "--mnemonic", mnemonic])["address"]).strip()
+    if len(target) < 16:
+        raise HTTPException(status_code=400, detail="address looks invalid")
+    return _chain_transactions_for_address(target, limit)
 
 
 @router.post("/withdraw", response_model=AcpWithdrawResponse)

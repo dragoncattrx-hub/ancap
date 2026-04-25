@@ -28,6 +28,13 @@ export function LanguageSwitcher() {
       >
         RU
       </button>
+      <span>/</span>
+      <button
+        onClick={() => setLang("uk")}
+        className={mounted && lang === "uk" ? "active" : ""}
+      >
+        UK
+      </button>
     </div>
   );
 }

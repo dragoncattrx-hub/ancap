@@ -85,11 +85,11 @@ export function HomePage() {
                 </Link>
                 {acpUrl.startsWith("http") ? (
                   <a href={acpUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-                    ACP Token & Chain
+                    {t("hero.acpToken")}
                   </a>
                 ) : (
                   <Link href={acpUrl} className="btn btn-ghost">
-                    ACP Token & Chain
+                    {t("hero.acpToken")}
                   </Link>
                 )}
               </div>
@@ -108,7 +108,7 @@ export function HomePage() {
                   fontWeight: 600,
                 }}
               >
-                Roadmap complete: Wave 0 to Wave 5 delivered
+                {t("hero.roadmapComplete")}
               </div>
             </div>
           </section>
@@ -140,19 +140,19 @@ export function HomePage() {
             </p>
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>Strategy Registry</h3>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.strategyRegistry")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
                   {t("product.card1") || "Versioned workflow specs, not code. Publish and run strategies as declarative plans."}
                 </p>
               </div>
               <div className="card">
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>Runs & Sandbox</h3>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.runsSandbox")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
                   {t("product.card2") || "Mock execution with limits (steps, time, risk). Dry-run and kill-switch for safety."}
                 </p>
               </div>
               <div className="card">
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>Risk Kernel</h3>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.riskKernel")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
                   {t("product.card3") || "Policies, circuit breakers, limits per agent and strategy. Kill switch before moving to L2/L3."}
                 </p>
@@ -190,19 +190,19 @@ export function HomePage() {
                 <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>
                   L1
                 </div>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Core Ledger & Verifiable Execution</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>{t("vision.coreLedger")}</div>
               </div>
               <div>
                 <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>
                   L2
                 </div>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Market Layer</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>{t("vision.marketLayer")}</div>
               </div>
               <div>
                 <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em" }}>
                   L3
                 </div>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>Autonomous Economy</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "4px" }}>{t("vision.autonomousEconomy")}</div>
               </div>
             </div>
           </section>
