@@ -49,8 +49,14 @@ type AcpTransaction = {
   net_acp: string;
 };
 
+type SwapFormErrors = {
+  usdt_trc20_amount?: string;
+  payout_acp_address?: string;
+};
+
 export default function AcpWalletPage() {
   const ACP_FIXED_MIN_FEE = "0.00000100";
+  const ACP_ADDRESS_RE = /^acp1[a-z0-9]{20,100}$/;
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -75,6 +81,8 @@ export default function AcpWalletPage() {
     tron_txid: "",
   });
   const [quote, setQuote] = useState<{ rate_acp_per_usdt: string; estimated_acp_amount: string } | null>(null);
+  const [swapFormErrors, setSwapFormErrors] = useState<SwapFormErrors>({});
+  const [swapInfo, setSwapInfo] = useState("");
 
   const [withdrawForm, setWithdrawForm] = useState({
     to_address: "",
@@ -186,9 +194,31 @@ export default function AcpWalletPage() {
     if (!v) return;
     try {
       await navigator.clipboard.writeText(v);
+      setSwapInfo("Copied to clipboard.");
     } catch {
-      // ignore clipboard errors
+      setError("Clipboard is not available in this browser context");
     }
+  }
+
+  function validateSwapForm(input: typeof swapForm): { valid: boolean; errors: SwapFormErrors } {
+    const errors: SwapFormErrors = {};
+    const amountRaw = input.usdt_trc20_amount.trim();
+    const payoutAddress = input.payout_acp_address.trim();
+    const amountNum = Number(amountRaw);
+
+    if (!amountRaw) {
+      errors.usdt_trc20_amount = "Tether amount is required";
+    } else if (!Number.isFinite(amountNum) || amountNum <= 0) {
+      errors.usdt_trc20_amount = "Tether amount must be a number greater than 0";
+    }
+
+    if (!payoutAddress) {
+      errors.payout_acp_address = "Payout ACP address is required";
+    } else if (!ACP_ADDRESS_RE.test(payoutAddress)) {
+      errors.payout_acp_address = "Invalid ACP address format (expected acp1...)";
+    }
+
+    return { valid: Object.keys(errors).length === 0, errors };
   }
 
   async function refreshTransactionsByAddress(address: string) {
@@ -234,9 +264,17 @@ export default function AcpWalletPage() {
 
   async function refreshQuote() {
     setError("");
+    setSwapInfo("");
+    const checked = validateSwapForm(swapForm);
+    setSwapFormErrors(checked.errors);
+    if (!checked.valid) {
+      setQuote(null);
+      return;
+    }
     try {
       const q = await walletAcp.swapQuote({ usdt_trc20_amount: swapForm.usdt_trc20_amount.trim() });
       setQuote(q);
+      setSwapInfo(`Quote updated: ${q.estimated_acp_amount} ACP estimated payout.`);
     } catch (e: any) {
       setQuote(null);
       setError(e?.message || "Failed to calculate quote");
@@ -245,8 +283,12 @@ export default function AcpWalletPage() {
 
   async function createSwapOrder(e: React.FormEvent) {
     e.preventDefault();
+    const checked = validateSwapForm(swapForm);
+    setSwapFormErrors(checked.errors);
+    if (!checked.valid) return;
     setBusy(true);
     setError("");
+    setSwapInfo("");
     try {
       const created = await walletAcp.createSwapOrder({
         usdt_trc20_amount: swapForm.usdt_trc20_amount.trim(),
@@ -255,6 +297,8 @@ export default function AcpWalletPage() {
       });
       await refreshAll();
       setSelectedOrderId(created.id);
+      setSwapInfo(`Swap order ${created.id} created.`);
+      setSwapForm((prev) => ({ ...prev, tron_txid: "" }));
     } catch (e: any) {
       setError(e?.message || "Failed to create swap order");
     } finally {
@@ -349,6 +393,7 @@ export default function AcpWalletPage() {
   if (authLoading || !isAuthenticated) return null;
 
   const singleWalletAddress = (depositAddress || balance?.address || "").trim();
+  const isSwapFormValid = validateSwapForm(swapForm).valid;
 
   return (
     <>
@@ -416,6 +461,20 @@ export default function AcpWalletPage() {
               }}
             >
               {error}
+            </div>
+          )}
+          {swapInfo && (
+            <div
+              style={{
+                padding: "12px",
+                borderRadius: "8px",
+                background: "rgba(16, 185, 129, 0.1)",
+                color: "#10b981",
+                fontSize: "0.9rem",
+                marginBottom: "18px",
+              }}
+            >
+              {swapInfo}
             </div>
           )}
           {loadWarnings.length > 0 && (
@@ -673,23 +732,54 @@ export default function AcpWalletPage() {
 
                 <form onSubmit={createSwapOrder} style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Tether amount (TRC-20)</label>
-                  <input className="input input-bordered w-full" value={swapForm.usdt_trc20_amount} onChange={(e) => setSwapForm((p) => ({ ...p, usdt_trc20_amount: e.target.value }))} inputMode="decimal" required />
+                  <input
+                    className="input input-bordered w-full"
+                    value={swapForm.usdt_trc20_amount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSwapForm((p) => ({ ...p, usdt_trc20_amount: value }));
+                      setSwapFormErrors((prev) => ({ ...prev, usdt_trc20_amount: undefined }));
+                    }}
+                    inputMode="decimal"
+                    required
+                  />
+                  {swapFormErrors.usdt_trc20_amount && (
+                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.usdt_trc20_amount}</div>
+                  )}
 
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
-                  <input className="input input-bordered w-full" value={swapForm.payout_acp_address} onChange={(e) => setSwapForm((p) => ({ ...p, payout_acp_address: e.target.value }))} required />
+                  <input
+                    className="input input-bordered w-full"
+                    value={swapForm.payout_acp_address}
+                    onChange={(e) => {
+                      const value = e.target.value.trim();
+                      setSwapForm((p) => ({ ...p, payout_acp_address: value }));
+                      setSwapFormErrors((prev) => ({ ...prev, payout_acp_address: undefined }));
+                    }}
+                    required
+                  />
+                  {swapFormErrors.payout_acp_address && (
+                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.payout_acp_address}</div>
+                  )}
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                    Use a lowercase ACP address starting with <code>acp1</code>.
+                  </div>
 
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
                   <input className="input input-bordered w-full" value={swapForm.note} onChange={(e) => setSwapForm((p) => ({ ...p, note: e.target.value }))} />
 
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     <button type="button" className="btn btn-ghost" onClick={refreshQuote} disabled={busy}>Preview quote</button>
-                    <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? "Creating..." : "Create order"}</button>
+                    <button type="submit" className="btn btn-primary" disabled={busy || !isSwapFormValid}>{busy ? "Creating..." : "Create order"}</button>
                   </div>
                 </form>
 
                 {quote && (
-                  <div style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>
-                    Quote: 1 Tether TRC-20 = {quote.rate_acp_per_usdt} ACP, estimated payout <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong>
+                  <div style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7, border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg)" }}>
+                    <div>Quote rate: 1 Tether TRC-20 = {quote.rate_acp_per_usdt} ACP</div>
+                    <div>
+                      Estimated payout: <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong>
+                    </div>
                   </div>
                 )}
 

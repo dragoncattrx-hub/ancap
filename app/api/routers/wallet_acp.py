@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
@@ -97,6 +98,22 @@ def _require_non_empty(value: str, field_name: str) -> str:
     out = (value or "").strip()
     if not out:
         raise HTTPException(status_code=400, detail=f"{field_name} is required")
+    return out
+
+
+_ACP_ADDRESS_RE = re.compile(r"^acp1[a-z0-9]{20,100}$")
+
+
+def _validate_acp_address(value: str, field_name: str) -> str:
+    out = _require_non_empty(value, field_name)
+    if not _ACP_ADDRESS_RE.fullmatch(out):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"{field_name} is invalid; expected ACP bech32-like address "
+                "starting with 'acp1' and containing lowercase letters/digits"
+            ),
+        )
     return out
 
 
@@ -687,9 +704,7 @@ async def create_swap_order(
     rate = _swap_rate()
     estimated = (amount * rate).quantize(Decimal("0.00000001"))
     settings = get_settings()
-    payout_address = _require_non_empty(body.payout_acp_address, "payout_acp_address")
-    if len(payout_address) < 16:
-        raise HTTPException(status_code=400, detail="payout_acp_address looks invalid")
+    payout_address = _validate_acp_address(body.payout_acp_address, "payout_acp_address")
 
     idempotency_key = (x_idempotency_key or "").strip() or None
     if idempotency_key:

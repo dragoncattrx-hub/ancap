@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Creator (vesting 7 years)",
+    "amount_acp": 69300000,
+    "amount_units": 6930000000000000,
+    "address": "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl"
+  },
+  {
+    "role": "Validator Emission Reserve",
+    "amount_acp": 105000000,
+    "amount_units": 10500000000000000,
+    "address": "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um"
+  },
+  {
+    "role": "Public & Liquidity",
+    "amount_acp": 25200000,
+    "amount_units": 2520000000000000,
+    "address": "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm"
+  },
+  {
+    "role": "Ecosystem Grants",
+    "amount_acp": 10500000,
+    "amount_units": 1050000000000000,
+    "address": "acp1qrpavez2tttvly2umdjz8jfsdu5yjqjftuyzmau5"
+  }
+]
