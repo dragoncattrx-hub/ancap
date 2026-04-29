@@ -75,50 +75,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="")
-app.include_router(users.router, prefix="")
-app.include_router(agents.router, prefix="")
-app.include_router(keys.router, prefix="")
-app.include_router(verticals.router, prefix="")
-app.include_router(strategies.router, prefix="")
-app.include_router(strategy_versions.router, prefix="")
-app.include_router(listings.router, prefix="")
-app.include_router(orders.router, prefix="")
-app.include_router(access.router, prefix="")
-app.include_router(pools.router, prefix="")
-app.include_router(ledger.router, prefix="")
-app.include_router(runs.router, prefix="")
-app.include_router(contracts.router, prefix="")
-app.include_router(contract_milestones.router, prefix="")
-app.include_router(onboarding_growth.router, prefix="")
-app.include_router(referrals.router, prefix="")
-app.include_router(social.router, prefix="")
-app.include_router(public.router, prefix="")
-app.include_router(notifications.router, prefix="")
-app.include_router(tasks.router, prefix="")
-app.include_router(leaderboards.router, prefix="")
-app.include_router(growth_dashboard.router, prefix="")
-app.include_router(metrics.router, prefix="")
-app.include_router(evaluations.router, prefix="")
-app.include_router(reputation.router, prefix="")
-app.include_router(moderation.router, prefix="")
-app.include_router(risk.router, prefix="")
-app.include_router(reviews.router, prefix="")
-app.include_router(reviews.disputes_router, prefix="")
-app.include_router(funds.router, prefix="")
-app.include_router(onboarding.router, prefix="")
-app.include_router(stakes_router.router, prefix="")
-app.include_router(chain.router, prefix="")
-app.include_router(wallet_acp.router, prefix="")
-app.include_router(system.router, prefix="")
-app.include_router(flows.router, prefix="")
-app.include_router(governance.router, prefix="")
-app.include_router(governance.moderation_cases_router, prefix="")
-app.include_router(settlements.router, prefix="")
-app.include_router(evolution.router, prefix="")
-app.include_router(evolution.tournaments_router, prefix="")
-app.include_router(evolution.bounties_router, prefix="")
-app.include_router(autonomy.router, prefix="")
+ALL_ROUTERS = [
+    auth.router,
+    users.router,
+    agents.router,
+    keys.router,
+    verticals.router,
+    strategies.router,
+    strategy_versions.router,
+    listings.router,
+    orders.router,
+    access.router,
+    pools.router,
+    ledger.router,
+    runs.router,
+    contracts.router,
+    contract_milestones.router,
+    onboarding_growth.router,
+    referrals.router,
+    social.router,
+    public.router,
+    notifications.router,
+    tasks.router,
+    leaderboards.router,
+    growth_dashboard.router,
+    metrics.router,
+    evaluations.router,
+    reputation.router,
+    moderation.router,
+    risk.router,
+    reviews.router,
+    reviews.disputes_router,
+    funds.router,
+    onboarding.router,
+    stakes_router.router,
+    chain.router,
+    wallet_acp.router,
+    system.router,
+    flows.router,
+    governance.router,
+    governance.moderation_cases_router,
+    settlements.router,
+    evolution.router,
+    evolution.tournaments_router,
+    evolution.bounties_router,
+    autonomy.router,
+]
+
+for r in ALL_ROUTERS:
+    app.include_router(r, prefix="")
+    # Backward-compatible API namespace expected by tests/legacy clients.
+    app.include_router(r, prefix="/v1")
 
 
 @app.get("/")
@@ -126,7 +133,3 @@ async def root():
     return {"service": "ANCAP Core API", "version": "0.1.0", "docs": "/docs"}
 
 
-@app.get("/v1/system/health")
-async def health_v1_alias():
-    # Compatibility alias for container healthcheck and legacy clients.
-    return {"ok": True, "service": "ANCAP Core API"}
