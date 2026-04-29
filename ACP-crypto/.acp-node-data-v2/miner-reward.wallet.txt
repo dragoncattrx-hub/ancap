@@ -1,0 +1,3 @@
+Role: Auto Miner Reward Wallet
+Address: acp1qz3ws60ggt4tkuxgj2g9q9rwnvpqxx2r8ut0rvvl
+Mnemonic: increase mandate advance fall favorite outer injury cherry capital correct where hip

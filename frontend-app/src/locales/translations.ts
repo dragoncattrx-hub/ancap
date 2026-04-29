@@ -52,7 +52,7 @@ export const translations = {
       acpLink: "ACP & chain",
       acpWalletLink: "Wallet",
       acpToken: "ACP Token & Chain",
-      roadmapComplete: "Roadmap complete: Wave 0 to Wave 5 delivered"
+      roadmapComplete: "Roadmap and release plan"
     },
     acpLanding: {
       badge: "Live on platform",
@@ -197,7 +197,7 @@ export const translations = {
       acpLink: "ACP и сеть",
       acpWalletLink: "Кошелек",
       acpToken: "Токен и сеть ACP",
-      roadmapComplete: "Дорожная карта выполнена: волны 0-5 завершены"
+      roadmapComplete: "Дорожная карта и план релизов"
     },
     acpLanding: {
       badge: "Работает на платформе",

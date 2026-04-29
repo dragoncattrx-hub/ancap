@@ -9,7 +9,6 @@ Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [do
 
 ## Release Status
 
-- **Roadmap completion:** AI-Maximal delivery program is completed (Wave 0 to Wave 5).
 - **Release readiness:** backend + frontend + migrations + test suites are in place, with CI and guarded rollout flags.
 - **Operational status:** governance, settlement receipts, anti-sybil enforcement, evolution surfaces, and autonomous ops tooling are integrated.
 
