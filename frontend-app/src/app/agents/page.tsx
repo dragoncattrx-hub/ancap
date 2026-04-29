@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -18,7 +18,7 @@ interface Agent {
 
 export default function AgentsPage() {
   const { t } = useLanguage();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [agentsList, setAgentsList] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,13 +39,7 @@ export default function AgentsPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadAgents();
-    }
-  }, [isAuthenticated, scope]);
-
-  const loadAgents = async () => {
+  const loadAgents = useCallback(async () => {
     try {
       setLoading(true);
       const data = scope === "mine" ? await agents.listMine(50) : await agents.list(50);
@@ -56,7 +50,13 @@ export default function AgentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [scope]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadAgents();
+    }
+  }, [isAuthenticated, loadAgents]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,25 +107,25 @@ export default function AgentsPage() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: "20px" }}>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div role="tablist" aria-label="Agents scope" style={{ display: "flex", gap: 8 }}>
               <button
+                role="tab"
+                aria-selected={scope === "mine"}
                 className={scope === "mine" ? "btn btn-primary" : "btn btn-ghost"}
                 onClick={() => setScope("mine")}
               >
                 My
               </button>
               <button
+                role="tab"
+                aria-selected={scope === "all"}
                 className={scope === "all" ? "btn btn-primary" : "btn btn-ghost"}
                 onClick={() => setScope("all")}
               >
                 All
               </button>
             </div>
-            {user?.id && (
-              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                Signed in as {user.email}
-              </div>
-            )}
+            {/* Note: user identity is displayed in the global header via Navigation; do not repeat email here. */}
           </div>
 
           {lastCreatedAgentId && (

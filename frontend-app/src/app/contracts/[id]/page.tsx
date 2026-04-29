@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
@@ -29,7 +29,7 @@ export default function ContractDetailPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
@@ -65,13 +65,13 @@ export default function ContractDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (isAuthenticated) {
       load();
     }
-  }, [isAuthenticated, id]);
+  }, [isAuthenticated, load]);
 
   const doAction = async (kind: "propose" | "accept" | "cancel" | "complete" | "dispute") => {
     if (!id) return;

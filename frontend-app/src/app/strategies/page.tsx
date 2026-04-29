@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -43,19 +43,13 @@ export default function StrategiesPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated, scope]);
-
   const myAgents = useMemo(() => {
     // If backend ownership isn't applied everywhere yet, fallback to showing all.
     // We use `mine=true` API when scope=mine.
     return agentsList;
   }, [agentsList]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [strategiesData, agentsData, verticalsData] = await Promise.all([
@@ -72,7 +66,13 @@ export default function StrategiesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [scope]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated, loadData]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

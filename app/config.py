@@ -102,6 +102,12 @@ class Settings(BaseSettings):
     ff_external_actions: bool = False
     ff_nl_strategy_compiler: bool = False
 
+    # Participation gates: when enabled (default), every listing/order/run is checked
+    # against the tier-1 thresholds in services/participation_gates.py (stake/trust/
+    # reputation/graph). Disabling skips the gate entirely (test-only escape hatch).
+    # Production should keep this on.
+    participation_gates_enabled: bool = True
+
     # Wave 2: reputation and graph enforcement tuning
     reputation_half_life_30d: float = 10.0
     reputation_half_life_90d: float = 30.0

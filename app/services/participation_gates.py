@@ -83,6 +83,15 @@ def _tier_for(stake_acp: Decimal, trust: float, rep: float) -> int:
 
 
 async def evaluate_agent_gate(session: AsyncSession, agent_id: UUID) -> GateDecision:
+    # Test-only escape hatch. Defaults to enabled in production via Settings.
+    # Imported lazily so this module stays cheap to load and the flag can be
+    # flipped via env var (PARTICIPATION_GATES_ENABLED=false) without restarting
+    # any module-level cache.
+    from app.config import get_settings
+
+    if not get_settings().participation_gates_enabled:
+        return GateDecision(True, 2, metrics={"tier": 2, "gates_enabled": False})
+
     stake_acp = await _active_stake_acp(session, agent_id)
     trust = await _trust_score(session, agent_id)
     rep = await _reputation_score(session, agent_id)

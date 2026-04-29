@@ -23,10 +23,15 @@ def _create_agent(client, token: str, role: str) -> str:
     return r.json()["id"]
 
 
-def _deposit(client, owner_type: str, owner_id: str, amount: str, currency: str = "VUSD"):
+def _deposit(client, token: str, owner_type: str, owner_id: str, amount: str, currency: str = "VUSD"):
+    # /v1/ledger/* endpoints require an authenticated user and check that the user
+    # owns the target account. Helper threads the bearer token through.
     r = client.post(
         "/v1/ledger/deposit",
-        headers={"Idempotency-Key": unique_name("idk_hard_deposit")},
+        headers={
+            "Idempotency-Key": unique_name("idk_hard_deposit"),
+            "Authorization": f"Bearer {token}",
+        },
         json={
             "account_owner_type": owner_type,
             "account_owner_id": owner_id,
@@ -36,8 +41,12 @@ def _deposit(client, owner_type: str, owner_id: str, amount: str, currency: str 
     assert r.status_code == 201, r.text
 
 
-def _balance(client, owner_type: str, owner_id: str, currency: str = "VUSD") -> Decimal:
-    r = client.get("/v1/ledger/balance", params={"owner_type": owner_type, "owner_id": owner_id})
+def _balance(client, token: str, owner_type: str, owner_id: str, currency: str = "VUSD") -> Decimal:
+    r = client.get(
+        "/v1/ledger/balance",
+        params={"owner_type": owner_type, "owner_id": owner_id},
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert r.status_code == 200, r.text
     for b in r.json().get("balances") or []:
         if b.get("currency") == currency:
@@ -66,7 +75,7 @@ def test_run_under_contract_requires_auth_and_worker(client, base_vertical_id):
     # user owns exactly one agent -> will be used as worker identity
     worker = _create_agent(client, token, "buyer")
     employer = _create_agent(client, token, "seller")
-    _deposit(client, "agent", employer, "50")
+    _deposit(client, token, "agent", employer, "50")
 
     c = client.post(
         "/v1/contracts",
@@ -94,10 +103,12 @@ def test_run_under_contract_requires_auth_and_worker(client, base_vertical_id):
 
     vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
 
-    # Not authenticated -> 401 when contract_id provided
+    # Not authenticated -> 401 when contract_id provided.
+    # Empty Authorization header opts out of the session-wide default token
+    # (see _AuthedTestClient in conftest.py).
     r0 = client.post(
         "/v1/runs",
-        headers={"Idempotency-Key": unique_name("idk_run0")},
+        headers={"Idempotency-Key": unique_name("idk_run0"), "Authorization": ""},
         json={"strategy_version_id": vid, "pool_id": pool_id, "params": {}, "limits": {}, "dry_run": True, "run_mode": "mock", "contract_id": cid},
     )
     assert r0.status_code == 401, r0.text
@@ -107,7 +118,7 @@ def test_per_run_one_run_one_payout_and_max_runs(client, base_vertical_id):
     token = _register_and_login(client)
     worker = _create_agent(client, token, "buyer")
     employer = _create_agent(client, token, "seller")
-    _deposit(client, "agent", employer, "50")
+    _deposit(client, token, "agent", employer, "50")
 
     c = client.post(
         "/v1/contracts",
@@ -135,7 +146,7 @@ def test_per_run_one_run_one_payout_and_max_runs(client, base_vertical_id):
 
     vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
 
-    before = _balance(client, "agent", worker)
+    before = _balance(client, token, "agent", worker)
     run = client.post(
         "/v1/runs",
         headers={"Idempotency-Key": unique_name("idk_run1"), "Authorization": f"Bearer {token}"},
@@ -144,7 +155,7 @@ def test_per_run_one_run_one_payout_and_max_runs(client, base_vertical_id):
     assert run.status_code == 201, run.text
     run_id = run.json()["id"]
 
-    after = _balance(client, "agent", worker)
+    after = _balance(client, token, "agent", worker)
     assert after >= before + Decimal("4")
 
     # Attempt second run should be blocked by max_runs (runs_completed reserved atomically)
@@ -156,7 +167,11 @@ def test_per_run_one_run_one_payout_and_max_runs(client, base_vertical_id):
     assert run2.status_code == 403, run2.text
 
     # Ledger has exactly one contract_payout for (contract_id, run_id)
-    ev = client.get("/v1/ledger/events", params={"limit": 200, "type": "contract_payout"})
+    ev = client.get(
+        "/v1/ledger/events",
+        params={"limit": 200, "type": "contract_payout"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert ev.status_code == 200, ev.text
     items = ev.json().get("items") or []
     hits = [e for e in items if (e.get("metadata") or {}).get("contract_id") == cid and (e.get("metadata") or {}).get("run_id") == run_id]

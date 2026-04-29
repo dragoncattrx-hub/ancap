@@ -10,11 +10,31 @@ const inter = Inter({
   display: "swap",
 });
 
+// Build a sane absolute base for canonical/OG links. Override via NEXT_PUBLIC_SITE_URL
+// in Docker/CI when serving from a different host, otherwise default to ancap.cloud.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ancap.cloud";
+
 export const metadata: Metadata = {
-  title: "ANCAP Platform",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "ANCAP Platform",
+    template: "%s · ANCAP",
+  },
   description: "AI-Native Capital Allocation Platform",
   icons: {
-    icon: '/icon.svg',
+    icon: "/icon.svg",
+  },
+  openGraph: {
+    siteName: "ANCAP Platform",
+    type: "website",
+    url: "/",
+    title: "ANCAP Platform",
+    description: "AI-Native Capital Allocation Platform",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ANCAP Platform",
+    description: "AI-Native Capital Allocation Platform",
   },
 };
 

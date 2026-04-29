@@ -12,6 +12,15 @@ export function NetworkBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Respect the user's "Reduce motion" OS preference. We still draw a
+    // single static frame so the page does not look empty, but the
+    // requestAnimationFrame loop is never started.
+    const motionQuery =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+    let prefersReducedMotion = motionQuery?.matches ?? false;
+
     let width: number, height: number;
     let nodes: Array<{
       x: number;
@@ -23,7 +32,7 @@ export function NetworkBackground() {
     const nodeCount = 80;
     const maxDist = 180;
     let scrollPhase = 0;
-    let rafId: number;
+    let rafId: number | null = null;
 
     function resize() {
       if (!canvas) return;
@@ -51,7 +60,7 @@ export function NetworkBackground() {
       scrollPhase = docHeight > 0 ? Math.min(1, scrollY / docHeight) : 0;
     }
 
-    function draw() {
+    function drawFrame(animate: boolean) {
       if (!ctx || !width || !height) return;
       if (nodes.some((n) => !Number.isFinite(n.x) || !Number.isFinite(n.y))) {
         initNodes();
@@ -85,12 +94,14 @@ export function NetworkBackground() {
 
       // Draw nodes
       nodes.forEach((n) => {
-        n.x += n.vx;
-        n.y += n.vy;
-        if (n.x < 0 || n.x > width) n.vx *= -1;
-        if (n.y < 0 || n.y > height) n.vy *= -1;
-        n.x = Math.max(0, Math.min(width, n.x));
-        n.y = Math.max(0, Math.min(height, n.y));
+        if (animate) {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > width) n.vx *= -1;
+          if (n.y < 0 || n.y > height) n.vy *= -1;
+          n.x = Math.max(0, Math.min(width, n.x));
+          n.y = Math.max(0, Math.min(height, n.y));
+        }
 
         const hue = (170 + hueShift) % 360;
         const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 6);
@@ -108,23 +119,54 @@ export function NetworkBackground() {
         ctx.fill();
       });
 
-      rafId = requestAnimationFrame(draw);
+      if (animate) {
+        rafId = requestAnimationFrame(() => drawFrame(true));
+      }
+    }
+
+    function startLoop() {
+      cancelLoop();
+      if (prefersReducedMotion) {
+        // One static frame, no animation.
+        drawFrame(false);
+      } else {
+        drawFrame(true);
+      }
+    }
+
+    function cancelLoop() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
     }
 
     function onScroll() {
       updateScrollPhase();
+      if (prefersReducedMotion) {
+        // Re-render the static frame so scroll-driven hue/opacity still updates,
+        // but without continuous animation.
+        drawFrame(false);
+      }
+    }
+
+    function onMotionChange(e: MediaQueryListEvent) {
+      prefersReducedMotion = e.matches;
+      startLoop();
     }
 
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    motionQuery?.addEventListener?.("change", onMotionChange);
     resize();
     updateScrollPhase();
-    draw();
+    startLoop();
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(rafId);
+      motionQuery?.removeEventListener?.("change", onMotionChange);
+      cancelLoop();
     };
   }, []);
 

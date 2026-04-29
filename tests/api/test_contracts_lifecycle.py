@@ -14,7 +14,10 @@ def _create_agent(client, role: str) -> str:
   return r.json()["id"]
 
 
-def _fund_agent(client, agent_id: str, amount: str = "100", currency: str = "VUSD") -> None:
+def _fund_agent(client, agent_id: str, amount: str = "100", currency: str = "VUSD", token: str | None = None) -> None:
+  headers = {"Idempotency-Key": unique_name("idk_contract_deposit")}
+  if token:
+    headers["Authorization"] = f"Bearer {token}"
   r = client.post(
     "/v1/ledger/deposit",
     json={
@@ -22,13 +25,18 @@ def _fund_agent(client, agent_id: str, amount: str = "100", currency: str = "VUS
       "account_owner_id": agent_id,
       "amount": {"amount": amount, "currency": currency},
     },
-    headers={"Idempotency-Key": unique_name("idk_contract_deposit")},
+    headers=headers,
   )
   assert r.status_code == 201, r.text
 
 
-def _get_balance(client, agent_id: str, currency: str = "VUSD") -> Decimal:
-  r = client.get("/v1/ledger/balance", params={"owner_type": "agent", "owner_id": agent_id})
+def _get_balance(client, agent_id: str, currency: str = "VUSD", token: str | None = None) -> Decimal:
+  headers = {"Authorization": f"Bearer {token}"} if token else None
+  r = client.get(
+    "/v1/ledger/balance",
+    params={"owner_type": "agent", "owner_id": agent_id},
+    headers=headers,
+  )
   assert r.status_code == 200, r.text
   payload = r.json()
   for item in payload.get("balances") or []:
@@ -228,7 +236,10 @@ def test_per_run_contract_payout_uses_succeeded_runs(client, base_vertical_id):
   assert pool.status_code == 201, pool.text
   pool_id = pool.json()["id"]
 
-  balance_before_runs = _get_balance(client, worker)
+  # worker was created with the freshly-registered user's token, so balance
+  # checks must use the same token (the auto-attached default user does not
+  # own this agent).
+  balance_before_runs = _get_balance(client, worker, token=token)
 
   # Create two successful runs under this contract
   for _ in range(2):
@@ -247,14 +258,14 @@ def test_per_run_contract_payout_uses_succeeded_runs(client, base_vertical_id):
     )
     assert r.status_code == 201, r.text
 
-  after_runs = _get_balance(client, worker)
+  after_runs = _get_balance(client, worker, token=token)
   # per_run: payout is executed per succeeded run
   assert after_runs >= balance_before_runs + Decimal("20")
 
   comp = client.post(f"/v1/contracts/{cid}/complete")
   assert comp.status_code == 200, comp.text
   assert comp.json()["status"] == "completed"
-  after_complete = _get_balance(client, worker)
+  after_complete = _get_balance(client, worker, token=token)
   # complete should not create additional payouts for per_run model
   assert after_complete == after_runs
 

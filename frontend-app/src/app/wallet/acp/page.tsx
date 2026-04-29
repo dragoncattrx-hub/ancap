@@ -395,6 +395,30 @@ export default function AcpWalletPage() {
   const singleWalletAddress = (depositAddress || balance?.address || "").trim();
   const isSwapFormValid = validateSwapForm(swapForm).valid;
 
+  // Client-side withdraw validation:
+  // - Address must look like a bech32 ACP address.
+  // - Amount must be a positive number and not exceed `available_acp` (which the
+  //   backend computes as `balance - in_work - locked_vested`). Without this guard
+  //   users hit a generic backend error and can't tell why the withdraw fails.
+  const withdrawAvailableNum = Number(balance?.available_acp ?? balance?.acp ?? "0");
+  const withdrawAmountNum = Number(withdrawForm.amount_acp);
+  const withdrawAmountValid =
+    withdrawForm.amount_acp.trim() !== "" &&
+    Number.isFinite(withdrawAmountNum) &&
+    withdrawAmountNum > 0;
+  const withdrawAddressValid = ACP_ADDRESS_RE.test(withdrawForm.to_address.trim());
+  const withdrawPasswordValid = withdrawForm.wallet_password.length > 0;
+  const withdrawExceedsBalance =
+    Number.isFinite(withdrawAvailableNum) &&
+    withdrawAmountValid &&
+    withdrawAmountNum > withdrawAvailableNum;
+  const withdrawDisabled =
+    busy ||
+    !withdrawAddressValid ||
+    !withdrawAmountValid ||
+    !withdrawPasswordValid ||
+    withdrawExceedsBalance;
+
   return (
     <>
       <NetworkBackground />
@@ -526,7 +550,10 @@ export default function AcpWalletPage() {
                   Real balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                 </div>
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  In work: <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
+                  <span title="Funds reserved by pending orders, escrows or open swaps. They become available again when those operations close.">
+                    In work
+                  </span>
+                  : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
                 </div>
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
@@ -554,8 +581,34 @@ export default function AcpWalletPage() {
                   <span className="badge badge-warning">Signed</span>
                 </div>
                 <form onSubmit={doWithdraw} style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <input placeholder="To address" value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value }))} className="input input-bordered w-full" required />
-                  <input placeholder="Amount (ACP)" value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" required />
+                  <input
+                    placeholder="To address (acp1...)"
+                    value={withdrawForm.to_address}
+                    onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))}
+                    className="input input-bordered w-full"
+                    required
+                    aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid}
+                    autoComplete="off"
+                  />
+                  {withdrawForm.to_address.length > 0 && !withdrawAddressValid && (
+                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>
+                      Address must start with <code>acp1</code>.
+                    </div>
+                  )}
+                  <input
+                    placeholder="Amount (ACP)"
+                    value={withdrawForm.amount_acp}
+                    onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))}
+                    className="input input-bordered w-full"
+                    inputMode="decimal"
+                    required
+                    aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)}
+                  />
+                  {withdrawExceedsBalance && (
+                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>
+                      Amount exceeds available balance ({balance?.available_acp ?? balance?.acp ?? "0"} ACP).
+                    </div>
+                  )}
                   <div style={{ display: "grid", gap: 8 }}>
                     <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Fee mode</label>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -599,8 +652,8 @@ export default function AcpWalletPage() {
                         : "Manual fee is UI-only for now; backend still applies fixed minimum fee."}
                     </div>
                   </div>
-                  <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required />
-                  <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Sending..." : "Withdraw"}</button>
+                  <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required autoComplete="current-password" />
+                  <button className="btn btn-primary" type="submit" disabled={withdrawDisabled}>{busy ? "Sending..." : "Withdraw"}</button>
                 </form>
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}
                 <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
