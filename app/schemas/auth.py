@@ -20,6 +20,7 @@ class UserCreateRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     display_name: Optional[str] = Field(None, min_length=1, max_length=80)
+    referral_code: Optional[str] = Field(None, min_length=3, max_length=64)
 
 
 class UserPublic(BaseModel):

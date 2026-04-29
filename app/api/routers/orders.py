@@ -2,10 +2,10 @@ from decimal import Decimal
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException, Header
+from fastapi import APIRouter, Query, HTTPException, Header, Depends
 
 from app.schemas import OrderPlaceRequest, OrderPublic, OrderStatus, Pagination, Money
-from app.api.deps import DbSession
+from app.api.deps import DbSession, require_auth
 from app.config import get_settings
 from app.db.models import Order, Listing, OrderStatusEnum, AccessGrant, AccessScopeEnum, Strategy, AgentLink, Agent
 from app.services.ledger import get_or_create_account, append_event, balance_for_account
@@ -17,6 +17,7 @@ from app.services.reputation_events import on_order_fulfilled, upsert_edge_daily
 from app.db.models import EdgeTypeEnum
 from app.services.participation_gates import evaluate_agent_gate
 from app.services.decision_logs import log_reject_decision
+from app.services.referrals import issue_referral_rewards_for_order
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -25,6 +26,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 async def place_order(
     body: OrderPlaceRequest,
     session: DbSession,
+    user_id: str = Depends(require_auth),
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
     if not idempotency_key:
@@ -45,6 +47,12 @@ async def place_order(
         raise HTTPException(status_code=404, detail="Strategy not found")
     owner_agent_id = strat.owner_agent_id
     buyer_id = UUID(body.buyer_id)
+    if body.buyer_type == "user" and str(buyer_id) != user_id:
+        raise HTTPException(status_code=403, detail="buyer_id must match authenticated user")
+    if body.buyer_type == "agent":
+        buyer_agent = await session.get(Agent, buyer_id)
+        if not buyer_agent or str(buyer_agent.owner_user_id or "") != user_id:
+            raise HTTPException(status_code=403, detail="buyer agent is not owned by current user")
 
     # Anti-self-dealing: buyer must not be owner or linked to owner
     if body.buyer_type == "agent":
@@ -156,6 +164,16 @@ async def place_order(
     )
     session.add(grant)
     await session.flush()
+
+    # Referral rewards: signup bonus + ACP commission share for attributed users/agents.
+    await issue_referral_rewards_for_order(
+        session,
+        order_id=order.id,
+        buyer_type=body.buyer_type,
+        buyer_id=buyer_id,
+        amount_currency=amount_currency,
+        amount_value=amount_decimal,
+    )
 
     # Reputation 2.0: seller +1.0 (order_fulfilled), edge buyer -> seller
     try:

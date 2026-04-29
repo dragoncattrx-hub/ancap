@@ -144,24 +144,8 @@ async def _run_workflow_and_persist(
         from app.constants import PLATFORM_ACCOUNT_OWNER_ID
         from sqlalchemy.exc import IntegrityError
         settings = get_settings()
-        if settings.run_fee_amount and Decimal(settings.run_fee_amount) > 0:
-            try:
-                pool_acc = await get_or_create_account(session, "pool_treasury", pool_id)
-                platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
-                fee_value = Decimal(settings.run_fee_amount)
-                await append_event(
-                    session,
-                    LedgerEventTypeEnum.fee,
-                    settings.run_fee_currency,
-                    fee_value,
-                    src_account_id=pool_acc.id,
-                    dst_account_id=platform_acc.id,
-                    metadata={"type": "run_fee", "run_id": str(run.id), "pool_id": str(pool_id)},
-                )
-            except Exception:
-                pass
-
         # Per-run contract payouts: one succeeded run -> at most one contract_payout.
+        # Platform fee is percentage-based over payout amount.
         if run.contract_id:
             try:
                 contract = await session.get(Contract, run.contract_id)
@@ -191,9 +175,17 @@ async def _run_workflow_and_persist(
                         if payout_amount <= 0:
                             payout_amount = Decimal(0)
 
+                        run_fee_percent = Decimal(str(getattr(settings, "run_fee_percent", "0") or "0"))
+                        platform_fee = Decimal(0)
+                        if run_fee_percent > 0 and payout_amount > 0:
+                            platform_fee = (payout_amount * run_fee_percent / Decimal(100)).quantize(Decimal("0.00000001"))
+                            if platform_fee > payout_amount:
+                                platform_fee = payout_amount
+                        worker_payout = payout_amount - platform_fee
+
                         async with session.begin_nested():
                             try:
-                                if payout_amount > 0:
+                                if worker_payout > 0:
                                     meta = {
                                         "type": "contract_payout",
                                         "contract_id": str(contract.id),
@@ -206,10 +198,27 @@ async def _run_workflow_and_persist(
                                         session,
                                         LedgerEventTypeEnum.contract_payout,
                                         contract.currency,
-                                        payout_amount,
+                                        worker_payout,
                                         src_account_id=employer_acc.id,
                                         dst_account_id=worker_acc.id,
                                         metadata=meta,
+                                    )
+                                if platform_fee > 0:
+                                    platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+                                    await append_event(
+                                        session,
+                                        LedgerEventTypeEnum.fee,
+                                        contract.currency,
+                                        platform_fee,
+                                        src_account_id=employer_acc.id,
+                                        dst_account_id=platform_acc.id,
+                                        metadata={
+                                            "type": "run_fee_percent",
+                                            "contract_id": str(contract.id),
+                                            "run_id": str(run.id),
+                                            "run_fee_percent": str(run_fee_percent),
+                                            "gross_payout": str(payout_amount),
+                                        },
                                     )
                             except IntegrityError:
                                 # Idempotency: unique index prevents double payout for same (contract_id, run_id).

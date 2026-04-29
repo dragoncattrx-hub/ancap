@@ -45,6 +45,7 @@ const secondaryNav: NavItem[] = [
   { label: "Growth", href: "/growth" },
   { label: "Pools", href: "/pools" },
   { label: "Funds", href: "/funds" },
+  { label: "Staking", href: "/staking" },
   { label: "Orders", href: "/orders" },
   { label: "Access", href: "/access" },
   { label: "Seller", href: "/dashboard/seller" },

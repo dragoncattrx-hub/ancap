@@ -15,6 +15,8 @@ mod rpc;
 mod storage;
 mod sync;
 mod util;
+mod vesting;
+mod emission;
 
 use crate::config::{FileConfig, NodeConfig};
 use crate::rpc::handlers::RpcCtx;
@@ -49,6 +51,12 @@ fn load_config_from_env(mut cfg: NodeConfig) -> NodeConfig {
             cfg.miner_interval_secs = n.max(1);
         }
     }
+    if let Ok(v) = env::var("ACP_MINER_REWARD_ADDRESS") {
+        let v = v.trim().to_string();
+        if !v.is_empty() {
+            cfg.miner_reward_address = Some(v);
+        }
+    }
     if let Ok(v) = env::var("ACP_RPC_TOKEN") {
         let v = v.trim().to_string();
         if !v.is_empty() {
@@ -73,7 +81,18 @@ async fn main() -> anyhow::Result<()> {
             }
         }
     }
-    let cfg = load_config_from_env(cfg);
+    let mut cfg = load_config_from_env(cfg);
+    if cfg.miner_reward_address.is_none() {
+        match emission::load_or_create_local_miner_reward_address(&cfg.data_dir) {
+            Ok(addr) => {
+                info!("auto miner_reward_address resolved: {}", addr);
+                cfg.miner_reward_address = Some(addr);
+            }
+            Err(e) => {
+                tracing::warn!("failed to auto-resolve miner reward address: {}", e);
+            }
+        }
+    }
 
     info!(
         "ACP node starting (chain_id={}, data_dir={})",

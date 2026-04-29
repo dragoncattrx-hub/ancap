@@ -74,6 +74,27 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
             .unwrap_or_default()
             .as_secs();
 
+        let mut txs: Vec<Transaction> = Vec::with_capacity(2);
+        if let Some(ref payout_address) = ctx.config.miner_reward_address {
+            match crate::emission::emission_available_now_units(&ctx.chain.storage, now) {
+                Ok(available) if available > 0 => {
+                    // Smooth emission over time using target block cadence.
+                    let target_per_block = (acp_crypto::protocol_params::ANNUAL_EMISSION_ACP as u128)
+                        .saturating_mul(acp_crypto::UNITS_PER_ACP as u128)
+                        / ((365u128 * 24 * 60 * 60)
+                            / (acp_crypto::protocol_params::TARGET_BLOCK_TIME_SEC as u128).max(1));
+                    let reward_units = available.min(target_per_block.max(1) as u64);
+                    match crate::emission::build_miner_emission_tx(chain_id, payout_address, reward_units) {
+                        Ok(reward_tx) => txs.push(reward_tx),
+                        Err(e) => warn!("miner: emission tx build failed: {}", e),
+                    }
+                }
+                Ok(_) => {}
+                Err(e) => warn!("miner: emission availability failed: {}", e),
+            }
+        }
+        txs.push(tx);
+
         let header = BlockHeader {
             version: 1,
             chain_id,
@@ -85,7 +106,7 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
             nonce: 0,
         };
 
-        let block = match Block::build(header, vec![tx]) {
+        let block = match Block::build(header, txs) {
             Ok(b) => b,
             Err(e) => {
                 warn!("miner: Block::build failed: {}", e);

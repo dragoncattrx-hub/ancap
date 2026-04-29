@@ -15,7 +15,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string, displayName: string) => Promise<string | null>;
+  register: (email: string, password: string, displayName: string, referralCode?: string) => Promise<string | null>;
   logout: () => void;
 }
 
@@ -82,8 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return walletBackupMnemonic || null;
   };
 
-  const register = async (email: string, password: string, displayName: string) => {
-    const created = await auth.register(email, password, displayName);
+  const register = async (email: string, password: string, displayName: string, referralCode?: string) => {
+    const created = await auth.register(email, password, displayName, referralCode);
     const walletBackupMnemonic =
       created && typeof created === "object" && "wallet_backup_mnemonic" in created
         ? String((created as any).wallet_backup_mnemonic || "")

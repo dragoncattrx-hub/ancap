@@ -38,6 +38,7 @@ dependencies = [
  "fs2",
  "fs4",
  "hex",
+ "rand_core",
  "reqwest",
  "rocksdb",
  "serde",

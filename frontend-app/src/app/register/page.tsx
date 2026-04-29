@@ -24,7 +24,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const mnemonic = await register(email, password, displayName);
+      const referralCode =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("ref")?.trim() || ""
+          : "";
+      const mnemonic = await register(email, password, displayName, referralCode || undefined);
       if (mnemonic) {
         setWalletMnemonic(mnemonic);
       } else {

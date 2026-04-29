@@ -355,6 +355,8 @@ impl Storage<Rocks> {
     /// Atomic store for a new tip block with strict tip rules.
     pub fn put_block_as_tip(&self, block: &Block) -> Result<BlockHash> {
         block.validate().map_err(anyhow::Error::msg)?;
+        crate::vesting::validate_block_creator_vesting(self, block)?;
+        crate::emission::validate_block_emission(self, block)?;
 
         let best_h = self.best_height()?;
         let best_hash = self.best_hash()?;

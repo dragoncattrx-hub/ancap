@@ -1,6 +1,9 @@
+import os
+import httpx
 from fastapi import APIRouter, Request, HTTPException
 from sqlalchemy import select
 from sqlalchemy import desc
+from sqlalchemy import func
 
 from app.config import get_settings
 from app.api.deps import DbSession
@@ -20,7 +23,7 @@ from app.jobs.faucet_abuse_check_tick import faucet_abuse_check_tick
 from app.jobs.governance_checks_tick import governance_checks_tick
 from app.jobs.graph_enforcement_tick import graph_enforcement_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
-from app.db.models import DecisionLog
+from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
 from app.schemas import DecisionLogPublic
 
 router = APIRouter(prefix="/system", tags=["System"])
@@ -47,6 +50,65 @@ async def diagnostics():
             "acp_rpc_url": s.acp_rpc_url,
             "walletd_configured": bool(__import__("os").getenv("ACP_WALLETD_PATH", "").strip()),
         },
+    }
+
+
+@router.get("/fees")
+async def fee_settings():
+    s = get_settings()
+    return {
+        "listing_fee_percent": str(getattr(s, "listing_fee_percent", "0") or "0"),
+        "listing_fee_amount": str(getattr(s, "listing_fee_amount", "0") or "0"),
+        "listing_fee_currency": s.listing_fee_currency,
+        "run_fee_percent": str(getattr(s, "run_fee_percent", "0") or "0"),
+        "run_fee_amount": str(getattr(s, "run_fee_amount", "0") or "0"),
+        "run_fee_currency": s.run_fee_currency,
+    }
+
+
+@router.get("/economy-health")
+async def economy_health(session: DbSession):
+    s = get_settings()
+    rpc_ok = False
+    rpc_error = None
+    rpc_url = (s.acp_rpc_url or "").strip()
+    if rpc_url:
+        try:
+            body = {"jsonrpc": "2.0", "id": 1, "method": "getblockcount", "params": {}}
+            headers = {}
+            token = os.getenv("ACP_RPC_TOKEN", "").strip()
+            if token:
+                headers["x-acp-rpc-token"] = token
+            r = httpx.post(rpc_url, json=body, headers=headers, timeout=5.0)
+            payload = r.json()
+            rpc_ok = bool(r.status_code == 200 and not payload.get("error"))
+            if not rpc_ok:
+                rpc_error = str(payload.get("error") or f"status={r.status_code}")
+        except Exception as exc:
+            rpc_error = str(exc)
+    pending_swaps = (
+        await session.execute(
+            select(func.count(AcpSwapOrder.id)).where(AcpSwapOrder.status.in_(("awaiting_deposit", "pending_review")))
+        )
+    ).scalar_one()
+    pending_payout_jobs = (
+        await session.execute(
+            select(func.count(ReferralOnchainPayoutJob.id)).where(ReferralOnchainPayoutJob.status == "pending")
+        )
+    ).scalar_one()
+    failed_payout_jobs = (
+        await session.execute(
+            select(func.count(ReferralOnchainPayoutJob.id)).where(ReferralOnchainPayoutJob.status == "failed")
+        )
+    ).scalar_one()
+    halted = await is_ledger_invariant_halted(session)
+    return {
+        "acp_rpc_ok": rpc_ok,
+        "acp_rpc_error": rpc_error,
+        "ledger_halted": halted,
+        "pending_swaps": int(pending_swaps or 0),
+        "pending_referral_payout_jobs": int(pending_payout_jobs or 0),
+        "failed_referral_payout_jobs": int(failed_payout_jobs or 0),
     }
 
 

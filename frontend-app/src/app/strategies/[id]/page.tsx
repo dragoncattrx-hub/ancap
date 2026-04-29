@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
-import { listings, strategies, verticals, growthSocial } from "@/lib/api";
+import { listings, strategies, verticals, growthSocial, system as systemApi } from "@/lib/api";
 
 type StrategyPublic = {
   id: string;
@@ -28,6 +28,7 @@ type StrategyVersionPublic = {
 };
 
 export default function StrategyDetailPage() {
+  const [listingFeePercent, setListingFeePercent] = useState<number>(2);
   const { t } = useLanguage();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -81,6 +82,13 @@ export default function StrategyDetailPage() {
         const verts = await verticals.list();
         const found = (verts.items || []).find((x: any) => x.id === s.vertical_id);
         setVerticalName(found?.name || s.vertical_id);
+        try {
+          const feeCfg = await systemApi.fees();
+          const pct = Number(feeCfg?.listing_fee_percent ?? "0");
+          if (Number.isFinite(pct) && pct >= 0) setListingFeePercent(pct);
+        } catch {
+          // keep fallback fee percentage
+        }
         setVersionForm((prev) => {
           try {
             const parsed = JSON.parse(prev.workflowJson);
@@ -119,6 +127,11 @@ export default function StrategyDetailPage() {
   }
 
   const latestVersion = useMemo(() => versions[0] || null, [versions]);
+  const listingPrice = Number(publishForm.price_amount || "0");
+  const listingFeePreview =
+    Number.isFinite(listingPrice) && listingPrice > 0
+      ? ((listingPrice * listingFeePercent) / 100).toFixed(8).replace(/\.?0+$/, "")
+      : "0";
 
   async function createVersion(e: React.FormEvent) {
     e.preventDefault();
@@ -359,6 +372,21 @@ export default function StrategyDetailPage() {
                   onChange={(e) => setPublishForm((p) => ({ ...p, notes: e.target.value }))}
                   style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
                 />
+              </div>
+              <div
+                style={{
+                  marginBottom: 14,
+                  padding: 10,
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "var(--bg)",
+                  color: "var(--text-muted)",
+                  fontSize: "0.9rem",
+                }}
+              >
+                Platform listing fee: {listingFeePercent}% of listing price.
+                <br />
+                Preview: {listingFeePreview} {publishForm.price_currency || "ACP"}.
               </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <button className="btn btn-primary" type="submit" disabled={publishing || !publishForm.version_id}>

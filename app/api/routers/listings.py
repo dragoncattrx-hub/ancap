@@ -18,6 +18,16 @@ from sqlalchemy import select
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
 
+def _listing_price_from_fee_model(fee_model: dict) -> tuple[Decimal, str]:
+    one_time = (fee_model or {}).get("one_time_price") or {}
+    if one_time:
+        return Decimal(str(one_time.get("amount") or "0")), str(one_time.get("currency") or "ACP")
+    monthly = (fee_model or {}).get("subscription_price_monthly") or {}
+    if monthly:
+        return Decimal(str(monthly.get("amount") or "0")), str(monthly.get("currency") or "ACP")
+    return Decimal(0), "ACP"
+
+
 @router.post("", response_model=ListingPublic, status_code=201)
 async def create_listing(body: ListingCreateRequest, session: DbSession):
     strategy_id = UUID(body.strategy_id)
@@ -52,23 +62,38 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
                 "metrics": gate.metrics,
             },
         )
-    # L3: platform listing fee
+    # L3: platform listing fee (% of listing price; fallback to static fee if configured)
     settings = get_settings()
-    if settings.listing_fee_amount and Decimal(settings.listing_fee_amount) > 0:
+    listing_price, listing_currency = _listing_price_from_fee_model(body.fee_model.model_dump())
+    listing_fee_percent = Decimal(str(getattr(settings, "listing_fee_percent", "0") or "0"))
+    fee_value = Decimal(0)
+    fee_currency = listing_currency
+    if listing_fee_percent > 0 and listing_price > 0:
+        fee_value = (listing_price * listing_fee_percent / Decimal(100)).quantize(Decimal("0.00000001"))
+    elif settings.listing_fee_amount and Decimal(settings.listing_fee_amount) > 0:
+        fee_value = Decimal(settings.listing_fee_amount)
+        fee_currency = settings.listing_fee_currency
+
+    if fee_value > 0:
         acc_agent = await get_or_create_account(session, "agent", strat.owner_agent_id)
         acc_platform = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
-        fee_value = Decimal(settings.listing_fee_amount)
-        bal = await balance_for_account(session, acc_agent.id, settings.listing_fee_currency)
-        if (bal.get(settings.listing_fee_currency) or Decimal(0)) < fee_value:
+        bal = await balance_for_account(session, acc_agent.id, fee_currency)
+        if (bal.get(fee_currency) or Decimal(0)) < fee_value:
             raise HTTPException(status_code=402, detail="Insufficient balance for listing fee")
         await append_event(
             session,
             LedgerEventTypeEnum.fee,
-            settings.listing_fee_currency,
+            fee_currency,
             fee_value,
             src_account_id=acc_agent.id,
             dst_account_id=acc_platform.id,
-            metadata={"type": "listing_fee", "strategy_id": str(strategy_id)},
+            metadata={
+                "type": "listing_fee",
+                "strategy_id": str(strategy_id),
+                "basis": "listing_price_percent" if listing_fee_percent > 0 and listing_price > 0 else "static",
+                "listing_price": str(listing_price),
+                "listing_fee_percent": str(listing_fee_percent),
+            },
         )
     listing = Listing(
         strategy_id=strategy_id,

@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from app.schemas import AuthLoginRequest, AuthLoginResponse, UserCreateRequest, UserPublic
 from app.services.auth import create_access_token, hash_password, verify_password
 from app.services.acp_wallet import create_wallet_for_user, get_wallet_for_user
+from app.services.referrals import attribute_referral
 from app.api.deps import DbSession
 from app.db.models import User
 from sqlalchemy import select
@@ -54,6 +55,14 @@ async def create_user(body: UserCreateRequest, session: DbSession):
         user_id=str(user.id),
         password=body.password,
     )
+    if body.referral_code and body.referral_code.strip():
+        await attribute_referral(
+            session,
+            code=body.referral_code.strip(),
+            referred_user_id=user.id,
+            referred_agent_id=None,
+            source="signup",
+        )
     await session.refresh(user)
     return UserPublic(
         id=str(user.id),

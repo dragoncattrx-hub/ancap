@@ -14,6 +14,8 @@ type BalanceResponse = {
   utxo_count?: number;
   in_work_acp?: string;
   available_acp?: string;
+  vested_unlocked_acp?: string;
+  vested_locked_acp?: string;
   balance_note?: string;
 };
 
@@ -48,6 +50,7 @@ type AcpTransaction = {
 };
 
 export default function AcpWalletPage() {
+  const ACP_FIXED_MIN_FEE = "0.00000100";
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -78,7 +81,12 @@ export default function AcpWalletPage() {
     amount_acp: "",
     wallet_password: "",
   });
+  const [withdrawFeeMode, setWithdrawFeeMode] = useState<"auto" | "manual">("auto");
+  const [withdrawFeeAcp, setWithdrawFeeAcp] = useState(ACP_FIXED_MIN_FEE);
   const [withdrawResult, setWithdrawResult] = useState<any>(null);
+  const [distributionPlan, setDistributionPlan] = useState("");
+  const [distributionPassword, setDistributionPassword] = useState("");
+  const [distributionResult, setDistributionResult] = useState<any[]>([]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.push("/login");
@@ -143,7 +151,13 @@ export default function AcpWalletPage() {
         const items = Array.isArray(txRes.value) ? txRes.value : [];
         setTransactions(items);
       } else {
-        warnings.push(`On-chain history unavailable: ${txRes.reason?.message || "unknown error"}`);
+        const txErr = String(txRes.reason?.message || "");
+        if (txErr.includes("API error 502") || txErr.includes("API error 503") || txErr.includes("API error 504")) {
+          // History endpoint can be temporarily unavailable while wallet actions still work.
+          setTransactions([]);
+        } else {
+          warnings.push(`On-chain history unavailable: ${txErr || "unknown error"}`);
+        }
       }
       if (balRes.status === "fulfilled") {
         setTxAddressBalance(balRes.value || null);
@@ -183,15 +197,36 @@ export default function AcpWalletPage() {
     setBusy(true);
     setError("");
     try {
-      const [items, bal] = await Promise.all([
+      const [txRes, balRes] = await Promise.allSettled([
         walletAcp.listTransactions({ address: target, limit: 50 }),
         walletAcp.getBalance({ address: target }),
       ]);
-      setTransactions(Array.isArray(items) ? items : []);
-      setTxAddressBalance((bal as BalanceResponse) || null);
+      if (txRes.status === "fulfilled") {
+        setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
+      } else {
+        const txErr = String(txRes.reason?.message || "");
+        if (!txErr.includes("API error 502") && !txErr.includes("API error 503") && !txErr.includes("API error 504")) {
+          throw txRes.reason;
+        }
+        setTransactions([]);
+      }
+      if (balRes.status === "fulfilled") {
+        setTxAddressBalance((balRes.value as BalanceResponse) || null);
+      } else {
+        const balErr = String(balRes.reason?.message || "");
+        if (!balErr.includes("API error 502") && !balErr.includes("API error 503") && !balErr.includes("API error 504")) {
+          throw balRes.reason;
+        }
+        setTxAddressBalance({ address: target, units: "0", acp: "0", utxo_count: 0 });
+      }
       setTxAddressActive(target);
     } catch (e: any) {
-      setError(e?.message || "Failed to load on-chain history");
+      const msg = String(e?.message || "");
+      if (msg.includes("API error 401")) {
+        router.push("/login");
+        return;
+      }
+      setError(msg || "Failed to load on-chain history");
     } finally {
       setBusy(false);
     }
@@ -263,15 +298,49 @@ export default function AcpWalletPage() {
     setError("");
     setWithdrawResult(null);
     try {
+      const feeAcp = (withdrawFeeMode === "auto" ? ACP_FIXED_MIN_FEE : withdrawFeeAcp).trim();
       const res = await walletAcp.withdraw({
         to_address: withdrawForm.to_address.trim(),
         amount_acp: withdrawForm.amount_acp.trim(),
+        fee_acp: feeAcp,
         wallet_password: withdrawForm.wallet_password,
       });
       setWithdrawResult(res);
       await refreshAll();
     } catch (e: any) {
       setError(e?.message || "Withdraw failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runDistribution(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setDistributionResult([]);
+    try {
+      const lines = distributionPlan
+        .split(/\r?\n/)
+        .map((x) => x.trim())
+        .filter(Boolean);
+      if (!lines.length) throw new Error("Add at least one line: <address> <amount>");
+      const results: any[] = [];
+      for (const line of lines) {
+        const [to, amount] = line.split(/\s+/);
+        if (!to || !amount) throw new Error(`Invalid line: ${line}`);
+        const res = await walletAcp.withdraw({
+          to_address: to,
+          amount_acp: amount,
+          fee_acp: ACP_FIXED_MIN_FEE,
+          wallet_password: distributionPassword,
+        });
+        results.push({ to, amount, ...res });
+      }
+      setDistributionResult(results);
+      await refreshAll();
+    } catch (e: any) {
+      setError(e?.message || "Distribution failed");
     } finally {
       setBusy(false);
     }
@@ -403,6 +472,16 @@ export default function AcpWalletPage() {
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                 </div>
+                {balance?.vested_unlocked_acp != null && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Vested unlocked: <strong style={{ color: "var(--text)" }}>{balance.vested_unlocked_acp} ACP</strong>
+                  </div>
+                )}
+                {balance?.vested_locked_acp != null && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Vested locked: <strong style={{ color: "var(--text)" }}>{balance.vested_locked_acp} ACP</strong>
+                  </div>
+                )}
                 {balance?.balance_note ? (
                   <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>
                     {balance.balance_note}
@@ -418,10 +497,84 @@ export default function AcpWalletPage() {
                 <form onSubmit={doWithdraw} style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   <input placeholder="To address" value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value }))} className="input input-bordered w-full" required />
                   <input placeholder="Amount (ACP)" value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" required />
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Fee mode</label>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => {
+                          setWithdrawFeeMode("auto");
+                          setWithdrawFeeAcp(ACP_FIXED_MIN_FEE);
+                        }}
+                        style={{
+                          borderColor: withdrawFeeMode === "auto" ? "rgba(16, 185, 129, 0.5)" : undefined,
+                          color: withdrawFeeMode === "auto" ? "#34d399" : undefined,
+                        }}
+                      >
+                        Auto
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setWithdrawFeeMode("manual")}
+                        style={{
+                          borderColor: withdrawFeeMode === "manual" ? "rgba(16, 185, 129, 0.5)" : undefined,
+                          color: withdrawFeeMode === "manual" ? "#34d399" : undefined,
+                        }}
+                      >
+                        Manual
+                      </button>
+                    </div>
+                    <input
+                      placeholder="Fee (ACP)"
+                      value={withdrawFeeAcp}
+                      onChange={(e) => setWithdrawFeeAcp(e.target.value)}
+                      className="input input-bordered w-full"
+                      inputMode="decimal"
+                      disabled={withdrawFeeMode === "auto"}
+                    />
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                      {withdrawFeeMode === "auto"
+                        ? `Auto now uses fixed minimum fee: ${ACP_FIXED_MIN_FEE} ACP`
+                        : "Manual fee is UI-only for now; backend still applies fixed minimum fee."}
+                    </div>
+                  </div>
                   <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required />
                   <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Sending..." : "Withdraw"}</button>
                 </form>
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                  <h4 style={{ margin: 0 }}>Bulk distribution</h4>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 4 }}>
+                    One line per transfer: <code>acp1... amount</code>
+                  </div>
+                  <form onSubmit={runDistribution} style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                    <textarea
+                      className="input input-bordered w-full"
+                      rows={5}
+                      value={distributionPlan}
+                      onChange={(e) => setDistributionPlan(e.target.value)}
+                      placeholder={"acp1... 25000\nacp1... 15000"}
+                    />
+                    <input
+                      type="password"
+                      className="input input-bordered w-full"
+                      placeholder="Wallet password"
+                      value={distributionPassword}
+                      onChange={(e) => setDistributionPassword(e.target.value)}
+                      required
+                    />
+                    <button className="btn btn-ghost" type="submit" disabled={busy}>
+                      {busy ? "Processing..." : "Run bulk distribution"}
+                    </button>
+                  </form>
+                  {distributionResult.length > 0 && (
+                    <pre style={{ marginTop: 8, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>
+                      {JSON.stringify(distributionResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
                 </div>
               </div>
 
