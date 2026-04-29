@@ -57,7 +57,7 @@ export default function SellerDashboardPage() {
       for (const ev of evs) {
         const amount = Number(ev.amount?.amount || "0");
         if (!Number.isFinite(amount)) continue;
-        const currency = ev.amount?.currency || "USD";
+        const currency = ev.amount?.currency || "ACP";
         if (ev.metadata && ev.metadata.order_settlement) {
           out[currency] = (out[currency] || 0) + amount;
         }

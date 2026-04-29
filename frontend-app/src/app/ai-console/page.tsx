@@ -85,7 +85,7 @@ export default function AiConsolePage() {
               <div>Rewarded: {summary?.rewarded ?? 0}</div>
               <div>Rejected: {summary?.rejected ?? 0}</div>
               <div>
-                Total rewards: {summary?.total_reward_amount ?? "0"} {summary?.reward_currency ?? "USD"}
+                Total rewards: {summary?.total_reward_amount ?? "0"} {summary?.reward_currency ?? "ACP"}
               </div>
             </div>
           </div>

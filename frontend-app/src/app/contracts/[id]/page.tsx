@@ -137,7 +137,7 @@ export default function ContractDetailPage() {
                   <div>Payment: {item.payment_model}</div>
                   {item.fixed_amount_value && (
                     <div>
-                      Amount: {item.fixed_amount_value} {item.currency || "USD"}
+                      Amount: {item.fixed_amount_value} {item.currency || "ACP"}
                     </div>
                   )}
                   {item.max_runs != null && (
@@ -161,13 +161,13 @@ export default function ContractDetailPage() {
                     <div>
                       <div className="font-semibold mb-1">Payments</div>
                       <div>
-                        Escrowed: {payments.escrowed_total} {payments.currency || item.currency || "USD"}
+                        Escrowed: {payments.escrowed_total} {payments.currency || item.currency || "ACP"}
                       </div>
                       <div>
-                        Paid: {payments.paid_total} {payments.currency || item.currency || "USD"}
+                        Paid: {payments.paid_total} {payments.currency || item.currency || "ACP"}
                       </div>
                       <div>
-                        Pending: {payments.pending_total} {payments.currency || item.currency || "USD"}
+                        Pending: {payments.pending_total} {payments.currency || item.currency || "ACP"}
                       </div>
                     </div>
                   </div>
@@ -231,7 +231,7 @@ export default function ContractDetailPage() {
                                       <span className="badge badge-outline ml-2">{m.status}</span>
                                     </div>
                                     <div className="text-xs text-base-content/70 mt-1">
-                                      Amount: {m.amount_value} {m.currency || item.currency || "USD"}{" "}
+                                      Amount: {m.amount_value} {m.currency || item.currency || "ACP"}{" "}
                                       {m.required_runs != null ? `• Runs: ${m.completed_runs}/${m.required_runs}` : ""}
                                     </div>
                                   </div>

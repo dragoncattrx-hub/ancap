@@ -90,3 +90,4 @@ frontend-app/.env.production
 **/.next/
 **/playwright-report/
 **/test-results/
+_backups/

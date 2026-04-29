@@ -107,6 +107,21 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class UserAcpWallet(Base):
+    __tablename__ = "user_acp_wallets"
+
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    address = Column(String(128), nullable=False, unique=True, index=True)
+    encrypted_mnemonic = Column(Text, nullable=False)
+    salt_b64 = Column(Text, nullable=False)
+    nonce_b64 = Column(Text, nullable=False)
+    derivation_path = Column(String(128), nullable=False, default="m/44'/0'/0'/0/0")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+
 class Agent(Base):
     __tablename__ = "agents"
 
@@ -893,7 +908,7 @@ class Contract(Base):
     status = Column(SQLEnum(ContractStatusEnum), default=ContractStatusEnum.draft)
     payment_model = Column(SQLEnum(PaymentModelEnum), nullable=False)
     fixed_amount_value = Column(Numeric(36, 18), nullable=True)
-    currency = Column(String(10), nullable=False, default="USD")
+    currency = Column(String(10), nullable=False, default="ACP")
     max_runs = Column(Integer, nullable=True)
     runs_completed = Column(Integer, nullable=False, default=0)
     risk_policy_id = Column(UUID(as_uuid=False), ForeignKey("risk_policies.id", ondelete="SET NULL"), nullable=True)
@@ -914,7 +929,7 @@ class ContractMilestone(Base):
     status = Column(SQLEnum(ContractMilestoneStatusEnum), nullable=False, default=ContractMilestoneStatusEnum.pending, index=True)
 
     amount_value = Column(Numeric(36, 18), nullable=False)
-    currency = Column(String(10), nullable=False, default="USD")
+    currency = Column(String(10), nullable=False, default="ACP")
 
     required_runs = Column(Integer, nullable=True)
     completed_runs = Column(Integer, nullable=False, default=0)

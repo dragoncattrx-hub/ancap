@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [walletMnemonic, setWalletMnemonic] = useState<string>("");
   const { register } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -23,8 +24,12 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password, displayName);
-      router.push("/dashboard");
+      const mnemonic = await register(email, password, displayName);
+      if (mnemonic) {
+        setWalletMnemonic(mnemonic);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {
@@ -161,6 +166,62 @@ export default function RegisterPage() {
           </form>
         </div>
       </div>
+
+      {walletMnemonic && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.65)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 200,
+            padding: "16px",
+          }}
+        >
+          <div className="card" style={{ maxWidth: "760px", width: "100%" }}>
+            <h2 style={{ marginTop: 0, marginBottom: "10px", fontSize: "1.25rem", fontWeight: 700 }}>
+              Save your ACP wallet seed phrase
+            </h2>
+            <p style={{ marginTop: 0, color: "var(--text-muted)", lineHeight: 1.6 }}>
+              This phrase is shown only once. Write it down offline. If you lose it, wallet recovery is impossible.
+            </p>
+            <div
+              style={{
+                marginTop: "12px",
+                border: "1px solid var(--border)",
+                borderRadius: "10px",
+                padding: "14px",
+                background: "var(--bg)",
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                lineHeight: 1.8,
+                wordBreak: "break-word",
+              }}
+            >
+              {walletMnemonic}
+            </div>
+            <div style={{ display: "flex", gap: "10px", marginTop: "14px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => navigator.clipboard?.writeText(walletMnemonic)}
+              >
+                Copy phrase
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setWalletMnemonic("");
+                  router.push("/dashboard");
+                }}
+              >
+                I saved it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

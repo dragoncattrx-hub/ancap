@@ -60,7 +60,7 @@ export default function StrategyDetailPage() {
   const [publishForm, setPublishForm] = useState({
     version_id: "",
     price_amount: "10",
-    price_currency: "USD",
+    price_currency: "ACP",
     notes: "",
   });
 

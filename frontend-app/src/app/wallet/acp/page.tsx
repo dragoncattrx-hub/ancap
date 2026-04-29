@@ -73,7 +73,7 @@ export default function AcpWalletPage() {
   const [withdrawForm, setWithdrawForm] = useState({
     to_address: "",
     amount_acp: "",
-    wallet_secret: "",
+    wallet_password: "",
   });
   const [withdrawResult, setWithdrawResult] = useState<any>(null);
 
@@ -263,7 +263,7 @@ export default function AcpWalletPage() {
       const res = await walletAcp.withdraw({
         to_address: withdrawForm.to_address.trim(),
         amount_acp: withdrawForm.amount_acp.trim(),
-        wallet_secret: withdrawForm.wallet_secret.trim() || undefined,
+        wallet_password: withdrawForm.wallet_password,
       });
       setWithdrawResult(res);
       await refreshAll();
@@ -395,13 +395,13 @@ export default function AcpWalletPage() {
 
                 <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Operator withdraw</h3>
-                  <span className="badge badge-warning">Operator</span>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>Withdraw</h3>
+                  <span className="badge badge-warning">Signed</span>
                 </div>
                 <form onSubmit={doWithdraw} style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   <input placeholder="To address" value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value }))} className="input input-bordered w-full" required />
                   <input placeholder="Amount (ACP)" value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" required />
-                  <input placeholder="X-Wallet-Secret" value={withdrawForm.wallet_secret} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_secret: e.target.value }))} className="input input-bordered w-full" />
+                  <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required />
                   <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Sending..." : "Withdraw"}</button>
                 </form>
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}

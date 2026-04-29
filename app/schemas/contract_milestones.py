@@ -22,7 +22,7 @@ class ContractMilestoneCreateRequest(BaseModel):
     description: str = ""
     order_index: int = 0
     amount_value: str = Field(..., description="Decimal string")
-    currency: str = "USD"
+    currency: str = "ACP"
     required_runs: Optional[int] = None
 
 

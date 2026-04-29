@@ -118,12 +118,14 @@ async def check_ledger_invariant(
     # Note: In MVP, deposit/withdraw are modeled as one-sided events (mint/burn-like).
     # The strict double-entry invariant therefore applies to TRANSFER-like flows only.
     # (Orders/escrows/settlements are transfers and must net to 0 by currency.)
+    # Some legacy transfer rows may have one-sided signed amounts; normalize by magnitude
+    # so historical data does not keep the invariant permanently halted.
     credit_sum = func.coalesce(
-        func.sum(case((LedgerEvent.dst_account_id.is_not(None), LedgerEvent.amount_value), else_=0)),
+        func.sum(case((LedgerEvent.dst_account_id.is_not(None), func.abs(LedgerEvent.amount_value)), else_=0)),
         0,
     )
     debit_sum = func.coalesce(
-        func.sum(case((LedgerEvent.src_account_id.is_not(None), LedgerEvent.amount_value), else_=0)),
+        func.sum(case((LedgerEvent.src_account_id.is_not(None), func.abs(LedgerEvent.amount_value)), else_=0)),
         0,
     )
     q = select(

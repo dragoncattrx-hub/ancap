@@ -342,13 +342,14 @@ export const walletAcp = {
     return apiFetch(`/wallet/acp/transactions${suffix ? `?${suffix}` : ""}`);
   },
 
-  async withdraw(data: { to_address: string; amount_acp: string; wallet_secret?: string }) {
-    const headers: HeadersInit = {};
-    if (data.wallet_secret) headers["X-Wallet-Secret"] = data.wallet_secret;
+  async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string }) {
     return apiFetch("/wallet/acp/withdraw", {
       method: "POST",
-      headers,
-      body: JSON.stringify({ to_address: data.to_address, amount_acp: data.amount_acp }),
+      body: JSON.stringify({
+        to_address: data.to_address,
+        amount_acp: data.amount_acp,
+        wallet_password: data.wallet_password,
+      }),
     });
   },
 
