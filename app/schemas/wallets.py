@@ -13,6 +13,9 @@ class AcpBalanceResponse(BaseModel):
     units: str
     acp: str
     utxo_count: int = 0
+    in_work_acp: str | None = None
+    available_acp: str | None = None
+    balance_note: str | None = None
 
 
 class AcpWithdrawRequest(BaseModel):
