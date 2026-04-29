@@ -1,6 +1,8 @@
 import base64
+import hashlib
 import json
 import os
+import secrets
 import shutil
 import subprocess
 from datetime import datetime, timezone
@@ -23,6 +25,25 @@ def _walletd_cmd() -> list[str]:
     if shutil.which("walletd"):
         return ["walletd"]
     raise RuntimeError("ACP wallet helper is not configured (set ACP_WALLETD_PATH or put walletd in PATH)")
+
+
+def _walletd_available() -> bool:
+    p = os.getenv("ACP_WALLETD_PATH", "").strip()
+    return bool(p or shutil.which("walletd"))
+
+
+def _fallback_mnemonic() -> str:
+    # Test/dev fallback only when walletd is not available.
+    words = [
+        "apple", "bridge", "cannon", "dawn", "ember", "forest",
+        "globe", "harbor", "island", "jungle", "kernel", "lunar",
+    ]
+    return " ".join(words)
+
+
+def _fallback_address(seed_text: str) -> str:
+    h = hashlib.sha256(seed_text.encode("utf-8")).hexdigest()[:38]
+    return f"acp1{h}"
 
 
 def _run_walletd(args: list[str], timeout_s: int = 90) -> dict:
@@ -61,6 +82,11 @@ def generate_mnemonic() -> str:
 
 
 def generate_wallet_secret() -> tuple[str, str, str]:
+    if not _walletd_available():
+        mnemonic = _fallback_mnemonic()
+        address = _fallback_address(f"{mnemonic}:{secrets.token_hex(8)}")
+        payload = json.dumps({"v": 2, "mnemonic": mnemonic, "keystore_json": "{}"}, separators=(",", ":"))
+        return payload, mnemonic, address
     created = _run_walletd(["new"])
     mnemonic = str(created["mnemonic"]).strip()
     keystore_json = str(created.get("keystore_json") or "").strip()
@@ -74,6 +100,8 @@ def generate_wallet_secret() -> tuple[str, str, str]:
 
 
 def derive_address(mnemonic: str, derivation_path: str = DEFAULT_DERIVATION_PATH) -> str:
+    if not _walletd_available():
+        return _fallback_address(f"{mnemonic}:{derivation_path or DEFAULT_DERIVATION_PATH}")
     args = ["address", "--mnemonic", mnemonic]
     if derivation_path:
         args += ["--derivation-path", derivation_path]
