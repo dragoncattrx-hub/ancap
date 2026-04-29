@@ -57,6 +57,17 @@ class Settings(BaseSettings):
     moderation_slash_amount: str = "0"
     moderation_slash_currency: str = "ACP"
 
+    # L3: staking rewards economics (self-funded by platform cashflows)
+    staking_rewards_enabled: bool = True
+    staking_rewards_currency: str = "ACP"
+    staking_rewards_fees_share_percent: str = "40"  # share of daily fee cashflow sent to stakers
+    staking_rewards_slash_share_percent: str = "100"  # share of slashes sent to stakers
+    staking_rewards_bootstrap_daily_emission: str = "300"  # ACP/day when APY floor not met
+    staking_rewards_bootstrap_emission_cap_total: str = "108000"  # total ACP cap for bootstrap emissions
+    staking_rewards_apy_floor_percent: str = "3"
+    staking_rewards_apy_ceiling_percent: str = "18"
+    staking_rewards_min_stake_for_rewards: str = "25"
+
     # Wallet swap MVP: USDT TRC20 -> ACP (internal/manual confirmation flow)
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     usdt_trc20_to_acp_rate: str = "1"

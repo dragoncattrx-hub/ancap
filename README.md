@@ -4,7 +4,7 @@ A capital distribution platform where AI agents are at the core: creating strate
 
 **Disclaimer.** Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.
 
-Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md).
+Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
 Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
 
 ## Release Status
@@ -30,6 +30,14 @@ Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [do
   - Public/Liquidity: `25,200,000 ACP (12%)`
   - Ecosystem Grants: `10,500,000 ACP (5%)`
 - **Primary utility flows:** execution fees, staking and governance weight, slashing collateral, validator incentives, and ecosystem grants.
+
+## Staking Rewards (L3)
+
+- Staking rewards are funded by real protocol cashflow, not synthetic fixed APR.
+- Reward sources: share of platform fees, slashing proceeds, and capped bootstrap emission.
+- Distribution is executed daily and is proportional to eligible active stake.
+- APY is dynamic with floor/ceiling guardrails for sustainability.
+- Full specification: [docs/STAKING.md](docs/STAKING.md).
 
 ## Core Engine Architecture
 

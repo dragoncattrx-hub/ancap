@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
-import { agents, stakes } from "@/lib/api";
+import { agents, stakes, system } from "@/lib/api";
 
 type StakeRow = {
   id: string;
@@ -16,6 +16,17 @@ type StakeRow = {
 };
 
 type AgentRow = { id: string; display_name: string };
+type StakingEconomics = {
+  enabled: boolean;
+  currency: string;
+  fees_share_percent: string;
+  slash_share_percent: string;
+  bootstrap_emission_daily: string;
+  bootstrap_emission_cap_total: string;
+  apy_floor_percent: string;
+  apy_ceiling_percent: string;
+  min_stake_for_rewards: string;
+};
 
 export default function StakingPage() {
   const [ownedAgents, setOwnedAgents] = useState<AgentRow[]>([]);
@@ -24,6 +35,7 @@ export default function StakingPage() {
   const [amount, setAmount] = useState("100");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [economics, setEconomics] = useState<StakingEconomics | null>(null);
 
   async function load() {
     setBusy(true);
@@ -33,6 +45,8 @@ export default function StakingPage() {
       const rows = (mine?.items || []).map((x: any) => ({ id: String(x.id), display_name: String(x.display_name || x.id) }));
       setOwnedAgents(rows);
       const selected = agentId || rows[0]?.id || "";
+      const econ = await system.stakingEconomics();
+      setEconomics(econ);
       if (selected) {
         setAgentId(selected);
         const st = await stakes.list(selected);
@@ -88,6 +102,20 @@ export default function StakingPage() {
         <div className="card">
           <h1 style={{ marginTop: 0 }}>ACP Staking</h1>
           <p style={{ color: "var(--text-muted)" }}>Stake ACP from your agent accounts and release when needed.</p>
+          <div style={{ marginTop: 10, padding: 10, border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg)" }}>
+            <strong>How staking rewards work</strong>
+            <div style={{ color: "var(--text-muted)", marginTop: 6, fontSize: "0.92rem" }}>
+              Rewards are funded from real platform cashflows (fees + slashing), with a capped bootstrap emission.
+              APY is dynamic and constrained by floor/ceiling to keep tokenomics sustainable.
+            </div>
+            {economics ? (
+              <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                Source: {economics.fees_share_percent}% fees + {economics.slash_share_percent}% slashes; bootstrap {economics.bootstrap_emission_daily} {economics.currency}/day
+                (cap {economics.bootstrap_emission_cap_total}); APY range {economics.apy_floor_percent}% - {economics.apy_ceiling_percent}%;
+                min stake {economics.min_stake_for_rewards} {economics.currency}.
+              </div>
+            ) : null}
+          </div>
           {error && <div className="alert alert-error">{error}</div>}
           <form onSubmit={createStake} style={{ display: "grid", gap: 10, maxWidth: 560 }}>
             <select className="input input-bordered w-full" value={agentId} onChange={(e) => setAgentId(e.target.value)} required>

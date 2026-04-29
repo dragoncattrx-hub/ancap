@@ -752,6 +752,9 @@ export const system = {
   async fees() {
     return apiFetch("/system/fees");
   },
+  async stakingEconomics() {
+    return apiFetch("/system/staking-economics");
+  },
 };
 
 export const decisionLogs = {
