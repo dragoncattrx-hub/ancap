@@ -22,6 +22,7 @@ from app.jobs.growth_metrics_rollup_tick import growth_metrics_rollup_tick
 from app.jobs.faucet_abuse_check_tick import faucet_abuse_check_tick
 from app.jobs.governance_checks_tick import governance_checks_tick
 from app.jobs.graph_enforcement_tick import graph_enforcement_tick
+from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
 from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
 from app.schemas import DecisionLogPublic
@@ -63,6 +64,22 @@ async def fee_settings():
         "run_fee_percent": str(getattr(s, "run_fee_percent", "0") or "0"),
         "run_fee_amount": str(getattr(s, "run_fee_amount", "0") or "0"),
         "run_fee_currency": s.run_fee_currency,
+    }
+
+
+@router.get("/staking-economics")
+async def staking_economics():
+    s = get_settings()
+    return {
+        "enabled": s.staking_rewards_enabled,
+        "currency": s.staking_rewards_currency,
+        "fees_share_percent": str(s.staking_rewards_fees_share_percent),
+        "slash_share_percent": str(s.staking_rewards_slash_share_percent),
+        "bootstrap_emission_daily": str(s.staking_rewards_bootstrap_daily_emission),
+        "bootstrap_emission_cap_total": str(s.staking_rewards_bootstrap_emission_cap_total),
+        "apy_floor_percent": str(s.staking_rewards_apy_floor_percent),
+        "apy_ceiling_percent": str(s.staking_rewards_apy_ceiling_percent),
+        "min_stake_for_rewards": str(s.staking_rewards_min_stake_for_rewards),
     }
 
 
@@ -182,6 +199,7 @@ async def jobs_tick(request: Request, session: DbSession):
     growth_faucet_abuse = await faucet_abuse_check_tick(session, max_items=500)
     governance_checks = await governance_checks_tick(session, commit=False)
     graph_enforcement = await graph_enforcement_tick(session, max_agents=200)
+    staking_rewards = await staking_rewards_tick(session)
     ledger_violations = await check_ledger_invariant(session)
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     return {
@@ -201,5 +219,6 @@ async def jobs_tick(request: Request, session: DbSession):
         "growth_faucet_abuse": growth_faucet_abuse,
         "governance_checks": governance_checks,
         "graph_enforcement": graph_enforcement,
+        "staking_rewards": staking_rewards,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
     }
