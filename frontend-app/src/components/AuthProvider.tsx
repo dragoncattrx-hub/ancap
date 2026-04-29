@@ -14,8 +14,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<string | null>;
+  register: (email: string, password: string, displayName: string) => Promise<string | null>;
   logout: () => void;
 }
 
@@ -70,17 +70,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    await auth.login(email, password);
+    const loginRes = await auth.login(email, password);
     const me = await users.me();
     const userData = userFromApiPayload(me);
     setUser(userData);
     safeSetItem("ancap_user", JSON.stringify(userData));
+    const walletBackupMnemonic =
+      loginRes && typeof loginRes === "object" && "wallet_backup_mnemonic" in loginRes
+        ? String((loginRes as any).wallet_backup_mnemonic || "")
+        : "";
+    return walletBackupMnemonic || null;
   };
 
   const register = async (email: string, password: string, displayName: string) => {
-    await auth.register(email, password, displayName);
+    const created = await auth.register(email, password, displayName);
+    const walletBackupMnemonic =
+      created && typeof created === "object" && "wallet_backup_mnemonic" in created
+        ? String((created as any).wallet_backup_mnemonic || "")
+        : "";
     // Auto-login after registration
-    await login(email, password);
+    const loginBackupMnemonic = await login(email, password);
+    return walletBackupMnemonic || loginBackupMnemonic || null;
   };
 
   const logout = () => {

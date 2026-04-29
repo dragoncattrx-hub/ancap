@@ -9,9 +9,13 @@ from uuid import uuid4
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
+from app.db.session import get_db
+from app.services.acp_wallet import get_wallet_for_user
+from app.services.acp_wallet import decrypt_mnemonic
 from app.schemas import (
     AcpBalanceResponse,
     AcpDepositAddressResponse,
@@ -24,6 +28,7 @@ from app.schemas import (
     AcpSwapOrderConfirmRequest,
     AcpSwapOrderPublic,
     AcpSwapCompleteResponse,
+    AcpSwapCompleteRequest,
 )
 
 
@@ -144,6 +149,24 @@ def _rpc_call(rpc_url: str, method: str, params: list | None = None):
 
 def _to_public_order(order: dict) -> AcpSwapOrderPublic:
     return AcpSwapOrderPublic(**order)
+
+
+async def _get_user_wallet_mnemonic(session: AsyncSession, user_id: str, wallet_password: str) -> str:
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(
+            status_code=409,
+            detail="ACP wallet is not initialized for this account. Please sign in again.",
+        )
+    try:
+        return decrypt_mnemonic(
+            encrypted_mnemonic=wallet.encrypted_mnemonic,
+            salt_b64=wallet.salt_b64,
+            nonce_b64=wallet.nonce_b64,
+            password=wallet_password,
+        )
+    except Exception:
+        raise HTTPException(status_code=403, detail="Invalid wallet password")
 
 
 def _hot_mnemonic_path() -> Path:
@@ -272,16 +295,31 @@ def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransac
 
 
 @router.post("/deposit_address", response_model=AcpDepositAddressResponse)
-def get_deposit_address():
-    mnemonic = _load_or_create_valid_hot_mnemonic()
-    addr = _run_walletd(["address", "--mnemonic", mnemonic])["address"]
-    return AcpDepositAddressResponse(address=addr)
+async def get_deposit_address(
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(
+            status_code=409,
+            detail="ACP wallet is not initialized for this account. Please sign in again.",
+        )
+    return AcpDepositAddressResponse(address=wallet.address)
 
 
 @router.get("/hot/balance", response_model=AcpBalanceResponse)
-def hot_balance():
-    mnemonic = _load_or_create_valid_hot_mnemonic()
-    addr = _run_walletd(["address", "--mnemonic", mnemonic])["address"]
+async def hot_balance(
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(
+            status_code=409,
+            detail="ACP wallet is not initialized for this account. Please sign in again.",
+        )
+    addr = wallet.address
     try:
         rpc_url = _require_acp_rpc_url()
         res = _run_walletd(["balance", "--rpc", rpc_url, "--address", addr], timeout_s=180)
@@ -292,11 +330,20 @@ def hot_balance():
 
 
 @router.get("/balance", response_model=AcpBalanceResponse)
-def balance(address: str | None = Query(default=None)):
+async def balance(
+    address: str | None = Query(default=None),
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
     target = (address or "").strip()
     if not target:
-        mnemonic = _load_or_create_valid_hot_mnemonic()
-        target = str(_run_walletd(["address", "--mnemonic", mnemonic])["address"]).strip()
+        wallet = await get_wallet_for_user(session, user_id)
+        if wallet is None:
+            raise HTTPException(
+                status_code=409,
+                detail="ACP wallet is not initialized for this account. Please sign in again.",
+            )
+        target = wallet.address
     if len(target) < 16:
         raise HTTPException(status_code=400, detail="address looks invalid")
     rpc_url = _require_acp_rpc_url()
@@ -305,27 +352,34 @@ def balance(address: str | None = Query(default=None)):
 
 
 @router.get("/transactions", response_model=list[AcpTransactionPublic])
-def list_transactions(
+async def list_transactions(
     address: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=500),
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
 ):
     target = (address or "").strip()
     if not target:
-        mnemonic = _load_or_create_valid_hot_mnemonic()
-        target = str(_run_walletd(["address", "--mnemonic", mnemonic])["address"]).strip()
+        wallet = await get_wallet_for_user(session, user_id)
+        if wallet is None:
+            raise HTTPException(
+                status_code=409,
+                detail="ACP wallet is not initialized for this account. Please sign in again.",
+            )
+        target = wallet.address
     if len(target) < 16:
         raise HTTPException(status_code=400, detail="address looks invalid")
     return _chain_transactions_for_address(target, limit)
 
 
 @router.post("/withdraw", response_model=AcpWithdrawResponse)
-def withdraw(body: AcpWithdrawRequest, x_wallet_secret: str | None = Header(default=None)):
-    expected = os.getenv("ACP_WALLET_OPERATOR_SECRET", "").strip()
-    if expected and (x_wallet_secret or "").strip() != expected:
-        raise HTTPException(status_code=403, detail="Forbidden")
-
+async def withdraw(
+    body: AcpWithdrawRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
     rpc_url = _require_acp_rpc_url()
-    mnemonic = _load_or_create_valid_hot_mnemonic()
+    mnemonic = await _get_user_wallet_mnemonic(session, user_id, body.wallet_password)
     to_address = _require_non_empty(body.to_address, "to_address")
     amount = _parse_positive_decimal(body.amount_acp, "amount_acp")
 
@@ -444,13 +498,14 @@ def cancel_swap_order(order_id: str, user_id: str = Depends(require_auth)):
 
 
 @router.post("/swap/orders/{order_id}/complete", response_model=AcpSwapCompleteResponse)
-def complete_swap_order(order_id: str, x_wallet_secret: str | None = Header(default=None)):
-    expected = os.getenv("ACP_WALLET_OPERATOR_SECRET", "").strip()
-    if not expected or (x_wallet_secret or "").strip() != expected:
-        raise HTTPException(status_code=403, detail="Forbidden")
-
+async def complete_swap_order(
+    order_id: str,
+    body: AcpSwapCompleteRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
     order = _swap_orders.get(order_id)
-    if not order:
+    if not order or order["user_id"] != user_id:
         raise HTTPException(status_code=404, detail="Swap order not found")
     if order["status"] in ("completed", "cancelled", "rejected"):
         raise HTTPException(status_code=409, detail=f"Swap order is already {order['status']}")
@@ -458,7 +513,7 @@ def complete_swap_order(order_id: str, x_wallet_secret: str | None = Header(defa
         raise HTTPException(status_code=409, detail="Swap order must be confirmed before completion")
 
     rpc_url = _require_acp_rpc_url()
-    mnemonic = _load_or_create_valid_hot_mnemonic()
+    mnemonic = await _get_user_wallet_mnemonic(session, user_id, body.wallet_password)
     transfer_res = _run_walletd(
         [
             "transfer",

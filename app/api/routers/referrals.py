@@ -166,7 +166,7 @@ async def my_referral_summary(session: DbSession, user_id: str = Depends(require
         )
     ).first()
     total_reward_amount = str(reward_row[0]) if reward_row else "0"
-    reward_currency = str(reward_row[1]) if reward_row and reward_row[1] else "USD"
+    reward_currency = str(reward_row[1]) if reward_row and reward_row[1] else "ACP"
     total_reward_events = int(reward_row[2]) if reward_row and reward_row[2] is not None else 0
     total_reward_acp_amount = str(reward_row[3]) if reward_row else "0"
     signup_bonus_acp_amount = str(reward_row[4]) if reward_row else "0"

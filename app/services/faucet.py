@@ -117,22 +117,15 @@ async def claim_faucet(
     else:
         raise HTTPException(status_code=400, detail="missing destination")
 
-    meta = {"type": "faucet", "faucet_claim_id": str(claim.id)}
-    await append_event(
-        session,
-        LedgerEventTypeEnum.transfer,
-        currency,
-        -amount_value,
-        src_account_id=sys_acc.id,
-        metadata={**meta, "leg": "system_debit"},
-    )
+    # Keep faucet payout as one balanced transfer event to preserve ledger invariants.
     ev2 = await append_event(
         session,
         LedgerEventTypeEnum.transfer,
         currency,
         amount_value,
+        src_account_id=sys_acc.id,
         dst_account_id=dst_acc.id,
-        metadata={**meta, "leg": "beneficiary_credit"},
+        metadata={"type": "faucet", "faucet_claim_id": str(claim.id)},
     )
     claim.ledger_tx_id = ev2.id
     await session.flush()

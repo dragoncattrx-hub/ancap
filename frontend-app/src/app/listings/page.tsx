@@ -19,8 +19,9 @@ export default function ListingsPage() {
   const [error, setError] = useState<string>("");
 
   const normalizeCurrency = (currency?: string) => {
-    const c = (currency || "USD").toUpperCase();
-    return c === "VUSD" ? "USD" : c;
+    const c = (currency || "ACP").toUpperCase();
+    if (c === "VUSD" || c === "USD") return "ACP";
+    return c;
   };
 
   useEffect(() => {

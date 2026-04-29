@@ -83,6 +83,7 @@ from app.schemas.wallets import (
     AcpSwapOrderConfirmRequest,
     AcpSwapOrderPublic,
     AcpSwapCompleteResponse,
+    AcpSwapCompleteRequest,
 )
 from app.schemas.growth import (
     FaucetClaimRequest,
@@ -198,6 +199,7 @@ __all__ = [
     "AcpSwapOrderConfirmRequest",
     "AcpSwapOrderPublic",
     "AcpSwapCompleteResponse",
+    "AcpSwapCompleteRequest",
     "FaucetClaimRequest",
     "FaucetClaimPublic",
     "StarterPackAssignRequest",

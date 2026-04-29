@@ -104,7 +104,13 @@ async def withdraw(body: WithdrawRequest, session: DbSession):
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
     acc = await get_or_create_account(session, body.account_owner_type, UUID(body.account_owner_id))
-    value = -Decimal(body.amount.amount)
+    value = Decimal(body.amount.amount)
+    if value <= 0:
+        raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
+    balances = await balance_for_account(session, acc.id, body.amount.currency)
+    available = balances.get(body.amount.currency) or Decimal(0)
+    if available < value:
+        raise HTTPException(status_code=402, detail="Insufficient balance")
     ev = await append_event(
         session,
         LedgerEventTypeEnum.withdraw,

@@ -41,7 +41,7 @@ export default function OnboardingPage() {
     setBusy(true);
     setError("");
     try {
-      const r = await onboardingGrowth.faucetClaim({ currency: "USD", amount: "10", agent_id: selectedAgentId || undefined });
+      const r = await onboardingGrowth.faucetClaim({ currency: "ACP", amount: "10", agent_id: selectedAgentId || undefined });
       setResult(r);
     } catch (e: any) {
       setError(e.message || "Faucet claim failed");
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
         <div className="card" style={{ maxWidth: 980, margin: "0 auto" }}>
           <h1 className="section-title" style={{ marginBottom: 8 }}>Onboarding</h1>
           <p className="section-subtitle" style={{ marginBottom: 18 }}>
-            Claim starter assets (USD), activate a starter pack, and run a quickstart workflow.
+            Claim starter assets (ACP), activate a starter pack, and run a quickstart workflow.
           </p>
 
           <div style={{ display: "grid", gap: 20 }}>
@@ -107,7 +107,7 @@ export default function OnboardingPage() {
 
             <div className="action-cluster" style={{ paddingTop: 4, gap: 14 }}>
               <button className="btn btn-primary" style={{ minWidth: 210 }} disabled={busy} onClick={doFaucet}>
-                Claim Faucet ($10)
+                Claim Faucet (10 ACP)
               </button>
               <button className="btn btn-ghost" style={{ minWidth: 210 }} disabled={busy} onClick={doStarterPack}>
                 Activate Starter Pack

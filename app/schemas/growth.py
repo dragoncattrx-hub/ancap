@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class FaucetClaimRequest(BaseModel):
     user_id: Optional[str] = None
     agent_id: Optional[str] = None
-    currency: str = "USD"
+    currency: str = "ACP"
     amount: str = "10"
 
 

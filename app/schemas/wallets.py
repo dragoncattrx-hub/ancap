@@ -18,6 +18,7 @@ class AcpBalanceResponse(BaseModel):
 class AcpWithdrawRequest(BaseModel):
     to_address: str
     amount_acp: str = Field(..., description="Decimal string, e.g. 1.5")
+    wallet_password: str = Field(..., min_length=8, description="Account password used to decrypt wallet seed")
 
 
 class AcpWithdrawResponse(BaseModel):
@@ -66,6 +67,10 @@ class AcpSwapOrderPublic(BaseModel):
 class AcpSwapCompleteResponse(BaseModel):
     order: AcpSwapOrderPublic
     transfer: AcpWithdrawResponse
+
+
+class AcpSwapCompleteRequest(BaseModel):
+    wallet_password: str = Field(..., min_length=8, description="Account password used to decrypt wallet seed")
 
 
 class AcpTransactionPublic(BaseModel):
