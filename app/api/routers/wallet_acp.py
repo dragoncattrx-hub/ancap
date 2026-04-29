@@ -9,10 +9,12 @@ from uuid import uuid4
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
+from app.db.models import Agent, Stake, StakeStatusEnum
 from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
@@ -127,6 +129,64 @@ def _units_to_acp_str(units: int) -> str:
 
 def _acp_timestamp(ts: int) -> str:
     return datetime.fromtimestamp(ts, timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _parse_decimal_or_zero(value: str | int | float | Decimal | None) -> Decimal:
+    try:
+        if value is None:
+            return Decimal(0)
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return Decimal(0)
+
+
+async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
+    try:
+        owner_user_id = user_id.strip()
+    except Exception:
+        return Decimal(0)
+    if not owner_user_id:
+        return Decimal(0)
+    q = (
+        select(func.coalesce(func.sum(Stake.amount_value), 0))
+        .select_from(Stake)
+        .join(Agent, Agent.id == Stake.agent_id)
+        .where(
+            Agent.owner_user_id == owner_user_id,
+            Stake.status == StakeStatusEnum.active,
+            Stake.amount_currency == "ACP",
+        )
+    )
+    result = await session.execute(q)
+    return _parse_decimal_or_zero(result.scalar())
+
+
+def _format_balance_note(real_acp: Decimal, in_work_acp: Decimal, available_acp: Decimal) -> str:
+    return (
+        f"Real account balance: {_decimal_to_api_str(real_acp)} ACP; "
+        f"in work: {_decimal_to_api_str(in_work_acp)} ACP; "
+        f"available for withdraw: {_decimal_to_api_str(available_acp)} ACP."
+    )
+
+
+async def _decorate_balance_for_user(
+    session: AsyncSession,
+    user_id: str,
+    raw: dict,
+    *,
+    include_in_work: bool,
+) -> AcpBalanceResponse:
+    real_acp = _parse_decimal_or_zero(raw.get("acp"))
+    in_work_acp = await _in_work_acp_for_user(session, user_id) if include_in_work else Decimal(0)
+    available_acp = real_acp - in_work_acp
+    if available_acp < 0:
+        available_acp = Decimal(0)
+    return AcpBalanceResponse(
+        **raw,
+        in_work_acp=_decimal_to_api_str(in_work_acp),
+        available_acp=_decimal_to_api_str(available_acp),
+        balance_note=_format_balance_note(real_acp, in_work_acp, available_acp),
+    )
 
 
 def _rpc_call(rpc_url: str, method: str, params: list | None = None):
@@ -323,10 +383,15 @@ async def hot_balance(
     try:
         rpc_url = _require_acp_rpc_url()
         res = _run_walletd(["balance", "--rpc", rpc_url, "--address", addr], timeout_s=180)
-        return AcpBalanceResponse(**res)
+        return await _decorate_balance_for_user(session, user_id, res, include_in_work=True)
     except HTTPException:
         # Keep wallet UI operational even when RPC is temporarily unavailable.
-        return AcpBalanceResponse(address=addr, units="0", acp="0", utxo_count=0)
+        return await _decorate_balance_for_user(
+            session,
+            user_id,
+            {"address": addr, "units": "0", "acp": "0", "utxo_count": 0},
+            include_in_work=True,
+        )
 
 
 @router.get("/balance", response_model=AcpBalanceResponse)
@@ -335,9 +400,9 @@ async def balance(
     user_id: str = Depends(require_auth),
     session: AsyncSession = Depends(get_db),
 ):
+    wallet = await get_wallet_for_user(session, user_id)
     target = (address or "").strip()
     if not target:
-        wallet = await get_wallet_for_user(session, user_id)
         if wallet is None:
             raise HTTPException(
                 status_code=409,
@@ -348,7 +413,8 @@ async def balance(
         raise HTTPException(status_code=400, detail="address looks invalid")
     rpc_url = _require_acp_rpc_url()
     res = _run_walletd(["balance", "--rpc", rpc_url, "--address", target], timeout_s=180)
-    return AcpBalanceResponse(**res)
+    include_in_work = bool(wallet and wallet.address == target)
+    return await _decorate_balance_for_user(session, user_id, res, include_in_work=include_in_work)
 
 
 @router.get("/transactions", response_model=list[AcpTransactionPublic])
@@ -379,9 +445,29 @@ async def withdraw(
     session: AsyncSession = Depends(get_db),
 ):
     rpc_url = _require_acp_rpc_url()
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(
+            status_code=409,
+            detail="ACP wallet is not initialized for this account. Please sign in again.",
+        )
     mnemonic = await _get_user_wallet_mnemonic(session, user_id, body.wallet_password)
     to_address = _require_non_empty(body.to_address, "to_address")
     amount = _parse_positive_decimal(body.amount_acp, "amount_acp")
+    balance_res = _run_walletd(["balance", "--rpc", rpc_url, "--address", wallet.address], timeout_s=180)
+    real_acp = _parse_decimal_or_zero(balance_res.get("acp"))
+    in_work_acp = await _in_work_acp_for_user(session, user_id)
+    available_acp = real_acp - in_work_acp
+    if available_acp < 0:
+        available_acp = Decimal(0)
+    if amount > available_acp:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Requested {_decimal_to_api_str(amount)} ACP exceeds available "
+                f"{_decimal_to_api_str(available_acp)} ACP (in work: {_decimal_to_api_str(in_work_acp)} ACP)."
+            ),
+        )
 
     res = _run_walletd(
         [

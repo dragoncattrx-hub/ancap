@@ -12,6 +12,9 @@ type BalanceResponse = {
   units: string;
   acp: string;
   utxo_count?: number;
+  in_work_acp?: string;
+  available_acp?: string;
+  balance_note?: string;
 };
 
 type SwapOrder = {
@@ -391,6 +394,20 @@ export default function AcpWalletPage() {
                   {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
+                <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  Real balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                </div>
+                <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  In work: <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
+                </div>
+                <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
+                </div>
+                {balance?.balance_note ? (
+                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>
+                    {balance.balance_note}
+                  </div>
+                ) : null}
                 </div>
 
                 <div className="card">
