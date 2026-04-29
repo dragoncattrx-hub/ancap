@@ -4,6 +4,95 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-04-29 — Bring up local ACP chain with 1,000,000 ACP on hot wallet
+
+The wallet UI was showing `Balance: 0 ACP (0 UTXO)` for the hot wallet address
+`acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` because the ACP node was not
+running on this machine and the data dir under `Sicret/acp-node-data-host/`
+was a freshly-initialized RocksDB with no SST files. The frontend stack
+(`ancap-api-1`, `ancap-frontend-1`, `ancap-proxy-1`, `ancap-postgres-1`) was
+up via Docker Compose, but the chain node lives outside compose; nothing was
+listening on `host.docker.internal:8545`, so `walletd balance` calls
+gracefully degraded to `acp=0, utxo_count=0`.
+
+### What landed
+
+- **`ACP-crypto/acp-wallet/examples/build_and_submit_genesis_custom.rs`** —
+  new example that builds and submits a fresh genesis block with two
+  outputs:
+    1. configurable target address (default: hot wallet) — `1,000,000 ACP`
+    2. throwaway treasury — `BASE_SUPPLY_ACP - 1,000,000 = 209,000,000 ACP`
+  The treasury mnemonic is written to
+  `Sicret/genesis-treasury-mnemonic.txt` so the operator keeps custody of
+  the rest of the supply. Configurable via env:
+  `ACP_RPC_URL`, `ACP_RPC_TOKEN`, `ACP_GENESIS_TARGET_ADDRESS`,
+  `ACP_GENESIS_TARGET_AMOUNT_ACP`, `ACP_GENESIS_TREASURY_OUT_PATH`.
+- **`scripts/start-acp-node.ps1`** — one-liner to start the node on the host
+  for the local Docker stack. Builds the binary if missing, sets
+  `ACP_DATA_DIR` to `Sicret/acp-node-data-host/`, listens on
+  `0.0.0.0:8545` so the API container can reach it via
+  `host.docker.internal:8545`. `-Background` writes logs to
+  `Sicret/acp-node.log`. `-EnableMiner` turns on auto-mining of empty
+  blocks (off by default — genesis-only state is enough for the wallet UI
+  to show the balance).
+- **`scripts/init-acp-genesis.ps1`** — one-liner that runs the custom
+  genesis example after the node is up. Builds the example binary if
+  missing.
+- **`.gitignore`** — added `genesis-block.hex` and
+  `genesis-block-custom.hex` (artifact from running the genesis example
+  from the repo root).
+
+### Verification (live, performed in this session)
+
+```text
+> .\scripts\start-acp-node.ps1 -Background
+ACP node starting (chain_id=1001, data_dir=Sicret\acp-node-data-host)
+RPC listening on 0.0.0.0:8545
+
+> .\scripts\init-acp-genesis.ps1
+Custom genesis (height 1)
+  Target  : acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9 (1000000 ACP)
+  Treasury: acp1qzf6ccmzdekql4hgtvg7hlu92kzup8ywrczrkxt4 (209000000 ACP)
+[OK] Custom genesis accepted. Block hash: 20d00850f6b3ef32126eea81e500c2e8ba17ea9a4f21207dd74b8e716628a091
+
+> walletd balance --rpc http://127.0.0.1:8545/rpc --address acp1qzfd...nqp9
+{"ok":true,"result":{"acp":"1000000.00000000","address":"...","units":"100000000000000","utxo_count":1}}
+
+> docker exec ancap-api-1 walletd balance \
+    --rpc http://host.docker.internal:8545/rpc \
+    --address acp1qzfd...nqp9
+{"ok":true,"result":{"acp":"1000000.00000000",...}}
+```
+
+### How to recreate after a reboot or fresh clone
+
+```powershell
+# 1) (only on the very first run, or to start a brand-new chain)
+Remove-Item -Recurse -Force .\Sicret\acp-node-data-host\*
+.\scripts\start-acp-node.ps1 -Background
+.\scripts\init-acp-genesis.ps1
+
+# 2) on subsequent runs, just resume the same chain:
+.\scripts\start-acp-node.ps1 -Background
+```
+
+### Open follow-ups
+
+- `ACP-crypto/acp-node/src/rpc/handlers.rs` does not expose a `getbalance`
+  RPC — `walletd` computes it via UTXO scans. This is fine for the wallet
+  UI but annoying for ad-hoc curl debugging. A single read-only handler
+  would be a small, safe add.
+- The 209M treasury allocation lives off a 12-word mnemonic in
+  `Sicret/genesis-treasury-mnemonic.txt`. That file is gitignored, but if
+  this becomes a multi-operator deploy it should move to a proper KMS or
+  HSM and not sit on disk.
+- The node here runs without a miner, so the chain stays at height 1.
+  Anchoring (`CHAIN_ANCHOR_DRIVER=acp`) and in-product transfers will
+  start producing new blocks via mempool + miner; for the wallet UI alone
+  height 1 is enough.
+
+---
+
 ## 2026-04-29 — Backend test suite repair + two production bug fixes
 
 Triggered by a `pytest` run that surfaced **47 failing tests** at HEAD. None

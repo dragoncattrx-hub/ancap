@@ -70,6 +70,8 @@ ACP-crypto/**/target/
 ACP-crypto/acp-wallet/ecosystem.keystore.json
 ACP-crypto/acp-wallet/genesis-addresses.json
 ACP-crypto/acp-wallet/genesis-block.hex
+genesis-block.hex
+genesis-block-custom.hex
 ACP-crypto/acp-wallet/receive-address.txt
 
 # Local scratch / agent notes
