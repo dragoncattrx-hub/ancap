@@ -59,6 +59,75 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+type LangCode = "en" | "ru" | "uk";
+const LANG_OPTIONS: ReadonlyArray<{ code: LangCode; label: string }> = [
+  { code: "en", label: "EN" },
+  { code: "ru", label: "RU" },
+  { code: "uk", label: "UK" },
+];
+
+/**
+ * Accessible language switcher.
+ *
+ * Implements WAI-ARIA radiogroup semantics so screen readers announce
+ * "1 of 3" and arrow keys move the selection. Visually it stays a row of
+ * three buttons inside a pill, the same as before.
+ */
+function LangSwitcher({
+  lang,
+  setLang,
+  size = "default",
+}: {
+  lang: LangCode;
+  setLang: (l: LangCode) => void;
+  size?: "default" | "compact";
+}) {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    let nextIdx = idx;
+    if (e.key === "ArrowRight") nextIdx = (idx + 1) % LANG_OPTIONS.length;
+    else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + LANG_OPTIONS.length) % LANG_OPTIONS.length;
+    else if (e.key === "Home") nextIdx = 0;
+    else if (e.key === "End") nextIdx = LANG_OPTIONS.length - 1;
+    setLang(LANG_OPTIONS[nextIdx].code);
+  };
+
+  const padCls = size === "compact"
+    ? "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]"
+    : "rounded-full px-3 py-1.5 text-[12px] font-medium transition";
+  const wrapCls = size === "compact"
+    ? "flex origin-right scale-[0.92] items-center rounded-full border border-white/10 bg-white/[0.03] p-0.5 sm:scale-100 sm:p-1"
+    : "flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1";
+
+  return (
+    <div role="radiogroup" aria-label="Language" className={wrapCls}>
+      {LANG_OPTIONS.map((opt, idx) => {
+        const active = lang === opt.code;
+        return (
+          <button
+            key={opt.code}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            tabIndex={active ? 0 : -1}
+            onClick={() => setLang(opt.code)}
+            onKeyDown={(e) => onKeyDown(e, idx)}
+            className={cn(
+              padCls,
+              active
+                ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                : "text-white/50 hover:text-white/85"
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function HeaderLink({
   item,
   label,
@@ -178,44 +247,7 @@ export function Navigation() {
               {t("nav.acpWallet")}
             </Link>
             <div className="h-6 w-px shrink-0 bg-white/10" />
-            <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
-              <button
-                type="button"
-                onClick={() => setLang("en")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
-                  lang === "en"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("ru")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
-                  lang === "ru"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                RU
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("uk")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
-                  lang === "uk"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                UK
-              </button>
-            </div>
+            <LangSwitcher lang={lang} setLang={setLang} />
 
             <div className="h-6 w-px bg-white/10" />
 
@@ -256,44 +288,7 @@ export function Navigation() {
               <span className="sm:hidden">{t("hero.acpWalletLink")}</span>
               <span className="hidden sm:inline">{t("nav.acpWallet")}</span>
             </Link>
-            <div className="flex origin-right scale-[0.92] items-center rounded-full border border-white/10 bg-white/[0.03] p-0.5 sm:scale-100 sm:p-1">
-              <button
-                type="button"
-                onClick={() => setLang("en")}
-                className={cn(
-                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
-                  lang === "en"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("ru")}
-                className={cn(
-                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
-                  lang === "ru"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                RU
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("uk")}
-                className={cn(
-                  "rounded-full px-2 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-[12px]",
-                  lang === "uk"
-                    ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                    : "text-white/50 hover:text-white/85"
-                )}
-              >
-                UK
-              </button>
-            </div>
+            <LangSwitcher lang={lang} setLang={setLang} size="compact" />
 
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}

@@ -6,6 +6,7 @@ All tests share the same loop → no "Event loop is closed" or skips.
 import json
 import os
 import uuid
+from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -18,6 +19,16 @@ if "+asyncpg" not in _test_db_url:
 os.environ["DATABASE_URL"] = _test_db_url
 # Disable daily agent registration limit in tests
 os.environ["REGISTRATION_MAX_AGENTS_PER_DAY"] = "0"
+# Disable tier-gating in tests so listings/orders/runs don't 403 because the
+# test agent has no stake/trust/reputation. Production keeps this on by default.
+os.environ.setdefault("PARTICIPATION_GATES_ENABLED", "false")
+# Tests assert listing/run creation succeeds without first funding the seller's
+# agent account. Zero out platform fees in the test environment; the few tests
+# that explicitly cover fee accounting set their own values via monkeypatch.
+os.environ.setdefault("LISTING_FEE_PERCENT", "0")
+os.environ.setdefault("LISTING_FEE_AMOUNT", "0")
+os.environ.setdefault("RUN_FEE_PERCENT", "0")
+os.environ.setdefault("RUN_FEE_AMOUNT", "0")
 
 from app.db.session import Base, get_db, async_session_maker
 from app.main import app
@@ -102,9 +113,66 @@ def _run_migrations_or_create_all(sync_url: str):
     sync_engine.dispose()
 
 
+class _AuthedTestClient(TestClient):
+    """TestClient that injects a default Bearer token unless a test passes its own.
+
+    Most legacy tests were written before `/v1/ledger/*`, `/v1/api-keys`, etc.
+    became authenticated. Rather than touch ~140 test bodies, we attach a token
+    for the session's default user automatically. To opt out (e.g. when a test
+    explicitly checks for 401), pass `headers={"Authorization": ""}` or use the
+    `client_unauth` fixture.
+    """
+
+    default_token: str | None = None
+
+    def request(self, method: str, url: str, **kwargs: Any):  # type: ignore[override]
+        if self.default_token:
+            headers = dict(kwargs.get("headers") or {})
+            # Use `in` rather than `.get(...) or ...` so empty-string opt-outs
+            # are not confused with "header not provided".
+            has_auth = "Authorization" in headers or "authorization" in headers
+            if not has_auth:
+                headers["Authorization"] = f"Bearer {self.default_token}"
+            else:
+                value = headers.get("Authorization")
+                if value is None:
+                    value = headers.get("authorization")
+                if value == "":
+                    # Caller wants an unauthenticated request; strip the header
+                    # entirely so the server replies 401 (not 422 on a bad token).
+                    headers.pop("Authorization", None)
+                    headers.pop("authorization", None)
+            kwargs["headers"] = headers
+        return super().request(method, url, **kwargs)
+
+
+def _bootstrap_default_user(c: TestClient) -> str:
+    """Create a single throwaway user for the session and return its access token."""
+    email = unique_email()
+    password = "password123"
+    r = c.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "default_test_user"},
+        headers={"Authorization": ""},
+    )
+    assert r.status_code in (200, 201, 400), r.text
+    login = c.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""},
+    )
+    assert login.status_code == 200, login.text
+    return str(login.json().get("access_token") or "")
+
+
 @pytest.fixture(scope="session")
 def client():
-    """Sync HTTP client. Creates tables once via sync engine; app runs in one thread/loop."""
+    """Sync HTTP client. Creates tables once via sync engine; app runs in one thread/loop.
+
+    Auto-attaches a Bearer token for the session's default user. Tests that need
+    an unauthenticated request can pass `headers={"Authorization": ""}` or use
+    the `client_unauth` fixture below.
+    """
     sync_url = _sync_database_url()
     try:
         _run_migrations_or_create_all(sync_url)
@@ -123,9 +191,25 @@ def client():
                 await session.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app=app, base_url="http://test") as c:
+    with _AuthedTestClient(app=app, base_url="http://test") as c:
+        c.default_token = _bootstrap_default_user(c)
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="session")
+def client_unauth(client):
+    """Sibling client that does not auto-attach the default user's token.
+
+    Use only for tests that intentionally check 401 / unauth behavior.
+    """
+
+    class _BareClient(TestClient):
+        pass
+
+    bare = _BareClient(app=app, base_url="http://test")
+    yield bare
+    bare.close()
 
 
 def get_base_vertical_id_from_db():

@@ -74,6 +74,8 @@ Default language: **EN**.
 
 **Frontend documentation:** [FRONTEND.md](FRONTEND.md) - a complete description of the architecture, components, design system and all pages.
 
+**Latest UX / a11y / SEO audit:** [docs/AUDIT-2026-04-29.md](docs/AUDIT-2026-04-29.md) — privacy / accessibility / marketplace / wallet / metadata fixes, plus deferred items that need backend decisions. The matching change-log entry is in [LOG.md](LOG.md).
+
 **Launch frontend:**
 
 ```bash

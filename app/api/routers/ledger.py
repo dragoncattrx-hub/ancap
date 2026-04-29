@@ -34,6 +34,16 @@ async def _assert_owner_access(session: DbSession, user_id: str, owner_type: str
         if not agent or str(agent.owner_user_id or "") != user_id:
             raise HTTPException(status_code=403, detail="Forbidden account owner")
         return
+    if ot == "pool_treasury":
+        # Pools are shared/platform-level. A deposit to a pool_treasury credits
+        # the pool from outside the system (no source account is debited), so
+        # any authenticated user is allowed to top one up. Allocations from a
+        # pool are gated separately via Pool.owner_agent_id in `allocate`.
+        from app.db.models import Pool
+        pool = await session.get(Pool, owner_id)
+        if not pool:
+            raise HTTPException(status_code=404, detail="Pool not found")
+        return
     raise HTTPException(status_code=403, detail="Unsupported owner_type for user access")
 
 
@@ -162,8 +172,12 @@ async def allocate(body: AllocateRequest, session: DbSession, user_id: str = Dep
     pool = r.scalar_one_or_none()
     if not pool:
         raise HTTPException(status_code=404, detail="Pool not found")
-    if str(pool.owner_agent_id or ""):
-        await _assert_owner_access(session, user_id, "agent", UUID(str(pool.owner_agent_id)))
+    # The Pool model currently has no `owner_agent_id` column, so dereferencing
+    # it directly raised AttributeError → 500 for every caller. Use getattr so
+    # we degrade to a clean 403 instead, until pool ownership is modeled.
+    pool_owner_agent_id = getattr(pool, "owner_agent_id", None)
+    if pool_owner_agent_id:
+        await _assert_owner_access(session, user_id, "agent", UUID(str(pool_owner_agent_id)))
     else:
         raise HTTPException(status_code=403, detail="Pool has no owner")
     pool_acc = await get_or_create_account(session, "pool_treasury", pool.id)
@@ -209,8 +223,25 @@ async def list_events(
         await _assert_owner_access(session, user_id, acc.owner_type, acc.owner_id)
         q = q.where((LedgerEvent.src_account_id == account_id) | (LedgerEvent.dst_account_id == account_id))
     else:
-        q = q.join(Account, ((LedgerEvent.src_account_id == Account.id) | (LedgerEvent.dst_account_id == Account.id)))
-        q = q.where((Account.owner_type == "user") & (Account.owner_id == UUID(user_id)))
+        # Without an explicit account filter, return events that touch any
+        # account the user owns directly OR via an agent they own. The previous
+        # query only matched `owner_type=user` accounts, so contract payouts and
+        # other agent-to-agent events were invisible to the very user who
+        # initiated them. We use a subquery on Account so events where BOTH
+        # src and dst happen to be owned by the user (e.g. a contract payout
+        # between two of their agents) are not duplicated by the OR join.
+        owned_agent_ids_subq = select(Agent.id).where(Agent.owner_user_id == UUID(user_id))
+        owned_account_ids_subq = (
+            select(Account.id)
+            .where(
+                ((Account.owner_type == "user") & (Account.owner_id == UUID(user_id)))
+                | ((Account.owner_type == "agent") & (Account.owner_id.in_(owned_agent_ids_subq)))
+            )
+        )
+        q = q.where(
+            (LedgerEvent.src_account_id.in_(owned_account_ids_subq))
+            | (LedgerEvent.dst_account_id.in_(owned_account_ids_subq))
+        )
     if type:
         q = q.where(LedgerEvent.type == type.value)
     r = await session.execute(q)

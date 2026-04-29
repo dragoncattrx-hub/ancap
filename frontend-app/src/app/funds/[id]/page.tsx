@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
@@ -31,18 +31,13 @@ export default function FundDetailPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated && fundId) {
-      loadData();
-    }
-  }, [isAuthenticated, fundId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    if (!fundId) return;
     try {
       setLoading(true);
       const [fundData, perfData, strategiesData] = await Promise.all([
-        funds.get(fundId!),
-        funds.getPerformance(fundId!),
+        funds.get(fundId),
+        funds.getPerformance(fundId),
         strategies.list(100),
       ]);
       setFund(fundData);
@@ -54,7 +49,13 @@ export default function FundDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fundId]);
+
+  useEffect(() => {
+    if (isAuthenticated && fundId) {
+      loadData();
+    }
+  }, [isAuthenticated, fundId, loadData]);
 
   const handleAllocate = async (e: React.FormEvent) => {
     e.preventDefault();

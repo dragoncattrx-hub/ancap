@@ -216,6 +216,21 @@ frontend-app/
 - Connections between nodes (blockchain style)
 - Adaptive size
 - Low opacity (does not distract from the content)
+- **Honors `prefers-reduced-motion: reduce`**: when the OS-level "Reduce motion"
+  preference is on, the component draws a single static frame and does not start
+  the `requestAnimationFrame` loop. It also subscribes to `MediaQueryList` change
+  events, so toggling the preference takes effect without a reload.
+
+### LangSwitcher (inside `Navigation.tsx`)
+
+**Purpose**: Accessible EN/RU/UK language toggle.
+
+**Features**:
+- Single component reused in the desktop and mobile nav.
+- Implements WAI-ARIA `radiogroup` / `radio` pattern with `aria-checked` and roving
+  `tabIndex`.
+- Arrow Left / Arrow Right / Home / End move the selection by keyboard.
+- Persists the choice via `LanguageProvider` (`localStorage` key `ancap-lang-v2`).
 
 ## API Integration
 

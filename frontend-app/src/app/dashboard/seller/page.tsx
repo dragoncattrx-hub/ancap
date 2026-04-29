@@ -64,7 +64,7 @@ export default function SellerDashboardPage() {
       }
     }
     return out;
-  }, [myAgents, balances]);
+  }, [myAgents, eventsByAgent]);
 
   if (isLoading || !isAuthenticated) return null;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
@@ -8,7 +8,7 @@ import { NetworkBackground } from "@/components/NetworkBackground";
 import { access } from "@/lib/api";
 
 function AccessPageInner() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,13 +22,7 @@ function AccessPageInner() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadGrants();
-    }
-  }, [isAuthenticated, searchParams]);
-
-  const loadGrants = async () => {
+  const loadGrants = useCallback(async () => {
     try {
       setLoading(true);
       const granteeType = searchParams?.get("grantee_type") || undefined;
@@ -41,7 +35,13 @@ function AccessPageInner() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadGrants();
+    }
+  }, [isAuthenticated, loadGrants]);
 
   if (authLoading || !isAuthenticated) {
     return null;

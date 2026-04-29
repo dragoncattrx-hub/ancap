@@ -1,4 +1,4 @@
-from decimal import Decimal
+﻿from decimal import Decimal
 
 from tests.conftest import unique_email, unique_name
 
@@ -23,17 +23,24 @@ def _create_agent(client, token: str, role: str) -> str:
     return r.json()["id"]
 
 
-def _deposit(client, owner_type: str, owner_id: str, amount: str, currency: str = "VUSD"):
+def _deposit(client, token: str, owner_type: str, owner_id: str, amount: str, currency: str = "VUSD"):
     r = client.post(
         "/v1/ledger/deposit",
-        headers={"Idempotency-Key": unique_name("idk_ms_deposit")},
+        headers={
+            "Idempotency-Key": unique_name("idk_ms_deposit"),
+            "Authorization": f"Bearer {token}",
+        },
         json={"account_owner_type": owner_type, "account_owner_id": owner_id, "amount": {"amount": amount, "currency": currency}},
     )
     assert r.status_code == 201, r.text
 
 
-def _balance(client, owner_type: str, owner_id: str, currency: str = "VUSD") -> Decimal:
-    r = client.get("/v1/ledger/balance", params={"owner_type": owner_type, "owner_id": owner_id})
+def _balance(client, token: str, owner_type: str, owner_id: str, currency: str = "VUSD") -> Decimal:
+    r = client.get(
+        "/v1/ledger/balance",
+        params={"owner_type": owner_type, "owner_id": owner_id},
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert r.status_code == 200, r.text
     for b in r.json().get("balances") or []:
         if b.get("currency") == currency:
@@ -58,7 +65,7 @@ def test_fixed_milestones_partial_payout_and_refund(client, base_vertical_id):
     token = _register_and_login(client)
     employer = _create_agent(client, token, "seller")
     worker = _create_agent(client, token, "buyer")
-    _deposit(client, "agent", employer, "50")
+    _deposit(client, token, "agent", employer, "50")
 
     c = client.post(
         "/v1/contracts",
@@ -109,18 +116,18 @@ def test_fixed_milestones_partial_payout_and_refund(client, base_vertical_id):
     a = client.post(f"/v1/contracts/{cid}/accept")
     assert a.status_code == 200, a.text
 
-    before_worker = _balance(client, "agent", worker)
+    before_worker = _balance(client, token, "agent", worker)
     # Accept milestone -> partial payout from escrow
     am1 = client.post(f"/v1/milestones/{mid1}/accept", headers={"Authorization": f"Bearer {token}"})
     assert am1.status_code == 200, am1.text
-    after_worker = _balance(client, "agent", worker)
+    after_worker = _balance(client, token, "agent", worker)
     assert after_worker >= before_worker + Decimal("10")
 
     # Cancel contract -> refund remainder
-    before_employer = _balance(client, "agent", employer)
+    before_employer = _balance(client, token, "agent", employer)
     cancel = client.post(f"/v1/contracts/{cid}/cancel")
     assert cancel.status_code == 200, cancel.text
-    after_employer = _balance(client, "agent", employer)
+    after_employer = _balance(client, token, "agent", employer)
     assert after_employer >= before_employer
 
 
@@ -128,7 +135,7 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
     token = _register_and_login(client)
     employer = _create_agent(client, token, "seller")
     worker = _create_agent(client, token, "buyer")
-    _deposit(client, "agent", employer, "50")
+    _deposit(client, token, "agent", employer, "50")
 
     c = client.post(
         "/v1/contracts",
@@ -170,7 +177,7 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
     )
 
     vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
-    before = _balance(client, "agent", worker)
+    before = _balance(client, token, "agent", worker)
 
     r1 = client.post(
         "/v1/runs",
@@ -178,7 +185,7 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
         json={"strategy_version_id": vid, "pool_id": pool_id, "params": {}, "limits": {}, "dry_run": True, "run_mode": "mock", "contract_id": cid, "contract_milestone_id": mid},
     )
     assert r1.status_code == 201, r1.text
-    mid_balance1 = _balance(client, "agent", worker)
+    mid_balance1 = _balance(client, token, "agent", worker)
     assert mid_balance1 >= before + Decimal("7")
 
     r2 = client.post(
@@ -187,9 +194,10 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
         json={"strategy_version_id": vid, "pool_id": pool_id, "params": {}, "limits": {}, "dry_run": True, "run_mode": "mock", "contract_id": cid, "contract_milestone_id": mid},
     )
     assert r2.status_code == 201, r2.text
-    after = _balance(client, "agent", worker)
+    after = _balance(client, token, "agent", worker)
 
     # Total payout capped at 10
     assert after >= before + Decimal("10")
     assert after <= before + Decimal("10.000000000000000001")
+
 

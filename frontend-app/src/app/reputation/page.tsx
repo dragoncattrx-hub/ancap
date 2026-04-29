@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
@@ -39,13 +39,7 @@ export default function ReputationPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadEvents();
-    }
-  }, [isAuthenticated, user?.id]);
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       if (!user?.id) return;
       setLoading(true);
@@ -57,7 +51,13 @@ export default function ReputationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadEvents();
+    }
+  }, [isAuthenticated, loadEvents]);
 
   const loadSubjectReputation = async (e: React.FormEvent) => {
     e.preventDefault();
