@@ -15,12 +15,15 @@ class AcpBalanceResponse(BaseModel):
     utxo_count: int = 0
     in_work_acp: str | None = None
     available_acp: str | None = None
+    vested_unlocked_acp: str | None = None
+    vested_locked_acp: str | None = None
     balance_note: str | None = None
 
 
 class AcpWithdrawRequest(BaseModel):
     to_address: str
     amount_acp: str = Field(..., description="Decimal string, e.g. 1.5")
+    fee_acp: str | None = Field(default=None, description="Optional fee in ACP (must be >= network minimum)")
     wallet_password: str = Field(..., min_length=8, description="Account password used to decrypt wallet seed")
 
 

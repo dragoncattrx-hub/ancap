@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import shutil
 import subprocess
@@ -59,6 +60,19 @@ def generate_mnemonic() -> str:
     return " ".join(words)
 
 
+def generate_wallet_secret() -> tuple[str, str, str]:
+    created = _run_walletd(["new"])
+    mnemonic = str(created["mnemonic"]).strip()
+    keystore_json = str(created.get("keystore_json") or "").strip()
+    address = str(created["address"]).strip()
+    if len(address) < 16:
+        raise RuntimeError("ACP wallet helper returned invalid address")
+    if not keystore_json:
+        raise RuntimeError("ACP wallet helper did not return keystore_json")
+    payload = json.dumps({"v": 2, "mnemonic": mnemonic, "keystore_json": keystore_json}, separators=(",", ":"))
+    return payload, mnemonic, address
+
+
 def derive_address(mnemonic: str, derivation_path: str = DEFAULT_DERIVATION_PATH) -> str:
     args = ["address", "--mnemonic", mnemonic]
     if derivation_path:
@@ -110,6 +124,25 @@ def decrypt_mnemonic(encrypted_mnemonic: str, salt_b64: str, nonce_b64: str, pas
     return plaintext.decode("utf-8")
 
 
+def decode_wallet_secret(secret_text: str) -> tuple[str, str | None]:
+    """
+    Returns (mnemonic, keystore_json_or_none), compatible with legacy mnemonic-only rows.
+    """
+    text = (secret_text or "").strip()
+    if not text:
+        raise RuntimeError("empty wallet secret")
+    try:
+        payload = json.loads(text)
+        if isinstance(payload, dict) and payload.get("v") == 2:
+            mnemonic = str(payload.get("mnemonic") or "").strip()
+            keystore_json = str(payload.get("keystore_json") or "").strip()
+            if mnemonic and keystore_json:
+                return mnemonic, keystore_json
+    except Exception:
+        pass
+    return text, None
+
+
 async def get_wallet_for_user(session: AsyncSession, user_id: str) -> UserAcpWallet | None:
     q = select(UserAcpWallet).where(UserAcpWallet.user_id == user_id)
     row = await session.execute(q)
@@ -122,9 +155,8 @@ async def create_wallet_for_user(
     password: str,
     derivation_path: str = DEFAULT_DERIVATION_PATH,
 ) -> tuple[UserAcpWallet, str]:
-    mnemonic = generate_mnemonic()
-    address = derive_address(mnemonic, derivation_path=derivation_path)
-    encrypted_mnemonic, salt_b64, nonce_b64 = encrypt_mnemonic(mnemonic, password)
+    wallet_secret, mnemonic, address = generate_wallet_secret()
+    encrypted_mnemonic, salt_b64, nonce_b64 = encrypt_mnemonic(wallet_secret, password)
     now = datetime.now(timezone.utc)
     wallet = UserAcpWallet(
         user_id=user_id,

@@ -143,6 +143,8 @@ pub struct NodeConfig {
     pub miner_enabled: bool,
     /// Interval in seconds between miner attempts (when mempool is non-empty).
     pub miner_interval_secs: u64,
+    /// Optional address to receive automatic Validator Reserve emission rewards.
+    pub miner_reward_address: Option<String>,
 }
 
 impl Default for NodeConfig {
@@ -157,6 +159,7 @@ impl Default for NodeConfig {
             protocol: None,
             miner_enabled: true,
             miner_interval_secs: 10,
+            miner_reward_address: None,
         }
     }
 }

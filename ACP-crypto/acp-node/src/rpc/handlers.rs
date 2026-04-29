@@ -4310,6 +4310,22 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
                 }));
             }
 
+            let now_time = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
+            if let Err(e) = crate::vesting::validate_tx_creator_vesting(
+                &ctx.chain.storage,
+                &ctx.mempool,
+                &tx,
+                now_time,
+            ) {
+                return Ok(json!({
+                    "accepted": false,
+                    "reason": e.to_string()
+                }));
+            }
+
             let txid = match tx.txid() {
                 Ok(id) => id,
                 Err(e) => {

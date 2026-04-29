@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
-import { runs, strategies, pools } from "@/lib/api";
+import { runs, strategies, pools, system as systemApi } from "@/lib/api";
 
 interface Run {
   id: string;
@@ -18,6 +18,7 @@ interface Run {
 }
 
 export default function RunsPage() {
+  const [runFeePercent, setRunFeePercent] = useState<number>(1);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [runsList, setRunsList] = useState<Run[]>([]);
@@ -48,14 +49,17 @@ export default function RunsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [runsData, strategiesData, poolsData] = await Promise.all([
+      const [runsData, strategiesData, poolsData, feeCfg] = await Promise.all([
         runs.list(50),
         strategies.list(50),
         pools.list(50),
+        systemApi.fees().catch(() => null),
       ]);
       setRunsList(runsData.items || []);
       setStrategiesList(strategiesData.items || []);
       setPoolsList(poolsData.items || []);
+      const pct = Number((feeCfg as any)?.run_fee_percent ?? "0");
+      if (Number.isFinite(pct) && pct >= 0) setRunFeePercent(pct);
       setError("");
     } catch (err: any) {
       setError(err.message || "Failed to load data");
@@ -287,6 +291,9 @@ export default function RunsPage() {
                     Dry run (test mode, no real execution)
                   </span>
                 </label>
+              </div>
+              <div style={{ marginBottom: "16px", color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                Platform run fee: {runFeePercent}% is charged only from contract payout (if any).
               </div>
 
               <div style={{ display: "flex", gap: "12px" }}>

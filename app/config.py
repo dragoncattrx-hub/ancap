@@ -37,8 +37,13 @@ class Settings(BaseSettings):
     stake_to_activate_currency: str = "ACP"
 
     # L3: Fees (platform)
+    # Percentage-based defaults:
+    # - listing_fee_percent is applied to listing price on publish
+    # - run_fee_percent is applied to contract payout amount on successful run
+    run_fee_percent: str = "1"
     run_fee_amount: str = "0"
     run_fee_currency: str = "ACP"
+    listing_fee_percent: str = "2"
     listing_fee_amount: str = "0"
     listing_fee_currency: str = "ACP"
 
@@ -55,6 +60,11 @@ class Settings(BaseSettings):
     # Wallet swap MVP: USDT TRC20 -> ACP (internal/manual confirmation flow)
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     usdt_trc20_to_acp_rate: str = "1"
+
+    # Referral rewards: optional on-chain auto payout from a dedicated site wallet.
+    referral_onchain_payout_enabled: bool = False
+    referral_onchain_payout_keystore_file: str = ""
+    referral_onchain_payout_fee_acp: str = ""
 
     # Opaque cursor (reputation events pagination): HMAC secret
     cursor_secret: str = "change-me-cursor-secret"

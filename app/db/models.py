@@ -1043,6 +1043,57 @@ class ReferralRewardEvent(Base):
     )
 
 
+class ReferralOnchainPayoutJob(Base):
+    __tablename__ = "referral_onchain_payout_jobs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    reward_event_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("referral_reward_events.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    to_address = Column(String(128), nullable=False)
+    amount_value = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="pending", index=True)  # pending|sent|failed
+    attempts = Column(Integer, nullable=False, default=0)
+    txid = Column(String(128), nullable=True, index=True)
+    last_error = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_ref_payout_status_created", "status", "created_at"),
+        Index("ux_ref_payout_reward_event", "reward_event_id", unique=True),
+    )
+
+
+class AcpSwapOrder(Base):
+    __tablename__ = "acp_swap_orders"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="awaiting_deposit", index=True)
+    usdt_trc20_amount = Column(Numeric(38, 18), nullable=False)
+    rate_acp_per_usdt = Column(Numeric(38, 18), nullable=False)
+    estimated_acp_amount = Column(Numeric(38, 18), nullable=False)
+    payout_acp_address = Column(String(128), nullable=False)
+    deposit_trc20_address = Column(String(128), nullable=False)
+    deposit_reference = Column(String(64), nullable=False, unique=True, index=True)
+    tron_txid = Column(String(256), nullable=True, index=True)
+    payout_txid = Column(String(128), nullable=True, index=True)
+    note = Column(Text, nullable=True)
+    idempotency_key = Column(String(128), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_swap_orders_user_created", "user_id", "created_at"),
+        Index("ux_swap_user_idempotency", "user_id", "idempotency_key", unique=True),
+    )
+
+
 class FaucetClaim(Base):
     __tablename__ = "faucet_claims"
 

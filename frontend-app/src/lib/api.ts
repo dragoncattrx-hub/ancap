@@ -87,10 +87,10 @@ export const auth = {
     return data;
   },
 
-  async register(email: string, password: string, display_name: string) {
+  async register(email: string, password: string, display_name: string, referral_code?: string) {
     return apiFetch("/auth/users", {
       method: "POST",
-      body: JSON.stringify({ email, password, display_name }),
+      body: JSON.stringify({ email, password, display_name, referral_code }),
     });
   },
 
@@ -342,12 +342,13 @@ export const walletAcp = {
     return apiFetch(`/wallet/acp/transactions${suffix ? `?${suffix}` : ""}`);
   },
 
-  async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string }) {
+  async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string; fee_acp?: string }) {
     return apiFetch("/wallet/acp/withdraw", {
       method: "POST",
       body: JSON.stringify({
         to_address: data.to_address,
         amount_acp: data.amount_acp,
+        fee_acp: data.fee_acp,
         wallet_password: data.wallet_password,
       }),
     });
@@ -384,6 +385,28 @@ export const walletAcp = {
 
   async cancelSwapOrder(orderId: string) {
     return apiFetch(`/wallet/acp/swap/orders/${orderId}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+  },
+};
+
+export const stakes = {
+  async list(agent_id?: string) {
+    const params = new URLSearchParams();
+    if (agent_id) params.append("agent_id", agent_id);
+    const suffix = params.toString();
+    return apiFetch(`/stakes${suffix ? `?${suffix}` : ""}`);
+  },
+  async create(data: { agent_id: string; amount: string; currency?: string }) {
+    const params = new URLSearchParams({ agent_id: data.agent_id });
+    return apiFetch(`/stakes/user/stake?${params.toString()}`, {
+      method: "POST",
+      body: JSON.stringify({ amount: data.amount, currency: data.currency || "ACP" }),
+    });
+  },
+  async release(stake_id: string) {
+    return apiFetch(`/stakes/user/${stake_id}/release`, {
       method: "POST",
       body: JSON.stringify({}),
     });
@@ -628,7 +651,7 @@ export const onboardingGrowth = {
   async faucetClaim(data: { currency?: string; amount?: string; agent_id?: string; user_id?: string }) {
     return apiFetch("/onboarding/faucet/claim", {
       method: "POST",
-      body: JSON.stringify({ currency: "USD", amount: "10", ...data }),
+      body: JSON.stringify({ currency: "ACP", amount: "10", ...data }),
     });
   },
   async starterPackAssign(data: { starter_pack_code?: string; agent_id?: string; user_id?: string }) {
@@ -722,6 +745,12 @@ export const referrals = {
   },
   async listMyRewards(limit = 50) {
     return apiFetch(`/referrals/me/rewards?limit=${limit}`);
+  },
+};
+
+export const system = {
+  async fees() {
+    return apiFetch("/system/fees");
   },
 };
 
@@ -887,6 +916,8 @@ export const api = {
   pools,
   verticals,
   ledger,
+  walletAcp,
+  stakes,
   reputation,
   listings,
   orders,
@@ -902,6 +933,7 @@ export const api = {
   growthTasks,
   growthDashboard,
   referrals,
+  system,
   decisionLogs,
   governance,
   evolution,

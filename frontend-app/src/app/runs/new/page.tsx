@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { pools, runs, strategies } from "@/lib/api";
+import { pools, runs, strategies, system as systemApi } from "@/lib/api";
 
 function RunNewPageInner() {
+  const [runFeePercent, setRunFeePercent] = useState<number>(1);
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const sp = useSearchParams();
@@ -73,6 +74,13 @@ function RunNewPageInner() {
               strategy_version_id: preferred,
             };
           });
+        }
+        try {
+          const feeCfg = await systemApi.fees();
+          const pct = Number(feeCfg?.run_fee_percent ?? "0");
+          if (Number.isFinite(pct) && pct >= 0) setRunFeePercent(pct);
+        } catch {
+          // keep fallback fee percentage
         }
       } catch (e: any) {
         setError(e?.message || String(e));
@@ -223,6 +231,9 @@ function RunNewPageInner() {
                     {creating ? "Executing…" : "Execute run"}
                   </button>
                   <a className="btn btn-ghost" href="/runs">View runs</a>
+                </div>
+                <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  Platform run fee: {runFeePercent}% applies only when this run produces contract payout.
                 </div>
 
                 {form.buyer_agent_id && (

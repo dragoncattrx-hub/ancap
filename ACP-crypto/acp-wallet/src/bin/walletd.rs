@@ -10,7 +10,7 @@
 use anyhow::{anyhow, Context};
 use acp_crypto::{
     protocol_params::{MIN_FEE_UNITS, UNITS_PER_ACP},
-    AddressV0, Mnemonic, Transaction, TxHex, TxInput, TxOutput, WalletIdentity,
+    AddressV0, KeystoreV3, Mnemonic, Transaction, TxHex, TxInput, TxOutput, WalletIdentity,
 };
 use rand_core::OsRng;
 use reqwest::blocking::Client;
@@ -144,18 +144,36 @@ fn format_acp(units: u64) -> String {
     format!("{acp:.8}")
 }
 
-fn cmd_new() -> anyhow::Result<Value> {
-    let m = Mnemonic::generate_12()?;
-    let seed = m.to_seed("");
-    let id = WalletIdentity::new_from_seed(&seed, OsRng)?;
-    let address = id.receive_address_v0()?;
-    Ok(json!({ "address": address, "mnemonic": m.words() }))
-}
-
-fn cmd_address(mnemonic: &str) -> anyhow::Result<Value> {
+fn identity_from_mnemonic(mnemonic: &str) -> anyhow::Result<(WalletIdentity, acp_crypto::Seed)> {
     let m = Mnemonic::parse(mnemonic.trim())?;
     let seed = m.to_seed("");
     let id = WalletIdentity::new_from_seed(&seed, OsRng)?;
+    Ok((id, seed))
+}
+
+fn identity_from_keystore_json(keystore_json: &str) -> anyhow::Result<WalletIdentity> {
+    let ks: KeystoreV3 = serde_json::from_str(keystore_json.trim())
+        .context("invalid keystore_json")?;
+    WalletIdentity::from_keystore_v3(&ks).map_err(Into::into)
+}
+
+fn cmd_new() -> anyhow::Result<Value> {
+    let m = Mnemonic::generate_12()?;
+    let (id, seed) = identity_from_mnemonic(&m.words())?;
+    let address = id.receive_address_v0()?;
+    let keystore = id.to_keystore_v3(&seed)?;
+    let keystore_json = serde_json::to_string(&keystore)?;
+    Ok(json!({ "address": address, "mnemonic": m.words(), "keystore_json": keystore_json }))
+}
+
+fn cmd_address(mnemonic: Option<&str>, keystore_json: Option<&str>) -> anyhow::Result<Value> {
+    let id = if let Some(kj) = keystore_json {
+        identity_from_keystore_json(kj)?
+    } else if let Some(m) = mnemonic {
+        identity_from_mnemonic(m)?.0
+    } else {
+        anyhow::bail!("either --mnemonic or --keystore-json is required")
+    };
     let address = id.receive_address_v0()?;
     Ok(json!({ "address": address }))
 }
@@ -173,7 +191,14 @@ fn cmd_balance(rpc_url: &str, address: &str) -> anyhow::Result<Value> {
     }))
 }
 
-fn cmd_transfer(rpc_url: &str, mnemonic: &str, to: &str, amount_acp: &str) -> anyhow::Result<Value> {
+fn cmd_transfer(
+    rpc_url: &str,
+    mnemonic: Option<&str>,
+    keystore_json: Option<&str>,
+    to: &str,
+    amount_acp: &str,
+    fee_acp: Option<&str>,
+) -> anyhow::Result<Value> {
     let amount_acp_f: f64 = amount_acp
         .trim()
         .parse()
@@ -185,13 +210,33 @@ fn cmd_transfer(rpc_url: &str, mnemonic: &str, to: &str, amount_acp: &str) -> an
     if transfer_units == 0 {
         anyhow::bail!("amount-acp too small");
     }
+    let fee_units = if let Some(v) = fee_acp {
+        let fee_f: f64 = v
+            .trim()
+            .parse()
+            .map_err(|_| anyhow!("fee-acp must be a number"))?;
+        if fee_f <= 0.0 {
+            anyhow::bail!("fee-acp must be > 0");
+        }
+        let parsed_fee_units = (fee_f * (UNITS_PER_ACP as f64)).round() as u64;
+        if parsed_fee_units < MIN_FEE_UNITS {
+            anyhow::bail!("fee-acp must be >= {}", format_acp(MIN_FEE_UNITS));
+        }
+        parsed_fee_units
+    } else {
+        MIN_FEE_UNITS
+    };
 
     let client = Client::builder().timeout(Duration::from_secs(60)).build()?;
     let chain_id = get_chain_id(&client, rpc_url)?;
 
-    let m = Mnemonic::parse(mnemonic.trim())?;
-    let seed = m.to_seed("");
-    let id = WalletIdentity::new_from_seed(&seed, OsRng)?;
+    let id = if let Some(kj) = keystore_json {
+        identity_from_keystore_json(kj)?
+    } else if let Some(m) = mnemonic {
+        identity_from_mnemonic(m)?.0
+    } else {
+        anyhow::bail!("either --mnemonic or --keystore-json is required")
+    };
     let from_address = id.receive_address_v0()?;
 
     let to_addr_decoded = AddressV0::decode(to.trim()).context("invalid 'to' address")?;
@@ -205,18 +250,18 @@ fn cmd_transfer(rpc_url: &str, mnemonic: &str, to: &str, amount_acp: &str) -> an
     for u in utxos {
         picked.push(u.clone());
         sum = sum.saturating_add(u.amount_units);
-        if sum >= transfer_units.saturating_add(MIN_FEE_UNITS) {
+        if sum >= transfer_units.saturating_add(fee_units) {
             break;
         }
     }
-    if sum < transfer_units.saturating_add(MIN_FEE_UNITS) {
+    if sum < transfer_units.saturating_add(fee_units) {
         return Ok(json!({
             "accepted": false,
             "reason": "insufficient funds"
         }));
     }
 
-    let change = sum - transfer_units - MIN_FEE_UNITS;
+    let change = sum - transfer_units - fee_units;
     let mut outputs = vec![TxOutput::to_address_v0(transfer_units, &to_addr_decoded)];
     if change > 0 {
         let from_addr_decoded = AddressV0::decode(&from_address)?;
@@ -265,13 +310,23 @@ fn real_main() -> anyhow::Result<()> {
         "new" => cmd_new()?,
         "address" => {
             let mut mnemonic: Option<String> = None;
+            let mut keystore_json: Option<String> = None;
+            let mut keystore_file: Option<String> = None;
             while let Some(a) = args.next() {
                 if a == "--mnemonic" {
                     mnemonic = args.next();
+                } else if a == "--keystore-json" {
+                    keystore_json = args.next();
+                } else if a == "--keystore-file" {
+                    keystore_file = args.next();
                 }
             }
-            let m = mnemonic.ok_or_else(|| anyhow!("--mnemonic is required"))?;
-            cmd_address(&m)?
+            if keystore_json.is_none() {
+                if let Some(path) = keystore_file {
+                    keystore_json = Some(std::fs::read_to_string(path)?);
+                }
+            }
+            cmd_address(mnemonic.as_deref(), keystore_json.as_deref())?
         }
         "balance" => {
             let mut rpc_url: Option<String> = None;
@@ -290,22 +345,39 @@ fn real_main() -> anyhow::Result<()> {
         "transfer" => {
             let mut rpc_url: Option<String> = None;
             let mut mnemonic: Option<String> = None;
+            let mut keystore_json: Option<String> = None;
+            let mut keystore_file: Option<String> = None;
             let mut to: Option<String> = None;
             let mut amount_acp: Option<String> = None;
+            let mut fee_acp: Option<String> = None;
             while let Some(a) = args.next() {
                 match a.as_str() {
                     "--rpc" => rpc_url = args.next(),
                     "--mnemonic" => mnemonic = args.next(),
+                    "--keystore-json" => keystore_json = args.next(),
+                    "--keystore-file" => keystore_file = args.next(),
                     "--to" => to = args.next(),
                     "--amount-acp" => amount_acp = args.next(),
+                    "--fee-acp" => fee_acp = args.next(),
                     _ => {}
                 }
             }
+            if keystore_json.is_none() {
+                if let Some(path) = keystore_file {
+                    keystore_json = Some(std::fs::read_to_string(path)?);
+                }
+            }
             let rpc_url = rpc_url.ok_or_else(|| anyhow!("--rpc is required"))?;
-            let mnemonic = mnemonic.ok_or_else(|| anyhow!("--mnemonic is required"))?;
             let to = to.ok_or_else(|| anyhow!("--to is required"))?;
             let amount_acp = amount_acp.ok_or_else(|| anyhow!("--amount-acp is required"))?;
-            cmd_transfer(&rpc_url, &mnemonic, &to, &amount_acp)?
+            cmd_transfer(
+                &rpc_url,
+                mnemonic.as_deref(),
+                keystore_json.as_deref(),
+                &to,
+                &amount_acp,
+                fee_acp.as_deref(),
+            )?
         }
         _ => anyhow::bail!("unknown command: {cmd}"),
     };

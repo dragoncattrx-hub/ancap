@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.schemas import (
     DepositRequest,
@@ -15,17 +15,32 @@ from app.schemas import (
     Pagination,
     BalanceItem,
 )
-from app.api.deps import DbSession
-from app.db.models import LedgerEvent, LedgerEventTypeEnum, Account
+from app.api.deps import DbSession, require_auth
+from app.db.models import LedgerEvent, LedgerEventTypeEnum, Account, Agent
 from app.services.ledger import get_or_create_account, append_event, balance_for_account, is_ledger_invariant_halted
 from sqlalchemy import select
 
 router = APIRouter(prefix="/ledger", tags=["Ledger"])
 
 
+async def _assert_owner_access(session: DbSession, user_id: str, owner_type: str, owner_id: UUID) -> None:
+    ot = (owner_type or "").strip().lower()
+    if ot == "user":
+        if str(owner_id) != user_id:
+            raise HTTPException(status_code=403, detail="Forbidden account owner")
+        return
+    if ot == "agent":
+        agent = await session.get(Agent, owner_id)
+        if not agent or str(agent.owner_user_id or "") != user_id:
+            raise HTTPException(status_code=403, detail="Forbidden account owner")
+        return
+    raise HTTPException(status_code=403, detail="Unsupported owner_type for user access")
+
+
 @router.get("/accounts", response_model=Pagination[LedgerAccountPublic])
 async def list_accounts(
     session: DbSession,
+    user_id: str = Depends(require_auth),
     limit: int = Query(50, ge=1, le=200),
     cursor: str | None = Query(None),
     owner_type: str | None = Query(None),
@@ -41,6 +56,8 @@ async def list_accounts(
         q = q.where(Account.owner_type == owner_type)
     if owner_id:
         q = q.where(Account.owner_id == owner_id)
+    else:
+        q = q.where((Account.owner_type == "user") & (Account.owner_id == UUID(user_id)))
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None
@@ -61,10 +78,11 @@ async def list_accounts(
 
 
 @router.get("/accounts/{account_id}", response_model=LedgerAccountPublic)
-async def get_account(account_id: UUID, session: DbSession):
+async def get_account(account_id: UUID, session: DbSession, user_id: str = Depends(require_auth)):
     acc = await session.get(Account, account_id)
     if not acc:
         raise HTTPException(status_code=404, detail="Account not found")
+    await _assert_owner_access(session, user_id, acc.owner_type, acc.owner_id)
     return LedgerAccountPublic(
         id=str(acc.id),
         owner_type=acc.owner_type,
@@ -75,10 +93,12 @@ async def get_account(account_id: UUID, session: DbSession):
 
 
 @router.post("/deposit", response_model=LedgerEventPublic, status_code=201)
-async def deposit(body: DepositRequest, session: DbSession):
+async def deposit(body: DepositRequest, session: DbSession, user_id: str = Depends(require_auth)):
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
-    acc = await get_or_create_account(session, body.account_owner_type, UUID(body.account_owner_id))
+    owner_id = UUID(body.account_owner_id)
+    await _assert_owner_access(session, user_id, body.account_owner_type, owner_id)
+    acc = await get_or_create_account(session, body.account_owner_type, owner_id)
     value = Decimal(body.amount.amount)
     ev = await append_event(
         session,
@@ -100,10 +120,12 @@ async def deposit(body: DepositRequest, session: DbSession):
 
 
 @router.post("/withdraw", response_model=LedgerEventPublic, status_code=201)
-async def withdraw(body: WithdrawRequest, session: DbSession):
+async def withdraw(body: WithdrawRequest, session: DbSession, user_id: str = Depends(require_auth)):
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
-    acc = await get_or_create_account(session, body.account_owner_type, UUID(body.account_owner_id))
+    owner_id = UUID(body.account_owner_id)
+    await _assert_owner_access(session, user_id, body.account_owner_type, owner_id)
+    acc = await get_or_create_account(session, body.account_owner_type, owner_id)
     value = Decimal(body.amount.amount)
     if value <= 0:
         raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
@@ -131,15 +153,19 @@ async def withdraw(body: WithdrawRequest, session: DbSession):
 
 
 @router.post("/allocate", response_model=LedgerEventPublic, status_code=201)
-async def allocate(body: AllocateRequest, session: DbSession):
+async def allocate(body: AllocateRequest, session: DbSession, user_id: str = Depends(require_auth)):
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
-    from app.db.models import Pool, Account
+    from app.db.models import Pool
     q = select(Pool).where(Pool.id == UUID(body.pool_id))
     r = await session.execute(q)
     pool = r.scalar_one_or_none()
     if not pool:
         raise HTTPException(status_code=404, detail="Pool not found")
+    if str(pool.owner_agent_id or ""):
+        await _assert_owner_access(session, user_id, "agent", UUID(str(pool.owner_agent_id)))
+    else:
+        raise HTTPException(status_code=403, detail="Pool has no owner")
     pool_acc = await get_or_create_account(session, "pool_treasury", pool.id)
     value = Decimal(body.amount.amount)
     ev = await append_event(
@@ -164,6 +190,7 @@ async def allocate(body: AllocateRequest, session: DbSession):
 @router.get("/events", response_model=Pagination[LedgerEventPublic])
 async def list_events(
     session: DbSession,
+    user_id: str = Depends(require_auth),
     limit: int = Query(50, ge=1, le=200),
     cursor: str | None = Query(None),
     account_id: UUID | None = Query(None),
@@ -176,7 +203,14 @@ async def list_events(
         except ValueError:
             pass
     if account_id:
+        acc = await session.get(Account, account_id)
+        if not acc:
+            raise HTTPException(status_code=404, detail="Account not found")
+        await _assert_owner_access(session, user_id, acc.owner_type, acc.owner_id)
         q = q.where((LedgerEvent.src_account_id == account_id) | (LedgerEvent.dst_account_id == account_id))
+    else:
+        q = q.join(Account, ((LedgerEvent.src_account_id == Account.id) | (LedgerEvent.dst_account_id == Account.id)))
+        q = q.where((Account.owner_type == "user") & (Account.owner_id == UUID(user_id)))
     if type:
         q = q.where(LedgerEvent.type == type.value)
     r = await session.execute(q)
@@ -205,7 +239,9 @@ async def get_balance(
     session: DbSession,
     owner_type: str,
     owner_id: UUID,
+    user_id: str = Depends(require_auth),
 ):
+    await _assert_owner_access(session, user_id, owner_type, owner_id)
     acc = await get_or_create_account(session, owner_type, owner_id)
     balances = await balance_for_account(session, acc.id)
     return BalanceResponse(
