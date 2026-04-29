@@ -11,6 +11,9 @@ downloads/
 eggs/
 .eggs/
 lib/
+# Frontend source should not be ignored by the generic Python `lib/` rule.
+!frontend-app/src/lib/
+!frontend-app/src/lib/**
 lib64/
 parts/
 sdist/
