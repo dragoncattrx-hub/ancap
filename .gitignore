@@ -79,6 +79,7 @@ ACP-crypto/.acp-node-data-*/
 ACP-crypto/.acp-node-data*/
 .env.moltbook
 .env.telegram
+.cache_ggshield/
 
 # Local scratch / agent notes
 update.md

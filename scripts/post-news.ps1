@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 
 # Load tokens from environment or local untracked files
 $TELEGRAM_BOT_TOKEN = $env:TELEGRAM_BOT_TOKEN
-$TELEGRAM_CHANNEL = if ($env:TELEGRAM_CHANNEL) { $env:TELEGRAM_CHANNEL } else { "@ancapnews" }
+$TELEGRAM_CHANNEL = if ($env:TELEGRAM_CHANNEL) { $env:TELEGRAM_CHANNEL } else { "@ancap24news" }
 $MOLTBOOK_API_TOKEN = $env:MOLTBOOK_API_TOKEN
 $MOLTBOOK_SUBMOLT = if ($env:MOLTBOOK_SUBMOLT) { $env:MOLTBOOK_SUBMOLT } else { "crypto" }
 
