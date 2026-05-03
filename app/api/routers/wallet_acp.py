@@ -84,16 +84,6 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _parse_positive_decimal(value: str, field_name: str) -> Decimal:
-    try:
-        d = Decimal(str(value))
-    except (InvalidOperation, ValueError):
-        raise HTTPException(status_code=400, detail=f"Invalid {field_name}")
-    if d <= 0:
-        raise HTTPException(status_code=400, detail=f"{field_name} must be > 0")
-    return d
-
-
 def _require_non_empty(value: str, field_name: str) -> str:
     out = (value or "").strip()
     if not out:
@@ -102,6 +92,63 @@ def _require_non_empty(value: str, field_name: str) -> str:
 
 
 _ACP_ADDRESS_RE = re.compile(r"^acp1[a-z0-9]{20,100}$")
+# Grouping helpers for pasted amounts (withdraw / fees / quotes).
+_US_GROUPED_DECIMAL_RE = re.compile(r"^-?\d{1,3}(,\d{3})+(\.\d*)?$")
+_EU_GROUPED_DECIMAL_RE = re.compile(r"^-?\d{1,3}(\.\d{3})+(,\d+)?$")
+
+
+def _normalize_user_decimal_string(raw: object) -> str:
+    """
+    Strip wrappers and grouping so Decimal() accepts common user input:
+    1,000,000 · 1.234.567,89 · 12,34 · trailing 'ACP' / NBSP.
+    """
+    if raw is None:
+        return ""
+    s = str(raw).strip()
+    if not s:
+        return ""
+    for ch in ("\u00a0", "\u202f", "\u2009", "\u2007", " "):
+        s = s.replace(ch, "")
+    s = s.replace("\u2212", "-").replace("−", "-").replace("＋", "+")
+    s = re.sub(r"(?i)(?:acp|токен)\s*$", "", s).strip()
+    if not s:
+        return ""
+
+    if _US_GROUPED_DECIMAL_RE.fullmatch(s):
+        return s.replace(",", "")
+    if _EU_GROUPED_DECIMAL_RE.fullmatch(s):
+        if "," in s:
+            body, frac = s.rsplit(",", 1)
+            return body.replace(".", "") + "." + frac
+        return s.replace(".", "")
+
+    if "," in s and "." not in s:
+        parts = s.split(",")
+        if len(parts) == 2:
+            left, right = parts
+            ld = left.lstrip("-")
+            if ld.isdigit() and right.isdigit():
+                if len(right) <= 2:
+                    return f"{left}.{right}"
+                if len(right) == 3 and len(ld) <= 3:
+                    return f"{left}{right}"
+                return f"{left}.{right}"
+        return s.replace(",", "")
+
+    return s
+
+
+def _parse_positive_decimal(value: object, field_name: str) -> Decimal:
+    normalized = _normalize_user_decimal_string(value)
+    if not normalized:
+        raise HTTPException(status_code=400, detail=f"Invalid {field_name}")
+    try:
+        d = Decimal(normalized)
+    except (InvalidOperation, ValueError):
+        raise HTTPException(status_code=400, detail=f"Invalid {field_name}")
+    if d <= 0:
+        raise HTTPException(status_code=400, detail=f"{field_name} must be > 0")
+    return d
 
 
 def _validate_acp_address(value: str, field_name: str) -> str:
@@ -147,6 +194,33 @@ def _acp_timestamp(ts: int) -> str:
     return datetime.fromtimestamp(ts, timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _json_chain_amount_to_int(value: object) -> int:
+    """Parse RPC getblock vout/vin amounts without silent float precision loss."""
+    if value is None:
+        return 0
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        s = value.strip()
+        if not s:
+            return 0
+        try:
+            return int(Decimal(s))
+        except (InvalidOperation, ValueError):
+            return 0
+    if isinstance(value, float):
+        try:
+            return int(Decimal(str(value)))
+        except (InvalidOperation, ValueError):
+            return 0
+    try:
+        return int(Decimal(str(value)))
+    except (InvalidOperation, ValueError):
+        return 0
+
+
 def _parse_decimal_or_zero(value: str | int | float | Decimal | None) -> Decimal:
     try:
         if value is None:
@@ -156,13 +230,23 @@ def _parse_decimal_or_zero(value: str | int | float | Decimal | None) -> Decimal
         return Decimal(0)
 
 
-async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
+async def _in_work_breakdown_for_user(
+    session: AsyncSession, user_id: str
+) -> tuple[Decimal, Decimal, Decimal]:
+    """
+    Return (total_in_work, staked_acp, ledger_positive_net_acp).
+
+    `staked_acp` counts active ACP stakes on user-owned agents.
+    `ledger_positive_net_acp` sums max(net, 0) per user + those agents’ ledger accounts
+    (fluid balances still on-platform). Together they cap what we allow to withdraw on-chain
+    so the same ACP is not spent twice.
+    """
     try:
         owner_user_id = user_id.strip()
     except Exception:
-        return Decimal(0)
+        return (Decimal(0), Decimal(0), Decimal(0))
     if not owner_user_id:
-        return Decimal(0)
+        return (Decimal(0), Decimal(0), Decimal(0))
     stake_q = (
         select(func.coalesce(func.sum(Stake.amount_value), 0))
         .select_from(Stake)
@@ -176,8 +260,6 @@ async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
     stake_result = await session.execute(stake_q)
     staked_acp = _parse_decimal_or_zero(stake_result.scalar())
 
-    # Reserve on-chain withdrawals by ACP already allocated inside platform ledger
-    # (user account + all user-owned agent accounts).
     agent_ids = (
         await session.execute(select(Agent.id).where(Agent.owner_user_id == owner_user_id))
     ).scalars().all()
@@ -194,8 +276,11 @@ async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
         ).scalars().all()
         account_ids.extend(rows)
 
+    # Stable unique ordering; avoids double-counting if a bug ever duplicates ids.
+    account_ids = list(dict.fromkeys(account_ids))
+
     if not account_ids:
-        return staked_acp
+        return (staked_acp, staked_acp, Decimal(0))
 
     credits_rows = (
         await session.execute(
@@ -227,7 +312,13 @@ async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
         if bal > 0:
             ledger_reserved_acp += bal
 
-    return staked_acp + ledger_reserved_acp
+    total = staked_acp + ledger_reserved_acp
+    return (total, staked_acp, ledger_reserved_acp)
+
+
+async def _in_work_acp_for_user(session: AsyncSession, user_id: str) -> Decimal:
+    total, _, _ = await _in_work_breakdown_for_user(session, user_id)
+    return total
 
 
 def _format_balance_note(real_acp: Decimal, in_work_acp: Decimal, available_acp: Decimal) -> str:
@@ -243,9 +334,19 @@ def _creator_vesting_monthly_unlock_acp() -> Decimal:
     return Decimal("962500")
 
 
+# `acp_crypto::protocol_params::{GENESIS_ACP_CREATOR, UNITS_PER_ACP}`.
+_GENESIS_ACP_CREATOR_AMOUNT_ACP: int = 69_300_000
+_UNITS_PER_ACP: int = 100_000_000
+_GENESIS_CREATOR_OUTPUT_UNITS: int = _GENESIS_ACP_CREATOR_AMOUNT_ACP * _UNITS_PER_ACP
+
+
 def _creator_vesting_snapshot(address: str, now_ts: int | None = None) -> tuple[Decimal, Decimal] | None:
     """
-    Return (unlocked_acp, locked_acp) for creator genesis address, otherwise None.
+    Return (unlocked_acp, locked_acp) for the canonical creator genesis vout, otherwise None.
+
+    The node applies vesting only to genesis tx vout 0. UI must not treat every
+    genesis payee as the vested creator (e.g. a 1,000,000 ACP dev allocation on vout 0).
+    We only return fields when vout 0 is exactly 69,300,000 ACP to the queried address.
     """
     rpc_url = _require_acp_rpc_url()
     bh = _rpc_call(rpc_url, "getblockhash", {"height": 1})
@@ -255,11 +356,18 @@ def _creator_vesting_snapshot(address: str, now_ts: int | None = None) -> tuple[
         return None
     genesis_tx = txs[0] or {}
     outputs = genesis_tx.get("vout") or []
-    creator_vout = next((o for o in outputs if str(o.get("recipient_address") or "") == address), None)
-    if not creator_vout:
+    if not outputs:
+        return None
+    vout0 = outputs[0] or {}
+    if str(vout0.get("recipient_address") or "").strip() != (address or "").strip():
+        return None
+    try:
+        creator_total_units = _json_chain_amount_to_int(vout0.get("amount"))
+    except (TypeError, ValueError):
+        return None
+    if creator_total_units != _GENESIS_CREATOR_OUTPUT_UNITS:
         return None
 
-    creator_total_units = int(creator_vout.get("amount") or 0)
     creator_total_acp = Decimal(creator_total_units) / Decimal(100_000_000)
     genesis_time = int(block.get("time") or 0)
     now = int(now_ts or datetime.now(timezone.utc).timestamp())
@@ -293,10 +401,15 @@ async def _decorate_balance_for_user(
     include_in_work: bool,
 ) -> AcpBalanceResponse:
     real_acp = _parse_decimal_or_zero(raw.get("acp"))
-    in_work_acp = await _in_work_acp_for_user(session, user_id) if include_in_work else Decimal(0)
+    if include_in_work:
+        in_work_acp, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
+    else:
+        in_work_acp = in_staked = in_ledger = Decimal(0)
     available_acp = real_acp - in_work_acp
     if available_acp < 0:
         available_acp = Decimal(0)
+    in_work_staked_s = _decimal_to_api_str(in_staked) if include_in_work else None
+    in_work_ledger_s = _decimal_to_api_str(in_ledger) if include_in_work else None
     vested_unlocked_acp: str | None = None
     vested_locked_acp: str | None = None
     target_address = str(raw.get("address") or "").strip()
@@ -311,6 +424,8 @@ async def _decorate_balance_for_user(
     return AcpBalanceResponse(
         **raw,
         in_work_acp=_decimal_to_api_str(in_work_acp),
+        in_work_staked_acp=in_work_staked_s,
+        in_work_ledger_acp=in_work_ledger_s,
         available_acp=_decimal_to_api_str(available_acp),
         vested_unlocked_acp=vested_unlocked_acp,
         vested_locked_acp=vested_locked_acp,
@@ -470,7 +585,7 @@ def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransac
 
             for idx, vout in enumerate(tx.get("vout") or []):
                 out_addr = str(vout.get("recipient_address") or "")
-                out_amount = int(vout.get("amount") or 0)
+                out_amount = _json_chain_amount_to_int(vout.get("amount"))
                 out_index[(txid, idx)] = (out_addr, out_amount)
                 if out_addr == address:
                     received_units += out_amount

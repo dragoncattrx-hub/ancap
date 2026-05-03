@@ -5,6 +5,8 @@ edition = "2021"
 
 [features]
 default = []
+# Mainnet: include on-chain 69.3M creator vout0 vesting. Omit for all default dev/CI builds.
+enforced-creator-vesting = []
 pqc = ["acp-crypto/pqc"]
 
 [dependencies]

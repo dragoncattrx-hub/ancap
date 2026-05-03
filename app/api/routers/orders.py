@@ -90,28 +90,31 @@ async def place_order(
         if link_r.scalar_one_or_none():
             raise HTTPException(status_code=403, detail="Self-dealing: buyer is linked to strategy owner")
 
-        # Quarantine: agents created < 24h have a limit on orders per day
+        # Quarantine: while agent is younger than quarantine_hours, cap order volume.
+        # Count since agent creation (not UTC calendar midnight) so limits stay correct
+        # across day boundaries and match buyer_id storage (UUID as_uuid=False -> str).
         settings = get_settings()
         agent = await session.get(Agent, buyer_id)
-        if agent and agent.created_at:
+        if agent:
             now_utc = datetime.now(timezone.utc)
-            created = agent.created_at
+            created = agent.created_at or now_utc
             if getattr(created, "tzinfo", None) is None:
                 created = created.replace(tzinfo=timezone.utc)
             if (now_utc - created) < timedelta(hours=settings.quarantine_hours):
-                # Count orders by this agent today (UTC)
-                today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
                 count_q = select(func.count(Order.id)).where(
                     Order.buyer_type == "agent",
-                    Order.buyer_id == buyer_id,
-                    Order.created_at >= today_start,
+                    Order.buyer_id == str(buyer_id),
+                    Order.created_at >= created,
                 )
                 count_r = await session.execute(count_q)
-                order_count_today = count_r.scalar() or 0
-                if order_count_today >= settings.quarantine_max_orders_per_day:
+                order_count_window = count_r.scalar() or 0
+                if order_count_window >= settings.quarantine_max_orders_per_day:
                     raise HTTPException(
                         status_code=403,
-                        detail=f"Quarantine: agent created less than {settings.quarantine_hours}h ago is limited to {settings.quarantine_max_orders_per_day} orders per day",
+                        detail=(
+                            f"Quarantine: agents in their first {settings.quarantine_hours}h are limited to "
+                            f"{settings.quarantine_max_orders_per_day} orders"
+                        ),
                     )
 
     fee = listing.fee_model
@@ -240,7 +243,7 @@ async def list_orders(
     if buyer_type:
         q = q.where(Order.buyer_type == buyer_type)
     if buyer_id:
-        q = q.where(Order.buyer_id == buyer_id)
+        q = q.where(Order.buyer_id == str(buyer_id))
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

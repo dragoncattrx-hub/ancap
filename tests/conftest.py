@@ -21,7 +21,13 @@ os.environ["DATABASE_URL"] = _test_db_url
 os.environ["REGISTRATION_MAX_AGENTS_PER_DAY"] = "0"
 # Disable tier-gating in tests so listings/orders/runs don't 403 because the
 # test agent has no stake/trust/reputation. Production keeps this on by default.
-os.environ.setdefault("PARTICIPATION_GATES_ENABLED", "false")
+# Always force false here: if the developer shell exports PARTICIPATION_GATES_ENABLED=true,
+# setdefault would leave it on and break quarantine/order tests (403 detail becomes a dict).
+os.environ["PARTICIPATION_GATES_ENABLED"] = "false"
+# New-agent order limits: force defaults so developer shell/.env cannot disable or
+# widen quarantine (e.g. QUARANTINE_HOURS—0 skips the guardrail; a huge max prevents 403).
+os.environ["QUARANTINE_HOURS"] = "24"
+os.environ["QUARANTINE_MAX_ORDERS_PER_DAY"] = "3"
 # Tests assert listing/run creation succeeds without first funding the seller's
 # agent account. Zero out platform fees in the test environment; the few tests
 # that explicitly cover fee accounting set their own values via monkeypatch.
@@ -30,7 +36,11 @@ os.environ.setdefault("LISTING_FEE_AMOUNT", "0")
 os.environ.setdefault("RUN_FEE_PERCENT", "0")
 os.environ.setdefault("RUN_FEE_AMOUNT", "0")
 
+from app.config import get_settings
 from app.db.session import Base, get_db, async_session_maker
+
+# Ensure Settings reflects the env vars above (get_settings is lru_cached).
+get_settings.cache_clear()
 from app.main import app
 
 

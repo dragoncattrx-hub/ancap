@@ -113,7 +113,7 @@ def test_list_access_grants(client):
 
 
 def test_quarantine_new_agent_order_limit(client):
-    """Agent created < 24h is limited to quarantine_max_orders_per_day (default 3) orders per day."""
+    """Agent created < 24h is limited to quarantine_max_orders_per_day (default 3) orders."""
     listing_ids = [_strategy_with_listing(client)[2] for _ in range(4)]
     buyer_id = _buyer_agent(client)
     client.post(

@@ -74,6 +74,12 @@ genesis-block.hex
 genesis-block-custom.hex
 ACP-crypto/acp-wallet/receive-address.txt
 
+# Local ACP node runtime / chain data / wallet exports (never commit)
+ACP-crypto/.acp-node-data-*/
+ACP-crypto/.acp-node-data*/
+.env.moltbook
+.env.telegram
+
 # Local scratch / agent notes
 update.md
 

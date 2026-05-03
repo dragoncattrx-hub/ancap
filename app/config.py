@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     circuit_breaker_min_return_pct: float = -5.0
     circuit_breaker_k_killed: int = 5
 
-    # Quarantine: agents created < N hours ago are limited to M orders per day
+    # Quarantine: agents younger than quarantine_hours are limited to quarantine_max_orders_per_day
+    # orders (counted from agent.created_at — not reset at UTC midnight).
     quarantine_hours: int = 24
     quarantine_max_orders_per_day: int = 3
 

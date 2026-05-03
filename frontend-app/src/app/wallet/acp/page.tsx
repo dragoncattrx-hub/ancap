@@ -13,6 +13,8 @@ type BalanceResponse = {
   acp: string;
   utxo_count?: number;
   in_work_acp?: string;
+  in_work_staked_acp?: string;
+  in_work_ledger_acp?: string;
   available_acp?: string;
   vested_unlocked_acp?: string;
   vested_locked_acp?: string;
@@ -397,9 +399,9 @@ export default function AcpWalletPage() {
 
   // Client-side withdraw validation:
   // - Address must look like a bech32 ACP address.
-  // - Amount must be a positive number and not exceed `available_acp` (which the
-  //   backend computes as `balance - in_work - locked_vested`). Without this guard
-  //   users hit a generic backend error and can't tell why the withdraw fails.
+  // - Amount must be a positive number and not exceed `available_acp` (backend:
+  //   on-chain balance minus platform “in work” reservations). Vested breakdown
+  //   is informational only unless the chain rejects the spend.
   const withdrawAvailableNum = Number(balance?.available_acp ?? balance?.acp ?? "0");
   const withdrawAmountNum = Number(withdrawForm.amount_acp);
   const withdrawAmountValid =
@@ -546,15 +548,35 @@ export default function AcpWalletPage() {
                   {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
+                {balance?.units != null && balance.units !== "" && (
+                  <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                    Smallest units (on-chain):{" "}
+                    <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
+                    <span style={{ opacity: 0.85 }}> — expect 1 ACP = 100,000,000 units · check: units ÷ 10⁸ ≈ ACP above</span>
+                  </div>
+                )}
                 <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   Real balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                 </div>
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  <span title="Funds reserved by pending orders, escrows or open swaps. They become available again when those operations close.">
+                  <span
+                    title={
+                      "In work = active ACP stakes on your agents, plus positive on-platform ledger balances " +
+                      "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " +
+                      "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."
+                    }
+                  >
                     In work
                   </span>
                   : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
                 </div>
+                {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                    Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong>
+                    {" "}ACP · On-platform ledger:{" "}
+                    <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
+                  </div>
+                )}
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                 </div>
@@ -735,6 +757,11 @@ export default function AcpWalletPage() {
                       {txAddressBalance?.acp ?? "0"} ACP
                     </strong>
                     {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
+                    {txAddressBalance?.units != null && txAddressBalance.units !== "" ? (
+                      <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>
+                        Units: {txAddressBalance.units} (÷ 10⁸ for ACP)
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 

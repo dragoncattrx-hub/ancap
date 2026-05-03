@@ -114,10 +114,10 @@ fn scan_utxos(client: &Client, rpc_url: &str, address: &str) -> anyhow::Result<V
                     if addr != Some(address) {
                         continue;
                     }
-                    let amt = o
-                        .get("amount")
-                        .and_then(|v| v.as_u64())
-                        .ok_or_else(|| anyhow!("vout.amount missing"))?;
+                    let amt = json_amount_units(
+                        o.get("amount")
+                            .ok_or_else(|| anyhow!("vout.amount missing"))?,
+                    )?;
                     let vout_index = idx as u32;
                     let key = format!("{txid}:{vout_index}");
                     if spent.contains(&key) {
@@ -139,9 +139,81 @@ fn scan_utxos(client: &Client, rpc_url: &str, address: &str) -> anyhow::Result<V
     Ok(unspent.into_values().collect())
 }
 
+/// Convert smallest units to an ACP decimal string without `f64` (whole-chain amounts exceed
+/// IEEE-754 integer precision; `f64` can drift and confuse users vs RPC `amount`).
 fn format_acp(units: u64) -> String {
-    let acp = (units as f64) / (UNITS_PER_ACP as f64);
-    format!("{acp:.8}")
+    let whole = units / UNITS_PER_ACP;
+    let frac = units % UNITS_PER_ACP;
+    let mut s = format!("{}.{:08}", whole, frac);
+    while s.contains('.') && s.ends_with('0') {
+        s.pop();
+    }
+    if s.ends_with('.') {
+        s.pop();
+    }
+    if s.is_empty() {
+        "0".to_string()
+    } else {
+        s
+    }
+}
+
+fn acp_decimal_str_to_units(s: &str) -> anyhow::Result<u64> {
+    let s = s.trim();
+    if s.is_empty() || s == "." {
+        anyhow::bail!("amount-acp is empty");
+    }
+    let (whole_s, frac_raw) = match s.split_once('.') {
+        Some((w, f)) => (w, f),
+        None => (s, ""),
+    };
+    let whole: u64 = if whole_s.is_empty() {
+        0
+    } else {
+        whole_s.parse().map_err(|_| anyhow!("invalid whole ACP"))?
+    };
+    let mut frac = frac_raw.chars().take(8).collect::<String>();
+    while frac.len() < 8 {
+        frac.push('0');
+    }
+    let frac_n: u64 = frac.parse().map_err(|_| anyhow!("invalid fractional ACP"))?;
+    whole
+        .checked_mul(UNITS_PER_ACP)
+        .and_then(|w| w.checked_add(frac_n))
+        .ok_or_else(|| anyhow!("amount-acp overflow"))
+}
+
+fn json_amount_units(v: &Value) -> anyhow::Result<u64> {
+    if v.is_null() {
+        anyhow::bail!("amount is null");
+    }
+    if let Some(n) = v.as_u64() {
+        return Ok(n);
+    }
+    if let Some(n) = v.as_i64() {
+        return u64::try_from(n).map_err(|_| anyhow!("negative amount"));
+    }
+    if let Some(s) = v.as_str() {
+        return s
+            .trim()
+            .parse()
+            .map_err(|_| anyhow!("amount string is not u64"));
+    }
+    if let Some(f) = v.as_f64() {
+        if !f.is_finite() || f < 0.0 {
+            anyhow::bail!("invalid amount float");
+        }
+        // Reject non-integer floats to avoid silent precision loss.
+        let r = f.round();
+        if (r - f).abs() > 1e-6 {
+            anyhow::bail!("amount must be an integer in smallest units");
+        }
+        if r > (u64::MAX as f64) {
+            anyhow::bail!("amount too large");
+        }
+        return Ok(r as u64);
+    }
+    anyhow::bail!("amount has unsupported JSON type")
 }
 
 fn identity_from_mnemonic(mnemonic: &str) -> anyhow::Result<(WalletIdentity, acp_crypto::Seed)> {
@@ -199,26 +271,12 @@ fn cmd_transfer(
     amount_acp: &str,
     fee_acp: Option<&str>,
 ) -> anyhow::Result<Value> {
-    let amount_acp_f: f64 = amount_acp
-        .trim()
-        .parse()
-        .map_err(|_| anyhow!("amount-acp must be a number"))?;
-    if amount_acp_f <= 0.0 {
+    let transfer_units = acp_decimal_str_to_units(amount_acp)?;
+    if transfer_units == 0 {
         anyhow::bail!("amount-acp must be > 0");
     }
-    let transfer_units = (amount_acp_f * (UNITS_PER_ACP as f64)).round() as u64;
-    if transfer_units == 0 {
-        anyhow::bail!("amount-acp too small");
-    }
     let fee_units = if let Some(v) = fee_acp {
-        let fee_f: f64 = v
-            .trim()
-            .parse()
-            .map_err(|_| anyhow!("fee-acp must be a number"))?;
-        if fee_f <= 0.0 {
-            anyhow::bail!("fee-acp must be > 0");
-        }
-        let parsed_fee_units = (fee_f * (UNITS_PER_ACP as f64)).round() as u64;
+        let parsed_fee_units = acp_decimal_str_to_units(v)?;
         if parsed_fee_units < MIN_FEE_UNITS {
             anyhow::bail!("fee-acp must be >= {}", format_acp(MIN_FEE_UNITS));
         }

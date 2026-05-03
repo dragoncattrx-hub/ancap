@@ -114,9 +114,13 @@ fn main() -> anyhow::Result<()> {
     }
 
     let target_addr_obj = AddressV0::decode(&target_address)?;
+    // When `ACP_ENFORCE_CREATOR_VESTING=1`, `acp-node` applies creator vesting only to
+    // genesis tx vout 0 if it matches the canonical 69.3M amount. Put the large
+    // treasury remainder on vout 0 and the hot-wallet allocation on vout 1 so the
+    // dev wallet stays fully spendable; the treasury UTXO is the vesting-scoped outpoint.
     let outputs = vec![
-        TxOutput::to_address_v0(target_units, &target_addr_obj),
         TxOutput::to_address_v0(treasury_units, &treasury_addr_obj),
+        TxOutput::to_address_v0(target_units, &target_addr_obj),
     ];
 
     let signer_mnemonic = Mnemonic::parse(GENESIS_SIGNER_PHRASE)?;

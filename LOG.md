@@ -4,6 +4,55 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-04-30 — ACP wallet balance: correct vesting labels + genesis vout layout
+
+The API/UI were showing **“Vested locked: 1,000,000 ACP”** for any address that
+appeared in genesis outputs, using the creator cliff/linear schedule even when
+the vout was a **1,000,000 ACP** dev allocation. That label is only meaningful
+for the **canonical creator slice** (69,300,000 ACP on genesis **vout 0**),
+matching `acp-node` vesting scope.
+
+### What landed
+
+- **`app/api/routers/wallet_acp.py`** — `_creator_vesting_snapshot` only for canonical
+  creator vout; `_in_work_breakdown_for_user` exposes stake vs ledger parts and
+  de‑duplicates account ids before summing.
+- **`ACP-crypto/acp-wallet/examples/build_and_submit_genesis_custom.rs`** —
+  outputs reordered: **treasury on vout 0**, **hot wallet on vout 1** so the dev
+  wallet is not the vesting-scoped outpoint (node vesting is hard‑wired to vout 0).
+  **Existing chains** keep the old UTXO layout until re‑bootstrap; redeploy genesis
+  to pick up spendability on a fresh data dir.
+- **`app/schemas/wallets.py`** — `AcpBalanceResponse` adds `in_work_staked_acp` and
+  `in_work_ledger_acp` (split of the total “in work” reservation).
+- **`frontend-app/src/app/wallet/acp/page.tsx`** — shows stake vs ledger breakdown
+  under **In work**; clarifies that fractional ACP is normal (8 decimals).
+- **`ACP-crypto/acp-wallet/src/bin/walletd.rs`** — `format_acp` and transfer amounts
+  use integer math (no `f64`) so large balances and RPC `amount` stay consistent;
+  `json_amount_units` accepts u64 / string / exact-integer floats.
+- **`app/api/routers/wallet_acp.py`** — `_json_chain_amount_to_int` for block scan
+  amounts; hot balance UI documents raw `units` vs ACP (÷ 10⁸).
+- **`ACP-crypto/acp-node` — creator vesting** is **not in the default binary**:
+  `cargo build --release` does not compile the on-chain check; use
+  **`cargo build --release --features enforced-creator-vesting`** for mainnet-style
+  69.3M vout0 rules (then `ACP_ENFORCE` / `ACP_DISABLE` in `enforced_vesting.rs` apply).
+  This avoids “spend exceeds unlocked” on default dev builds regardless of env/launcher.
+- **`scripts/start-acp-node.ps1`** — recooks **`acp-node.exe` when source is newer** than the release
+  binary (or if **`-ForceBuild` / `-MainnetVestingBuild`**) so a stale EXE is not the default;
+  **`-SkipBuild`** opts out. **`scripts/rebuild-acp-node.ps1`** is a one-shot `cargo build --release`.
+  Vesting env: default **`ACP_DISABLE=1`**; **`-MainnetVestingBuild`** + feature build for
+  69.3M rules. JSON-RPC `node_version` is **`acp-node/0.0.3 (creator_vesting=on|off …)`** at compile time.
+- **`ACP-crypto/acp-node/src/main.rs`** — logs `vesting::env_diagnostics` and `vesting::diagnostic_line` at startup.
+
+### Note on “In work”
+
+`in_work_acp` is still **stakes + net positive ACP ledger balances** for the user
+and owned agents (`_in_work_breakdown_for_user`). The API now exposes
+`in_work_staked_acp` and `in_work_ledger_acp` so the UI can show whether the total
+comes from **active stakes** (e.g. two identical stake rows sum to a “non‑integer”
+total) vs **fluid ledger** balances. Account ids are de‑duplicated before summing.
+
+---
+
 ## 2026-04-29 — Bring up local ACP chain with 1,000,000 ACP on hot wallet
 
 The wallet UI was showing `Balance: 0 ACP (0 UTXO)` for the hot wallet address
@@ -20,8 +69,8 @@ gracefully degraded to `acp=0, utxo_count=0`.
 - **`ACP-crypto/acp-wallet/examples/build_and_submit_genesis_custom.rs`** —
   new example that builds and submits a fresh genesis block with two
   outputs:
-    1. configurable target address (default: hot wallet) — `1,000,000 ACP`
-    2. throwaway treasury — `BASE_SUPPLY_ACP - 1,000,000 = 209,000,000 ACP`
+    1. throwaway treasury — `BASE_SUPPLY_ACP - 1,000,000 = 209,000,000 ACP` (vout 0; vesting-scoped in `acp-node`)
+    2. configurable target address (default: hot wallet) — `1,000,000 ACP` (vout 1; liquid)
   The treasury mnemonic is written to
   `Sicret/genesis-treasury-mnemonic.txt` so the operator keeps custody of
   the rest of the supply. Configurable via env:

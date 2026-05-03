@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+import math
+from decimal import Decimal
+
+from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
 
@@ -14,6 +17,8 @@ class AcpBalanceResponse(BaseModel):
     acp: str
     utxo_count: int = 0
     in_work_acp: str | None = None
+    in_work_staked_acp: str | None = None
+    in_work_ledger_acp: str | None = None
     available_acp: str | None = None
     vested_unlocked_acp: str | None = None
     vested_locked_acp: str | None = None
@@ -25,6 +30,23 @@ class AcpWithdrawRequest(BaseModel):
     amount_acp: str = Field(..., description="Decimal string, e.g. 1.5")
     fee_acp: str | None = Field(default=None, description="Optional fee in ACP (must be >= network minimum)")
     wallet_password: str = Field(..., min_length=8, description="Account password used to decrypt wallet seed")
+
+    @field_validator("amount_acp", "fee_acp", mode="before")
+    @classmethod
+    def _coerce_decimal_field(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, bool):
+            raise ValueError("expected a number or decimal string, not a boolean")
+        if isinstance(v, int):
+            return str(v)
+        if isinstance(v, float):
+            if not math.isfinite(v):
+                raise ValueError("expected a finite number")
+            # Avoid scientific notation and stray float artifacts where possible.
+            d = Decimal(str(v))
+            return format(d, "f").rstrip("0").rstrip(".") or "0"
+        return str(v).strip()
 
 
 class AcpWithdrawResponse(BaseModel):

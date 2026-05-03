@@ -101,13 +101,21 @@ async fn main() -> anyhow::Result<()> {
 
     let rocks = Rocks::open(&cfg.data_dir)?;
     let storage = Storage::new(rocks);
+    info!("{}", crate::vesting::env_diagnostics());
+    info!("{}", crate::vesting::diagnostic_line(&storage));
     let chain = Chain::new(cfg.chain_id, storage);
     let mempool = Mempool::new(crate::mempool::MempoolLimits::default());
 
+    let creator_vesting_build = if cfg!(feature = "enforced-creator-vesting") {
+        "on"
+    } else {
+        "off (default; bulk/dev OK)"
+    };
+    let node_version = format!("acp-node/0.0.3 (creator_vesting={creator_vesting_build})");
     let ctx = std::sync::Arc::new(RpcCtx {
         chain,
         mempool,
-        node_version: "acp-node/0.0.2-skeleton".into(),
+        node_version,
         config: cfg.clone(),
     });
 

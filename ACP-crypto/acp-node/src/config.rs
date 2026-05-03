@@ -97,6 +97,7 @@ pub struct ProtocolConfig {
     pub unbonding_days: Option<u16>,
 }
 
+#[allow(dead_code)] // accessors reserved for config merge / future RPC; fields may be read directly
 impl ProtocolConfig {
     /// Base supply: config override or acp_crypto default.
     pub fn base_supply_acp(&self) -> u64 {
