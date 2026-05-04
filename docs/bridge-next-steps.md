@@ -82,8 +82,14 @@ Still not declared live:
 - public reverse enablement
 - hardened idempotent burn-event confirmation across production replay/recovery scenarios
 - reverse reconciliation / replay-safe recovery
-- operator pause + manual recovery flow for reverse payouts
 - wider production validation of ACP payout confirmation path
+
+What is now available for operator recovery:
+- reverse admin listing: `GET /api/v1/bridge/admin/reverse/operations`
+- manual confirmed-burn attachment: `POST /api/v1/bridge/admin/reverse/bind-burn`
+- manual ACP payout attachment: `POST /api/v1/bridge/admin/reverse/bind-payout`
+- payout resend preparation: `POST /api/v1/bridge/admin/reverse/requeue-payout`
+- dispute escalation: `POST /api/v1/bridge/admin/reverse/mark-disputed`
 
 ### 3. Keep docs aligned with runtime truth
 Recommended:
@@ -139,8 +145,9 @@ Reverse direction is now partially implemented in the backend pipeline:
 
 But separate work is still needed before public enablement:
 - production replay/idempotency hardening
-- operator recovery endpoints
+- reverse-side reconciliation that explicitly accounts for completed ACP payouts and disputed/requeued cases
 - broader reconciliation and operational validation
+- at least one controlled end-to-end reverse pilot with observed watcher-confirmed completion
 
 ## Recommended operator checks before any next pilot
 - `GET /api/v1/bridge/status`

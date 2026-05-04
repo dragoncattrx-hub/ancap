@@ -318,6 +318,128 @@ def test_orchestrator_submits_acp_payout_for_confirmed_burn(client, monkeypatch)
     assert op["acp_tx_hash"] == payout_txid
 
 
+def test_admin_reverse_bind_burn_promotes_pending_burn(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x6666666666666666666666666666666666666666",
+        "user_acp_address": "acp1qadminburn0000000000000000000000000000000",
+        "amount_wacp": "1",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+
+    burn_tx_hash = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
+    r = client.post(
+        "/v1/bridge/admin/reverse/bind-burn",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={
+            "operation_id": op_id,
+            "bsc_tx_hash_burn": burn_tx_hash,
+            "bsc_log_index": 4,
+            "correlation_id": "req-4",
+            "note": "manual bind for recovery",
+        },
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["status"] == "BURN_CONFIRMED"
+    assert data["bsc_tx_hash_burn"] == burn_tx_hash
+    assert data["bsc_log_index"] == 4
+
+
+def test_admin_reverse_bind_payout_and_requeue(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x7777777777777777777777777777777777777777",
+        "user_acp_address": "acp1qadminpayout00000000000000000000000000000",
+        "amount_wacp": "1.25",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+
+    burn_tx_hash = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
+    bind_burn = client.post(
+        "/v1/bridge/admin/reverse/bind-burn",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={
+            "operation_id": op_id,
+            "bsc_tx_hash_burn": burn_tx_hash,
+            "bsc_log_index": 5,
+        },
+    )
+    assert bind_burn.status_code == 200, bind_burn.text
+
+    bind_payout = client.post(
+        "/v1/bridge/admin/reverse/bind-payout",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={
+            "operation_id": op_id,
+            "acp_tx_hash": "acp-manual-payout-1",
+            "note": "manual payout bind",
+        },
+    )
+    assert bind_payout.status_code == 200, bind_payout.text
+    payout_data = bind_payout.json()
+    assert payout_data["status"] == "ACP_PAYOUT_SENT"
+    assert payout_data["acp_tx_hash"] == "acp-manual-payout-1"
+
+    requeue = client.post(
+        "/v1/bridge/admin/reverse/requeue-payout",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": op_id, "note": "tx missing on chain"},
+    )
+    assert requeue.status_code == 200, requeue.text
+    requeue_data = requeue.json()
+    assert requeue_data["status"] == "BURN_CONFIRMED"
+    assert requeue_data["acp_tx_hash"] is None
+
+
+def test_admin_reverse_mark_disputed_and_list(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x8888888888888888888888888888888888888888",
+        "user_acp_address": "acp1qadmindispute0000000000000000000000000000",
+        "amount_wacp": "0.75",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+
+    dispute = client.post(
+        "/v1/bridge/admin/reverse/mark-disputed",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": op_id, "note": "mismatch under investigation"},
+    )
+    assert dispute.status_code == 200, dispute.text
+    dispute_data = dispute.json()
+    assert dispute_data["status"] == "DISPUTED"
+
+    listed = client.get(
+        "/v1/bridge/admin/reverse/operations?status=DISPUTED",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+    )
+    assert listed.status_code == 200, listed.text
+    rows = listed.json()
+    assert any(row["id"] == op_id and row["status"] == "DISPUTED" for row in rows)
+
+
 def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")

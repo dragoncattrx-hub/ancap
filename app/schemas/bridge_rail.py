@@ -133,3 +133,27 @@ class WacpPublicStatusResponse(BaseModel):
 class BridgeAllowlistAddRequest(BaseModel):
     bsc_address: str = Field(..., min_length=42, max_length=66)
     note: str | None = None
+
+
+class BridgeAdminReverseBindBurnRequest(BaseModel):
+    operation_id: str
+    bsc_tx_hash_burn: str = Field(..., min_length=3, max_length=128)
+    bsc_log_index: int = Field(..., ge=0)
+    correlation_id: str | None = Field(None, max_length=128)
+    note: str | None = None
+
+
+class BridgeAdminReverseBindPayoutRequest(BaseModel):
+    operation_id: str
+    acp_tx_hash: str = Field(..., min_length=3, max_length=128)
+    note: str | None = None
+
+
+class BridgeAdminReverseRequeuePayoutRequest(BaseModel):
+    operation_id: str
+    note: str | None = None
+
+
+class BridgeAdminReverseMarkDisputedRequest(BaseModel):
+    operation_id: str
+    note: str

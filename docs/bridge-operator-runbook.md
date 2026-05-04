@@ -201,19 +201,33 @@ What is already real:
 What is not publicly live yet:
 - public reverse enablement
 - production-proven replay/idempotency handling for reverse recovery cases
-- operator-safe manual recovery flow
 - broader production ops validation
 
 What now exists in backend code:
 - burn-event watcher confirmation via `ReleaseRequested`
 - ACP payout submission worker path
 - reverse completion through ACP watcher confirmation
+- operator-safe reverse recovery endpoints protected by `X-Bridge-Operator-Secret`
+
+Current reverse admin endpoints:
+- `GET /api/v1/bridge/admin/reverse/operations`
+- `POST /api/v1/bridge/admin/reverse/bind-burn`
+- `POST /api/v1/bridge/admin/reverse/bind-payout`
+- `POST /api/v1/bridge/admin/reverse/requeue-payout`
+- `POST /api/v1/bridge/admin/reverse/mark-disputed`
 
 Operator rule:
 - do not manually present reverse rail as live until watcher + payout + reconciliation are proven
 - public status must remain:
   - `redeem_available=false`
   - `redeem_mode=pending-rollout`
+
+### Recovery usage notes
+- Use `bind-burn` only when a real `ReleaseRequested` event exists but watcher matching needs manual repair.
+- Use `bind-payout` only when a real ACP payout tx was sent outside the normal orchestrator path and must be attached back to the operation.
+- Use `requeue-payout` when an operation is stuck in `ACP_PAYOUT_SENT` but the recorded ACP tx should be abandoned and resent.
+- Use `mark-disputed` when amounts, destination, or chain evidence conflict and human review is required.
+- Do not mark reverse ops `COMPLETED` manually here; final completion still belongs to ACP watcher confirmation.
 
 ## Next recommended step
 

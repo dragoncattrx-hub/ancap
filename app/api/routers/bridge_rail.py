@@ -22,6 +22,10 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.schemas.bridge_rail import (
+    BridgeAdminReverseBindBurnRequest,
+    BridgeAdminReverseBindPayoutRequest,
+    BridgeAdminReverseMarkDisputedRequest,
+    BridgeAdminReverseRequeuePayoutRequest,
     BridgeAllowlistAddRequest,
     BridgeIntentAcpToBscCreate,
     BridgeIntentBscToAcpCreate,
@@ -122,6 +126,43 @@ def _quote_bsc_to_acp(amount_wacp: str) -> BridgeRedeemQuoteResponse:
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _serialize_operation(op: BridgeOperation) -> BridgeOperationPublic:
+    return BridgeOperationPublic(
+        id=str(op.id),
+        direction=op.direction,
+        status=op.status,
+        user_bsc_address=op.user_bsc_address,
+        user_acp_address=op.user_acp_address,
+        amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
+        amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
+        remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
+        acp_tx_hash=op.acp_tx_hash,
+        bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+        bsc_tx_hash_burn=op.bsc_tx_hash_burn,
+        deposit_ref_hex=op.deposit_ref_hex,
+        bsc_log_index=op.bsc_log_index,
+        version=op.version,
+        created_at=op.created_at,
+    )
+
+
+def _require_bridge_operator_secret(settings_secret: str | None, provided_secret: str | None) -> None:
+    secret = (settings_secret or "").strip()
+    if not secret or (provided_secret or "").strip() != secret:
+        raise HTTPException(status_code=403, detail="Invalid bridge operator secret")
+
+
+async def _get_operation_or_404(session: AsyncSession, operation_id: str) -> BridgeOperation:
+    try:
+        op_uuid = UUID(operation_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid operation_id") from exc
+    op = await session.get(BridgeOperation, op_uuid)
+    if op is None:
+        raise HTTPException(status_code=404, detail="Bridge operation not found")
+    return op
 
 
 async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProofResponse:
@@ -465,23 +506,7 @@ async def create_intent_acp_to_bsc(
     )
     await session.flush()
     await session.refresh(op)
-    return BridgeOperationPublic(
-        id=str(op.id),
-        direction=op.direction,
-        status=op.status,
-        user_bsc_address=op.user_bsc_address,
-        user_acp_address=op.user_acp_address,
-        amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
-        amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
-        remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
-        acp_tx_hash=op.acp_tx_hash,
-        bsc_tx_hash_mint=op.bsc_tx_hash_mint,
-        bsc_tx_hash_burn=op.bsc_tx_hash_burn,
-        deposit_ref_hex=op.deposit_ref_hex,
-        bsc_log_index=op.bsc_log_index,
-        version=op.version,
-        created_at=op.created_at,
-    )
+    return _serialize_operation(op)
 
 
 @router.post("/intents/bsc-to-acp", response_model=BridgeOperationPublic)
@@ -533,23 +558,7 @@ async def create_intent_bsc_to_acp(
     )
     await session.flush()
     await session.refresh(op)
-    return BridgeOperationPublic(
-        id=str(op.id),
-        direction=op.direction,
-        status=op.status,
-        user_bsc_address=op.user_bsc_address,
-        user_acp_address=op.user_acp_address,
-        amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
-        amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
-        remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
-        acp_tx_hash=op.acp_tx_hash,
-        bsc_tx_hash_mint=op.bsc_tx_hash_mint,
-        bsc_tx_hash_burn=op.bsc_tx_hash_burn,
-        deposit_ref_hex=op.deposit_ref_hex,
-        bsc_log_index=op.bsc_log_index,
-        version=op.version,
-        created_at=op.created_at,
-    )
+    return _serialize_operation(op)
 
 
 @router.get("/intents/me", response_model=list[BridgeOperationPublic])
@@ -570,25 +579,7 @@ async def list_my_intents(
     )
     out: list[BridgeOperationPublic] = []
     for op in r.scalars().all():
-        out.append(
-            BridgeOperationPublic(
-                id=str(op.id),
-                direction=op.direction,
-                status=op.status,
-                user_bsc_address=op.user_bsc_address,
-                user_acp_address=op.user_acp_address,
-                amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
-                amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
-                remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
-                acp_tx_hash=op.acp_tx_hash,
-                bsc_tx_hash_mint=op.bsc_tx_hash_mint,
-                bsc_tx_hash_burn=op.bsc_tx_hash_burn,
-                deposit_ref_hex=op.deposit_ref_hex,
-                bsc_log_index=op.bsc_log_index,
-                version=op.version,
-                created_at=op.created_at,
-            )
-        )
+        out.append(_serialize_operation(op))
     return out
 
 
@@ -600,9 +591,7 @@ async def admin_reconcile(
     s = get_settings()
     if not s.bridge_rail_enabled:
         raise HTTPException(status_code=503, detail="Bridge rail is disabled")
-    secret = (s.bridge_operator_secret or "").strip()
-    if not secret or (x_bridge_operator_secret or "").strip() != secret:
-        raise HTTPException(status_code=403, detail="Invalid bridge operator secret")
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
     return await run_reconciliation(session)
 
 
@@ -613,9 +602,7 @@ async def admin_allowlist_add(
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
-    secret = (s.bridge_operator_secret or "").strip()
-    if not secret or (x_bridge_operator_secret or "").strip() != secret:
-        raise HTTPException(status_code=403, detail="Invalid bridge operator secret")
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
     bsc = _norm_bsc(body.bsc_address)
     dup = await session.scalar(
         select(BridgeAllowlistAddress.id).where(BridgeAllowlistAddress.bsc_address == bsc)
@@ -626,3 +613,189 @@ async def admin_allowlist_add(
     session.add(row)
     await session.flush()
     return {"ok": True, "bsc_address": bsc}
+
+
+@router.get("/admin/reverse/operations", response_model=list[BridgeOperationPublic])
+async def admin_reverse_operations(
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+    status: str | None = None,
+    limit: int = 100,
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    lim = max(1, min(limit, 500))
+    q = select(BridgeOperation).where(BridgeOperation.direction == "bsc_to_acp")
+    if status:
+        q = q.where(BridgeOperation.status == status)
+    q = q.order_by(BridgeOperation.created_at.desc()).limit(lim)
+    r = await session.execute(q)
+    return [_serialize_operation(op) for op in r.scalars().all()]
+
+
+@router.post("/admin/reverse/bind-burn", response_model=BridgeOperationPublic)
+async def admin_reverse_bind_burn(
+    body: BridgeAdminReverseBindBurnRequest,
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "bsc_to_acp":
+        raise HTTPException(status_code=400, detail="Operation is not reverse rail")
+    if op.status not in {"PENDING_BURN", "BURN_CONFIRMED"}:
+        raise HTTPException(status_code=409, detail="Operation is not in a burn-bindable state")
+    tx_hash = str(body.bsc_tx_hash_burn).strip()
+    dup = await session.scalar(
+        select(BridgeOperation.id).where(
+            BridgeOperation.id != op.id,
+            BridgeOperation.bsc_tx_hash_burn == tx_hash,
+            BridgeOperation.bsc_log_index == body.bsc_log_index,
+        )
+    )
+    if dup is not None:
+        raise HTTPException(status_code=409, detail="Burn tx/log already bound to another operation")
+    op.bsc_tx_hash_burn = tx_hash
+    op.bsc_log_index = int(body.bsc_log_index)
+    if body.correlation_id is not None:
+        op.correlation_id = str(body.correlation_id).strip() or None
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_reverse_bind_burn",
+            payload_json={
+                "bsc_tx_hash_burn": tx_hash,
+                "bsc_log_index": int(body.bsc_log_index),
+                "correlation_id": op.correlation_id,
+                "note": body.note,
+            },
+        )
+    )
+    if op.status == "PENDING_BURN":
+        from app.services.bridge_orchestrator import append_transition
+        await append_transition(
+            session,
+            op,
+            "BURN_CONFIRMED",
+            metadata={
+                "admin": True,
+                "bsc_tx_hash_burn": tx_hash,
+                "bsc_log_index": int(body.bsc_log_index),
+                "correlation_id": op.correlation_id,
+                "note": body.note,
+            },
+        )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
+@router.post("/admin/reverse/bind-payout", response_model=BridgeOperationPublic)
+async def admin_reverse_bind_payout(
+    body: BridgeAdminReverseBindPayoutRequest,
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "bsc_to_acp":
+        raise HTTPException(status_code=400, detail="Operation is not reverse rail")
+    if op.status not in {"BURN_CONFIRMED", "ACP_PAYOUT_SENT"}:
+        raise HTTPException(status_code=409, detail="Operation is not in a payout-bindable state")
+    tx_hash = str(body.acp_tx_hash).strip()
+    dup = await session.scalar(
+        select(BridgeOperation.id).where(
+            BridgeOperation.id != op.id,
+            BridgeOperation.acp_tx_hash == tx_hash,
+        )
+    )
+    if dup is not None:
+        raise HTTPException(status_code=409, detail="ACP payout tx already bound to another operation")
+    op.acp_tx_hash = tx_hash
+    op.acp_out_index = 0
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_reverse_bind_payout",
+            payload_json={"acp_tx_hash": tx_hash, "note": body.note},
+        )
+    )
+    if op.status == "BURN_CONFIRMED":
+        from app.services.bridge_orchestrator import append_transition
+        await append_transition(
+            session,
+            op,
+            "ACP_PAYOUT_SENT",
+            metadata={"admin": True, "txid": tx_hash, "note": body.note},
+        )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
+@router.post("/admin/reverse/requeue-payout", response_model=BridgeOperationPublic)
+async def admin_reverse_requeue_payout(
+    body: BridgeAdminReverseRequeuePayoutRequest,
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "bsc_to_acp":
+        raise HTTPException(status_code=400, detail="Operation is not reverse rail")
+    if op.status != "ACP_PAYOUT_SENT":
+        raise HTTPException(status_code=409, detail="Only ACP_PAYOUT_SENT operations can be requeued")
+    from app.services.bridge_orchestrator import append_transition
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_reverse_requeue_payout",
+            payload_json={"previous_acp_tx_hash": op.acp_tx_hash, "note": body.note},
+        )
+    )
+    op.acp_tx_hash = None
+    op.acp_out_index = 0
+    await append_transition(
+        session,
+        op,
+        "BURN_CONFIRMED",
+        metadata={"admin": True, "requeued_from": "ACP_PAYOUT_SENT", "note": body.note},
+    )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
+@router.post("/admin/reverse/mark-disputed", response_model=BridgeOperationPublic)
+async def admin_reverse_mark_disputed(
+    body: BridgeAdminReverseMarkDisputedRequest,
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "bsc_to_acp":
+        raise HTTPException(status_code=400, detail="Operation is not reverse rail")
+    if op.status == "COMPLETED":
+        raise HTTPException(status_code=409, detail="Completed operations cannot be manually disputed here")
+    from app.services.bridge_orchestrator import append_transition
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_reverse_mark_disputed",
+            payload_json={"note": body.note},
+        )
+    )
+    await append_transition(
+        session,
+        op,
+        "DISPUTED",
+        metadata={"admin": True, "note": body.note},
+    )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
