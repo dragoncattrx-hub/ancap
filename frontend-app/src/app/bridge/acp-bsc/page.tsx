@@ -6,11 +6,11 @@ import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { bridgeRail } from "@/lib/api";
+import { buildAcpTxHref } from "@/lib/acpExplorer";
 
 /** Canonical spec in the public ANCAP repo (same path as local `docs/`). */
 const BRIDGE_SPEC_DOC_HREF =
   "https://github.com/dragoncattrx-hub/ancap/blob/master/docs/bridge-spec-v1.md";
-
 type BridgeStatus = {
   bridge_rail_enabled: boolean;
   bridge_rail_paused: boolean;
@@ -309,6 +309,9 @@ export default function BridgeAcpBscPage() {
                     const bscTxHref = o.bsc_tx_hash_mint && status?.bsc_explorer_base
                       ? `${status.bsc_explorer_base.replace(/\/$/, "")}/tx/${o.bsc_tx_hash_mint.startsWith("0x") ? o.bsc_tx_hash_mint : `0x${o.bsc_tx_hash_mint}`}`
                       : null;
+                    const acpTxHref = o.acp_tx_hash
+                      ? buildAcpTxHref(o.acp_tx_hash, status?.acp_explorer_tx_base)
+                      : null;
                     return (
                       <li key={o.id} className="rounded border border-zinc-800 bg-zinc-900/50 px-3 py-2 font-mono text-xs text-zinc-300">
                         <div className="text-zinc-500 break-all">{o.id}</div>
@@ -325,6 +328,13 @@ export default function BridgeAcpBscPage() {
                         {o.deposit_ref_hex ? <div className="break-all">deposit_ref={o.deposit_ref_hex}</div> : null}
                         {o.bsc_log_index !== null && o.bsc_log_index !== undefined ? <div>log_index={o.bsc_log_index}</div> : null}
                         {o.version !== null && o.version !== undefined ? <div>version={o.version}</div> : null}
+                        {acpTxHref ? (
+                          <div>
+                            <a className="text-sky-400 underline" href={acpTxHref} target="_blank" rel="noreferrer">
+                              Open ACP deposit tx
+                            </a>
+                          </div>
+                        ) : null}
                         {bscTxHref ? (
                           <div>
                             <a className="text-sky-400 underline" href={bscTxHref} target="_blank" rel="noreferrer">

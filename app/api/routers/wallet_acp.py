@@ -26,6 +26,8 @@ from app.schemas import (
     AcpWithdrawRequest,
     AcpWithdrawResponse,
     AcpTransactionPublic,
+    AcpTransactionDetailsPublic,
+    AcpTransactionIoPublic,
     AcpSwapQuoteRequest,
     AcpSwapQuoteResponse,
     AcpSwapOrderCreateRequest,
@@ -549,15 +551,14 @@ def _load_or_create_valid_hot_mnemonic() -> str:
         return new_mnemonic
 
 
-def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
+def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
     rpc_url = _require_acp_rpc_url()
     best_height = int(_rpc_call(rpc_url, "getblockcount", []) or 0)
     if best_height <= 0:
-        return []
+        return (0, {}, {})
 
-    # Track outputs while scanning chain to resolve vin ownership.
     out_index: dict[tuple[str, int], tuple[str, int]] = {}
-    rows: list[AcpTransactionPublic] = []
+    tx_index: dict[str, dict] = {}
 
     for height in range(1, best_height + 1):
         block_hash = _rpc_call(rpc_url, "getblockhash", {"height": height})
@@ -570,55 +571,135 @@ def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransac
             if not txid:
                 continue
 
-            sent_units = 0
-            received_units = 0
-
+            inputs: list[dict] = []
+            total_input_units = 0
             for vin in tx.get("vin") or []:
                 prev_txid = vin.get("prev_txid")
                 prev_vout = vin.get("vout")
                 if prev_txid is None or prev_vout is None:
                     continue
                 key = (str(prev_txid), int(prev_vout))
-                prev_out = out_index.pop(key, None)
-                if prev_out and prev_out[0] == address:
-                    sent_units += int(prev_out[1])
+                prev_out = out_index.get(key)
+                prev_address = prev_out[0] if prev_out else None
+                prev_units = int(prev_out[1]) if prev_out else 0
+                total_input_units += prev_units
+                inputs.append(
+                    {
+                        "address": prev_address,
+                        "units": prev_units,
+                        "vout": int(prev_vout),
+                    }
+                )
 
+            outputs: list[dict] = []
+            total_output_units = 0
             for idx, vout in enumerate(tx.get("vout") or []):
                 out_addr = str(vout.get("recipient_address") or "")
                 out_amount = _json_chain_amount_to_int(vout.get("amount"))
                 out_index[(txid, idx)] = (out_addr, out_amount)
-                if out_addr == address:
-                    received_units += out_amount
-
-            if sent_units == 0 and received_units == 0:
-                continue
-
-            net_units = received_units - sent_units
-            if sent_units > 0 and received_units > 0 and net_units == 0:
-                direction = "self"
-            elif net_units < 0:
-                direction = "out"
-            else:
-                direction = "in"
-
-            rows.append(
-                AcpTransactionPublic(
-                    txid=txid,
-                    block_height=height,
-                    block_time=_acp_timestamp(block_time) if block_time > 0 else _utc_now_iso(),
-                    confirmations=(best_height - height + 1),
-                    direction=direction,
-                    sent_units=str(sent_units),
-                    sent_acp=_units_to_acp_str(sent_units),
-                    received_units=str(received_units),
-                    received_acp=_units_to_acp_str(received_units),
-                    net_units=str(net_units),
-                    net_acp=_units_to_acp_str(net_units),
+                total_output_units += out_amount
+                outputs.append(
+                    {
+                        "address": out_addr or None,
+                        "units": out_amount,
+                        "vout": idx,
+                    }
                 )
+
+            tx_index[txid] = {
+                "txid": txid,
+                "block_height": height,
+                "block_hash": str(block_hash),
+                "block_time": _acp_timestamp(block_time) if block_time > 0 else _utc_now_iso(),
+                "confirmations": (best_height - height + 1),
+                "inputs": inputs,
+                "outputs": outputs,
+                "total_input_units": total_input_units,
+                "total_output_units": total_output_units,
+                "fee_units": max(total_input_units - total_output_units, 0),
+            }
+
+    return (best_height, out_index, tx_index)
+
+
+def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
+    best_height, _out_index, tx_index = _scan_chain_transactions()
+    if best_height <= 0:
+        return []
+
+    rows: list[AcpTransactionPublic] = []
+
+    for tx in tx_index.values():
+        sent_units = sum(int(i.get("units") or 0) for i in tx["inputs"] if i.get("address") == address)
+        received_units = sum(int(o.get("units") or 0) for o in tx["outputs"] if o.get("address") == address)
+
+        if sent_units == 0 and received_units == 0:
+            continue
+
+        net_units = received_units - sent_units
+        if sent_units > 0 and received_units > 0 and net_units == 0:
+            direction = "self"
+        elif net_units < 0:
+            direction = "out"
+        else:
+            direction = "in"
+
+        rows.append(
+            AcpTransactionPublic(
+                txid=tx["txid"],
+                block_height=int(tx["block_height"]),
+                block_time=str(tx["block_time"]),
+                confirmations=int(tx["confirmations"]),
+                direction=direction,
+                sent_units=str(sent_units),
+                sent_acp=_units_to_acp_str(sent_units),
+                received_units=str(received_units),
+                received_acp=_units_to_acp_str(received_units),
+                net_units=str(net_units),
+                net_acp=_units_to_acp_str(net_units),
             )
+        )
 
     rows.sort(key=lambda x: (x.block_height, x.txid), reverse=True)
     return rows[:limit]
+
+
+def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
+    _best_height, _out_index, tx_index = _scan_chain_transactions()
+    tx = tx_index.get(txid)
+    if tx is None:
+        return None
+    return AcpTransactionDetailsPublic(
+        txid=str(tx["txid"]),
+        block_height=int(tx["block_height"]),
+        block_hash=str(tx.get("block_hash") or "") or None,
+        block_time=str(tx["block_time"]),
+        confirmations=int(tx["confirmations"]),
+        total_input_units=str(int(tx["total_input_units"])),
+        total_input_acp=_units_to_acp_str(int(tx["total_input_units"])),
+        total_output_units=str(int(tx["total_output_units"])),
+        total_output_acp=_units_to_acp_str(int(tx["total_output_units"])),
+        fee_units=str(int(tx["fee_units"])),
+        fee_acp=_units_to_acp_str(int(tx["fee_units"])),
+        inputs=[
+            AcpTransactionIoPublic(
+                address=(item.get("address") if item.get("address") else None),
+                units=str(int(item.get("units") or 0)),
+                acp=_units_to_acp_str(int(item.get("units") or 0)),
+                vout=(int(item["vout"]) if item.get("vout") is not None else None),
+            )
+            for item in tx["inputs"]
+        ],
+        outputs=[
+            AcpTransactionIoPublic(
+                address=(item.get("address") if item.get("address") else None),
+                units=str(int(item.get("units") or 0)),
+                acp=_units_to_acp_str(int(item.get("units") or 0)),
+                vout=(int(item["vout"]) if item.get("vout") is not None else None),
+            )
+            for item in tx["outputs"]
+        ],
+    )
 
 
 @router.post("/deposit_address", response_model=AcpDepositAddressResponse)
@@ -720,6 +801,22 @@ async def list_transactions(
         if exc.status_code in (502, 503, 504):
             return []
         raise
+
+
+@router.get("/transactions/{txid}", response_model=AcpTransactionDetailsPublic)
+async def get_transaction_details(txid: str):
+    txid_norm = (txid or "").strip()
+    if len(txid_norm) < 16:
+        raise HTTPException(status_code=400, detail="txid looks invalid")
+    try:
+        details = _chain_transaction_details(txid_norm)
+    except HTTPException as exc:
+        if exc.status_code in (502, 503, 504):
+            raise HTTPException(status_code=503, detail="ACP transaction lookup is temporarily unavailable") from exc
+        raise
+    if details is None:
+        raise HTTPException(status_code=404, detail="ACP transaction not found")
+    return details
 
 
 @router.post("/withdraw", response_model=AcpWithdrawResponse)

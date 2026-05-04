@@ -101,6 +101,29 @@ class AcpSwapCompleteRequest(BaseModel):
     wallet_password: str = Field(..., min_length=8, description="Account password used to decrypt wallet seed")
 
 
+class AcpTransactionIoPublic(BaseModel):
+    address: str | None = None
+    units: str
+    acp: str
+    vout: int | None = None
+
+
+class AcpTransactionDetailsPublic(BaseModel):
+    txid: str
+    block_height: int
+    block_hash: str | None = None
+    block_time: str
+    confirmations: int
+    total_input_units: str
+    total_input_acp: str
+    total_output_units: str
+    total_output_acp: str
+    fee_units: str
+    fee_acp: str
+    inputs: list[AcpTransactionIoPublic]
+    outputs: list[AcpTransactionIoPublic]
+
+
 class AcpTransactionPublic(BaseModel):
     txid: str
     block_height: int

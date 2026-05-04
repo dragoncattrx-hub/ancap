@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { api, bridgeRail } from '../api';
+import { api, bridgeRail, walletAcp } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
@@ -30,5 +30,10 @@ describe('API Client', () => {
     expect(bridgeRail.reserveSummary).toBeDefined();
     expect(bridgeRail.createIntentAcpToBsc).toBeDefined();
     expect(bridgeRail.listMyIntents).toBeDefined();
+  });
+
+  it('should expose public ACP transaction lookup client', () => {
+    expect(walletAcp).toBeDefined();
+    expect(walletAcp.getTransaction).toBeDefined();
   });
 });

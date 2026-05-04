@@ -15,6 +15,8 @@ services:
 
   api:
     build: .
+    env_file:
+      - ./Sicret/bridge-bsc/bridge.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
@@ -41,6 +43,7 @@ services:
       BRIDGE_RESERVE_ACP_ADDRESS: ${BRIDGE_RESERVE_ACP_ADDRESS:-}
       BRIDGE_ACP_CONFIRMATIONS: ${BRIDGE_ACP_CONFIRMATIONS:-30}
       BRIDGE_OPERATOR_SECRET: ${BRIDGE_OPERATOR_SECRET:-}
+      ACP_EXPLORER_TX_BASE: ${ACP_EXPLORER_TX_BASE:-https://ancap.cloud/acp/tx}
     volumes:
       # Persist ACP hot-wallet mnemonic outside the container.
       # Directory is gitignored by project settings.

@@ -29,6 +29,7 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
+  { label: "Bridge (wACP)", href: "/bridge/acp-bsc" },
   { label: "AI Console", href: "/ai-console" },
   { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },
@@ -421,13 +422,22 @@ export function Navigation() {
                       <div className="truncate text-[13px] text-white/80" title={userLabel}>
                         {userLabel}
                       </div>
-                      <Link
-                        href="/wallet/acp"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="inline-flex w-fit items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 px-4 py-2 text-[12px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/35 transition hover:bg-emerald-400/25"
-                      >
-                        {t("nav.acpWallet")}
-                      </Link>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href="/wallet/acp"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="inline-flex w-fit items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 px-4 py-2 text-[12px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/35 transition hover:bg-emerald-400/25"
+                        >
+                          {t("nav.acpWallet")}
+                        </Link>
+                        <Link
+                          href="/bridge/acp-bsc"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="inline-flex w-fit items-center justify-center rounded-full border border-sky-400/35 bg-sky-400/12 px-4 py-2 text-[12px] font-medium text-sky-100 ring-1 ring-inset ring-sky-400/25 transition hover:bg-sky-400/20"
+                        >
+                          {t("nav.bridgeAcpBsc")}
+                        </Link>
+                      </div>
                     </div>
                     <button
                       onClick={() => {

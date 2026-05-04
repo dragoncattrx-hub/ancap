@@ -65,9 +65,15 @@ Recommended:
 
 Main thing: docs should no longer imply that live mint path is missing.
 
-### 3. Add optional ACP explorer link support
-Right now `acp_explorer_tx_base` is empty in runtime status.
-If an ACP explorer base URL becomes available, expose it so UI can link ACP deposit txs the same way it links BSC mint txs.
+### 3. ACP explorer link support is now wired
+ACP deposit tx links no longer depend on a third-party explorer.
+ANCAP now provides a built-in tx viewer at:
+- `/acp/tx/{txid}`
+
+Runtime/config default:
+- `ACP_EXPLORER_TX_BASE=https://ancap.cloud/acp/tx`
+
+That means bridge UI can link ACP deposit txs immediately, while still allowing override to an external ACP explorer later if one appears.
 
 ### 4. Runtime balance helper is now available
 A small helper script now exists:

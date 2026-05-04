@@ -69,6 +69,7 @@ Intent list should be able to show:
 - deposit ref
 - BSC log index
 - version
+- built-in ACP tx link
 - BscScan link for mint tx
 
 ### 5. Pilot transaction flow
@@ -108,6 +109,7 @@ Confirm at least one of:
 - BSC watcher tx hash normalization fixed
 - API exposes result tx fields
 - frontend intent list updated to show result fields
+- built-in ACP tx viewer added at `/acp/tx/{txid}`
 
 ## Safety reminders
 - Keep all secrets only in `Sicret/`

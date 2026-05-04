@@ -68,6 +68,7 @@ Expected:
   - `deposit_ref_hex`
   - `bsc_log_index`
   - `version`
+  - built-in ACP tx link
   - BscScan tx link
 
 ## Normal ACP -> BSC operator flow
@@ -127,6 +128,12 @@ Operation API now exposes:
 - `deposit_ref_hex`
 - `bsc_log_index`
 - `version`
+
+Built-in ACP explorer path is:
+- `/acp/tx/{txid}`
+
+Runtime default is:
+- `ACP_EXPLORER_TX_BASE=https://ancap.cloud/acp/tx`
 
 This means most operator checks no longer require raw SQL.
 

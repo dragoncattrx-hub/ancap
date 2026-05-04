@@ -36,7 +36,7 @@ It has already completed one real end-to-end ACP -> BSC run successfully.
    - `deposit_ref_hex`
    - `bsc_log_index`
    - `version`
-7. Frontend intent list now shows those result fields and links mint tx to BscScan.
+7. Frontend intent list now shows those result fields, links mint tx to BscScan, and links ACP deposit tx to the built-in ANCAP ACP tx viewer.
 
 ## Current operator flow
 
@@ -88,6 +88,7 @@ Check all of:
 - reconciliation delta is zero
 - operation result fields exposed by API
 - BscScan tx exists and succeeded
+- ACP deposit tx link opens under `/acp/tx/{txid}`
 - recipient wallet `balanceOf(wACP)` increased
 
 ## Recommended next step

@@ -342,6 +342,10 @@ export const walletAcp = {
     return apiFetch(`/wallet/acp/transactions${suffix ? `?${suffix}` : ""}`);
   },
 
+  async getTransaction(txid: string) {
+    return apiFetch(`/wallet/acp/transactions/${encodeURIComponent(txid)}`);
+  },
+
   async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string; fee_acp?: string }) {
     return apiFetch("/wallet/acp/withdraw", {
       method: "POST",

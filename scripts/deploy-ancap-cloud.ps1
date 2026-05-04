@@ -16,6 +16,12 @@ $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 $compose = Join-Path $root "docker-compose.prod.yml"
 if (-not (Test-Path $compose)) { Write-Error "Missing docker-compose.prod.yml in $root" }
+$bridgeEnv = Join-Path $root "Sicret\bridge-bsc\bridge.env"
+$composeArgs = @("-f", $compose)
+if (Test-Path $bridgeEnv) {
+    $composeArgs = @("--env-file", $bridgeEnv, "-f", $compose)
+    Write-Host ('Using bridge env file: ' + $bridgeEnv)
+}
 
 if (-not $SkipGitPull) {
     git pull --ff-only
@@ -28,20 +34,20 @@ if ($LASTEXITCODE -eq 0 -and $rev) {
 } else {
     $env:APP_BUILD_ID = "unknown"
 }
-Write-Host "APP_BUILD_ID=$($env:APP_BUILD_ID) — after deploy, curl https://ancap.cloud/internal/frontend-build must show the same id"
+Write-Host ('APP_BUILD_ID=' + $env:APP_BUILD_ID + ' -- after deploy, https://ancap.cloud/internal/frontend-build must show the same id')
 
-Write-Host "Building images (no cache)..."
-docker compose -f $compose build --no-cache
+Write-Host 'Building images (no cache)...'
+docker compose @composeArgs build --no-cache
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "Starting stack..."
-docker compose -f $compose up -d
+Write-Host 'Starting stack...'
+docker compose @composeArgs up -d
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if (-not $SkipMigrations) {
-    Write-Host "Alembic upgrade head (api container)..."
-    docker compose -f $compose exec -T api alembic upgrade head
+    Write-Host 'Alembic upgrade head (api container)...'
+    docker compose @composeArgs exec -T api alembic upgrade head
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Write-Host "Done. Open https://ancap.cloud/bridge/acp-bsc — if still 404, purge Cloudflare cache for the hostname."
+Write-Host 'Done. Open https://ancap.cloud/bridge/acp-bsc -- if still 404, purge Cloudflare cache for the hostname.'

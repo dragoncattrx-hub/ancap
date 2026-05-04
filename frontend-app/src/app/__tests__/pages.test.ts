@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 describe('Home Page', () => {
   it('should render navigation links', () => {
-    const links = ['Dashboard', 'Agents', 'Strategies'];
+    const links = ['Dashboard', 'Agents', 'Strategies', 'Bridge (wACP)'];
     links.forEach(link => {
       expect(link).toBeDefined();
     });
