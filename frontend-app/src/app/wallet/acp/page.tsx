@@ -63,7 +63,6 @@ export default function AcpWalletPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [tab, setTab] = useState<"wallet" | "swap">("wallet");
   const [depositAddress, setDepositAddress] = useState<string>("");
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [transactions, setTransactions] = useState<AcpTransaction[]>([]);
@@ -429,55 +428,11 @@ export default function AcpWalletPage() {
         <Navigation />
 
         <div className="container" style={{ padding: "48px 24px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+          <div style={{ display: "grid", gap: 16, marginBottom: 18 }}>
             <div style={{ maxWidth: 760 }}>
-              <div className="section-num" style={{ marginBottom: 10 }}>
-                Wallet
-              </div>
               <h1 style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 900, letterSpacing: "-0.03em", margin: 0, color: "var(--text)" }}>
-                ACP Wallet & Swap
+                ACP Wallet
               </h1>
-              <div style={{ color: "var(--text-muted)", marginTop: 8, lineHeight: 1.6 }}>
-                Internal MVP swap: create Tether TRC-20 {"->"} ACP order, send Tether by reference, then wait for review and ACP payout.
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gap: 10, justifyItems: "end", width: "100%", maxWidth: 520 }}>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <Link href="/bridge/acp-bsc" className="btn btn-primary">
-                  Bridge (wACP)
-                </Link>
-                <button className="btn btn-ghost" onClick={refreshAll} disabled={busy}>
-                  {busy ? "Refreshing..." : "Refresh"}
-                </button>
-              </div>
-
-              <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
-                <button
-                  type="button"
-                  onClick={() => setTab("wallet")}
-                  className={[
-                    "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
-                    tab === "wallet"
-                      ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                      : "text-white/50 hover:text-white/85",
-                  ].join(" ")}
-                >
-                  Wallet
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTab("swap")}
-                  className={[
-                    "rounded-full px-3 py-1.5 text-[12px] font-medium transition",
-                    tab === "swap"
-                      ? "bg-emerald-400/12 text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
-                      : "text-white/50 hover:text-white/85",
-                  ].join(" ")}
-                >
-                  ACP swap
-                </button>
-              </div>
             </div>
           </div>
 
@@ -537,27 +492,17 @@ export default function AcpWalletPage() {
             }}
           >
             <div className="card-header">
-              <h3 style={{ fontWeight: 800, margin: 0 }}>ACP {"->"} BSC bridge</h3>
-              <span className="badge badge-info">wACP</span>
-            </div>
-            <div style={{ marginTop: 10, color: "var(--text-muted)", lineHeight: 1.7 }}>
-              Use the bridge page to lock ACP on ANCAP Chain and mint wACP on BSC. This is separate from the internal Tether TRC-20 swap flow below.
+              <h3 style={{ fontWeight: 800, margin: 0 }}>wACP</h3>
+              <span className="badge badge-info">ACP {"->"} BSC</span>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
               <Link href="/bridge/acp-bsc" className="btn btn-primary">
-                Open Bridge (wACP)
+                Open bridge
               </Link>
-              <button type="button" className="btn btn-ghost" onClick={() => setTab("wallet")}>
-                Wallet overview
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={() => setTab("swap")}>
-                Internal swap
-              </button>
             </div>
           </div>
 
-          {tab === "wallet" ? (
-            <div style={{ display: "grid", gap: 16 }}>
+          <div style={{ display: "grid", gap: 16 }}>
               <div className="responsive-grid responsive-grid-3">
                 <div className="card">
                 <div className="card-header">
@@ -836,7 +781,7 @@ export default function AcpWalletPage() {
                 )}
               </div>
             </div>
-          ) : (
+
             <div className="responsive-grid responsive-grid-2">
               <div className="card">
                 <div className="card-header">
@@ -942,7 +887,6 @@ export default function AcpWalletPage() {
                 )}
               </div>
             </div>
-          )}
         </div>
       </div>
     </>
