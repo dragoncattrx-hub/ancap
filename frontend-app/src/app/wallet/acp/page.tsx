@@ -691,95 +691,6 @@ export default function AcpWalletPage() {
                 </div>
               </div>
 
-              <div className="card">
-                <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>On-chain transaction history</h3>
-                  <span className="badge badge-active">Explorer</span>
-                </div>
-                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address</label>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <input
-                      className="input input-bordered w-full"
-                      value={txAddressInput}
-                      onChange={(e) => setTxAddressInput(e.target.value)}
-                      placeholder="acp1..."
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => refreshTransactionsByAddress(txAddressInput)}
-                      disabled={busy || !txAddressInput.trim()}
-                    >
-                      Load history
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => {
-                        const hot = (singleWalletAddress || "").trim();
-                        if (!hot) return;
-                        setTxAddressInput(hot);
-                        refreshTransactionsByAddress(hot);
-                      }}
-                      disabled={busy || !singleWalletAddress}
-                    >
-                      Use hot wallet
-                    </button>
-                  </div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span>
-                  </div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                    Balance:{" "}
-                    <strong style={{ color: "var(--text)" }}>
-                      {txAddressBalance?.acp ?? "0"} ACP
-                    </strong>
-                    {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
-                    {txAddressBalance?.units != null && txAddressBalance.units !== "" ? (
-                      <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>
-                        Units: {txAddressBalance.units} (÷ 10⁸ for ACP)
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                {transactions.length === 0 ? (
-                  <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
-                ) : (
-                  <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                    {transactions.map((tx) => (
-                      <div
-                        key={`${tx.txid}-${tx.block_height}`}
-                        style={{
-                          padding: 10,
-                          borderRadius: 10,
-                          border: "1px solid var(--border)",
-                          background: "var(--bg)",
-                          display: "grid",
-                          gap: 6,
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                          <strong>{tx.direction.toUpperCase()}</strong>
-                          <span style={{ color: "var(--text-muted)" }}>
-                            block {tx.block_height} • {tx.confirmations} conf
-                          </span>
-                        </div>
-                        <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>{tx.txid}</div>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                          <span style={{ color: "var(--text-muted)" }}>Sent: {tx.sent_acp} ACP</span>
-                          <span style={{ color: "var(--text-muted)" }}>Received: {tx.received_acp} ACP</span>
-                          <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>
-                            Net: {tx.net_acp} ACP
-                          </strong>
-                        </div>
-                        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{tx.block_time}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="responsive-grid responsive-grid-2">
@@ -886,6 +797,96 @@ export default function AcpWalletPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="card">
+              <div className="card-header">
+                <h3 style={{ fontWeight: 800, margin: 0 }}>On-chain transaction history</h3>
+                <span className="badge badge-active">Explorer</span>
+              </div>
+              <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address</label>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input
+                    className="input input-bordered w-full"
+                    value={txAddressInput}
+                    onChange={(e) => setTxAddressInput(e.target.value)}
+                    placeholder="acp1..."
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => refreshTransactionsByAddress(txAddressInput)}
+                    disabled={busy || !txAddressInput.trim()}
+                  >
+                    Load history
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      const hot = (singleWalletAddress || "").trim();
+                      if (!hot) return;
+                      setTxAddressInput(hot);
+                      refreshTransactionsByAddress(hot);
+                    }}
+                    disabled={busy || !singleWalletAddress}
+                  >
+                    Use hot wallet
+                  </button>
+                </div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span>
+                </div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                  Balance:{" "}
+                  <strong style={{ color: "var(--text)" }}>
+                    {txAddressBalance?.acp ?? "0"} ACP
+                  </strong>
+                  {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
+                  {txAddressBalance?.units != null && txAddressBalance.units !== "" ? (
+                    <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>
+                      Units: {txAddressBalance.units} (÷ 10⁸ for ACP)
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+
+              {transactions.length === 0 ? (
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
+              ) : (
+                <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                  {transactions.map((tx) => (
+                    <div
+                      key={`${tx.txid}-${tx.block_height}`}
+                      style={{
+                        padding: 10,
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--bg)",
+                        display: "grid",
+                        gap: 6,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                        <strong>{tx.direction.toUpperCase()}</strong>
+                        <span style={{ color: "var(--text-muted)" }}>
+                          block {tx.block_height} • {tx.confirmations} conf
+                        </span>
+                      </div>
+                      <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>{tx.txid}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{ color: "var(--text-muted)" }}>Sent: {tx.sent_acp} ACP</span>
+                        <span style={{ color: "var(--text-muted)" }}>Received: {tx.received_acp} ACP</span>
+                        <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>
+                          Net: {tx.net_acp} ACP
+                        </strong>
+                      </div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{tx.block_time}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
         </div>
       </div>
