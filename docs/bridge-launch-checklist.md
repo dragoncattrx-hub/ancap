@@ -1,37 +1,116 @@
-# wACP / BSC bridge rail — launch checklist
+# Bridge launch checklist
 
-Use after contracts and backend are deployed. See [bridge-spec-v1.md](./bridge-spec-v1.md).
+## Goal
 
-## Safe production apply (DB + ACP)
+Bring ACP -> BSC custodial rail to a safe live pilot state and verify it with real end-to-end flow.
 
-1. **Backup Postgres** before any migration (`pg_dump` or provider snapshot).
-2. Migration **039** is **additive only** (new `bridge_*` tables); it does not alter `users`, ledger, ACP wallet tables, or ACP-crypto protocol code.
-3. Keep **`BRIDGE_RAIL_ENABLED=false`** (default in [docker-compose.prod.yml](../docker-compose.prod.yml)) until operations are ready; with it off, bridge HTTP returns 503 for rail-only writes and the tick skips bridge work—**no new ACP spends** are introduced by this release.
-4. Do **not** change `ACP_RPC_URL`, `ACP_HOT_MNEMONIC_*`, genesis, or acp-node data for this rollout; pull new API/frontend images and run `alembic upgrade head` only.
+## Current reality
 
-## Pre-mainnet
+This checklist is now mostly a verification checklist, not a theoretical launch plan.
+The rail already completed one real pilot successfully on 2026-05-04.
 
-1. **BSC testnet:** deploy `WACP` + `BridgeGateway` from [contracts/bridge-bsc](../contracts/bridge-bsc); run `forge test`; record addresses.
-2. **Internal soak:** small amounts ACP→mint→`requestRelease`→ACP payout with operator keys isolated from user custodial hot wallet.
-3. **Reconciliation:** confirm `POST /bridge/admin/reconcile` (with `X-Bridge-Operator-Secret`) reports `ok: true` under load test data.
-4. **Allowlist:** if using pilot allowlist, populate via same admin endpoint; empty allowlist = all addresses allowed.
+### Live state already confirmed
+- BSC contracts deployed
+- API/runtime wired
+- ACP deposit detection working
+- live BSC mint submission working
+- BSC receipt confirmation working
+- reconciliation clean
+- first pilot operation completed
 
-## Mainnet tag `bridge-v1.0.0-mainnet`
+## Contracts
+- `WACP`: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
+- `BridgeGateway`: `0x57c24FF77B23a82328cb88914D4FD4EEBd93321b`
 
-Pilot runbook (RU, commands): [bridge-pilot-mainnet.md](./bridge-pilot-mainnet.md).
+## Runtime checklist
 
-1. Deploy verified bytecode to BSC mainnet (`contracts/bridge-bsc/script/Deploy.s.sol`); store addresses in env / secrets (not git).
-2. Set `BRIDGE_RAIL_ENABLED=true`, `BRIDGE_BSC_RPC_URL`, `BRIDGE_WACP_CONTRACT`, `BRIDGE_GATEWAY_CONTRACT`, `BRIDGE_RESERVE_ACP_ADDRESS`, `BRIDGE_OPERATOR_SECRET`, optional `BRIDGE_RAIL_PAUSED=true` until go-live.
-3. Run DB migration `039` on production Postgres.
-4. Configure cron `POST /v1/system/jobs/tick` (with `X-Cron-Secret` if set) so `bridge_rail` tick runs periodically.
+### 1. Environment
+Confirm `Sicret/bridge-bsc/bridge.env` contains correct live values:
+- `BRIDGE_RAIL_ENABLED=true`
+- `BRIDGE_RAIL_PAUSED=false`
+- `BRIDGE_DRY_RUN=false`
+- `BRIDGE_BSC_RPC_URL`
+- `BRIDGE_WACP_CONTRACT`
+- `BRIDGE_GATEWAY_CONTRACT`
+- `BRIDGE_RESERVE_ACP_ADDRESS`
+- `BRIDGE_OPERATOR_SECRET`
+- `BRIDGE_BSC_PRIVATE_KEY`
+- `BRIDGE_ACP_CONFIRMATIONS=3`
 
-## PancakeSwap liquidity
+### 2. Docker/runtime
+Confirm containers are healthy:
+- `ancap-frontend-1`
+- `ancap-api-1`
+- `ancap-proxy-1`
+- `ancap-postgres-1`
 
-1. Create pool **wACP / USDT** (or agreed pair); document initial price model separately.
-2. Publish reserve dashboard URLs (BSCscan + ACP explorer for reserve address).
-3. Publish user doc: how to buy, risks, pause behavior.
+### 3. API health
+Confirm:
+- `GET /api/v1/system/health`
+- `GET /api/v1/bridge/status`
+- `GET /api/v1/bridge/reserve-summary`
+- `POST /api/v1/system/jobs/tick`
+- `POST /api/v1/bridge/admin/reconcile`
 
-## Post-launch
+Expected bridge status:
+- enabled = true
+- paused = false
+- dry_run = false
+- confirmations_acp = 3
 
-1. Monitor `bridge_audit_events` for `reconciliation_mismatch` — halt and investigate.
-2. Rotate `BRIDGE_OPERATOR_SECRET` and relayer keys on schedule.
+### 4. UI health
+Confirm page loads:
+- `/bridge/acp-bsc`
+
+Intent list should be able to show:
+- status
+- ACP tx hash
+- BSC mint tx hash
+- deposit ref
+- BSC log index
+- version
+- BscScan link for mint tx
+
+### 5. Pilot transaction flow
+For a fresh small pilot:
+1. create intent
+2. send exact ACP amount to reserve address
+3. run or wait for tick
+4. verify status transitions:
+   - `PENDING_DEPOSIT`
+   - `CONFIRMED_ON_ACP`
+   - `MINT_REQUESTED`
+   - `COMPLETED`
+
+### 6. Reconciliation
+After pilot completion, confirm:
+- `ok=true`
+- `delta_wacp_wei=0`
+
+### 7. On-chain verification
+Confirm at least one of:
+- BscScan receipt success for mint tx
+- `balanceOf(recipient)` increased
+- `totalSupply()` changed as expected
+
+## First successful pilot reference
+- operation id: `9320ecb4-c407-4ad2-8a4c-5c634b2259d8`
+- ACP tx: `6c38d15141424819700e043fbd664826d37b0e0de14179a5f18906c2b3b4838e`
+- BSC tx: `a656c01758cd51f0fdd82627e6ac6ab5e7d24acbe4b694cd5e41cb1692ad8f8b`
+- result: `COMPLETED`
+- minted balance verified: `1 wACP`
+
+## Known important fixes
+- intent creation flush ordering fixed
+- ACP watcher implemented for real reserve deposit pickup
+- `BRIDGE_ACP_CONFIRMATIONS` passed into Docker runtime
+- live BSC mint path implemented
+- BSC watcher tx hash normalization fixed
+- API exposes result tx fields
+- frontend intent list updated to show result fields
+
+## Safety reminders
+- Keep all secrets only in `Sicret/`
+- Never commit mnemonics/private keys
+- Keep pilot caps conservative
+- Reverse rail is separate work; do not assume it is production-ready just because ACP -> BSC works

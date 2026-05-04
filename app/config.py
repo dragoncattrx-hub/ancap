@@ -124,6 +124,7 @@ class Settings(BaseSettings):
     bridge_bsc_rpc_url: str = ""
     bridge_wacp_contract: str = ""
     bridge_gateway_contract: str = ""
+    bridge_bsc_private_key: str | None = None
     bridge_reserve_acp_address: str = ""
     bridge_acp_confirmations: int = 30
     bridge_bsc_confirmations: int = 18

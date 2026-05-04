@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,6 +23,11 @@ class BridgeOperationPublic(BaseModel):
     user_acp_address: str | None
     amount_acp_smallest: str
     amount_wacp_wei: str
+    acp_tx_hash: str | None = None
+    bsc_tx_hash_mint: str | None = None
+    deposit_ref_hex: str | None = None
+    bsc_log_index: int | None = None
+    version: int | None = None
     created_at: datetime | None
 
 

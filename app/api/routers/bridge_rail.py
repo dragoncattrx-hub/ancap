@@ -193,6 +193,7 @@ async def create_intent_acp_to_bsc(
         remainder_wacp_wei=0,
     )
     session.add(op)
+    await session.flush()
     session.add(
         BridgeAuditEvent(
             operation_id=op.id,
@@ -210,6 +211,11 @@ async def create_intent_acp_to_bsc(
         user_acp_address=op.user_acp_address,
         amount_acp_smallest=str(op.amount_acp_smallest),
         amount_wacp_wei=str(op.amount_wacp_wei),
+        acp_tx_hash=op.acp_tx_hash,
+        bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+        deposit_ref_hex=op.deposit_ref_hex,
+        bsc_log_index=op.bsc_log_index,
+        version=op.version,
         created_at=op.created_at,
     )
 
@@ -241,6 +247,11 @@ async def list_my_intents(
                 user_acp_address=op.user_acp_address,
                 amount_acp_smallest=str(op.amount_acp_smallest),
                 amount_wacp_wei=str(op.amount_wacp_wei),
+                acp_tx_hash=op.acp_tx_hash,
+                bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+                deposit_ref_hex=op.deposit_ref_hex,
+                bsc_log_index=op.bsc_log_index,
+                version=op.version,
                 created_at=op.created_at,
             )
         )

@@ -290,12 +290,6 @@ export function Navigation() {
                 <Link href={acpUrl} className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
                   {t("hero.acpToken")}
                 </Link>
-                <Link
-                  href="/bridge/acp-bsc"
-                  className="rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1.5 text-sky-100/95 transition hover:bg-sky-500/18"
-                >
-                  {t("nav.bridgeAcpBsc")}
-                </Link>
               </nav>
             )}
           </div>
@@ -477,13 +471,7 @@ export function Navigation() {
                     >
                       {t("nav.acpWallet")}
                     </Link>
-                    <Link
-                      href="/bridge/acp-bsc"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-sky-400/30 bg-sky-500/10 px-3 py-2.5 text-[14px] font-medium text-sky-100 transition hover:bg-sky-500/16"
-                    >
-                      {t("nav.bridgeAcpBsc")}
-                    </Link>
+
                   </div>
                   <div className="flex items-center gap-2 border-t border-white/10 pt-3">
                     <Link

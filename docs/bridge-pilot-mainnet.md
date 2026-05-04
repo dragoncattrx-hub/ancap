@@ -1,74 +1,101 @@
-# Пилот wACP rail в BSC mainnet
+# ACP -> BSC bridge pilot (mainnet)
 
-Цель: включить мост в **боевой сети BSC (chain id 56)** после деплоя контрактов и настройки API. Репозиторий не хранит приватные ключи и адреса продакшена — только шаблоны.
+## Status
 
-## 0. Что нельзя сделать из репозитория автоматически
+As of 2026-05-04, the pilot is no longer just a plan.
+It has already completed one real end-to-end ACP -> BSC run successfully.
 
-- Подписать транзакции в mainnet без `PRIVATE_KEY` (или кошелька) на вашей машине.
-- Включить `BRIDGE_RAIL_ENABLED=true` на **ancap.cloud** без вашего `docker compose`/секретов на сервере.
+### Current deployed contracts
+- `WACP`: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
+- `BridgeGateway`: `0x57c24FF77B23a82328cb88914D4FD4EEBd93321b`
 
-Ниже — полный порядок действий для оператора.
+### Current runtime state
+- `BRIDGE_RAIL_ENABLED=true`
+- `BRIDGE_RAIL_PAUSED=false`
+- `BRIDGE_DRY_RUN=false`
+- `BRIDGE_ACP_CONFIRMATIONS=3`
+- BSC mint signer path is active
 
-## 1. Контракты (Foundry)
+### Confirmed successful pilot operation
+- operation id: `9320ecb4-c407-4ad2-8a4c-5c634b2259d8`
+- ACP deposit tx: `6c38d15141424819700e043fbd664826d37b0e0de14179a5f18906c2b3b4838e`
+- BSC mint tx: `a656c01758cd51f0fdd82627e6ac6ab5e7d24acbe4b694cd5e41cb1692ad8f8b`
+- final status: `COMPLETED`
+- minted amount: `1 wACP`
 
-```bash
-cd contracts/bridge-bsc
-forge install foundry-rs/forge-std@v1.9.4
-export PRIVATE_KEY=...          # deployer EOA (никогда в git)
-# Лимиты минта (18 decimals wACP), при необходимости переопределите:
-# export BRIDGE_MAX_SINGLE_MINT_WEI=...
-# export BRIDGE_MINT_CAP_PER_DAY_WEI=...
+## What was fixed to make pilot work
 
-forge script script/Deploy.s.sol:DeployScript \
-  --rpc-url "$BSC_MAINNET_RPC" \
-  --broadcast \
-  -vvv
-```
+1. Intent creation API FK ordering bug fixed.
+2. ACP watcher now detects real reserve deposits and matches them to pending intents.
+3. `BRIDGE_ACP_CONFIRMATIONS` is now actually passed through Docker runtime.
+4. Orchestrator now submits live BSC mint txs.
+5. BSC watcher now normalizes tx hashes with `0x` before receipt lookup.
+6. API now exposes:
+   - `acp_tx_hash`
+   - `bsc_tx_hash_mint`
+   - `deposit_ref_hex`
+   - `bsc_log_index`
+   - `version`
+7. Frontend intent list now shows those result fields and links mint tx to BscScan.
 
-Сохраните из логов адреса **WACP** и **BridgeGateway**. Проверка предсказания адреса gateway: `forge test --match-contract DeployPredictionTest`.
+## Current operator flow
 
-После деплоя при необходимости передайте владение мультисигу (отдельные транзакции от deployer):
+### 1. Preconditions
+- Docker stack must be healthy.
+- ACP node/RPC must be reachable.
+- BSC RPC must be reachable.
+- `bridge.env` must contain live values.
+- Operator secrets must stay in `Sicret/bridge-bsc/` only.
 
-- `WACP.transferOwnership(newOwner)`
-- `BridgeGateway.transferOwnership(newOwner)`
+### 2. Health checks
+Run these before any pilot:
+- `GET /api/v1/bridge/status`
+- `GET /api/v1/bridge/reserve-summary`
+- `POST /api/v1/system/jobs/tick`
+- `POST /api/v1/bridge/admin/reconcile`
+- open `/bridge/acp-bsc`
 
-## 2. Postgres
+Expected:
+- bridge enabled
+- not paused
+- `dry_run=false`
+- `confirmations_acp=3`
+- reconciliation `ok=true`
 
-На той же БД, что и API:
+### 3. Create intent
+Authenticated user creates `ACP -> BSC` intent via UI or API.
+Intent should start in `PENDING_DEPOSIT`.
 
-```bash
-alembic upgrade head
-```
+### 4. Send ACP to reserve
+User sends exact ACP amount to:
+- `BRIDGE_RESERVE_ACP_ADDRESS`
 
-(миграция **039** — только таблицы `bridge_*`.)
+Watcher should move operation:
+- `PENDING_DEPOSIT -> CONFIRMED_ON_ACP`
 
-## 3. Переменные API (Docker / systemd)
+### 5. Mint on BSC
+Orchestrator submits BSC tx through `BridgeGateway.mintWrapped(...)`.
+Operation moves to:
+- `MINT_REQUESTED`
 
-1. Скопируйте [`deploy/bridge-mainnet.pilot.env.example`](../deploy/bridge-mainnet.pilot.env.example) в секретный файл на сервере.
-2. Подставьте реальные `BRIDGE_WACP_CONTRACT`, `BRIDGE_GATEWAY_CONTRACT`, `BRIDGE_RESERVE_ACP_ADDRESS`, `BRIDGE_OPERATOR_SECRET`, свой `BRIDGE_BSC_RPC_URL`.
-3. Поднимите стек с этим env (пример):
+### 6. Confirm on BSC
+BSC watcher reads receipt/logs and advances operation through:
+- `MINT_REQUESTED -> MINTED_ON_BSC -> COMPLETED`
 
-```bash
-docker compose --env-file /path/to/bridge.env -f docker-compose.prod.yml build --no-cache
-docker compose --env-file /path/to/bridge.env -f docker-compose.prod.yml up -d
-```
+### 7. Verify outcome
+Check all of:
+- `/api/v1/bridge/status`
+- reconciliation delta is zero
+- operation result fields exposed by API
+- BscScan tx exists and succeeded
+- recipient wallet `balanceOf(wACP)` increased
 
-Без отдельного bridge-env (только обновление UI/API из `master`): из корня репозитория на хосте туннеля — **`bash scripts/deploy-ancap-cloud.sh`** или **`.\scripts\deploy-ancap-cloud.ps1`** (см. [README.md](../README.md)).
+## Recommended next step
 
-Пока не готовы к приёму пользователей, можно оставить **`BRIDGE_RAIL_PAUSED=true`** и **`BRIDGE_DRY_RUN=true`** для сухого прогона оркестратора (если поведение dry-run вас устраивает; иначе см. код `bridge_dry_run`).
+Run one more small controlled pilot.
+Goal is repeatability, not just one successful pass.
 
-## 4. Cron / tick
-
-Настройте периодический вызов `POST /v1/system/jobs/tick` с `X-Cron-Secret`, если задан `CRON_SECRET` (см. [bridge-launch-checklist.md](./bridge-launch-checklist.md)).
-
-## 5. ACP и горячий кошелёк
-
-Мост **не заменяет** настройку `ACP_RPC_URL`, `acp-node`, мнемоники резерва. Не меняйте genesis и ключи пользовательских кошельков; резерв для депозитов ACP — отдельный операторский адрес в `BRIDGE_RESERVE_ACP_ADDRESS`.
-
-## 6. Пилот «включён», но безопасный старт
-
-1. Короткий allowlist BSC-адресов через админ-API (если включён режим allowlist).
-2. Низкие caps на контракте (`setCaps`) и лимиты в env скрипта деплоя.
-3. Мониторинг `reconciliation_mismatch` в `bridge_audit_events`.
-
-После стабилизации пилота задокументируйте тег релиза по [bridge-launch-checklist.md](./bridge-launch-checklist.md) (`bridge-v1.0.0-mainnet`).
+## Notes
+- Keep caps conservative until there is at least one more successful run.
+- Do not commit mnemonics or private keys.
+- If reverse direction `BSC -> ACP` is needed later, that is separate operational work.
