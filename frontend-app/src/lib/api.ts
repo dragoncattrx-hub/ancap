@@ -409,6 +409,12 @@ export const bridgeRail = {
       body: JSON.stringify(data),
     });
   },
+  async createIntentBscToAcp(data: { user_bsc_address: string; user_acp_address: string; amount_wacp: string }) {
+    return apiFetch("/bridge/intents/bsc-to-acp", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
   async listMyIntents(limit = 50) {
     return apiFetch(`/bridge/intents/me?limit=${encodeURIComponent(String(limit))}`);
   },

@@ -45,6 +45,7 @@ type OpRow = {
   amount_wacp_wei: string;
   acp_tx_hash: string | null;
   bsc_tx_hash_mint: string | null;
+  bsc_tx_hash_burn: string | null;
   deposit_ref_hex: string | null;
   bsc_log_index: number | null;
   version: number | null;
@@ -61,6 +62,7 @@ export default function BridgeAcpBscPage() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ user_bsc_address: "", amount_acp: "1", user_acp_address: "" });
+  const [redeemForm, setRedeemForm] = useState({ user_bsc_address: "", user_acp_address: "", amount_wacp: "1" });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,6 +112,27 @@ export default function BridgeAcpBscPage() {
       await load();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Request failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitRedeemIntent() {
+    if (!isAuthenticated) {
+      router.push("/login?next=/bridge/acp-bsc");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await bridgeRail.createIntentBscToAcp({
+        user_bsc_address: redeemForm.user_bsc_address.trim(),
+        user_acp_address: redeemForm.user_acp_address.trim(),
+        amount_wacp: redeemForm.amount_wacp.trim(),
+      });
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Redeem request failed");
     } finally {
       setBusy(false);
     }
@@ -298,6 +321,63 @@ export default function BridgeAcpBscPage() {
               </div>
             </section>
 
+            <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
+              <h2 className="text-lg font-medium text-zinc-200">Redeem request (BSC → ACP)</h2>
+              {!isAuthenticated ? (
+                <p className="mt-2 text-sm text-zinc-500">
+                  <button type="button" className="text-sky-400 underline" onClick={() => router.push("/login?next=/bridge/acp-bsc")}>
+                    Sign in
+                  </button>{" "}
+                  to register a redeem request.
+                </p>
+              ) : (
+              <p className="mt-1 text-xs text-zinc-500">
+                Creates a row in <code className="text-zinc-400">PENDING_BURN</code>. Next live step is user burn via gateway request, then operator/watcher confirms and sends ACP payout.
+              </p>)}
+              <div className="mt-4 flex flex-col gap-3">
+                {isAuthenticated ? (
+                  <>
+                    <label className="text-sm text-zinc-400">
+                      BSC address (0x…)
+                      <input
+                        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
+                        value={redeemForm.user_bsc_address}
+                        onChange={(e) => setRedeemForm((f) => ({ ...f, user_bsc_address: e.target.value }))}
+                        placeholder="0x…"
+                        autoComplete="off"
+                      />
+                    </label>
+                    <label className="text-sm text-zinc-400">
+                      ACP payout address
+                      <input
+                        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
+                        value={redeemForm.user_acp_address}
+                        onChange={(e) => setRedeemForm((f) => ({ ...f, user_acp_address: e.target.value }))}
+                        placeholder="acp1…"
+                        autoComplete="off"
+                      />
+                    </label>
+                    <label className="text-sm text-zinc-400">
+                      Amount (wACP)
+                      <input
+                        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
+                        value={redeemForm.amount_wacp}
+                        onChange={(e) => setRedeemForm((f) => ({ ...f, amount_wacp: e.target.value }))}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      disabled={busy || status.bridge_rail_paused}
+                      onClick={() => void submitRedeemIntent()}
+                      className="rounded bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-white disabled:opacity-40"
+                    >
+                      {busy ? "Submitting…" : "Create redeem request"}
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </section>
+
             {isAuthenticated ? (
             <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
               <h2 className="text-lg font-medium text-zinc-200">My intents</h2>
@@ -306,8 +386,9 @@ export default function BridgeAcpBscPage() {
               ) : (
                 <ul className="mt-3 space-y-2 text-sm">
                   {intents.map((o) => {
-                    const bscTxHref = o.bsc_tx_hash_mint && status?.bsc_explorer_base
-                      ? `${status.bsc_explorer_base.replace(/\/$/, "")}/tx/${o.bsc_tx_hash_mint.startsWith("0x") ? o.bsc_tx_hash_mint : `0x${o.bsc_tx_hash_mint}`}`
+                    const bscTxHash = o.bsc_tx_hash_mint || o.bsc_tx_hash_burn;
+                    const bscTxHref = bscTxHash && status?.bsc_explorer_base
+                      ? `${status.bsc_explorer_base.replace(/\/$/, "")}/tx/${bscTxHash.startsWith("0x") ? bscTxHash : `0x${bscTxHash}`}`
                       : null;
                     const acpTxHref = o.acp_tx_hash
                       ? buildAcpTxHref(o.acp_tx_hash, status?.acp_explorer_tx_base)
@@ -325,6 +406,7 @@ export default function BridgeAcpBscPage() {
                         {o.user_acp_address ? <div className="break-all">acp={o.user_acp_address}</div> : null}
                         {o.acp_tx_hash ? <div className="break-all">acp_tx={o.acp_tx_hash}</div> : null}
                         {o.bsc_tx_hash_mint ? <div className="break-all">bsc_mint_tx={o.bsc_tx_hash_mint}</div> : null}
+                        {o.bsc_tx_hash_burn ? <div className="break-all">bsc_burn_tx={o.bsc_tx_hash_burn}</div> : null}
                         {o.deposit_ref_hex ? <div className="break-all">deposit_ref={o.deposit_ref_hex}</div> : null}
                         {o.bsc_log_index !== null && o.bsc_log_index !== undefined ? <div>log_index={o.bsc_log_index}</div> : null}
                         {o.version !== null && o.version !== undefined ? <div>version={o.version}</div> : null}
@@ -338,7 +420,7 @@ export default function BridgeAcpBscPage() {
                         {bscTxHref ? (
                           <div>
                             <a className="text-sky-400 underline" href={bscTxHref} target="_blank" rel="noreferrer">
-                              Open BSC mint tx
+                              Open BSC tx
                             </a>
                           </div>
                         ) : null}

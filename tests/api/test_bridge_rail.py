@@ -47,3 +47,44 @@ def test_wacp_exact_public_paths_ok(client):
     assert r1.status_code == 200, r1.text
     r2 = client.get("/v1/wacp/status", headers={"Authorization": ""})
     assert r2.status_code == 200, r2.text
+
+
+def test_create_redeem_intent_bsc_to_acp(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x1111111111111111111111111111111111111111",
+        "user_acp_address": "acp1qtestredeemaddress0000000000000000000000000",
+        "amount_wacp": "1.0000000001",
+    }
+    r = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["direction"] == "bsc_to_acp"
+    assert data["status"] == "PENDING_BURN"
+    assert data["amount_wacp_wei"] == "1000000000100000000"
+    assert data["amount_acp_smallest"] == "100000000"
+    assert data["bsc_tx_hash_burn"] is None
+
+
+def test_list_my_intents_includes_redeem_direction(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x2222222222222222222222222222222222222222",
+        "user_acp_address": "acp1qredeemlist000000000000000000000000000000",
+        "amount_wacp": "0.5",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+
+    r = client.get("/v1/bridge/intents/me")
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert any(op["direction"] == "bsc_to_acp" for op in data)

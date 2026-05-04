@@ -23,18 +23,27 @@ from app.db.session import get_db
 from app.schemas.bridge_rail import (
     BridgeAllowlistAddRequest,
     BridgeIntentAcpToBscCreate,
+    BridgeIntentBscToAcpCreate,
     BridgeOperationPublic,
     BridgeReserveSummaryResponse,
     BridgeStatusResponse,
     WacpPublicStatusResponse,
     WacpReserveProofResponse,
 )
-from app.services.bridge_decimal import acp_smallest_to_wacp_wei
+from app.services.bridge_decimal import acp_smallest_to_wacp_wei, wacp_wei_to_acp_smallest_floor
 from app.services.bridge_reconciliation import run_reconciliation
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bridge", tags=["Bridge (wACP)"])
+
+
+def _num_to_str(value: object) -> str:
+    if value is None:
+        return "0"
+    if isinstance(value, Decimal):
+        return format(value, "f").split(".")[0]
+    return str(value)
 
 
 WACP_PAIR_ADDRESS = "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601"
@@ -60,6 +69,13 @@ def _norm_bsc(addr: str) -> str:
     a = addr.strip().lower()
     if not re.fullmatch(r"0x[a-f0-9]{40}", a):
         raise HTTPException(status_code=400, detail="Invalid BSC address (expected 0x + 40 hex)")
+    return a
+
+
+def _norm_acp(addr: str) -> str:
+    a = addr.strip()
+    if len(a) < 3:
+        raise HTTPException(status_code=400, detail="Invalid ACP address")
     return a
 
 
@@ -397,10 +413,86 @@ async def create_intent_acp_to_bsc(
         status=op.status,
         user_bsc_address=op.user_bsc_address,
         user_acp_address=op.user_acp_address,
-        amount_acp_smallest=str(op.amount_acp_smallest),
-        amount_wacp_wei=str(op.amount_wacp_wei),
+        amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
+        amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
         acp_tx_hash=op.acp_tx_hash,
         bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+        bsc_tx_hash_burn=op.bsc_tx_hash_burn,
+        deposit_ref_hex=op.deposit_ref_hex,
+        bsc_log_index=op.bsc_log_index,
+        version=op.version,
+        created_at=op.created_at,
+    )
+
+
+@router.post("/intents/bsc-to-acp", response_model=BridgeOperationPublic)
+async def create_intent_bsc_to_acp(
+    body: BridgeIntentBscToAcpCreate,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    s = get_settings()
+    if not s.bridge_rail_enabled:
+        raise HTTPException(status_code=503, detail="Bridge rail is disabled")
+    if s.bridge_rail_paused:
+        raise HTTPException(status_code=503, detail="Bridge rail is paused")
+
+    bsc = _norm_bsc(body.user_bsc_address)
+    acp = _norm_acp(body.user_acp_address)
+    if not await _allowlist_allows(session, bsc):
+        raise HTTPException(status_code=403, detail="BSC address not on bridge allowlist")
+
+    try:
+        raw = Decimal(str(body.amount_wacp).strip())
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid amount_wacp") from exc
+    if raw <= 0:
+        raise HTTPException(status_code=400, detail="amount_wacp must be positive")
+    wacp_wei = int((raw * Decimal(10) ** 18).to_integral_value(rounding=ROUND_DOWN))
+    if wacp_wei <= 0:
+        raise HTTPException(status_code=400, detail="amount too small after 18dp quantization")
+    acp_smallest, remainder = wacp_wei_to_acp_smallest_floor(wacp_wei)
+    if acp_smallest <= 0:
+        raise HTTPException(status_code=400, detail="amount too small to redeem into ACP smallest units")
+
+    op = BridgeOperation(
+        id=uuid4(),
+        user_id=UUID(user_id),
+        direction="bsc_to_acp",
+        status="PENDING_BURN",
+        user_bsc_address=bsc,
+        user_acp_address=acp,
+        amount_acp_smallest=acp_smallest,
+        amount_wacp_wei=wacp_wei,
+        remainder_wacp_wei=remainder,
+    )
+    session.add(op)
+    await session.flush()
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="intent_created",
+            payload_json={
+                "direction": "bsc_to_acp",
+                "amount_acp_smallest": acp_smallest,
+                "amount_wacp_wei": wacp_wei,
+                "remainder_wacp_wei": remainder,
+            },
+        )
+    )
+    await session.flush()
+    await session.refresh(op)
+    return BridgeOperationPublic(
+        id=str(op.id),
+        direction=op.direction,
+        status=op.status,
+        user_bsc_address=op.user_bsc_address,
+        user_acp_address=op.user_acp_address,
+        amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
+        amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
+        acp_tx_hash=op.acp_tx_hash,
+        bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+        bsc_tx_hash_burn=op.bsc_tx_hash_burn,
         deposit_ref_hex=op.deposit_ref_hex,
         bsc_log_index=op.bsc_log_index,
         version=op.version,
@@ -433,10 +525,11 @@ async def list_my_intents(
                 status=op.status,
                 user_bsc_address=op.user_bsc_address,
                 user_acp_address=op.user_acp_address,
-                amount_acp_smallest=str(op.amount_acp_smallest),
-                amount_wacp_wei=str(op.amount_wacp_wei),
+                amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
+                amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
                 acp_tx_hash=op.acp_tx_hash,
                 bsc_tx_hash_mint=op.bsc_tx_hash_mint,
+                bsc_tx_hash_burn=op.bsc_tx_hash_burn,
                 deposit_ref_hex=op.deposit_ref_hex,
                 bsc_log_index=op.bsc_log_index,
                 version=op.version,

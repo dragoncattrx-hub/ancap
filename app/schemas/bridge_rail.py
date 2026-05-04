@@ -13,6 +13,12 @@ class BridgeIntentAcpToBscCreate(BaseModel):
     user_acp_address: str | None = Field(None, max_length=128)
 
 
+class BridgeIntentBscToAcpCreate(BaseModel):
+    user_bsc_address: str = Field(..., min_length=42, max_length=66)
+    user_acp_address: str = Field(..., min_length=3, max_length=128)
+    amount_wacp: str = Field(..., description="Decimal wACP amount in 18-decimal token units, e.g. 1 or 1.5")
+
+
 class BridgeOperationPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,6 +31,7 @@ class BridgeOperationPublic(BaseModel):
     amount_wacp_wei: str
     acp_tx_hash: str | None = None
     bsc_tx_hash_mint: str | None = None
+    bsc_tx_hash_burn: str | None = None
     deposit_ref_hex: str | None = None
     bsc_log_index: int | None = None
     version: int | None = None
