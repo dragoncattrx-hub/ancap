@@ -127,6 +127,7 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
 
 
 @router.get("/wacp/reserve-proof", response_model=WacpReserveProofResponse)
+@router.get("/reserve-proof", response_model=WacpReserveProofResponse, include_in_schema=False)
 async def wacp_reserve_proof(session: AsyncSession = Depends(get_db)):
     s = get_settings()
 
@@ -211,6 +212,7 @@ async def wacp_reserve_proof(session: AsyncSession = Depends(get_db)):
 
 
 @router.get("/wacp/status", response_model=WacpPublicStatusResponse)
+@router.get("/status-public", response_model=WacpPublicStatusResponse, include_in_schema=False)
 async def wacp_public_status(session: AsyncSession = Depends(get_db)):
     s = get_settings()
 

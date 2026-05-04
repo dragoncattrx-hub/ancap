@@ -40,3 +40,10 @@ def test_wacp_status_public_ok(client):
     assert data["docs"]["overview"].endswith("/docs/wacp")
     assert "pair_live" in data
     assert "token_metadata_live" in data
+
+
+def test_wacp_exact_public_paths_ok(client):
+    r1 = client.get("/v1/wacp/reserve-proof", headers={"Authorization": ""})
+    assert r1.status_code == 200, r1.text
+    r2 = client.get("/v1/wacp/status", headers={"Authorization": ""})
+    assert r2.status_code == 200, r2.text
