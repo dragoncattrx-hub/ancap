@@ -55,6 +55,52 @@ class BridgeReserveSummaryResponse(BaseModel):
     operations_completed: int
 
 
+class WacpReserveProofResponse(BaseModel):
+    status: str
+    bridge_enabled: bool
+    bridge_paused: bool
+    acp_reserve_address: str
+    acp_reserve_balance_smallest: str
+    wacp_contract: str
+    wacp_total_supply_wei: str
+    wacp_total_supply_acp_smallest: str
+    operational_buffer_smallest: str
+    backing_ratio: str | None = None
+    reserve_health: str
+    last_acp_block_height: int | None = None
+    last_bsc_block_number: int | None = None
+    last_updated_at: datetime | None = None
+    notes: list[str] = Field(default_factory=list)
+
+
+class WacpPublicStatusResponse(BaseModel):
+    status: str
+    bridge_enabled: bool
+    bridge_paused: bool
+    mint_available: bool
+    redeem_available: bool
+    reserve_proof_status: str
+    reserve_health: str
+    wacp_contract: str
+    gateway_contract: str
+    reserve_acp_address: str
+    confirmations_acp: int
+    confirmations_bsc: int
+    bsc_explorer_base: str
+    acp_explorer_tx_base: str
+    checkpoint_acp: int | None = None
+    checkpoint_bsc: int | None = None
+    last_updated_at: datetime | None = None
+    pair_live: bool = False
+    pair_dex: str | None = None
+    pair_symbol: str | None = None
+    bsc_contract_verified: bool = False
+    token_metadata_live: bool = False
+    docs: dict[str, str]
+    counts_by_status: dict[str, int]
+    notes: list[str] = Field(default_factory=list)
+
+
 class BridgeAllowlistAddRequest(BaseModel):
     bsc_address: str = Field(..., min_length=42, max_length=66)
     note: str | None = None

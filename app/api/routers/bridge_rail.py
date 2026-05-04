@@ -26,6 +26,8 @@ from app.schemas.bridge_rail import (
     BridgeOperationPublic,
     BridgeReserveSummaryResponse,
     BridgeStatusResponse,
+    WacpPublicStatusResponse,
+    WacpReserveProofResponse,
 )
 from app.services.bridge_decimal import acp_smallest_to_wacp_wei
 from app.services.bridge_reconciliation import run_reconciliation
@@ -33,6 +35,17 @@ from app.services.bridge_reconciliation import run_reconciliation
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bridge", tags=["Bridge (wACP)"])
+
+
+def _public_docs() -> dict[str, str]:
+    return {
+        "overview": "https://ancap.cloud/docs/wacp",
+        "bridge": "https://ancap.cloud/docs/wacp/bridge",
+        "reserve": "https://ancap.cloud/docs/wacp/reserve",
+        "risks": "https://ancap.cloud/docs/wacp/risks",
+        "contracts": "https://ancap.cloud/docs/wacp/contracts",
+        "listing_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
+    }
 
 
 def _norm_bsc(addr: str) -> str:
@@ -110,6 +123,161 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
         checkpoint_acp=int(cp_acp.last_block_height) if cp_acp else None,
         checkpoint_bsc=int(cp_bsc.last_block_height) if cp_bsc else None,
         last_reconciliation=last_recon,
+    )
+
+
+@router.get("/wacp/reserve-proof", response_model=WacpReserveProofResponse)
+async def wacp_reserve_proof(session: AsyncSession = Depends(get_db)):
+    s = get_settings()
+
+    completed = 0
+    total_wacp = 0
+    try:
+        completed = int(
+            await session.scalar(
+                select(func.count())
+                .select_from(BridgeOperation)
+                .where(
+                    BridgeOperation.direction == "acp_to_bsc",
+                    BridgeOperation.status == "COMPLETED",
+                )
+            )
+            or 0
+        )
+        total_wacp = int(
+            await session.scalar(
+                select(func.coalesce(func.sum(BridgeOperation.amount_wacp_wei), 0)).where(
+                    BridgeOperation.direction == "acp_to_bsc",
+                    BridgeOperation.status == "COMPLETED",
+                )
+            )
+            or 0
+        )
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("wacp_reserve_proof summary skipped: %s", exc)
+        await session.rollback()
+
+    cp_acp = None
+    cp_bsc = None
+    try:
+        cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
+        cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("wacp_reserve_proof checkpoints skipped: %s", exc)
+        await session.rollback()
+
+    notes: list[str] = []
+    reserve_balance_smallest = "0"
+    total_supply_acp_smallest = str(total_wacp // (10**10))
+    if not s.bridge_reserve_acp_address:
+        notes.append("Reserve ACP address is not configured.")
+    else:
+        notes.append("Reserve proof endpoint is live, but ACP reserve balance is not yet sourced from a dedicated snapshot table.")
+    if not s.bridge_wacp_contract:
+        notes.append("wACP production contract is not configured.")
+    if total_wacp == 0:
+        notes.append("No completed BSC mint supply has been observed yet, or historical supply import is not backfilled.")
+
+    reserve_health = "pending"
+    status = "pending"
+    backing_ratio = None
+    if not s.bridge_rail_enabled:
+        reserve_health = "disabled"
+        status = "disabled"
+    elif s.bridge_rail_paused:
+        reserve_health = "paused"
+        status = "paused"
+    elif total_wacp == 0:
+        reserve_health = "pending"
+        status = "pending"
+
+    return WacpReserveProofResponse(
+        status=status,
+        bridge_enabled=s.bridge_rail_enabled,
+        bridge_paused=s.bridge_rail_paused,
+        acp_reserve_address=s.bridge_reserve_acp_address,
+        acp_reserve_balance_smallest=reserve_balance_smallest,
+        wacp_contract=s.bridge_wacp_contract,
+        wacp_total_supply_wei=str(total_wacp),
+        wacp_total_supply_acp_smallest=total_supply_acp_smallest,
+        operational_buffer_smallest="0",
+        backing_ratio=backing_ratio,
+        reserve_health=reserve_health,
+        last_acp_block_height=int(cp_acp.last_block_height) if cp_acp else None,
+        last_bsc_block_number=int(cp_bsc.last_block_height) if cp_bsc else None,
+        last_updated_at=None,
+        notes=notes,
+    )
+
+
+@router.get("/wacp/status", response_model=WacpPublicStatusResponse)
+async def wacp_public_status(session: AsyncSession = Depends(get_db)):
+    s = get_settings()
+
+    counts: dict[str, int] = {}
+    try:
+        rows = await session.execute(select(BridgeOperation.status, func.count()).group_by(BridgeOperation.status))
+        for st, c in rows.all():
+            counts[str(st)] = int(c)
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("wacp_public_status counts skipped: %s", exc)
+        await session.rollback()
+
+    cp_acp = None
+    cp_bsc = None
+    try:
+        cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
+        cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("wacp_public_status checkpoints skipped: %s", exc)
+        await session.rollback()
+
+    notes: list[str] = []
+    if not s.bridge_wacp_contract:
+        notes.append("Production wACP contract is not configured.")
+    else:
+        notes.append("BSC mainnet verification still needs explicit confirmation in public docs / BscScan link set.")
+    notes.append("PancakeSwap pair live status is not yet confirmed by backend state.")
+    notes.append("Token metadata / logo inclusion on Pancake-related surfaces is still pending.")
+
+    overall_status = "pending"
+    reserve_proof_status = "pending"
+    reserve_health = "pending"
+    if not s.bridge_rail_enabled:
+        overall_status = "disabled"
+        reserve_proof_status = "disabled"
+        reserve_health = "disabled"
+    elif s.bridge_rail_paused:
+        overall_status = "paused"
+        reserve_proof_status = "paused"
+        reserve_health = "paused"
+
+    return WacpPublicStatusResponse(
+        status=overall_status,
+        bridge_enabled=s.bridge_rail_enabled,
+        bridge_paused=s.bridge_rail_paused,
+        mint_available=bool(s.bridge_rail_enabled and not s.bridge_rail_paused),
+        redeem_available=False,
+        reserve_proof_status=reserve_proof_status,
+        reserve_health=reserve_health,
+        wacp_contract=s.bridge_wacp_contract,
+        gateway_contract=s.bridge_gateway_contract,
+        reserve_acp_address=s.bridge_reserve_acp_address,
+        confirmations_acp=s.bridge_acp_confirmations,
+        confirmations_bsc=s.bridge_bsc_confirmations,
+        bsc_explorer_base=s.bsc_explorer_base,
+        acp_explorer_tx_base=s.acp_explorer_tx_base,
+        checkpoint_acp=int(cp_acp.last_block_height) if cp_acp else None,
+        checkpoint_bsc=int(cp_bsc.last_block_height) if cp_bsc else None,
+        last_updated_at=None,
+        pair_live=False,
+        pair_dex="PancakeSwap V2",
+        pair_symbol="wACP/USDT",
+        bsc_contract_verified=False,
+        token_metadata_live=False,
+        docs=_public_docs(),
+        counts_by_status=counts,
+        notes=notes,
     )
 
 

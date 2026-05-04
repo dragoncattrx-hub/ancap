@@ -19,3 +19,24 @@ def test_bridge_status_public_ok(client):
 def test_bridge_reserve_summary_disabled_503(client):
     r = client.get("/v1/bridge/reserve-summary", headers={"Authorization": ""})
     assert r.status_code == 503
+
+
+def test_wacp_reserve_proof_public_ok(client):
+    r = client.get("/v1/bridge/wacp/reserve-proof", headers={"Authorization": ""})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "status" in data
+    assert "reserve_health" in data
+    assert "wacp_total_supply_wei" in data
+    assert "notes" in data
+
+
+def test_wacp_status_public_ok(client):
+    r = client.get("/v1/bridge/wacp/status", headers={"Authorization": ""})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "status" in data
+    assert "docs" in data
+    assert data["docs"]["overview"].endswith("/docs/wacp")
+    assert "pair_live" in data
+    assert "token_metadata_live" in data
