@@ -318,6 +318,75 @@ def test_orchestrator_submits_acp_payout_for_confirmed_burn(client, monkeypatch)
     assert op["acp_tx_hash"] == payout_txid
 
 
+def test_orchestrator_resolves_missing_walletd_txid_via_chain_scan(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_DRY_RUN", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    suffix = uuid.uuid4().hex[:4]
+    payload = {
+        "user_bsc_address": "0x" + ("5" * 36) + suffix,
+        "user_acp_address": f"acp1qfallback{suffix}0000000000000000000000000000000",
+        "amount_wacp": "0.005",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+
+    from sqlalchemy import select
+    from app.db.models import BridgeOperation
+    import app.services.bridge_orchestrator as orch
+
+    burn_tx_hash = "0x" + uuid.uuid4().hex
+    fallback_txid = "f" * 64
+
+    async def setup_burn_confirmed():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                op = (await session.execute(select(BridgeOperation).where(BridgeOperation.id == op_id))).scalars().one()
+                op.status = "BURN_CONFIRMED"
+                op.bsc_tx_hash_burn = burn_tx_hash
+                op.bsc_log_index = 7
+                await session.commit()
+        finally:
+            await engine.dispose()
+
+    anyio.run(setup_burn_confirmed)
+
+    original_transfer = orch._hot_wallet_transfer
+
+    def fake_hot_wallet_transfer(acp_address, acp_smallest):
+        return {"accepted": True, "txid": fallback_txid, "txid_source": "chain_scan_fallback"}
+
+    orch._hot_wallet_transfer = fake_hot_wallet_transfer
+    try:
+        async def run_tick():
+            engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+            Session = async_sessionmaker(engine, expire_on_commit=False)
+            try:
+                async with Session() as session:
+                    result = await orch.tick_orchestrator(session)
+                    await session.commit()
+                    return result
+            finally:
+                await engine.dispose()
+        result = anyio.run(run_tick)
+    finally:
+        orch._hot_wallet_transfer = original_transfer
+
+    assert result["progressed_bsc_to_acp"] >= 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == op_id)
+    assert op["status"] == "ACP_PAYOUT_SENT"
+    assert op["acp_tx_hash"] == fallback_txid
+
+
 def test_admin_reverse_bind_burn_promotes_pending_burn(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")

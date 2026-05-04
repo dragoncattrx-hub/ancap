@@ -34,11 +34,18 @@ def _acp_amount_decimal_str(acp_smallest: int) -> str:
 
 
 def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
-    from app.api.routers.wallet_acp import _load_or_create_valid_hot_mnemonic, _require_acp_rpc_url, _run_walletd
+    from app.api.routers.wallet_acp import (
+        _load_or_create_valid_hot_mnemonic,
+        _require_acp_rpc_url,
+        _run_walletd,
+        _scan_chain_transactions,
+    )
 
     mnemonic = _load_or_create_valid_hot_mnemonic()
     rpc_url = _require_acp_rpc_url()
-    return _run_walletd(
+    from_wallet = _run_walletd(["address", "--mnemonic", mnemonic])
+    from_address = str(from_wallet.get("address") or "").strip()
+    transfer = _run_walletd(
         [
             "transfer",
             "--rpc",
@@ -52,6 +59,31 @@ def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
         ],
         timeout_s=180,
     )
+    txid = str(transfer.get("txid") or "").strip()
+    if txid:
+        return transfer
+    if from_address:
+        best_height, _out_index, tx_index = _scan_chain_transactions()
+        if best_height > 0:
+            candidates: list[tuple[int, str]] = []
+            for candidate_txid, tx in tx_index.items():
+                sent_units = sum(int(i.get("units") or 0) for i in tx.get("inputs") or [] if i.get("address") == from_address)
+                received_units = sum(int(o.get("units") or 0) for o in tx.get("outputs") or [] if o.get("address") == from_address)
+                if sent_units <= 0:
+                    continue
+                payout_units = abs(received_units - sent_units)
+                if payout_units != int(acp_smallest):
+                    continue
+                if not any(str(o.get("address") or "") == acp_address for o in tx.get("outputs") or []):
+                    continue
+                candidates.append((int(tx.get("block_height") or 0), str(candidate_txid)))
+            if candidates:
+                candidates.sort(reverse=True)
+                resolved = dict(transfer)
+                resolved["txid"] = candidates[0][1]
+                resolved["txid_source"] = "chain_scan_fallback"
+                return resolved
+    return transfer
 
 
 async def append_transition(
@@ -193,7 +225,7 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
         transfer = _hot_wallet_transfer(str(op.user_acp_address), int(op.amount_acp_smallest or 0))
         txid = str(transfer.get("txid") or "").strip()
         if not txid:
-            raise RuntimeError("walletd transfer returned no txid")
+            raise RuntimeError(f"walletd transfer returned no txid: {transfer}")
         op.acp_tx_hash = txid
         op.acp_out_index = 0
         op.updated_at = datetime.now(timezone.utc)
@@ -206,10 +238,11 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
                     "to": op.user_acp_address,
                     "amount_acp_smallest": int(op.amount_acp_smallest or 0),
                     "amount_acp": _acp_amount_decimal_str(int(op.amount_acp_smallest or 0)),
+                    "txid_source": transfer.get("txid_source"),
                 },
             )
         )
-        await append_transition(session, op, "ACP_PAYOUT_SENT", metadata={"txid": txid})
+        await append_transition(session, op, "ACP_PAYOUT_SENT", metadata={"txid": txid, "txid_source": transfer.get("txid_source")})
         progressed += 1
         progressed_bsc_to_acp += 1
 
