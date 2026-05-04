@@ -211,7 +211,11 @@ def client():
 def client_unauth(client):
     """Sibling client that does not auto-attach the default user's token.
 
-    Use only for tests that intentionally check 401 / unauth behavior.
+    Use only for tests that intentionally check 401 / unauth behavior without
+    touching the async DB on a second event loop. A separate ``TestClient`` uses
+    a different asyncio loop than the session ``client`` and breaks asyncpg when
+    both hit ``get_db``. For DB-backed routes, use ``client`` and pass an empty
+    ``Authorization`` header (see ``_AuthedTestClient.request``).
     """
 
     class _BareClient(TestClient):

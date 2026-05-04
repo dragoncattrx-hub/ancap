@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { api } from '../api';
+import { api, bridgeRail } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
@@ -22,5 +22,13 @@ describe('API Client', () => {
     expect(api.runs).toBeDefined();
     expect(api.runs.list).toBeDefined();
     expect(api.runs.get).toBeDefined();
+  });
+
+  it('should expose bridgeRail client', () => {
+    expect(bridgeRail).toBeDefined();
+    expect(bridgeRail.status).toBeDefined();
+    expect(bridgeRail.reserveSummary).toBeDefined();
+    expect(bridgeRail.createIntentAcpToBsc).toBeDefined();
+    expect(bridgeRail.listMyIntents).toBeDefined();
   });
 });

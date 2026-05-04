@@ -377,7 +377,7 @@ export function Navigation() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-2">
                     <div className="text-[13px] text-white/80">{userLabel}</div>
                     <Link
                       href="/wallet/acp"

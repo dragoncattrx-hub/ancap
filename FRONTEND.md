@@ -328,6 +328,11 @@ All pages show loading status:
 - Loading when mounting a component
 - Update after creation/change
 
+### Bridge — ACP to BSC (wACP) (`/bridge/acp-bsc`)
+
+- Status and optional reserve summary from `/v1/bridge/*` when the rail is enabled in the API.
+- Signed-in users can create ACP→BSC intents; navigation includes a header link next to ACP Wallet.
+
 ## Future improvements
 
 - [ ] Add pagination for lists
