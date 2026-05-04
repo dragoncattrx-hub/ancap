@@ -49,6 +49,16 @@ def test_wacp_exact_public_paths_ok(client):
     assert r2.status_code == 200, r2.text
 
 
+def test_quote_bsc_to_acp_floor_and_remainder(client):
+    r = client.post("/v1/bridge/quote/bsc-to-acp", json={"amount_wacp": "1.0000000001"})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["amount_wacp_wei"] == "1000000000100000000"
+    assert data["acp_smallest_floor"] == "100000000"
+    assert data["acp_amount_floor"] == "1"
+    assert data["remainder_wacp_wei"] == "100000000"
+
+
 def test_create_redeem_intent_bsc_to_acp(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
@@ -67,6 +77,7 @@ def test_create_redeem_intent_bsc_to_acp(client, monkeypatch):
     assert data["status"] == "PENDING_BURN"
     assert data["amount_wacp_wei"] == "1000000000100000000"
     assert data["amount_acp_smallest"] == "100000000"
+    assert data["remainder_wacp_wei"] == "100000000"
     assert data["bsc_tx_hash_burn"] is None
 
 

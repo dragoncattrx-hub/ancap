@@ -43,6 +43,7 @@ type OpRow = {
   user_acp_address: string | null;
   amount_acp_smallest: string;
   amount_wacp_wei: string;
+  remainder_wacp_wei: string;
   acp_tx_hash: string | null;
   bsc_tx_hash_mint: string | null;
   bsc_tx_hash_burn: string | null;
@@ -50,6 +51,16 @@ type OpRow = {
   bsc_log_index: number | null;
   version: number | null;
   created_at: string | null;
+};
+
+type RedeemQuote = {
+  amount_wacp: string;
+  amount_wacp_wei: string;
+  acp_amount_floor: string;
+  acp_smallest_floor: string;
+  remainder_wacp_wei: string;
+  remainder_wacp: string;
+  policy: string;
 };
 
 export default function BridgeAcpBscPage() {
@@ -63,6 +74,7 @@ export default function BridgeAcpBscPage() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ user_bsc_address: "", amount_acp: "1", user_acp_address: "" });
   const [redeemForm, setRedeemForm] = useState({ user_bsc_address: "", user_acp_address: "", amount_wacp: "1" });
+  const [redeemQuote, setRedeemQuote] = useState<RedeemQuote | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,6 +107,25 @@ export default function BridgeAcpBscPage() {
       void load();
     }
   }, [authLoading, load]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const raw = redeemForm.amount_wacp.trim();
+    if (!raw) {
+      setRedeemQuote(null);
+      return;
+    }
+    void bridgeRail.quoteBscToAcp({ amount_wacp: raw })
+      .then((q) => {
+        if (!cancelled) setRedeemQuote(q as RedeemQuote);
+      })
+      .catch(() => {
+        if (!cancelled) setRedeemQuote(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [redeemForm.amount_wacp]);
 
   async function submitIntent() {
     if (!isAuthenticated) {
@@ -365,6 +396,16 @@ export default function BridgeAcpBscPage() {
                         onChange={(e) => setRedeemForm((f) => ({ ...f, amount_wacp: e.target.value }))}
                       />
                     </label>
+                    {redeemQuote ? (
+                      <div className="rounded border border-zinc-800 bg-zinc-900/70 px-3 py-2 text-xs text-zinc-400">
+                        <div>ACP payout floor: <span className="font-mono text-zinc-200">{redeemQuote.acp_amount_floor}</span></div>
+                        <div>ACP smallest units: <span className="font-mono text-zinc-200">{redeemQuote.acp_smallest_floor}</span></div>
+                        <div>Remainder kept in buffer: <span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp}</span> wACP (<span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp_wei}</span> wei)</div>
+                        <div className="mt-1 text-zinc-500">{redeemQuote.policy}</div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-zinc-500">Enter a valid wACP amount to preview ACP floor payout.</div>
+                    )}
                     <button
                       type="button"
                       disabled={busy || status.bridge_rail_paused}
@@ -402,6 +443,7 @@ export default function BridgeAcpBscPage() {
                         <div>
                           acp_smallest={o.amount_acp_smallest} wacp_wei={o.amount_wacp_wei}
                         </div>
+                        {o.direction === "bsc_to_acp" ? <div>remainder_wacp_wei={o.remainder_wacp_wei}</div> : null}
                         <div className="break-all">bsc={o.user_bsc_address}</div>
                         {o.user_acp_address ? <div className="break-all">acp={o.user_acp_address}</div> : null}
                         {o.acp_tx_hash ? <div className="break-all">acp_tx={o.acp_tx_hash}</div> : null}

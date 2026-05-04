@@ -19,6 +19,20 @@ class BridgeIntentBscToAcpCreate(BaseModel):
     amount_wacp: str = Field(..., description="Decimal wACP amount in 18-decimal token units, e.g. 1 or 1.5")
 
 
+class BridgeRedeemQuoteRequest(BaseModel):
+    amount_wacp: str = Field(..., description="Decimal wACP amount in 18-decimal token units")
+
+
+class BridgeRedeemQuoteResponse(BaseModel):
+    amount_wacp: str
+    amount_wacp_wei: str
+    acp_amount_floor: str
+    acp_smallest_floor: str
+    remainder_wacp_wei: str
+    remainder_wacp: str
+    policy: str
+
+
 class BridgeOperationPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,6 +43,7 @@ class BridgeOperationPublic(BaseModel):
     user_acp_address: str | None
     amount_acp_smallest: str
     amount_wacp_wei: str
+    remainder_wacp_wei: str = "0"
     acp_tx_hash: str | None = None
     bsc_tx_hash_mint: str | None = None
     bsc_tx_hash_burn: str | None = None

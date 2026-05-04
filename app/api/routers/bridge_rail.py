@@ -25,6 +25,8 @@ from app.schemas.bridge_rail import (
     BridgeIntentAcpToBscCreate,
     BridgeIntentBscToAcpCreate,
     BridgeOperationPublic,
+    BridgeRedeemQuoteRequest,
+    BridgeRedeemQuoteResponse,
     BridgeReserveSummaryResponse,
     BridgeStatusResponse,
     WacpPublicStatusResponse,
@@ -89,6 +91,37 @@ async def _allowlist_allows(session: AsyncSession, bsc_norm: str) -> bool:
         select(BridgeAllowlistAddress.id).where(BridgeAllowlistAddress.bsc_address == bsc_norm)
     )
     return hit is not None
+
+
+def _quote_bsc_to_acp(amount_wacp: str) -> BridgeRedeemQuoteResponse:
+    try:
+        raw = Decimal(str(amount_wacp).strip())
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid amount_wacp") from exc
+    if raw <= 0:
+        raise HTTPException(status_code=400, detail="amount_wacp must be positive")
+    wacp_wei = int((raw * Decimal(10) ** 18).to_integral_value(rounding=ROUND_DOWN))
+    if wacp_wei <= 0:
+        raise HTTPException(status_code=400, detail="amount too small after 18dp quantization")
+    acp_smallest, remainder = wacp_wei_to_acp_smallest_floor(wacp_wei)
+    if acp_smallest <= 0:
+        raise HTTPException(status_code=400, detail="amount too small to redeem into ACP smallest units")
+    acp_amount_floor = format(Decimal(acp_smallest) / (Decimal(10) ** 8), "f")
+    remainder_wacp = format(Decimal(remainder) / (Decimal(10) ** 18), "f")
+    return BridgeRedeemQuoteResponse(
+        amount_wacp=str(raw),
+        amount_wacp_wei=str(wacp_wei),
+        acp_amount_floor=acp_amount_floor,
+        acp_smallest_floor=str(acp_smallest),
+        remainder_wacp_wei=str(remainder),
+        remainder_wacp=remainder_wacp,
+        policy="Floor to ACP 8 decimals; keep 18->8 decimal remainder in reserve-side buffer.",
+    )
+
+
+@router.post("/quote/bsc-to-acp", response_model=BridgeRedeemQuoteResponse)
+async def quote_bsc_to_acp(body: BridgeRedeemQuoteRequest):
+    return _quote_bsc_to_acp(body.amount_wacp)
 
 
 @router.get("/status", response_model=BridgeStatusResponse)
@@ -415,6 +448,7 @@ async def create_intent_acp_to_bsc(
         user_acp_address=op.user_acp_address,
         amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
         amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
+        remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
         acp_tx_hash=op.acp_tx_hash,
         bsc_tx_hash_mint=op.bsc_tx_hash_mint,
         bsc_tx_hash_burn=op.bsc_tx_hash_burn,
@@ -442,18 +476,10 @@ async def create_intent_bsc_to_acp(
     if not await _allowlist_allows(session, bsc):
         raise HTTPException(status_code=403, detail="BSC address not on bridge allowlist")
 
-    try:
-        raw = Decimal(str(body.amount_wacp).strip())
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail="Invalid amount_wacp") from exc
-    if raw <= 0:
-        raise HTTPException(status_code=400, detail="amount_wacp must be positive")
-    wacp_wei = int((raw * Decimal(10) ** 18).to_integral_value(rounding=ROUND_DOWN))
-    if wacp_wei <= 0:
-        raise HTTPException(status_code=400, detail="amount too small after 18dp quantization")
-    acp_smallest, remainder = wacp_wei_to_acp_smallest_floor(wacp_wei)
-    if acp_smallest <= 0:
-        raise HTTPException(status_code=400, detail="amount too small to redeem into ACP smallest units")
+    quote = _quote_bsc_to_acp(body.amount_wacp)
+    wacp_wei = int(quote.amount_wacp_wei)
+    acp_smallest = int(quote.acp_smallest_floor)
+    remainder = int(quote.remainder_wacp_wei)
 
     op = BridgeOperation(
         id=uuid4(),
@@ -490,6 +516,7 @@ async def create_intent_bsc_to_acp(
         user_acp_address=op.user_acp_address,
         amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
         amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
+        remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
         acp_tx_hash=op.acp_tx_hash,
         bsc_tx_hash_mint=op.bsc_tx_hash_mint,
         bsc_tx_hash_burn=op.bsc_tx_hash_burn,
@@ -527,6 +554,7 @@ async def list_my_intents(
                 user_acp_address=op.user_acp_address,
                 amount_acp_smallest=_num_to_str(op.amount_acp_smallest),
                 amount_wacp_wei=_num_to_str(op.amount_wacp_wei),
+                remainder_wacp_wei=_num_to_str(op.remainder_wacp_wei),
                 acp_tx_hash=op.acp_tx_hash,
                 bsc_tx_hash_mint=op.bsc_tx_hash_mint,
                 bsc_tx_hash_burn=op.bsc_tx_hash_burn,
