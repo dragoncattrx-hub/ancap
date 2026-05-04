@@ -69,9 +69,22 @@ Main thing: docs should no longer imply that live mint path is missing.
 Right now `acp_explorer_tx_base` is empty in runtime status.
 If an ACP explorer base URL becomes available, expose it so UI can link ACP deposit txs the same way it links BSC mint txs.
 
-### 4. Add a tiny runtime balance helper
-Optional but useful:
-- small script or endpoint to read `balanceOf(address)` and `totalSupply()` for wACP without depending on ABI files inside the API container.
+### 4. Runtime balance helper is now available
+A small helper script now exists:
+- `scripts/check_wacp_balance.py`
+
+Example:
+```bash
+python scripts/check_wacp_balance.py --env-file Sicret/bridge-bsc/bridge.env --address 0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4
+```
+
+It reads:
+- `balanceOf(address)`
+- `totalSupply()`
+- `symbol()`
+- `decimals()`
+
+without depending on contract ABI files inside the API container.
 
 ### 5. Prepare release path if ACP <- BSC direction is needed later
 Current success is for ACP -> BSC mint rail.

@@ -130,6 +130,21 @@ Operation API now exposes:
 
 This means most operator checks no longer require raw SQL.
 
+### Balance helper
+A lightweight runtime helper is available:
+- `scripts/check_wacp_balance.py`
+
+Example:
+```bash
+python scripts/check_wacp_balance.py --env-file Sicret/bridge-bsc/bridge.env --address 0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4
+```
+
+Use it when you want a direct check of:
+- wallet `wACP` balance
+- token `totalSupply`
+
+without depending on ABI files inside the API container.
+
 ## Failure playbook
 
 ### If intent stays in `PENDING_DEPOSIT`
