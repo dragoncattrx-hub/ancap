@@ -53,6 +53,8 @@ docker compose --env-file /path/to/bridge.env -f docker-compose.prod.yml build -
 docker compose --env-file /path/to/bridge.env -f docker-compose.prod.yml up -d
 ```
 
+Без отдельного bridge-env (только обновление UI/API из `master`): из корня репозитория на хосте туннеля — **`bash scripts/deploy-ancap-cloud.sh`** или **`.\scripts\deploy-ancap-cloud.ps1`** (см. [README.md](../README.md)).
+
 Пока не готовы к приёму пользователей, можно оставить **`BRIDGE_RAIL_PAUSED=true`** и **`BRIDGE_DRY_RUN=true`** для сухого прогона оркестратора (если поведение dry-run вас устраивает; иначе см. код `bridge_dry_run`).
 
 ## 4. Cron / tick
