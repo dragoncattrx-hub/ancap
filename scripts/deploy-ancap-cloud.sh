@@ -20,6 +20,10 @@ if [[ "$SKIP_PULL" -eq 0 ]]; then
   git pull --ff-only
 fi
 
+export APP_BUILD_ID
+APP_BUILD_ID="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+echo "APP_BUILD_ID=$APP_BUILD_ID (must match https://ancap.cloud/internal/frontend-build after deploy)"
+
 docker compose -f "$COMPOSE" build --no-cache
 docker compose -f "$COMPOSE" up -d
 

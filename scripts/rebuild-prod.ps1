@@ -11,6 +11,13 @@ if (-not (Test-Path $compose)) {
     Write-Error "docker-compose.prod.yml not found under $root"
 }
 
+$rev = git rev-parse --short HEAD 2>$null
+if ($LASTEXITCODE -eq 0 -and $rev) {
+    $env:APP_BUILD_ID = $rev.Trim()
+} else {
+    $env:APP_BUILD_ID = "unknown"
+}
+
 docker compose -f $compose build @args
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "OK: docker compose -f docker-compose.prod.yml build"

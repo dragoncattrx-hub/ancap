@@ -87,10 +87,11 @@ npm run dev
 Frontend (dev) will be available on http://localhost:3001  
 Production UI: https://ancap.cloud/
 
-If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` image**. On the **tunnel host**, from the repo root, run either:  
-- **Windows:** `.\scripts\deploy-ancap-cloud.ps1` (rebuilds all prod services, `up -d`, runs `alembic upgrade head` in `api`)  
+If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:  
+- **Windows:** `.\scripts\deploy-ancap-cloud.ps1`  
 - **Linux:** `bash scripts/deploy-ancap-cloud.sh`  
-Or manually: `git pull`, then `docker compose -f docker-compose.prod.yml build --no-cache` and `up -d`. Tunnel → `127.0.0.1:8080` unchanged. If the menu or HTML stays stale, purge **Cloudflare** cache for `ancap.cloud` / `www.ancap.cloud`.
+
+Then verify the new image is live: open **`https://ancap.cloud/internal/frontend-build`** — JSON field `NEXT_PUBLIC_APP_BUILD_ID` must equal `git rev-parse --short HEAD` on that host (the script sets `APP_BUILD_ID` for the build). If it still shows `unknown` or an old hash, Compose is not rebuilding the `frontend` service you expose on port **8080**, or the tunnel points at another machine/port.
 
 **Pages:**
 - `/` — Landing page with information about the platform

@@ -63,6 +63,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_ACP_URL: /acp
+        APP_BUILD_ID: ${APP_BUILD_ID:-unknown}
     environment:
       NODE_ENV: production
       # In prod-like we go through reverse proxy (/api → api)

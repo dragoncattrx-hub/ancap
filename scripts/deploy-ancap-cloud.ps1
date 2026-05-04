@@ -22,6 +22,14 @@ if (-not $SkipGitPull) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+$rev = git rev-parse --short HEAD 2>$null
+if ($LASTEXITCODE -eq 0 -and $rev) {
+    $env:APP_BUILD_ID = $rev.Trim()
+} else {
+    $env:APP_BUILD_ID = "unknown"
+}
+Write-Host "APP_BUILD_ID=$($env:APP_BUILD_ID) — after deploy, curl https://ancap.cloud/internal/frontend-build must show the same id"
+
 Write-Host "Building images (no cache)..."
 docker compose -f $compose build --no-cache
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

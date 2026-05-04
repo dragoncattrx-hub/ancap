@@ -10,14 +10,19 @@ COPY . .
 ARG NEXT_PUBLIC_ASSET_PREFIX=
 ARG NEXT_PUBLIC_API_URL=
 ARG NEXT_PUBLIC_ACP_URL=
+ARG APP_BUILD_ID=unknown
 ENV NEXT_PUBLIC_ASSET_PREFIX=$NEXT_PUBLIC_ASSET_PREFIX
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_ACP_URL=$NEXT_PUBLIC_ACP_URL
-RUN NEXT_BUILD_ID="$(date +%s)" npm run build
+ENV NEXT_PUBLIC_APP_BUILD_ID=$APP_BUILD_ID
+ENV NEXT_BUILD_ID=$APP_BUILD_ID
+RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
+ARG APP_BUILD_ID=unknown
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_APP_BUILD_ID=$APP_BUILD_ID
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
