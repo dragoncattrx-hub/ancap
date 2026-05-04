@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring ACP -> BSC custodial rail to a safe live pilot state and verify it with real end-to-end flow.
+Bring ACP -> BSC custodial rail to a safe live pilot state and keep all public/operator surfaces aligned with real runtime status.
 
 ## Current reality
 
@@ -64,13 +64,20 @@ Confirm page loads:
 
 Intent list should be able to show:
 - status
+- direction
 - ACP tx hash
 - BSC mint tx hash
+- BSC burn tx hash when present
 - deposit ref
 - BSC log index
 - version
+- reverse remainder field for `BSC -> ACP`
 - built-in ACP tx link
-- BscScan link for mint tx
+- BscScan link for BSC tx
+
+Redeem preview should also work:
+- `POST /api/v1/bridge/quote/bsc-to-acp`
+- UI should show floor ACP payout and retained remainder before submit
 
 ### 5. Pilot transaction flow
 For a fresh small pilot:
@@ -116,3 +123,7 @@ Confirm at least one of:
 - Never commit mnemonics/private keys
 - Keep pilot caps conservative
 - Reverse rail is separate work; do not assume it is production-ready just because ACP -> BSC works
+- Public status for reverse must remain truthful until payout ops are real:
+  - `redeem_available=false`
+  - `redeem_mode=pending-rollout`
+- Reserve proof is public but still not final until snapshot-backed ACP reserve balance is live

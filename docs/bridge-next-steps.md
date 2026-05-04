@@ -40,7 +40,7 @@ ACP -> BSC pilot rail is already working end-to-end.
 
 ## What to do next
 
-### 1. Run second controlled pilot
+### 1. Run second controlled ACP -> BSC pilot
 Goal: prove repeatability, not just one lucky pass.
 
 Suggested flow:
@@ -57,15 +57,44 @@ Suggested flow:
    - reconciliation remains `delta_wacp_wei=0`
    - wallet `wACP` balance increases as expected
 
-### 2. Clean operator docs
+### 2. Reverse rail: keep it truthful, then finish operations
+Current status for `BSC -> ACP`:
+- public docs/UI/API already show it as **planned / pending rollout**
+- public status must stay:
+  - `redeem_available=false`
+  - `redeem_mode=pending-rollout`
+- redeem intent registration is now implemented
+- redeem quote preview is now implemented
+
+Already available for reverse rail:
+- `POST /api/v1/bridge/intents/bsc-to-acp`
+- `POST /api/v1/bridge/quote/bsc-to-acp`
+
+Quote response exposes:
+- `amount_wacp_wei`
+- `acp_smallest_floor`
+- `acp_amount_floor`
+- `remainder_wacp_wei`
+- `remainder_wacp`
+- floor-rounding policy text
+
+Still not declared live:
+- watcher for `ReleaseRequested`
+- idempotent burn-event confirmation
+- ACP payout worker
+- reverse reconciliation / replay-safe recovery
+- operator pause + manual recovery flow for reverse payouts
+
+### 3. Keep docs aligned with runtime truth
 Recommended:
 - update `bridge-operator-runbook.md`
 - update `bridge-pilot-mainnet.md`
 - update `bridge-launch-checklist.md`
+- update public wACP docs whenever status changes
 
-Main thing: docs should no longer imply that live mint path is missing.
+Main thing: docs must not imply that reverse payout is live when it is not.
 
-### 3. ACP explorer link support is now wired
+### 4. ACP explorer link support is now wired
 ACP deposit tx links no longer depend on a third-party explorer.
 ANCAP now provides a built-in tx viewer at:
 - `/acp/tx/{txid}`
@@ -75,7 +104,16 @@ Runtime/config default:
 
 That means bridge UI can link ACP deposit txs immediately, while still allowing override to an external ACP explorer later if one appears.
 
-### 4. Runtime balance helper is now available
+### 5. Finish reserve-proof maturity
+Current public reserve proof endpoint is live, but still intentionally reports `pending` because ACP reserve balance is not yet sourced from a dedicated snapshot table.
+
+Still needed:
+- dedicated reserve snapshot sourcing
+- public backing ratio from real snapshot data
+- stale-data detection
+- operator alerting on mismatch
+
+### 6. Runtime balance helper is now available
 A small helper script now exists:
 - `scripts/check_wacp_balance.py`
 
@@ -92,9 +130,9 @@ It reads:
 
 without depending on contract ABI files inside the API container.
 
-### 5. Prepare release path if ACP <- BSC direction is needed later
+### 7. Prepare release path for ACP <- BSC safely
 Current success is for ACP -> BSC mint rail.
-If reverse direction is planned, separate work is still needed for burn/release operational safety.
+Reverse direction is partially surfaced, but separate work is still needed for burn/release operational safety.
 
 ## Recommended operator checks before any next pilot
 - `GET /api/v1/bridge/status`

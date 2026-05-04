@@ -93,10 +93,18 @@ Check all of:
 
 ## Recommended next step
 
-Run one more small controlled pilot.
+Run one more small controlled ACP -> BSC pilot.
 Goal is repeatability, not just one successful pass.
+
+In parallel, keep reverse rail staged but truthful:
+- reverse intent registration may be tested
+- reverse quote preview may be tested
+- reverse payout must not be advertised as live yet
 
 ## Notes
 - Keep caps conservative until there is at least one more successful run.
 - Do not commit mnemonics or private keys.
-- If reverse direction `BSC -> ACP` is needed later, that is separate operational work.
+- Reverse direction `BSC -> ACP` is partially surfaced, but still separate operational work.
+- Public reverse status should remain:
+  - `redeem_available=false`
+  - `redeem_mode=pending-rollout`

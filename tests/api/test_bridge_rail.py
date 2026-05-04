@@ -40,6 +40,8 @@ def test_wacp_status_public_ok(client):
     assert data["docs"]["overview"].endswith("/docs/wacp")
     assert "pair_live" in data
     assert "token_metadata_live" in data
+    assert "reserve_proof_status" in data
+    assert "reserve_health" in data
 
 
 def test_wacp_exact_public_paths_ok(client):
@@ -57,6 +59,54 @@ def test_quote_bsc_to_acp_floor_and_remainder(client):
     assert data["acp_smallest_floor"] == "100000000"
     assert data["acp_amount_floor"] == "1"
     assert data["remainder_wacp_wei"] == "100000000"
+
+
+def test_wacp_reserve_proof_live_balance_path(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
+    monkeypatch.setenv("BRIDGE_WACP_CONTRACT", "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    import app.api.routers.bridge_rail as bridge_rail
+
+    async def fake_scalar(*args, **kwargs):
+        return 1000000000000000000
+
+    class _FakeSession:
+        async def scalar(self, *args, **kwargs):
+            return 1000000000000000000
+
+        async def get(self, *args, **kwargs):
+            return None
+
+        async def rollback(self):
+            return None
+
+    def fake_require_rpc_url():
+        return "http://fake-rpc"
+
+    def fake_run_walletd(args, timeout_s=180):
+        return {"address": "acp1qreserve0000000000000000000000000000000", "units": "200000000", "acp": "2", "utxo_count": 1}
+
+    from app.api.routers import wallet_acp
+    original_require = wallet_acp._require_acp_rpc_url
+    original_run = wallet_acp._run_walletd
+    wallet_acp._require_acp_rpc_url = fake_require_rpc_url
+    wallet_acp._run_walletd = fake_run_walletd
+    try:
+        import anyio
+        data = anyio.run(bridge_rail._live_reserve_proof_payload, _FakeSession())
+    finally:
+        wallet_acp._require_acp_rpc_url = original_require
+        wallet_acp._run_walletd = original_run
+
+    assert data.acp_reserve_balance_smallest == "200000000"
+    assert data.wacp_total_supply_acp_smallest == "100000000"
+    assert data.backing_ratio == "2"
+    assert data.status == "healthy"
+    assert data.reserve_health == "healthy"
 
 
 def test_create_redeem_intent_bsc_to_acp(client, monkeypatch):

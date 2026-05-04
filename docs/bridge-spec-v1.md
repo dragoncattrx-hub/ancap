@@ -74,7 +74,14 @@ Operational state lives in `bridge_operations.status`. History in `bridge_state_
 
 ### BSC → ACP
 
+Normative reverse FSM target:
 `BURN_REQUESTED` → `BURN_CONFIRMED` → `ACP_PAYOUT_SENT` → `COMPLETED`
+
+Current implementation note as of 2026-05-04:
+- public status/docs/UI intentionally keep reverse rail in `pending-rollout`
+- intent registration exists
+- quote/floor/remainder transparency exists
+- watcher-confirmed burn -> ACP payout completion is not yet declared live
 
 Failed / manual paths: `FAILED`, `DISPUTED`, `REORGED` (document allowed transitions from each).
 
@@ -105,13 +112,30 @@ Bridge fee (if any): fixed or bps — **TBD in deployment config**; must be in s
 
 Append-only `bridge_audit_events`: every mint intent, mint tx hash, burn detection, payout tx, state change, admin pause/resume, reconciliation outcomes. DB role should not UPDATE/DELETE audit rows (enforce via permissions or triggers in production).
 
-## 13. References in repo
+## 13. Current public/API surface notes
+
+Live public/API surface currently includes:
+- `GET /api/v1/wacp/status`
+- `GET /api/v1/wacp/reserve-proof`
+- `POST /api/v1/bridge/intents/acp-to-bsc`
+- `POST /api/v1/bridge/intents/bsc-to-acp`
+- `POST /api/v1/bridge/quote/bsc-to-acp`
+
+Reverse quote endpoint must expose:
+- `amount_wacp_wei`
+- `acp_smallest_floor`
+- `acp_amount_floor`
+- `remainder_wacp_wei`
+- `remainder_wacp`
+- policy text reflecting reserve-favor floor rounding
+
+## 14. References in repo
 
 - ACP integration: `app/api/routers/wallet_acp.py`, `ACP-crypto/`
 - Contracts: `contracts/bridge-bsc/`
 - API: `app/api/routers/bridge_rail.py` under `/v1/bridge/...`
 - UI: `frontend-app/src/app/bridge/acp-bsc/`
 
-## 14. EIP note (non-blocking)
+## 15. EIP note (non-blocking)
 
 For future indexer interoperability, consider alignment with cross-chain mint/burn event standards (e.g. [EIP-7802](https://eips.ethereum.org/EIPS/eip-7802)) — not required for v1.

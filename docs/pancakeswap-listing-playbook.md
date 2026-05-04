@@ -17,11 +17,11 @@ Also:
 
 ## What must be true before you touch PancakeSwap
 
-Do **not** list before all of this is true:
+Do **not** call it an official market launch before all of this is true:
 - wACP mainnet contract deployed on **BSC mainnet**
 - wACP contract verified on **BscScan**
 - bridge / gateway contracts verified on **BscScan**
-- reserve proof endpoint live
+- reserve proof endpoint live with real snapshot-backed reserve balance
 - reserve docs live
 - risk docs live
 - multisig admin configured
@@ -30,7 +30,7 @@ Do **not** list before all of this is true:
 - duplicate protection tested
 - operational runbook written
 
-If any of that is missing, stop. Fix infra first.
+Current reality: a technical PancakeSwap bootstrap pair already exists. That is useful, but it is **not** the same as full trust maturity.
 
 ---
 
@@ -128,20 +128,19 @@ This matters because Pancake users and reviewers will check whether the asset lo
 ---
 
 ## Step 3 — Expose reserve proof publicly
-You need a public endpoint like:
+Already live:
 - `/api/v1/wacp/reserve-proof`
 
-It should show:
+But it still needs maturity work. It should ultimately show:
 - reserve address
-- ACP reserve balance
+- ACP reserve balance from snapshot-backed sourcing
 - wACP total supply
 - backing ratio
 - status
 - last updated timestamp
 
-Then test it from the public internet.
-
-If reserve proof is not live, do **not** add liquidity yet.
+Current public state is intentionally `pending`.
+Treat that as a blocker for calling the market officially ready, even though a small technical liquidity pair already exists.
 
 ---
 
@@ -253,11 +252,18 @@ This reduces spoofing risk.
 ### If contracts ARE final and verified already
 1. Prepare logo + metadata pack
 2. Publish docs pages publicly
-3. Make reserve proof public
+3. Make reserve proof public and snapshot-backed
 4. Open PancakeSwap V2
 5. Create `wACP / USDT` pair
 6. Add initial liquidity
 7. Test both swap directions
+
+### What is already done
+- pair live: `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601`
+- liquidity tx: `0x82458ec2b17e5aa58201a625169e493bb5ce8159487d66846906d9de69587503`
+- first buy tx: `0xe6b867346d6acfdef7e0a34c457dd48c9bf572c7e0aa94224c705dc83c1a504c`
+- first sell tx: `0x02ff5659d584aabf7bfe19c508c7673ba449ff89c1df07069cc272a6a8ab6795`
+- official swap URL: `https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
 8. Submit token metadata through PancakeSwap’s current official process
 9. Publish official contract + pair links on ancap.cloud and Telegram
 

@@ -1,14 +1,29 @@
 # wACP -> PancakeSwap Readiness
 
 ## Goal
-Ship wACP as a credible, redeemable, reserve-backed wrapped ACP asset on BNB Smart Chain, then enable initial PancakeSwap liquidity with minimal market and bridge risk.
+Ship wACP as a credible, reserve-backed wrapped ACP asset on BNB Smart Chain, then grow from technical bootstrap liquidity toward a safer public market state.
 
 ## Core production gate
-No reserve proof -> no liquidity.
-No duplicate protection -> no liquidity.
-No pause/admin model -> no liquidity.
-No verified contracts -> no liquidity.
+No reserve proof -> no official market launch.
+No duplicate protection -> no official market launch.
+No pause/admin model -> no official market launch.
+No verified contracts -> no official market launch.
 No public risk docs -> no serious liquidity.
+
+## Current reality as of 2026-05-04
+- PancakeSwap V2 technical liquidity bootstrap is already live
+- pair: `wACP / USDT`
+- pair address: `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601`
+- wACP contract is verified on BscScan
+- public docs pages are live
+- public status endpoint is live
+- reserve proof endpoint is live but still reports `pending`
+- live bridge direction today: `ACP -> BSC`
+- reverse `BSC -> ACP` is still `pending-rollout`
+
+Interpretation:
+- trading smoke-test exists
+- official trust maturity is still incomplete until reserve proof snapshots and reverse ops safety are finished
 
 ## Phase 0 — decisions to freeze once
 
@@ -102,6 +117,7 @@ If represented as ratio:
 - `critical` if `minted_wACP > reserve_equivalent`
 
 ### 2.2 Backend table: `bridge_reserve_snapshots`
+Still needed for full reserve-proof maturity.
 Add table:
 - `id`
 - `created_at`
@@ -116,8 +132,10 @@ Add table:
 - `bsc_block_number`
 
 ### 2.3 Public endpoint: reserve proof
-Add:
+Already live:
 - `GET /api/v1/wacp/reserve-proof`
+
+But still incomplete: the endpoint currently exposes truthful `pending` state because ACP reserve balance is not yet sourced from a dedicated snapshot table.
 
 Response shape:
 ```json
@@ -137,8 +155,12 @@ Response shape:
 ```
 
 ### 2.4 Public endpoint: bridge status
-Add:
+Already live:
 - `GET /api/v1/wacp/status`
+
+Current truthful reverse fields must remain:
+- `redeem_available=false`
+- `redeem_mode=pending-rollout`
 
 Include:
 - bridge enabled/paused
@@ -258,24 +280,19 @@ Emit anomaly alerts for:
 ### 5.1 `/wallet/acp` block
 Keep wACP inside ACP wallet page, not in top nav.
 
-Add compact block:
-- `wACP on BSC`
-- contract address
-- network = BNB Smart Chain
-- decimals = 18
-- bridge status badge: `Healthy / Degraded / Paused`
-- reserve backing percent
-- button: `Bridge ACP -> wACP`
-- button: `Redeem wACP -> ACP`
-- button: `Trade on PancakeSwap`
+Current reality:
+- compact wACP block already exists in `/wallet/acp`
+- it already shows the live `wACP/USDT` technical bootstrap context
+- it links to bridge, swap, and pool
+- it keeps bridge access out of the top navigation as requested
 
-Rules:
-- Pancake CTA is disabled until `pair_live = true`
-- show explicit warning when bridge is paused/degraded
-- show verified contract link when available
+Still desirable over time:
+- bridge status badge: `Healthy / Degraded / Paused`
+- reserve backing percent once snapshot-backed reserve proof is live
+- explicit verified-contract link if not already visible enough
 
 ### 5.2 Intent timeline page
-Add page:
+Still optional / not shipped yet:
 - `/wallet/acp/bridge/[intentId]`
 
 Timeline states:
@@ -287,7 +304,7 @@ Timeline states:
 6. completed
 
 ### 5.3 Reserve proof UI
-Add card/widget rendering:
+Still desirable / not fully shipped yet as a dedicated card:
 - reserve address
 - reserve balance
 - wACP total supply
@@ -306,7 +323,7 @@ Show links to:
 
 ## Phase 6 — Public docs
 
-Create:
+Already created and live:
 - `/docs/wacp`
 - `/docs/wacp/bridge`
 - `/docs/wacp/reserve`
@@ -369,6 +386,10 @@ Define when intent enters `manual_review`:
 - docs page live
 - reserve proof endpoint live
 
+Current reality:
+- these baseline items are largely done for the current technical bootstrap
+- what is still incomplete is trust maturity, mainly reserve snapshots and reverse payout ops
+
 ### 8.2 Token metadata pack
 Prepare:
 - `name: Wrapped ACP`
@@ -419,25 +440,25 @@ Prepare JSON metadata and submission path for PancakeSwap token list only after:
 ---
 
 ## Launch gate checklist
-All must be PASS before meaningful liquidity:
-- [ ] wACP contract deployed
-- [ ] wACP contract verified
-- [ ] gateway contract verified
+All must be PASS before meaningful public liquidity expansion:
+- [x] wACP contract deployed
+- [x] wACP contract verified
+- [x] gateway contract verified
 - [ ] admin owner is multisig
 - [ ] operator key has limited role
 - [ ] pause tested
-- [ ] mint tested
-- [ ] burn/redeem tested
-- [ ] duplicate scan tested
-- [ ] reserve proof endpoint live
-- [ ] reserve dashboard live
-- [ ] `/wallet/acp` shows wACP block
-- [ ] docs page live
-- [ ] emergency runbook written
-- [ ] seed liquidity amount approved
-- [ ] Pancake pair created
-- [ ] swap test passed
-- [ ] remove liquidity test passed
+- [x] mint tested
+- [ ] burn/redeem tested end-to-end as live ops
+- [x] duplicate scan tested on mint path
+- [x] reserve proof endpoint live
+- [ ] reserve dashboard live with snapshot-backed balances
+- [x] `/wallet/acp` shows wACP block
+- [x] docs page live
+- [x] emergency runbook written
+- [x] seed liquidity amount approved
+- [x] Pancake pair created
+- [x] swap test passed
+- [ ] remove liquidity test passed / documented
 
 ## Hard red flags
 Do not add liquidity if any are true:

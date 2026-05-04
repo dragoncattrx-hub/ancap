@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_DOWN
 from uuid import UUID, uuid4
 
@@ -119,6 +120,108 @@ def _quote_bsc_to_acp(amount_wacp: str) -> BridgeRedeemQuoteResponse:
     )
 
 
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProofResponse:
+    s = get_settings()
+
+    total_wacp = 0
+    try:
+        total_wacp = int(
+            await session.scalar(
+                select(func.coalesce(func.sum(BridgeOperation.amount_wacp_wei), 0)).where(
+                    BridgeOperation.direction == "acp_to_bsc",
+                    BridgeOperation.status == "COMPLETED",
+                )
+            )
+            or 0
+        )
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("live_reserve_proof total supply summary skipped: %s", exc)
+        await session.rollback()
+
+    cp_acp = None
+    cp_bsc = None
+    try:
+        cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
+        cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("live_reserve_proof checkpoints skipped: %s", exc)
+        await session.rollback()
+
+    notes: list[str] = []
+    reserve_balance_smallest_int: int | None = None
+    total_supply_acp_smallest = total_wacp // (10**10)
+    backing_ratio: str | None = None
+    status = "pending"
+    reserve_health = "pending"
+    last_updated_at: datetime | None = None
+
+    if not s.bridge_rail_enabled:
+        status = "disabled"
+        reserve_health = "disabled"
+    elif s.bridge_rail_paused:
+        status = "paused"
+        reserve_health = "paused"
+
+    if not s.bridge_reserve_acp_address:
+        notes.append("Reserve ACP address is not configured.")
+    else:
+        try:
+            from app.api.routers.wallet_acp import _require_acp_rpc_url, _run_walletd
+
+            rpc_url = _require_acp_rpc_url()
+            res = _run_walletd(["balance", "--rpc", rpc_url, "--address", s.bridge_reserve_acp_address], timeout_s=180)
+            reserve_balance_smallest_int = int(str(res.get("units") or "0"))
+            last_updated_at = _utc_now()
+            if total_wacp > 0:
+                backing_ratio_dec = Decimal(reserve_balance_smallest_int) / Decimal(total_supply_acp_smallest or 1)
+                backing_ratio = format(backing_ratio_dec, "f")
+                if backing_ratio_dec >= Decimal("1"):
+                    status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                else:
+                    status = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                    notes.append("Reserve balance is below implied completed wACP supply.")
+            else:
+                status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                notes.append("Reserve balance is live; completed wACP supply is currently zero or not backfilled.")
+        except HTTPException as exc:
+            notes.append(f"Reserve balance lookup unavailable: {exc.detail}")
+        except Exception as exc:
+            notes.append(f"Reserve balance lookup failed: {exc}")
+
+    if not s.bridge_wacp_contract:
+        notes.append("wACP production contract is not configured.")
+
+    if reserve_balance_smallest_int is None and s.bridge_rail_enabled and not s.bridge_rail_paused:
+        status = "pending"
+        reserve_health = "pending"
+        notes.append("Reserve proof endpoint is live, but ACP reserve balance could not be sourced right now.")
+
+    return WacpReserveProofResponse(
+        status=status,
+        bridge_enabled=s.bridge_rail_enabled,
+        bridge_paused=s.bridge_rail_paused,
+        acp_reserve_address=s.bridge_reserve_acp_address,
+        acp_reserve_balance_smallest=str(reserve_balance_smallest_int or 0),
+        wacp_contract=s.bridge_wacp_contract,
+        wacp_total_supply_wei=str(total_wacp),
+        wacp_total_supply_acp_smallest=str(total_supply_acp_smallest),
+        operational_buffer_smallest="0",
+        backing_ratio=backing_ratio,
+        reserve_health=reserve_health,
+        last_acp_block_height=int(cp_acp.last_block_height) if cp_acp else None,
+        last_bsc_block_number=int(cp_bsc.last_block_height) if cp_bsc else None,
+        last_updated_at=last_updated_at,
+        notes=notes,
+    )
+
+
 @router.post("/quote/bsc-to-acp", response_model=BridgeRedeemQuoteResponse)
 async def quote_bsc_to_acp(body: BridgeRedeemQuoteRequest):
     return _quote_bsc_to_acp(body.amount_wacp)
@@ -186,86 +289,7 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
 @router.get("/wacp/reserve-proof", response_model=WacpReserveProofResponse)
 @router.get("/reserve-proof", response_model=WacpReserveProofResponse, include_in_schema=False)
 async def wacp_reserve_proof(session: AsyncSession = Depends(get_db)):
-    s = get_settings()
-
-    completed = 0
-    total_wacp = 0
-    try:
-        completed = int(
-            await session.scalar(
-                select(func.count())
-                .select_from(BridgeOperation)
-                .where(
-                    BridgeOperation.direction == "acp_to_bsc",
-                    BridgeOperation.status == "COMPLETED",
-                )
-            )
-            or 0
-        )
-        total_wacp = int(
-            await session.scalar(
-                select(func.coalesce(func.sum(BridgeOperation.amount_wacp_wei), 0)).where(
-                    BridgeOperation.direction == "acp_to_bsc",
-                    BridgeOperation.status == "COMPLETED",
-                )
-            )
-            or 0
-        )
-    except (ProgrammingError, DBAPIError, OSError) as exc:
-        logger.warning("wacp_reserve_proof summary skipped: %s", exc)
-        await session.rollback()
-
-    cp_acp = None
-    cp_bsc = None
-    try:
-        cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
-        cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
-    except (ProgrammingError, DBAPIError, OSError) as exc:
-        logger.warning("wacp_reserve_proof checkpoints skipped: %s", exc)
-        await session.rollback()
-
-    notes: list[str] = []
-    reserve_balance_smallest = "0"
-    total_supply_acp_smallest = str(total_wacp // (10**10))
-    if not s.bridge_reserve_acp_address:
-        notes.append("Reserve ACP address is not configured.")
-    else:
-        notes.append("Reserve proof endpoint is live, but ACP reserve balance is not yet sourced from a dedicated snapshot table.")
-    if not s.bridge_wacp_contract:
-        notes.append("wACP production contract is not configured.")
-    if total_wacp == 0:
-        notes.append("No completed BSC mint supply has been observed yet, or historical supply import is not backfilled.")
-
-    reserve_health = "pending"
-    status = "pending"
-    backing_ratio = None
-    if not s.bridge_rail_enabled:
-        reserve_health = "disabled"
-        status = "disabled"
-    elif s.bridge_rail_paused:
-        reserve_health = "paused"
-        status = "paused"
-    elif total_wacp == 0:
-        reserve_health = "pending"
-        status = "pending"
-
-    return WacpReserveProofResponse(
-        status=status,
-        bridge_enabled=s.bridge_rail_enabled,
-        bridge_paused=s.bridge_rail_paused,
-        acp_reserve_address=s.bridge_reserve_acp_address,
-        acp_reserve_balance_smallest=reserve_balance_smallest,
-        wacp_contract=s.bridge_wacp_contract,
-        wacp_total_supply_wei=str(total_wacp),
-        wacp_total_supply_acp_smallest=total_supply_acp_smallest,
-        operational_buffer_smallest="0",
-        backing_ratio=backing_ratio,
-        reserve_health=reserve_health,
-        last_acp_block_height=int(cp_acp.last_block_height) if cp_acp else None,
-        last_bsc_block_number=int(cp_bsc.last_block_height) if cp_bsc else None,
-        last_updated_at=None,
-        notes=notes,
-    )
+    return await _live_reserve_proof_payload(session)
 
 
 @router.get("/wacp/status", response_model=WacpPublicStatusResponse)
@@ -291,6 +315,8 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         logger.warning("wacp_public_status checkpoints skipped: %s", exc)
         await session.rollback()
 
+    reserve = await _live_reserve_proof_payload(session)
+
     notes: list[str] = []
     if not s.bridge_wacp_contract:
         notes.append("Production wACP contract is not configured.")
@@ -299,20 +325,19 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
     notes.append("PancakeSwap V2 technical liquidity bootstrap is live with a micro-liquidity pool; treat it as a smoke-test market, not a deep-liquidity launch.")
     notes.append("BSC -> ACP redeem path is planned and contract-supported at the gateway level, but backend release ops, watcher confirmation, and payout idempotency are not yet declared live.")
     notes.append("Token metadata / logo inclusion on Pancake-related surfaces is still pending manual review by external platforms.")
+    for item in reserve.notes:
+        if item not in notes:
+            notes.append(item)
 
     overall_status = "live"
-    reserve_proof_status = "pending"
-    reserve_health = "pending"
+    reserve_proof_status = reserve.status
+    reserve_health = reserve.reserve_health
     if not s.bridge_rail_enabled:
         overall_status = "disabled"
-        reserve_proof_status = "disabled"
-        reserve_health = "disabled"
     elif s.bridge_rail_paused:
         overall_status = "paused"
-        reserve_proof_status = "paused"
-        reserve_health = "paused"
-    elif reserve_proof_status == "pending":
-        reserve_health = "pending"
+    elif reserve_health == "critical":
+        overall_status = "degraded"
 
     return WacpPublicStatusResponse(
         status=overall_status,
@@ -332,7 +357,7 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         acp_explorer_tx_base=s.acp_explorer_tx_base,
         checkpoint_acp=int(cp_acp.last_block_height) if cp_acp else None,
         checkpoint_bsc=int(cp_bsc.last_block_height) if cp_bsc else None,
-        last_updated_at=None,
+        last_updated_at=reserve.last_updated_at,
         pair_live=True,
         pair_dex="PancakeSwap V2",
         pair_symbol="wACP/USDT",

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This runbook is for the ACP -> BSC custodial rail that mints `wACP` on BSC after confirmed ACP deposit into the reserve address.
+This runbook is for the live ACP -> BSC custodial rail and the staged `BSC -> ACP` reverse rollout.
 
 It describes the operator reality after the first successful mainnet pilot on 2026-05-04.
 
@@ -63,13 +63,18 @@ Expected:
 - open `/bridge/acp-bsc`
 - authenticated user should be able to see intent rows
 - result rows may include:
+  - `direction`
   - `acp_tx_hash`
   - `bsc_tx_hash_mint`
+  - `bsc_tx_hash_burn`
+  - `remainder_wacp_wei`
   - `deposit_ref_hex`
   - `bsc_log_index`
   - `version`
   - built-in ACP tx link
   - BscScan tx link
+- reverse preview should work via:
+  - `POST /api/v1/bridge/quote/bsc-to-acp`
 
 ## Normal ACP -> BSC operator flow
 
@@ -184,10 +189,31 @@ Check:
 - locked ACP sum in operations
 - whether a tx succeeded on-chain but watcher/API state is lagging
 
+## Reverse rail current state
+
+What is already real:
+- reverse intent registration
+- floor/remainder quantization according to spec
+- mixed-direction ops listing
+- UI redeem request form
+- UI/API quote preview for floor payout and remainder transparency
+
+What is not live yet:
+- burn-event watcher confirmation
+- ACP payout worker
+- idempotent payout completion
+- reverse completion FSM in production ops
+
+Operator rule:
+- do not manually present reverse rail as live until watcher + payout + reconciliation are proven
+- public status must remain:
+  - `redeem_available=false`
+  - `redeem_mode=pending-rollout`
+
 ## Next recommended step
 
-Run one more small controlled pilot to prove repeatability.
-After that, raise confidence before changing caps.
+Run one more small controlled ACP -> BSC pilot to prove repeatability.
+In parallel, finish reverse watcher/payout safety before any public enablement.
 
 ## Non-goals
 
