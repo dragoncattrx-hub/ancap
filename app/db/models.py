@@ -3,7 +3,19 @@ import enum
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    String, Text, Integer, Boolean, Numeric, DateTime, Date, ForeignKey, Enum as SQLEnum, Index, Column,
+    String,
+    Text,
+    Integer,
+    BigInteger,
+    Boolean,
+    Numeric,
+    DateTime,
+    Date,
+    ForeignKey,
+    Enum as SQLEnum,
+    Index,
+    Column,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -1317,3 +1329,87 @@ class TaskFeedItem(Base):
         Index("ix_task_feed_open_score", "status", "score", "created_at"),
         Index("ix_task_feed_vertical", "target_vertical", "status", "score"),
     )
+
+
+class BridgeWatcherCheckpoint(Base):
+    __tablename__ = "bridge_watcher_checkpoints"
+
+    chain_key = Column(String(32), primary_key=True)
+    last_block_height = Column(BigInteger, nullable=False, default=0)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BridgeAllowlistAddress(Base):
+    __tablename__ = "bridge_allowlist_addresses"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    bsc_address = Column(String(66), nullable=False, unique=True, index=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class BridgeOperation(Base):
+    __tablename__ = "bridge_operations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    direction = Column(String(16), nullable=False)
+    status = Column(String(40), nullable=False, index=True)
+    user_bsc_address = Column(String(66), nullable=True)
+    user_acp_address = Column(String(128), nullable=True)
+    amount_acp_smallest = Column(Numeric(38, 0), nullable=False)
+    amount_wacp_wei = Column(Numeric(38, 0), nullable=False)
+    remainder_wacp_wei = Column(Numeric(38, 0), nullable=False, default=0)
+    acp_chain_id = Column(String(32), nullable=False, default="acp")
+    acp_tx_hash = Column(String(128), nullable=True)
+    acp_out_index = Column(Integer, nullable=False, default=0)
+    bsc_tx_hash_mint = Column(String(128), nullable=True)
+    bsc_tx_hash_burn = Column(String(128), nullable=True)
+    bsc_log_index = Column(Integer, nullable=True)
+    bsc_chain_id = Column(String(32), nullable=False, default="bsc")
+    deposit_ref_hex = Column(String(66), nullable=True)
+    correlation_id = Column(String(128), nullable=True)
+    version = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index(
+            "ux_bridge_ops_acp_tx",
+            "acp_chain_id",
+            "acp_tx_hash",
+            "acp_out_index",
+            unique=True,
+            postgresql_where=text("acp_tx_hash IS NOT NULL"),
+        ),
+        Index(
+            "ux_bridge_ops_bsc_burn_tx",
+            "bsc_chain_id",
+            "bsc_tx_hash_burn",
+            unique=True,
+            postgresql_where=text("bsc_tx_hash_burn IS NOT NULL"),
+        ),
+    )
+
+
+class BridgeStateTransition(Base):
+    __tablename__ = "bridge_state_transitions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="CASCADE"), nullable=False, index=True)
+    from_status = Column(String(40), nullable=True)
+    to_status = Column(String(40), nullable=False)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class BridgeAuditEvent(Base):
+    __tablename__ = "bridge_audit_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="SET NULL"), nullable=True, index=True)
+    event_type = Column(String(64), nullable=False, index=True)
+    payload_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+
+    __table_args__ = (Index("ix_bridge_audit_type_time", "event_type", "created_at"),)

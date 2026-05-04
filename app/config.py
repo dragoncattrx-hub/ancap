@@ -117,6 +117,20 @@ class Settings(BaseSettings):
     graph_enforcement_max_cluster_size: int = 10
     graph_enforcement_block_if_in_cycle: bool = True
 
+    # wACP / BSC custodial clearing rail (see docs/bridge-spec-v1.md)
+    bridge_rail_enabled: bool = False
+    bridge_rail_paused: bool = False
+    bridge_dry_run: bool = True
+    bridge_bsc_rpc_url: str = ""
+    bridge_wacp_contract: str = ""
+    bridge_gateway_contract: str = ""
+    bridge_reserve_acp_address: str = ""
+    bridge_acp_confirmations: int = 30
+    bridge_bsc_confirmations: int = 18
+    bridge_operator_secret: str | None = None
+    bsc_explorer_base: str = "https://bscscan.com"
+    acp_explorer_tx_base: str = ""  # optional template, e.g. https://explorer.example/tx/
+
 
 @lru_cache
 def get_settings() -> Settings:

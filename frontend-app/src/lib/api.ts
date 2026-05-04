@@ -391,6 +391,25 @@ export const walletAcp = {
   },
 };
 
+/** wACP / BSC custodial clearing rail (see docs/bridge-spec-v1.md). */
+export const bridgeRail = {
+  async status() {
+    return apiFetch("/bridge/status");
+  },
+  async reserveSummary() {
+    return apiFetch("/bridge/reserve-summary");
+  },
+  async createIntentAcpToBsc(data: { user_bsc_address: string; amount_acp: string; user_acp_address?: string }) {
+    return apiFetch("/bridge/intents/acp-to-bsc", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listMyIntents(limit = 50) {
+    return apiFetch(`/bridge/intents/me?limit=${encodeURIComponent(String(limit))}`);
+  },
+};
+
 export const stakes = {
   async list(agent_id?: string) {
     const params = new URLSearchParams();
@@ -920,6 +939,7 @@ export const api = {
   verticals,
   ledger,
   walletAcp,
+  bridgeRail,
   stakes,
   reputation,
   listings,
