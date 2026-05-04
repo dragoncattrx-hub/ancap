@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
@@ -428,8 +429,8 @@ export default function AcpWalletPage() {
         <Navigation />
 
         <div className="container" style={{ padding: "48px 24px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
-            <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+            <div style={{ maxWidth: 760 }}>
               <div className="section-num" style={{ marginBottom: 10 }}>
                 Wallet
               </div>
@@ -441,7 +442,16 @@ export default function AcpWalletPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div style={{ display: "grid", gap: 10, justifyItems: "end", width: "100%", maxWidth: 520 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <Link href="/bridge/acp-bsc" className="btn btn-primary">
+                  Bridge (wACP)
+                </Link>
+                <button className="btn btn-ghost" onClick={refreshAll} disabled={busy}>
+                  {busy ? "Refreshing..." : "Refresh"}
+                </button>
+              </div>
+
               <div className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
                 <button
                   type="button"
@@ -465,13 +475,9 @@ export default function AcpWalletPage() {
                       : "text-white/50 hover:text-white/85",
                   ].join(" ")}
                 >
-                  Tether TRC-20 {"->"} ACP
+                  ACP swap
                 </button>
               </div>
-
-              <button className="btn btn-ghost" onClick={refreshAll} disabled={busy}>
-                {busy ? "Refreshing..." : "Refresh"}
-              </button>
             </div>
           </div>
 
@@ -521,6 +527,34 @@ export default function AcpWalletPage() {
               ))}
             </div>
           )}
+
+          <div
+            className="card"
+            style={{
+              marginBottom: 16,
+              border: "1px solid rgba(56, 189, 248, 0.22)",
+              background: "linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255,255,255,0.02))",
+            }}
+          >
+            <div className="card-header">
+              <h3 style={{ fontWeight: 800, margin: 0 }}>ACP {"->"} BSC bridge</h3>
+              <span className="badge badge-info">wACP</span>
+            </div>
+            <div style={{ marginTop: 10, color: "var(--text-muted)", lineHeight: 1.7 }}>
+              Use the bridge page to lock ACP on ANCAP Chain and mint wACP on BSC. This is separate from the internal Tether TRC-20 swap flow below.
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+              <Link href="/bridge/acp-bsc" className="btn btn-primary">
+                Open Bridge (wACP)
+              </Link>
+              <button type="button" className="btn btn-ghost" onClick={() => setTab("wallet")}>
+                Wallet overview
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={() => setTab("swap")}>
+                Internal swap
+              </button>
+            </div>
+          </div>
 
           {tab === "wallet" ? (
             <div style={{ display: "grid", gap: 16 }}>
@@ -806,7 +840,7 @@ export default function AcpWalletPage() {
             <div className="responsive-grid responsive-grid-2">
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Create swap order</h3>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>Internal swap desk</h3>
                   <span className="badge badge-info">Tether TRC-20 {"->"} ACP</span>
                 </div>
 
@@ -864,7 +898,7 @@ export default function AcpWalletPage() {
                 )}
 
                 <div style={{ marginTop: 16, padding: 10, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                  After creating an order, send Tether TRC-20 to the provided address with the exact reference. Then submit TXID for review.
+                  Create an internal swap order, send Tether TRC-20 to the provided address with the exact reference, then submit the TRON TXID for manual review and ACP payout.
                 </div>
               </div>
 
