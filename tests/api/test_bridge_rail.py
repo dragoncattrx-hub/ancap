@@ -340,7 +340,7 @@ def test_orchestrator_resolves_missing_walletd_txid_via_chain_scan(client, monke
     import app.services.bridge_orchestrator as orch
 
     burn_tx_hash = "0x" + uuid.uuid4().hex
-    fallback_txid = "f" * 64
+    fallback_txid = uuid.uuid4().hex + uuid.uuid4().hex
 
     async def setup_burn_confirmed():
         engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
@@ -385,6 +385,44 @@ def test_orchestrator_resolves_missing_walletd_txid_via_chain_scan(client, monke
     op = next(x for x in mine.json() if x["id"] == op_id)
     assert op["status"] == "ACP_PAYOUT_SENT"
     assert op["acp_tx_hash"] == fallback_txid
+
+
+def test_orchestrator_rejects_hot_wallet_reserve_mismatch(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_DRY_RUN", "false")
+    monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserveexpected000000000000000000000000")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    import app.services.bridge_orchestrator as orch
+
+    original_run_walletd = orch._hot_wallet_transfer.__globals__.get("_run_walletd") if False else None
+    from app.api.routers import wallet_acp as wallet_acp_router
+
+    original_loader = wallet_acp_router._load_or_create_valid_hot_mnemonic
+    original_require_rpc = wallet_acp_router._require_acp_rpc_url
+    original_run = wallet_acp_router._run_walletd
+
+    wallet_acp_router._load_or_create_valid_hot_mnemonic = lambda: "test mnemonic"
+    wallet_acp_router._require_acp_rpc_url = lambda: "http://acp.invalid/rpc"
+
+    def fake_run_walletd(args, timeout_s=180):
+        if args[:2] == ["address", "--mnemonic"]:
+            return {"address": "acp1qderiveddifferent0000000000000000000000000"}
+        raise AssertionError(args)
+
+    wallet_acp_router._run_walletd = fake_run_walletd
+    try:
+        try:
+            orch._hot_wallet_transfer("acp1qdest000000000000000000000000000000000", 500000)
+            assert False, "expected RuntimeError"
+        except RuntimeError as exc:
+            assert "ACP hot wallet address mismatch" in str(exc)
+    finally:
+        wallet_acp_router._load_or_create_valid_hot_mnemonic = original_loader
+        wallet_acp_router._require_acp_rpc_url = original_require_rpc
+        wallet_acp_router._run_walletd = original_run
 
 
 def test_admin_reverse_bind_burn_promotes_pending_burn(client, monkeypatch):

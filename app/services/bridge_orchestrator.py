@@ -41,10 +41,16 @@ def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
         _scan_chain_transactions,
     )
 
+    settings = get_settings()
     mnemonic = _load_or_create_valid_hot_mnemonic()
     rpc_url = _require_acp_rpc_url()
     from_wallet = _run_walletd(["address", "--mnemonic", mnemonic])
     from_address = str(from_wallet.get("address") or "").strip()
+    reserve_address = str(settings.bridge_reserve_acp_address or "").strip()
+    if reserve_address and from_address and from_address != reserve_address:
+        raise RuntimeError(
+            f"ACP hot wallet address mismatch: derived {from_address} but BRIDGE_RESERVE_ACP_ADDRESS is {reserve_address}"
+        )
     transfer = _run_walletd(
         [
             "transfer",

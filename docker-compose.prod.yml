@@ -30,7 +30,7 @@ services:
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)
       ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-walletd}
-      ACP_HOT_MNEMONIC_FILE: ${ACP_HOT_MNEMONIC_FILE:-/run/secrets/acp_hot_mnemonic.txt}
+      ACP_HOT_MNEMONIC_FILE: ${ACP_HOT_MNEMONIC_FILE:-/run/secrets/bridge-bsc/acp-reserve-mnemonic.txt}
       ACP_WALLET_OPERATOR_SECRET: ${ACP_WALLET_OPERATOR_SECRET:-}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       BRIDGE_RAIL_ENABLED: ${BRIDGE_RAIL_ENABLED:-false}
