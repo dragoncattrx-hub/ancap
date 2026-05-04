@@ -1,6 +1,9 @@
 """FSM orchestrator hooks for bridge rail progression."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+from decimal import Decimal
+
 from eth_account import Account
 from eth_utils import keccak, to_hex
 from sqlalchemy import select
@@ -24,6 +27,31 @@ GATEWAY_ABI = [
         "type": "function",
     }
 ]
+
+
+def _acp_amount_decimal_str(acp_smallest: int) -> str:
+    return format(Decimal(acp_smallest) / (Decimal(10) ** 8), "f")
+
+
+def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
+    from app.api.routers.wallet_acp import _load_or_create_valid_hot_mnemonic, _require_acp_rpc_url, _run_walletd
+
+    mnemonic = _load_or_create_valid_hot_mnemonic()
+    rpc_url = _require_acp_rpc_url()
+    return _run_walletd(
+        [
+            "transfer",
+            "--rpc",
+            rpc_url,
+            "--mnemonic",
+            mnemonic,
+            "--to",
+            acp_address,
+            "--amount-acp",
+            _acp_amount_decimal_str(acp_smallest),
+        ],
+        timeout_s=180,
+    )
 
 
 async def append_transition(
@@ -70,10 +98,12 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
         return {"skipped": True}
 
     progressed = 0
+    progressed_acp_to_bsc = 0
+    progressed_bsc_to_acp = 0
     dry_run = settings.bridge_dry_run
 
     if dry_run:
-        ops = (
+        mint_ops = (
             await session.execute(
                 select(BridgeOperation)
                 .where(
@@ -84,7 +114,7 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
             )
         ).scalars().all()
 
-        for op in ops:
+        for op in mint_ops:
             session.add(
                 BridgeAuditEvent(
                     operation_id=op.id,
@@ -107,18 +137,93 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
                 },
             )
             progressed += 1
+            progressed_acp_to_bsc += 1
+
+        reverse_ops = (
+            await session.execute(
+                select(BridgeOperation)
+                .where(
+                    BridgeOperation.direction == "bsc_to_acp",
+                    BridgeOperation.status == "BURN_CONFIRMED",
+                    BridgeOperation.acp_tx_hash.is_(None),
+                )
+                .order_by(BridgeOperation.created_at.asc())
+            )
+        ).scalars().all()
+        for op in reverse_ops:
+            fake_txid = f"dryrun-{op.id}"
+            op.acp_tx_hash = fake_txid
+            op.acp_out_index = 0
+            session.add(
+                BridgeAuditEvent(
+                    operation_id=op.id,
+                    event_type="dry_run_acp_payout_simulated",
+                    payload_json={
+                        "txid": fake_txid,
+                        "to": op.user_acp_address,
+                        "amount_acp_smallest": int(op.amount_acp_smallest or 0),
+                    },
+                )
+            )
+            await append_transition(session, op, "ACP_PAYOUT_SENT", metadata={"dry_run": True, "txid": fake_txid})
+            progressed += 1
+            progressed_bsc_to_acp += 1
 
         await session.flush()
-        return {"ok": True, "dry_run": True, "progressed": progressed}
+        return {
+            "ok": True,
+            "dry_run": True,
+            "progressed": progressed,
+            "progressed_acp_to_bsc": progressed_acp_to_bsc,
+            "progressed_bsc_to_acp": progressed_bsc_to_acp,
+        }
+
+    reverse_ops = (
+        await session.execute(
+            select(BridgeOperation)
+            .where(
+                BridgeOperation.direction == "bsc_to_acp",
+                BridgeOperation.status == "BURN_CONFIRMED",
+                BridgeOperation.acp_tx_hash.is_(None),
+            )
+            .order_by(BridgeOperation.created_at.asc())
+        )
+    ).scalars().all()
+    for op in reverse_ops:
+        transfer = _hot_wallet_transfer(str(op.user_acp_address), int(op.amount_acp_smallest or 0))
+        txid = str(transfer.get("txid") or "").strip()
+        if not txid:
+            raise RuntimeError("walletd transfer returned no txid")
+        op.acp_tx_hash = txid
+        op.acp_out_index = 0
+        op.updated_at = datetime.now(timezone.utc)
+        session.add(
+            BridgeAuditEvent(
+                operation_id=op.id,
+                event_type="acp_payout_submitted",
+                payload_json={
+                    "txid": txid,
+                    "to": op.user_acp_address,
+                    "amount_acp_smallest": int(op.amount_acp_smallest or 0),
+                    "amount_acp": _acp_amount_decimal_str(int(op.amount_acp_smallest or 0)),
+                },
+            )
+        )
+        await append_transition(session, op, "ACP_PAYOUT_SENT", metadata={"txid": txid})
+        progressed += 1
+        progressed_bsc_to_acp += 1
 
     rpc = (settings.bridge_bsc_rpc_url or "").strip()
     gateway_addr = (settings.bridge_gateway_contract or "").strip()
     private_key = (settings.bridge_bsc_private_key or "").strip()
     if not rpc or not gateway_addr or not private_key:
+        await session.flush()
         return {
             "ok": False,
             "dry_run": False,
-            "progressed": 0,
+            "progressed": progressed,
+            "progressed_acp_to_bsc": progressed_acp_to_bsc,
+            "progressed_bsc_to_acp": progressed_bsc_to_acp,
             "error": "missing_bsc_mint_config",
         }
 
@@ -183,6 +288,13 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
             )
         )
         progressed += 1
+        progressed_acp_to_bsc += 1
 
     await session.flush()
-    return {"ok": True, "dry_run": False, "progressed": progressed}
+    return {
+        "ok": True,
+        "dry_run": False,
+        "progressed": progressed,
+        "progressed_acp_to_bsc": progressed_acp_to_bsc,
+        "progressed_bsc_to_acp": progressed_bsc_to_acp,
+    }

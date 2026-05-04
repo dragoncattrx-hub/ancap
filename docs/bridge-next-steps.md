@@ -79,11 +79,11 @@ Quote response exposes:
 - floor-rounding policy text
 
 Still not declared live:
-- watcher for `ReleaseRequested`
-- idempotent burn-event confirmation
-- ACP payout worker
+- public reverse enablement
+- hardened idempotent burn-event confirmation across production replay/recovery scenarios
 - reverse reconciliation / replay-safe recovery
 - operator pause + manual recovery flow for reverse payouts
+- wider production validation of ACP payout confirmation path
 
 ### 3. Keep docs aligned with runtime truth
 Recommended:
@@ -132,7 +132,15 @@ without depending on contract ABI files inside the API container.
 
 ### 7. Prepare release path for ACP <- BSC safely
 Current success is for ACP -> BSC mint rail.
-Reverse direction is partially surfaced, but separate work is still needed for burn/release operational safety.
+Reverse direction is now partially implemented in the backend pipeline:
+- BSC watcher can ingest `ReleaseRequested`
+- orchestrator can submit ACP payout and move ops to `ACP_PAYOUT_SENT`
+- ACP watcher can confirm payout tx and move ops to `COMPLETED`
+
+But separate work is still needed before public enablement:
+- production replay/idempotency hardening
+- operator recovery endpoints
+- broader reconciliation and operational validation
 
 ## Recommended operator checks before any next pilot
 - `GET /api/v1/bridge/status`

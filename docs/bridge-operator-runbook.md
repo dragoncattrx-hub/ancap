@@ -198,11 +198,16 @@ What is already real:
 - UI redeem request form
 - UI/API quote preview for floor payout and remainder transparency
 
-What is not live yet:
-- burn-event watcher confirmation
-- ACP payout worker
-- idempotent payout completion
-- reverse completion FSM in production ops
+What is not publicly live yet:
+- public reverse enablement
+- production-proven replay/idempotency handling for reverse recovery cases
+- operator-safe manual recovery flow
+- broader production ops validation
+
+What now exists in backend code:
+- burn-event watcher confirmation via `ReleaseRequested`
+- ACP payout submission worker path
+- reverse completion through ACP watcher confirmation
 
 Operator rule:
 - do not manually present reverse rail as live until watcher + payout + reconciliation are proven

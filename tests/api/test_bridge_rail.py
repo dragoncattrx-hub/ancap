@@ -5,6 +5,19 @@ A second ``TestClient`` uses a different asyncio loop and breaks asyncpg with th
 shared engine (see tests/conftest.py).
 """
 
+import anyio
+import os
+import uuid
+
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+
+def _test_async_db_url() -> str:
+    url = os.environ.get("DATABASE_URL", "")
+    if "+asyncpg" not in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
 
 def test_bridge_status_public_ok(client):
     r = client.get("/v1/bridge/status", headers={"Authorization": ""})
@@ -149,3 +162,268 @@ def test_list_my_intents_includes_redeem_direction(client, monkeypatch):
     assert r.status_code == 200, r.text
     data = r.json()
     assert any(op["direction"] == "bsc_to_acp" for op in data)
+
+
+def test_bsc_release_log_matches_pending_redeem_and_confirms_burn(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_BSC_RPC_URL", "https://bsc.example.invalid")
+    monkeypatch.setenv("BRIDGE_GATEWAY_CONTRACT", "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b")
+    monkeypatch.setenv("BRIDGE_BSC_CONFIRMATIONS", "2")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    suffix = uuid.uuid4().hex[:4]
+    payload = {
+        "user_bsc_address": "0x" + ("3" * 36) + suffix,
+        "user_acp_address": f"acp1qreleasewatch{suffix}0000000000000000000000000000",
+        "amount_wacp": "1.5",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    created = create.json()
+
+    from eth_abi import encode
+    from eth_utils import keccak
+    from app.db.models import BridgeWatcherCheckpoint
+    import app.services.bridge_bsc_watcher as watcher
+
+    request_id = 7
+    amount = 1500000000000000000
+    live_height = 999999
+    log_block = 999998
+    burn_tx_hash = "0x" + uuid.uuid4().hex
+    data_hex = "0x" + encode(["string", "uint256"], [payload["user_acp_address"], amount]).hex()
+    topic0 = "0x" + keccak(text="ReleaseRequested(uint256,address,string,uint256)").hex()
+    from_topic = "0x" + ("0" * 24) + payload["user_bsc_address"][2:].lower()
+    log = {
+        "transactionHash": burn_tx_hash,
+        "blockNumber": hex(log_block),
+        "logIndex": hex(2),
+        "topics": [topic0, hex(request_id), from_topic],
+        "data": data_hex,
+    }
+
+    async def fake_rpc(rpc_url, method, params):
+        if method == "eth_blockNumber":
+            return hex(live_height)
+        if method == "eth_getLogs":
+            return [log]
+        raise AssertionError(f"unexpected rpc method: {method}")
+
+    async def reset_and_run_tick():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                cp = await session.get(BridgeWatcherCheckpoint, "bsc")
+                if cp is None:
+                    cp = BridgeWatcherCheckpoint(chain_key="bsc", last_block_height=0)
+                    session.add(cp)
+                else:
+                    cp.last_block_height = 0
+                await session.commit()
+            async with Session() as session:
+                result = await watcher.tick_bsc_checkpoint(session)
+                await session.commit()
+                return result
+        finally:
+            await engine.dispose()
+
+    original_rpc = watcher._rpc
+    watcher._rpc = fake_rpc
+    try:
+        result = anyio.run(reset_and_run_tick)
+    finally:
+        watcher._rpc = original_rpc
+
+    assert result["matched_releases"] == 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == created["id"])
+    assert op["status"] == "BURN_CONFIRMED"
+    assert op["bsc_tx_hash_burn"] == burn_tx_hash
+    assert op["bsc_log_index"] == 2
+
+
+def test_orchestrator_submits_acp_payout_for_confirmed_burn(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_DRY_RUN", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    suffix = uuid.uuid4().hex[:4]
+    payload = {
+        "user_bsc_address": "0x" + ("4" * 36) + suffix,
+        "user_acp_address": f"acp1qpayoutwatch{suffix}00000000000000000000000000000",
+        "amount_wacp": "1.0000000001",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+
+    from sqlalchemy import select
+    from app.db.models import BridgeOperation
+    import app.services.bridge_orchestrator as orch
+
+    burn_tx_hash = "0x" + uuid.uuid4().hex
+
+    async def setup_burn_confirmed():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                op = (await session.execute(select(BridgeOperation).where(BridgeOperation.id == op_id))).scalars().one()
+                op.status = "BURN_CONFIRMED"
+                op.bsc_tx_hash_burn = burn_tx_hash
+                op.bsc_log_index = 5
+                await session.commit()
+        finally:
+            await engine.dispose()
+
+    anyio.run(setup_burn_confirmed)
+
+    payout_txid = f"acp-payout-{uuid.uuid4().hex}"
+    original_transfer = orch._hot_wallet_transfer
+
+    def fake_hot_wallet_transfer(acp_address, acp_smallest):
+        if acp_address == payload["user_acp_address"]:
+            return {"txid": payout_txid}
+        return {"txid": f"acp-payout-{uuid.uuid4().hex}"}
+
+    orch._hot_wallet_transfer = fake_hot_wallet_transfer
+    try:
+        async def run_tick():
+            engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+            Session = async_sessionmaker(engine, expire_on_commit=False)
+            try:
+                async with Session() as session:
+                    result = await orch.tick_orchestrator(session)
+                    await session.commit()
+                    return result
+            finally:
+                await engine.dispose()
+        result = anyio.run(run_tick)
+    finally:
+        orch._hot_wallet_transfer = original_transfer
+
+    assert result["progressed_bsc_to_acp"] >= 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == op_id)
+    assert op["status"] == "ACP_PAYOUT_SENT"
+    assert op["acp_tx_hash"] == payout_txid
+
+
+def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("ACP_RPC_URL", "https://acp.example.invalid")
+    monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
+    monkeypatch.setenv("BRIDGE_ACP_CONFIRMATIONS", "3")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    suffix = uuid.uuid4().hex[:4]
+    payload = {
+        "user_bsc_address": "0x" + ("5" * 36) + suffix,
+        "user_acp_address": f"acp1qwatchdone{suffix}00000000000000000000000000000",
+        "amount_wacp": "1.25",
+    }
+    create = client.post("/v1/bridge/intents/bsc-to-acp", json=payload)
+    assert create.status_code == 200, create.text
+    created = create.json()
+    op_id = created["id"]
+    payout_txid = f"acp-confirm-{uuid.uuid4().hex}"
+
+    from sqlalchemy import select
+    from app.db.models import BridgeOperation, BridgeWatcherCheckpoint
+    import app.services.bridge_acp_watcher as acp_watcher
+
+    async def setup_sent_payout():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                cp = await session.get(BridgeWatcherCheckpoint, "acp")
+                if cp is None:
+                    cp = BridgeWatcherCheckpoint(chain_key="acp", last_block_height=0)
+                    session.add(cp)
+                else:
+                    cp.last_block_height = 0
+                op = (await session.execute(select(BridgeOperation).where(BridgeOperation.id == op_id))).scalars().one()
+                op.status = "ACP_PAYOUT_SENT"
+                op.bsc_tx_hash_burn = "0x" + uuid.uuid4().hex
+                op.bsc_log_index = 9
+                op.acp_tx_hash = payout_txid
+                op.acp_out_index = 0
+                await session.commit()
+        finally:
+            await engine.dispose()
+
+    anyio.run(setup_sent_payout)
+
+    async def fake_json_rpc(rpc_url, method, params=None):
+        if method == "getblockcount":
+            return {"result": 10}
+        if method == "getblockhash":
+            height = int((params or {}).get("height") or 0)
+            return {"result": f"blockhash-{height}"}
+        if method == "getblock":
+            blockhash = str((params or {}).get("blockhash") or "")
+            try:
+                height = int(blockhash.split("-")[-1])
+            except Exception:
+                height = 0
+            txs = []
+            if height == 7:
+                txs = [
+                    {
+                        "txid": "fundingtx",
+                        "vin": [],
+                        "vout": [
+                            {"recipient_address": "acp1qreserve0000000000000000000000000000000", "amount": 1000000000},
+                        ],
+                    }
+                ]
+            elif height == 8:
+                txs = [
+                    {
+                        "txid": payout_txid,
+                        "vin": [{"prev_txid": "fundingtx", "vout": 0}],
+                        "vout": [
+                            {"recipient_address": payload["user_acp_address"], "amount": 125000000},
+                            {"recipient_address": "acp1qreserve0000000000000000000000000000000", "amount": 875000000},
+                        ],
+                    }
+                ]
+            return {"result": {"tx": txs}}
+        raise AssertionError(f"unexpected rpc method: {method}")
+
+    original_json_rpc = acp_watcher._json_rpc
+    acp_watcher._json_rpc = fake_json_rpc
+    try:
+        async def run_tick():
+            engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+            Session = async_sessionmaker(engine, expire_on_commit=False)
+            try:
+                async with Session() as session:
+                    result = await acp_watcher.tick_acp_checkpoint(session)
+                    await session.commit()
+                    return result
+            finally:
+                await engine.dispose()
+        result = anyio.run(run_tick)
+    finally:
+        acp_watcher._json_rpc = original_json_rpc
+
+    assert result["confirmed_payouts"] == 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == op_id)
+    assert op["status"] == "COMPLETED"
+    assert op["acp_tx_hash"] == payout_txid

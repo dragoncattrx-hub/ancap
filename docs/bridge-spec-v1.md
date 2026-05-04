@@ -77,11 +77,19 @@ Operational state lives in `bridge_operations.status`. History in `bridge_state_
 Normative reverse FSM target:
 `BURN_REQUESTED` → `BURN_CONFIRMED` → `ACP_PAYOUT_SENT` → `COMPLETED`
 
+State semantics for reverse rail:
+- `BURN_CONFIRMED` = confirmed `ReleaseRequested` event was matched idempotently to an operation
+- `ACP_PAYOUT_SENT` = ACP payout transaction was submitted and `acp_tx_hash` recorded
+- `COMPLETED` = ACP watcher later observed that payout tx on ACP with sufficient confirmations
+
 Current implementation note as of 2026-05-04:
 - public status/docs/UI intentionally keep reverse rail in `pending-rollout`
 - intent registration exists
 - quote/floor/remainder transparency exists
-- watcher-confirmed burn -> ACP payout completion is not yet declared live
+- BSC watcher ingests reverse burn requests
+- orchestrator submits ACP payout and records `ACP_PAYOUT_SENT`
+- ACP watcher is now responsible for final `COMPLETED` transition after ACP confirmation
+- despite this backend progress, reverse rail is still not declared publicly live
 
 Failed / manual paths: `FAILED`, `DISPUTED`, `REORGED` (document allowed transitions from each).
 
@@ -91,7 +99,7 @@ Failed / manual paths: `FAILED`, `DISPUTED`, `REORGED` (document allowed transit
 |------|--------|
 | Deposit watcher | **Read-only** ACP RPC; no spend keys |
 | Reserve (cold / semi-cold) | Funds majority of backing; manual/top-up procedures |
-| Release signer | **Isolated hot** wallet; minimal balance; rotatable; separate from `ACP_HOT_MNEMONIC` used for user custodial wallet |
+| Release signer | **Isolated hot** wallet; minimal balance; rotatable; in current implementation reuse the existing ACP hot-wallet / `walletd` operational path until a stricter dedicated signer split is introduced |
 
 ## 9. Smart contract (BSC) — v1 capabilities
 

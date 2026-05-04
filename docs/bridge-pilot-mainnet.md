@@ -99,6 +99,7 @@ Goal is repeatability, not just one successful pass.
 In parallel, keep reverse rail staged but truthful:
 - reverse intent registration may be tested
 - reverse quote preview may be tested
+- reverse backend watcher/orchestrator/ACP-confirmation path may be tested internally
 - reverse payout must not be advertised as live yet
 
 ## Notes

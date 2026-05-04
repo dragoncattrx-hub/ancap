@@ -5,6 +5,8 @@ import logging
 from typing import Any
 
 import httpx
+from eth_abi import decode
+from eth_utils import keccak
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,6 +40,46 @@ async def _eth_get_transaction_receipt(rpc_url: str, tx_hash: str) -> dict[str, 
     return res
 
 
+async def _eth_get_logs(rpc_url: str, params: dict[str, Any]) -> list[dict[str, Any]]:
+    res = await _rpc(rpc_url, "eth_getLogs", [params])
+    return list(res or [])
+
+
+_RELEASE_REQUESTED_TOPIC0 = keccak(text="ReleaseRequested(uint256,address,string,uint256)").hex()
+
+
+def _decode_release_requested(log: dict[str, Any]) -> dict[str, Any] | None:
+    topics = log.get("topics") or []
+    if len(topics) < 3:
+        return None
+    topic0 = str(topics[0] or "").lower()
+    if topic0.startswith("0x"):
+        topic0 = topic0[2:]
+    if topic0 != _RELEASE_REQUESTED_TOPIC0.lower():
+        return None
+
+    try:
+        request_id = int(str(topics[1]), 16)
+        from_topic = str(topics[2])
+        from_addr = f"0x{from_topic[-40:]}".lower()
+        payload = bytes.fromhex(str(log.get("data") or "0x")[2:])
+        acp_address, amount = decode(["string", "uint256"], payload)
+        tx_hash = str(log.get("transactionHash") or "")
+        block_number = int(str(log.get("blockNumber") or "0x0"), 16)
+        log_index = int(str(log.get("logIndex") or "0x0"), 16)
+        return {
+            "request_id": request_id,
+            "from": from_addr,
+            "acp_address": str(acp_address),
+            "amount": int(amount),
+            "tx_hash": tx_hash,
+            "block_number": block_number,
+            "log_index": log_index,
+        }
+    except Exception:
+        return None
+
+
 async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
     settings = get_settings()
     if not settings.bridge_rail_enabled:
@@ -55,7 +97,88 @@ async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
     if row is None:
         row = BridgeWatcherCheckpoint(chain_key="bsc", last_block_height=0)
         session.add(row)
+    previous_height = int(row.last_block_height or 0)
     row.last_block_height = height
+
+    confirmed = 0
+    matched_releases = 0
+
+    gateway_addr = (settings.bridge_gateway_contract or "").strip().lower()
+    confirmed_height = max(0, height - int(settings.bridge_bsc_confirmations) + 1)
+    if gateway_addr and confirmed_height > 0 and confirmed_height > previous_height:
+        try:
+            logs = await _eth_get_logs(
+                rpc,
+                {
+                    "fromBlock": hex(previous_height + 1),
+                    "toBlock": hex(confirmed_height),
+                    "address": gateway_addr,
+                    "topics": [f"0x{_RELEASE_REQUESTED_TOPIC0}"],
+                },
+            )
+            for raw_log in logs:
+                decoded = _decode_release_requested(raw_log)
+                if not decoded:
+                    continue
+                tx_hash = str(decoded["tx_hash"] or "")
+                log_index = int(decoded["log_index"])
+                dup = await session.scalar(
+                    select(BridgeOperation.id).where(
+                        BridgeOperation.bsc_tx_hash_burn == tx_hash,
+                        BridgeOperation.bsc_log_index == log_index,
+                    )
+                )
+                if dup is not None:
+                    continue
+                op = (
+                    await session.execute(
+                        select(BridgeOperation)
+                        .where(
+                            BridgeOperation.direction == "bsc_to_acp",
+                            BridgeOperation.status == "PENDING_BURN",
+                            BridgeOperation.bsc_tx_hash_burn.is_(None),
+                            BridgeOperation.user_bsc_address == str(decoded["from"]),
+                            BridgeOperation.user_acp_address == str(decoded["acp_address"]),
+                            BridgeOperation.amount_wacp_wei == int(decoded["amount"]),
+                        )
+                        .order_by(BridgeOperation.created_at.asc())
+                        .limit(1)
+                    )
+                ).scalars().first()
+                if op is None:
+                    session.add(
+                        BridgeAuditEvent(
+                            operation_id=None,
+                            event_type="bsc_release_unmatched",
+                            payload_json=decoded,
+                        )
+                    )
+                    continue
+                op.bsc_tx_hash_burn = tx_hash
+                op.bsc_log_index = log_index
+                op.correlation_id = str(decoded["request_id"])
+                session.add(
+                    BridgeAuditEvent(
+                        operation_id=op.id,
+                        event_type="bsc_release_requested",
+                        payload_json=decoded,
+                    )
+                )
+                await append_transition(
+                    session,
+                    op,
+                    "BURN_CONFIRMED",
+                    metadata={
+                        "tx_hash": tx_hash,
+                        "log_index": log_index,
+                        "request_id": decoded["request_id"],
+                        "block_number": decoded["block_number"],
+                        "confirmations": max(0, height - int(decoded["block_number"]) + 1),
+                    },
+                )
+                matched_releases += 1
+        except Exception as exc:
+            logger.warning("bsc release watcher failed: %s", exc)
 
     confirmed = 0
     ops = (
@@ -136,4 +259,10 @@ async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
             logger.warning("bsc mint confirmation failed for %s: %s", op.id, exc)
 
     await session.flush()
-    return {"ok": True, "chain_key": "bsc", "last_block_height": height, "confirmed_mints": confirmed}
+    return {
+        "ok": True,
+        "chain_key": "bsc",
+        "last_block_height": height,
+        "confirmed_mints": confirmed,
+        "matched_releases": matched_releases,
+    }

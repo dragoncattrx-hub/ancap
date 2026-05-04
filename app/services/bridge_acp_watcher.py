@@ -125,6 +125,7 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
     row.last_block_height = height
 
     matched = 0
+    confirmed_payouts = 0
     reserve = (settings.bridge_reserve_acp_address or "").strip()
     if reserve:
         try:
@@ -185,8 +186,56 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                     used_txids.add(txid)
                     matched += 1
                     break
+
+            reverse_ops = (
+                await session.execute(
+                    select(BridgeOperation)
+                    .where(
+                        BridgeOperation.direction == "bsc_to_acp",
+                        BridgeOperation.status == "ACP_PAYOUT_SENT",
+                        BridgeOperation.acp_tx_hash.is_not(None),
+                    )
+                    .order_by(BridgeOperation.created_at.asc())
+                )
+            ).scalars().all()
+            tx_by_id = {str(tx.get("txid") or ""): tx for tx in txs}
+            for op in reverse_ops:
+                txid = str(op.acp_tx_hash or "")
+                tx = tx_by_id.get(txid)
+                if not tx:
+                    continue
+                if tx.get("direction") != "out":
+                    continue
+                payout_units = abs(int(tx.get("net_units") or 0))
+                if payout_units != int(op.amount_acp_smallest or 0):
+                    continue
+                if int(tx.get("confirmations") or 0) < int(settings.bridge_acp_confirmations):
+                    continue
+                session.add(
+                    BridgeAuditEvent(
+                        operation_id=op.id,
+                        event_type="acp_payout_confirmed",
+                        payload_json={
+                            "txid": txid,
+                            "confirmations": int(tx.get("confirmations") or 0),
+                            "sent_units": int(tx.get("sent_units") or 0),
+                            "received_units": int(tx.get("received_units") or 0),
+                            "payout_units": payout_units,
+                        },
+                    )
+                )
+                await append_transition(
+                    session,
+                    op,
+                    "COMPLETED",
+                    metadata={
+                        "txid": txid,
+                        "confirmations": int(tx.get("confirmations") or 0),
+                    },
+                )
+                confirmed_payouts += 1
         except Exception as exc:
             logger.warning("acp deposit pickup failed: %s", exc)
 
     await session.flush()
-    return {"ok": True, "chain_key": "acp", "last_block_height": height, "matched_deposits": matched}
+    return {"ok": True, "chain_key": "acp", "last_block_height": height, "matched_deposits": matched, "confirmed_payouts": confirmed_payouts}
