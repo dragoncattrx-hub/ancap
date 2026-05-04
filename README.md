@@ -87,6 +87,10 @@ npm run dev
 Frontend (dev) will be available on http://localhost:3001  
 Production UI: https://ancap.cloud/
 
+If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` image**. On the server: `git pull`, then rebuild and restart the UI container, for example  
+`docker compose -f docker-compose.prod.yml build --no-cache frontend && docker compose -f docker-compose.prod.yml up -d frontend`  
+(Cloudflare Tunnel → `127.0.0.1:8080` as before.) If the menu still looks stale, purge **Cloudflare** cache for `ancap.cloud` / `www.ancap.cloud`.
+
 **Pages:**
 - `/` — Landing page with information about the platform
 - `/acp` — ACP Token & Chain (landing)
