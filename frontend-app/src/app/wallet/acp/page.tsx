@@ -495,10 +495,22 @@ export default function AcpWalletPage() {
               <h3 style={{ fontWeight: 800, margin: 0 }}>wACP</h3>
               <span className="badge badge-info">ACP {"->"} BSC</span>
             </div>
+            <div style={{ marginTop: 12, display: "grid", gap: 8, color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.65 }}>
+              <div>Pair live: <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> on PancakeSwap V2</div>
+              <div>Pool: <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
+              <div>Contract: <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
+              <div>Current state: technical liquidity bootstrap / smoke-test market</div>
+            </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
               <Link href="/bridge/acp-bsc" className="btn btn-primary">
                 Open bridge
               </Link>
+              <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">
+                Open swap
+              </a>
+              <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">
+                View pool
+              </a>
             </div>
           </div>
 

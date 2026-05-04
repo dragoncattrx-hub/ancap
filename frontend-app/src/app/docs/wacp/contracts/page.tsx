@@ -19,12 +19,13 @@ export default function WacpContractsDocsPage() {
               <span className="badge badge-info">Official addresses</span>
             </div>
             <div style={{ display: "grid", gap: 12, color: "var(--text-muted)", lineHeight: 1.75 }}>
-              <div><strong style={{ color: "var(--text)" }}>wACP contract:</strong> publish final BSC mainnet production address here</div>
-              <div><strong style={{ color: "var(--text)" }}>Bridge / gateway contract:</strong> publish final BSC gateway address here</div>
-              <div><strong style={{ color: "var(--text)" }}>ACP reserve address:</strong> publish canonical reserve custody address here</div>
+              <div><strong style={{ color: "var(--text)" }}>wACP contract:</strong> 0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</div>
+              <div><strong style={{ color: "var(--text)" }}>Bridge / gateway contract:</strong> 0x57c24FF77B23a82328cb88914D4FD4EEBd93321b</div>
+              <div><strong style={{ color: "var(--text)" }}>ACP reserve address:</strong> acp1qrs3p89rmqz7zr53z50jtjyypyravu8a9gaa0cw5</div>
               <div><strong style={{ color: "var(--text)" }}>Chain IDs:</strong> ACP native chain / BNB Smart Chain (56)</div>
-              <div><strong style={{ color: "var(--text)" }}>Verification:</strong> mark BscScan verification status here once confirmed</div>
-              <div><strong style={{ color: "var(--text)" }}>Warning:</strong> until this page is fully populated, users should treat discovery-only tokens as unsafe.</div>
+              <div><strong style={{ color: "var(--text)" }}>Verification:</strong> BscScan source match completed for the production wACP contract</div>
+              <div><strong style={{ color: "var(--text)" }}>Pool:</strong> 0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</div>
+              <div><strong style={{ color: "var(--text)" }}>Warning:</strong> pool is currently a technical liquidity bootstrap, not deep-liquidity market infrastructure.</div>
             </div>
           </div>
         </main>

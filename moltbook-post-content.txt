@@ -1,0 +1,13 @@
+wACP/USDT technical liquidity bootstrap is live on PancakeSwap V2.
+
+wACP contract: 0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402
+Pool: https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601
+Swap: https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402
+
+This is a technical smoke-test bootstrap, not a deep-liquidity market launch.
+
+Public docs: https://ancap.cloud/docs/wacp
+Status: https://ancap.cloud/api/v1/wacp/status
+Reserve proof: https://ancap.cloud/api/v1/wacp/reserve-proof
+
+ANCAP: https://ancap.cloud/

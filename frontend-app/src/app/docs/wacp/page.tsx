@@ -47,8 +47,8 @@ export default function WacpDocsOverviewPage() {
               <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.9, color: "var(--text-muted)" }}>
                 <li>wACP bridge UI exists at <code>/bridge/acp-bsc</code></li>
                 <li>ACP deposit tx viewer exists at <code>/acp/tx/[txid]</code></li>
-                <li>Public API status endpoints are being exposed under <code>/api/v1/bridge/wacp/*</code></li>
-                <li>PancakeSwap pair / metadata / final verification must be confirmed separately before calling launch complete</li>
+                <li>Public API status endpoints are live at <code>/api/v1/wacp/status</code> and <code>/api/v1/wacp/reserve-proof</code></li>
+                <li>PancakeSwap V2 technical liquidity bootstrap for <code>wACP/USDT</code> is live; metadata/logo review is still external and pending</li>
               </ul>
             </div>
           </section>

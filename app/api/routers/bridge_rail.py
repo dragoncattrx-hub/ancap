@@ -37,6 +37,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/bridge", tags=["Bridge (wACP)"])
 
 
+WACP_PAIR_ADDRESS = "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601"
+WACP_PAIR_URL = "https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601"
+WACP_SWAP_URL = "https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402"
+WACP_LIQUIDITY_TX = "0x82458ec2b17e5aa58201a625169e493bb5ce8159487d66846906d9de69587503"
+WACP_FIRST_SWAP_BUY_TX = "0xe6b867346d6acfdef7e0a34c457dd48c9bf572c7e0aa94224c705dc83c1a504c"
+WACP_FIRST_SWAP_SELL_TX = "0x02ff5659d584aabf7bfe19c508c7673ba449ff89c1df07069cc272a6a8ab6795"
+
+
 def _public_docs() -> dict[str, str]:
     return {
         "overview": "https://ancap.cloud/docs/wacp",
@@ -238,11 +246,11 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
     if not s.bridge_wacp_contract:
         notes.append("Production wACP contract is not configured.")
     else:
-        notes.append("BSC mainnet verification still needs explicit confirmation in public docs / BscScan link set.")
-    notes.append("PancakeSwap pair live status is not yet confirmed by backend state.")
-    notes.append("Token metadata / logo inclusion on Pancake-related surfaces is still pending.")
+        notes.append("wACP production contract source has been matched on BscScan; public trust copy and labels can still be improved.")
+    notes.append("PancakeSwap V2 technical liquidity bootstrap is live with a micro-liquidity pool; treat it as a smoke-test market, not a deep-liquidity launch.")
+    notes.append("Token metadata / logo inclusion on Pancake-related surfaces is still pending manual review by external platforms.")
 
-    overall_status = "pending"
+    overall_status = "live"
     reserve_proof_status = "pending"
     reserve_health = "pending"
     if not s.bridge_rail_enabled:
@@ -253,6 +261,8 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         overall_status = "paused"
         reserve_proof_status = "paused"
         reserve_health = "paused"
+    elif reserve_proof_status == "pending":
+        reserve_health = "pending"
 
     return WacpPublicStatusResponse(
         status=overall_status,
@@ -272,10 +282,16 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         checkpoint_acp=int(cp_acp.last_block_height) if cp_acp else None,
         checkpoint_bsc=int(cp_bsc.last_block_height) if cp_bsc else None,
         last_updated_at=None,
-        pair_live=False,
+        pair_live=True,
         pair_dex="PancakeSwap V2",
         pair_symbol="wACP/USDT",
-        bsc_contract_verified=False,
+        pair_address=WACP_PAIR_ADDRESS,
+        pair_url=WACP_PAIR_URL,
+        swap_url=WACP_SWAP_URL,
+        liquidity_tx_hash=WACP_LIQUIDITY_TX,
+        first_swap_buy_tx_hash=WACP_FIRST_SWAP_BUY_TX,
+        first_swap_sell_tx_hash=WACP_FIRST_SWAP_SELL_TX,
+        bsc_contract_verified=True,
         token_metadata_live=False,
         docs=_public_docs(),
         counts_by_status=counts,

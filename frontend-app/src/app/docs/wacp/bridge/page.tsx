@@ -31,6 +31,9 @@ export default function WacpBridgeDocsPage() {
               <li>Confirm BSC mint</li>
               <li>Track the ACP deposit tx and BSC mint tx in public explorers</li>
             </ol>
+            <div style={{ marginTop: 16, color: "var(--text-muted)", lineHeight: 1.75 }}>
+              Current public market bootstrap: <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" target="_blank" rel="noreferrer">wACP/USDT PancakeSwap V2 pool</a>.
+            </div>
           </div>
         </main>
       </div>

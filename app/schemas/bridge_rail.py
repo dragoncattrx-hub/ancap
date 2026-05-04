@@ -94,6 +94,12 @@ class WacpPublicStatusResponse(BaseModel):
     pair_live: bool = False
     pair_dex: str | None = None
     pair_symbol: str | None = None
+    pair_address: str | None = None
+    pair_url: str | None = None
+    swap_url: str | None = None
+    liquidity_tx_hash: str | None = None
+    first_swap_buy_tx_hash: str | None = None
+    first_swap_sell_tx_hash: str | None = None
     bsc_contract_verified: bool = False
     token_metadata_live: bool = False
     docs: dict[str, str]
