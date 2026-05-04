@@ -18,7 +18,9 @@ Use after contracts and backend are deployed. See [bridge-spec-v1.md](./bridge-s
 
 ## Mainnet tag `bridge-v1.0.0-mainnet`
 
-1. Deploy verified bytecode to BSC mainnet; store addresses in env / secrets (not git).
+Pilot runbook (RU, commands): [bridge-pilot-mainnet.md](./bridge-pilot-mainnet.md).
+
+1. Deploy verified bytecode to BSC mainnet (`contracts/bridge-bsc/script/Deploy.s.sol`); store addresses in env / secrets (not git).
 2. Set `BRIDGE_RAIL_ENABLED=true`, `BRIDGE_BSC_RPC_URL`, `BRIDGE_WACP_CONTRACT`, `BRIDGE_GATEWAY_CONTRACT`, `BRIDGE_RESERVE_ACP_ADDRESS`, `BRIDGE_OPERATOR_SECRET`, optional `BRIDGE_RAIL_PAUSED=true` until go-live.
 3. Run DB migration `039` on production Postgres.
 4. Configure cron `POST /v1/system/jobs/tick` (with `X-Cron-Secret` if set) so `bridge_rail` tick runs periodically.

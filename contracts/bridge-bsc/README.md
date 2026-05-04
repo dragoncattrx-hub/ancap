@@ -25,11 +25,20 @@ Docker (no local Foundry): mount the **git repo root** so `forge install` works;
 docker run --rm -v "$(pwd):/repo" -w /repo/contracts/bridge-bsc ghcr.io/foundry-rs/foundry:latest /bin/bash -lc "git config --global --add safe.directory /repo && forge install foundry-rs/forge-std@v1.9.4 && forge test -vvv"
 ```
 
-## Deploy (BSC testnet example)
+## Deploy (BSC testnet / mainnet)
 
-Set `PRIVATE_KEY` and RPC; then use Foundry script (add `script/Deploy.s.sol` when ready) or `forge create`.
+Two-contract deploy without a temporary EOA gateway: `script/Deploy.s.sol` uses `vm.computeCreateAddress` so `WACP` is wired to the not-yet-deployed `BridgeGateway` address (next nonce). See `test/DeployPrediction.t.sol`.
 
-See [docs/bridge-spec-v1.md](../../docs/bridge-spec-v1.md) for invariants and operations.
+```bash
+export PRIVATE_KEY=...   # deployer; never commit
+# optional caps (wei, 18 decimals): BRIDGE_MAX_SINGLE_MINT_WEI, BRIDGE_MINT_CAP_PER_DAY_WEI
+
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url "$BSC_RPC_URL" \
+  --broadcast -vvv
+```
+
+Mainnet pilot checklist: [docs/bridge-pilot-mainnet.md](../../docs/bridge-pilot-mainnet.md). Invariants: [docs/bridge-spec-v1.md](../../docs/bridge-spec-v1.md).
 
 ## Release tags (repo convention)
 
