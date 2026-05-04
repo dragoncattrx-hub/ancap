@@ -157,3 +157,20 @@ class BridgeAdminReverseRequeuePayoutRequest(BaseModel):
 class BridgeAdminReverseMarkDisputedRequest(BaseModel):
     operation_id: str
     note: str
+
+
+class BridgeReverseLiabilitySummaryResponse(BaseModel):
+    reverse_enabled_runtime: bool
+    reverse_public_mode: str
+    counts_by_status: dict[str, int]
+    total_pending_burn_wacp_wei: str
+    total_confirmed_burn_wacp_wei: str
+    total_confirmed_burn_acp_smallest: str
+    total_payout_sent_wacp_wei: str
+    total_payout_sent_acp_smallest: str
+    total_disputed_wacp_wei: str
+    total_disputed_acp_smallest: str
+    total_completed_wacp_wei: str
+    total_completed_acp_smallest: str
+    outstanding_operator_liability_acp_smallest: str
+    notes: list[str] = Field(default_factory=list)

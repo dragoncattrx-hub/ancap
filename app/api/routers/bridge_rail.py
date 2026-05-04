@@ -33,6 +33,7 @@ from app.schemas.bridge_rail import (
     BridgeRedeemQuoteRequest,
     BridgeRedeemQuoteResponse,
     BridgeReserveSummaryResponse,
+    BridgeReverseLiabilitySummaryResponse,
     BridgeStatusResponse,
     WacpPublicStatusResponse,
     WacpReserveProofResponse,
@@ -152,6 +153,55 @@ def _require_bridge_operator_secret(settings_secret: str | None, provided_secret
     secret = (settings_secret or "").strip()
     if not secret or (provided_secret or "").strip() != secret:
         raise HTTPException(status_code=403, detail="Invalid bridge operator secret")
+
+
+async def _reverse_liability_summary(session: AsyncSession) -> BridgeReverseLiabilitySummaryResponse:
+    counts_rows = await session.execute(
+        select(BridgeOperation.status, func.count())
+        .where(BridgeOperation.direction == "bsc_to_acp")
+        .group_by(BridgeOperation.status)
+    )
+    counts = {str(st): int(c) for st, c in counts_rows.all()}
+
+    def _sum_query(statuses: tuple[str, ...], column_name: str) -> select:
+        column = getattr(BridgeOperation, column_name)
+        return select(func.coalesce(func.sum(column), 0)).where(
+            BridgeOperation.direction == "bsc_to_acp",
+            BridgeOperation.status.in_(statuses),
+        )
+
+    pending_burn_wacp = int((await session.scalar(_sum_query(("PENDING_BURN",), "amount_wacp_wei"))) or 0)
+    confirmed_burn_wacp = int((await session.scalar(_sum_query(("BURN_CONFIRMED",), "amount_wacp_wei"))) or 0)
+    confirmed_burn_acp = int((await session.scalar(_sum_query(("BURN_CONFIRMED",), "amount_acp_smallest"))) or 0)
+    payout_sent_wacp = int((await session.scalar(_sum_query(("ACP_PAYOUT_SENT",), "amount_wacp_wei"))) or 0)
+    payout_sent_acp = int((await session.scalar(_sum_query(("ACP_PAYOUT_SENT",), "amount_acp_smallest"))) or 0)
+    disputed_wacp = int((await session.scalar(_sum_query(("DISPUTED",), "amount_wacp_wei"))) or 0)
+    disputed_acp = int((await session.scalar(_sum_query(("DISPUTED",), "amount_acp_smallest"))) or 0)
+    completed_wacp = int((await session.scalar(_sum_query(("COMPLETED",), "amount_wacp_wei"))) or 0)
+    completed_acp = int((await session.scalar(_sum_query(("COMPLETED",), "amount_acp_smallest"))) or 0)
+
+    notes = [
+        "Outstanding operator ACP liability is tracked as BURN_CONFIRMED + ACP_PAYOUT_SENT + DISPUTED reverse operations.",
+        "PENDING_BURN is not yet an ACP payout liability until a confirmed ReleaseRequested burn is bound or detected.",
+        "COMPLETED reverse operations are excluded from outstanding liability once ACP watcher confirmation lands.",
+    ]
+
+    return BridgeReverseLiabilitySummaryResponse(
+        reverse_enabled_runtime=True,
+        reverse_public_mode="pending-rollout",
+        counts_by_status=counts,
+        total_pending_burn_wacp_wei=str(pending_burn_wacp),
+        total_confirmed_burn_wacp_wei=str(confirmed_burn_wacp),
+        total_confirmed_burn_acp_smallest=str(confirmed_burn_acp),
+        total_payout_sent_wacp_wei=str(payout_sent_wacp),
+        total_payout_sent_acp_smallest=str(payout_sent_acp),
+        total_disputed_wacp_wei=str(disputed_wacp),
+        total_disputed_acp_smallest=str(disputed_acp),
+        total_completed_wacp_wei=str(completed_wacp),
+        total_completed_acp_smallest=str(completed_acp),
+        outstanding_operator_liability_acp_smallest=str(confirmed_burn_acp + payout_sent_acp + disputed_acp),
+        notes=notes,
+    )
 
 
 async def _get_operation_or_404(session: AsyncSession, operation_id: str) -> BridgeOperation:
@@ -631,6 +681,16 @@ async def admin_reverse_operations(
     q = q.order_by(BridgeOperation.created_at.desc()).limit(lim)
     r = await session.execute(q)
     return [_serialize_operation(op) for op in r.scalars().all()]
+
+
+@router.get("/admin/reverse/liability", response_model=BridgeReverseLiabilitySummaryResponse)
+async def admin_reverse_liability(
+    session: AsyncSession = Depends(get_db),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    return await _reverse_liability_summary(session)
 
 
 @router.post("/admin/reverse/bind-burn", response_model=BridgeOperationPublic)

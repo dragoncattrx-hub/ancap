@@ -440,6 +440,115 @@ def test_admin_reverse_mark_disputed_and_list(client, monkeypatch):
     assert any(row["id"] == op_id and row["status"] == "DISPUTED" for row in rows)
 
 
+def test_bridge_tick_surfaces_orchestrator_error_without_500(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    import app.jobs.bridge_rail_tick as bridge_tick
+
+    original_tick = bridge_tick.tick_orchestrator
+
+    async def fake_tick_orchestrator(session):
+        raise RuntimeError("forced reverse payout failure")
+
+    bridge_tick.tick_orchestrator = fake_tick_orchestrator
+    try:
+        r = client.post("/v1/system/jobs/tick", headers={"Authorization": ""})
+    finally:
+        bridge_tick.tick_orchestrator = original_tick
+
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["bridge_rail"]["orchestrator"]["ok"] is False
+    assert data["bridge_rail"]["orchestrator"]["step"] == "orchestrator"
+    assert "forced reverse payout failure" in data["bridge_rail"]["orchestrator"]["error"]
+
+
+def test_admin_reverse_liability_summary(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    burn_payload = {
+        "user_bsc_address": "0x9999999999999999999999999999999999999999",
+        "user_acp_address": "acp1qliabilityburn000000000000000000000000000",
+        "amount_wacp": "0.5",
+    }
+    sent_payload = {
+        "user_bsc_address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "user_acp_address": "acp1qliabilitysent000000000000000000000000000",
+        "amount_wacp": "0.75",
+    }
+    disputed_payload = {
+        "user_bsc_address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "user_acp_address": "acp1qliabilitydisp000000000000000000000000000",
+        "amount_wacp": "1",
+    }
+
+    burn = client.post("/v1/bridge/intents/bsc-to-acp", json=burn_payload)
+    assert burn.status_code == 200, burn.text
+    burn_id = burn.json()["id"]
+
+    sent = client.post("/v1/bridge/intents/bsc-to-acp", json=sent_payload)
+    assert sent.status_code == 200, sent.text
+    sent_id = sent.json()["id"]
+
+    disputed = client.post("/v1/bridge/intents/bsc-to-acp", json=disputed_payload)
+    assert disputed.status_code == 200, disputed.text
+    disputed_id = disputed.json()["id"]
+
+    burn_tx_1 = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
+    burn_tx_2 = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
+
+    r1 = client.post(
+        "/v1/bridge/admin/reverse/bind-burn",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": burn_id, "bsc_tx_hash_burn": burn_tx_1, "bsc_log_index": 1},
+    )
+    assert r1.status_code == 200, r1.text
+
+    r2 = client.post(
+        "/v1/bridge/admin/reverse/bind-burn",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": sent_id, "bsc_tx_hash_burn": burn_tx_2, "bsc_log_index": 2},
+    )
+    assert r2.status_code == 200, r2.text
+
+    payout_tx_hash = f"acp-liability-payout-{uuid.uuid4().hex}"
+    r3 = client.post(
+        "/v1/bridge/admin/reverse/bind-payout",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": sent_id, "acp_tx_hash": payout_tx_hash},
+    )
+    assert r3.status_code == 200, r3.text
+
+    r4 = client.post(
+        "/v1/bridge/admin/reverse/mark-disputed",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        json={"operation_id": disputed_id, "note": "manual dispute"},
+    )
+    assert r4.status_code == 200, r4.text
+
+    summary = client.get(
+        "/v1/bridge/admin/reverse/liability",
+        headers={"X-Bridge-Operator-Secret": "test-secret"},
+    )
+    assert summary.status_code == 200, summary.text
+    data = summary.json()
+    assert data["reverse_public_mode"] == "pending-rollout"
+    assert int(data["counts_by_status"].get("BURN_CONFIRMED", 0)) >= 1
+    assert int(data["counts_by_status"].get("ACP_PAYOUT_SENT", 0)) >= 1
+    assert int(data["counts_by_status"].get("DISPUTED", 0)) >= 1
+    assert int(data["total_confirmed_burn_acp_smallest"]) >= 50000000
+    assert int(data["total_payout_sent_acp_smallest"]) >= 75000000
+    assert int(data["total_disputed_acp_smallest"]) >= 100000000
+    assert int(data["outstanding_operator_liability_acp_smallest"]) >= 225000000
+
+
 def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
