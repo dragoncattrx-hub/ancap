@@ -46,6 +46,7 @@ export default function WacpDocsOverviewPage() {
               <h3 style={{ marginTop: 0 }}>Current public state</h3>
               <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.9, color: "var(--text-muted)" }}>
                 <li>wACP bridge UI exists at <code>/bridge/acp-bsc</code></li>
+                <li>Live public rail today: <code>ACP -&gt; BSC</code>; reverse <code>BSC -&gt; ACP</code> redeem is still pending rollout</li>
                 <li>ACP deposit tx viewer exists at <code>/acp/tx/[txid]</code></li>
                 <li>Public API status endpoints are live at <code>/api/v1/wacp/status</code> and <code>/api/v1/wacp/reserve-proof</code></li>
                 <li>PancakeSwap V2 technical liquidity bootstrap for <code>wACP/USDT</code> is live; metadata/logo review is still external and pending</li>

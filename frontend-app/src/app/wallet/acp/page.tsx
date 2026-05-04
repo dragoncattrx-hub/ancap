@@ -499,6 +499,8 @@ export default function AcpWalletPage() {
               <div>Pair live: <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> on PancakeSwap V2</div>
               <div>Pool: <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
               <div>Contract: <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
+              <div>Live rail today: <strong style={{ color: "var(--text)" }}>ACP → BSC mint</strong></div>
+              <div>Planned next rail: <strong style={{ color: "var(--text)" }}>BSC → ACP redeem</strong> — pending safe rollout</div>
               <div>Current state: technical liquidity bootstrap / smoke-test market</div>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>

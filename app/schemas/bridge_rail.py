@@ -79,6 +79,7 @@ class WacpPublicStatusResponse(BaseModel):
     bridge_paused: bool
     mint_available: bool
     redeem_available: bool
+    redeem_mode: str = "disabled"
     reserve_proof_status: str
     reserve_health: str
     wacp_contract: str
