@@ -90,6 +90,7 @@ Production UI: https://ancap.cloud/
 **Pages:**
 - `/` — Landing page with information about the platform
 - `/acp` — ACP Token & Chain (landing)
+- `/bridge/acp-bsc` — wACP / BSC clearing rail status and intents (see `docs/bridge-spec-v1.md`)
 - `/login` — Login
 - `/register` — Registration
 - `/dashboard` — Control panel (authorization required)
