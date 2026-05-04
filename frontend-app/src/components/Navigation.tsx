@@ -29,7 +29,6 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
-  { label: "ACP → BSC (wACP)", href: "/bridge/acp-bsc", i18nKey: "nav.bridgeAcpBsc" },
   { label: "AI Console", href: "/ai-console" },
   { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },
@@ -59,6 +58,10 @@ const secondaryNav: NavItem[] = [
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
+
+/** Horizontal strip: many links, little vertical space, touch-friendly scroll. */
+const navScrollRow =
+  "flex max-w-full flex-nowrap items-center gap-x-0.5 gap-y-0 overflow-x-auto overflow-y-hidden overscroll-x-contain py-0.5 touch-pan-x [-ms-overflow-style:none] [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent";
 
 type LangCode = "en" | "ru" | "uk";
 const LANG_OPTIONS: ReadonlyArray<{ code: LangCode; label: string }> = [
@@ -183,7 +186,7 @@ export function Navigation() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent" />
 
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex min-h-[78px] items-center justify-between gap-2 sm:gap-4 lg:min-h-[92px]">
+        <div className="flex min-h-[72px] items-center justify-between gap-2 sm:gap-4 lg:min-h-[80px]">
           {/* Left: Brand */}
           <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-6">
             <Link href="/" className="group inline-flex items-center gap-3">
@@ -198,10 +201,10 @@ export function Navigation() {
           </div>
 
           {/* Center: primary + secondary links (lg+); below lg — compact bar + drawer */}
-          <div className="hidden min-w-0 flex-1 lg:flex lg:flex-col lg:justify-center">
+          <div className="hidden min-w-0 flex-1 lg:flex lg:flex-col lg:justify-center lg:gap-0.5">
             {isAuthenticated ? (
               <>
-                <nav className="flex flex-wrap items-center gap-x-1 gap-y-1">
+                <nav className={navScrollRow} aria-label={t("nav.main")}>
                   {primaryNav.map((item) => (
                     <HeaderLink
                       key={item.href}
@@ -212,7 +215,10 @@ export function Navigation() {
                   ))}
                 </nav>
 
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-1">
+                <nav
+                  className={cn(navScrollRow, "mt-0.5 border-t border-white/[0.06] pt-0.5")}
+                  aria-label={t("nav.system")}
+                >
                   {secondaryNav.map((item) => (
                     <HeaderLink
                       key={item.href}
@@ -222,7 +228,7 @@ export function Navigation() {
                       compact
                     />
                   ))}
-                </div>
+                </nav>
               </>
             ) : (
               <nav className="flex flex-wrap items-center gap-2 text-[13px]">
@@ -324,55 +330,59 @@ export function Navigation() {
           <div className="mx-auto max-w-[1440px] px-4 py-4 sm:px-6">
             {isAuthenticated ? (
               <div className="grid gap-5">
-                <div>
+                <div className="min-h-0">
                   <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
                     {t("nav.main")}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {primaryNav.map((item) => {
-                      const active = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={cn(
-                            "rounded-xl border px-3 py-2.5 text-[13px] transition",
-                            active
-                              ? "border-emerald-400/30 bg-emerald-400/10 text-white"
-                              : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
-                          )}
-                        >
-                          {navItemLabel(item, t)}
-                        </Link>
-                      );
-                    })}
+                  <div className="max-h-[min(40vh,18rem)] overflow-y-auto overscroll-y-contain rounded-xl border border-white/[0.07] bg-white/[0.02] p-2 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent]">
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                      {primaryNav.map((item) => {
+                        const active = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={cn(
+                              "rounded-lg border px-2.5 py-2 text-[12px] leading-snug transition",
+                              active
+                                ? "border-emerald-400/30 bg-emerald-400/10 text-white"
+                                : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                            )}
+                          >
+                            {navItemLabel(item, t)}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                <div>
+                <div className="min-h-0">
                   <div className="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/35">
                     {t("nav.system")}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {secondaryNav.map((item) => {
-                      const active = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={cn(
-                            "rounded-xl border px-3 py-2.5 text-[13px] transition",
-                            active
-                              ? "border-emerald-400/30 bg-emerald-400/10 text-white"
-                              : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
-                          )}
-                        >
-                          {navItemLabel(item, t)}
-                        </Link>
-                      );
-                    })}
+                  <div className="max-h-[min(52vh,22rem)] overflow-y-auto overscroll-y-contain rounded-xl border border-white/[0.07] bg-white/[0.02] p-2 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent]">
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                      {secondaryNav.map((item) => {
+                        const active = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={cn(
+                              "rounded-lg border px-2.5 py-2 text-[12px] leading-snug transition",
+                              active
+                                ? "border-emerald-400/30 bg-emerald-400/10 text-white"
+                                : "border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                            )}
+                          >
+                            {navItemLabel(item, t)}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -385,13 +395,6 @@ export function Navigation() {
                       className="inline-flex items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 px-3 py-1.5 text-[12px] font-medium text-emerald-200 ring-1 ring-inset ring-emerald-400/40 transition hover:bg-emerald-400/25"
                     >
                       {t("nav.acpWallet")}
-                    </Link>
-                    <Link
-                      href="/bridge/acp-bsc"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="inline-flex items-center justify-center rounded-full border border-sky-400/40 bg-sky-400/12 px-3 py-1.5 text-[12px] font-medium text-sky-200 ring-1 ring-inset ring-sky-400/35 transition hover:bg-sky-400/22"
-                    >
-                      {t("nav.bridgeAcpBsc")}
                     </Link>
                   </div>
                   <button

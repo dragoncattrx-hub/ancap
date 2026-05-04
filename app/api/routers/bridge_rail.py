@@ -1,12 +1,14 @@
 """wACP / BSC custodial clearing rail HTTP surface (docs/bridge-spec-v1.md)."""
 from __future__ import annotations
 
+import logging
 import re
 from decimal import Decimal, ROUND_DOWN
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import func, select
+from sqlalchemy.exc import DBAPIError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_auth
@@ -27,6 +29,8 @@ from app.schemas.bridge_rail import (
 )
 from app.services.bridge_decimal import acp_smallest_to_wacp_wei
 from app.services.bridge_reconciliation import run_reconciliation
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bridge", tags=["Bridge (wACP)"])
 
@@ -55,26 +59,41 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
     s = get_settings()
     counts: dict[str, int] = {}
     if s.bridge_rail_enabled:
-        rows = await session.execute(
-            select(BridgeOperation.status, func.count())
-            .group_by(BridgeOperation.status)
-        )
-        for st, c in rows.all():
-            counts[str(st)] = int(c)
+        try:
+            rows = await session.execute(
+                select(BridgeOperation.status, func.count())
+                .group_by(BridgeOperation.status)
+            )
+            for st, c in rows.all():
+                counts[str(st)] = int(c)
+        except (ProgrammingError, DBAPIError, OSError) as exc:
+            logger.warning("bridge_status counts skipped: %s", exc)
+            await session.rollback()
 
-    cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
-    cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+    cp_acp = None
+    cp_bsc = None
+    try:
+        cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
+        cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+    except (ProgrammingError, DBAPIError, OSError) as exc:
+        logger.warning("bridge_status checkpoints skipped (run alembic upgrade head?): %s", exc)
+        await session.rollback()
+
     last_recon = None
     if s.bridge_rail_enabled:
-        r = await session.execute(
-            select(BridgeAuditEvent.payload_json)
-            .where(BridgeAuditEvent.event_type.in_(("reconciliation_ok", "reconciliation_mismatch")))
-            .order_by(BridgeAuditEvent.created_at.desc())
-            .limit(1)
-        )
-        row = r.first()
-        if row:
-            last_recon = row[0]
+        try:
+            r = await session.execute(
+                select(BridgeAuditEvent.payload_json)
+                .where(BridgeAuditEvent.event_type.in_(("reconciliation_ok", "reconciliation_mismatch")))
+                .order_by(BridgeAuditEvent.created_at.desc())
+                .limit(1)
+            )
+            row = r.first()
+            if row:
+                last_recon = row[0]
+        except (ProgrammingError, DBAPIError, OSError) as exc:
+            logger.warning("bridge_status last_reconciliation skipped: %s", exc)
+            await session.rollback()
 
     return BridgeStatusResponse(
         bridge_rail_enabled=s.bridge_rail_enabled,
