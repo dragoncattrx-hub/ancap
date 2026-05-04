@@ -2,6 +2,13 @@
 
 Use after contracts and backend are deployed. See [bridge-spec-v1.md](./bridge-spec-v1.md).
 
+## Safe production apply (DB + ACP)
+
+1. **Backup Postgres** before any migration (`pg_dump` or provider snapshot).
+2. Migration **039** is **additive only** (new `bridge_*` tables); it does not alter `users`, ledger, ACP wallet tables, or ACP-crypto protocol code.
+3. Keep **`BRIDGE_RAIL_ENABLED=false`** (default in [docker-compose.prod.yml](../docker-compose.prod.yml)) until operations are ready; with it off, bridge HTTP returns 503 for rail-only writes and the tick skips bridge work—**no new ACP spends** are introduced by this release.
+4. Do **not** change `ACP_RPC_URL`, `ACP_HOT_MNEMONIC_*`, genesis, or acp-node data for this rollout; pull new API/frontend images and run `alembic upgrade head` only.
+
 ## Pre-mainnet
 
 1. **BSC testnet:** deploy `WACP` + `BridgeGateway` from [contracts/bridge-bsc](../contracts/bridge-bsc); run `forge test`; record addresses.
