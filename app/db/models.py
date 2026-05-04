@@ -1343,18 +1343,20 @@ class BridgeAllowlistAddress(Base):
     __tablename__ = "bridge_allowlist_addresses"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    bsc_address = Column(String(66), nullable=False, unique=True, index=True)
+    bsc_address = Column(String(66), nullable=False)
     note = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (Index("ix_bridge_allowlist_bsc", "bsc_address", unique=True),)
 
 
 class BridgeOperation(Base):
     __tablename__ = "bridge_operations"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     direction = Column(String(16), nullable=False)
-    status = Column(String(40), nullable=False, index=True)
+    status = Column(String(40), nullable=False)
     user_bsc_address = Column(String(66), nullable=True)
     user_acp_address = Column(String(128), nullable=True)
     amount_acp_smallest = Column(Numeric(38, 0), nullable=False)
@@ -1370,10 +1372,13 @@ class BridgeOperation(Base):
     deposit_ref_hex = Column(String(66), nullable=True)
     correlation_id = Column(String(128), nullable=True)
     version = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
+        Index("ix_bridge_ops_status", "status"),
+        Index("ix_bridge_ops_user", "user_id"),
+        Index("ix_bridge_ops_created", "created_at"),
         Index(
             "ux_bridge_ops_acp_tx",
             "acp_chain_id",
@@ -1396,20 +1401,25 @@ class BridgeStateTransition(Base):
     __tablename__ = "bridge_state_transitions"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="CASCADE"), nullable=False, index=True)
+    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="CASCADE"), nullable=False)
     from_status = Column(String(40), nullable=True)
     to_status = Column(String(40), nullable=False)
     metadata_json = Column(JSONB, nullable=False, default=dict)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (Index("ix_bridge_transitions_op", "operation_id"),)
 
 
 class BridgeAuditEvent(Base):
     __tablename__ = "bridge_audit_events"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="SET NULL"), nullable=True, index=True)
-    event_type = Column(String(64), nullable=False, index=True)
+    operation_id = Column(UUID(as_uuid=False), ForeignKey("bridge_operations.id", ondelete="SET NULL"), nullable=True)
+    event_type = Column(String(64), nullable=False)
     payload_json = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    __table_args__ = (Index("ix_bridge_audit_type_time", "event_type", "created_at"),)
+    __table_args__ = (
+        Index("ix_bridge_audit_op", "operation_id"),
+        Index("ix_bridge_audit_type_time", "event_type", "created_at"),
+    )
