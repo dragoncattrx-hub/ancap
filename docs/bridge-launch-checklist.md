@@ -122,8 +122,7 @@ Confirm at least one of:
 - Keep all secrets only in `Sicret/`
 - Never commit mnemonics/private keys
 - Keep pilot caps conservative
-- Reverse rail is separate work; do not assume it is production-ready just because ACP -> BSC works
-- Public status for reverse must remain truthful until payout ops are real:
-  - `redeem_available=false`
-  - `redeem_mode=pending-rollout`
-- Reserve proof is public but still not final until snapshot-backed ACP reserve balance is live
+- Reverse rail is now live, but do not assume that means it is fully hardened for replay/recovery edge-cases
+- Public status for reverse must always reflect the real runtime state; do not reintroduce stale `pending-rollout` copy while payouts are actually live
+- Reserve proof is public and live; keep improving snapshot/backing observability without lying about current availability
+- For the current single-node ACP runtime, `BRIDGE_ACP_CONFIRMATIONS=1` is intentional and should not be changed casually

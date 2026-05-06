@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+from collections import defaultdict
 from typing import Any
 
 import httpx
@@ -61,6 +62,7 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
                 continue
             sent_units = 0
             received_units = 0
+            outputs_by_address: dict[str, int] = defaultdict(int)
 
             for vin in tx.get("vin") or []:
                 prev_txid = vin.get("prev_txid")
@@ -78,6 +80,8 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
                 out_index[(txid, idx)] = (out_addr, out_amount)
                 if out_addr == address:
                     received_units += out_amount
+                if out_addr:
+                    outputs_by_address[out_addr] += out_amount
 
             if sent_units == 0 and received_units == 0:
                 continue
@@ -93,6 +97,7 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
                     "received_units": received_units,
                     "sent_units": sent_units,
                     "direction": direction,
+                    "outputs_by_address": dict(outputs_by_address),
                 }
             )
 
@@ -206,10 +211,13 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                     continue
                 if tx.get("direction") != "out":
                     continue
-                payout_units = abs(int(tx.get("net_units") or 0))
-                if payout_units != int(op.amount_acp_smallest or 0):
-                    continue
                 if int(tx.get("confirmations") or 0) < int(settings.bridge_acp_confirmations):
+                    continue
+                user_acp_address = str(op.user_acp_address or "").strip()
+                expected_units = int(op.amount_acp_smallest or 0)
+                outputs_by_address = tx.get("outputs_by_address") or {}
+                payout_units = int(outputs_by_address.get(user_acp_address) or 0)
+                if not user_acp_address or payout_units != expected_units:
                     continue
                 session.add(
                     BridgeAuditEvent(
@@ -221,6 +229,7 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                             "sent_units": int(tx.get("sent_units") or 0),
                             "received_units": int(tx.get("received_units") or 0),
                             "payout_units": payout_units,
+                            "beneficiary_address": user_acp_address,
                         },
                     )
                 )

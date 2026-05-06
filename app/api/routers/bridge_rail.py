@@ -414,7 +414,7 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
     else:
         notes.append("wACP production contract source has been matched on BscScan; public trust copy and labels can still be improved.")
     notes.append("PancakeSwap V2 technical liquidity bootstrap is live with a micro-liquidity pool; treat it as a smoke-test market, not a deep-liquidity launch.")
-    notes.append("BSC -> ACP redeem path is planned and contract-supported at the gateway level, but backend release ops, watcher confirmation, and payout idempotency are not yet declared live.")
+    notes.append("BSC -> ACP redeem path is live with funded reserve and automated payout processing; public UX and metadata can still be improved.")
     notes.append("Token metadata / logo inclusion on Pancake-related surfaces is still pending manual review by external platforms.")
     for item in reserve.notes:
         if item not in notes:
@@ -435,8 +435,8 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         bridge_enabled=s.bridge_rail_enabled,
         bridge_paused=s.bridge_rail_paused,
         mint_available=bool(s.bridge_rail_enabled and not s.bridge_rail_paused),
-        redeem_available=False,
-        redeem_mode="pending-rollout",
+        redeem_available=bool(s.bridge_rail_enabled and not s.bridge_rail_paused and reserve_health != "critical"),
+        redeem_mode="live" if bool(s.bridge_rail_enabled and not s.bridge_rail_paused and reserve_health != "critical") else "disabled",
         reserve_proof_status=reserve_proof_status,
         reserve_health=reserve_health,
         wacp_contract=s.bridge_wacp_contract,

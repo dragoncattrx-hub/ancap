@@ -136,18 +136,19 @@ It reads:
 
 without depending on contract ABI files inside the API container.
 
-### 7. Prepare release path for ACP <- BSC safely
-Current success is for ACP -> BSC mint rail.
-Reverse direction is now partially implemented in the backend pipeline:
-- BSC watcher can ingest `ReleaseRequested`
-- orchestrator can submit ACP payout and move ops to `ACP_PAYOUT_SENT`
-- ACP watcher can confirm payout tx and move ops to `COMPLETED`
+### 7. Reverse path status: ACP <- BSC is live, but still needs hardening
+Current success is no longer only ACP -> BSC mint rail.
+Reverse direction is now live in the backend and public status:
+- BSC watcher ingests `ReleaseRequested`
+- orchestrator submits ACP payout and moves ops to `ACP_PAYOUT_SENT`
+- ACP watcher confirms payout tx and moves ops to `COMPLETED`
+- reconciliation reflects completed reverse payouts without outstanding liability
 
-But separate work is still needed before public enablement:
+Remaining work after public enablement:
 - production replay/idempotency hardening
-- reverse-side reconciliation that explicitly accounts for completed ACP payouts and disputed/requeued cases
 - broader reconciliation and operational validation
-- at least one controlled end-to-end reverse pilot with observed watcher-confirmed completion
+- at least one additional controlled end-to-end reverse pilot for repeatability
+- decision on longer-term ACP finality policy beyond the current single-node runtime (`BRIDGE_ACP_CONFIRMATIONS=1`)
 
 ## Recommended operator checks before any next pilot
 - `GET /api/v1/bridge/status`
@@ -161,3 +162,4 @@ But separate work is still needed before public enablement:
 - Keep secrets only in `Sicret/`
 - Do not commit mnemonics/private keys
 - Keep pilot caps conservative until at least one more successful run
+- Do not change `BRIDGE_ACP_CONFIRMATIONS=1` for this environment unless ACP block progression/finality model is changed deliberately

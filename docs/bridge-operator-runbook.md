@@ -175,6 +175,19 @@ Check:
 - gateway/wACP contract addresses correct
 - orchestrator tick actually ran
 
+### If reverse rail fails at `BURN_CONFIRMED`
+Check in this exact order:
+- `BRIDGE_RAIL_ENABLED=true`
+- `BRIDGE_DRY_RUN=false`
+- `ACP_HOT_MNEMONIC_FILE` inside the API runtime points to the bridge-scoped secret, not a generic project wallet path
+- derived signer address from current ACP hot mnemonic exactly matches `BRIDGE_RESERVE_ACP_ADDRESS`
+- reserve address actually has spendable ACP for the payout amount + fee
+- ACP RPC and `walletd` are both healthy from inside the API container
+
+Operator rule:
+- if derived signer != configured reserve address, reverse rail is NO-GO even if reserve-proof and public status look healthy
+- do not flip `BSC -> ACP` live until signer/address identity is proven in the running container
+
 ### If intent stays in `MINT_REQUESTED`
 Check:
 - `bsc_tx_hash_mint` exists
@@ -198,10 +211,10 @@ What is already real:
 - UI redeem request form
 - UI/API quote preview for floor payout and remainder transparency
 
-What is not publicly live yet:
-- public reverse enablement
+What is not fully matured yet:
 - production-proven replay/idempotency handling for reverse recovery cases
 - broader production ops validation
+- multi-node / higher-finality ACP confirmation policy beyond the current single-node runtime
 
 What now exists in backend code:
 - burn-event watcher confirmation via `ReleaseRequested`
@@ -217,10 +230,9 @@ Current reverse admin endpoints:
 - `POST /api/v1/bridge/admin/reverse/mark-disputed`
 
 Operator rule:
-- do not manually present reverse rail as live until watcher + payout + reconciliation are proven
-- public status must remain:
-  - `redeem_available=false`
-  - `redeem_mode=pending-rollout`
+- reverse rail may be presented as live only when signer identity, payout execution, watcher confirmation, and reconciliation are all proven in the running container
+- current production state satisfies that requirement
+- for this current ACP runtime (`http://host.docker.internal:8545/rpc`), `BRIDGE_ACP_CONFIRMATIONS=1` is the truthful policy because chain height is effectively static/single-node in this environment; do not raise it blindly without real block progression
 
 ### Recovery usage notes
 - Use `bind-burn` only when a real `ReleaseRequested` event exists but watcher matching needs manual repair.
@@ -231,8 +243,8 @@ Operator rule:
 
 ## Next recommended step
 
-Run one more small controlled ACP -> BSC pilot to prove repeatability.
-In parallel, finish reverse watcher/payout safety before any public enablement.
+Run one more small controlled round-trip to prove repeatability in both directions.
+In parallel, harden reverse replay/idempotency handling and decide whether ACP should remain a single-node runtime policy (`BRIDGE_ACP_CONFIRMATIONS=1`) or move to a higher-confirmation multi-node setup.
 
 ## Non-goals
 

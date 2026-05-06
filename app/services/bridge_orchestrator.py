@@ -35,17 +35,15 @@ def _acp_amount_decimal_str(acp_smallest: int) -> str:
 
 def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
     from app.api.routers.wallet_acp import (
-        _load_or_create_valid_hot_mnemonic,
+        _load_existing_valid_hot_signer,
         _require_acp_rpc_url,
         _run_walletd,
         _scan_chain_transactions,
     )
 
     settings = get_settings()
-    mnemonic = _load_or_create_valid_hot_mnemonic()
+    signer_args, from_address = _load_existing_valid_hot_signer()
     rpc_url = _require_acp_rpc_url()
-    from_wallet = _run_walletd(["address", "--mnemonic", mnemonic])
-    from_address = str(from_wallet.get("address") or "").strip()
     reserve_address = str(settings.bridge_reserve_acp_address or "").strip()
     if reserve_address and from_address and from_address != reserve_address:
         raise RuntimeError(
@@ -56,8 +54,7 @@ def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
             "transfer",
             "--rpc",
             rpc_url,
-            "--mnemonic",
-            mnemonic,
+            *signer_args,
             "--to",
             acp_address,
             "--amount-acp",

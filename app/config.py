@@ -126,6 +126,7 @@ class Settings(BaseSettings):
     bridge_gateway_contract: str = ""
     bridge_bsc_private_key: str | None = None
     bridge_reserve_acp_address: str = ""
+    acp_hot_keystore_file: str = ""
     bridge_acp_confirmations: int = 30
     bridge_bsc_confirmations: int = 18
     bridge_operator_secret: str | None = None

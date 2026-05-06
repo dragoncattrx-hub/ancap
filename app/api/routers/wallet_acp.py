@@ -503,10 +503,19 @@ def _hot_mnemonic_path() -> Path:
     return Path(p)
 
 
+def _hot_keystore_path() -> Path:
+    p = os.getenv("ACP_HOT_KEYSTORE_FILE", "/run/secrets/acp_hot_keystore.json")
+    return Path(p)
+
+
+def _normalize_mnemonic_text(raw: str) -> str:
+    return " ".join([w for w in str(raw or "").split() if w.strip()])
+
+
 def _load_or_create_hot_mnemonic() -> str:
     env = os.getenv("ACP_HOT_MNEMONIC", "").strip()
     if env:
-        return env
+        return _normalize_mnemonic_text(env)
     p = _hot_mnemonic_path()
     if p.exists():
         txt = p.read_text(encoding="utf-8").strip()
@@ -520,7 +529,7 @@ def _load_or_create_hot_mnemonic() -> str:
             pass
     p.parent.mkdir(parents=True, exist_ok=True)
     created = _run_walletd(["new"])
-    mnemonic = str(created["mnemonic"]).strip()
+    mnemonic = _normalize_mnemonic_text(str(created["mnemonic"]))
     p.write_text(mnemonic + "\n", encoding="utf-8")
     return mnemonic
 
@@ -544,11 +553,76 @@ def _load_or_create_valid_hot_mnemonic() -> str:
             except Exception:
                 pass
         created = _run_walletd(["new"])
-        new_mnemonic = str(created["mnemonic"]).strip()
+        new_mnemonic = _normalize_mnemonic_text(str(created["mnemonic"]))
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(new_mnemonic + "\n", encoding="utf-8")
         _run_walletd(["address", "--mnemonic", new_mnemonic])
         return new_mnemonic
+
+
+def _load_existing_valid_hot_mnemonic() -> str:
+    """
+    Strict bridge/operator loader for mnemonic-based signers.
+    Never creates or rotates signer material implicitly.
+    Operator secrets must fail closed, not mutate themselves.
+    """
+    env = os.getenv("ACP_HOT_MNEMONIC", "").strip()
+    if env:
+        mnemonic = _normalize_mnemonic_text(env)
+        if len(mnemonic.split()) not in (12, 15, 18, 21, 24):
+            raise HTTPException(status_code=500, detail="ACP_HOT_MNEMONIC is malformed")
+        _run_walletd(["address", "--mnemonic", mnemonic])
+        return mnemonic
+
+    p = _hot_mnemonic_path()
+    if not p.exists():
+        raise HTTPException(status_code=500, detail=f"ACP hot mnemonic file is missing: {p}")
+
+    txt = p.read_text(encoding="utf-8").strip()
+    words = [w for w in txt.split() if w.strip()]
+    if len(words) not in (12, 15, 18, 21, 24):
+        raise HTTPException(status_code=500, detail=f"ACP hot mnemonic file is malformed: {p}")
+
+    mnemonic = " ".join(words)
+    _run_walletd(["address", "--mnemonic", mnemonic])
+    return mnemonic
+
+
+def _load_existing_valid_hot_signer() -> tuple[list[str], str]:
+    """
+    Strict bridge/operator signer loader.
+    Prefers keystore because ACP hybrid identities include PQC material that is not
+    reproducible from mnemonic alone. Falls back to mnemonic only when no keystore is configured.
+    Returns (walletd_signer_args, derived_address).
+    """
+    env_keystore = os.getenv("ACP_HOT_KEYSTORE_JSON", "").strip()
+    if env_keystore:
+        derived = _run_walletd(["address", "--keystore-json", env_keystore])
+        address = str(derived.get("address") or "").strip()
+        if not address:
+            raise HTTPException(status_code=500, detail="ACP hot keystore env did not derive an address")
+        return (["--keystore-json", env_keystore], address)
+
+    keystore_file = os.getenv("ACP_HOT_KEYSTORE_FILE", "").strip()
+    if keystore_file:
+        p = Path(keystore_file)
+        if not p.exists():
+            raise HTTPException(status_code=500, detail=f"ACP hot keystore file is missing: {p}")
+        keystore_json = p.read_text(encoding="utf-8").strip()
+        if not keystore_json:
+            raise HTTPException(status_code=500, detail=f"ACP hot keystore file is empty: {p}")
+        derived = _run_walletd(["address", "--keystore-json", keystore_json])
+        address = str(derived.get("address") or "").strip()
+        if not address:
+            raise HTTPException(status_code=500, detail=f"ACP hot keystore file did not derive an address: {p}")
+        return (["--keystore-json", keystore_json], address)
+
+    mnemonic = _load_existing_valid_hot_mnemonic()
+    derived = _run_walletd(["address", "--mnemonic", mnemonic])
+    address = str(derived.get("address") or "").strip()
+    if not address:
+        raise HTTPException(status_code=500, detail="ACP hot mnemonic did not derive an address")
+    return (["--mnemonic", mnemonic], address)
 
 
 def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
