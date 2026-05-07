@@ -1,135 +1,146 @@
 # PancakeSwap wACP liquidity
 
 ## Purpose
+This document covers the DEX side after the ACP <-> BSC rail is already working live.
+It is about how to scale `wACP` liquidity without doing something stupid with reserve-backed inventory.
 
-This document covers the DEX side after the ACP -> BSC rail is already working.
-It is not about bringing the bridge to life from zero anymore.
-As of 2026-05-04, the bridge pilot already completed one real successful ACP -> BSC mint.
+## Current live bridge context as of 2026-05-07
 
-## Current bridge context
-
-### Live contracts
+### Contracts
 - `WACP`: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
 - `BridgeGateway`: `0x57c24FF77B23a82328cb88914D4FD4EEBd93321b`
+- `ACP reserve`: `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz`
 
-### Current runtime
+### Runtime
 - bridge enabled
-- not paused
+- bridge not paused
 - `dry_run=false`
-- `BRIDGE_ACP_CONFIRMATIONS=3`
+- `BRIDGE_ACP_CONFIRMATIONS=1`
+- BSC confirmation target from public status: `18`
+- reverse `BSC -> ACP` path is live
 
-### Proven pilot result
-- one real `1 ACP -> 1 wACP` pilot completed successfully
-- recipient wallet received `1 wACP`
-- reconciliation stayed clean
+### Live market references
+- pair: `wACP / USDT`
+- pair address: `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601`
+- pool URL: <https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601>
+- swap URL: <https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
+- initial liquidity bootstrap tx: `0x82458ec2b17e5aa58201a625169e493bb5ce8159487d66846906d9de69587503`
+- first swap buy tx: `0xe6b867346d6acfdef7e0a34c457dd48c9bf572c7e0aa94224c705dc83c1a504c`
+- first swap sell tx: `0x02ff5659d584aabf7bfe19c508c7673ba449ff89c1df07069cc272a6a8ab6795`
 
-## What liquidity step means now
+### Reserve posture
+From live reserve proof on 2026-05-07:
+- reserve: about `100999.994999 ACP`
+- current total supply: `1 wACP`
+- reserve health: `healthy`
+- backing ratio: about `100999.994999`
 
-The bridge can already mint `wACP`.
-Liquidity is the next market-access layer, not a blocker for the mint rail itself.
+## What the next liquidity step actually means
+The bridge can already mint `wACP`, and the pair already exists.
+So the next step is not “create a market from zero”.
+The next step is to scale inventory and liquidity in a controlled order:
+1. reserve stays healthy
+2. mint inventory deliberately
+3. LP only part of that inventory
+4. keep the rest under treasury control
 
-## Preconditions before seeding liquidity
+## Required preconditions before meaningful LP expansion
+1. Reserve proof is still healthy right before mint and right after mint.
+2. The operator wallet has enough `BNB` for gas.
+3. The operator wallet has enough `USDT` for the paired side.
+4. The chosen LP wallet already holds the minted `wACP` inventory.
+5. The initial price target is decided explicitly.
+6. Andrew approves the actual mint and LP amounts.
 
-1. Bridge runtime is healthy.
-2. `wACP` exists on BSC mainnet.
-3. Operator wallet has enough:
-   - `BNB` for gas
-   - `wACP`
-   - paired token, usually `USDT` on BSC
-4. Token contract addresses are verified and documented.
-5. Team is ready to publish pair address and risk notes.
+## Recommended operator flow for the `100000 wACP` plan
 
-## Suggested first pair
+### 1. Confirm reserve headroom
+Check live endpoint:
+- <https://ancap.cloud/api/v1/wacp/reserve-proof>
 
-Default practical choice:
-- `wACP / USDT`
+The reserve must remain above the intended redeemable supply after mint.
+With current live numbers, a `100000 wACP` mint is feasible in principle.
 
-Reason:
-- easier price communication
-- easier user mental model
-- better for first pilot liquidity than exotic pairing
+### 2. Mint to treasury, not directly to LP
+Mint `100000 wACP` to the treasury / operator wallet first.
+That gives clean separation between:
+- supply creation
+- reserve verification
+- LP sizing
 
-## Before opening PancakeSwap
+### 3. Re-check supply and reserve immediately
+After mint:
+- verify `totalSupply`
+- verify reserve proof still reads healthy
+- verify bridge status still reads enabled / not paused
+- verify treasury wallet `balanceOf` is exactly what was intended
 
-Prepare these links and values:
-- wACP token contract
-- official BSC USDT contract
-- target initial price model
-- initial liquidity amounts
-- bridge UI URL: `/bridge/acp-bsc`
-- BscScan links for `wACP` and bridge txs
+### 4. Decide LP depth from price, not from emotion
+Do not dump the whole minted stack into liquidity.
+Decide in advance:
+- starting price in `USDT per wACP`
+- how many `wACP` go into LP
+- how many `USDT` go into LP
+- how much inventory stays outside LP
 
-## Suggested operator flow
+### 5. Add liquidity on PancakeSwap V2
+Operator sequence:
+1. connect BSC wallet
+2. open the pool URL or Liquidity page
+3. import `wACP` if needed
+4. choose official BSC `USDT`
+5. approve both tokens if prompted
+6. add the chosen initial tranche
+7. save tx hashes and updated pair references
 
-### 1. Make sure minted inventory exists
-Before adding LP, verify you actually hold `wACP` in the operator wallet.
-At minimum verify:
-- `balanceOf(operator_wallet) > 0`
+### 6. Post-LP verification
+Run small tests:
+- `wACP -> USDT`
+- `USDT -> wACP`
 
-### 2. Decide initial price carefully
-Do not improvise price from vibes.
-Decide explicitly:
-- how many USDT per 1 wACP
-- how much depth to provide
-- acceptable initial slippage
+Then confirm:
+- routing works
+- slippage is not insane
+- displayed token metadata is acceptable
+- pair link remains stable and shareable
 
-### 3. Open PancakeSwap
-On <https://pancakeswap.finance/>:
-1. connect the BSC wallet
-2. open **Liquidity**
-3. choose **Add Liquidity** or V3 equivalent
-4. import custom token `wACP` by contract address
-5. select official `USDT` on BSC
-6. enter liquidity amounts
-7. approve tokens if prompted
-8. confirm supply transaction
+## LP policy recommendation
+### Bad idea
+- mint `100000 wACP`
+- LP all `100000`
+- hope price discovery figures itself out
 
-### 4. Save public references
-After pool creation, save and publish:
-- wACP token page
-- pair/pool page
-- bridge page
-- short explanation of bridge pause/caps risks
+### Good idea
+- mint `100000 wACP`
+- LP a smaller controlled tranche
+- keep the majority of inventory outside LP initially
+- deepen liquidity only after observing market behavior
 
-## Post-liquidity checks
-
-1. Small swap test:
-   - `wACP -> USDT`
-   - `USDT -> wACP`
-2. Confirm routing works.
-3. Confirm displayed token metadata is correct.
-4. Confirm slippage is not absurd.
-5. Confirm pool link is stable and shareable.
-
-## What users should be told
-
+## What should be published publicly after execution
 At minimum publish:
-- how to get `wACP`
 - official contract address
 - official pair address
-- where to verify txs
-- bridge can be paused by operator
-- liquidity is limited during pilot phase
-- smart contract and bridge risks exist
+- reserve proof URL
+- pair URL
+- swap URL
+- note that liquidity is still staged and may remain shallow
+- note that bridge operators can pause the system during incidents
+- note that redemption depends on reserve and bridge availability
 
 ## Operational risks
+- shallow LP causes violent price movement
+- wrong starting price creates instant distortion
+- over-LPing treasury inventory removes flexibility
+- stale reserve proof destroys trust fast
+- metadata/logo lag on external surfaces can confuse users
 
-- low liquidity means price moves hard
-- LP can be imbalanced quickly
-- user confusion is likely if contract/pair links are not clearly published
-- bridge pause, caps, or reconciliation issues must be communicated quickly
+## Bottom line
+Current infra is good enough to execute the `100000 wACP` plan.
+The safe order is:
+- reserve
+- mint
+- verify
+- partial LP
+- publish
 
-## Recommendation
-
-Do not seed large liquidity immediately.
-First do:
-1. one more small controlled bridge pilot
-2. confirm repeatability
-3. then add conservative initial liquidity
-
-## Not covered here
-
-This doc does not define:
-- exact treasury policy
-- market-making strategy
-- reverse bridge direction (`BSC -> ACP`)
+Anything else is asking for avoidable damage.

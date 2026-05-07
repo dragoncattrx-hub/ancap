@@ -1,31 +1,39 @@
 # wACP -> PancakeSwap Readiness
 
 ## Goal
-Ship wACP as a credible, reserve-backed wrapped ACP asset on BNB Smart Chain, then grow from technical bootstrap liquidity toward a safer public market state.
+Ship wACP as a credibly reserve-backed wrapped ACP asset on BNB Smart Chain, then scale from a technical bootstrap into a real market launch without breaking reserve discipline.
 
-## Core production gate
-No reserve proof -> no official market launch.
-No duplicate protection -> no official market launch.
-No pause/admin model -> no official market launch.
-No verified contracts -> no official market launch.
-No public risk docs -> no serious liquidity.
-
-## Current reality as of 2026-05-04
-- PancakeSwap V2 technical liquidity bootstrap is already live
-- pair: `wACP / USDT`
+## Current live state as of 2026-05-07
+- PancakeSwap V2 pair is already live: `wACP / USDT`
 - pair address: `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601`
-- wACP contract is verified on BscScan
-- public docs pages are live
-- public status endpoint is live
-- reserve proof endpoint is live but still reports `pending`
-- live bridge direction today: `ACP -> BSC`
-- reverse `BSC -> ACP` is still `pending-rollout`
+- pair URL: <https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601>
+- swap URL: <https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
+- wACP contract: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
+- bridge / gateway contract: `0x57c24FF77B23a82328cb88914D4FD4EEBd93321b`
+- ACP reserve address: `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz`
+- public reserve proof: <https://ancap.cloud/api/v1/wacp/reserve-proof>
+- public status endpoint: <https://ancap.cloud/api/v1/wacp/status>
+- bridge runtime: enabled, not paused, `dry_run=false`
+- ACP confirmations policy: `1`
+- BSC confirmations policy: `18`
+- reverse `BSC -> ACP` path is live, funded, and automated
+- current reserve proof reports approximately `100999.994999 ACP` in reserve
+- current wACP total supply is still `1 wACP`
+- current backing ratio is approximately `100999.994999`
 
-Interpretation:
-- trading smoke-test exists
-- official trust maturity is still incomplete until reserve proof snapshots and reverse ops safety are finished
+## Interpretation
+The bridge is no longer in a pure pilot-only direction.
+The reserve is funded enough for a `100000 wACP` rollout in principle.
+What is still missing is the controlled execution sequence for minting, LP sizing, public messaging, and post-launch monitoring.
 
-## Phase 0 — decisions to freeze once
+## Core launch gates
+No reserve proof -> no official scale-up.
+No clean supply-vs-reserve math -> no official scale-up.
+No clear liquidity policy -> no official scale-up.
+No published contract and pair references -> no official scale-up.
+No rollback / pause posture -> no official scale-up.
+
+## Phase 0 — Constants to freeze
 
 ### Token spec
 - Native ACP decimals: `8`
@@ -37,490 +45,118 @@ Interpretation:
 - `symbol = wACP`
 - `chainId = 56`
 
-### Launch DEX choice
-For first market launch:
-- Start with **PancakeSwap V2**
-- First pair: **wACP/USDT**
-- Fallback pair: **wACP/USDC**
-- Avoid first launch on `wACP/WBNB`
-- Avoid starting with V3/Infinity until price discovery and ops are stable
+### DEX choice
+For the first meaningful market phase:
+- Primary venue: **PancakeSwap V2**
+- Primary pair: **wACP/USDT**
+- Secondary future option: **wACP/USDC**
+- Avoid making `wACP/WBNB` the main reference market at launch
 
 Reason:
-- V2 uses standard LP tokens and is simpler to seed, custody, lock, or treasury-hold.
-- V3 uses NFT positions and adds extra operational complexity.
-- WBNB introduces avoidable volatility for the first listing.
-
----
-
-## Phase 1 — Contracts
-
-### 1.1 wACP contract requirements
-Implement/finalize BEP-20-compatible wACP contract with:
-- `name()`
-- `symbol()`
-- `decimals()`
-- `totalSupply()`
-- `balanceOf(address)`
-- `transfer(address,uint256)`
-- `approve(address,uint256)`
-- `transferFrom(address,address,uint256)`
-- `allowance(address,address)`
-
-Additional required controls:
-- `mint(address to, uint256 amount)`
-- `burn(address from, uint256 amount)`
-- `pause()`
-- `unpause()`
-- `setBridgeOperator(address)` or equivalent role-based operator assignment
-
-### 1.2 Access control model
-Do **not** use one hot EOA for full ownership.
-
-Target roles:
-- `DEFAULT_ADMIN_ROLE` -> multisig
-- `PAUSER_ROLE` -> multisig + emergency EOA
-- `MINTER_ROLE` -> bridge gateway / signer
-- `BURNER_ROLE` -> bridge gateway
-- `OPERATOR_ROLE` -> backend bridge worker
-
-### 1.3 Contract tests
-Must pass before mainnet liquidity:
-- mint works only for authorized role
-- burn works only for authorized role
-- pause blocks mint/burn and any intended restricted operations
-- unpause restores flow
-- transfer / approve / transferFrom match normal BEP-20 behavior
-- decimals conversion is exact for ACP<->wACP mapping
-- rounding behavior is explicitly tested and documented
-
-### 1.4 Verification artifacts
-Prepare:
-- compiler version
-- optimizer settings
-- constructor args
-- deployment addresses
-- verification scripts / commands for BscScan
-
----
-
-## Phase 2 — Bridge invariants and reserve proof
-
-### 2.1 Canonical invariant
-Define and document one invariant everywhere:
-
-`minted_wACP_on_BSC <= locked_or_custodied_ACP_reserve - operational_buffer`
-
-If represented as ratio:
-- `backing_ratio = acp_reserve_smallest_units / redeemable_wacp_equivalent_smallest_units`
-- `healthy` if `backing_ratio >= 1.0`
-- `degraded` if close to threshold or telemetry stale
-- `critical` if `minted_wACP > reserve_equivalent`
-
-### 2.2 Backend table: `bridge_reserve_snapshots`
-Still needed for full reserve-proof maturity.
-Add table:
-- `id`
-- `created_at`
-- `acp_reserve_address`
-- `acp_reserve_balance_smallest`
-- `bsc_wacp_total_supply_wei`
-- `bsc_wacp_total_supply_acp_smallest`
-- `operational_buffer_smallest`
-- `backing_ratio`
-- `status` (`healthy|degraded|critical|paused`)
-- `acp_block_height`
-- `bsc_block_number`
-
-### 2.3 Public endpoint: reserve proof
-Already live:
-- `GET /api/v1/wacp/reserve-proof`
-
-But still incomplete: the endpoint currently exposes truthful `pending` state because ACP reserve balance is not yet sourced from a dedicated snapshot table.
-
-Response shape:
-```json
-{
-  "status": "healthy",
-  "acp_reserve_address": "ACP...",
-  "acp_reserve_balance_smallest": "1000000000000",
-  "wacp_contract": "0x...",
-  "wacp_total_supply_wei": "10000000000000000000000",
-  "wacp_total_supply_acp_smallest": "1000000000000",
-  "backing_ratio": "1.0000",
-  "operational_buffer_smallest": "0",
-  "last_acp_block_height": 123456,
-  "last_bsc_block_number": 456789,
-  "last_updated_at": "2026-05-04T00:00:00Z"
-}
-```
-
-### 2.4 Public endpoint: bridge status
-Already live:
-- `GET /api/v1/wacp/status`
-
-Current truthful reverse fields must remain:
-- `redeem_available=false`
-- `redeem_mode=pending-rollout`
-
-Include:
-- bridge enabled/paused
-- reserve proof summary
-- required confirmations
-- mint/redeem availability
-- latest worker heartbeat
-- known degraded flags
-
----
-
-## Phase 3 — Intent lifecycle and idempotency
-
-### 3.1 Backend table: `bridge_intents`
-Add:
-- `id`
-- `direction` (`acp_to_wacp` / `wacp_to_acp`)
-- `user_id`
-- `status`
-- `acp_txid`
-- `acp_from_address`
-- `acp_to_reserve_address`
-- `acp_amount_smallest`
-- `bsc_tx_hash`
-- `bsc_recipient`
-- `wacp_amount_wei`
-- `confirmations_seen`
-- `required_confirmations`
-- `idempotency_key`
-- `error_code`
-- `error_message`
-- `created_at`
-- `updated_at`
-- `completed_at`
-
-### 3.2 Required statuses
-- `created`
-- `acp_seen`
-- `acp_confirming`
-- `acp_confirmed`
-- `mint_queued`
-- `mint_submitted`
-- `mint_confirming`
-- `completed`
-- `failed`
-- `paused`
-- `manual_review`
-
-### 3.3 Idempotency rules
-Must enforce at DB layer:
-- `UNIQUE(direction, acp_txid, bsc_recipient)`
-- `UNIQUE(idempotency_key)`
-
-This is mandatory to prevent duplicate minting after rescans, retries, or worker restarts.
-
-### 3.4 Intent APIs
-Add:
-- `GET /api/v1/wacp/intents/{id}`
-- optional authenticated list endpoint later for user history
-
-Intent response should include:
-- status
-- source txid
-- destination tx hash
-- confirmations progress
-- timestamps
-- human-readable current step
-
----
-
-## Phase 4 — Workers / jobs hardening
-
-### 4.1 Jobs to implement
-Split responsibilities into separate jobs:
-- `bridge_scan_acp_deposits`
-- `bridge_confirm_acp_deposits`
-- `bridge_submit_bsc_mints`
-- `bridge_confirm_bsc_mints`
-- `bridge_reconcile_supply_reserve`
-- `bridge_alert_anomalies`
-
-### 4.2 Worker invariants
-Workers must obey:
-- never mint before required confirmations
-- never mint twice for the same economic event
-- never proceed when bridge is paused
-- never silently skip reserve mismatch
-- always persist status transitions before external side effects where possible
-- always be restart-safe
-
-### 4.3 Failure-mode tests
-Required scenarios:
-- ACP RPC down -> intent survives, bridge status degrades, no duplicate actions
-- BSC RPC down -> mint not duplicated
-- worker restart mid-flow -> resumes from last safe state
-- duplicate ACP tx scan -> no duplicate mint
-- bridge paused -> new mints stop
-- DB restart -> no lost intent
-- malformed txid -> `manual_review` or explicit failure
-- insufficient confirmations -> mint blocked
-- BSC tx failed -> retry/manual review without duplicate mint
-- reserve mismatch -> pause or block mint path according to policy
-
-### 4.4 Alerting
-Emit anomaly alerts for:
-- reserve ratio below threshold
-- stale reserve snapshot
-- stuck intent age threshold breached
-- repeated mint submission failure
-- unexpected total supply jump
-- reconciliation mismatch
-
----
-
-## Phase 5 — Frontend
-
-### 5.1 `/wallet/acp` block
-Keep wACP inside ACP wallet page, not in top nav.
-
-Current reality:
-- compact wACP block already exists in `/wallet/acp`
-- it already shows the live `wACP/USDT` technical bootstrap context
-- it links to bridge, swap, and pool
-- it keeps bridge access out of the top navigation as requested
-
-Still desirable over time:
-- bridge status badge: `Healthy / Degraded / Paused`
-- reserve backing percent once snapshot-backed reserve proof is live
-- explicit verified-contract link if not already visible enough
-
-### 5.2 Intent timeline page
-Still optional / not shipped yet:
-- `/wallet/acp/bridge/[intentId]`
-
-Timeline states:
-1. deposit address generated
-2. ACP transaction seen
-3. ACP confirmations progress
-4. mint submitted on BSC
-5. mint confirmed
-6. completed
-
-### 5.3 Reserve proof UI
-Still desirable / not fully shipped yet as a dedicated card:
-- reserve address
-- reserve balance
-- wACP total supply
-- backing ratio
-- last updated time
-- health state
-
-### 5.4 Explorer / trust links
-Show links to:
-- BscScan verified contract
-- BscScan tx for mint/burn
-- ACP tx viewer for deposit side
-- public docs pages
-
----
-
-## Phase 6 — Public docs
-
-Already created and live:
-- `/docs/wacp`
-- `/docs/wacp/bridge`
-- `/docs/wacp/reserve`
-- `/docs/wacp/risks`
-- `/docs/wacp/contracts`
-
-### Mandatory risk disclosures
-Document clearly:
-- wACP is a wrapped representation of ACP on BNB Smart Chain
-- redemption depends on bridge availability and ACP reserve backing
-- bridge operators/admins may pause minting or redemption during incidents
-- smart contract, custody, RPC, chain reorg and liquidity risks exist
-- PancakeSwap market price may differ from ACP reference value
-
-### Contracts page should include
-- wACP contract address
-- bridge/gateway contract address
-- reserve address
-- chain IDs
-- explorer links
-- verification status
-
----
-
-## Phase 7 — Operations / security
-
-### 7.1 Key management
-Define:
-- multisig admin owners
-- operator key storage method
-- emergency pauser key storage
-- signer rotation process
-
-### 7.2 Emergency runbooks
-Write runbooks for:
-- bridge pause
-- reserve mismatch
-- stuck mint
-- stuck redeem
-- RPC outage
-- chain reorg handling
-- contract role compromise
-
-### 7.3 Manual review policy
-Define when intent enters `manual_review`:
-- malformed source tx
-- amount mismatch
-- unsupported recipient mapping
-- failed retries exhausted
-- suspicious duplicate patterns
-
----
-
-## Phase 8 — Verification and listing readiness
-
-### 8.1 Must verify before liquidity
-- wACP contract verified on BscScan
-- bridge/gateway contract verified on BscScan
-- compiler metadata published
-- docs page live
-- reserve proof endpoint live
-
-Current reality:
-- these baseline items are largely done for the current technical bootstrap
-- what is still incomplete is trust maturity, mainly reserve snapshots and reverse payout ops
-
-### 8.2 Token metadata pack
-Prepare:
-- `name: Wrapped ACP`
-- `symbol: wACP`
-- `decimals: 18`
-- `chainId: 56`
-- `website: https://ancap.cloud`
-- `docs: https://ancap.cloud/docs/wacp`
-- `logoURI`
-- `contract: 0x...`
-
-### 8.3 PancakeSwap token list follow-up
-Prepare JSON metadata and submission path for PancakeSwap token list only after:
-- mainnet contract final
-- logo final
-- docs live
-- pair live
-
----
-
-## Phase 9 — Safe launch order
-
-### 9.1 Testnet
-1. deploy wACP to BSC testnet
-2. test mint flow end-to-end
-3. test redeem flow end-to-end
-4. test pause flow
-5. test duplicate protection
-6. test reserve reconciliation
-
-### 9.2 Mainnet pre-market
-1. deploy wACP to BSC mainnet
-2. verify contract on BscScan
-3. verify gateway/bridge contract
-4. publish docs and reserve proof endpoint
-5. mint small controlled amount
-6. reconcile supply vs reserve
-
-### 9.3 Initial DEX launch
-1. create PancakeSwap **V2** pair `wACP/USDT`
-2. add small seed liquidity
-3. test buy
-4. test sell
-5. test remove liquidity
-6. announce limited beta
-7. scale liquidity only after stable monitoring period
-
----
-
-## Launch gate checklist
-All must be PASS before meaningful public liquidity expansion:
-- [x] wACP contract deployed
-- [x] wACP contract verified
-- [x] gateway contract verified
-- [ ] admin owner is multisig
-- [ ] operator key has limited role
-- [ ] pause tested
-- [x] mint tested
-- [ ] burn/redeem tested end-to-end as live ops
-- [x] duplicate scan tested on mint path
-- [x] reserve proof endpoint live
-- [ ] reserve dashboard live with snapshot-backed balances
-- [x] `/wallet/acp` shows wACP block
-- [x] docs page live
-- [x] emergency runbook written
-- [x] seed liquidity amount approved
-- [x] Pancake pair created
-- [x] swap test passed
-- [ ] remove liquidity test passed / documented
-
-## Hard red flags
-Do not add liquidity if any are true:
-- single EOA owns mint/admin/pause
-- no reserve proof endpoint
-- no duplicate tx protection
-- no pause switch
-- no bridge status on frontend
-- no BscScan verification
-- no public risk disclosure
-- no runbook for stuck mint/redeem
-- no supply mismatch monitoring
-
-## Recommended implementation order
-
-### Sprint 1 — `wacp-readiness-core`
-Backend:
-1. add `bridge_reserve_snapshots`
-2. add `bridge_intents` + state machine
-3. add `GET /api/v1/wacp/reserve-proof`
-4. add `GET /api/v1/wacp/status`
-5. add `GET /api/v1/wacp/intents/{id}`
-6. add reconciliation job
-7. add anomaly alerts
-
-Contracts:
-1. finalize wACP BEP-20
-2. add AccessControl roles
-3. add Pausable
-4. restrict mint/burn
-5. add tests
-6. prepare BscScan verification config
-
-Frontend:
-1. add compact wACP card to `/wallet/acp`
-2. add reserve proof card
-3. add bridge status badge
-4. add bridge intent timeline page
-5. add disabled Pancake CTA until pair live
-
-Ops:
-1. define operator key storage
-2. define multisig admin
-3. define emergency pause flow
-4. define reserve mismatch response
-5. define manual review process
-
-### Sprint 2 — `wacp-mainnet-trust`
-1. deploy and verify contracts
-2. publish docs pages
-3. expose public reserve proof
-4. validate alerts and dashboards
-5. dry-run limited mint/redeem on mainnet
-
-### Sprint 3 — `wacp-market-bootstrap`
-1. create V2 stable pair
-2. seed small liquidity
-3. run trade/remove tests
-4. enable Pancake CTA
-5. limited beta announcement
-6. increase liquidity gradually
-
-## Final verdict
-PancakeSwap itself is the easy part.
-The real gate is whether wACP looks and behaves like a provable, reserve-backed wrapped ACP asset with restart-safe bridge lifecycle, verified contracts, and public transparency.
+- V2 is simpler to manage operationally
+- USDT pair is easier to communicate publicly
+- WBNB adds volatility noise that is not useful for the first real launch
+
+## Phase 1 — Backing and mint envelope
+
+### Canonical invariant
+`minted_wACP_on_BSC <= ACP_reserve_smallest_units - operational_buffer`
+
+### Live reserve math snapshot
+From `GET /api/v1/wacp/reserve-proof` on 2026-05-07:
+- `acp_reserve_balance_smallest = 10099999499900`
+- `wacp_total_supply_wei = 1000000000000000000`
+- `wacp_total_supply_acp_smallest = 100000000`
+- `backing_ratio = 100999.994999`
+
+Equivalent human view:
+- reserve: about `100999.994999 ACP`
+- minted supply: `1 wACP`
+- unused mint headroom before buffer: about `100998.994999 ACP`
+
+### Practical conclusion
+A `100000 wACP` mint is **backing-feasible** right now if Andrew wants to consume almost all current reserve headroom.
+That does **not** mean all `100000 wACP` should be dropped into liquidity.
+
+## Phase 2 — Safe `100000 wACP` rollout sequence
+
+### Recommended sequence
+1. Keep reserve funded above `100000 ACP` first
+2. Mint `100000 wACP` to the treasury / operator wallet, not directly into LP
+3. Verify total supply and reserve proof immediately after mint
+4. Add only a controlled tranche of the minted inventory to PancakeSwap V2 liquidity
+5. Keep the rest in treasury for future market-making, OTC, treasury ops, or staged LP adds
+6. Publish official reserve-proof and pair links only after post-mint verification is clean
+
+### Why not LP the full 100000?
+Because it is strategically dumb.
+Full-LP deployment would:
+- make price discovery too brittle
+- expose too much inventory at once
+- leave no treasury-controlled supply for later operations
+- increase damage if initial pricing is wrong
+
+## Phase 3 — Liquidity sizing policy
+
+### Minimum operator checklist before adding liquidity
+- enough `BNB` for approvals and LP transactions
+- enough `USDT` for the paired side
+- minted `wACP` balance confirmed in the LP wallet
+- reserve proof still healthy after mint
+- official pair and swap links prepared
+- clear initial price target chosen in advance
+
+### Suggested staged liquidity approach
+Instead of LPing all `100000 wACP`, use staged seeding such as:
+- Stage A: small discovery liquidity
+- Stage B: moderate top-up after swap behavior is observed
+- Stage C: deeper liquidity only after market and ops stay stable
+
+The exact tranche sizes should be chosen deliberately from:
+- desired start price
+- USDT budget available
+- target slippage range
+- how much treasury inventory should remain off-LP
+
+## Phase 4 — Public trust artifacts
+Publish and keep consistent:
+- reserve proof endpoint: <https://ancap.cloud/api/v1/wacp/reserve-proof>
+- status endpoint: <https://ancap.cloud/api/v1/wacp/status>
+- contracts page: <https://ancap.cloud/docs/wacp/contracts>
+- PancakeSwap docs page: <https://ancap.cloud/docs/wacp/pancakeswap>
+- pair URL: <https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601>
+- swap URL: <https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
+
+## Phase 5 — Launch checklist for the `100000 wACP` step
+- [x] reserve is funded above `100000 ACP`
+- [x] reserve proof endpoint is live
+- [x] pair already exists
+- [x] swap URL already exists
+- [x] reverse redeem path is live
+- [x] wACP contract is verified
+- [ ] explicit mint transaction approved by Andrew in active session
+- [ ] explicit LP sizing approved by Andrew in active session
+- [ ] operator wallet balance checks done immediately before transaction
+- [ ] post-mint reserve proof rechecked
+- [ ] post-mint total supply rechecked
+- [ ] public announcement text prepared with official links
+
+## Red flags
+Do **not** proceed with the `100000 wACP` mint if any of these are true:
+- reserve proof turns stale or unhealthy
+- reserve drops below the intended mint envelope
+- LP wallet lacks enough gas or paired USDT
+- the mint would consume headroom needed for operational buffer
+- the intended LP plan has no explicit start price
+- the transaction is being rushed without immediate post-mint verification
+
+## Final recommendation
+Current state is good enough to prepare for the `100000 wACP` step.
+But the right move is:
+- reserve first
+- mint to treasury second
+- verify third
+- add **partial** liquidity fourth
+- publish links fifth
+
+That keeps the asset reserve-backed, the launch coherent, and the treasury flexible.
