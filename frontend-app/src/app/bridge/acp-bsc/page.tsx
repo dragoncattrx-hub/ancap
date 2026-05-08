@@ -288,9 +288,9 @@ export default function BridgeAcpBscPage() {
               <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
                 <h2 className="text-lg font-medium text-zinc-200">Reserve summary (DB)</h2>
                 <ul className="mt-3 list-inside list-disc text-sm text-zinc-400">
-                  <li>Total ACP smallest (all intents): {reserve.total_acp_smallest_locked_intent}</li>
+                  <li>Total ACP smallest (active + completed forward ops): {reserve.total_acp_smallest_locked_intent}</li>
                   <li>Total wACP wei (completed mints): {reserve.total_wacp_wei_completed_mints}</li>
-                  <li>Pending ops: {reserve.operations_pending}</li>
+                  <li>Active pending ops: {reserve.operations_pending}</li>
                   <li>Completed ops: {reserve.operations_completed}</li>
                 </ul>
               </section>

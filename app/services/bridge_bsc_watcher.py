@@ -46,6 +46,8 @@ async def _eth_get_logs(rpc_url: str, params: dict[str, Any]) -> list[dict[str, 
 
 
 _RELEASE_REQUESTED_TOPIC0 = keccak(text="ReleaseRequested(uint256,address,string,uint256)").hex()
+_BSC_RELEASE_LOG_SCAN_CHUNK = 1000
+_BSC_RELEASE_LOG_RECOVERY_LOOKBACK = 64
 
 
 def _decode_release_requested(log: dict[str, Any]) -> dict[str, Any] | None:
@@ -98,87 +100,118 @@ async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
         row = BridgeWatcherCheckpoint(chain_key="bsc", last_block_height=0)
         session.add(row)
     previous_height = int(row.last_block_height or 0)
-    row.last_block_height = height
 
     confirmed = 0
     matched_releases = 0
+    release_scan_from: int | None = None
+    release_scan_to: int | None = None
 
     gateway_addr = (settings.bridge_gateway_contract or "").strip().lower()
     confirmed_height = max(0, height - int(settings.bridge_bsc_confirmations) + 1)
-    if gateway_addr and confirmed_height > 0 and confirmed_height > previous_height:
-        try:
-            logs = await _eth_get_logs(
-                rpc,
-                {
-                    "fromBlock": hex(previous_height + 1),
-                    "toBlock": hex(confirmed_height),
-                    "address": gateway_addr,
-                    "topics": [f"0x{_RELEASE_REQUESTED_TOPIC0}"],
-                },
+    if gateway_addr and confirmed_height > 0:
+        has_pending_reverse = (
+            await session.scalar(
+                select(BridgeOperation.id)
+                .where(
+                    BridgeOperation.direction == "bsc_to_acp",
+                    BridgeOperation.status == "PENDING_BURN",
+                    BridgeOperation.bsc_tx_hash_burn.is_(None),
+                )
+                .limit(1)
             )
-            for raw_log in logs:
-                decoded = _decode_release_requested(raw_log)
-                if not decoded:
-                    continue
-                tx_hash = str(decoded["tx_hash"] or "")
-                log_index = int(decoded["log_index"])
-                dup = await session.scalar(
-                    select(BridgeOperation.id).where(
-                        BridgeOperation.bsc_tx_hash_burn == tx_hash,
-                        BridgeOperation.bsc_log_index == log_index,
+            is not None
+        )
+        scan_from = previous_height + 1
+        if has_pending_reverse:
+            recovery_from = max(1, confirmed_height - _BSC_RELEASE_LOG_RECOVERY_LOOKBACK + 1)
+            scan_from = min(scan_from, recovery_from)
+        if scan_from <= confirmed_height:
+            release_scan_from = scan_from
+            last_successful_to = scan_from - 1
+            try:
+                chunk_start = scan_from
+                while chunk_start <= confirmed_height:
+                    chunk_end = min(chunk_start + _BSC_RELEASE_LOG_SCAN_CHUNK - 1, confirmed_height)
+                    logs = await _eth_get_logs(
+                        rpc,
+                        {
+                            "fromBlock": hex(chunk_start),
+                            "toBlock": hex(chunk_end),
+                            "address": gateway_addr,
+                            "topics": [f"0x{_RELEASE_REQUESTED_TOPIC0}"],
+                        },
                     )
-                )
-                if dup is not None:
-                    continue
-                op = (
-                    await session.execute(
-                        select(BridgeOperation)
-                        .where(
-                            BridgeOperation.direction == "bsc_to_acp",
-                            BridgeOperation.status == "PENDING_BURN",
-                            BridgeOperation.bsc_tx_hash_burn.is_(None),
-                            BridgeOperation.user_bsc_address == str(decoded["from"]),
-                            BridgeOperation.user_acp_address == str(decoded["acp_address"]),
-                            BridgeOperation.amount_wacp_wei == int(decoded["amount"]),
+                    for raw_log in logs:
+                        decoded = _decode_release_requested(raw_log)
+                        if not decoded:
+                            continue
+                        tx_hash = str(decoded["tx_hash"] or "")
+                        log_index = int(decoded["log_index"])
+                        dup = await session.scalar(
+                            select(BridgeOperation.id).where(
+                                BridgeOperation.bsc_tx_hash_burn == tx_hash,
+                                BridgeOperation.bsc_log_index == log_index,
+                            )
                         )
-                        .order_by(BridgeOperation.created_at.asc())
-                        .limit(1)
-                    )
-                ).scalars().first()
-                if op is None:
-                    session.add(
-                        BridgeAuditEvent(
-                            operation_id=None,
-                            event_type="bsc_release_unmatched",
-                            payload_json=decoded,
+                        if dup is not None:
+                            continue
+                        op = (
+                            await session.execute(
+                                select(BridgeOperation)
+                                .where(
+                                    BridgeOperation.direction == "bsc_to_acp",
+                                    BridgeOperation.status == "PENDING_BURN",
+                                    BridgeOperation.bsc_tx_hash_burn.is_(None),
+                                    BridgeOperation.user_bsc_address == str(decoded["from"]),
+                                    BridgeOperation.user_acp_address == str(decoded["acp_address"]),
+                                    BridgeOperation.amount_wacp_wei == int(decoded["amount"]),
+                                )
+                                .order_by(BridgeOperation.created_at.asc())
+                                .limit(1)
+                            )
+                        ).scalars().first()
+                        if op is None:
+                            session.add(
+                                BridgeAuditEvent(
+                                    operation_id=None,
+                                    event_type="bsc_release_unmatched",
+                                    payload_json=decoded,
+                                )
+                            )
+                            continue
+                        op.bsc_tx_hash_burn = tx_hash
+                        op.bsc_log_index = log_index
+                        op.correlation_id = str(decoded["request_id"])
+                        session.add(
+                            BridgeAuditEvent(
+                                operation_id=op.id,
+                                event_type="bsc_release_requested",
+                                payload_json=decoded,
+                            )
                         )
-                    )
-                    continue
-                op.bsc_tx_hash_burn = tx_hash
-                op.bsc_log_index = log_index
-                op.correlation_id = str(decoded["request_id"])
-                session.add(
-                    BridgeAuditEvent(
-                        operation_id=op.id,
-                        event_type="bsc_release_requested",
-                        payload_json=decoded,
-                    )
-                )
-                await append_transition(
-                    session,
-                    op,
-                    "BURN_CONFIRMED",
-                    metadata={
-                        "tx_hash": tx_hash,
-                        "log_index": log_index,
-                        "request_id": decoded["request_id"],
-                        "block_number": decoded["block_number"],
-                        "confirmations": max(0, height - int(decoded["block_number"]) + 1),
-                    },
-                )
-                matched_releases += 1
-        except Exception as exc:
-            logger.warning("bsc release watcher failed: %s", exc)
+                        await append_transition(
+                            session,
+                            op,
+                            "BURN_CONFIRMED",
+                            metadata={
+                                "tx_hash": tx_hash,
+                                "log_index": log_index,
+                                "request_id": decoded["request_id"],
+                                "block_number": decoded["block_number"],
+                                "confirmations": max(0, height - int(decoded["block_number"]) + 1),
+                            },
+                        )
+                        matched_releases += 1
+                    last_successful_to = chunk_end
+                    chunk_start = chunk_end + 1
+                row.last_block_height = confirmed_height
+                release_scan_to = confirmed_height
+            except Exception as exc:
+                row.last_block_height = max(0, last_successful_to)
+                release_scan_to = max(0, last_successful_to)
+                logger.warning("bsc release watcher failed: %s", exc)
+        elif previous_height > confirmed_height:
+            row.last_block_height = confirmed_height
 
     confirmed = 0
     ops = (
@@ -262,7 +295,11 @@ async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
     return {
         "ok": True,
         "chain_key": "bsc",
-        "last_block_height": height,
+        "last_block_height": int(row.last_block_height or 0),
+        "latest_block_height": height,
+        "confirmed_height": confirmed_height,
         "confirmed_mints": confirmed,
         "matched_releases": matched_releases,
+        "release_scan_from": release_scan_from,
+        "release_scan_to": release_scan_to,
     }

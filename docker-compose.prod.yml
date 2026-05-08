@@ -36,17 +36,9 @@ services:
       ACP_HOT_MNEMONIC_FILE: /run/secrets/bridge-bsc/acp-reserve-mnemonic.txt
       ACP_WALLET_OPERATOR_SECRET: ${ACP_WALLET_OPERATOR_SECRET:-}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
-      BRIDGE_RAIL_ENABLED: ${BRIDGE_RAIL_ENABLED:-false}
-      BRIDGE_RAIL_PAUSED: ${BRIDGE_RAIL_PAUSED:-false}
-      BRIDGE_DRY_RUN: ${BRIDGE_DRY_RUN:-true}
-      BRIDGE_BSC_RPC_URL: ${BRIDGE_BSC_RPC_URL:-}
-      BRIDGE_WACP_CONTRACT: ${BRIDGE_WACP_CONTRACT:-}
-      BRIDGE_GATEWAY_CONTRACT: ${BRIDGE_GATEWAY_CONTRACT:-}
-      BRIDGE_BSC_PRIVATE_KEY: ${BRIDGE_BSC_PRIVATE_KEY:-}
-      BRIDGE_RESERVE_ACP_ADDRESS: ${BRIDGE_RESERVE_ACP_ADDRESS:-}
-      BRIDGE_ACP_CONFIRMATIONS: ${BRIDGE_ACP_CONFIRMATIONS:-30}
-      BRIDGE_OPERATOR_SECRET: ${BRIDGE_OPERATOR_SECRET:-}
-      ACP_EXPLORER_TX_BASE: ${ACP_EXPLORER_TX_BASE:-https://ancap.cloud/acp/tx}
+      # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
+      # Do not mirror them here with ${VAR:-default} fallbacks: compose-level
+      # environment entries override env_file and can silently blank live bridge config.
     volumes:
       # Persist ACP hot-wallet mnemonic outside the container.
       # Directory is gitignored by project settings.

@@ -247,6 +247,125 @@ def test_bsc_release_log_matches_pending_redeem_and_confirms_burn(client, monkey
     assert op["bsc_log_index"] == 2
 
 
+def test_bsc_release_log_scan_failure_does_not_advance_checkpoint_past_unscanned_range(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_BSC_RPC_URL", "https://bsc.example.invalid")
+    monkeypatch.setenv("BRIDGE_GATEWAY_CONTRACT", "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b")
+    monkeypatch.setenv("BRIDGE_BSC_CONFIRMATIONS", "2")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    from app.db.models import BridgeWatcherCheckpoint
+    import app.services.bridge_bsc_watcher as watcher
+
+    live_height = 5000
+    confirmed_height = live_height - 2 + 1
+
+    async def fake_rpc(rpc_url, method, params):
+        if method == "eth_blockNumber":
+            return hex(live_height)
+        if method == "eth_getLogs":
+            raise RuntimeError("{'code': -32005, 'message': 'limit exceeded'}")
+        raise AssertionError(f"unexpected rpc method: {method}")
+
+    async def reset_and_run_tick():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                cp = await session.get(BridgeWatcherCheckpoint, "bsc")
+                if cp is None:
+                    cp = BridgeWatcherCheckpoint(chain_key="bsc", last_block_height=0)
+                    session.add(cp)
+                else:
+                    cp.last_block_height = 0
+                await session.commit()
+            async with Session() as session:
+                result = await watcher.tick_bsc_checkpoint(session)
+                await session.commit()
+                cp = await session.get(BridgeWatcherCheckpoint, "bsc")
+                return result, cp.last_block_height
+        finally:
+            await engine.dispose()
+
+    original_rpc = watcher._rpc
+    watcher._rpc = fake_rpc
+    try:
+        result, stored_height = anyio.run(reset_and_run_tick)
+    finally:
+        watcher._rpc = original_rpc
+
+    assert result["ok"] is True
+    assert result["matched_releases"] == 0
+    assert result["confirmed_height"] == confirmed_height
+    assert result["release_scan_from"] == 1
+    assert result["release_scan_to"] == 0
+    assert stored_height == 0
+
+
+def test_bsc_release_log_scan_chunks_large_ranges(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_BSC_RPC_URL", "https://bsc.example.invalid")
+    monkeypatch.setenv("BRIDGE_GATEWAY_CONTRACT", "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b")
+    monkeypatch.setenv("BRIDGE_BSC_CONFIRMATIONS", "2")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    from app.db.models import BridgeWatcherCheckpoint
+    import app.services.bridge_bsc_watcher as watcher
+
+    live_height = 2505
+    confirmed_height = live_height - 2 + 1
+    ranges = []
+
+    async def fake_rpc(rpc_url, method, params):
+        if method == "eth_blockNumber":
+            return hex(live_height)
+        if method == "eth_getLogs":
+            p = params[0]
+            start = int(p["fromBlock"], 16)
+            end = int(p["toBlock"], 16)
+            ranges.append((start, end))
+            return []
+        raise AssertionError(f"unexpected rpc method: {method}")
+
+    async def reset_and_run_tick():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                cp = await session.get(BridgeWatcherCheckpoint, "bsc")
+                if cp is None:
+                    cp = BridgeWatcherCheckpoint(chain_key="bsc", last_block_height=0)
+                    session.add(cp)
+                else:
+                    cp.last_block_height = 0
+                await session.commit()
+            async with Session() as session:
+                result = await watcher.tick_bsc_checkpoint(session)
+                await session.commit()
+                cp = await session.get(BridgeWatcherCheckpoint, "bsc")
+                return result, cp.last_block_height
+        finally:
+            await engine.dispose()
+
+    original_rpc = watcher._rpc
+    watcher._rpc = fake_rpc
+    try:
+        result, stored_height = anyio.run(reset_and_run_tick)
+    finally:
+        watcher._rpc = original_rpc
+
+    assert result["ok"] is True
+    assert result["confirmed_height"] == confirmed_height
+    assert ranges == [(1, 1000), (1001, 2000), (2001, confirmed_height)]
+    assert result["release_scan_from"] == 1
+    assert result["release_scan_to"] == confirmed_height
+    assert stored_height == confirmed_height
+
+
 def test_orchestrator_submits_acp_payout_for_confirmed_burn(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")

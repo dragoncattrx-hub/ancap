@@ -472,12 +472,20 @@ async def bridge_reserve_summary(session: AsyncSession = Depends(get_db)):
     if not s.bridge_rail_enabled:
         raise HTTPException(status_code=503, detail="Bridge rail is disabled")
 
+    active_forward_statuses = (
+        "PENDING_DEPOSIT",
+        "CONFIRMED_ON_ACP",
+        "MINT_REQUESTED",
+        "MINTED_ON_BSC",
+    )
+    locked_forward_statuses = (*active_forward_statuses, "COMPLETED")
+
     pending = await session.scalar(
         select(func.count())
         .select_from(BridgeOperation)
         .where(
             BridgeOperation.direction == "acp_to_bsc",
-            BridgeOperation.status != "COMPLETED",
+            BridgeOperation.status.in_(active_forward_statuses),
         )
     )
     completed = await session.scalar(
@@ -491,6 +499,7 @@ async def bridge_reserve_summary(session: AsyncSession = Depends(get_db)):
     total_acp = await session.scalar(
         select(func.coalesce(func.sum(BridgeOperation.amount_acp_smallest), 0)).where(
             BridgeOperation.direction == "acp_to_bsc",
+            BridgeOperation.status.in_(locked_forward_statuses),
         )
     )
     total_wacp = await session.scalar(
