@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
+import { useWallet } from "./WalletProvider";
+import { getPreferredEvmProvider } from "@/lib/evmProvider";
 
 type NavItem = {
   label: string;
@@ -203,8 +205,9 @@ function NavScrollWithFades({ children }: { children: React.ReactNode }) {
 }
 
 export function Navigation() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, loginWithWallet } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const { isConnected, isConnecting, shortAddress, connect, clearError, chainId } = useWallet();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
@@ -223,6 +226,21 @@ export function Navigation() {
   }, [mobileMenuOpen]);
 
   const userLabel = user?.display_name || user?.email || "";
+
+  const handleWalletContinue = async () => {
+    clearError();
+    if (!isConnected) {
+      await connect();
+      return;
+    }
+    const provider = getPreferredEvmProvider();
+    if (!isAuthenticated && provider) {
+      const accountsRaw = await provider.request({ method: "eth_accounts" });
+      const accounts = Array.isArray(accountsRaw) ? accountsRaw : [];
+      const address = typeof accounts[0] === "string" ? accounts[0] : "";
+      if (address) await loginWithWallet(address, chainId);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-[100] border-b border-white/8 bg-[#040816]/90 backdrop-blur-xl">
@@ -301,6 +319,33 @@ export function Navigation() {
             >
               {t("nav.acpWallet")}
             </Link>
+            {isConnected ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const provider = getPreferredEvmProvider();
+                  if (!isAuthenticated && provider) {
+                    provider.request({ method: "eth_accounts" }).then(async (accountsRaw) => {
+                      const accounts = Array.isArray(accountsRaw) ? accountsRaw : [];
+                      const address = typeof accounts[0] === "string" ? accounts[0] : "";
+                      if (address) await loginWithWallet(address, chainId);
+                    }).catch(() => undefined);
+                  }
+                }}
+                className="whitespace-nowrap rounded-full border border-violet-400/30 bg-violet-500/12 px-3 py-2 text-[12px] font-semibold text-violet-100 transition hover:bg-violet-500/18 hover:text-white"
+              >
+                {shortAddress || t("auth.walletConnected")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleWalletContinue}
+                disabled={isConnecting}
+                className="whitespace-nowrap rounded-full border border-white/12 bg-white/[0.03] px-3 py-2 text-[12px] font-semibold text-white/88 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isConnecting ? t("auth.connectingWallet") : t("auth.connectWallet")}
+              </button>
+            )}
             <div className="h-6 w-px shrink-0 bg-white/10" />
             <LangSwitcher lang={lang} setLang={setLang} />
             <div className="h-6 w-px bg-white/10" />
@@ -460,6 +505,27 @@ export function Navigation() {
                     >
                       {t("nav.acpWallet")}
                     </Link>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        if (!isConnected) {
+                          clearError();
+                          await connect();
+                          return;
+                        }
+                        const provider = getPreferredEvmProvider();
+                        if (!isAuthenticated && provider) {
+                          const accountsRaw = await provider.request({ method: "eth_accounts" });
+                          const accounts = Array.isArray(accountsRaw) ? accountsRaw : [];
+                          const address = typeof accounts[0] === "string" ? accounts[0] : "";
+                          if (address) await loginWithWallet(address, chainId);
+                        }
+                      }}
+                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
+                    >
+                      {isConnected ? (shortAddress || t("auth.walletConnected")) : (isConnecting ? t("auth.connectingWallet") : t("auth.connectWallet"))}
+                    </button>
 
                   </div>
                   <div className="flex items-center gap-2 border-t border-white/10 pt-3">

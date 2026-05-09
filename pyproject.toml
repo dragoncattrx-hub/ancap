@@ -19,6 +19,7 @@ dependencies = [
     "python-multipart>=0.0.17",
     "psycopg2-binary>=2.9",
     "httpx>=0.28",
+    "eth-account>=0.13",
 ]
 
 [build-system]

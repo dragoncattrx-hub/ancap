@@ -8,6 +8,9 @@ from app.schemas.common import (
 from app.schemas.auth import (
     AuthLoginRequest,
     AuthLoginResponse,
+    WalletAuthNonceRequest,
+    WalletAuthNonceResponse,
+    WalletAuthVerifyRequest,
     UserCreateRequest,
     UserPublic,
 )
@@ -126,6 +129,9 @@ __all__ = [
     "Timestamp",
     "AuthLoginRequest",
     "AuthLoginResponse",
+    "WalletAuthNonceRequest",
+    "WalletAuthNonceResponse",
+    "WalletAuthVerifyRequest",
     "UserCreateRequest",
     "UserPublic",
     "AgentCreateRequest",

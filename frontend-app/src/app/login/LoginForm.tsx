@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
+import { WalletConnectCard } from "@/components/WalletConnectCard";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -129,6 +130,8 @@ export function LoginForm() {
               </Link>
             </div>
           </form>
+
+          <WalletConnectCard />
         </div>
       </div>
 

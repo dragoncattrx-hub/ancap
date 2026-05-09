@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
+import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { walletAcp } from "@/lib/api";
 
 type BalanceResponse = {
@@ -464,6 +465,8 @@ export default function AcpWalletPage() {
               {swapInfo}
             </div>
           )}
+          <WalletConnectCard />
+
           {loadWarnings.length > 0 && (
             <div
               style={{

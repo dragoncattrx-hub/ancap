@@ -1,9 +1,18 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 
-from app.schemas import AuthLoginRequest, AuthLoginResponse, UserCreateRequest, UserPublic
+from app.schemas import (
+    AuthLoginRequest,
+    AuthLoginResponse,
+    UserCreateRequest,
+    UserPublic,
+    WalletAuthNonceRequest,
+    WalletAuthNonceResponse,
+    WalletAuthVerifyRequest,
+)
 from app.services.auth import create_access_token, hash_password, verify_password
 from app.services.acp_wallet import create_wallet_for_user, get_wallet_for_user
 from app.services.referrals import attribute_referral
+from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
 from app.api.deps import DbSession
 from app.db.models import User
 from sqlalchemy import select
@@ -34,6 +43,55 @@ async def login(body: AuthLoginRequest, session: DbSession):
         token_type="bearer",
         expires_in=3600,
         wallet_backup_mnemonic=wallet_backup_mnemonic,
+    )
+
+
+@router.post("/wallet/nonce", response_model=WalletAuthNonceResponse)
+async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: DbSession):
+    forwarded_host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
+    host = forwarded_host or (request.headers.get("host") or "ancap.cloud").split(",")[0].strip()
+
+    forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip().lower()
+    scheme = forwarded_proto or (request.url.scheme or "https").strip().lower()
+    if scheme not in {"http", "https"}:
+        scheme = "https"
+
+    default_uri = f"{scheme}://{host}/login"
+    challenge = await create_wallet_auth_challenge(
+        session,
+        address=body.address,
+        chain_id=body.chain_id,
+        domain=(body.domain or host).strip(),
+        uri=(body.uri or default_uri).strip(),
+    )
+    return WalletAuthNonceResponse(
+        challenge_id=str(challenge.id),
+        address=challenge.wallet_address,
+        chain_id=int(challenge.chain_id or 56),
+        nonce=challenge.nonce,
+        message=challenge.message,
+        issued_at=challenge.issued_at,
+        expires_at=challenge.expires_at,
+    )
+
+
+@router.post("/wallet/verify", response_model=AuthLoginResponse)
+async def wallet_verify(body: WalletAuthVerifyRequest, session: DbSession):
+    try:
+        token, _user = await verify_wallet_auth_and_issue_token(
+            session,
+            challenge_id=body.challenge_id,
+            address=body.address,
+            signature=body.signature,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    return AuthLoginResponse(
+        access_token=token,
+        token_type="bearer",
+        expires_in=3600,
+        wallet_backup_mnemonic=None,
     )
 
 

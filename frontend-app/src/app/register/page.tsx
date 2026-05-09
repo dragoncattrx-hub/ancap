@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
+import { WalletConnectCard } from "@/components/WalletConnectCard";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -168,6 +169,8 @@ export default function RegisterPage() {
               </a>
             </div>
           </form>
+
+          <WalletConnectCard />
         </div>
       </div>
 

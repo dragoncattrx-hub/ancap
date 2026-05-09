@@ -16,6 +16,29 @@ class AuthLoginResponse(BaseModel):
     wallet_backup_mnemonic: Optional[str] = None
 
 
+class WalletAuthNonceRequest(BaseModel):
+    address: str = Field(..., min_length=42, max_length=66)
+    chain_id: Optional[int] = None
+    domain: Optional[str] = Field(None, min_length=1, max_length=255)
+    uri: Optional[str] = Field(None, min_length=1, max_length=500)
+
+
+class WalletAuthNonceResponse(BaseModel):
+    challenge_id: str
+    address: str
+    chain_id: int
+    nonce: str
+    message: str
+    issued_at: datetime
+    expires_at: datetime
+
+
+class WalletAuthVerifyRequest(BaseModel):
+    challenge_id: str = Field(..., min_length=1, max_length=64)
+    address: str = Field(..., min_length=42, max_length=66)
+    signature: str = Field(..., min_length=10, max_length=2048)
+
+
 class UserCreateRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)

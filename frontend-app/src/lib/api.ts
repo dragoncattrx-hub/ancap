@@ -87,6 +87,22 @@ export const auth = {
     return data;
   },
 
+  async walletNonce(address: string, chain_id?: number, domain?: string, uri?: string) {
+    return apiFetch("/auth/wallet/nonce", {
+      method: "POST",
+      body: JSON.stringify({ address, chain_id, domain, uri }),
+    });
+  },
+
+  async walletVerify(challenge_id: string, address: string, signature: string) {
+    const data = await apiFetch("/auth/wallet/verify", {
+      method: "POST",
+      body: JSON.stringify({ challenge_id, address, signature }),
+    });
+    setToken(data.access_token);
+    return data;
+  },
+
   async register(email: string, password: string, display_name: string, referral_code?: string) {
     return apiFetch("/auth/users", {
       method: "POST",

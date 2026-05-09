@@ -134,6 +134,32 @@ class UserAcpWallet(Base):
     user = relationship("User", foreign_keys=[user_id])
 
 
+class UserEvmWallet(Base):
+    __tablename__ = "user_evm_wallets"
+
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    wallet_address = Column(String(66), nullable=False, unique=True, index=True)
+    chain_id = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+
+class WalletAuthChallenge(Base):
+    __tablename__ = "wallet_auth_challenges"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    wallet_address = Column(String(66), nullable=False, index=True)
+    chain_id = Column(Integer, nullable=True)
+    nonce = Column(String(128), nullable=False, unique=True, index=True)
+    message = Column(Text, nullable=False)
+    issued_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
 class Agent(Base):
     __tablename__ = "agents"
 
