@@ -7,6 +7,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
+import { NetworkBackground } from "@/components/NetworkBackground";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,6 +16,7 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [walletMnemonic, setWalletMnemonic] = useState<string>("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const { login } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -24,7 +27,10 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      const mnemonic = await login(email, password);
+      if (!turnstileToken) {
+        throw new Error("Complete the captcha first");
+      }
+      const mnemonic = await login(email, password, turnstileToken);
       if (mnemonic) {
         setWalletMnemonic(mnemonic);
       } else {
@@ -40,7 +46,12 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
+      <NetworkBackground />
       <Navigation />
+      <div
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[radial-gradient(ellipse_85%_55%_at_50%_-25%,rgba(52,211,153,0.11),transparent_55%)]"
+        aria-hidden
+      />
       <div
         className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center"
         style={{ padding: "24px" }}
@@ -64,6 +75,7 @@ export function LoginForm() {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -89,6 +101,7 @@ export function LoginForm() {
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -103,6 +116,12 @@ export function LoginForm() {
                 }}
               />
             </div>
+
+            <TurnstileWidget
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              action="login"
+              onTokenChange={setTurnstileToken}
+            />
 
             {error && (
               <div
@@ -131,7 +150,7 @@ export function LoginForm() {
             </div>
           </form>
 
-          <WalletConnectCard />
+          <WalletConnectCard turnstileToken={turnstileToken} turnstileRequired turnstileErrorMessage="Complete the captcha to continue." />
         </div>
       </div>
 

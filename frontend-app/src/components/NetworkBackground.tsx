@@ -29,16 +29,26 @@ export function NetworkBackground() {
       vy: number;
       r: number;
     }> = [];
-    const nodeCount = 80;
-    const maxDist = 180;
+    let nodeCount = 28;
+    const maxDist = 150;
     let scrollPhase = 0;
     let rafId: number | null = null;
+    let scrollRafId: number | null = null;
+
+    function targetNodeCount() {
+      const area = Math.max((width || 0) * (height || 0), 0);
+      return Math.max(18, Math.min(48, Math.round(area / 50000)));
+    }
 
     function resize() {
       if (!canvas) return;
       width = canvas.width = canvas.offsetWidth;
       height = canvas.height = canvas.offsetHeight;
-      if (nodes.length === 0) initNodes();
+      const nextCount = targetNodeCount();
+      if (nodes.length === 0 || nextCount !== nodeCount) {
+        nodeCount = nextCount;
+        initNodes();
+      }
     }
 
     function initNodes() {
@@ -47,9 +57,9 @@ export function NetworkBackground() {
         nodes.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          r: 1.5 + Math.random() * 1.5,
+          vx: (Math.random() - 0.5) * 0.28,
+          vy: (Math.random() - 0.5) * 0.28,
+          r: 1.3 + Math.random() * 1.2,
         });
       }
     }
@@ -119,7 +129,7 @@ export function NetworkBackground() {
         ctx.fill();
       });
 
-      if (animate) {
+      if (animate && !document.hidden) {
         rafId = requestAnimationFrame(() => drawFrame(true));
       }
     }
@@ -143,11 +153,23 @@ export function NetworkBackground() {
 
     function onScroll() {
       updateScrollPhase();
-      if (prefersReducedMotion) {
-        // Re-render the static frame so scroll-driven hue/opacity still updates,
-        // but without continuous animation.
-        drawFrame(false);
+      if (scrollRafId !== null) return;
+      scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = null;
+        if (prefersReducedMotion) {
+          // Re-render the static frame so scroll-driven hue/opacity still updates,
+          // but without continuous animation.
+          drawFrame(false);
+        }
+      });
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) {
+        cancelLoop();
+        return;
       }
+      startLoop();
     }
 
     function onMotionChange(e: MediaQueryListEvent) {
@@ -157,6 +179,7 @@ export function NetworkBackground() {
 
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
     motionQuery?.addEventListener?.("change", onMotionChange);
     resize();
     updateScrollPhase();
@@ -165,7 +188,9 @@ export function NetworkBackground() {
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       motionQuery?.removeEventListener?.("change", onMotionChange);
+      if (scrollRafId !== null) cancelAnimationFrame(scrollRafId);
       cancelLoop();
     };
   }, []);

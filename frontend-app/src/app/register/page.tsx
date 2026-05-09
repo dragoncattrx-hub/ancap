@@ -7,6 +7,7 @@ import { NetworkBackground } from "@/components/NetworkBackground";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [walletMnemonic, setWalletMnemonic] = useState<string>("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const { register } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -29,7 +31,10 @@ export default function RegisterPage() {
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("ref")?.trim() || ""
           : "";
-      const mnemonic = await register(email, password, displayName, referralCode || undefined);
+      if (!turnstileToken) {
+        throw new Error("Complete the captcha first");
+      }
+      const mnemonic = await register(email, password, displayName, referralCode || undefined, turnstileToken);
       if (mnemonic) {
         setWalletMnemonic(mnemonic);
       } else {
@@ -71,6 +76,7 @@ export default function RegisterPage() {
               <input
                 id="display_name"
                 type="text"
+                autoComplete="nickname"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
@@ -96,6 +102,7 @@ export default function RegisterPage() {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -121,6 +128,7 @@ export default function RegisterPage() {
               <input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -139,6 +147,12 @@ export default function RegisterPage() {
                 {t("auth.minPassword")}
               </div>
             </div>
+
+            <TurnstileWidget
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              action="register"
+              onTokenChange={setTurnstileToken}
+            />
 
             {error && (
               <div style={{
@@ -170,7 +184,7 @@ export default function RegisterPage() {
             </div>
           </form>
 
-          <WalletConnectCard />
+          <WalletConnectCard showContinue={false} />
         </div>
       </div>
 
