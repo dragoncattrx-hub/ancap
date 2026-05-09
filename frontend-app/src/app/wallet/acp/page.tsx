@@ -74,6 +74,8 @@ export default function AcpWalletPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
 
   const [busy, setBusy] = useState(false);
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [error, setError] = useState("");
   const [loadWarnings, setLoadWarnings] = useState<string[]>([]);
 
@@ -119,7 +121,6 @@ export default function AcpWalletPage() {
     const resolved = (depositAddress || balance?.address || "").trim();
     if (!resolved) return;
     setTxAddressInput((prev) => (prev ? prev : resolved));
-    setTxAddressActive((prev) => (prev ? prev : resolved));
   }, [depositAddress, balance?.address]);
 
   async function refreshAll() {
@@ -127,11 +128,10 @@ export default function AcpWalletPage() {
     setError("");
     setLoadWarnings([]);
     try {
-      const [addrRes, balRes, ordersRes, txRes] = await Promise.allSettled([
+      const [addrRes, balRes, ordersRes] = await Promise.allSettled([
         walletAcp.getDepositAddress(),
         walletAcp.getHotBalance(),
         walletAcp.listSwapOrders(),
-        walletAcp.listTransactions({ limit: 50 }),
       ]);
 
       const warnings: string[] = [];
@@ -144,6 +144,7 @@ export default function AcpWalletPage() {
 
       if (balRes.status === "fulfilled") {
         setBalance(balRes.value || null);
+        setTxAddressBalance(balRes.value || null);
       } else {
         warnings.push(`Hot balance unavailable: ${balRes.reason?.message || "unknown error"}`);
       }
@@ -158,23 +159,7 @@ export default function AcpWalletPage() {
         warnings.push(`Swap history unavailable: ${ordersRes.reason?.message || "unknown error"}`);
       }
 
-      if (txRes.status === "fulfilled") {
-        const items = Array.isArray(txRes.value) ? txRes.value : [];
-        setTransactions(items);
-      } else {
-        const txErr = String(txRes.reason?.message || "");
-        if (txErr.includes("API error 502") || txErr.includes("API error 503") || txErr.includes("API error 504")) {
-          // History endpoint can be temporarily unavailable while wallet actions still work.
-          setTransactions([]);
-        } else {
-          warnings.push(`On-chain history unavailable: ${txErr || "unknown error"}`);
-        }
-      }
-      if (balRes.status === "fulfilled") {
-        setTxAddressBalance(balRes.value || null);
-      }
-
-      const any401 = [addrRes, balRes, ordersRes, txRes].some(
+      const any401 = [addrRes, balRes, ordersRes].some(
         (res) =>
           res.status === "rejected" &&
           String((res.reason as any)?.message || "").includes("API error 401"),
@@ -224,16 +209,19 @@ export default function AcpWalletPage() {
     return { valid: Object.keys(errors).length === 0, errors };
   }
 
-  async function refreshTransactionsByAddress(address: string) {
+  async function refreshTransactionsByAddress(address: string, options?: { silent?: boolean; skipBalance?: boolean }) {
     const target = address.trim();
     if (!target) return;
-    setBusy(true);
-    setError("");
+    if (!options?.silent) {
+      setHistoryBusy(true);
+      setError("");
+    }
     try {
-      const [txRes, balRes] = await Promise.allSettled([
-        walletAcp.listTransactions({ address: target, limit: 50 }),
-        walletAcp.getBalance({ address: target }),
-      ]);
+      const requests: Promise<any>[] = [walletAcp.listTransactions({ address: target, limit: 20 })];
+      if (!options?.skipBalance) {
+        requests.push(walletAcp.getBalance({ address: target }));
+      }
+      const [txRes, balRes] = await Promise.allSettled(requests);
       if (txRes.status === "fulfilled") {
         setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
       } else {
@@ -243,25 +231,34 @@ export default function AcpWalletPage() {
         }
         setTransactions([]);
       }
-      if (balRes.status === "fulfilled") {
-        setTxAddressBalance((balRes.value as BalanceResponse) || null);
-      } else {
-        const balErr = String(balRes.reason?.message || "");
-        if (!balErr.includes("API error 502") && !balErr.includes("API error 503") && !balErr.includes("API error 504")) {
-          throw balRes.reason;
+      if (!options?.skipBalance) {
+        if (balRes && balRes.status === "fulfilled") {
+          setTxAddressBalance((balRes.value as BalanceResponse) || null);
+        } else {
+          const balErr = String((balRes as PromiseRejectedResult | undefined)?.reason?.message || "");
+          if (!balErr.includes("API error 502") && !balErr.includes("API error 503") && !balErr.includes("API error 504")) {
+            throw (balRes as PromiseRejectedResult | undefined)?.reason;
+          }
+          setTxAddressBalance({ address: target, units: "0", acp: "0", utxo_count: 0 });
         }
-        setTxAddressBalance({ address: target, units: "0", acp: "0", utxo_count: 0 });
+      } else if (singleWalletAddress && target === singleWalletAddress && balance) {
+        setTxAddressBalance(balance);
       }
       setTxAddressActive(target);
+      setHistoryLoaded(true);
     } catch (e: any) {
       const msg = String(e?.message || "");
       if (msg.includes("API error 401")) {
         router.push("/login");
         return;
       }
-      setError(msg || "Failed to load on-chain history");
+      if (!options?.silent) {
+        setError(msg || "Failed to load on-chain history");
+      }
     } finally {
-      setBusy(false);
+      if (!options?.silent) {
+        setHistoryBusy(false);
+      }
     }
   }
 
@@ -834,7 +831,7 @@ export default function AcpWalletPage() {
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => refreshTransactionsByAddress(txAddressInput)}
-                    disabled={busy || !txAddressInput.trim()}
+                    disabled={historyBusy || !txAddressInput.trim()}
                   >
                     Load history
                   </button>
@@ -845,9 +842,9 @@ export default function AcpWalletPage() {
                       const hot = (singleWalletAddress || "").trim();
                       if (!hot) return;
                       setTxAddressInput(hot);
-                      refreshTransactionsByAddress(hot);
+                      refreshTransactionsByAddress(hot, { skipBalance: !!balance });
                     }}
-                    disabled={busy || !singleWalletAddress}
+                    disabled={historyBusy || !singleWalletAddress}
                   >
                     Use hot wallet
                   </button>
@@ -869,7 +866,11 @@ export default function AcpWalletPage() {
                 </div>
               </div>
 
-              {transactions.length === 0 ? (
+              {!historyLoaded ? (
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>
+                  History is loaded on demand to keep the wallet page fast. Click <strong style={{ color: "var(--text)" }}>Load history</strong> when needed.
+                </div>
+              ) : transactions.length === 0 ? (
                 <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
               ) : (
                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>

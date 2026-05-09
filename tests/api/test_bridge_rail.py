@@ -516,19 +516,16 @@ def test_orchestrator_rejects_hot_wallet_reserve_mismatch(client, monkeypatch):
 
     import app.services.bridge_orchestrator as orch
 
-    original_run_walletd = orch._hot_wallet_transfer.__globals__.get("_run_walletd") if False else None
     from app.api.routers import wallet_acp as wallet_acp_router
 
-    original_loader = wallet_acp_router._load_or_create_valid_hot_mnemonic
+    original_loader = wallet_acp_router._load_existing_valid_hot_signer
     original_require_rpc = wallet_acp_router._require_acp_rpc_url
     original_run = wallet_acp_router._run_walletd
 
-    wallet_acp_router._load_or_create_valid_hot_mnemonic = lambda: "test mnemonic"
+    wallet_acp_router._load_existing_valid_hot_signer = lambda: (["--mnemonic", "test mnemonic"], "acp1qderiveddifferent0000000000000000000000000")
     wallet_acp_router._require_acp_rpc_url = lambda: "http://acp.invalid/rpc"
 
     def fake_run_walletd(args, timeout_s=180):
-        if args[:2] == ["address", "--mnemonic"]:
-            return {"address": "acp1qderiveddifferent0000000000000000000000000"}
         raise AssertionError(args)
 
     wallet_acp_router._run_walletd = fake_run_walletd
@@ -539,7 +536,7 @@ def test_orchestrator_rejects_hot_wallet_reserve_mismatch(client, monkeypatch):
         except RuntimeError as exc:
             assert "ACP hot wallet address mismatch" in str(exc)
     finally:
-        wallet_acp_router._load_or_create_valid_hot_mnemonic = original_loader
+        wallet_acp_router._load_existing_valid_hot_signer = original_loader
         wallet_acp_router._require_acp_rpc_url = original_require_rpc
         wallet_acp_router._run_walletd = original_run
 

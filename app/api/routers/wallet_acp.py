@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import re
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
@@ -39,6 +40,15 @@ from app.schemas import (
 
 
 router = APIRouter(prefix="/wallet/acp", tags=["Wallet (ACP)"])
+
+_CHAIN_SCAN_CACHE_TTL_S = 15.0
+_chain_scan_cache: dict[str, object] = {
+    "expires_at": 0.0,
+    "data": None,
+}
+
+_CHAIN_BALANCE_CACHE_TTL_S = 15.0
+_chain_balance_cache: dict[str, tuple[float, dict]] = {}
 
 
 def _walletd_cmd() -> list[str]:
@@ -435,7 +445,7 @@ async def _decorate_balance_for_user(
     )
 
 
-def _rpc_call(rpc_url: str, method: str, params: list | None = None):
+def _rpc_call(rpc_url: str, method: str, params: list | dict | None = None):
     body = {"jsonrpc": "2.0", "id": "wallet-acp-history", "method": method, "params": params or []}
     try:
         r = httpx.post(rpc_url, json=body, timeout=30.0)
@@ -451,6 +461,80 @@ def _rpc_call(rpc_url: str, method: str, params: list | None = None):
     if payload.get("error"):
         raise HTTPException(status_code=502, detail=f"ACP RPC error: {payload['error']}")
     return payload.get("result")
+
+
+def _rpc_balance_for_address(address: str) -> dict:
+    target = (address or "").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="address is required")
+
+    now = time.monotonic()
+    cached = _chain_balance_cache.get(target)
+    if cached is not None:
+        expires_at, payload = cached
+        if now < expires_at:
+            return dict(payload)
+
+    rpc_url = _require_acp_rpc_url()
+    best_height = int(_rpc_call(rpc_url, "getblockcount", []) or 0)
+    if best_height <= 0:
+        payload = {"address": target, "units": "0", "acp": "0", "utxo_count": 0}
+        _chain_balance_cache[target] = (now + _CHAIN_BALANCE_CACHE_TTL_S, payload)
+        return dict(payload)
+
+    unspent: dict[str, int] = {}
+    spent: set[str] = set()
+
+    for height in range(1, best_height + 1):
+        block_hash = _rpc_call(rpc_url, "getblockhash", {"height": height})
+        block = _rpc_call(rpc_url, "getblock", {"blockhash": block_hash, "verbose": 2}) or {}
+        txs = block.get("tx") or []
+
+        for tx in txs:
+            txid = str(tx.get("txid") or "")
+            if not txid:
+                continue
+
+            for vin in tx.get("vin") or []:
+                prev_txid = vin.get("prev_txid")
+                prev_vout = vin.get("vout")
+                if prev_txid is None or prev_vout is None:
+                    continue
+                key = f"{prev_txid}:{int(prev_vout)}"
+                spent.add(key)
+                unspent.pop(key, None)
+
+            for idx, vout in enumerate(tx.get("vout") or []):
+                out_addr = str(vout.get("recipient_address") or "")
+                if out_addr != target:
+                    continue
+                key = f"{txid}:{idx}"
+                if key in spent:
+                    continue
+                unspent[key] = _json_chain_amount_to_int(vout.get("amount"))
+
+    units = sum(unspent.values())
+    payload = {
+        "address": target,
+        "units": str(units),
+        "acp": _units_to_acp_str(units),
+        "utxo_count": len(unspent),
+    }
+    _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, payload)
+    return dict(payload)
+
+
+def _load_balance_result(address: str) -> dict:
+    target = (address or "").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="address is required")
+    rpc_url = _require_acp_rpc_url()
+    try:
+        return _run_walletd(["balance", "--rpc", rpc_url, "--address", target], timeout_s=180)
+    except HTTPException as exc:
+        if exc.status_code not in (502, 503, 504):
+            raise
+        return _rpc_balance_for_address(target)
 
 
 def _to_public_order(order: dict) -> AcpSwapOrderPublic:
@@ -626,10 +710,19 @@ def _load_existing_valid_hot_signer() -> tuple[list[str], str]:
 
 
 def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
+    now = time.monotonic()
+    cached = _chain_scan_cache.get("data")
+    expires_at = float(_chain_scan_cache.get("expires_at") or 0.0)
+    if cached is not None and now < expires_at:
+        return cached  # type: ignore[return-value]
+
     rpc_url = _require_acp_rpc_url()
     best_height = int(_rpc_call(rpc_url, "getblockcount", []) or 0)
     if best_height <= 0:
-        return (0, {}, {})
+        data = (0, {}, {})
+        _chain_scan_cache["data"] = data
+        _chain_scan_cache["expires_at"] = now + _CHAIN_SCAN_CACHE_TTL_S
+        return data
 
     out_index: dict[tuple[str, int], tuple[str, int]] = {}
     tx_index: dict[str, dict] = {}
@@ -693,7 +786,10 @@ def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, in
                 "fee_units": max(total_input_units - total_output_units, 0),
             }
 
-    return (best_height, out_index, tx_index)
+    data = (best_height, out_index, tx_index)
+    _chain_scan_cache["data"] = data
+    _chain_scan_cache["expires_at"] = time.monotonic() + _CHAIN_SCAN_CACHE_TTL_S
+    return data
 
 
 def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
@@ -803,17 +899,11 @@ async def hot_balance(
         )
     addr = wallet.address
     try:
-        rpc_url = _require_acp_rpc_url()
-        res = _run_walletd(["balance", "--rpc", rpc_url, "--address", addr], timeout_s=180)
-        return await _decorate_balance_for_user(session, user_id, res, include_in_work=True)
+        res = _load_balance_result(addr)
     except HTTPException:
         # Keep wallet UI operational even when RPC is temporarily unavailable.
-        return await _decorate_balance_for_user(
-            session,
-            user_id,
-            {"address": addr, "units": "0", "acp": "0", "utxo_count": 0},
-            include_in_work=True,
-        )
+        res = {"address": addr, "units": "0", "acp": "0", "utxo_count": 0}
+    return await _decorate_balance_for_user(session, user_id, res, include_in_work=True)
 
 
 @router.get("/balance", response_model=AcpBalanceResponse)
@@ -833,21 +923,18 @@ async def balance(
         target = wallet.address
     if len(target) < 16:
         raise HTTPException(status_code=400, detail="address looks invalid")
-    rpc_url = _require_acp_rpc_url()
     include_in_work = bool(wallet and wallet.address == target)
     try:
-        res = _run_walletd(["balance", "--rpc", rpc_url, "--address", target], timeout_s=180)
-        return await _decorate_balance_for_user(session, user_id, res, include_in_work=include_in_work)
-    except HTTPException as exc:
+        res = _load_balance_result(target)
+    except HTTPException:
         # Keep wallet UI operational when RPC/balance helper is temporarily unavailable.
-        if exc.status_code in (502, 503, 504):
-            return await _decorate_balance_for_user(
-                session,
-                user_id,
-                {"address": target, "units": "0", "acp": "0", "utxo_count": 0},
-                include_in_work=include_in_work,
-            )
-        raise
+        res = {"address": target, "units": "0", "acp": "0", "utxo_count": 0}
+    return await _decorate_balance_for_user(
+        session,
+        user_id,
+        res,
+        include_in_work=include_in_work,
+    )
 
 
 @router.get("/transactions", response_model=list[AcpTransactionPublic])
@@ -921,12 +1008,12 @@ async def withdraw(
                 "Please create/migrate to a new wallet."
             ),
         )
-    to_address = _require_non_empty(body.to_address, "to_address")
+    to_address = _validate_acp_address(body.to_address, "to_address")
     amount = _parse_positive_decimal(body.amount_acp, "amount_acp")
     fee: Decimal | None = None
     if body.fee_acp is not None and str(body.fee_acp).strip():
         fee = _parse_positive_decimal(body.fee_acp, "fee_acp")
-    balance_res = _run_walletd(["balance", "--rpc", rpc_url, "--address", wallet.address], timeout_s=180)
+    balance_res = _load_balance_result(wallet.address)
     real_acp = _parse_decimal_or_zero(balance_res.get("acp"))
     in_work_acp = await _in_work_acp_for_user(session, user_id)
     available_acp = real_acp - in_work_acp
