@@ -86,5 +86,9 @@ export function TurnstileWidget({ siteKey, action, onTokenChange }: Props) {
 
   if (!siteKey) return null;
 
-  return <div id={`turnstile_${domId}`} ref={containerRef} style={{ marginBottom: "16px", minHeight: 65 }} />;
+  return (
+    <div className="turnstile-shell">
+      <div id={`turnstile_${domId}`} ref={containerRef} className="turnstile-inner" style={{ minHeight: 65 }} />
+    </div>
+  );
 }

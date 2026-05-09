@@ -59,10 +59,13 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
 
   return (
     <div
-      className={compact ? undefined : "card"}
+      className={compact ? "wallet-connect-card wallet-connect-card-compact" : "card wallet-connect-card"}
       style={compact ? undefined : { marginTop: "20px", borderColor: "rgba(52, 211, 153, 0.18)" }}
     >
-      <div style={{ display: "flex", alignItems: compact ? "center" : "flex-start", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+      <div
+        className="wallet-connect-header"
+        style={{ display: "flex", alignItems: compact ? "center" : "flex-start", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}
+      >
         <div style={{ flex: 1, minWidth: compact ? 0 : "220px" }}>
           {!compact && (
             <>
@@ -73,13 +76,14 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             </>
           )}
           {!compact && (
-            <p style={{ margin: "8px 0 0", color: "var(--text-muted)", lineHeight: 1.55, fontSize: "0.92rem" }}>
+            <p style={{ margin: "8px 0 0", color: "var(--text-muted)", lineHeight: 1.55, fontSize: "0.92rem", overflowWrap: "anywhere" }}>
               {t("auth.walletSignInDesc")}
             </p>
           )}
         </div>
 
         <div
+          className="wallet-connect-status"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -91,6 +95,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             color: statusTone.color,
             fontSize: "0.86rem",
             fontWeight: 600,
+            maxWidth: "100%",
           }}
         >
           {isConnected ? `${t("auth.walletConnected")}: ${shortAddress}` : providerAvailable ? "EVM wallet ready" : t("auth.walletNotInstalled")}
@@ -99,6 +104,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
 
       {isConnected && (
         <div
+          className="wallet-connect-details"
           style={{
             marginTop: compact ? "10px" : "16px",
             display: "grid",
@@ -109,7 +115,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             background: "rgba(255,255,255,0.02)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", fontSize: "0.9rem" }}>
+          <div className="wallet-connect-row" style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", fontSize: "0.9rem" }}>
             <span style={{ color: "var(--text-muted)" }}>{t("auth.connectedWallet")}</span>
             <span
               title={address ?? undefined}
@@ -126,12 +132,12 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
               {address}
             </span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", fontSize: "0.9rem" }}>
+          <div className="wallet-connect-row" style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", fontSize: "0.9rem" }}>
             <span style={{ color: "var(--text-muted)" }}>Network</span>
             <span style={{ color: onBnb ? "#86efac" : "#fbbf24", fontWeight: 600 }}>{chainName}</span>
           </div>
           {!onBnb && (
-            <div style={{ color: "#fbbf24", fontSize: "0.88rem", lineHeight: 1.5 }}>{t("auth.walletBnbHint")}</div>
+            <div style={{ color: "#fbbf24", fontSize: "0.88rem", lineHeight: 1.5, overflowWrap: "anywhere" }}>{t("auth.walletBnbHint")}</div>
           )}
         </div>
       )}
@@ -145,6 +151,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             background: "rgba(245, 158, 11, 0.12)",
             color: "#fbbf24",
             fontSize: "0.9rem",
+            overflowWrap: "anywhere",
           }}
         >
           {turnstileErrorMessage}
@@ -160,13 +167,14 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             background: "rgba(239, 68, 68, 0.1)",
             color: "#ef4444",
             fontSize: "0.9rem",
+            overflowWrap: "anywhere",
           }}
         >
           {error}
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: compact ? "10px" : "16px" }}>
+      <div className="wallet-connect-actions" style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: compact ? "10px" : "16px" }}>
         {!isConnected ? (
           <button type="button" className="btn btn-primary" onClick={handleConnect} disabled={isConnecting}>
             {isConnecting ? t("auth.connectingWallet") : t("auth.connectWallet")}

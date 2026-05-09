@@ -394,12 +394,6 @@ export default function AcpWalletPage() {
 
   const singleWalletAddress = (depositAddress || balance?.address || "").trim();
   const isSwapFormValid = validateSwapForm(swapForm).valid;
-
-  // Client-side withdraw validation:
-  // - Address must look like a bech32 ACP address.
-  // - Amount must be a positive number and not exceed `available_acp` (backend:
-  //   on-chain balance minus platform “in work” reservations). Vested breakdown
-  //   is informational only unless the chain rejects the spend.
   const withdrawAvailableNum = Number(balance?.available_acp ?? balance?.acp ?? "0");
   const withdrawAmountNum = Number(withdrawForm.amount_acp);
   const withdrawAmountValid =
@@ -435,90 +429,29 @@ export default function AcpWalletPage() {
           </div>
 
           {error && (
-            <div
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                background: "rgba(239, 68, 68, 0.1)",
-                color: "#ef4444",
-                fontSize: "0.9rem",
-                marginBottom: "18px",
-              }}
-            >
+            <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", fontSize: "0.9rem", marginBottom: "18px" }}>
               {error}
             </div>
           )}
           {swapInfo && (
-            <div
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                background: "rgba(16, 185, 129, 0.1)",
-                color: "#10b981",
-                fontSize: "0.9rem",
-                marginBottom: "18px",
-              }}
-            >
+            <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontSize: "0.9rem", marginBottom: "18px" }}>
               {swapInfo}
             </div>
           )}
-          <WalletConnectCard />
-
-          {loadWarnings.length > 0 && (
-            <div
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                background: "rgba(245, 158, 11, 0.12)",
-                color: "#f59e0b",
-                fontSize: "0.9rem",
-                marginBottom: "18px",
-                display: "grid",
-                gap: 6,
-              }}
-            >
-              {loadWarnings.map((w) => (
-                <div key={w}>{w}</div>
-              ))}
-            </div>
-          )}
-
-          <div
-            className="card"
-            style={{
-              marginBottom: 16,
-              border: "1px solid rgba(56, 189, 248, 0.22)",
-              background: "linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255,255,255,0.02))",
-            }}
-          >
-            <div className="card-header">
-              <h3 style={{ fontWeight: 800, margin: 0 }}>wACP</h3>
-              <span className="badge badge-info">ACP {"->"} BSC</span>
-            </div>
-            <div style={{ marginTop: 12, display: "grid", gap: 8, color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.65 }}>
-              <div>Pair live: <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> on PancakeSwap V2</div>
-              <div>Pool: <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
-              <div>Contract: <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
-              <div>Live rail today: <strong style={{ color: "var(--text)" }}>ACP → BSC mint</strong></div>
-              <div>Planned next rail: <strong style={{ color: "var(--text)" }}>BSC → ACP redeem</strong> — pending safe rollout</div>
-              <div>Current state: technical liquidity bootstrap / smoke-test market</div>
-            </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-              <Link href="/bridge/acp-bsc" className="btn btn-primary">
-                Open bridge
-              </Link>
-              <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">
-                Open swap
-              </a>
-              <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">
-                View pool
-              </a>
-            </div>
-          </div>
 
           <div style={{ display: "grid", gap: 16 }}>
-              <div className="responsive-grid responsive-grid-3">
-                <div className="card">
+            <WalletConnectCard />
+
+            {loadWarnings.length > 0 && (
+              <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(245, 158, 11, 0.12)", color: "#f59e0b", fontSize: "0.9rem", marginBottom: "2px", display: "grid", gap: 6 }}>
+                {loadWarnings.map((w) => (
+                  <div key={w}>{w}</div>
+                ))}
+              </div>
+            )}
+
+            <div className="responsive-grid responsive-grid-3">
+              <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Deposit address</h3>
                   <span className="badge badge-info">ACP</span>
@@ -527,24 +460,23 @@ export default function AcpWalletPage() {
                 <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                   {singleWalletAddress || "-"}
                 </div>
-                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>Copy</button>
                 </div>
-                </div>
+              </div>
 
-                <div className="card">
+              <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Hot balance</h3>
                   <span className="badge badge-active">Live</span>
                 </div>
-                <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)" }}>
+                <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
                   {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
                 {balance?.units != null && balance.units !== "" && (
                   <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                    Smallest units (on-chain):{" "}
-                    <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
+                    Smallest units (on-chain): <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
                     <span style={{ opacity: 0.85 }}> — expect 1 ACP = 100,000,000 units · check: units ÷ 10⁸ ≈ ACP above</span>
                   </div>
                 )}
@@ -552,22 +484,14 @@ export default function AcpWalletPage() {
                   Real balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                 </div>
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  <span
-                    title={
-                      "In work = active ACP stakes on your agents, plus positive on-platform ledger balances " +
-                      "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " +
-                      "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."
-                    }
-                  >
+                  <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
                     In work
                   </span>
                   : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
                 </div>
                 {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
                   <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                    Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong>
-                    {" "}ACP · On-platform ledger:{" "}
-                    <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
+                    Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong> ACP · On-platform ledger: <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
                   </div>
                 )}
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
@@ -583,88 +507,28 @@ export default function AcpWalletPage() {
                     Vested locked: <strong style={{ color: "var(--text)" }}>{balance.vested_locked_acp} ACP</strong>
                   </div>
                 )}
-                {balance?.balance_note ? (
-                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>
-                    {balance.balance_note}
-                  </div>
-                ) : null}
-                </div>
+                {balance?.balance_note ? <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>{balance.balance_note}</div> : null}
+              </div>
 
-                <div className="card">
+              <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>Withdraw</h3>
                   <span className="badge badge-warning">Signed</span>
                 </div>
                 <form onSubmit={doWithdraw} style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <input
-                    placeholder="To address (acp1...)"
-                    value={withdrawForm.to_address}
-                    onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))}
-                    className="input input-bordered w-full"
-                    required
-                    aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid}
-                    autoComplete="off"
-                  />
-                  {withdrawForm.to_address.length > 0 && !withdrawAddressValid && (
-                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>
-                      Address must start with <code>acp1</code>.
-                    </div>
-                  )}
-                  <input
-                    placeholder="Amount (ACP)"
-                    value={withdrawForm.amount_acp}
-                    onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))}
-                    className="input input-bordered w-full"
-                    inputMode="decimal"
-                    required
-                    aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)}
-                  />
-                  {withdrawExceedsBalance && (
-                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>
-                      Amount exceeds available balance ({balance?.available_acp ?? balance?.acp ?? "0"} ACP).
-                    </div>
-                  )}
+                  <input placeholder="To address (acp1...)" value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))} className="input input-bordered w-full" required aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid} autoComplete="off" />
+                  {withdrawForm.to_address.length > 0 && !withdrawAddressValid && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>Address must start with <code>acp1</code>.</div>}
+                  <input placeholder="Amount (ACP)" value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" inputMode="decimal" required aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)} />
+                  {withdrawExceedsBalance && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>Amount exceeds available balance ({balance?.available_acp ?? balance?.acp ?? "0"} ACP).</div>}
                   <div style={{ display: "grid", gap: 8 }}>
                     <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Fee mode</label>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => {
-                          setWithdrawFeeMode("auto");
-                          setWithdrawFeeAcp(ACP_FIXED_MIN_FEE);
-                        }}
-                        style={{
-                          borderColor: withdrawFeeMode === "auto" ? "rgba(16, 185, 129, 0.5)" : undefined,
-                          color: withdrawFeeMode === "auto" ? "#34d399" : undefined,
-                        }}
-                      >
-                        Auto
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => setWithdrawFeeMode("manual")}
-                        style={{
-                          borderColor: withdrawFeeMode === "manual" ? "rgba(16, 185, 129, 0.5)" : undefined,
-                          color: withdrawFeeMode === "manual" ? "#34d399" : undefined,
-                        }}
-                      >
-                        Manual
-                      </button>
+                      <button type="button" className="btn btn-ghost" onClick={() => { setWithdrawFeeMode("auto"); setWithdrawFeeAcp(ACP_FIXED_MIN_FEE); }} style={{ borderColor: withdrawFeeMode === "auto" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "auto" ? "#34d399" : undefined }}>Auto</button>
+                      <button type="button" className="btn btn-ghost" onClick={() => setWithdrawFeeMode("manual")} style={{ borderColor: withdrawFeeMode === "manual" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "manual" ? "#34d399" : undefined }}>Manual</button>
                     </div>
-                    <input
-                      placeholder="Fee (ACP)"
-                      value={withdrawFeeAcp}
-                      onChange={(e) => setWithdrawFeeAcp(e.target.value)}
-                      className="input input-bordered w-full"
-                      inputMode="decimal"
-                      disabled={withdrawFeeMode === "auto"}
-                    />
+                    <input placeholder="Fee (ACP)" value={withdrawFeeAcp} onChange={(e) => setWithdrawFeeAcp(e.target.value)} className="input input-bordered w-full" inputMode="decimal" disabled={withdrawFeeMode === "auto"} />
                     <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                      {withdrawFeeMode === "auto"
-                        ? `Auto now uses fixed minimum fee: ${ACP_FIXED_MIN_FEE} ACP`
-                        : "Manual fee is UI-only for now; backend still applies fixed minimum fee."}
+                      {withdrawFeeMode === "auto" ? `Auto now uses fixed minimum fee: ${ACP_FIXED_MIN_FEE} ACP` : "Manual fee is UI-only for now; backend still applies fixed minimum fee."}
                     </div>
                   </div>
                   <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required autoComplete="current-password" />
@@ -673,38 +537,15 @@ export default function AcpWalletPage() {
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}
                 <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
                   <h4 style={{ margin: 0 }}>Bulk distribution</h4>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 4 }}>
-                    One line per transfer: <code>acp1... amount</code>
-                  </div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 4 }}>One line per transfer: <code>acp1... amount</code></div>
                   <form onSubmit={runDistribution} style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                    <textarea
-                      className="input input-bordered w-full"
-                      rows={5}
-                      value={distributionPlan}
-                      onChange={(e) => setDistributionPlan(e.target.value)}
-                      placeholder={"acp1... 25000\nacp1... 15000"}
-                    />
-                    <input
-                      type="password"
-                      className="input input-bordered w-full"
-                      placeholder="Wallet password"
-                      value={distributionPassword}
-                      onChange={(e) => setDistributionPassword(e.target.value)}
-                      required
-                    />
-                    <button className="btn btn-ghost" type="submit" disabled={busy}>
-                      {busy ? "Processing..." : "Run bulk distribution"}
-                    </button>
+                    <textarea className="input input-bordered w-full" rows={5} value={distributionPlan} onChange={(e) => setDistributionPlan(e.target.value)} placeholder={"acp1... 25000\nacp1... 15000"} />
+                    <input type="password" className="input input-bordered w-full" placeholder="Wallet password" value={distributionPassword} onChange={(e) => setDistributionPassword(e.target.value)} required />
+                    <button className="btn btn-ghost" type="submit" disabled={busy}>{busy ? "Processing..." : "Run bulk distribution"}</button>
                   </form>
-                  {distributionResult.length > 0 && (
-                    <pre style={{ marginTop: 8, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>
-                      {JSON.stringify(distributionResult, null, 2)}
-                    </pre>
-                  )}
-                </div>
+                  {distributionResult.length > 0 && <pre style={{ marginTop: 8, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(distributionResult, null, 2)}</pre>}
                 </div>
               </div>
-
             </div>
 
             <div className="responsive-grid responsive-grid-2">
@@ -716,38 +557,13 @@ export default function AcpWalletPage() {
 
                 <form onSubmit={createSwapOrder} style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Tether amount (TRC-20)</label>
-                  <input
-                    className="input input-bordered w-full"
-                    value={swapForm.usdt_trc20_amount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSwapForm((p) => ({ ...p, usdt_trc20_amount: value }));
-                      setSwapFormErrors((prev) => ({ ...prev, usdt_trc20_amount: undefined }));
-                    }}
-                    inputMode="decimal"
-                    required
-                  />
-                  {swapFormErrors.usdt_trc20_amount && (
-                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.usdt_trc20_amount}</div>
-                  )}
+                  <input className="input input-bordered w-full" value={swapForm.usdt_trc20_amount} onChange={(e) => { const value = e.target.value; setSwapForm((p) => ({ ...p, usdt_trc20_amount: value })); setSwapFormErrors((prev) => ({ ...prev, usdt_trc20_amount: undefined })); }} inputMode="decimal" required />
+                  {swapFormErrors.usdt_trc20_amount && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.usdt_trc20_amount}</div>}
 
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
-                  <input
-                    className="input input-bordered w-full"
-                    value={swapForm.payout_acp_address}
-                    onChange={(e) => {
-                      const value = e.target.value.trim();
-                      setSwapForm((p) => ({ ...p, payout_acp_address: value }));
-                      setSwapFormErrors((prev) => ({ ...prev, payout_acp_address: undefined }));
-                    }}
-                    required
-                  />
-                  {swapFormErrors.payout_acp_address && (
-                    <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.payout_acp_address}</div>
-                  )}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                    Use a lowercase ACP address starting with <code>acp1</code>.
-                  </div>
+                  <input className="input input-bordered w-full" value={swapForm.payout_acp_address} onChange={(e) => { const value = e.target.value.trim(); setSwapForm((p) => ({ ...p, payout_acp_address: value })); setSwapFormErrors((prev) => ({ ...prev, payout_acp_address: undefined })); }} required />
+                  {swapFormErrors.payout_acp_address && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.payout_acp_address}</div>}
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Use a lowercase ACP address starting with <code>acp1</code>.</div>
 
                   <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
                   <input className="input input-bordered w-full" value={swapForm.note} onChange={(e) => setSwapForm((p) => ({ ...p, note: e.target.value }))} />
@@ -761,9 +577,7 @@ export default function AcpWalletPage() {
                 {quote && (
                   <div style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7, border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg)" }}>
                     <div>Quote rate: 1 Tether TRC-20 = {quote.rate_acp_per_usdt} ACP</div>
-                    <div>
-                      Estimated payout: <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong>
-                    </div>
+                    <div>Estimated payout: <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong></div>
                   </div>
                 )}
 
@@ -813,6 +627,26 @@ export default function AcpWalletPage() {
               </div>
             </div>
 
+            <div className="card" style={{ border: "1px solid rgba(56, 189, 248, 0.22)", background: "linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255,255,255,0.02))" }}>
+              <div className="card-header">
+                <h3 style={{ fontWeight: 800, margin: 0 }}>wACP</h3>
+                <span className="badge badge-info">ACP {"->"} BSC</span>
+              </div>
+              <div style={{ marginTop: 12, display: "grid", gap: 8, color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.65 }}>
+                <div>Pair live: <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> on PancakeSwap V2</div>
+                <div>Pool: <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
+                <div>Contract: <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
+                <div>Live rail today: <strong style={{ color: "var(--text)" }}>ACP → BSC mint</strong></div>
+                <div>Planned next rail: <strong style={{ color: "var(--text)" }}>BSC → ACP redeem</strong> — pending safe rollout</div>
+                <div>Current state: technical liquidity bootstrap / smoke-test market</div>
+              </div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+                <Link href="/bridge/acp-bsc" className="btn btn-primary">Open bridge</Link>
+                <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">Open swap</a>
+                <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">View pool</a>
+              </div>
+            </div>
+
             <div className="card">
               <div className="card-header">
                 <h3 style={{ fontWeight: 800, margin: 0 }}>On-chain transaction history</h3>
@@ -821,84 +655,35 @@ export default function AcpWalletPage() {
               <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
                 <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address</label>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <input
-                    className="input input-bordered w-full"
-                    value={txAddressInput}
-                    onChange={(e) => setTxAddressInput(e.target.value)}
-                    placeholder="acp1..."
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => refreshTransactionsByAddress(txAddressInput)}
-                    disabled={historyBusy || !txAddressInput.trim()}
-                  >
-                    Load history
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => {
-                      const hot = (singleWalletAddress || "").trim();
-                      if (!hot) return;
-                      setTxAddressInput(hot);
-                      refreshTransactionsByAddress(hot, { skipBalance: !!balance });
-                    }}
-                    disabled={historyBusy || !singleWalletAddress}
-                  >
-                    Use hot wallet
-                  </button>
+                  <input className="input input-bordered w-full" value={txAddressInput} onChange={(e) => setTxAddressInput(e.target.value)} placeholder="acp1..." />
+                  <button type="button" className="btn btn-ghost" onClick={() => refreshTransactionsByAddress(txAddressInput)} disabled={historyBusy || !txAddressInput.trim()}>Load history</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => { const hot = (singleWalletAddress || "").trim(); if (!hot) return; setTxAddressInput(hot); refreshTransactionsByAddress(hot, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>Use hot wallet</button>
                 </div>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span>
-                </div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span></div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  Balance:{" "}
-                  <strong style={{ color: "var(--text)" }}>
-                    {txAddressBalance?.acp ?? "0"} ACP
-                  </strong>
+                  Balance: <strong style={{ color: "var(--text)" }}>{txAddressBalance?.acp ?? "0"} ACP</strong>
                   {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
-                  {txAddressBalance?.units != null && txAddressBalance.units !== "" ? (
-                    <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>
-                      Units: {txAddressBalance.units} (÷ 10⁸ for ACP)
-                    </span>
-                  ) : null}
+                  {txAddressBalance?.units != null && txAddressBalance.units !== "" ? <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>Units: {txAddressBalance.units} (÷ 10⁸ for ACP)</span> : null}
                 </div>
               </div>
 
               {!historyLoaded ? (
-                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>
-                  History is loaded on demand to keep the wallet page fast. Click <strong style={{ color: "var(--text)" }}>Load history</strong> when needed.
-                </div>
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>History is loaded on demand to keep the wallet page fast. Click <strong style={{ color: "var(--text)" }}>Load history</strong> when needed.</div>
               ) : transactions.length === 0 ? (
                 <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
               ) : (
                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                   {transactions.map((tx) => (
-                    <div
-                      key={`${tx.txid}-${tx.block_height}`}
-                      style={{
-                        padding: 10,
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background: "var(--bg)",
-                        display: "grid",
-                        gap: 6,
-                      }}
-                    >
+                    <div key={`${tx.txid}-${tx.block_height}`} style={{ padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", display: "grid", gap: 6 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                         <strong>{tx.direction.toUpperCase()}</strong>
-                        <span style={{ color: "var(--text-muted)" }}>
-                          block {tx.block_height} • {tx.confirmations} conf
-                        </span>
+                        <span style={{ color: "var(--text-muted)" }}>block {tx.block_height} • {tx.confirmations} conf</span>
                       </div>
                       <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>{tx.txid}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ color: "var(--text-muted)" }}>Sent: {tx.sent_acp} ACP</span>
                         <span style={{ color: "var(--text-muted)" }}>Received: {tx.received_acp} ACP</span>
-                        <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>
-                          Net: {tx.net_acp} ACP
-                        </strong>
+                        <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>Net: {tx.net_acp} ACP</strong>
                       </div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{tx.block_time}</div>
                     </div>
@@ -906,6 +691,7 @@ export default function AcpWalletPage() {
                 </div>
               )}
             </div>
+          </div>
         </div>
       </div>
     </>

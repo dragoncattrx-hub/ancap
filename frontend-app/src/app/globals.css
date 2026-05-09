@@ -615,6 +615,79 @@ textarea {
   }
 }
 
+.turnstile-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.turnstile-inner {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.wallet-connect-card {
+  overflow: hidden;
+}
+
+.wallet-connect-header,
+.wallet-connect-details,
+.wallet-connect-row,
+.wallet-connect-actions {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .wallet-connect-status {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .wallet-connect-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .wallet-connect-actions {
+    flex-direction: column;
+  }
+
+  .wallet-connect-actions > .btn,
+  .wallet-connect-actions > a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .card,
+  .btn,
+  .badge,
+  input,
+  textarea,
+  select,
+  .input,
+  .textarea,
+  .select {
+    max-width: 100%;
+  }
+
+  .card code,
+  .card pre,
+  .card a,
+  .card button,
+  .card span,
+  .card div,
+  .card p,
+  .card strong {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
 /* Responsive Text */
 @media (max-width: 768px) {
   h1 {
