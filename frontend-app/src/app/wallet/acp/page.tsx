@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { walletAcp } from "@/lib/api";
 
 type BalanceResponse = {
@@ -440,8 +439,6 @@ export default function AcpWalletPage() {
           )}
 
           <div style={{ display: "grid", gap: 16 }}>
-            <WalletConnectCard />
-
             {loadWarnings.length > 0 && (
               <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(245, 158, 11, 0.12)", color: "#f59e0b", fontSize: "0.9rem", marginBottom: "2px", display: "grid", gap: 6 }}>
                 {loadWarnings.map((w) => (

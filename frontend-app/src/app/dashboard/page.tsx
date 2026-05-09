@@ -6,7 +6,6 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
-import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { agents, strategies, runs } from "@/lib/api";
 
 export default function DashboardPage() {
@@ -28,7 +27,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadStats();
+      void loadStats();
     }
   }, [isAuthenticated]);
 
@@ -47,7 +46,7 @@ export default function DashboardPage() {
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
-      setStats(prev => ({ ...prev, loading: false }));
+      setStats((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -82,7 +81,7 @@ export default function DashboardPage() {
   return (
     <>
       <NetworkBackground />
-      
+
       <div className="min-h-screen">
         <Navigation />
 
@@ -90,10 +89,8 @@ export default function DashboardPage() {
           <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "32px", color: "var(--text)" }}>
             {t("nav.dashboard")}
           </h1>
-          
-          <WalletConnectCard />
 
-          <div className="responsive-grid responsive-grid-3" style={{ marginBottom: "48px", marginTop: "20px" }}>
+          <div className="responsive-grid responsive-grid-3" style={{ marginBottom: "48px" }}>
             <div className="card">
               <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
                 {t("dashboard.agents") || "Agents"}
