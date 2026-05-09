@@ -16,9 +16,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isWalletOnlyAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string, displayName: string, referralCode?: string) => Promise<string | null>;
-  loginWithWallet: (walletAddress: string, chainId?: number | null) => Promise<void>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<string | null>;
+  register: (email: string, password: string, displayName: string, referralCode?: string, turnstileToken?: string) => Promise<string | null>;
+  loginWithWallet: (walletAddress: string, chainId?: number | null, turnstileToken?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -82,8 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const loginRes = await auth.login(email, password);
+  const login = async (email: string, password: string, turnstileToken?: string) => {
+    const loginRes = await auth.login(email, password, turnstileToken);
     const me = await users.me();
     const userData = userFromApiPayload(me);
     setUser(userData);
@@ -97,17 +97,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return walletBackupMnemonic || null;
   };
 
-  const register = async (email: string, password: string, displayName: string, referralCode?: string) => {
-    const created = await auth.register(email, password, displayName, referralCode);
+  const register = async (email: string, password: string, displayName: string, referralCode?: string, turnstileToken?: string) => {
+    const created = await auth.register(email, password, displayName, referralCode, turnstileToken);
     const walletBackupMnemonic =
       created && typeof created === "object" && "wallet_backup_mnemonic" in created
         ? String((created as any).wallet_backup_mnemonic || "")
         : "";
-    const loginBackupMnemonic = await login(email, password);
-    return walletBackupMnemonic || loginBackupMnemonic || null;
+    const me = await users.me();
+    const userData = userFromApiPayload(me);
+    setUser(userData);
+    setIsWalletOnlyAuthenticated(false);
+    safeSetItem("ancap_user", JSON.stringify(userData));
+    safeRemoveItem(WALLET_ONLY_USER_KEY);
+    return walletBackupMnemonic || null;
   };
 
-  const loginWithWallet = async (walletAddress: string, chainId?: number | null) => {
+  const loginWithWallet = async (walletAddress: string, chainId?: number | null, turnstileToken?: string) => {
     const compact = walletAddress.trim().toLowerCase();
     if (!compact) {
       throw new Error("Wallet address is required");
@@ -141,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const domain = window.location.host;
     const uri = `${window.location.origin}/login`;
-    const nonceRes = await auth.walletNonce(providerAddress, activeChainId ?? chainId ?? undefined, domain, uri);
+    const nonceRes = await auth.walletNonce(providerAddress, activeChainId ?? chainId ?? undefined, domain, uri, turnstileToken);
     const signatureRaw = await provider.request({
       method: "personal_sign",
       params: [nonceRes.message, providerAddress],

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production-use-long-random-string"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    turnstile_secret_key: str = ""
 
     # Pagination
     default_page_limit: int = 50
@@ -132,6 +133,7 @@ class Settings(BaseSettings):
     bridge_operator_secret: str | None = None
     bsc_explorer_base: str = "https://bscscan.com"
     acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"  # can be overridden by env; default points to built-in ACP tx viewer
+    turnstile_site_key: str = ""
 
 
 @lru_cache

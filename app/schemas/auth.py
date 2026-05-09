@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class AuthLoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
+    turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
 
 
 class AuthLoginResponse(BaseModel):
@@ -21,6 +22,7 @@ class WalletAuthNonceRequest(BaseModel):
     chain_id: Optional[int] = None
     domain: Optional[str] = Field(None, min_length=1, max_length=255)
     uri: Optional[str] = Field(None, min_length=1, max_length=500)
+    turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
 
 
 class WalletAuthNonceResponse(BaseModel):
@@ -44,6 +46,7 @@ class UserCreateRequest(BaseModel):
     password: str = Field(..., min_length=8)
     display_name: Optional[str] = Field(None, min_length=1, max_length=80)
     referral_code: Optional[str] = Field(None, min_length=3, max_length=64)
+    turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
 
 
 class UserPublic(BaseModel):
@@ -54,3 +57,6 @@ class UserPublic(BaseModel):
     display_name: Optional[str] = None
     created_at: datetime
     wallet_backup_mnemonic: Optional[str] = None
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
+    expires_in: Optional[int] = None

@@ -35,6 +35,8 @@ services:
       # with a generic ACP hot-wallet path and reverse payouts will derive from the wrong wallet.
       ACP_HOT_MNEMONIC_FILE: /run/secrets/bridge-bsc/acp-reserve-mnemonic.txt
       ACP_WALLET_OPERATOR_SECRET: ${ACP_WALLET_OPERATOR_SECRET:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level
@@ -63,11 +65,13 @@ services:
       args:
         NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_ACP_URL: /acp
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
         APP_BUILD_ID: ${APP_BUILD_ID:-unknown}
     environment:
       NODE_ENV: production
       # In prod-like we go through reverse proxy (/api → api)
       NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     depends_on:
       api:
         condition: service_healthy

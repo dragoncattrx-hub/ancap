@@ -78,19 +78,19 @@ async function apiFetch(path: string, options: RequestInit = {}) {
 
 // Auth API
 export const auth = {
-  async login(email: string, password: string) {
+  async login(email: string, password: string, turnstileToken?: string) {
     const data = await apiFetch("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
     });
     setToken(data.access_token);
     return data;
   },
 
-  async walletNonce(address: string, chain_id?: number, domain?: string, uri?: string) {
+  async walletNonce(address: string, chain_id?: number, domain?: string, uri?: string, turnstileToken?: string) {
     return apiFetch("/auth/wallet/nonce", {
       method: "POST",
-      body: JSON.stringify({ address, chain_id, domain, uri }),
+      body: JSON.stringify({ address, chain_id, domain, uri, turnstile_token: turnstileToken }),
     });
   },
 
@@ -103,11 +103,15 @@ export const auth = {
     return data;
   },
 
-  async register(email: string, password: string, display_name: string, referral_code?: string) {
-    return apiFetch("/auth/users", {
+  async register(email: string, password: string, display_name: string, referral_code?: string, turnstileToken?: string) {
+    const data = await apiFetch("/auth/users", {
       method: "POST",
-      body: JSON.stringify({ email, password, display_name, referral_code }),
+      body: JSON.stringify({ email, password, display_name, referral_code, turnstile_token: turnstileToken }),
     });
+    if (data?.access_token) {
+      setToken(data.access_token);
+    }
+    return data;
   },
 
   logout() {

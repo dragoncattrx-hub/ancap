@@ -10,9 +10,12 @@ type WalletConnectCardProps = {
   compact?: boolean;
   showContinue?: boolean;
   onConnected?: () => void;
+  turnstileToken?: string;
+  turnstileRequired?: boolean;
+  turnstileErrorMessage?: string;
 };
 
-export function WalletConnectCard({ compact = false, showContinue = true, onConnected }: WalletConnectCardProps) {
+export function WalletConnectCard({ compact = false, showContinue = true, onConnected, turnstileToken, turnstileRequired = false, turnstileErrorMessage }: WalletConnectCardProps) {
   const router = useRouter();
   const { t } = useLanguage();
   const { loginWithWallet } = useAuth();
@@ -47,7 +50,10 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
 
   const handleContinue = async () => {
     if (!address) return;
-    await loginWithWallet(address, chainId);
+    if (turnstileRequired && !turnstileToken) {
+      throw new Error(turnstileErrorMessage || "Complete the captcha first");
+    }
+    await loginWithWallet(address, chainId, turnstileToken);
     router.push("/dashboard");
   };
 
@@ -130,6 +136,21 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
         </div>
       )}
 
+      {turnstileRequired && turnstileErrorMessage && !turnstileToken && (
+        <div
+          style={{
+            marginTop: compact ? "10px" : "14px",
+            padding: "12px",
+            borderRadius: "8px",
+            background: "rgba(245, 158, 11, 0.12)",
+            color: "#fbbf24",
+            fontSize: "0.9rem",
+          }}
+        >
+          {turnstileErrorMessage}
+        </div>
+      )}
+
       {error && (
         <div
           style={{
@@ -158,7 +179,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
               </button>
             )}
             {showContinue && (
-              <button type="button" className="btn btn-primary" onClick={() => void handleContinue()}>
+              <button type="button" className="btn btn-primary" onClick={() => void handleContinue()} disabled={turnstileRequired && !turnstileToken}>
                 {t("auth.continueToDashboard")}
               </button>
             )}

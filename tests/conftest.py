@@ -24,6 +24,8 @@ os.environ["REGISTRATION_MAX_AGENTS_PER_DAY"] = "0"
 # Always force false here: if the developer shell exports PARTICIPATION_GATES_ENABLED=true,
 # setdefault would leave it on and break quarantine/order tests (403 detail becomes a dict).
 os.environ["PARTICIPATION_GATES_ENABLED"] = "false"
+os.environ["TURNSTILE_SECRET_KEY"] = ""
+os.environ["TURNSTILE_SITE_KEY"] = ""
 # New-agent order limits: force defaults so developer shell/.env cannot disable or
 # widen quarantine (e.g. QUARANTINE_HOURS—0 skips the guardrail; a huge max prevents 403).
 os.environ["QUARANTINE_HOURS"] = "24"

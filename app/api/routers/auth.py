@@ -13,6 +13,7 @@ from app.services.auth import create_access_token, hash_password, verify_passwor
 from app.services.acp_wallet import create_wallet_for_user, get_wallet_for_user
 from app.services.referrals import attribute_referral
 from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
+from app.services.turnstile import verify_turnstile
 from app.api.deps import DbSession
 from app.db.models import User
 from sqlalchemy import select
@@ -21,7 +22,8 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login", response_model=AuthLoginResponse)
-async def login(body: AuthLoginRequest, session: DbSession):
+async def login(body: AuthLoginRequest, request: Request, session: DbSession):
+    await verify_turnstile(request, body.turnstile_token, "login")
     q = select(User).where(User.email == body.email)
     r = await session.execute(q)
     user = r.scalar_one_or_none()
@@ -48,6 +50,7 @@ async def login(body: AuthLoginRequest, session: DbSession):
 
 @router.post("/wallet/nonce", response_model=WalletAuthNonceResponse)
 async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: DbSession):
+    await verify_turnstile(request, body.turnstile_token, "login")
     forwarded_host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
     host = forwarded_host or (request.headers.get("host") or "ancap.cloud").split(",")[0].strip()
 
@@ -96,7 +99,8 @@ async def wallet_verify(body: WalletAuthVerifyRequest, session: DbSession):
 
 
 @router.post("/users", response_model=UserPublic, status_code=201)
-async def create_user(body: UserCreateRequest, session: DbSession):
+async def create_user(body: UserCreateRequest, request: Request, session: DbSession):
+    await verify_turnstile(request, body.turnstile_token, "register")
     q = select(User).where(User.email == body.email)
     r = await session.execute(q)
     if r.scalar_one_or_none():
@@ -122,10 +126,14 @@ async def create_user(body: UserCreateRequest, session: DbSession):
             source="signup",
         )
     await session.refresh(user)
+    token = create_access_token(str(user.id))
     return UserPublic(
         id=str(user.id),
         email=user.email,
         display_name=user.display_name,
         created_at=user.created_at,
         wallet_backup_mnemonic=mnemonic,
+        access_token=token,
+        token_type="bearer",
+        expires_in=3600,
     )
