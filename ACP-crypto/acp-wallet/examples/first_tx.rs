@@ -3,7 +3,7 @@
 //! Run (from the root of the repo, where there is acp-crypto and acp-wallet):
 //!   cargo run -p acp-wallet --example first_tx
 //!
-//! Requirements: node is running, RPC to http://127.0.0.1:8545/rpc
+//! Requirements: node is running, RPC to https://acp1.ancap.cloud/rpc
 
 use acp_crypto::{
     AddressV0, Block, BlockHeader, Mnemonic, Transaction, TxHex, TxInput, TxOutput,
@@ -14,7 +14,7 @@ use rand_core::OsRng;
 const CHAIN_ID: u32 = 1001;
 const GENESIS_AMOUNT: u64 = 1_000_000;
 const FEE: u64 = 1;
-const RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let m = Mnemonic::generate_12()?;

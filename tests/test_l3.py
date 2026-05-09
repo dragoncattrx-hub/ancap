@@ -128,7 +128,7 @@ def test_chain_anchor_acp_success_mocked(client, monkeypatch):
     from unittest.mock import AsyncMock, MagicMock, patch
     from app.config import get_settings
     monkeypatch.setenv("CHAIN_ANCHOR_DRIVER", "acp")
-    monkeypatch.setenv("ACP_RPC_URL", "http://localhost:8545/rpc")
+    monkeypatch.setenv("ACP_RPC_URL", "https://acp1.ancap.cloud/rpc")
     get_settings.cache_clear()
     mock_response = MagicMock()
     mock_response.status_code = 200

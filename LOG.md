@@ -60,8 +60,8 @@ The wallet UI was showing `Balance: 0 ACP (0 UTXO)` for the hot wallet address
 running on this machine and the data dir under `Sicret/acp-node-data-host/`
 was a freshly-initialized RocksDB with no SST files. The frontend stack
 (`ancap-api-1`, `ancap-frontend-1`, `ancap-proxy-1`, `ancap-postgres-1`) was
-up via Docker Compose, but the chain node lives outside compose; nothing was
-listening on `host.docker.internal:8545`, so `walletd balance` calls
+up via Docker Compose, but the chain node lives outside compose; ACP RPC was not
+available on the expected endpoint, so `walletd balance` calls
 gracefully degraded to `acp=0, utxo_count=0`.
 
 ### What landed
@@ -79,8 +79,8 @@ gracefully degraded to `acp=0, utxo_count=0`.
 - **`scripts/start-acp-node.ps1`** — one-liner to start the node on the host
   for the local Docker stack. Builds the binary if missing, sets
   `ACP_DATA_DIR` to `Sicret/acp-node-data-host/`, listens on
-  `0.0.0.0:8545` so the API container can reach it via
-  `host.docker.internal:8545`. `-Background` writes logs to
+  `0.0.0.0:8545` for local node operation. Public/default ACP RPC is
+  `https://acp1.ancap.cloud/rpc`. `-Background` writes logs to
   `Sicret/acp-node.log`. `-EnableMiner` turns on auto-mining of empty
   blocks (off by default — genesis-only state is enough for the wallet UI
   to show the balance).
@@ -104,11 +104,11 @@ Custom genesis (height 1)
   Treasury: acp1qzf6ccmzdekql4hgtvg7hlu92kzup8ywrczrkxt4 (209000000 ACP)
 [OK] Custom genesis accepted. Block hash: 20d00850f6b3ef32126eea81e500c2e8ba17ea9a4f21207dd74b8e716628a091
 
-> walletd balance --rpc http://127.0.0.1:8545/rpc --address acp1qzfd...nqp9
+> walletd balance --rpc https://acp1.ancap.cloud/rpc --address acp1qzfd...nqp9
 {"ok":true,"result":{"acp":"1000000.00000000","address":"...","units":"100000000000000","utxo_count":1}}
 
 > docker exec ancap-api-1 walletd balance \
-    --rpc http://host.docker.internal:8545/rpc \
+    --rpc https://acp1.ancap.cloud/rpc \
     --address acp1qzfd...nqp9
 {"ok":true,"result":{"acp":"1000000.00000000",...}}
 ```

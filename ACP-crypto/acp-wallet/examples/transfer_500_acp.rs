@@ -15,7 +15,7 @@ use reqwest::blocking::Client;
 use serde_json::json;
 
 const CHAIN_ID: u32 = 1001;
-const RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
 const TRANSFER_ACP: u64 = 500;
 const GENESIS_ECOSYSTEM_VOUT: u32 = 3; // order in genesis: Creator=0, Validator=1, Public=2, Ecosystem=3
 

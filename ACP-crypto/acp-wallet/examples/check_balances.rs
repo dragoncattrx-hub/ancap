@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let want: HashSet<String> = addresses.iter().cloned().collect();
     let client = Client::new();
-    let rpc_url: String = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| "http://127.0.0.1:8545/rpc".to_string());
+    let rpc_url: String = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| "https://acp1.ancap.cloud/rpc".to_string());
 
     let best_height: u64 = rpc(&client, &rpc_url, "getblockcount", json!([]))?
         .as_u64()

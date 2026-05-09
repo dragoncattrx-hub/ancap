@@ -25,7 +25,7 @@ services:
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: acp
       # Keep non-empty default to avoid silent runtime failures in wallet endpoints.
-      ACP_RPC_URL: http://host.docker.internal:8545/rpc
+      ACP_RPC_URL: https://acp1.ancap.cloud/rpc
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)

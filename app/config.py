@@ -50,7 +50,7 @@ class Settings(BaseSettings):
 
     # L3: On-chain (mock by default). ACP = ANCAP Chain Protocol (see ACP-crypto/)
     chain_anchor_driver: str = "mock"  # mock | acp | ethereum | solana
-    acp_rpc_url: str = "http://127.0.0.1:8545/rpc"  # used when chain_anchor_driver=acp
+    acp_rpc_url: str = "https://acp1.ancap.cloud/rpc"  # used when chain_anchor_driver=acp
     ethereum_rpc_url: str = ""  # e.g. https://eth.llamarpc.com ; used when chain_anchor_driver=ethereum
     solana_rpc_url: str = ""  # e.g. https://api.mainnet-beta.solana.com ; used when chain_anchor_driver=solana
 

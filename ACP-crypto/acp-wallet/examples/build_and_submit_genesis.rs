@@ -1,6 +1,6 @@
 //! Assembling and sending the genesis block (block 1) using genesis-addresses.json.
 //!
-//! Requirements: the node is running (RPC on http://127.0.0.1:8545/rpc), the database is empty (no blocks yet).
+//! Requirements: the node is running (RPC on https://acp1.ancap.cloud/rpc), the database is empty (no blocks yet).
 //! First generate wallets: run-genesis-wallets.bat → get genesis-addresses.json.
 //!
 //! Launch: cargo run -p acp-wallet --example build_and_submit_genesis
@@ -16,7 +16,7 @@ use serde_json::json;
 use std::time::Duration;
 
 const CHAIN_ID: u32 = 1001;
-const DEFAULT_RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const DEFAULT_RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
 const RPC_TIMEOUT_SECS: u64 = 120;
 /// Deterministic mnemonic for genesis-tx signature only (no one stores funds on this key).
 const GENESIS_SIGNER_PHRASE: &str =

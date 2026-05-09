@@ -12,7 +12,7 @@
 //!   cargo run --release -p acp-wallet --example build_and_submit_genesis_custom
 //!
 //! Env vars:
-//!   ACP_RPC_URL                       (default: http://127.0.0.1:8545/rpc)
+//!   ACP_RPC_URL                       (default: https://acp1.ancap.cloud/rpc)
 //!   ACP_RPC_TOKEN                     (optional bearer for protected nodes)
 //!   ACP_GENESIS_TARGET_ADDRESS        (default: hot wallet acp1qzfd...nqp9)
 //!   ACP_GENESIS_TARGET_AMOUNT_ACP     (default: 1_000_000)
@@ -29,7 +29,7 @@ use serde_json::json;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const CHAIN_ID: u32 = 1001;
-const DEFAULT_RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const DEFAULT_RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
 const DEFAULT_TARGET_ADDRESS: &str = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
 const DEFAULT_TARGET_AMOUNT_ACP: u64 = 1_000_000;
 const DEFAULT_TREASURY_OUT_PATH: &str = "Sicret/genesis-treasury-mnemonic.txt";

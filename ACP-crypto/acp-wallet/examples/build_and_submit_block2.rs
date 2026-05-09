@@ -25,7 +25,7 @@ fn rpc(client: &Client, rpc_url: &str, method: &str, params: serde_json::Value) 
 }
 
 fn main() -> anyhow::Result<()> {
-    let rpc_url: String = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| "http://127.0.0.1:8545/rpc".to_string());
+    let rpc_url: String = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| "https://acp1.ancap.cloud/rpc".to_string());
     let client = Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()?;

@@ -12,8 +12,8 @@
 # For *confirmed* on-chain tx in the app (blocks after genesis), use -EnableMiner so empty blocks
 #   are mined; otherwise height stays at 1 and history shows only the genesis/coinbase.
 #
-# It listens on 0.0.0.0:8545 so the API container can reach it via
-# host.docker.internal:8545 (default of ACP_RPC_URL in .env).
+# It listens on 0.0.0.0:8545 for local node operation.
+# Public/default ACP RPC should now point to https://acp1.ancap.cloud/rpc.
 #
 # Creator vesting: default `cargo build --release` has NO on-chain vesting (see vesting.rs).
 # Rebuilds run automatically if any `src\*.rs` (or `Cargo.toml`) is newer than `acp-node.exe`.

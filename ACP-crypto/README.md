@@ -32,7 +32,7 @@ Cryptocurrency and network protocol for the **ANCAP** (AI-Native Capital Allocat
    - `ACP_DATA_DIR` — node data directory (default `/var/lib/acp-node`)
    - `ACP_RPC_LISTEN` - address: RPC port (default `127.0.0.1:8545`)
    - `ACP_CHAIN_ID` — network ID (default 1001)
-   - `ACP_RPC_URL` - for wallet examples: RPC node URL (default `http://127.0.0.1:8545/rpc`)
+   - `ACP_RPC_URL` - for wallet examples: RPC node URL (default `https://acp1.ancap.cloud/rpc`)
    - `ACP_ECOSYSTEM_MNEMONIC` - Ecosystem wallet mnemonic (for translation examples)
 
 4. **Genesis** (first launch):

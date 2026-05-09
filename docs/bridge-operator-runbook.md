@@ -232,7 +232,7 @@ Current reverse admin endpoints:
 Operator rule:
 - reverse rail may be presented as live only when signer identity, payout execution, watcher confirmation, and reconciliation are all proven in the running container
 - current production state satisfies that requirement
-- for this current ACP runtime (`http://host.docker.internal:8545/rpc`), `BRIDGE_ACP_CONFIRMATIONS=1` is the truthful policy because chain height is effectively static/single-node in this environment; do not raise it blindly without real block progression
+- for this current ACP runtime (`https://acp1.ancap.cloud/rpc`), `BRIDGE_ACP_CONFIRMATIONS=1` is the truthful policy because chain height is effectively static/single-node in this environment; do not raise it blindly without real block progression
 
 ### Recovery usage notes
 - Use `bind-burn` only when a real `ReleaseRequested` event exists but watcher matching needs manual repair.

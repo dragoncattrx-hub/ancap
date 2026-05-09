@@ -2,7 +2,7 @@
 //!
 //! Run: cargo run -p acp-wallet --example transfer_ecosystem_to_address -- <address> [ACP_amount]
 //! Or: ACP_TO_ADDRESS=acp1... ACP_AMOUNT=1000 cargo run -p acp-wallet --example transfer_ecosystem_to_address
-//! RPC: ACP_RPC_URL=http://127.0.0.1:8545/rpc (default)
+//! RPC: ACP_RPC_URL=https://acp1.ancap.cloud/rpc (default)
 //!
 //! Requirements: node is running, genesis is applied, ecosystem.keystore.json or ecosystem.mnemonic.
 
@@ -16,7 +16,7 @@ use reqwest::blocking::Client;
 use serde_json::json;
 
 const CHAIN_ID: u32 = 1001;
-const DEFAULT_RPC_URL: &str = "http://127.0.0.1:8545/rpc";
+const DEFAULT_RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
 const DEFAULT_TRANSFER_ACP: u64 = 500;
 const GENESIS_ECOSYSTEM_VOUT: u32 = 3;
 
