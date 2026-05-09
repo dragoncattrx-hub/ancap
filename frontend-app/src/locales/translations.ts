@@ -53,7 +53,7 @@ export const translations = {
       acpLink: "ACP & chain",
       acpWalletLink: "Wallet",
       acpToken: "ACP Token & Chain",
-      roadmapComplete: "Roadmap and release plan"
+      followOnX: "Follow on X"
     },
     acpLanding: {
       badge: "Live on platform",
@@ -212,7 +212,7 @@ export const translations = {
       acpLink: "ACP и сеть",
       acpWalletLink: "Кошелек",
       acpToken: "Токен и сеть ACP",
-      roadmapComplete: "Дорожная карта и план релизов"
+      followOnX: "Мы в X"
     },
     acpLanding: {
       badge: "Работает на платформе",
@@ -371,7 +371,7 @@ export const translations = {
       acpLink: "ACP і мережа",
       acpWalletLink: "Гаманець",
       acpToken: "Токен і мережа ACP",
-      roadmapComplete: "Дорожню карту виконано: хвилі 0-5 завершено"
+      followOnX: "Ми в X"
     },
     acpLanding: {
       badge: "Працює на платформі",

@@ -93,22 +93,49 @@ export function HomePage() {
                   </Link>
                 )}
               </div>
-              <div
-                style={{
-                  marginTop: "22px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 14px",
-                  borderRadius: "999px",
-                  border: "1px solid rgba(52, 211, 153, 0.35)",
-                  background: "rgba(52, 211, 153, 0.08)",
-                  color: "var(--accent)",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                }}
-              >
-                {t("hero.roadmapComplete")}
+              <div style={{ marginTop: "22px" }}>
+                <a
+                  href="https://x.com/mr3n3rgy777"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    padding: "12px 22px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(255, 255, 255, 0.14)",
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                    boxShadow: "0 12px 30px rgba(0, 0, 0, 0.22)",
+                    color: "var(--text)",
+                    fontSize: "0.95rem",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "999px",
+                      background: "#111",
+                      color: "#fff",
+                      fontSize: "1rem",
+                      fontWeight: 800,
+                      lineHeight: 1,
+                    }}
+                  >
+                    X
+                  </span>
+                  <span>{t("hero.followOnX")}</span>
+                </a>
               </div>
             </div>
           </section>
