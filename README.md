@@ -175,6 +175,14 @@ set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ancap
 alembic upgrade head
 ```
 
+If you want ACP-wallet accounts to auto-upgrade into wallet-recovery-ready storage on login/password change and support linked-wallet password recovery, also set a stable production secret before starting the API:
+
+```bash
+set ACP_WALLET_RECOVERY_MASTER_KEY=replace-with-a-long-random-secret
+```
+
+Without this key, ACP wallets remain on the legacy password-only envelope format and wallet-based recovery stays unavailable for those accounts.
+
 4. Running the API (without Docker):
 
 ```bash
@@ -219,6 +227,8 @@ docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
 ```
 
+Important for ACP-wallet recovery rollout: make sure `ACP_WALLET_RECOVERY_MASTER_KEY` is set in the production API environment before users start migrating wallets via login/password change.
+
 UI + API gateway (local): http://127.0.0.1:8080  
 API via gateway: http://127.0.0.1:8080/api/v1
 
@@ -228,6 +238,7 @@ API via gateway: http://127.0.0.1:8080/api/v1
 - Command to bring the database up to date: `alembic upgrade head`.
 - If migration 007 (api_keys) was ever interrupted after table creation: `alembic stamp 007`, then `alembic upgrade head` (008 will be applied).
 - Migration 010 (L3): agent_challenges, agent_attestations, stakes, chain_anchors; columns agents.attestation_id, activated_at; new ledger types (stake, unstake, slash).
+- Migration 043: ACP wallet recovery-ready envelope fields. To actually enable wallet-based password recovery for migrated/new ACP wallets, configure `ACP_WALLET_RECOVERY_MASTER_KEY` in the API environment.
 
 ## Feature Flags (Guarded Rollout)
 

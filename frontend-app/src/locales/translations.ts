@@ -45,9 +45,10 @@ export const translations = {
       system: "System"
     },
     hero: {
-      title: "AI-Native Capital Allocation Platform",
-      sub: "A capital allocation platform where AI agents are at the core: strategies, allocation, risk, and system evolution.",
+      title: "Paid AI workflows for crypto teams and agents",
+      sub: "Buy useful AI execution with crypto: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts.",
       learnMore: "Learn more",
+      workflowsCta: "Run AI workflows",
       acpStrip:
         "ACP chain integration and custodial wallet are live on the platform — overview on ACP page, wallet after sign-in.",
       acpLink: "ACP & chain",
@@ -79,14 +80,14 @@ export const translations = {
       tokenUtilityNote: "Fees, staking, and slashing currency rails use ACP where configured; broader marketplace settlement is roadmap-aligned."
     },
     product: {
-      title: "Verifiable execution and Ledger",
-      desc: "Every run leaves artifact hashes (inputs, workflow, outputs). Execution verifiability and audit out of the box.",
+      title: "Sellable workflows with proof-backed execution",
+      desc: "ANCAP should monetize concrete crypto workflows first: buy a run, get a result, inspect cost and receipt, then repeat or scale through subscriptions and APIs.",
       strategyRegistry: "Strategy Registry",
       runsSandbox: "Runs & Sandbox",
       riskKernel: "Risk Kernel",
-      card1: "Versioned workflow specs, not code. Publish and run strategies as declarative plans.",
-      card2: "Mock execution with limits (steps, time, risk). Dry-run and kill-switch for safety.",
-      card3: "Policies, circuit breakers, limits per agent and strategy. Kill switch before moving to L2/L3."
+      card1: "Workflow catalog for listing packs, launch kits, token intelligence, and growth operations.",
+      card2: "Paid runs with previews, pricing, repeat execution, and machine-readable receipts.",
+      card3: "Proof, audit trails, and spend controls so AI workflows can be sold safely to users and other agents."
     },
     vision: {
       title: "From engine to market",
@@ -96,8 +97,8 @@ export const translations = {
       autonomousEconomy: "Autonomous Economy"
     },
     cta: {
-      title: "Ready for the AI economy?",
-      sub: "Platform for agents: strategies, capital, reputation and evolution."
+      title: "Start with paid workflows, then expand into agent commerce",
+      sub: "The first revenue loop is simple: workflow catalog, priced runs, receipts, repeat usage, then APIs and MCP."
     },
     footer: {
       suffix: "— AI-Native Capital Allocation Platform. Roadmap and vision in the repository."
@@ -204,9 +205,10 @@ export const translations = {
       system: "Система"
     },
     hero: {
-      title: "AI-нативная платформа распределения капитала",
-      sub: "Платформа распределения капитала, в центре которой находятся AI-агенты: стратегии, аллокация, риск и эволюция системы.",
+      title: "Платные AI-workflow для криптокоманд и агентов",
+      sub: "Покупай полезное AI-исполнение за crypto: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof.",
       learnMore: "Подробнее",
+      workflowsCta: "Запустить AI workflow",
       acpStrip:
         "Интеграция с сетью ACP и кастодиальный кошелек уже доступны на платформе: обзор на странице ACP, кошелек после входа.",
       acpLink: "ACP и сеть",
@@ -238,14 +240,14 @@ export const translations = {
       tokenUtilityNote: "Комиссии, стейкинг и штрафы используют ACP там, где это настроено; расширенные расчеты маркетплейса соответствуют дорожной карте."
     },
     product: {
-      title: "Проверяемое исполнение и реестр",
-      desc: "Каждый запуск оставляет хэши артефактов: входных данных, workflow и результатов. Проверяемость исполнения и аудит доступны из коробки.",
+      title: "Продаваемые workflow с proof-backed исполнением",
+      desc: "ANCAP должен сначала монетизировать конкретные crypto-workflow: купил run, получил результат, увидел цену и receipt, потом повторил запуск или масштабировал через подписки и API.",
       strategyRegistry: "Реестр стратегий",
       runsSandbox: "Запуски и песочница",
       riskKernel: "Ядро риска",
-      card1: "Версионируемые спецификации workflow вместо кода. Публикуйте и запускайте стратегии как декларативные планы.",
-      card2: "Mock-исполнение с лимитами по шагам, времени и риску. Dry-run и kill switch для безопасной проверки.",
-      card3: "Политики, предохранители и лимиты для агентов и стратегий. Kill switch перед переходом к L2/L3."
+      card1: "Каталог workflow для listing packs, launch kits, token intelligence и growth-операций.",
+      card2: "Платные запуски с preview, pricing, repeat execution и machine-readable receipts.",
+      card3: "Proof, audit trails и spend controls, чтобы AI-workflow можно было безопасно продавать людям и другим агентам."
     },
     vision: {
       title: "От движка к рынку",
@@ -255,8 +257,8 @@ export const translations = {
       autonomousEconomy: "Автономная экономика"
     },
     cta: {
-      title: "Готовы к AI-экономике?",
-      sub: "Платформа для агентов: стратегии, капитал, репутация и эволюция."
+      title: "Сначала платные workflow, потом agent commerce",
+      sub: "Первый денежный цикл простой: каталог workflow, платные run, receipts, повторное использование, затем API и MCP."
     },
     footer: {
       suffix: "- AI-нативная платформа распределения капитала. Дорожная карта и видение доступны в репозитории."

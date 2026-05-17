@@ -35,7 +35,7 @@ export function HomePage() {
                   marginRight: "auto",
                 }}
               >
-                {t("hero.title") || "AI-Native Capital Allocation Platform"}
+                {t("hero.title") || "Paid AI workflows for crypto teams and agents"}
               </h1>
               <p
                 style={{
@@ -47,7 +47,7 @@ export function HomePage() {
                 }}
               >
                 {t("hero.sub") ||
-                  "A capital allocation platform where AI agents are at the core: strategies, allocation, risk, and system evolution."}
+                  "Buy useful AI execution with crypto: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts."}
               </p>
               <p
                 style={{
@@ -77,7 +77,10 @@ export function HomePage() {
                 </Link>
               </div>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-                <a href="#product" className="btn btn-primary">
+                <Link href="/ai/workflows" className="btn btn-primary">
+                  {t("hero.workflowsCta") || "Run AI workflows"}
+                </Link>
+                <a href="#product" className="btn btn-ghost">
                   {t("hero.learnMore") || "Learn more"}
                 </a>
                 <Link href="/projects" className="btn btn-ghost">
@@ -151,7 +154,7 @@ export function HomePage() {
                 maxWidth: "640px",
               }}
             >
-              {t("product.title") || "Verifiable execution and Ledger"}
+              {t("product.title") || "Sellable workflows with proof-backed execution"}
             </h2>
             <p
               style={{
@@ -163,25 +166,25 @@ export function HomePage() {
               }}
             >
               {t("product.desc") ||
-                "Every run leaves artifact hashes (inputs, workflow, outputs). Execution verifiability and audit out of the box."}
+                "ANCAP should monetize concrete crypto workflows first: buy a run, get a result, inspect cost and receipt, then repeat or scale through subscriptions and APIs."}
             </p>
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.strategyRegistry")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
-                  {t("product.card1") || "Versioned workflow specs, not code. Publish and run strategies as declarative plans."}
+                  {t("product.card1") || "Workflow catalog for listing packs, launch kits, token intelligence, and growth operations."}
                 </p>
               </div>
               <div className="card">
                 <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.runsSandbox")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
-                  {t("product.card2") || "Mock execution with limits (steps, time, risk). Dry-run and kill-switch for safety."}
+                  {t("product.card2") || "Paid runs with previews, pricing, repeat execution, and machine-readable receipts."}
                 </p>
               </div>
               <div className="card">
                 <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "8px" }}>{t("product.riskKernel")}</h3>
                 <p style={{ fontSize: "0.95rem", color: "var(--text-muted)", margin: 0 }}>
-                  {t("product.card3") || "Policies, circuit breakers, limits per agent and strategy. Kill switch before moving to L2/L3."}
+                  {t("product.card3") || "Proof, audit trails, and spend controls so AI workflows can be sold safely to users and other agents."}
                 </p>
               </div>
             </div>
@@ -237,13 +240,16 @@ export function HomePage() {
           <section id="contact" style={{ textAlign: "center", padding: "80px 24px 60px" }}>
             <div className="container">
               <h2 style={{ fontSize: "clamp(1.5rem, 5vw, 2.25rem)", fontWeight: 700, marginBottom: "16px" }}>
-                {t("cta.title") || "Ready for the AI economy?"}
+                {t("cta.title") || "Start with paid workflows, then expand into agent commerce"}
               </h2>
               <p style={{ color: "var(--text-muted)", marginBottom: "32px", fontSize: "clamp(0.95rem, 2vw, 1.1rem)" }}>
-                {t("cta.sub") || "Platform for agents: strategies, capital, reputation and evolution."}
+                {t("cta.sub") || "The first revenue loop is simple: workflow catalog, priced runs, receipts, repeat usage, then APIs and MCP."}
               </p>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-                <Link href="/projects" className="btn btn-primary">
+                <Link href="/ai/workflows" className="btn btn-primary">
+                  {t("hero.workflowsCta") || "Run AI workflows"}
+                </Link>
+                <Link href="/projects" className="btn btn-ghost">
                   {t("nav.docs") || "Documentation"}
                 </Link>
                 <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener noreferrer">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, walletConstants } from "@/components/WalletProvider";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,13 +9,16 @@ import { useLanguage } from "@/components/LanguageProvider";
 type WalletConnectCardProps = {
   compact?: boolean;
   showContinue?: boolean;
+  continueHref?: string;
+  continueLabel?: string;
   onConnected?: () => void;
+  onAuthFailure?: () => void;
   turnstileToken?: string;
   turnstileRequired?: boolean;
   turnstileErrorMessage?: string;
 };
 
-export function WalletConnectCard({ compact = false, showContinue = true, onConnected, turnstileToken, turnstileRequired = false, turnstileErrorMessage }: WalletConnectCardProps) {
+export function WalletConnectCard({ compact = false, showContinue = true, continueHref = "/dashboard", continueLabel, onConnected, onAuthFailure, turnstileToken, turnstileRequired = false, turnstileErrorMessage }: WalletConnectCardProps) {
   const router = useRouter();
   const { t } = useLanguage();
   const { loginWithWallet } = useAuth();
@@ -33,6 +36,8 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
     switchToBnb,
     clearError,
   } = useWallet();
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
 
   const onBnb = chainId === walletConstants.bnbChainId;
 
@@ -44,17 +49,29 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
 
   const handleConnect = async () => {
     clearError();
+    setAuthError("");
     await connect();
     if (onConnected) onConnected();
   };
 
   const handleContinue = async () => {
-    if (!address) return;
-    if (turnstileRequired && !turnstileToken) {
-      throw new Error(turnstileErrorMessage || "Complete the captcha first");
+    if (!address || authBusy) return;
+    setAuthError("");
+    clearError();
+    setAuthBusy(true);
+    try {
+      if (turnstileRequired && !turnstileToken) {
+        throw new Error(turnstileErrorMessage || "Complete the captcha first");
+      }
+      await loginWithWallet(address, chainId, turnstileToken);
+      router.push(continueHref);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Wallet sign-in failed";
+      setAuthError(message);
+      onAuthFailure?.();
+    } finally {
+      setAuthBusy(false);
     }
-    await loginWithWallet(address, chainId, turnstileToken);
-    router.push("/dashboard");
   };
 
   return (
@@ -158,7 +175,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
         </div>
       )}
 
-      {error && (
+      {(error || authError) && (
         <div
           style={{
             marginTop: compact ? "10px" : "14px",
@@ -170,7 +187,7 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
             overflowWrap: "anywhere",
           }}
         >
-          {error}
+          {error || authError}
         </div>
       )}
 
@@ -187,8 +204,8 @@ export function WalletConnectCard({ compact = false, showContinue = true, onConn
               </button>
             )}
             {showContinue && (
-              <button type="button" className="btn btn-primary" onClick={() => void handleContinue()} disabled={turnstileRequired && !turnstileToken}>
-                {t("auth.continueToDashboard")}
+              <button type="button" className="btn btn-primary" onClick={() => void handleContinue()} disabled={authBusy || (turnstileRequired && !turnstileToken)}>
+                {authBusy ? "Signing in..." : continueLabel || t("auth.continueToDashboard")}
               </button>
             )}
           </>

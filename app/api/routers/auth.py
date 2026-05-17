@@ -1,22 +1,50 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy import select
+
+from app.api.deps import DbSession, require_auth
+from app.db.models import User, UserEvmWallet
 from app.schemas import (
     AuthLoginRequest,
     AuthLoginResponse,
+    PasswordChangeRequest,
+    PasswordChangeResponse,
+    PasswordForgotRequest,
+    PasswordRecoverWithWalletRequest,
+    PasswordRecoverWithWalletResponse,
+    PasswordForgotResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
     UserCreateRequest,
     UserPublic,
     WalletAuthNonceRequest,
     WalletAuthNonceResponse,
     WalletAuthVerifyRequest,
+    WalletLinkRequest,
+    WalletLinkResponse,
+)
+from app.services.acp_wallet import (
+    create_wallet_for_user,
+    decrypt_wallet_secret_with_recovery_key,
+    get_wallet_for_user,
+    migrate_wallet_to_recovery_ready,
+    password_recovery_ready,
+    rewrap_wallet_secret_for_password_change,
+    set_wallet_secret_for_password,
 )
 from app.services.auth import create_access_token, hash_password, verify_password
-from app.services.acp_wallet import create_wallet_for_user, get_wallet_for_user
+from app.services.auth_flows import (
+    create_password_reset,
+    find_user_by_email,
+    get_password_reset_token,
+    mark_password_reset_token_used,
+    send_login_alert,
+    send_password_reset_email,
+)
 from app.services.referrals import attribute_referral
-from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
 from app.services.turnstile import verify_turnstile
-from app.api.deps import DbSession
-from app.db.models import User
-from sqlalchemy import select
+from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -38,8 +66,14 @@ async def login(body: AuthLoginRequest, request: Request, session: DbSession):
             user_id=str(user.id),
             password=body.password,
         )
+    else:
+        await migrate_wallet_to_recovery_ready(session, str(user.id), body.password)
 
     token = create_access_token(str(user.id))
+    try:
+        await send_login_alert(user=user, request=request, via="password")
+    except Exception:
+        pass
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
@@ -79,9 +113,9 @@ async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: 
 
 
 @router.post("/wallet/verify", response_model=AuthLoginResponse)
-async def wallet_verify(body: WalletAuthVerifyRequest, session: DbSession):
+async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, session: DbSession):
     try:
-        token, _user = await verify_wallet_auth_and_issue_token(
+        token, user = await verify_wallet_auth_and_issue_token(
             session,
             challenge_id=body.challenge_id,
             address=body.address,
@@ -90,11 +124,49 @@ async def wallet_verify(body: WalletAuthVerifyRequest, session: DbSession):
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
+    try:
+        await send_login_alert(user=user, request=request, via="wallet")
+    except Exception:
+        pass
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
         expires_in=3600,
         wallet_backup_mnemonic=None,
+    )
+
+
+@router.post("/wallet/link", response_model=WalletLinkResponse)
+async def wallet_link(
+    body: WalletLinkRequest,
+    request: Request,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    result = await session.execute(select(User).where(User.id == UUID(user_id)))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    try:
+        _token, _linked_user = await verify_wallet_auth_and_issue_token(
+            session,
+            challenge_id=body.challenge_id,
+            address=body.address,
+            signature=body.signature,
+            link_to_user=user,
+        )
+    except ValueError as exc:
+        detail = str(exc)
+        code = status.HTTP_409_CONFLICT if "already linked to another account" in detail.lower() else status.HTTP_400_BAD_REQUEST
+        raise HTTPException(status_code=code, detail=detail) from exc
+
+    wallet_result = await session.execute(select(UserEvmWallet).where(UserEvmWallet.user_id == UUID(user_id)))
+    wallet_link_row = wallet_result.scalar_one_or_none()
+    return WalletLinkResponse(
+        success=True,
+        wallet_address=(wallet_link_row.wallet_address if wallet_link_row else body.address.lower()),
+        chain_id=int(wallet_link_row.chain_id or 56) if wallet_link_row else 56,
     )
 
 
@@ -137,3 +209,150 @@ async def create_user(body: UserCreateRequest, request: Request, session: DbSess
         token_type="bearer",
         expires_in=3600,
     )
+
+
+@router.post("/password/forgot", response_model=PasswordForgotResponse)
+async def password_forgot(body: PasswordForgotRequest, request: Request, session: DbSession):
+    await verify_turnstile(request, body.turnstile_token, "login")
+    user = await find_user_by_email(session, body.email)
+    if user is not None:
+        wallet = await get_wallet_for_user(session, str(user.id))
+        if wallet is None:
+            raw_token, _reset = await create_password_reset(session, user)
+            try:
+                await send_password_reset_email(request, user, raw_token)
+            except Exception:
+                pass
+    return PasswordForgotResponse(success=True)
+
+
+@router.post("/password/reset", response_model=PasswordResetResponse)
+async def password_reset(body: PasswordResetRequest, request: Request, session: DbSession):
+    await verify_turnstile(request, body.turnstile_token, "login")
+    try:
+        reset = await get_password_reset_token(session, body.token)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    result = await session.execute(select(User).where(User.id == reset.user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    wallet = await get_wallet_for_user(session, str(user.id))
+    if wallet is not None:
+        linked_wallet_result = await session.execute(
+            select(UserEvmWallet).where(UserEvmWallet.user_id == user.id)
+        )
+        linked_wallet = linked_wallet_result.scalar_one_or_none()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "ACP_WALLET_PASSWORD_RESET_BLOCKED",
+                "message": (
+                    "Password reset is temporarily blocked for accounts with an ACP wallet. "
+                    "Sign in and change your password from an authenticated session so the wallet secret can be re-encrypted safely."
+                ),
+                "recovery": {
+                    "type": "authenticated_password_rotation",
+                    "wallet_signin_available": linked_wallet is not None,
+                    "linked_wallet_address": (linked_wallet.wallet_address if linked_wallet is not None else None),
+                    "login_target": "/login?next=/wallet/acp%23password-security",
+                    "wallet_recovery_target": "/wallet/acp#password-security",
+                },
+            },
+        )
+
+    user.password_hash = hash_password(body.password)
+    mark_password_reset_token_used(reset)
+    return PasswordResetResponse(success=True)
+
+
+@router.post("/password/recover-with-wallet", response_model=PasswordRecoverWithWalletResponse)
+async def password_recover_with_wallet(
+    body: PasswordRecoverWithWalletRequest,
+    session: DbSession,
+):
+    try:
+        _token, user = await verify_wallet_auth_and_issue_token(
+            session,
+            challenge_id=body.challenge_id,
+            address=body.address,
+            signature=body.signature,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    wallet = await get_wallet_for_user(session, str(user.id))
+    if wallet is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ACP wallet not found for this account",
+        )
+
+    if not password_recovery_ready(wallet):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "ACP_WALLET_RECOVERY_NOT_AVAILABLE",
+                "message": (
+                    "Wallet-based password recovery is not available for this ACP-wallet account yet. "
+                    "The wallet secret is still encrypted under the account password and cannot be safely rewrapped from wallet sign-in alone."
+                ),
+                "recovery": {
+                    "type": "authenticated_password_rotation",
+                    "wallet_signin_available": True,
+                    "linked_wallet_address": body.address.lower(),
+                    "login_target": "/login?next=/wallet/acp%23password-security",
+                    "wallet_recovery_target": "/wallet/acp#password-security",
+                },
+            },
+        )
+
+    try:
+        wallet_secret = decrypt_wallet_secret_with_recovery_key(wallet)
+        await set_wallet_secret_for_password(
+            session=session,
+            user_id=str(user.id),
+            wallet_secret=wallet_secret,
+            new_password=body.new_password,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="ACP wallet recovery material is present but password recovery failed",
+        ) from exc
+
+    user.password_hash = hash_password(body.new_password)
+    return PasswordRecoverWithWalletResponse(success=True)
+
+
+@router.post("/password/change", response_model=PasswordChangeResponse)
+async def password_change(
+    body: PasswordChangeRequest,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    result = await session.execute(select(User).where(User.id == UUID(user_id)))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+
+    try:
+        await rewrap_wallet_secret_for_password_change(
+            session=session,
+            user_id=str(user.id),
+            current_password=body.current_password,
+            new_password=body.new_password,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="ACP wallet secret could not be re-encrypted with the new password",
+        ) from exc
+
+    user.password_hash = hash_password(body.new_password)
+    await migrate_wallet_to_recovery_ready(session, str(user.id), body.new_password)
+    return PasswordChangeResponse(success=True)

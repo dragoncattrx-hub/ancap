@@ -52,7 +52,7 @@ async def create_password_reset(session: AsyncSession, user: User) -> tuple[str,
     return raw_token, reset
 
 
-async def consume_password_reset_token(session: AsyncSession, token: str) -> PasswordResetToken:
+async def get_password_reset_token(session: AsyncSession, token: str) -> PasswordResetToken:
     token_hash = _hash_token(token)
     result = await session.execute(
         select(PasswordResetToken).where(PasswordResetToken.token_hash == token_hash)
@@ -67,7 +67,16 @@ async def consume_password_reset_token(session: AsyncSession, token: str) -> Pas
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < utc_now():
         raise ValueError("Password reset token expired")
+    return reset
+
+
+def mark_password_reset_token_used(reset: PasswordResetToken) -> None:
     reset.used_at = utc_now()
+
+
+async def consume_password_reset_token(session: AsyncSession, token: str) -> PasswordResetToken:
+    reset = await get_password_reset_token(session, token)
+    mark_password_reset_token_used(reset)
     return reset
 
 

@@ -40,6 +40,20 @@ function clearToken(): void {
 }
 
 // Base fetch wrapper with auth
+class ApiError extends Error {
+  status: number;
+  code?: string;
+  detail?: unknown;
+
+  constructor(message: string, status: number, options?: { code?: string; detail?: unknown }) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = options?.code;
+    this.detail = options?.detail;
+  }
+}
+
 async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: HeadersInit = {
@@ -55,9 +69,25 @@ async function apiFetch(path: string, options: RequestInit = {}) {
 
   if (!res.ok) {
     let detail = "";
+    let detailPayload: unknown = undefined;
+    let errorCode = "";
     try {
       const maybeJson = await res.json();
-      detail = String(maybeJson?.detail || maybeJson?.message || "").trim();
+      detailPayload = maybeJson?.detail;
+      if (typeof maybeJson?.detail === "string") {
+        detail = maybeJson.detail.trim();
+      } else if (maybeJson?.detail && typeof maybeJson.detail === "object") {
+        const structuredDetail = maybeJson.detail as { code?: unknown; message?: unknown };
+        if (typeof structuredDetail.code === "string") {
+          errorCode = structuredDetail.code.trim();
+        }
+        if (typeof structuredDetail.message === "string") {
+          detail = structuredDetail.message.trim();
+        }
+      }
+      if (!detail) {
+        detail = String(maybeJson?.message || "").trim();
+      }
     } catch {
       // If upstream/proxy returns HTML/plain text, expose short readable snippet.
       const raw = (await res.text().catch(() => "")).trim();
@@ -70,7 +100,10 @@ async function apiFetch(path: string, options: RequestInit = {}) {
       }
     }
     const baseMessage = `API error ${res.status}${res.statusText ? ` ${res.statusText}` : ""}`;
-    throw new Error(detail ? `${baseMessage}: ${detail}` : baseMessage);
+    throw new ApiError(detail ? `${baseMessage}: ${detail}` : baseMessage, res.status, {
+      code: errorCode || undefined,
+      detail: detailPayload,
+    });
   }
 
   return res.json();
@@ -101,6 +134,41 @@ export const auth = {
     });
     setToken(data.access_token);
     return data;
+  },
+
+  async walletLink(challenge_id: string, address: string, signature: string) {
+    return apiFetch("/auth/wallet/link", {
+      method: "POST",
+      body: JSON.stringify({ challenge_id, address, signature }),
+    });
+  },
+
+  async forgotPassword(email: string, turnstileToken?: string) {
+    return apiFetch("/auth/password/forgot", {
+      method: "POST",
+      body: JSON.stringify({ email, turnstile_token: turnstileToken }),
+    });
+  },
+
+  async resetPassword(token: string, password: string, turnstileToken?: string) {
+    return apiFetch("/auth/password/reset", {
+      method: "POST",
+      body: JSON.stringify({ token, password, turnstile_token: turnstileToken }),
+    });
+  },
+
+  async recoverPasswordWithWallet(challenge_id: string, address: string, signature: string, newPassword: string) {
+    return apiFetch("/auth/password/recover-with-wallet", {
+      method: "POST",
+      body: JSON.stringify({ challenge_id, address, signature, new_password: newPassword }),
+    });
+  },
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return apiFetch("/auth/password/change", {
+      method: "POST",
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    });
   },
 
   async register(email: string, password: string, display_name: string, referral_code?: string, turnstileToken?: string) {
@@ -803,6 +871,157 @@ export const referrals = {
   },
 };
 
+export const workflowStore = {
+  async listTemplates() {
+    return apiFetch("/workflow-store/templates");
+  },
+  async listBundles() {
+    return apiFetch("/workflow-store/bundles");
+  },
+  async getBundle(slug: string) {
+    return apiFetch(`/workflow-store/bundles/${slug}`);
+  },
+  async checkoutBundle(slug: string, data: {
+    payment_currency?: string;
+    payment_method?: string;
+    project_name?: string;
+    unlock_full_result?: boolean;
+    reserve_credits?: boolean;
+    inputs_by_workflow?: Record<string, Record<string, any>>;
+    note?: string;
+  }) {
+    return apiFetch(`/workflow-store/bundles/${slug}/checkout`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listCreditPackages() {
+    return apiFetch("/workflow-store/credit-packages");
+  },
+  async getCreditPackage(slug: string) {
+    return apiFetch(`/workflow-store/credit-packages/${slug}`);
+  },
+  async createCreditTopUpIntent(slug: string, data: {
+    payment_currency?: string;
+    payment_method?: string;
+    note?: string;
+  } = {}) {
+    return apiFetch(`/workflow-store/credit-packages/${slug}/top-up-intents`, {
+      method: "POST",
+      body: JSON.stringify({
+        payment_method: "manual",
+        ...data,
+      }),
+    });
+  },
+  async confirmCreditTopUpIntent(id: string, data: {
+    payment_reference: string;
+    note?: string;
+  }) {
+    return apiFetch(`/workflow-store/top-up-intents/${id}/confirm`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listAdminTopUpIntents(status = "requires_payment", limit = 50) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (status) params.set("status", status);
+    return apiFetch(`/workflow-store/admin/top-up-intents?${params.toString()}`);
+  },
+  async approveCreditTopUpIntent(id: string, data: {
+    payment_reference: string;
+    note?: string;
+  }) {
+    return apiFetch(`/workflow-store/admin/top-up-intents/${id}/confirm`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async getTemplate(slug: string) {
+    return apiFetch(`/workflow-store/templates/${slug}`);
+  },
+  async listRuns(limit = 20) {
+    return apiFetch(`/workflow-store/runs?limit=${limit}`);
+  },
+  async getRun(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}`);
+  },
+  async createRun(data: {
+    workflow_slug: string;
+    payment_currency?: string;
+    unlock_full_result?: boolean;
+    inputs?: Record<string, any>;
+  }) {
+    return apiFetch("/workflow-store/runs", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async updateRunStatus(id: string, status: "quoted" | "paid" | "queued" | "running" | "completed" | "failed" | "cancelled") {
+    return apiFetch(`/workflow-store/runs/${id}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    });
+  },
+  async executeRun(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}/execute`, {
+      method: "POST",
+    });
+  },
+  async confirmRunPayment(id: string, data: {
+    payment_reference: string;
+    payment_method?: string;
+    payment_amount?: { amount: string; currency: string };
+    note?: string;
+  }) {
+    return apiFetch(`/workflow-store/runs/${id}/confirm-payment`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async createPaymentIntent(id: string, data: {
+    payment_method?: string;
+    payment_reference?: string;
+    note?: string;
+  } = {}) {
+    return apiFetch(`/workflow-store/runs/${id}/payment-intents`, {
+      method: "POST",
+      body: JSON.stringify({
+        payment_method: "credits",
+        ...data,
+      }),
+    });
+  },
+  async retrySettlement(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}/retry-settlement`, {
+      method: "POST",
+    });
+  },
+  async repeatRun(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}/repeat`, {
+      method: "POST",
+    });
+  },
+  async getReceiptTrail(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}/receipt-trail`);
+  },
+  async getProofBundle(id: string) {
+    return apiFetch(`/workflow-store/runs/${id}/proof-bundle`);
+  },
+  async revenueSummary(days = 30) {
+    return apiFetch(`/workflow-store/admin/revenue?days=${encodeURIComponent(String(days))}`);
+  },
+};
+
+export const paidApi = {
+  async listProducts() {
+    return apiFetch("/paid-api/products");
+  },
+  async listMyUsage(limit = 50) {
+    return apiFetch(`/paid-api/me/usage?limit=${encodeURIComponent(String(limit))}`);
+  },
+};
+
 export const system = {
   async fees() {
     return apiFetch("/system/fees");
@@ -1001,4 +1220,3 @@ export const api = {
   settlements,
   autonomy,
 };
-

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { access, ledger, orders, runs as runsApi } from "@/lib/api";
+import { access, ledger, orders, runs as runsApi, workflowStore } from "@/lib/api";
 
 export default function AdminOverviewPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -18,6 +18,8 @@ export default function AdminOverviewPage() {
   const [recentRuns, setRecentRuns] = useState<any[]>([]);
   const [failedRuns, setFailedRuns] = useState<any[]>([]);
   const [settlementEvents, setSettlementEvents] = useState<any[]>([]);
+  const [workflowRevenue, setWorkflowRevenue] = useState<any | null>(null);
+  const [pendingTopUps, setPendingTopUps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -33,7 +35,7 @@ export default function AdminOverviewPage() {
       try {
         setLoading(true);
         setError("");
-        const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes] =
+        const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes, workflowRevenueRes, topUpsRes] =
           await Promise.all([
             fetch("/api/system/health").then((r) => r.json()),
             fetch("/api/system/ledger-invariant-status").then((r) => r.json()),
@@ -42,6 +44,8 @@ export default function AdminOverviewPage() {
             runsApi.list(20),
             runsApi.list(20, undefined),
             ledger.getEvents(undefined, 50),
+            workflowStore.revenueSummary(30),
+            workflowStore.listAdminTopUpIntents("requires_payment", 20),
           ]);
 
         setHealth(healthRes);
@@ -56,6 +60,8 @@ export default function AdminOverviewPage() {
         setSettlementEvents(
           allEvents.filter((e: any) => e.metadata && e.metadata.order_settlement)
         );
+        setWorkflowRevenue(workflowRevenueRes);
+        setPendingTopUps(topUpsRes.items || []);
       } catch (e: any) {
         setError(e?.message || String(e));
       } finally {
@@ -65,6 +71,30 @@ export default function AdminOverviewPage() {
   }, [isAuthenticated]);
 
   if (isLoading || !isAuthenticated) return null;
+
+  const capturedTotals = (workflowRevenue?.totals || []).filter((item: any) => item.status === "captured");
+  const reservedTotals = (workflowRevenue?.totals || []).filter((item: any) => item.status === "reserved");
+  const refundedTotals = (workflowRevenue?.totals || []).filter((item: any) => item.status === "refunded");
+  const topWorkflowSkus = (workflowRevenue?.skus || []).slice(0, 5);
+  const moneyLine = (items: any[]) =>
+    items.length ? items.map((item) => `${item.amount} ${item.currency}`).join(" · ") : "0";
+
+  const approveTopUp = async (topUp: any) => {
+    try {
+      setError("");
+      const reference = topUp?.item?.payment_reference || `admin-${Date.now()}`;
+      await workflowStore.approveCreditTopUpIntent(topUp.item.id, {
+        payment_reference: reference,
+        note: "admin top-up approval",
+      });
+      const refreshed = await workflowStore.listAdminTopUpIntents("requires_payment", 20);
+      setPendingTopUps(refreshed.items || []);
+      const revenue = await workflowStore.revenueSummary(30);
+      setWorkflowRevenue(revenue);
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    }
+  };
 
   return (
     <>
@@ -89,6 +119,114 @@ export default function AdminOverviewPage() {
             <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading…</div>
           ) : (
             <>
+              <div className="card" style={{ marginBottom: 18 }}>
+                <div className="card-header" style={{ alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                      Workflow revenue
+                    </div>
+                    <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 0" }}>
+                      Paid workflow monetization
+                    </h2>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
+                      Last {workflowRevenue?.window_days || 30} days · quotes, reserved credits, captured revenue, refunds.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Quotes created</div>
+                    <div style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text)" }}>
+                      {workflowRevenue?.quote_count ?? 0}
+                    </div>
+                  </div>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Captured revenue</div>
+                    <div style={{ fontSize: "1.35rem", fontWeight: 900, color: "var(--accent)" }}>
+                      {moneyLine(capturedTotals)}
+                    </div>
+                  </div>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Open reserved / refunded</div>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 800, color: "var(--text)" }}>
+                      Reserved: {moneyLine(reservedTotals)}
+                    </div>
+                    <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: 4 }}>
+                      Refunded: {moneyLine(refundedTotals)}
+                    </div>
+                  </div>
+                </div>
+
+                {topWorkflowSkus.length === 0 ? (
+                  <div style={{ color: "var(--text-muted)" }}>No workflow revenue data yet.</div>
+                ) : (
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {topWorkflowSkus.map((sku: any) => (
+                      <div key={`${sku.workflow_slug}-${sku.currency}`} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                          <div>
+                            <div style={{ color: "var(--text)", fontWeight: 800 }}>{sku.title}</div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                              {sku.workflow_slug} · {sku.category} · {sku.currency}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ color: "var(--accent)", fontWeight: 900 }}>
+                              {sku.captured_amount} {sku.currency}
+                            </div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                              quotes {sku.quote_count} · captured {sku.captured_count} · reserved {sku.reserved_count}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="card" style={{ marginBottom: 18 }}>
+                <div className="card-header" style={{ alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                      Credit top-ups
+                    </div>
+                    <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 0" }}>
+                      Pending approvals
+                    </h2>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
+                      Manual invoices wait here before credits are posted to the user ledger.
+                    </div>
+                  </div>
+                </div>
+
+                {pendingTopUps.length === 0 ? (
+                  <div style={{ color: "var(--text-muted)" }}>No pending credit top-ups.</div>
+                ) : (
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {pendingTopUps.map((topUp: any) => (
+                      <div key={topUp.item.id} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                          <div>
+                            <div style={{ color: "var(--text)", fontWeight: 800 }}>{topUp.package.title}</div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                              User {String(topUp.item.owner_user_id).slice(0, 8)} · pays {topUp.item.amount.amount} {topUp.item.amount.currency} · receives {topUp.package.credit_amount.amount} {topUp.package.credit_amount.currency}
+                            </div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 3, wordBreak: "break-all" }}>
+                              {topUp.item.payment_reference}
+                            </div>
+                          </div>
+                          <button type="button" className="btn btn-primary" onClick={() => approveTopUp(topUp)}>
+                            Approve
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
                 <div className="card">
                   <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>

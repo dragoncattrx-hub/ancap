@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -14,16 +14,33 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [recoveryHint, setRecoveryHint] = useState<"forgot-password" | "">("");
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [walletMnemonic, setWalletMnemonic] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState("");
-  const { login } = useAuth();
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const { login, requestPasswordReset } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextHref = useMemo(() => {
+    const raw = searchParams?.get("next")?.trim() || "";
+    return raw.startsWith("/") ? raw : "/dashboard";
+  }, [searchParams]);
+  const recoveryTarget = useMemo(
+    () => nextHref.startsWith("/wallet/acp") && nextHref.includes("#password-security"),
+    [nextHref],
+  );
+  const submitLabel = recoveryTarget ? "Continue to wallet recovery" : t("nav.login");
+  const submitLoadingLabel = recoveryTarget ? "Opening wallet recovery..." : t("auth.loggingIn");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setInfo("");
+    setRecoveryHint("");
     setLoading(true);
 
     try {
@@ -34,13 +51,40 @@ export function LoginForm() {
       if (mnemonic) {
         setWalletMnemonic(mnemonic);
       } else {
-        router.push("/dashboard");
+        router.push(nextHref);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
+      setTurnstileToken("");
+      setTurnstileResetKey((v) => v + 1);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setError("");
+    setInfo("");
+    setRecoveryHint("");
+    setForgotLoading(true);
+    try {
+      if (!email.trim()) {
+        throw new Error("Enter your email first");
+      }
+      if (!turnstileToken) {
+        throw new Error("Complete the captcha first");
+      }
+      await requestPasswordReset(email.trim(), turnstileToken);
+      setInfo("If this email exists, a reset link was sent. If nothing arrives and this account uses an ACP wallet, use wallet sign-in or your current password to log in, then change it on the ACP wallet page.");
+      setRecoveryHint("forgot-password");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Password reset request failed";
+      setError(message);
+      setTurnstileToken("");
+      setTurnstileResetKey((v) => v + 1);
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -121,6 +165,7 @@ export function LoginForm() {
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
               action="login"
               onTokenChange={setTurnstileToken}
+              resetSignal={turnstileResetKey}
             />
 
             {error && (
@@ -138,8 +183,75 @@ export function LoginForm() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", marginBottom: "16px" }}>
-              {loading ? t("auth.loggingIn") : t("nav.login")}
+            {info && (
+              <div
+                style={{
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "rgba(52, 211, 153, 0.1)",
+                  color: "#86efac",
+                  fontSize: "0.9rem",
+                  marginBottom: "20px",
+                }}
+              >
+                {info}
+              </div>
+            )}
+
+            {recoveryTarget && (
+              <div
+                style={{
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "rgba(245,158,11,0.12)",
+                  color: "#fbbf24",
+                  fontSize: "0.9rem",
+                  marginBottom: "20px",
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: "8px" }}>ACP wallet recovery login</div>
+                <div>You are signing in to reach the safe password rotation section for an ACP-wallet account.</div>
+                <div>After login, ANCAP will open the ACP wallet and focus the <strong>Password &amp; wallet secret</strong> block.</div>
+                <div>Use your current password there to rotate it safely and re-encrypt the wallet secret.</div>
+              </div>
+            )}
+
+            {recoveryHint === "forgot-password" && (
+              <div
+                style={{
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "rgba(245,158,11,0.12)",
+                  color: "#fbbf24",
+                  fontSize: "0.9rem",
+                  marginBottom: "20px",
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: "8px" }}>ACP wallet recovery note</div>
+                <div>If this account has an ACP wallet, email-only recovery may be unavailable.</div>
+                <div>Use wallet sign-in below if your EVM wallet is already linked, or sign in with the current password.</div>
+                <div>After login you will be sent straight to the ACP wallet password rotation section.</div>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
+                  <Link href="/login?next=/wallet/acp%23password-security" className="btn btn-ghost">Open wallet recovery login</Link>
+                  <Link href="/wallet/acp#password-security" className="btn btn-ghost">Open ACP wallet</Link>
+                </div>
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }}>
+              {loading ? submitLoadingLabel : submitLabel}
+            </button>
+
+            <button
+              type="button"
+              disabled={forgotLoading || loading}
+              className="btn btn-ghost"
+              style={{ width: "100%", marginBottom: "16px" }}
+              onClick={() => void handleForgotPassword()}
+            >
+              {forgotLoading ? "Sending reset link..." : "Forgot password?"}
             </button>
 
             <div style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--text-muted)" }}>
@@ -150,7 +262,21 @@ export function LoginForm() {
             </div>
           </form>
 
-          <WalletConnectCard turnstileToken={turnstileToken} turnstileRequired turnstileErrorMessage="Complete the captcha to continue." />
+          <WalletConnectCard
+            continueHref={nextHref}
+            continueLabel={recoveryTarget ? "Continue to wallet recovery" : undefined}
+            turnstileToken={turnstileToken}
+            turnstileRequired
+            turnstileErrorMessage="Complete the captcha to continue."
+            onConnected={() => {
+              setError("");
+              setInfo("");
+            }}
+            onAuthFailure={() => {
+              setTurnstileToken("");
+              setTurnstileResetKey((v) => v + 1);
+            }}
+          />
         </div>
       </div>
 

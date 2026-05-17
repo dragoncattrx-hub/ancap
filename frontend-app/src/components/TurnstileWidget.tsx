@@ -17,6 +17,7 @@ type Props = {
   siteKey: string;
   action: "login" | "register";
   onTokenChange: (token: string) => void;
+  resetSignal?: string | number;
 };
 
 function ensureScript(): Promise<void> {
@@ -45,7 +46,7 @@ function ensureScript(): Promise<void> {
   return window.__ancapTurnstileScriptLoading;
 }
 
-export function TurnstileWidget({ siteKey, action, onTokenChange }: Props) {
+export function TurnstileWidget({ siteKey, action, onTokenChange, resetSignal }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
   const domId = useId().replace(/:/g, "_");
@@ -82,7 +83,7 @@ export function TurnstileWidget({ siteKey, action, onTokenChange }: Props) {
       }
       widgetIdRef.current = null;
     };
-  }, [action, onTokenChange, siteKey]);
+  }, [action, onTokenChange, resetSignal, siteKey]);
 
   if (!siteKey) return null;
 

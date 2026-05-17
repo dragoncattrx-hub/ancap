@@ -41,6 +41,57 @@ class WalletAuthVerifyRequest(BaseModel):
     signature: str = Field(..., min_length=10, max_length=2048)
 
 
+class PasswordForgotRequest(BaseModel):
+    email: EmailStr
+    turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
+
+
+class PasswordForgotResponse(BaseModel):
+    success: bool = True
+
+
+class PasswordResetRequest(BaseModel):
+    token: str = Field(..., min_length=12, max_length=512)
+    password: str = Field(..., min_length=8)
+    turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
+
+
+class PasswordResetResponse(BaseModel):
+    success: bool = True
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8)
+
+
+class PasswordChangeResponse(BaseModel):
+    success: bool = True
+
+
+class PasswordRecoverWithWalletRequest(BaseModel):
+    challenge_id: str = Field(..., min_length=1, max_length=64)
+    address: str = Field(..., min_length=42, max_length=66)
+    signature: str = Field(..., min_length=10, max_length=2048)
+    new_password: str = Field(..., min_length=8)
+
+
+class PasswordRecoverWithWalletResponse(BaseModel):
+    success: bool = True
+
+
+class WalletLinkRequest(BaseModel):
+    challenge_id: str = Field(..., min_length=1, max_length=64)
+    address: str = Field(..., min_length=42, max_length=66)
+    signature: str = Field(..., min_length=10, max_length=2048)
+
+
+class WalletLinkResponse(BaseModel):
+    success: bool = True
+    wallet_address: str
+    chain_id: int
+
+
 class UserCreateRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
@@ -56,6 +107,8 @@ class UserPublic(BaseModel):
     email: str
     display_name: Optional[str] = None
     created_at: datetime
+    wallet_address: Optional[str] = None
+    wallet_chain_id: Optional[int] = None
     wallet_backup_mnemonic: Optional[str] = None
     access_token: Optional[str] = None
     token_type: Optional[str] = None

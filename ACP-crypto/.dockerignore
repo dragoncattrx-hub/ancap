@@ -1,0 +1,30 @@
+# Keep ACP node Docker build context minimal.
+# docker-compose.prod.yml uses context: ./ACP-crypto and acp-node/Dockerfile,
+# which only needs the acp-crypto and acp-node source trees.
+
+*
+!acp-crypto/
+!acp-crypto/**
+!acp-node/
+!acp-node/**
+
+# Exclude heavy build/runtime artifacts even inside allowed trees.
+acp-crypto/target/
+acp-crypto/**/target/
+acp-node/target/
+acp-node/**/target/
+acp-crypto/.git/
+acp-node/.git/
+acp-crypto/.cargo/
+acp-node/.cargo/
+acp-crypto/**/*.log
+acp-node/**/*.log
+
+# Explicitly keep bulky local chain/runtime data out of context.
+.acp-node-data/
+.acp-node-data-*/
+acp-chain/
+acp-docs/
+acp-exchange-kit/
+acp-wallet/
+*.log

@@ -6,6 +6,7 @@ from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db.session import get_db
 from app.services.auth import decode_token
 from app.services.api_keys import resolve_key
@@ -60,3 +61,19 @@ def require_agent_id(
         return UUID(agent_id_str)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid agent")
+
+
+async def require_platform_admin(
+    user_id: Annotated[str, Depends(require_auth)],
+) -> str:
+    """Require a platform operator account for admin monetization actions.
+
+    Production should set PLATFORM_ADMIN_USER_IDS to a comma-separated list of
+    user UUIDs. When it is empty, local/dev environments keep admin workflows
+    reachable for manual testing and legacy fixtures.
+    """
+    raw = get_settings().platform_admin_user_ids or ""
+    allowed = {item.strip() for item in raw.split(",") if item.strip()}
+    if not allowed or user_id in allowed:
+        return user_id
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform admin required")

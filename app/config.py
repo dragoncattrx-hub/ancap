@@ -18,6 +18,23 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     turnstile_secret_key: str = ""
+    password_reset_token_ttl_minutes: int = 30
+    public_app_url: str = "https://ancap.cloud"
+    acp_wallet_recovery_master_key: str = ""
+    platform_admin_user_ids: str = ""
+
+    # Mail / alerts
+    mail_enabled: bool = False
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "ANCAP Support"
+    smtp_use_tls: bool = True
+    smtp_use_ssl: bool = False
+    smtp_timeout_seconds: int = 15
+    login_alerts_enabled: bool = True
 
     # Pagination
     default_page_limit: int = 50

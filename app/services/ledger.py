@@ -14,6 +14,7 @@ OWNER_TYPE_TO_KIND = {
     "order_escrow": "escrow",
     "stake_escrow": "escrow",
     "contract_escrow": "escrow",
+    "workflow_run": "escrow",
     "pool_treasury": "treasury",
 }
 

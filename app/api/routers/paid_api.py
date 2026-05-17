@@ -1,0 +1,333 @@
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from decimal import Decimal
+from uuid import UUID
+
+import hashlib
+import json
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy import desc, select
+
+from app.api.deps import DbSession, require_auth
+from app.constants import PLATFORM_ACCOUNT_OWNER_ID
+from app.db.models import Agent, ApiUsageEvent, LedgerEventTypeEnum
+from app.schemas import (
+    Money,
+    PaidApiAnalyzeRequest,
+    PaidApiAnalyzeResponse,
+    PaidApiProductPublic,
+    PaidApiProductsResponse,
+    PaidApiUsageEventsResponse,
+    PaidApiUsagePublic,
+)
+from app.services.api_keys import KEY_PREFIX_DISPLAY_LEN, resolve_key
+from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
+
+
+router = APIRouter(prefix="/paid-api", tags=["Paid API"])
+
+
+PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
+    PaidApiProductPublic(
+        slug="token-risk",
+        title="Token Risk Snapshot",
+        description="Score token risk using lightweight launch, liquidity, and trust signals.",
+        endpoint="/paid-api/token-risk",
+        price=Money(amount="2.00", currency="USDC"),
+        accepted_currencies=["USDC"],
+        tags=["risk", "token", "api"],
+    ),
+    PaidApiProductPublic(
+        slug="listing-readiness",
+        title="Listing Readiness Score",
+        description="Check whether a token/project profile is ready for directory or exchange submissions.",
+        endpoint="/paid-api/listing-readiness",
+        price=Money(amount="1.50", currency="USDC"),
+        accepted_currencies=["USDC"],
+        tags=["listing", "launch", "api"],
+    ),
+    PaidApiProductPublic(
+        slug="wallet-risk",
+        title="Wallet Risk Snapshot",
+        description="Score a wallet reference for operational, concentration, and behavior risk.",
+        endpoint="/paid-api/wallet-risk",
+        price=Money(amount="2.00", currency="USDC"),
+        accepted_currencies=["USDC"],
+        tags=["wallet", "risk", "api"],
+    ),
+    PaidApiProductPublic(
+        slug="bridge-proof",
+        title="Bridge Proof Check",
+        description="Produce a compact proof-readiness result for bridge transaction references.",
+        endpoint="/paid-api/bridge-proof",
+        price=Money(amount="1.00", currency="USDC"),
+        accepted_currencies=["USDC"],
+        tags=["bridge", "proof", "api"],
+    ),
+    PaidApiProductPublic(
+        slug="campaign-score",
+        title="Campaign Score",
+        description="Score campaign inputs for clarity, channel fit, proof quality, and spam risk.",
+        endpoint="/paid-api/campaign-score",
+        price=Money(amount="1.00", currency="USDC"),
+        accepted_currencies=["USDC"],
+        tags=["campaign", "growth", "api"],
+    ),
+]
+
+
+def _product(product_slug: str) -> PaidApiProductPublic:
+    item = next((product for product in PAID_API_PRODUCTS if product.slug == product_slug), None)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Paid API product not found")
+    return item
+
+
+def _serialize_usage(row: ApiUsageEvent) -> PaidApiUsagePublic:
+    return PaidApiUsagePublic(
+        id=str(row.id),
+        agent_id=str(row.agent_id),
+        owner_user_id=str(row.owner_user_id) if row.owner_user_id else None,
+        api_key_prefix=row.api_key_prefix,
+        product_slug=row.product_slug,
+        endpoint=row.endpoint,
+        status=row.status,
+        amount=Money(amount=str(row.amount_value), currency=row.amount_currency),
+        ledger_event_id=str(row.ledger_event_id) if row.ledger_event_id else None,
+        request_hash=row.request_hash,
+        created_at=row.created_at,
+    )
+
+
+def _hash_request(body: PaidApiAnalyzeRequest) -> str:
+    payload = body.model_dump(mode="json")
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _score_from_request(product_slug: str, body: PaidApiAnalyzeRequest) -> int:
+    base = int(hashlib.sha256(f"{product_slug}:{body.subject}:{body.chain or ''}".encode("utf-8")).hexdigest()[:4], 16)
+    signal_bonus = min(len(body.signals or {}) * 4, 24)
+    metadata_bonus = min(len(body.metadata or {}) * 2, 10)
+    return max(1, min(99, 35 + (base % 45) + signal_bonus + metadata_bonus))
+
+
+def _build_result(product: PaidApiProductPublic, body: PaidApiAnalyzeRequest) -> dict:
+    score = _score_from_request(product.slug, body)
+    risk_level = "low" if score >= 76 else "medium" if score >= 48 else "high"
+    subject = body.subject.strip()
+    chain = (body.chain or "unknown").strip() or "unknown"
+
+    if product.slug == "listing-readiness":
+        missing = []
+        for key in ("project_summary", "tokenomics", "links", "team_note"):
+            if key not in body.signals:
+                missing.append(key)
+        return {
+            "subject": subject,
+            "chain": chain,
+            "score": score,
+            "readiness": "ready" if score >= 76 and not missing else "needs_review",
+            "missing_fields": missing[:6],
+            "recommendations": [
+                "Keep short and long project descriptions aligned.",
+                "Attach proof links for tokenomics, liquidity, and community channels.",
+                "Use the workflow store listing pack for reusable exchange answers.",
+            ],
+        }
+
+    if product.slug == "bridge-proof":
+        return {
+            "subject": subject,
+            "chain": chain,
+            "score": score,
+            "proof_status": "review_ready" if score >= 60 else "needs_more_evidence",
+            "required_evidence": ["source_tx", "destination_tx", "amount", "counterparty", "timestamp"],
+            "proof_hash": hashlib.sha256(f"bridge-proof:{subject}:{chain}".encode("utf-8")).hexdigest(),
+        }
+
+    if product.slug == "campaign-score":
+        return {
+            "subject": subject,
+            "score": score,
+            "grade": "A" if score >= 85 else "B" if score >= 70 else "C" if score >= 50 else "D",
+            "channel_fit": sorted([str(item) for item in body.signals.get("channels", [])]) if isinstance(body.signals.get("channels"), list) else [],
+            "flags": [] if score >= 70 else ["message clarity", "proof density", "anti-spam controls"],
+        }
+
+    flags = []
+    if score < 50:
+        flags.extend(["concentration_review", "liquidity_review"])
+    if "owner" not in body.signals:
+        flags.append("owner_signal_missing")
+    return {
+        "subject": subject,
+        "chain": chain,
+        "score": score,
+        "risk_level": risk_level,
+        "flags": flags,
+        "summary": f"{product.title} for {subject} on {chain}: {risk_level} risk signal.",
+    }
+
+
+async def _charge_usage(
+    session: DbSession,
+    *,
+    product: PaidApiProductPublic,
+    body: PaidApiAnalyzeRequest,
+    raw_api_key: str | None,
+) -> ApiUsageEvent:
+    if await is_ledger_invariant_halted(session):
+        raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
+    if not raw_api_key:
+        raise HTTPException(status_code=401, detail="Agent identity required (X-API-Key)")
+    agent_id = await resolve_key(session, raw_api_key)
+    if agent_id is None:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    agent = await session.get(Agent, agent_id)
+    if agent is None:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    owner_user_id = UUID(str(agent.owner_user_id)) if agent.owner_user_id else None
+    payer_type = "user" if owner_user_id else "agent"
+    payer_id = owner_user_id or UUID(str(agent.id))
+    payer_acc = await get_or_create_account(session, payer_type, payer_id)
+    platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+
+    currency = product.price.currency
+    amount = Decimal(product.price.amount)
+    balances = await balance_for_account(session, payer_acc.id, currency)
+    available = balances.get(currency) or Decimal(0)
+    if available < amount:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "message": "Insufficient credits for paid API usage",
+                "currency": currency,
+                "required": str(amount),
+                "available": str(available),
+            },
+        )
+
+    request_hash = _hash_request(body)
+    ev = await append_event(
+        session,
+        LedgerEventTypeEnum.fee,
+        currency,
+        amount,
+        src_account_id=payer_acc.id,
+        dst_account_id=platform_acc.id,
+        metadata={
+            "type": "paid_api_usage_charge",
+            "agent_id": str(agent.id),
+            "owner_user_id": str(owner_user_id) if owner_user_id else None,
+            "product_slug": product.slug,
+            "endpoint": product.endpoint,
+            "request_hash": request_hash,
+        },
+    )
+    row = ApiUsageEvent(
+        agent_id=UUID(str(agent.id)),
+        owner_user_id=owner_user_id,
+        api_key_prefix=raw_api_key[:KEY_PREFIX_DISPLAY_LEN],
+        product_slug=product.slug,
+        endpoint=product.endpoint,
+        status="captured",
+        amount_currency=currency,
+        amount_value=amount,
+        ledger_event_id=ev.id,
+        request_hash=request_hash,
+        metadata_json={"payer_type": payer_type, "payer_id": str(payer_id)},
+    )
+    session.add(row)
+    await session.flush()
+    await session.refresh(row)
+    return row
+
+
+@router.get("/products", response_model=PaidApiProductsResponse)
+async def list_paid_api_products():
+    return PaidApiProductsResponse(items=PAID_API_PRODUCTS)
+
+
+@router.get("/me/usage", response_model=PaidApiUsageEventsResponse)
+async def list_my_paid_api_usage(
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+    limit: int = Query(50, ge=1, le=200),
+):
+    rows = (
+        await session.execute(
+            select(ApiUsageEvent)
+            .where(ApiUsageEvent.owner_user_id == UUID(user_id))
+            .order_by(desc(ApiUsageEvent.created_at))
+            .limit(limit)
+        )
+    ).scalars().all()
+    return PaidApiUsageEventsResponse(items=[_serialize_usage(row) for row in rows])
+
+
+async def _run_paid_api_product(
+    product_slug: str,
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None,
+) -> PaidApiAnalyzeResponse:
+    product = _product(product_slug)
+    result = _build_result(product, body)
+    usage = await _charge_usage(session, product=product, body=body, raw_api_key=x_api_key)
+    usage.response_json = result
+    usage.metadata_json = {
+        **(usage.metadata_json or {}),
+        "result_score": result.get("score"),
+        "completed_at": datetime.now(UTC).isoformat(),
+    }
+    await session.flush()
+    await session.refresh(usage)
+    return PaidApiAnalyzeResponse(product=product, usage=_serialize_usage(usage), result=result)
+
+
+@router.post("/token-risk", response_model=PaidApiAnalyzeResponse)
+async def token_risk_snapshot(
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    return await _run_paid_api_product("token-risk", body, session, x_api_key)
+
+
+@router.post("/listing-readiness", response_model=PaidApiAnalyzeResponse)
+async def listing_readiness_score(
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    return await _run_paid_api_product("listing-readiness", body, session, x_api_key)
+
+
+@router.post("/wallet-risk", response_model=PaidApiAnalyzeResponse)
+async def wallet_risk_snapshot(
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    return await _run_paid_api_product("wallet-risk", body, session, x_api_key)
+
+
+@router.post("/bridge-proof", response_model=PaidApiAnalyzeResponse)
+async def bridge_proof_check(
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    return await _run_paid_api_product("bridge-proof", body, session, x_api_key)
+
+
+@router.post("/campaign-score", response_model=PaidApiAnalyzeResponse)
+async def campaign_score(
+    body: PaidApiAnalyzeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    return await _run_paid_api_product("campaign-score", body, session, x_api_key)

@@ -20,6 +20,9 @@ function navItemLabel(item: NavItem, t: (key: string) => string): string {
 }
 
 const primaryNav: NavItem[] = [
+  { label: "Workflows", href: "/ai/workflows" },
+  { label: "Billing", href: "/billing" },
+  { label: "Credits", href: "/wallet/credits" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Feed", href: "/feed" },
   { label: "Agents", href: "/agents" },

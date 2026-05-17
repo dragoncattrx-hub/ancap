@@ -12,10 +12,13 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db.models import UserAcpWallet
 
 
 DEFAULT_DERIVATION_PATH = "m/44'/0'/0'/0/0"
+SECRET_BOX_VERSION_LEGACY = 1
+SECRET_BOX_VERSION_RECOVERY_READY = 2
 
 
 def _walletd_cmd() -> list[str]:
@@ -33,7 +36,6 @@ def _walletd_available() -> bool:
 
 
 def _fallback_mnemonic() -> str:
-    # Test/dev fallback only when walletd is not available.
     words = [
         "apple", "bridge", "cannon", "dawn", "ember", "forest",
         "globe", "harbor", "island", "jungle", "kernel", "lunar",
@@ -60,8 +62,6 @@ def _run_walletd(args: list[str], timeout_s: int = 90) -> dict:
 
     out = (r.stdout or "").strip()
     try:
-        import json
-
         payload = json.loads(out) if out else {}
     except Exception as exc:
         raise RuntimeError(f"ACP wallet helper returned non-JSON output: {out[:200]}") from exc
@@ -108,7 +108,6 @@ def derive_address(mnemonic: str, derivation_path: str = DEFAULT_DERIVATION_PATH
     try:
         res = _run_walletd(args)
     except RuntimeError:
-        # Backward compatibility: old walletd builds may not support derivation path.
         res = _run_walletd(["address", "--mnemonic", mnemonic])
     address = str(res["address"]).strip()
     if len(address) < 16:
@@ -128,34 +127,44 @@ def _derive_key(password: str, salt: bytes) -> bytes:
     )
 
 
+def _encrypt_bytes(plaintext: bytes, key: bytes) -> tuple[str, str]:
+    nonce = os.urandom(12)
+    ciphertext = AESGCM(key).encrypt(nonce, plaintext, None)
+    return base64.b64encode(ciphertext).decode("ascii"), base64.b64encode(nonce).decode("ascii")
+
+
+def _decrypt_bytes(ciphertext_b64: str, nonce_b64: str, key: bytes) -> bytes:
+    return AESGCM(key).decrypt(
+        base64.b64decode(nonce_b64),
+        base64.b64decode(ciphertext_b64),
+        None,
+    )
+
+
+def _get_recovery_master_key() -> bytes | None:
+    raw = (get_settings().acp_wallet_recovery_master_key or "").strip()
+    if not raw:
+        return None
+    digest = hashlib.sha256(raw.encode("utf-8")).digest()
+    return digest
+
+
 def encrypt_mnemonic(mnemonic: str, password: str) -> tuple[str, str, str]:
     if not password:
         raise ValueError("password is required")
     salt = os.urandom(16)
-    nonce = os.urandom(12)
     key = _derive_key(password, salt)
-    ciphertext = AESGCM(key).encrypt(nonce, mnemonic.encode("utf-8"), None)
-    return (
-        base64.b64encode(ciphertext).decode("ascii"),
-        base64.b64encode(salt).decode("ascii"),
-        base64.b64encode(nonce).decode("ascii"),
-    )
+    ciphertext_b64, nonce_b64 = _encrypt_bytes(mnemonic.encode("utf-8"), key)
+    return ciphertext_b64, base64.b64encode(salt).decode("ascii"), nonce_b64
 
 
 def decrypt_mnemonic(encrypted_mnemonic: str, salt_b64: str, nonce_b64: str, password: str) -> str:
     key = _derive_key(password, base64.b64decode(salt_b64))
-    plaintext = AESGCM(key).decrypt(
-        base64.b64decode(nonce_b64),
-        base64.b64decode(encrypted_mnemonic),
-        None,
-    )
+    plaintext = _decrypt_bytes(encrypted_mnemonic, nonce_b64, key)
     return plaintext.decode("utf-8")
 
 
 def decode_wallet_secret(secret_text: str) -> tuple[str, str | None]:
-    """
-    Returns (mnemonic, keystore_json_or_none), compatible with legacy mnemonic-only rows.
-    """
     text = (secret_text or "").strip()
     if not text:
         raise RuntimeError("empty wallet secret")
@@ -171,6 +180,89 @@ def decode_wallet_secret(secret_text: str) -> tuple[str, str | None]:
     return text, None
 
 
+def _build_recovery_ready_fields(wallet_secret: str, password: str) -> dict[str, str | bool | int | None]:
+    master_key = _get_recovery_master_key()
+    if master_key is None:
+        encrypted_mnemonic, salt_b64, nonce_b64 = encrypt_mnemonic(wallet_secret, password)
+        return {
+            "secret_box_version": SECRET_BOX_VERSION_LEGACY,
+            "encrypted_mnemonic": encrypted_mnemonic,
+            "salt_b64": salt_b64,
+            "nonce_b64": nonce_b64,
+            "secret_wrapped_b64": None,
+            "secret_wrap_salt_b64": None,
+            "secret_wrap_nonce_b64": None,
+            "recovery_secret_box_b64": None,
+            "recovery_secret_nonce_b64": None,
+            "recovery_enabled": False,
+        }
+
+    secret_key = os.urandom(32)
+    secret_wrapped_b64, secret_wrap_nonce_b64 = _encrypt_bytes(wallet_secret.encode("utf-8"), secret_key)
+
+    wrap_salt = os.urandom(16)
+    password_key = _derive_key(password, wrap_salt)
+    recovery_secret_box_b64, recovery_secret_nonce_b64 = _encrypt_bytes(secret_key, master_key)
+    encrypted_mnemonic, nonce_b64 = _encrypt_bytes(secret_key, password_key)
+
+    return {
+        "secret_box_version": SECRET_BOX_VERSION_RECOVERY_READY,
+        "encrypted_mnemonic": encrypted_mnemonic,
+        "salt_b64": base64.b64encode(wrap_salt).decode("ascii"),
+        "nonce_b64": nonce_b64,
+        "secret_wrapped_b64": secret_wrapped_b64,
+        "secret_wrap_salt_b64": None,
+        "secret_wrap_nonce_b64": secret_wrap_nonce_b64,
+        "recovery_secret_box_b64": recovery_secret_box_b64,
+        "recovery_secret_nonce_b64": recovery_secret_nonce_b64,
+        "recovery_enabled": True,
+    }
+
+
+def _apply_wallet_secret_fields(wallet: UserAcpWallet, fields: dict[str, str | bool | int | None]) -> None:
+    wallet.secret_box_version = int(fields["secret_box_version"] or SECRET_BOX_VERSION_LEGACY)
+    wallet.encrypted_mnemonic = str(fields["encrypted_mnemonic"] or "")
+    wallet.salt_b64 = str(fields["salt_b64"] or "")
+    wallet.nonce_b64 = str(fields["nonce_b64"] or "")
+    wallet.secret_wrapped_b64 = fields["secret_wrapped_b64"] if isinstance(fields["secret_wrapped_b64"], str) else None
+    wallet.secret_wrap_salt_b64 = fields["secret_wrap_salt_b64"] if isinstance(fields["secret_wrap_salt_b64"], str) else None
+    wallet.secret_wrap_nonce_b64 = fields["secret_wrap_nonce_b64"] if isinstance(fields["secret_wrap_nonce_b64"], str) else None
+    wallet.recovery_secret_box_b64 = fields["recovery_secret_box_b64"] if isinstance(fields["recovery_secret_box_b64"], str) else None
+    wallet.recovery_secret_nonce_b64 = fields["recovery_secret_nonce_b64"] if isinstance(fields["recovery_secret_nonce_b64"], str) else None
+    wallet.recovery_enabled = bool(fields["recovery_enabled"])
+
+
+def password_recovery_ready(wallet: UserAcpWallet) -> bool:
+    return bool(
+        getattr(wallet, "secret_box_version", SECRET_BOX_VERSION_LEGACY) >= SECRET_BOX_VERSION_RECOVERY_READY
+        and wallet.recovery_enabled
+        and wallet.secret_wrapped_b64
+        and wallet.secret_wrap_nonce_b64
+        and wallet.recovery_secret_box_b64
+        and wallet.recovery_secret_nonce_b64
+    )
+
+
+def decrypt_wallet_secret_with_password(wallet: UserAcpWallet, password: str) -> str:
+    if password_recovery_ready(wallet):
+        password_key = _derive_key(password, base64.b64decode(wallet.salt_b64))
+        secret_key = _decrypt_bytes(wallet.encrypted_mnemonic, wallet.nonce_b64, password_key)
+        wallet_secret = _decrypt_bytes(wallet.secret_wrapped_b64, wallet.secret_wrap_nonce_b64, secret_key)
+        return wallet_secret.decode("utf-8")
+    return decrypt_mnemonic(wallet.encrypted_mnemonic, wallet.salt_b64, wallet.nonce_b64, password)
+
+
+def decrypt_wallet_secret_with_recovery_key(wallet: UserAcpWallet) -> str:
+    if not password_recovery_ready(wallet):
+        raise RuntimeError("wallet is not recovery-ready")
+    master_key = _get_recovery_master_key()
+    if master_key is None:
+        raise RuntimeError("ACP wallet recovery master key is not configured")
+    secret_key = _decrypt_bytes(wallet.recovery_secret_box_b64, wallet.recovery_secret_nonce_b64, master_key)
+    wallet_secret = _decrypt_bytes(wallet.secret_wrapped_b64, wallet.secret_wrap_nonce_b64, secret_key)
+    return wallet_secret.decode("utf-8")
+
+
 async def get_wallet_for_user(session: AsyncSession, user_id: str) -> UserAcpWallet | None:
     q = select(UserAcpWallet).where(UserAcpWallet.user_id == user_id)
     row = await session.execute(q)
@@ -184,14 +276,21 @@ async def create_wallet_for_user(
     derivation_path: str = DEFAULT_DERIVATION_PATH,
 ) -> tuple[UserAcpWallet, str]:
     wallet_secret, mnemonic, address = generate_wallet_secret()
-    encrypted_mnemonic, salt_b64, nonce_b64 = encrypt_mnemonic(wallet_secret, password)
+    fields = _build_recovery_ready_fields(wallet_secret, password)
     now = datetime.now(timezone.utc)
     wallet = UserAcpWallet(
         user_id=user_id,
         address=address,
-        encrypted_mnemonic=encrypted_mnemonic,
-        salt_b64=salt_b64,
-        nonce_b64=nonce_b64,
+        encrypted_mnemonic=str(fields["encrypted_mnemonic"]),
+        salt_b64=str(fields["salt_b64"]),
+        nonce_b64=str(fields["nonce_b64"]),
+        secret_box_version=int(fields["secret_box_version"] or SECRET_BOX_VERSION_LEGACY),
+        secret_wrapped_b64=fields["secret_wrapped_b64"] if isinstance(fields["secret_wrapped_b64"], str) else None,
+        secret_wrap_salt_b64=fields["secret_wrap_salt_b64"] if isinstance(fields["secret_wrap_salt_b64"], str) else None,
+        secret_wrap_nonce_b64=fields["secret_wrap_nonce_b64"] if isinstance(fields["secret_wrap_nonce_b64"], str) else None,
+        recovery_secret_box_b64=fields["recovery_secret_box_b64"] if isinstance(fields["recovery_secret_box_b64"], str) else None,
+        recovery_secret_nonce_b64=fields["recovery_secret_nonce_b64"] if isinstance(fields["recovery_secret_nonce_b64"], str) else None,
+        recovery_enabled=bool(fields["recovery_enabled"]),
         derivation_path=derivation_path,
         created_at=now,
         updated_at=now,
@@ -200,3 +299,53 @@ async def create_wallet_for_user(
     await session.flush()
     return wallet, mnemonic
 
+
+async def rewrap_wallet_secret_for_password_change(
+    session: AsyncSession,
+    user_id: str,
+    current_password: str,
+    new_password: str,
+) -> UserAcpWallet | None:
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        return None
+    secret = decrypt_wallet_secret_with_password(wallet, current_password)
+    fields = _build_recovery_ready_fields(secret, new_password)
+    _apply_wallet_secret_fields(wallet, fields)
+    wallet.updated_at = datetime.now(timezone.utc)
+    await session.flush()
+    return wallet
+
+
+async def set_wallet_secret_for_password(
+    session: AsyncSession,
+    user_id: str,
+    wallet_secret: str,
+    new_password: str,
+) -> UserAcpWallet | None:
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        return None
+    fields = _build_recovery_ready_fields(wallet_secret, new_password)
+    _apply_wallet_secret_fields(wallet, fields)
+    wallet.updated_at = datetime.now(timezone.utc)
+    await session.flush()
+    return wallet
+
+
+async def migrate_wallet_to_recovery_ready(
+    session: AsyncSession,
+    user_id: str,
+    password: str,
+) -> UserAcpWallet | None:
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None or password_recovery_ready(wallet):
+        return wallet
+    if _get_recovery_master_key() is None:
+        return wallet
+    secret = decrypt_wallet_secret_with_password(wallet, password)
+    fields = _build_recovery_ready_fields(secret, password)
+    _apply_wallet_secret_fields(wallet, fields)
+    wallet.updated_at = datetime.now(timezone.utc)
+    await session.flush()
+    return wallet

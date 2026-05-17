@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [walletMnemonic, setWalletMnemonic] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const { register } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -42,6 +43,8 @@ export default function RegisterPage() {
       }
     } catch (err: any) {
       setError(err.message || "Registration failed");
+      setTurnstileToken("");
+      setTurnstileResetKey((v) => v + 1);
     } finally {
       setLoading(false);
     }
@@ -152,6 +155,7 @@ export default function RegisterPage() {
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
               action="register"
               onTokenChange={setTurnstileToken}
+              resetSignal={turnstileResetKey}
             />
 
             {error && (

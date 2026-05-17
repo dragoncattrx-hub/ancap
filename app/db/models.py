@@ -59,6 +59,15 @@ class OrderStatusEnum(str, enum.Enum):
     refunded = "refunded"
 
 
+class PaymentIntentStatusEnum(str, enum.Enum):
+    requires_payment = "requires_payment"
+    reserved = "reserved"
+    captured = "captured"
+    refunded = "refunded"
+    cancelled = "cancelled"
+    failed = "failed"
+
+
 class AccessScopeEnum(str, enum.Enum):
     view = "view"
     execute = "execute"
@@ -127,6 +136,13 @@ class UserAcpWallet(Base):
     encrypted_mnemonic = Column(Text, nullable=False)
     salt_b64 = Column(Text, nullable=False)
     nonce_b64 = Column(Text, nullable=False)
+    secret_box_version = Column(Integer, nullable=False, default=1)
+    secret_wrapped_b64 = Column(Text, nullable=True)
+    secret_wrap_salt_b64 = Column(Text, nullable=True)
+    secret_wrap_nonce_b64 = Column(Text, nullable=True)
+    recovery_secret_box_b64 = Column(Text, nullable=True)
+    recovery_secret_nonce_b64 = Column(Text, nullable=True)
+    recovery_enabled = Column(Boolean, nullable=False, default=False)
     derivation_path = Column(String(128), nullable=False, default="m/44'/0'/0'/0/0")
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -158,6 +174,19 @@ class WalletAuthChallenge(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
     used_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash = Column(String(64), nullable=False, unique=True, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
 
 
 class Agent(Base):
@@ -199,6 +228,34 @@ class ApiKey(Base):
     scope = Column(String(64), nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ApiUsageEvent(Base):
+    __tablename__ = "api_usage_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=False, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    api_key_prefix = Column(String(24), nullable=True, index=True)
+    product_slug = Column(String(80), nullable=False, index=True)
+    endpoint = Column(String(160), nullable=False)
+    status = Column(String(32), nullable=False, default="captured", index=True)
+    amount_currency = Column(String(10), nullable=False, index=True)
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    request_hash = Column(String(64), nullable=False, index=True)
+    response_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    agent = relationship("Agent", foreign_keys=[agent_id])
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+
+    __table_args__ = (
+        Index("ix_api_usage_events_agent_created", "agent_id", "created_at"),
+        Index("ix_api_usage_events_owner_created", "owner_user_id", "created_at"),
+        Index("ix_api_usage_events_product_status", "product_slug", "status"),
+    )
 
 
 class AgentLinkTypeEnum(str, enum.Enum):
@@ -330,6 +387,62 @@ class Order(Base):
     payment_method = Column(String(64), nullable=True)
     note = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class WorkflowRunRecord(Base):
+    __tablename__ = "workflow_runs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workflow_slug = Column(String(120), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    category = Column(String(80), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="quoted", index=True)
+    quoted_amount = Column(Numeric(36, 18), nullable=False)
+    quoted_currency = Column(String(10), nullable=False)
+    payment_currency = Column(String(10), nullable=False)
+    unlock_full_result = Column(Boolean, nullable=False, default=True)
+    inputs_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    preview_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    result_json = Column(JSONB, nullable=True)
+    receipt_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+
+    __table_args__ = (
+        Index("ix_workflow_runs_owner_created", "owner_user_id", "created_at"),
+        Index("ix_workflow_runs_owner_slug", "owner_user_id", "workflow_slug"),
+    )
+
+
+class PaymentIntent(Base):
+    __tablename__ = "payment_intents"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workflow_run_id = Column(UUID(as_uuid=False), ForeignKey("workflow_runs.id", ondelete="CASCADE"), nullable=True, index=True)
+    intent_type = Column(String(32), nullable=False, default="workflow_run", index=True)
+    status = Column(String(32), nullable=False, default=PaymentIntentStatusEnum.requires_payment.value, index=True)
+    payment_method = Column(String(64), nullable=False, default="credits")
+    amount_currency = Column(String(10), nullable=False, index=True)
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    payment_reference = Column(String(128), nullable=True, index=True)
+    reserved_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    capture_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    refund_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    provider_payload_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+    workflow_run = relationship("WorkflowRunRecord", foreign_keys=[workflow_run_id])
+
+    __table_args__ = (
+        Index("ix_payment_intents_owner_created", "owner_user_id", "created_at"),
+        Index("ix_payment_intents_run_status", "workflow_run_id", "status"),
+    )
 
 
 class AccessGrant(Base):

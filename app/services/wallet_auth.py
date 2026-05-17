@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import User, UserEvmWallet, WalletAuthChallenge
+from app.services.auth_flows import link_wallet_to_user
 from app.services.auth import create_access_token, hash_password
 
 WALLET_AUTH_TTL_MINUTES = 10
@@ -113,14 +114,7 @@ async def resolve_or_create_wallet_user(session: AsyncSession, address: str) -> 
     )
     session.add(user)
     await session.flush()
-    session.add(
-        UserEvmWallet(
-            user_id=user.id,
-            wallet_address=normalized,
-            chain_id=DEFAULT_CHAIN_ID,
-        )
-    )
-    await session.flush()
+    await link_wallet_to_user(session, user=user, wallet_address=normalized, chain_id=DEFAULT_CHAIN_ID)
     return user
 
 
@@ -130,6 +124,7 @@ async def verify_wallet_auth_and_issue_token(
     challenge_id: str,
     address: str,
     signature: str,
+    link_to_user: User | None = None,
 ) -> tuple[str, User]:
     normalized = normalize_wallet_address(address)
     challenge_result = await session.execute(
@@ -157,15 +152,10 @@ async def verify_wallet_auth_and_issue_token(
     if normalize_wallet_address(recovered) != normalized:
         raise ValueError("Wallet signature does not match the provided address")
 
-    user = await resolve_or_create_wallet_user(session, normalized)
+    user = link_to_user or await resolve_or_create_wallet_user(session, normalized)
     challenge.used_at = utc_now()
 
-    existing_link = await session.execute(
-        select(UserEvmWallet).where(UserEvmWallet.wallet_address == normalized)
-    )
-    link = existing_link.scalar_one_or_none()
-    if link is not None and link.chain_id != challenge.chain_id:
-        link.chain_id = challenge.chain_id
+    await link_wallet_to_user(session, user=user, wallet_address=normalized, chain_id=challenge.chain_id)
 
     token = create_access_token(str(user.id))
     return token, user

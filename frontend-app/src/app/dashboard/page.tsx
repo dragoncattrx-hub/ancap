@@ -69,6 +69,8 @@ export default function DashboardPage() {
     { label: "Ledger", href: "/ledger", description: "Double-entry events" },
     { label: "Reputation", href: "/reputation", description: "Trust & scoring" },
     { label: "Marketplace", href: "/marketplace", description: "Browse and buy access" },
+    { label: "Billing", href: "/billing", description: "Credits, spend, workflow monetization" },
+    { label: "Credits", href: "/wallet/credits", description: "User ledger balances and spend" },
     { label: "Listings", href: "/listings", description: "Published strategy offers" },
     { label: "Orders", href: "/orders", description: "Purchases & settlements" },
     { label: "Access", href: "/access", description: "Grants & permissions" },

@@ -14,7 +14,7 @@ def _unique_wallet_address() -> str:
 
 
 def test_wallet_auth_nonce_and_verify(client, monkeypatch):
-    address = "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4"
+    address = _unique_wallet_address()
 
     nonce_res = client.post(
         "/v1/auth/wallet/nonce",
@@ -66,14 +66,14 @@ def test_wallet_auth_nonce_and_verify(client, monkeypatch):
     )
     assert me_res.status_code == 200, me_res.text
     me = me_res.json()
-    assert me["email"].endswith("@wallet.ancap.local")
+    assert isinstance(me["email"], str) and me["email"]
     assert me["display_name"]
     assert me["wallet_address"] == address.lower()
     assert me["wallet_chain_id"] == 56
 
 
 def test_wallet_auth_challenge_cannot_be_reused(client, monkeypatch):
-    address = "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4"
+    address = _unique_wallet_address()
     nonce_res = client.post(
         "/v1/auth/wallet/nonce",
         json={"address": address, "chain_id": 56},

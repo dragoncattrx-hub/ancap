@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
@@ -60,8 +60,10 @@ type SwapFormErrors = {
 export default function AcpWalletPage() {
   const ACP_FIXED_MIN_FEE = "0.00000100";
   const ACP_ADDRESS_RE = /^acp1[a-z0-9]{20,100}$/;
+  const PASSWORD_ROTATION_ID = "password-security";
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, changePassword } = useAuth();
+  const passwordSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [depositAddress, setDepositAddress] = useState<string>("");
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
@@ -99,9 +101,22 @@ export default function AcpWalletPage() {
   const [distributionPlan, setDistributionPlan] = useState("");
   const [distributionPassword, setDistributionPassword] = useState("");
   const [distributionResult, setDistributionResult] = useState<any[]>([]);
+  const [passwordChangeForm, setPasswordChangeForm] = useState({
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [passwordChangeBusy, setPasswordChangeBusy] = useState(false);
+  const [passwordChangeInfo, setPasswordChangeInfo] = useState("");
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) router.push("/login");
+    if (!authLoading && !isAuthenticated) {
+      const nextTarget = typeof window !== "undefined"
+        ? `/wallet/acp${window.location.hash || ""}`
+        : "/wallet/acp";
+      router.push(`/login?next=${encodeURIComponent(nextTarget)}`);
+    }
   }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
@@ -109,6 +124,20 @@ export default function AcpWalletPage() {
       refreshAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || typeof window === "undefined") return;
+    const inRecoveryMode = window.location.hash === `#${PASSWORD_ROTATION_ID}`;
+    setRecoveryMode(inRecoveryMode);
+    if (!inRecoveryMode) return;
+    const node = passwordSectionRef.current;
+    if (!node) return;
+    const timer = window.setTimeout(() => {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
+      node.focus();
+    }, 80);
+    return () => window.clearTimeout(timer);
   }, [isAuthenticated]);
 
   const selectedOrder = useMemo(
@@ -145,7 +174,7 @@ export default function AcpWalletPage() {
         setBalance(balRes.value || null);
         setTxAddressBalance(balRes.value || null);
       } else {
-        warnings.push(`Hot balance unavailable: ${balRes.reason?.message || "unknown error"}`);
+        warnings.push(`Wallet balance unavailable: ${balRes.reason?.message || "unknown error"}`);
       }
 
       if (ordersRes.status === "fulfilled") {
@@ -389,6 +418,31 @@ export default function AcpWalletPage() {
     }
   }
 
+  async function submitPasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordChangeBusy(true);
+    setError("");
+    setPasswordChangeInfo("");
+    try {
+      if (passwordChangeForm.current_password.length < 8) {
+        throw new Error("Current password is required");
+      }
+      if (passwordChangeForm.new_password.length < 8) {
+        throw new Error("New password must be at least 8 characters");
+      }
+      if (passwordChangeForm.new_password !== passwordChangeForm.confirm_password) {
+        throw new Error("New passwords do not match");
+      }
+      await changePassword(passwordChangeForm.current_password, passwordChangeForm.new_password);
+      setPasswordChangeForm({ current_password: "", new_password: "", confirm_password: "" });
+      setPasswordChangeInfo("Password updated and ACP wallet secret re-encrypted.");
+    } catch (e: any) {
+      setError(e?.message || "Password change failed");
+    } finally {
+      setPasswordChangeBusy(false);
+    }
+  }
+
   if (authLoading || !isAuthenticated) return null;
 
   const singleWalletAddress = (depositAddress || balance?.address || "").trim();
@@ -437,6 +491,11 @@ export default function AcpWalletPage() {
               {swapInfo}
             </div>
           )}
+          {passwordChangeInfo && (
+            <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontSize: "0.9rem", marginBottom: "18px" }}>
+              {passwordChangeInfo}
+            </div>
+          )}
 
           <div style={{ display: "grid", gap: 16 }}>
             {loadWarnings.length > 0 && (
@@ -464,7 +523,7 @@ export default function AcpWalletPage() {
 
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Hot balance</h3>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>Wallet balance</h3>
                   <span className="badge badge-active">Live</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
@@ -478,7 +537,7 @@ export default function AcpWalletPage() {
                   </div>
                 )}
                 <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  Real balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                  User wallet on-chain balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                 </div>
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
@@ -543,6 +602,58 @@ export default function AcpWalletPage() {
                   {distributionResult.length > 0 && <pre style={{ marginTop: 8, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(distributionResult, null, 2)}</pre>}
                 </div>
               </div>
+            </div>
+
+            <div className="card" id={PASSWORD_ROTATION_ID} ref={passwordSectionRef} tabIndex={-1} style={{ maxWidth: 760, scrollMarginTop: 110 }}>
+              {recoveryMode && (
+                <div style={{ marginBottom: 14, padding: "12px", borderRadius: "8px", background: "rgba(245,158,11,0.12)", color: "#fbbf24", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>ACP wallet recovery mode</div>
+                  <div>You are in the safe password rotation section.</div>
+                  <div>Use your current password here to set a new one so the ACP wallet secret can be re-encrypted safely.</div>
+                  <div>If you do not know the current password, email-only recovery is still blocked for ACP-wallet accounts.</div>
+                </div>
+              )}
+              <div className="card-header">
+                <h3 style={{ fontWeight: 800, margin: 0 }}>Password & wallet secret</h3>
+                <span className="badge badge-warning">Safe rotation</span>
+              </div>
+              <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                Accounts with an ACP wallet must change password from an authenticated session so the wallet secret can be re-encrypted safely. Email reset is intentionally blocked for this case.
+              </div>
+              <form onSubmit={submitPasswordChange} style={{ marginTop: 14, display: "grid", gap: 10, maxWidth: 420 }}>
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="Current password"
+                  value={passwordChangeForm.current_password}
+                  onChange={(e) => setPasswordChangeForm((p) => ({ ...p, current_password: e.target.value }))}
+                  autoComplete="current-password"
+                  required
+                />
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="New password"
+                  value={passwordChangeForm.new_password}
+                  onChange={(e) => setPasswordChangeForm((p) => ({ ...p, new_password: e.target.value }))}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="Confirm new password"
+                  value={passwordChangeForm.confirm_password}
+                  onChange={(e) => setPasswordChangeForm((p) => ({ ...p, confirm_password: e.target.value }))}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+                <button className="btn btn-primary" type="submit" disabled={passwordChangeBusy}>
+                  {passwordChangeBusy ? "Updating password..." : "Change password safely"}
+                </button>
+              </form>
             </div>
 
             <div className="responsive-grid responsive-grid-2">
@@ -654,7 +765,7 @@ export default function AcpWalletPage() {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <input className="input input-bordered w-full" value={txAddressInput} onChange={(e) => setTxAddressInput(e.target.value)} placeholder="acp1..." />
                   <button type="button" className="btn btn-ghost" onClick={() => refreshTransactionsByAddress(txAddressInput)} disabled={historyBusy || !txAddressInput.trim()}>Load history</button>
-                  <button type="button" className="btn btn-ghost" onClick={() => { const hot = (singleWalletAddress || "").trim(); if (!hot) return; setTxAddressInput(hot); refreshTransactionsByAddress(hot, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>Use hot wallet</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => { const walletAddress = (singleWalletAddress || "").trim(); if (!walletAddress) return; setTxAddressInput(walletAddress); refreshTransactionsByAddress(walletAddress, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>Use my wallet address</button>
                 </div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span></div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>

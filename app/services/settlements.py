@@ -6,12 +6,14 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import (
     ChainReceipt,
     ChainReceiptStatusEnum,
+    LedgerEvent,
     LedgerEventTypeEnum,
     SettlementIntent,
     SettlementIntentStatusEnum,
@@ -67,19 +69,42 @@ async def execute_settlement_intent(session: AsyncSession, intent: SettlementInt
     session.add(receipt)
     await session.flush()
 
+    if intent.status == SettlementIntentStatusEnum.executed.value:
+        receipt.status = ChainReceiptStatusEnum.finalized.value
+        receipt.finalized_at = datetime.utcnow()
+        receipt.receipt_json = {
+            "driver": driver_name,
+            "payload_hash": payload_hash,
+            "chain_id": chain_id,
+            "status": "finalized",
+            "replayed": True,
+            "note": "Settlement intent was already executed; skipped duplicate execution.",
+        }
+        await session.flush()
+        return intent, receipt
+
     try:
         src_account = await get_or_create_account(session, intent.source_owner_type, intent.source_owner_id)
         dst_account = await get_or_create_account(session, intent.target_owner_type, intent.target_owner_id)
         event_type = INTENT_TO_LEDGER_EVENT[intent.intent_type]
-        await append_event(
-            session,
-            event_type,
-            intent.amount_currency,
-            Decimal(intent.amount_value),
-            src_account_id=src_account.id,
-            dst_account_id=dst_account.id,
-            metadata={"settlement_intent_id": str(intent.id), "correlation_id": intent.correlation_id},
-        )
+
+        existing_ledger_event = (
+            await session.execute(
+                select(LedgerEvent).where(
+                    LedgerEvent.metadata_.contains({"settlement_intent_id": str(intent.id)})
+                ).limit(1)
+            )
+        ).scalar_one_or_none()
+        if existing_ledger_event is None:
+            await append_event(
+                session,
+                event_type,
+                intent.amount_currency,
+                Decimal(intent.amount_value),
+                src_account_id=src_account.id,
+                dst_account_id=dst_account.id,
+                metadata={"settlement_intent_id": str(intent.id), "correlation_id": intent.correlation_id},
+            )
 
         driver = get_anchor_driver(driver_name)
         if not driver:
@@ -93,6 +118,7 @@ async def execute_settlement_intent(session: AsyncSession, intent: SettlementInt
         )
 
         intent.status = SettlementIntentStatusEnum.executed.value
+        intent.error_message = None
         intent.executed_at = datetime.utcnow()
         receipt.status = ChainReceiptStatusEnum.finalized.value
         receipt.finalized_at = datetime.utcnow()
@@ -106,6 +132,7 @@ async def execute_settlement_intent(session: AsyncSession, intent: SettlementInt
             "chain_id": chain_id,
             "tx_hash": anchor.tx_hash,
             "status": "finalized",
+            "ledger_event_reused": existing_ledger_event is not None,
         }
     except Exception as exc:
         intent.status = SettlementIntentStatusEnum.failed.value
