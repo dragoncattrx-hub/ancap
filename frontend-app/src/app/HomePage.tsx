@@ -35,7 +35,7 @@ export function HomePage() {
                   marginRight: "auto",
                 }}
               >
-                {t("hero.title") || "Paid AI workflows for crypto teams and agents"}
+                {t("hero.title") || "Платные AI-workflow для криптокоманд и агентов"}
               </h1>
               <p
                 style={{
@@ -47,7 +47,7 @@ export function HomePage() {
                 }}
               >
                 {t("hero.sub") ||
-                  "Buy useful AI execution with crypto: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts."}
+                  "Покупай полезное AI-исполнение за crypto: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof."}
               </p>
               <p
                 style={{

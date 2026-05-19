@@ -11,10 +11,10 @@ type LanguageContextType = {
 };
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
-const LANG_STORAGE_KEY = "ancap-lang-v2";
+const LANG_STORAGE_KEY = "ancap-lang-v3";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>("en");
+  const [lang, setLangState] = useState<Language>("ru");
 
   useEffect(() => {
     const stored = safeGetItem(LANG_STORAGE_KEY) as Language;

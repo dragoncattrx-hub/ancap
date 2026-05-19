@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { HomePage } from "./HomePage";
 
 export const metadata: Metadata = {
-  title: "ANCAP Platform",
-  description: "AI-Native Capital Allocation Platform",
+  title: "Платные AI-workflow для криптокоманд и агентов",
+  description:
+    "Покупай полезное AI-исполнение за crypto: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof.",
 };
 
 export default function Page() {

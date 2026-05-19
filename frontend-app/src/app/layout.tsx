@@ -13,28 +13,31 @@ const inter = Inter({
 // Build a sane absolute base for canonical/OG links. Override via NEXT_PUBLIC_SITE_URL
 // in Docker/CI when serving from a different host, otherwise default to ancap.cloud.
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ancap.cloud";
+const SITE_TITLE = "Платные AI-workflow для криптокоманд и агентов";
+const SITE_DESCRIPTION =
+  "Покупай полезное AI-исполнение за crypto: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "ANCAP Platform",
+    default: SITE_TITLE,
     template: "%s · ANCAP",
   },
-  description: "AI-Native Capital Allocation Platform",
+  description: SITE_DESCRIPTION,
   icons: {
     icon: "/icon.svg",
   },
   openGraph: {
-    siteName: "ANCAP Platform",
+    siteName: SITE_TITLE,
     type: "website",
     url: "/",
-    title: "ANCAP Platform",
-    description: "AI-Native Capital Allocation Platform",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "ANCAP Platform",
-    description: "AI-Native Capital Allocation Platform",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -44,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <ChunkErrorRecovery />
         <ClientProviders>{children}</ClientProviders>
