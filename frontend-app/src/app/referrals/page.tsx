@@ -80,7 +80,7 @@ export default function ReferralsPage() {
           <div>
             <h1 className="section-title">Referral Cabinet</h1>
             <p className="section-subtitle">
-              Invite partners, track referrals, and monitor your ACP rewards in one place.
+              Partner dashboard for links, paid-run attribution, captured-purchase rewards, and commission-ready growth campaigns.
             </p>
           </div>
           <div className="action-cluster">
@@ -96,7 +96,7 @@ export default function ReferralsPage() {
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Your referral link</h3>
             <p style={{ color: "var(--text-muted)", marginTop: 0 }}>
-              Reward policy: 100 ACP per verified referral + 30% lifetime share of platform commissions.
+              Reward policy: referrals become payable after the referred user completes a first captured paid workflow run.
             </p>
             {referralLink ? (
               <>
@@ -121,6 +121,25 @@ export default function ReferralsPage() {
               <div>Commission share rewards: {formatAmount(summary?.commission_share_acp_amount)} ACP</div>
               <div>Total reward events: {summary?.total_reward_events ?? 0}</div>
             </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-4" style={{ marginBottom: 16 }}>
+          <div className="card">
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Clicks</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)" }}>link</div>
+          </div>
+          <div className="card">
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Attributed users</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)" }}>{summary?.total_attributions ?? 0}</div>
+          </div>
+          <div className="card">
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Paid-run rewards</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "var(--accent)" }}>{summary?.rewarded ?? 0}</div>
+          </div>
+          <div className="card">
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Payable commission</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "var(--accent)" }}>{formatAmount(summary?.commission_share_acp_amount)} ACP</div>
           </div>
         </div>
 

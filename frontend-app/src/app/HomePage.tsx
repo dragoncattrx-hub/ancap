@@ -8,6 +8,26 @@ import { NetworkBackground } from "@/components/NetworkBackground";
 export function HomePage() {
   const { t } = useLanguage();
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
+  const topOffers = [
+    {
+      title: "Pro Launch Pack",
+      price: "349 USDC",
+      href: "/ai/bundles/pro-launch-pack",
+      result: "audit + exchange listing + KOL/Telegram + bounty + pro risk report",
+    },
+    {
+      title: "Exchange Listing Submission Pack",
+      price: "149 USDC",
+      href: "/ai/run/exchange-listing-submission-pack",
+      result: "exchange answers, reviewer memo, due-diligence packet",
+    },
+    {
+      title: "Token Risk Report Pro",
+      price: "59 USDC",
+      href: "/ai/run/token-risk-report-pro",
+      result: "risk score, evidence gaps, liquidity/holder flags",
+    },
+  ];
 
   return (
     <div className="relative min-h-screen bg-[var(--bg)]">
@@ -78,7 +98,13 @@ export function HomePage() {
               </div>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
                 <Link href="/ai/workflows" className="btn btn-primary">
-                  {t("hero.workflowsCta") || "Run AI workflows"}
+                  {t("hero.workflowsCta") || "Купить workflow"}
+                </Link>
+                <Link href="/token-snapshot" className="btn btn-ghost">
+                  Free token snapshot
+                </Link>
+                <Link href="/developers" className="btn btn-ghost">
+                  Paid API for agents
                 </Link>
                 <a href="#product" className="btn btn-ghost">
                   {t("hero.learnMore") || "Learn more"}
@@ -139,6 +165,20 @@ export function HomePage() {
                   </span>
                   <span>{t("hero.followOnX")}</span>
                 </a>
+              </div>
+              <div className="responsive-grid responsive-grid-3" style={{ margin: "42px auto 0", maxWidth: 1040, textAlign: "left" }}>
+                {topOffers.map((offer) => (
+                  <Link key={offer.title} href={offer.href} className="card" style={{ textDecoration: "none" }}>
+                    <div style={{ fontSize: "0.75rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                      Buy AI execution
+                    </div>
+                    <h3 style={{ color: "var(--text)", fontSize: "1.15rem", fontWeight: 800, margin: "10px 0 8px" }}>
+                      {offer.title}
+                    </h3>
+                    <div style={{ color: "var(--accent)", fontWeight: 900, marginBottom: 10 }}>{offer.price}</div>
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.55, margin: 0 }}>{offer.result}</p>
+                  </Link>
+                ))}
               </div>
             </div>
           </section>

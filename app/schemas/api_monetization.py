@@ -16,6 +16,7 @@ class PaidApiProductPublic(BaseModel):
     price: Money
     accepted_currencies: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    x402: dict[str, Any] = Field(default_factory=dict)
 
 
 class PaidApiProductsResponse(BaseModel):
@@ -47,6 +48,18 @@ class PaidApiAnalyzeResponse(BaseModel):
     product: PaidApiProductPublic
     usage: PaidApiUsagePublic
     result: dict[str, Any] = Field(default_factory=dict)
+    receipt: dict[str, Any] = Field(default_factory=dict)
+
+
+class PaidApiSpendCapRequest(BaseModel):
+    currency: str = Field(default="USDC", min_length=2, max_length=10)
+    monthly_cap: Optional[str] = Field(default=None, max_length=40)
+
+
+class PaidApiSpendCapResponse(BaseModel):
+    agent_id: str
+    caps: dict[str, str] = Field(default_factory=dict)
+    current_30d_spend: dict[str, str] = Field(default_factory=dict)
 
 
 class PaidApiUsageEventsResponse(BaseModel):

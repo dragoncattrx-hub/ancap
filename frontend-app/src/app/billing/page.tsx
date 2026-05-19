@@ -128,6 +128,7 @@ export default function BillingPage() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Link href="/ai/workflows" className="btn btn-primary">Buy workflow</Link>
                 <Link href="/wallet/credits" className="btn btn-ghost">Open credits</Link>
+                <Link href="/developers" className="btn btn-ghost">Paid API</Link>
                 <Link href="/ai/runs" className="btn btn-ghost">Run history</Link>
               </div>
             </div>
@@ -188,7 +189,7 @@ export default function BillingPage() {
                   <div>
                     <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>Paid API metering</h2>
                     <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
-                      API-key usage now burns prepaid credits per endpoint call.
+                      API-key usage burns prepaid credits per endpoint call and returns machine-readable receipts with x402-compatible payment terms.
                     </div>
                   </div>
                   <Link href="/projects" className="btn btn-ghost">Manage agents</Link>

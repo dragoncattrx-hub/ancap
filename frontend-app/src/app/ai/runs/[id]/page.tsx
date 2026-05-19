@@ -322,6 +322,17 @@ export default function WorkflowRunDetailPage() {
   }), [settlementAttempts]);
 
   const proofBundleText = useMemo(() => (proofBundle ? JSON.stringify(proofBundle, null, 2) : ""), [proofBundle]);
+  const invoiceReference = useMemo(() => (run ? `ANCAP-${run.id.slice(0, 8)}-${run.workflow_slug}` : ""), [run]);
+  const paymentTarget = "ancap-workflow-treasury";
+  const shouldPollRun = Boolean(run && ["quoted", "paid", "queued", "running"].includes(run.status));
+
+  useEffect(() => {
+    if (!shouldPollRun) return;
+    const interval = window.setInterval(() => {
+      void loadRun();
+    }, 10000);
+    return () => window.clearInterval(interval);
+  }, [shouldPollRun, loadRun]);
 
   async function copyProofBundle() {
     if (!proofBundleText) return;
@@ -378,6 +389,11 @@ export default function WorkflowRunDetailPage() {
             <Link href="/wallet/credits" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               Credits
             </Link>
+            {run && (
+              <Link href={`/proof-center?run=${run.id}`} className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+                Proof Center
+              </Link>
+            )}
             {run && (
               <Link href={`/ai/run/${run.workflow_slug}`} className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
                 Open template
@@ -476,6 +492,35 @@ export default function WorkflowRunDetailPage() {
                       </Link>
                     </div>
                   </div>
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-semibold text-white/90">Checkout invoice</div>
+                        <div className="mt-1 text-sm text-white/58">Use credits for instant reservation, or pay manually and paste the transfer reference below.</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void loadRun()}
+                        className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                      >
+                        Poll status
+                      </button>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                        <div className="text-xs uppercase tracking-[0.18em] text-white/45">Amount due</div>
+                        <div className="mt-2 text-lg font-semibold text-emerald-300">{run.price.amount} {run.payment_currency}</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                        <div className="text-xs uppercase tracking-[0.18em] text-white/45">Payment target</div>
+                        <div className="mt-2 break-all text-sm font-semibold text-white/88">{paymentTarget}</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3 sm:col-span-2">
+                        <div className="text-xs uppercase tracking-[0.18em] text-white/45">Reference</div>
+                        <div className="mt-2 break-all text-sm font-semibold text-white/88">{invoiceReference}</div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -500,7 +545,7 @@ export default function WorkflowRunDetailPage() {
                       <input
                         value={paymentReference}
                         onChange={(e) => setPaymentReference(e.target.value)}
-                        placeholder="tx hash / invoice id / transfer ref"
+                        placeholder={invoiceReference || "tx hash / invoice id / transfer ref"}
                         className="w-full rounded-2xl border border-white/10 bg-[var(--bg)] px-4 py-3 text-sm text-white outline-none"
                       />
                     </div>

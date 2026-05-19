@@ -131,6 +131,8 @@ from app.schemas.api_monetization import (
     PaidApiAnalyzeResponse,
     PaidApiProductPublic,
     PaidApiProductsResponse,
+    PaidApiSpendCapRequest,
+    PaidApiSpendCapResponse,
     PaidApiUsageEventsResponse,
     PaidApiUsagePublic,
 )
@@ -302,6 +304,8 @@ __all__ = [
     "PaidApiAnalyzeResponse",
     "PaidApiProductPublic",
     "PaidApiProductsResponse",
+    "PaidApiSpendCapRequest",
+    "PaidApiSpendCapResponse",
     "PaidApiUsageEventsResponse",
     "PaidApiUsagePublic",
     "WorkflowTemplatePublic",

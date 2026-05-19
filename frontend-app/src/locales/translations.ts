@@ -12,7 +12,21 @@ export function t(lang: Language, key: string): string {
     }
   }
   
-  return typeof value === 'string' ? value : key;
+  return typeof value === 'string' ? repairMojibake(value) : key;
+}
+
+function repairMojibake(value: string): string {
+  const commonFixed = value
+    .replaceAll("â€”", "—")
+    .replaceAll("â€“", "–")
+    .replaceAll("â†’", "→")
+    .replaceAll("â€¦", "…");
+  if (!/[ÐÑ]/.test(commonFixed)) return commonFixed;
+  try {
+    return decodeURIComponent(escape(commonFixed));
+  } catch {
+    return commonFixed;
+  }
 }
 
 export const translations = {

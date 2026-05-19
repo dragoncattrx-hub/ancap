@@ -536,11 +536,23 @@ def _build_workflow_run_record(
 ) -> WorkflowRunRecord:
     quoted_amount = quote_workflow_amount(template, payment_currency)
     created_at = datetime.now(UTC)
+    estimated_provider_cost = (quoted_amount * Decimal("0.18")).quantize(Decimal("0.01"))
+    estimated_margin = (quoted_amount - estimated_provider_cost).quantize(Decimal("0.01"))
     proof: dict[str, object] = {
         "pricing_basis": template.price.model_dump(),
         "accepted_currencies": template.accepted_currencies,
         "billing_mode": "persistent_quote",
         "template_slug": template.slug,
+        "provider_cost_estimate": {
+            "amount": str(estimated_provider_cost),
+            "currency": payment_currency,
+            "basis": "default 18% fulfillment reserve until provider costs are connected",
+        },
+        "margin_snapshot": {
+            "gross": {"amount": str(quoted_amount), "currency": payment_currency},
+            "estimated_cost": {"amount": str(estimated_provider_cost), "currency": payment_currency},
+            "estimated_margin": {"amount": str(estimated_margin), "currency": payment_currency},
+        },
         "status_timeline": [
             {
                 "from": None,

@@ -1020,6 +1020,12 @@ export const paidApi = {
   async listMyUsage(limit = 50) {
     return apiFetch(`/paid-api/me/usage?limit=${encodeURIComponent(String(limit))}`);
   },
+  async setSpendCap(agentId: string, data: { currency?: string; monthly_cap?: string | null }) {
+    return apiFetch(`/paid-api/agents/${encodeURIComponent(agentId)}/spend-cap`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 export const system = {

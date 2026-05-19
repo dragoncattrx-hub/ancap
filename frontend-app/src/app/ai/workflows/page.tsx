@@ -41,6 +41,9 @@ async function getWorkflowBundles(): Promise<WorkflowBundle[]> {
 export default async function WorkflowsPage() {
   const workflows = await getWorkflowTemplates();
   const bundles = await getWorkflowBundles();
+  const premiumWorkflows = workflows.filter((workflow) =>
+    ["token-launch-audit-pack", "exchange-listing-submission-pack", "kol-telegram-campaign-builder", "token-risk-report-pro", "agent-api-readiness-pack"].includes(workflow.slug),
+  );
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -51,21 +54,62 @@ export default async function WorkflowsPage() {
             AI Workflow Store
           </div>
           <h1 className="max-w-4xl text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
-            Paid AI workflows for crypto teams, agents, and launch operations
+            Buy paid AI execution for crypto teams and agents
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/70 sm:text-base">
-            ANCAP is shifting from a vague AI/Web3 showcase to monetizable execution: buy a workflow, get a structured result,
-            receive a receipt, and rerun or scale it. Pay in ACP, wACP, or USDC as billing gets wired in.
+            Choose a workflow, pay with credits or crypto rails, receive a structured artifact, and keep a proof-backed receipt for repeat runs or API usage.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/dashboard" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
               Open dashboard
+            </Link>
+            <Link href="/pricing" className="rounded-full border border-emerald-400/25 px-5 py-2.5 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">
+              Pricing
+            </Link>
+            <Link href="/sample-reports/token-risk-report-pro" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Sample report
             </Link>
             <a href="/api/docs" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               API docs
             </a>
           </div>
         </section>
+
+        {premiumWorkflows.length > 0 && (
+          <section className="mb-10 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.05] p-6">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-emerald-200/75">Premium SKUs</div>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Higher-ticket workflow products</h2>
+              </div>
+              <Link href="/token-snapshot" className="rounded-full border border-emerald-400/30 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300 hover:text-emerald-100">
+                Start free snapshot
+              </Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {premiumWorkflows.map((workflow) => (
+                <article key={workflow.slug} className="rounded-2xl border border-white/10 bg-black/15 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                      {workflow.category}
+                    </span>
+                    <span className="text-sm font-semibold text-emerald-300">{workflow.price.amount} {workflow.price.currency}</span>
+                  </div>
+                  <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-white/68">{workflow.summary}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <Link href={`/ai/run/${workflow.slug}`} className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+                      Buy workflow
+                    </Link>
+                    <Link href={`/sample-reports/${workflow.slug}`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white/25 hover:text-white">
+                      Sample output
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -143,7 +187,7 @@ export default async function WorkflowsPage() {
               <div className="text-xs uppercase tracking-[0.18em] text-white/45">Initial catalog</div>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">First sellable workflows</h2>
             </div>
-            <div className="text-sm text-white/45">Preview shell — billing and run execution next</div>
+            <div className="text-sm text-white/45">Checkout, credits, receipts, and repeat runs are live</div>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">

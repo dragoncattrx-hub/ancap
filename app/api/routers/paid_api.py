@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -8,7 +8,8 @@ import hashlib
 import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, select
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.api.deps import DbSession, require_auth
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
@@ -19,6 +20,8 @@ from app.schemas import (
     PaidApiAnalyzeResponse,
     PaidApiProductPublic,
     PaidApiProductsResponse,
+    PaidApiSpendCapRequest,
+    PaidApiSpendCapResponse,
     PaidApiUsageEventsResponse,
     PaidApiUsagePublic,
 )
@@ -27,6 +30,16 @@ from app.services.ledger import append_event, balance_for_account, get_or_create
 
 
 router = APIRouter(prefix="/paid-api", tags=["Paid API"])
+
+
+def _x402_terms(product_slug: str, amount: str, currency: str = "USDC") -> dict[str, object]:
+    return {
+        "version": "x402-compatible-preview",
+        "accepts": [{"scheme": "exact", "network": "base", "currency": currency, "amount": amount}],
+        "resource": f"https://ancap.cloud/api/v1/paid-api/{product_slug}",
+        "pay_to": "ancap-workflow-treasury",
+        "proof_url_template": "https://ancap.cloud/proof-center?run={workflow_run_id}",
+    }
 
 
 PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
@@ -38,6 +51,7 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         price=Money(amount="2.00", currency="USDC"),
         accepted_currencies=["USDC"],
         tags=["risk", "token", "api"],
+        x402=_x402_terms("token-risk", "2.00"),
     ),
     PaidApiProductPublic(
         slug="listing-readiness",
@@ -47,6 +61,7 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         price=Money(amount="1.50", currency="USDC"),
         accepted_currencies=["USDC"],
         tags=["listing", "launch", "api"],
+        x402=_x402_terms("listing-readiness", "1.50"),
     ),
     PaidApiProductPublic(
         slug="wallet-risk",
@@ -56,6 +71,7 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         price=Money(amount="2.00", currency="USDC"),
         accepted_currencies=["USDC"],
         tags=["wallet", "risk", "api"],
+        x402=_x402_terms("wallet-risk", "2.00"),
     ),
     PaidApiProductPublic(
         slug="bridge-proof",
@@ -65,6 +81,7 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         price=Money(amount="1.00", currency="USDC"),
         accepted_currencies=["USDC"],
         tags=["bridge", "proof", "api"],
+        x402=_x402_terms("bridge-proof", "1.00"),
     ),
     PaidApiProductPublic(
         slug="campaign-score",
@@ -74,6 +91,7 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         price=Money(amount="1.00", currency="USDC"),
         accepted_currencies=["USDC"],
         tags=["campaign", "growth", "api"],
+        x402=_x402_terms("campaign-score", "1.00"),
     ),
 ]
 
@@ -104,6 +122,34 @@ def _serialize_usage(row: ApiUsageEvent) -> PaidApiUsagePublic:
 def _hash_request(body: PaidApiAnalyzeRequest) -> str:
     payload = body.model_dump(mode="json")
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _agent_spend_caps(agent: Agent) -> dict[str, str]:
+    metadata = agent.metadata_ if isinstance(agent.metadata_, dict) else {}
+    caps = metadata.get("paid_api_spend_caps") if isinstance(metadata.get("paid_api_spend_caps"), dict) else {}
+    return {str(currency).upper(): str(amount) for currency, amount in caps.items() if str(amount).strip()}
+
+
+async def _agent_30d_spend(session: DbSession, agent_id: UUID, currency: str) -> Decimal:
+    since = datetime.now(UTC) - timedelta(days=30)
+    total = (
+        await session.execute(
+            select(func.coalesce(func.sum(ApiUsageEvent.amount_value), 0)).where(
+                ApiUsageEvent.agent_id == agent_id,
+                ApiUsageEvent.amount_currency == currency,
+                ApiUsageEvent.status == "captured",
+                ApiUsageEvent.created_at >= since,
+            )
+        )
+    ).scalar_one()
+    return Decimal(str(total or "0"))
+
+
+async def _current_spend_map(session: DbSession, agent_id: UUID, caps: dict[str, str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for currency in sorted(caps.keys() or ["USDC"]):
+        out[currency] = str(await _agent_30d_spend(session, agent_id, currency))
+    return out
 
 
 def _score_from_request(product_slug: str, body: PaidApiAnalyzeRequest) -> int:
@@ -197,6 +243,24 @@ async def _charge_usage(
 
     currency = product.price.currency
     amount = Decimal(product.price.amount)
+    caps = _agent_spend_caps(agent)
+    cap_value = caps.get(currency)
+    if cap_value is not None:
+        current_spend = await _agent_30d_spend(session, UUID(str(agent.id)), currency)
+        monthly_cap = Decimal(str(cap_value))
+        if current_spend + amount > monthly_cap:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "message": "Paid API monthly spend cap exceeded",
+                    "code": "spend_cap_exceeded",
+                    "currency": currency,
+                    "monthly_cap": str(monthly_cap),
+                    "current_30d_spend": str(current_spend),
+                    "required": str(amount),
+                    "x402": product.x402,
+                },
+            )
     balances = await balance_for_account(session, payer_acc.id, currency)
     available = balances.get(currency) or Decimal(0)
     if available < amount:
@@ -207,6 +271,7 @@ async def _charge_usage(
                 "currency": currency,
                 "required": str(amount),
                 "available": str(available),
+                "x402": product.x402,
             },
         )
 
@@ -268,6 +333,44 @@ async def list_my_paid_api_usage(
     return PaidApiUsageEventsResponse(items=[_serialize_usage(row) for row in rows])
 
 
+@router.post("/agents/{agent_id}/spend-cap", response_model=PaidApiSpendCapResponse)
+async def set_paid_api_spend_cap(
+    agent_id: str,
+    body: PaidApiSpendCapRequest,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    try:
+        parsed_agent_id = UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid agent_id")
+    agent = await session.get(Agent, parsed_agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    if str(agent.owner_user_id or "") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden agent")
+
+    metadata = dict(agent.metadata_ or {})
+    caps = dict(metadata.get("paid_api_spend_caps") or {})
+    currency = body.currency.upper()
+    if body.monthly_cap is None or str(body.monthly_cap).strip() == "":
+        caps.pop(currency, None)
+    else:
+        monthly_cap = Decimal(str(body.monthly_cap)).quantize(Decimal("0.01"))
+        if monthly_cap < 0:
+            raise HTTPException(status_code=400, detail="monthly_cap must be positive")
+        caps[currency] = str(monthly_cap)
+    metadata["paid_api_spend_caps"] = caps
+    agent.metadata_ = metadata
+    flag_modified(agent, "metadata_")
+    await session.flush()
+    return PaidApiSpendCapResponse(
+        agent_id=str(agent.id),
+        caps={str(k).upper(): str(v) for k, v in caps.items()},
+        current_30d_spend=await _current_spend_map(session, parsed_agent_id, {str(k).upper(): str(v) for k, v in caps.items()}),
+    )
+
+
 async def _run_paid_api_product(
     product_slug: str,
     body: PaidApiAnalyzeRequest,
@@ -285,7 +388,21 @@ async def _run_paid_api_product(
     }
     await session.flush()
     await session.refresh(usage)
-    return PaidApiAnalyzeResponse(product=product, usage=_serialize_usage(usage), result=result)
+    usage_public = _serialize_usage(usage)
+    return PaidApiAnalyzeResponse(
+        product=product,
+        usage=usage_public,
+        result=result,
+        receipt={
+            "receipt_version": "paid-api-usage/v1",
+            "product_slug": product.slug,
+            "endpoint": product.endpoint,
+            "amount": usage_public.amount.model_dump(),
+            "request_hash": usage.request_hash,
+            "ledger_event_id": str(usage.ledger_event_id) if usage.ledger_event_id else None,
+            "x402": product.x402,
+        },
+    )
 
 
 @router.post("/token-risk", response_model=PaidApiAnalyzeResponse)

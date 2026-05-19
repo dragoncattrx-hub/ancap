@@ -197,7 +197,7 @@ def test_workflow_bundle_checkout_reserves_discounted_launch_pack(client):
     catalog = client.get("/v1/workflow-store/bundles")
     assert catalog.status_code == 200, catalog.text
     bundle_slugs = {item["slug"] for item in catalog.json()["items"]}
-    assert {"launch-pack", "growth-pack", "concierge-pack"}.issubset(bundle_slugs)
+    assert {"launch-pack", "growth-pack", "concierge-pack", "pro-launch-pack", "agent-commerce-pack"}.issubset(bundle_slugs)
 
     checkout = client.post(
         "/v1/workflow-store/bundles/launch-pack/checkout",

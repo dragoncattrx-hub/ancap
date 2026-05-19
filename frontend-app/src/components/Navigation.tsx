@@ -21,6 +21,8 @@ function navItemLabel(item: NavItem, t: (key: string) => string): string {
 
 const primaryNav: NavItem[] = [
   { label: "Workflows", href: "/ai/workflows" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Developers", href: "/developers" },
   { label: "Billing", href: "/billing" },
   { label: "Credits", href: "/wallet/credits" },
   { label: "Dashboard", href: "/dashboard" },
@@ -40,6 +42,8 @@ const secondaryNav: NavItem[] = [
   { label: "Tournaments", href: "/tournaments" },
   { label: "Bounties", href: "/bounties" },
   { label: "Chain Receipts", href: "/chain-receipts" },
+  { label: "Proof Center", href: "/proof-center" },
+  { label: "Free Snapshot", href: "/token-snapshot" },
   { label: "Operations NOC", href: "/operations-noc" },
   { label: "AI Council", href: "/ai-council" },
   { label: "Strategy Compiler", href: "/strategy-compiler" },

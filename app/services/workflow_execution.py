@@ -78,6 +78,76 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "asset_reference", "status_timeline"],
         tags=["risk", "token", "intelligence"],
     ),
+    WorkflowTemplatePublic(
+        slug="token-launch-audit-pack",
+        title="Token Launch Audit Pack",
+        category="Audit",
+        summary="Audit launch readiness across token narrative, liquidity proof, campaign plan, and trust signals.",
+        description="Produces a launch-readiness audit with scoring, gaps, mitigation tasks, and a proof-backed delivery receipt.",
+        price=Money(amount="79", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        estimated_time_minutes=55,
+        preview_items=["Launch readiness score", "Gap matrix", "Priority fixes"],
+        output_items=["Audit scorecard", "Launch risk matrix", "Fix backlog", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "provider_cost_estimate", "margin_snapshot", "status_timeline"],
+        tags=["audit", "launch", "risk", "premium"],
+    ),
+    WorkflowTemplatePublic(
+        slug="exchange-listing-submission-pack",
+        title="Exchange Listing Submission Pack",
+        category="Listings",
+        summary="Prepare exchange-facing answers, due-diligence pack, market narrative, and submission checklist.",
+        description="Creates a premium exchange listing submission pack designed for cleaner reviewer handoff and repeat submissions.",
+        price=Money(amount="149", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        estimated_time_minutes=90,
+        preview_items=["Exchange answer map", "Reviewer checklist", "Submission sequence"],
+        output_items=["Exchange form answers", "Due-diligence packet", "Reviewer memo", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "listing_readiness", "margin_snapshot", "status_timeline"],
+        tags=["listing", "exchange", "launch", "premium"],
+    ),
+    WorkflowTemplatePublic(
+        slug="kol-telegram-campaign-builder",
+        title="KOL / Telegram Campaign Builder",
+        category="Growth",
+        summary="Build KOL briefs, Telegram campaign mechanics, proof policy, and attribution-ready growth flow.",
+        description="Packages a campaign that can be handed to community operators, Telegram admins, and KOL partners without losing proof discipline.",
+        price=Money(amount="99", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        estimated_time_minutes=70,
+        preview_items=["KOL brief preview", "Telegram funnel", "Attribution plan"],
+        output_items=["KOL brief kit", "Telegram campaign plan", "Partner scripts", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "campaign_attribution", "margin_snapshot", "status_timeline"],
+        tags=["kol", "telegram", "growth", "premium"],
+    ),
+    WorkflowTemplatePublic(
+        slug="token-risk-report-pro",
+        title="Token Risk Report Pro",
+        category="Risk",
+        summary="Create a pro-grade token risk report with scoring, evidence requests, wallet/liquidity checks, and buyer-ready summary.",
+        description="Turns a lightweight token snapshot into a premium report with structured risks, evidence gaps, and recommended next checks.",
+        price=Money(amount="59", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        estimated_time_minutes=50,
+        preview_items=["Pro risk score", "Evidence gaps", "Buyer-ready summary"],
+        output_items=["Risk scorecard", "Evidence request list", "Liquidity and holder flags", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "asset_reference", "risk_score", "margin_snapshot", "status_timeline"],
+        tags=["risk", "token", "report", "premium"],
+    ),
+    WorkflowTemplatePublic(
+        slug="agent-api-readiness-pack",
+        title="Agent API Readiness Pack",
+        category="Developers",
+        summary="Package a crypto API or workflow for AI-agent buyers with pricing, x402 metadata, docs, and spend controls.",
+        description="Creates the commercial surface an external agent needs: endpoint offer, pricing copy, 402 response plan, curl examples, and receipt schema.",
+        price=Money(amount="99", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        estimated_time_minutes=65,
+        preview_items=["Endpoint offer map", "x402 payment shape", "Spend-control checklist"],
+        output_items=["Developer offer page", "API pricing matrix", "x402 response plan", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "x402_payment_terms", "margin_snapshot", "status_timeline"],
+        tags=["api", "x402", "agents", "premium"],
+    ),
 ]
 
 
@@ -158,6 +228,57 @@ WORKFLOW_BUNDLES: list[WorkflowBundlePublic] = [
             "Five proof-backed workflow receipts",
         ],
         tags=["bundle", "concierge", "premium", "launch"],
+    ),
+    WorkflowBundlePublic(
+        slug="pro-launch-pack",
+        title="ANCAP Pro Launch Pack",
+        category="Premium Launch",
+        summary="Higher-ticket launch execution pack for teams that need listing, audit, KOL, bounty, and pro risk artifacts together.",
+        description="Bundles the premium launch audit, exchange submission pack, KOL/Telegram campaign, bounty builder, and pro token risk report into one proof-backed checkout.",
+        workflow_slugs=[
+            "token-launch-audit-pack",
+            "exchange-listing-submission-pack",
+            "kol-telegram-campaign-builder",
+            "airdrop-bounty-builder",
+            "token-risk-report-pro",
+        ],
+        price=Money(amount="349", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        discount_percent=13,
+        estimated_time_minutes=295,
+        output_items=[
+            "Launch readiness audit",
+            "Exchange listing submission pack",
+            "KOL / Telegram campaign kit",
+            "Airdrop / bounty structure",
+            "Token Risk Report Pro",
+            "Five proof-backed workflow receipts",
+        ],
+        tags=["bundle", "launch", "premium", "risk", "growth"],
+    ),
+    WorkflowBundlePublic(
+        slug="agent-commerce-pack",
+        title="ANCAP Agent Commerce Pack",
+        category="Agent Commerce",
+        summary="A B2B pack for API owners and AI-agent builders who want pay-per-call monetization fast.",
+        description="Combines API readiness, campaign positioning, listing copy, and proof-center setup so external agents can discover, pay, and verify ANCAP-style execution.",
+        workflow_slugs=[
+            "agent-api-readiness-pack",
+            "crypto-campaign-builder",
+            "token-listing-pack",
+            "token-risk-report-pro",
+        ],
+        price=Money(amount="249", currency="USDC"),
+        accepted_currencies=["USDC", "wACP", "ACP"],
+        discount_percent=5,
+        estimated_time_minutes=165,
+        output_items=[
+            "Agent/API paid endpoint offer",
+            "x402-compatible payment terms",
+            "Developer pricing matrix",
+            "Proof-center receipt schema",
+        ],
+        tags=["bundle", "api", "x402", "agents"],
     ),
 ]
 
@@ -242,6 +363,7 @@ def build_workflow_preview(template: WorkflowTemplatePublic) -> dict[str, Any]:
         "headline": f"Preview for {template.title}",
         "included": template.preview_items,
         "note": "Persistent workflow run created. Payment confirmation and execution are tracked separately.",
+        "sample_output_url": f"/sample-reports/{template.slug}",
     }
 
 
@@ -319,6 +441,127 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "listing_pack",
             "sections_generated": 5,
             "focus": ["exchange forms", "directory copy", "token positioning", "due diligence"],
+        }
+    elif template.slug == "token-launch-audit-pack":
+        deliverable = {
+            "launch_readiness_score": 78,
+            "scorecard": {
+                "positioning": {"score": 82, "note": f"{project_name} has a clear buyer narrative for {audience} if proof examples are visible."},
+                "liquidity_proof": {"score": 64, "note": f"{liquidity_model} needs lock, depth, and counterparty evidence before premium promotion."},
+                "listing_readiness": {"score": 76, "note": "Core listing materials can be prepared, but reviewer evidence should be attached."},
+                "campaign_quality": {"score": 84, "note": "Campaign can lead with execution outcomes and avoid investment-return language."},
+            },
+            "priority_fixes": [
+                "Publish a one-page token utility memo with non-yield language",
+                "Attach liquidity lock or treasury-control evidence",
+                "Prepare proof links for website, docs, team/contact, and socials",
+                "Create a reviewer-facing launch checklist before paid distribution",
+            ],
+            "go_no_go": {
+                "status": "conditional_go",
+                "reason": "Launch can proceed after evidence pack and liquidity proof are tightened.",
+            },
+            "proof_requests": ["liquidity lock", "top holder distribution", "treasury signer model", "official links"],
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "launch_audit",
+            "sections_generated": 5,
+            "focus": ["readiness score", "gap matrix", "evidence requests", "launch fixes"],
+        }
+    elif template.slug == "exchange-listing-submission-pack":
+        deliverable = {
+            "submission_positioning": f"{project_name} should present {token_symbol} as product access and operational coordination, not as a passive return instrument.",
+            "exchange_answer_bank": {
+                "project_overview": f"{project_name} serves {audience} with crypto-native execution tooling on {chain}.",
+                "token_utility": f"{token_symbol} is framed as a {token_type} tied to platform access, fees, incentives, and proof-backed operations.",
+                "market_need": f"{market} buyers need concise launch, listing, campaign, and risk artifacts with auditable receipts.",
+                "compliance_posture": "Do not promise yield, price appreciation, or investment outcomes; keep claims tied to software/service execution.",
+            },
+            "reviewer_packet": [
+                "Token contract and chain details",
+                "Website, docs, socials, and contact route",
+                "Liquidity and treasury evidence",
+                "Token utility memo",
+                "Risk and disclosure note",
+            ],
+            "submission_sequence": ["directory listing", "DEX analytics profile", "centralized exchange intake", "partner marketplace update"],
+            "red_line_claims": ["guaranteed returns", "risk-free yield", "price target", "exchange approval guarantee"],
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "exchange_listing_submission",
+            "sections_generated": 5,
+            "focus": ["exchange answers", "reviewer packet", "submission sequence", "safe claims"],
+        }
+    elif template.slug == "kol-telegram-campaign-builder":
+        deliverable = {
+            "campaign_offer": f"Promote {project_name} as useful execution infrastructure for {audience}, with proof links and a concrete next action.",
+            "kol_brief": {
+                "angle": "paid AI execution for crypto teams, not vague AI/Web3 hype",
+                "must_include": ["one concrete buyer pain", "one proof/receipt point", "one CTA"],
+                "must_avoid": ["investment promises", "fake urgency", "undisclosed paid claims"],
+            },
+            "telegram_funnel": [
+                "Pinned proof post with sample output",
+                "Daily operator update",
+                "Live Q&A or office-hours thread",
+                "Paid report/workflow CTA",
+            ],
+            "partner_scripts": {
+                "short_dm": f"{project_name} sells proof-backed AI workflow execution for launch/listing/growth teams. Want a sample report link?",
+                "public_post": f"{project_name} packages listing packs, campaign builders, bounty flows, and token risk reports with receipts.",
+            },
+            "attribution_plan": ["referral code per partner", "paid-run conversion tracking", "commission only after captured payment"],
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "kol_telegram_campaign",
+            "sections_generated": 5,
+            "focus": ["KOL brief", "Telegram funnel", "partner scripts", "attribution"],
+        }
+    elif template.slug == "token-risk-report-pro":
+        deliverable = {
+            "risk_summary": f"Pro risk review for {project_name} / {token_symbol} on {chain}.",
+            "overall_score": 71,
+            "risk_domains": {
+                "holder_concentration": {"rating": "needs_evidence", "request": "top holders, vesting, lockups"},
+                "liquidity_durability": {"rating": "medium", "request": "lock proof, pool depth, withdrawal controls"},
+                "team_and_ops": {"rating": "medium", "request": "official contacts, response policy, treasury signer model"},
+                "market_integrity": {"rating": "medium", "request": "campaign disclosure and anti-sybil controls"},
+            },
+            "buyer_ready_summary": f"{token_symbol} can be reviewed as a {token_type}, but buyers and partners should request liquidity, holder, and treasury evidence before higher-risk commitments.",
+            "evidence_gap_queue": ["holder CSV or explorer link", "liquidity lock proof", "treasury policy", "campaign disclosures"],
+            "upgrade_path": "Run Token Launch Audit Pack or Exchange Listing Submission Pack for a fuller launch-readiness packet.",
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "risk_report_pro",
+            "sections_generated": 5,
+            "focus": ["risk score", "evidence gaps", "buyer summary", "upgrade path"],
+        }
+    elif template.slug == "agent-api-readiness-pack":
+        deliverable = {
+            "endpoint_offer": {
+                "buyer": "AI agents, crypto tools, dashboards, and operators needing paid on-demand checks",
+                "pricing_model": "pay-per-call with prepaid credits now, x402-compatible HTTP 402 terms next",
+                "receipt_model": "every paid call records usage, amount, request hash, and machine-readable result",
+            },
+            "x402_response_plan": {
+                "status": 402,
+                "network": "Base",
+                "currency": "USDC",
+                "fields": ["accepts", "amount", "pay_to", "resource", "expires_at", "proof_url"],
+            },
+            "spend_controls": ["monthly cap per agent", "per-key usage export", "402 insufficient balance response", "request hash for retries"],
+            "developer_docs_outline": ["products", "pricing", "curl examples", "API key setup", "receipt/proof format"],
+            "sample_curl": "curl -X POST https://ancap.cloud/api/v1/paid-api/token-risk -H 'X-API-Key: ...' -d '{\"subject\":\"TOKEN\",\"chain\":\"Base\"}'",
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "agent_api_readiness",
+            "sections_generated": 5,
+            "focus": ["API pricing", "x402 terms", "spend controls", "developer docs"],
         }
     elif template.slug == "crypto-campaign-builder":
         deliverable = {
