@@ -1,95 +1,94 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const topOffers = [
+const offerDefs = [
   {
-    title: "Pro Launch Pack",
+    titleKey: "homePage.offer1Title",
+    labelKey: "homePage.offer1Label",
+    resultKey: "homePage.offer1Result",
     price: "349 ACP",
     href: "/ai/bundles/pro-launch-pack",
-    label: "Лучший старт",
-    result: "Launch audit, listing packet, KOL/Telegram campaign, bounty flow и pro risk report в одном пакете.",
   },
   {
-    title: "Exchange Listing Submission Pack",
+    titleKey: "homePage.offer2Title",
+    labelKey: "homePage.offer2Label",
+    resultKey: "homePage.offer2Result",
     price: "149 ACP",
     href: "/ai/run/exchange-listing-submission-pack",
-    label: "Листинг",
-    result: "Готовит ответы для биржи, due-diligence memo, checklist рисков и proof receipt запуска.",
   },
   {
-    title: "Token Risk Report Pro",
+    titleKey: "homePage.offer3Title",
+    labelKey: "homePage.offer3Label",
+    resultKey: "homePage.offer3Result",
     price: "59 ACP",
     href: "/ai/run/token-risk-report-pro",
-    label: "Риск",
-    result: "Проверяет token, liquidity, holders, evidence gaps и собирает отчет для команды или инвесткомитета.",
   },
 ];
 
-const executionSteps = [
-  {
-    title: "1. Выберите workflow",
-    text: "Каталог собран вокруг конкретных задач crypto-команд: listing, launch, bounty, campaign, risk и agent API readiness.",
-  },
-  {
-    title: "2. Оплатите в ACP",
-    text: "Цена показывается до запуска. 1 ACP считается как 1 расчетная единица платформы для paid workflow и API.",
-  },
-  {
-    title: "3. Получите результат",
-    text: "На выходе не обещание, а рабочий артефакт: отчет, пакет документов, campaign plan, bounty flow или API receipt.",
-  },
-  {
-    title: "4. Проверьте proof",
-    text: "Каждый платный запуск оставляет receipt, input hash, timeline и proof bundle, чтобы результат можно было показать команде или агенту.",
-  },
+const productMapDefs = [
+  ["homePage.launchLabel", "homePage.launchText"],
+  ["homePage.riskLabel", "homePage.riskText"],
+  ["homePage.agentApiLabel", "homePage.agentApiText"],
+  ["homePage.proofLabel", "homePage.proofText"],
+];
+
+const stepDefs = [
+  ["homePage.step1Title", "homePage.step1Text"],
+  ["homePage.step2Title", "homePage.step2Text"],
+  ["homePage.step3Title", "homePage.step3Text"],
+  ["homePage.step4Title", "homePage.step4Text"],
+];
+
+const audienceDefs = [
+  ["homePage.audience1Title", "homePage.audience1Text"],
+  ["homePage.audience2Title", "homePage.audience2Text"],
+  ["homePage.audience3Title", "homePage.audience3Text"],
 ];
 
 const productRoutes = [
-  { title: "Workflow store", href: "/ai/workflows", text: "купить готовое AI-исполнение" },
-  { title: "Pricing", href: "/pricing", text: "сравнить отдельные SKU и пакеты" },
-  { title: "Token snapshot", href: "/token-snapshot", text: "быстрый вход через бесплатную risk-проверку" },
-  { title: "Developers", href: "/developers", text: "paid API endpoints для внешних AI-агентов" },
-  { title: "Proof Center", href: "/proof-center", text: "публичные receipts и проверяемые артефакты" },
-  { title: "ACP wallet", href: "/wallet/acp", text: "кастодиальный кошелек после входа" },
+  { title: "Workflow store", href: "/ai/workflows", textKey: "homePage.route1Text" },
+  { title: "Pricing", href: "/pricing", textKey: "homePage.route2Text" },
+  { title: "Token snapshot", href: "/token-snapshot", textKey: "homePage.route3Text" },
+  { title: "Developers", href: "/developers", textKey: "homePage.route4Text" },
+  { title: "Proof Center", href: "/proof-center", textKey: "homePage.route5Text" },
+  { title: "ACP wallet", href: "/wallet/acp", textKey: "homePage.route6Text" },
 ];
-
-const audienceBlocks = [
-  {
-    title: "Для crypto-команды",
-    text: "ANCAP помогает купить не консультацию в свободной форме, а готовый операционный результат: listing pack, launch audit, campaign builder, bounty mechanics или token risk report.",
-  },
-  {
-    title: "Для AI-агента",
-    text: "Платформа дает понятные маршруты, цены, API-продукты, spend caps и machine-readable receipts, чтобы агент мог покупать исполнение без длинной ручной переписки.",
-  },
-  {
-    title: "Для владельца проекта",
-    text: "Revenue loop строится вокруг ACP: платные workflow, bundles, proof, repeat runs, API calls и партнерская воронка через token snapshot.",
-  },
-];
-
-const productSchema = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "ANCAP",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  description:
-    "Paid AI workflows for crypto teams and AI agents: listing packs, campaign builders, bounty flows, token risk reports, ACP checkout and proof receipts.",
-  offers: topOffers.map((offer) => ({
-    "@type": "Offer",
-    name: offer.title,
-    price: offer.price.replace(" ACP", ""),
-    priceCurrency: "ACP",
-    url: `https://ancap.cloud${offer.href}`,
-  })),
-};
 
 export function HomePage() {
+  const { t } = useLanguage();
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
+
+  useEffect(() => {
+    document.title = t("hero.title");
+  }, [t]);
+
+  const offers = offerDefs.map((offer) => ({
+    ...offer,
+    title: t(offer.titleKey),
+    label: t(offer.labelKey),
+    result: t(offer.resultKey),
+  }));
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "ANCAP",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description:
+      "Paid AI workflows for crypto teams and AI agents: listing packs, campaign builders, bounty flows, token risk reports, ACP checkout and proof receipts.",
+    offers: offers.map((offer) => ({
+      "@type": "Offer",
+      name: offer.title,
+      price: offer.price.replace(" ACP", ""),
+      priceCurrency: "ACP",
+      url: `https://ancap.cloud${offer.href}`,
+    })),
+  };
 
   return (
     <div className="relative min-h-screen bg-[var(--bg)]">
@@ -122,7 +121,7 @@ export function HomePage() {
                 }}
               >
                 <div>
-                  <div className="section-num">ANCAP CLOUD</div>
+                  <div className="section-num">{t("homePage.badge")}</div>
                   <h1
                     id="home-title"
                     style={{
@@ -134,7 +133,7 @@ export function HomePage() {
                       maxWidth: 780,
                     }}
                   >
-                    Платные AI-workflow для криптокоманд и агентов
+                    {t("hero.title")}
                   </h1>
                   <p
                     style={{
@@ -145,9 +144,7 @@ export function HomePage() {
                       marginBottom: 18,
                     }}
                   >
-                    ANCAP продает полезное AI-исполнение за crypto: listing packs, campaign builders,
-                    bounty flows, token risk reports и receipts с proof. Пользователь покупает не
-                    абстрактный доступ к AI, а понятный результат с ценой, статусом оплаты и проверяемым следом.
+                    {t("homePage.heroLead")}
                   </p>
                   <p
                     style={{
@@ -157,43 +154,41 @@ export function HomePage() {
                       marginBottom: 28,
                     }}
                   >
-                    Интеграция с сетью ACP и кастодиальный кошелек уже доступны на платформе:
-                    обзор сети находится на странице ACP, кошелек открывается после входа. Для платных
-                    workflow и API используется ACP, где 1 ACP = 1 расчетная единица платформы.
+                    {t("homePage.acpLead")}
                   </p>
                   <div className="action-cluster" style={{ marginBottom: 22 }}>
                     <Link href="/ai/workflows" className="btn btn-primary">
-                      Купить workflow
+                      {t("homePage.buyWorkflow")}
                     </Link>
                     <Link href="/pricing" className="btn btn-ghost">
-                      Смотреть цены
+                      {t("homePage.viewPricing")}
                     </Link>
                     <Link href="/developers" className="btn btn-ghost">
-                      API для агентов
+                      {t("homePage.agentApi")}
                     </Link>
                   </div>
                   <div className="action-cluster">
                     {acpUrl.startsWith("http") ? (
                       <a href={acpUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-                        ACP и сеть
+                        {t("hero.acpLink")}
                       </a>
                     ) : (
                       <Link href={acpUrl} className="btn btn-ghost">
-                        ACP и сеть
+                        {t("hero.acpLink")}
                       </Link>
                     )}
                     <Link href="/wallet/acp" className="btn btn-ghost">
-                      ACP-кошелек
+                      {t("nav.acpWallet")}
                     </Link>
                     <Link href="/proof-center" className="btn btn-ghost">
-                      Proof Center
+                      {t("homePage.proofCenter")}
                     </Link>
                   </div>
                 </div>
 
                 <aside
                   className="card"
-                  aria-label="Короткая карта продукта"
+                  aria-label={t("homePage.productMapTitle")}
                   style={{
                     borderRadius: 8,
                     background: "rgba(18, 26, 45, 0.82)",
@@ -201,20 +196,15 @@ export function HomePage() {
                   }}
                 >
                   <div className="badge badge-success" style={{ marginBottom: 18 }}>
-                    Live product map
+                    {t("homePage.liveMap")}
                   </div>
                   <h2 style={{ fontSize: "1.35rem", fontWeight: 800, marginBottom: 14 }}>
-                    Что здесь можно купить
+                    {t("homePage.productMapTitle")}
                   </h2>
                   <div style={{ display: "grid", gap: 12 }}>
-                    {[
-                      ["Launch", "аудит запуска, листинг, кампания, bounty"],
-                      ["Risk", "token report, holder/liquidity flags, evidence gaps"],
-                      ["Agent API", "pay-per-call endpoints, spend caps, receipts"],
-                      ["Proof", "receipt URL, input hash, run timeline, bundle"],
-                    ].map(([name, text]) => (
+                    {productMapDefs.map(([nameKey, textKey]) => (
                       <div
-                        key={name}
+                        key={nameKey}
                         style={{
                           display: "grid",
                           gridTemplateColumns: "96px 1fr",
@@ -224,8 +214,8 @@ export function HomePage() {
                           borderTop: "1px solid var(--border)",
                         }}
                       >
-                        <strong style={{ color: "var(--accent-strong)" }}>{name}</strong>
-                        <span style={{ color: "var(--text-muted)", lineHeight: 1.55 }}>{text}</span>
+                        <strong style={{ color: "var(--accent-strong)" }}>{t(nameKey)}</strong>
+                        <span style={{ color: "var(--text-muted)", lineHeight: 1.55 }}>{t(textKey)}</span>
                       </div>
                     ))}
                   </div>
@@ -237,19 +227,19 @@ export function HomePage() {
           <section className="container" style={{ padding: "28px 24px 62px" }} aria-labelledby="offers-title">
             <div className="section-header">
               <div>
-                <span className="section-num">BUY FIRST</span>
+                <span className="section-num">{t("homePage.offersKicker")}</span>
                 <h2 id="offers-title" className="section-title">
-                  Первые платные продукты
+                  {t("homePage.offersTitle")}
                 </h2>
               </div>
               <Link href="/ai/workflows" className="btn btn-ghost">
-                Весь каталог
+                {t("homePage.allCatalog")}
               </Link>
             </div>
             <div className="responsive-grid responsive-grid-3">
-              {topOffers.map((offer) => (
+              {offers.map((offer) => (
                 <Link
-                  key={offer.title}
+                  key={offer.href}
                   href={offer.href}
                   className="card"
                   style={{ textDecoration: "none", borderRadius: 8, minHeight: 250 }}
@@ -270,34 +260,33 @@ export function HomePage() {
           </section>
 
           <section id="product" className="container" style={{ padding: "62px 24px", borderTop: "1px solid var(--border)" }}>
-            <span className="section-num">HOW IT WORKS</span>
+            <span className="section-num">{t("homePage.howKicker")}</span>
             <h2 className="section-title" style={{ maxWidth: 680, marginBottom: 16 }}>
-              Простая логика: оплатил, запустил, получил артефакт, проверил proof
+              {t("homePage.howTitle")}
             </h2>
             <p className="section-subtitle" style={{ maxWidth: 760 }}>
-              Главная ценность ANCAP в том, что AI-исполнение превращается в покупаемый продукт.
-              Каждый workflow имеет входные данные, цену, ожидаемый результат, статус оплаты и проверяемый receipt.
+              {t("homePage.howLead")}
             </p>
             <div className="responsive-grid responsive-grid-2">
-              {executionSteps.map((step) => (
-                <div key={step.title} className="card" style={{ borderRadius: 8 }}>
-                  <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 10 }}>{step.title}</h3>
-                  <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>{step.text}</p>
+              {stepDefs.map(([titleKey, textKey]) => (
+                <div key={titleKey} className="card" style={{ borderRadius: 8 }}>
+                  <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 10 }}>{t(titleKey)}</h3>
+                  <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>{t(textKey)}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section id="vision" className="container" style={{ padding: "62px 24px", borderTop: "1px solid var(--border)" }}>
-            <span className="section-num">AUDIENCE</span>
+            <span className="section-num">{t("homePage.audienceKicker")}</span>
             <h2 className="section-title" style={{ marginBottom: 16 }}>
-              Кому нужен ANCAP
+              {t("homePage.audienceTitle")}
             </h2>
             <div className="responsive-grid responsive-grid-3">
-              {audienceBlocks.map((block) => (
-                <div key={block.title} className="card" style={{ borderRadius: 8 }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 10 }}>{block.title}</h3>
-                  <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>{block.text}</p>
+              {audienceDefs.map(([titleKey, textKey]) => (
+                <div key={titleKey} className="card" style={{ borderRadius: 8 }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 10 }}>{t(titleKey)}</h3>
+                  <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>{t(textKey)}</p>
                 </div>
               ))}
             </div>
@@ -313,16 +302,13 @@ export function HomePage() {
               }}
             >
               <div>
-                <span className="section-num">AI-FRIENDLY ROUTES</span>
+                <span className="section-num">{t("homePage.routesKicker")}</span>
                 <h2 className="section-title" style={{ marginBottom: 16 }}>
-                  Страница говорит понятными маршрутами
+                  {t("homePage.routesTitle")}
                 </h2>
-                <p className="section-subtitle">
-                  Для человека это навигация. Для AI-агента это карта продукта: где купить,
-                  где посмотреть цену, где получить proof, где работать с ACP и где подключать paid API.
-                </p>
+                <p className="section-subtitle">{t("homePage.routesLead")}</p>
                 <Link href="/developers" className="btn btn-primary">
-                  Открыть developer page
+                  {t("homePage.openDevelopers")}
                 </Link>
               </div>
               <div className="responsive-grid" style={{ gap: 12 }}>
@@ -340,7 +326,7 @@ export function HomePage() {
                     }}
                   >
                     <strong style={{ color: "var(--text)" }}>{route.title}</strong>
-                    <span style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>{route.text}</span>
+                    <span style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>{t(route.textKey)}</span>
                   </Link>
                 ))}
               </div>
@@ -360,22 +346,20 @@ export function HomePage() {
               }}
             >
               <div>
-                <span className="section-num">ACP RAIL</span>
+                <span className="section-num">{t("homePage.acpKicker")}</span>
                 <h2 className="section-title" style={{ marginBottom: 12 }}>
-                  ACP уже встроен в продуктовую воронку
+                  {t("homePage.acpTitle")}
                 </h2>
                 <p style={{ color: "var(--text-muted)", lineHeight: 1.7, margin: 0, maxWidth: 760 }}>
-                  ACP используется как расчетная единица для workflow и API. Пользователь может изучить сеть,
-                  войти в аккаунт, открыть кастодиальный ACP-кошелек, пополнить баланс и запускать платные
-                  workflow с receipt после оплаты.
+                  {t("homePage.acpText")}
                 </p>
               </div>
               <div className="action-cluster" style={{ justifyContent: "flex-end" }}>
                 <Link href="/acp" className="btn btn-ghost">
-                  Страница ACP
+                  {t("homePage.acpPage")}
                 </Link>
                 <Link href="/wallet/acp" className="btn btn-primary">
-                  Кошелек
+                  {t("homePage.wallet")}
                 </Link>
               </div>
             </div>
@@ -384,18 +368,17 @@ export function HomePage() {
           <section id="contact" style={{ textAlign: "center", padding: "74px 24px 60px" }}>
             <div className="container">
               <h2 style={{ fontSize: "2rem", fontWeight: 850, marginBottom: 16, letterSpacing: 0 }}>
-                Начните с одного workflow, затем масштабируйте в API и bundles
+                {t("homePage.finalTitle")}
               </h2>
               <p style={{ color: "var(--text-muted)", margin: "0 auto 30px", fontSize: "1.05rem", lineHeight: 1.65, maxWidth: 760 }}>
-                Самый короткий путь к ценности: бесплатный token snapshot, платный pro report,
-                затем launch или growth pack. Для агентов есть отдельная developer-страница с paid endpoints.
+                {t("homePage.finalText")}
               </p>
               <div className="action-cluster" style={{ justifyContent: "center" }}>
                 <Link href="/token-snapshot" className="btn btn-primary">
-                  Free token snapshot
+                  {t("homePage.freeSnapshot")}
                 </Link>
                 <Link href="/ai/workflows" className="btn btn-ghost">
-                  Купить AI-workflow
+                  {t("homePage.buyAiWorkflow")}
                 </Link>
                 <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
                   Swagger API
@@ -418,7 +401,7 @@ export function HomePage() {
             <Link href="/" style={{ color: "var(--text-muted)", textDecoration: "none", fontWeight: 800 }}>
               ANCAP
             </Link>
-            <span> - paid AI execution, ACP payments, proof receipts and agent commerce.</span>
+            <span> - {t("homePage.footer")}</span>
           </div>
         </footer>
       </div>

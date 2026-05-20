@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Language, t as translate } from "@/locales/translations";
+import { Language, isSupportedLanguage, t as translate } from "@/locales/translations";
 import { safeGetItem, safeSetItem } from "@/lib/safeStorage";
 
 type LanguageContextType = {
@@ -18,7 +18,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = safeGetItem(LANG_STORAGE_KEY) as Language;
-    if (stored === "en" || stored === "ru" || stored === "uk") {
+    if (isSupportedLanguage(stored)) {
       setLangState(stored);
     }
   }, []);

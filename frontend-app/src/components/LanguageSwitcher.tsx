@@ -35,6 +35,12 @@ export function LanguageSwitcher() {
       >
         UK
       </button>
+      <button
+        onClick={() => setLang("de")}
+        className={mounted && lang === "de" ? "active" : ""}
+      >
+        DE
+      </button>
     </div>
   );
 }
