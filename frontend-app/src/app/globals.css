@@ -430,6 +430,35 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
+.home-hero-grid {
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+}
+
+.home-split-grid {
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1.08fr);
+}
+
+.home-route-link {
+  grid-template-columns: 150px 1fr;
+}
+
+.home-acp-panel {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@media (max-width: 900px) {
+  .home-hero-grid,
+  .home-split-grid,
+  .home-acp-panel,
+  .home-route-link {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-acp-panel .action-cluster {
+    justify-content: flex-start !important;
+  }
+}
+
 @media (max-width: 640px) {
   .responsive-grid {
     gap: 16px;
