@@ -18,7 +18,7 @@ def _register_user(client):
     return me.json(), headers
 
 
-def _user_balance(client, user_id: str, currency="USDC", headers=None) -> Decimal:
+def _user_balance(client, user_id: str, currency="ACP", headers=None) -> Decimal:
     res = client.get(f"/v1/ledger/balance?owner_type=user&owner_id={user_id}", headers=headers)
     assert res.status_code == 200, res.text
     for item in res.json()["balances"]:
@@ -35,7 +35,7 @@ def test_paid_api_usage_charges_owner_credits_and_records_meter_event(client):
         json={
             "account_owner_type": "user",
             "account_owner_id": user["id"],
-            "amount": {"amount": "10", "currency": "USDC"},
+            "amount": {"amount": "10", "currency": "ACP"},
             "reference": "paid-api-test",
         },
     )
@@ -70,10 +70,10 @@ def test_paid_api_usage_charges_owner_credits_and_records_meter_event(client):
     assert payload["product"]["x402"]["version"] == "x402-compatible-preview"
     assert payload["usage"]["status"] == "captured"
     assert payload["receipt"]["request_hash"] == payload["usage"]["request_hash"]
-    assert payload["receipt"]["x402"]["accepts"][0]["currency"] == "USDC"
+    assert payload["receipt"]["x402"]["accepts"][0]["currency"] == "ACP"
     assert Decimal(payload["usage"]["amount"]["amount"]) == Decimal("2.000000000000000000")
     assert payload["result"]["score"] > 0
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("8.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("8.000000000000000000")
 
     usage = client.get("/v1/paid-api/me/usage", headers=headers)
     assert usage.status_code == 200, usage.text
@@ -109,7 +109,7 @@ def test_paid_api_usage_respects_agent_monthly_spend_cap(client):
         json={
             "account_owner_type": "user",
             "account_owner_id": user["id"],
-            "amount": {"amount": "10", "currency": "USDC"},
+            "amount": {"amount": "10", "currency": "ACP"},
             "reference": "paid-api-spend-cap-test",
         },
     )
@@ -128,10 +128,10 @@ def test_paid_api_usage_respects_agent_monthly_spend_cap(client):
     cap = client.post(
         f"/v1/paid-api/agents/{agent_id}/spend-cap",
         headers=headers,
-        json={"currency": "USDC", "monthly_cap": "1.00"},
+        json={"currency": "ACP", "monthly_cap": "1.00"},
     )
     assert cap.status_code == 200, cap.text
-    assert cap.json()["caps"]["USDC"] == "1.00"
+    assert cap.json()["caps"]["ACP"] == "1.00"
 
     response = client.post(
         "/v1/paid-api/token-risk",

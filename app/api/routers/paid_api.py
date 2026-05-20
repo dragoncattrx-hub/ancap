@@ -32,7 +32,7 @@ from app.services.ledger import append_event, balance_for_account, get_or_create
 router = APIRouter(prefix="/paid-api", tags=["Paid API"])
 
 
-def _x402_terms(product_slug: str, amount: str, currency: str = "USDC") -> dict[str, object]:
+def _x402_terms(product_slug: str, amount: str, currency: str = "ACP") -> dict[str, object]:
     return {
         "version": "x402-compatible-preview",
         "accepts": [{"scheme": "exact", "network": "base", "currency": currency, "amount": amount}],
@@ -48,8 +48,8 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         title="Token Risk Snapshot",
         description="Score token risk using lightweight launch, liquidity, and trust signals.",
         endpoint="/paid-api/token-risk",
-        price=Money(amount="2.00", currency="USDC"),
-        accepted_currencies=["USDC"],
+        price=Money(amount="2.00", currency="ACP"),
+        accepted_currencies=["ACP"],
         tags=["risk", "token", "api"],
         x402=_x402_terms("token-risk", "2.00"),
     ),
@@ -58,8 +58,8 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         title="Listing Readiness Score",
         description="Check whether a token/project profile is ready for directory or exchange submissions.",
         endpoint="/paid-api/listing-readiness",
-        price=Money(amount="1.50", currency="USDC"),
-        accepted_currencies=["USDC"],
+        price=Money(amount="1.50", currency="ACP"),
+        accepted_currencies=["ACP"],
         tags=["listing", "launch", "api"],
         x402=_x402_terms("listing-readiness", "1.50"),
     ),
@@ -68,8 +68,8 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         title="Wallet Risk Snapshot",
         description="Score a wallet reference for operational, concentration, and behavior risk.",
         endpoint="/paid-api/wallet-risk",
-        price=Money(amount="2.00", currency="USDC"),
-        accepted_currencies=["USDC"],
+        price=Money(amount="2.00", currency="ACP"),
+        accepted_currencies=["ACP"],
         tags=["wallet", "risk", "api"],
         x402=_x402_terms("wallet-risk", "2.00"),
     ),
@@ -78,8 +78,8 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         title="Bridge Proof Check",
         description="Produce a compact proof-readiness result for bridge transaction references.",
         endpoint="/paid-api/bridge-proof",
-        price=Money(amount="1.00", currency="USDC"),
-        accepted_currencies=["USDC"],
+        price=Money(amount="1.00", currency="ACP"),
+        accepted_currencies=["ACP"],
         tags=["bridge", "proof", "api"],
         x402=_x402_terms("bridge-proof", "1.00"),
     ),
@@ -88,8 +88,8 @@ PAID_API_PRODUCTS: list[PaidApiProductPublic] = [
         title="Campaign Score",
         description="Score campaign inputs for clarity, channel fit, proof quality, and spam risk.",
         endpoint="/paid-api/campaign-score",
-        price=Money(amount="1.00", currency="USDC"),
-        accepted_currencies=["USDC"],
+        price=Money(amount="1.00", currency="ACP"),
+        accepted_currencies=["ACP"],
         tags=["campaign", "growth", "api"],
         x402=_x402_terms("campaign-score", "1.00"),
     ),
@@ -147,7 +147,7 @@ async def _agent_30d_spend(session: DbSession, agent_id: UUID, currency: str) ->
 
 async def _current_spend_map(session: DbSession, agent_id: UUID, caps: dict[str, str]) -> dict[str, str]:
     out: dict[str, str] = {}
-    for currency in sorted(caps.keys() or ["USDC"]):
+    for currency in sorted(caps.keys() or ["ACP"]):
         out[currency] = str(await _agent_30d_spend(session, agent_id, currency))
     return out
 

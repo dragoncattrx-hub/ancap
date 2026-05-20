@@ -19,7 +19,7 @@ export default function TokenSnapshotPage() {
     token_symbol: subject || "TOKEN",
     chain,
     liquidity_model: "DEX-led liquidity",
-  }))}&paymentCurrency=USDC&unlockFullResult=1`;
+  }))}&paymentCurrency=ACP&unlockFullResult=1`;
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">

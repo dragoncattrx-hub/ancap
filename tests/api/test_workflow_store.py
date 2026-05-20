@@ -25,7 +25,7 @@ def _current_user(client, headers=None):
     return res.json()
 
 
-def _deposit_user_credits(client, amount="20", currency="USDC", headers=None):
+def _deposit_user_credits(client, amount="20", currency="ACP", headers=None):
     user = _current_user(client, headers=headers)
     res = client.post(
         "/v1/ledger/deposit",
@@ -41,7 +41,7 @@ def _deposit_user_credits(client, amount="20", currency="USDC", headers=None):
     return user
 
 
-def _user_balance(client, user_id: str, currency="USDC", headers=None) -> Decimal:
+def _user_balance(client, user_id: str, currency="ACP", headers=None) -> Decimal:
     res = client.get(f"/v1/ledger/balance?owner_type=user&owner_id={user_id}", headers=headers)
     assert res.status_code == 200, res.text
     for item in res.json()["balances"]:
@@ -53,7 +53,7 @@ def _user_balance(client, user_id: str, currency="USDC", headers=None) -> Decima
 def _create_workflow_run(client, headers=None):
     payload = {
         "workflow_slug": "token-risk-report",
-        "payment_currency": "USDC",
+        "payment_currency": "ACP",
         "unlock_full_result": True,
         "inputs": {
             "project_name": "Deterministic Proof Test",
@@ -68,7 +68,7 @@ def _create_workflow_run(client, headers=None):
 
 def test_workflow_payment_intent_reserves_and_captures_credits(client):
     user, headers = _register_user(client)
-    _deposit_user_credits(client, amount="20", currency="USDC", headers=headers)
+    _deposit_user_credits(client, amount="20", currency="ACP", headers=headers)
     run = _create_workflow_run(client, headers=headers)
     run_id = run["id"]
 
@@ -83,7 +83,7 @@ def test_workflow_payment_intent_reserves_and_captures_credits(client):
     assert reserved_payload["item"]["status"] == "reserved"
     assert reserved_payload["run"]["status"] == "paid"
     assert Decimal(reserved_payload["item"]["amount"]["amount"]) == Decimal(run["price"]["amount"])
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("6.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("6.000000000000000000")
 
     execute = client.post(f"/v1/workflow-store/runs/{run_id}/execute", headers=headers)
     assert execute.status_code == 200, execute.text
@@ -91,13 +91,13 @@ def test_workflow_payment_intent_reserves_and_captures_credits(client):
     assert executed_payload["item"]["status"] == "completed"
     assert executed_payload["item"]["receipt"]["proof"]["payment_intent_status"] == "captured"
 
-    balance_after_capture = _user_balance(client, user["id"], "USDC", headers=headers)
+    balance_after_capture = _user_balance(client, user["id"], "ACP", headers=headers)
     assert balance_after_capture == Decimal("6.000000000000000000")
 
 
 def test_workflow_payment_intent_refunds_reserved_credits_on_cancel(client):
     user, headers = _register_user(client)
-    _deposit_user_credits(client, amount="20", currency="USDC", headers=headers)
+    _deposit_user_credits(client, amount="20", currency="ACP", headers=headers)
     run = _create_workflow_run(client, headers=headers)
     run_id = run["id"]
 
@@ -107,19 +107,19 @@ def test_workflow_payment_intent_refunds_reserved_credits_on_cancel(client):
         headers=headers,
     )
     assert reserve.status_code == 201, reserve.text
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("6.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("6.000000000000000000")
 
     cancel = client.post(f"/v1/workflow-store/runs/{run_id}/status", json={"status": "cancelled"}, headers=headers)
     assert cancel.status_code == 200, cancel.text
     payload = cancel.json()
     assert payload["item"]["status"] == "cancelled"
     assert payload["item"]["receipt"]["proof"]["payment_intent_status"] == "refunded"
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("20.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("20.000000000000000000")
 
 
 def test_workflow_revenue_summary_reports_captured_sku(client):
     _, headers = _register_user(client)
-    _deposit_user_credits(client, amount="20", currency="USDC", headers=headers)
+    _deposit_user_credits(client, amount="20", currency="ACP", headers=headers)
     run = _create_workflow_run(client, headers=headers)
     run_id = run["id"]
 
@@ -138,14 +138,14 @@ def test_workflow_revenue_summary_reports_captured_sku(client):
     assert payload["quote_count"] >= 1
     assert payload["payment_status_counts"]["captured"] >= 1
     captured_totals = [
-        item for item in payload["totals"] if item["currency"] == "USDC" and item["status"] == "captured"
+        item for item in payload["totals"] if item["currency"] == "ACP" and item["status"] == "captured"
     ]
     assert captured_totals
     assert any(Decimal(item["amount"]) >= Decimal(run["price"]["amount"]) for item in captured_totals)
     sku = next(
         item
         for item in payload["skus"]
-        if item["workflow_slug"] == "token-risk-report" and item["currency"] == "USDC"
+        if item["workflow_slug"] == "token-risk-report" and item["currency"] == "ACP"
     )
     assert sku["captured_count"] >= 1
     assert Decimal(sku["captured_amount"]) >= Decimal(run["price"]["amount"])
@@ -165,7 +165,7 @@ def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client):
     )
     assert attribution.status_code == 201, attribution.text
 
-    _deposit_user_credits(client, amount="20", currency="USDC", headers=referred_headers)
+    _deposit_user_credits(client, amount="20", currency="ACP", headers=referred_headers)
     run = _create_workflow_run(client, headers=referred_headers)
     run_id = run["id"]
     reserve = client.post(
@@ -187,12 +187,12 @@ def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client):
     assert summary_payload["total_reward_events"] >= 1
     assert Decimal(summary_payload["signup_bonus_acp_amount"]) >= Decimal("100")
     assert _user_balance(client, owner["id"], "ACP", headers=owner_headers) >= Decimal("100")
-    assert _user_balance(client, referred_user["id"], "USDC", headers=referred_headers) == Decimal("6.000000000000000000")
+    assert _user_balance(client, referred_user["id"], "ACP", headers=referred_headers) == Decimal("6.000000000000000000")
 
 
 def test_workflow_bundle_checkout_reserves_discounted_launch_pack(client):
     user, headers = _register_user(client)
-    _deposit_user_credits(client, amount="100", currency="USDC", headers=headers)
+    _deposit_user_credits(client, amount="100", currency="ACP", headers=headers)
 
     catalog = client.get("/v1/workflow-store/bundles")
     assert catalog.status_code == 200, catalog.text
@@ -202,7 +202,7 @@ def test_workflow_bundle_checkout_reserves_discounted_launch_pack(client):
     checkout = client.post(
         "/v1/workflow-store/bundles/launch-pack/checkout",
         json={
-            "payment_currency": "USDC",
+            "payment_currency": "ACP",
             "payment_method": "credits",
             "project_name": "Bundle Test",
             "reserve_credits": True,
@@ -212,16 +212,16 @@ def test_workflow_bundle_checkout_reserves_discounted_launch_pack(client):
     assert checkout.status_code == 201, checkout.text
     payload = checkout.json()
     assert payload["bundle"]["slug"] == "launch-pack"
-    assert payload["quoted_total"] == {"amount": "49.00", "currency": "USDC"}
-    assert payload["original_total"] == {"amount": "70.00", "currency": "USDC"}
-    assert payload["discount_amount"] == {"amount": "21.00", "currency": "USDC"}
+    assert payload["quoted_total"] == {"amount": "49.00", "currency": "ACP"}
+    assert payload["original_total"] == {"amount": "70.00", "currency": "ACP"}
+    assert payload["discount_amount"] == {"amount": "21.00", "currency": "ACP"}
     assert payload["reserved"] is True
     assert len(payload["runs"]) == 5
     assert len(payload["payment_intents"]) == 5
     assert {run["status"] for run in payload["runs"]} == {"paid"}
     assert {intent["status"] for intent in payload["payment_intents"]} == {"reserved"}
     assert sum(Decimal(run["price"]["amount"]) for run in payload["runs"]) == Decimal("49.00")
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("51.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("51.000000000000000000")
     assert all(run["receipt"]["proof"]["bundle_slug"] == "launch-pack" for run in payload["runs"])
 
 
@@ -234,17 +234,17 @@ def test_credit_package_top_up_intent_credits_user_balance_once(client):
 
     intent = client.post(
         "/v1/workflow-store/credit-packages/launch-credits/top-up-intents",
-        json={"payment_currency": "USDC", "payment_method": "manual", "note": "test top-up invoice"},
+        json={"payment_currency": "ACP", "payment_method": "manual", "note": "test top-up invoice"},
         headers=headers,
     )
     assert intent.status_code == 201, intent.text
     payload = intent.json()
     assert payload["credited"] is False
-    assert payload["package"]["credit_amount"] == {"amount": "100", "currency": "USDC"}
+    assert payload["package"]["credit_amount"] == {"amount": "100", "currency": "ACP"}
     assert payload["item"]["workflow_run_id"] is None
     assert payload["item"]["status"] == "requires_payment"
     assert Decimal(payload["item"]["amount"]["amount"]) == Decimal("95.00")
-    assert payload["item"]["amount"]["currency"] == "USDC"
+    assert payload["item"]["amount"]["currency"] == "ACP"
 
     user_confirm = client.post(
         f"/v1/workflow-store/top-up-intents/{payload['item']['id']}/confirm",
@@ -266,7 +266,7 @@ def test_credit_package_top_up_intent_credits_user_balance_once(client):
     confirmed_payload = confirm.json()
     assert confirmed_payload["credited"] is True
     assert confirmed_payload["item"]["status"] == "captured"
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("100.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("100.000000000000000000")
 
     second_confirm = client.post(
         f"/v1/workflow-store/admin/top-up-intents/{payload['item']['id']}/confirm",
@@ -275,7 +275,7 @@ def test_credit_package_top_up_intent_credits_user_balance_once(client):
     )
     assert second_confirm.status_code == 200, second_confirm.text
     assert second_confirm.json()["credited"] is True
-    assert _user_balance(client, user["id"], "USDC", headers=headers) == Decimal("100.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("100.000000000000000000")
 
 
 def test_workflow_payment_intent_rejects_insufficient_credits(client):

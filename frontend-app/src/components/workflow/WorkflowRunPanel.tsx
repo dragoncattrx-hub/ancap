@@ -270,7 +270,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
-  const [paymentCurrency, setPaymentCurrency] = useState(workflow.accepted_currencies[0] || "USDC");
+  const [paymentCurrency, setPaymentCurrency] = useState(workflow.accepted_currencies[0] || "ACP");
   const [unlockFullResult, setUnlockFullResult] = useState(true);
   const [useStructuredForm, setUseStructuredForm] = useState(supportsStructuredWorkflow(workflow.slug));
   const [inputsText, setInputsText] = useState(JSON.stringify({}, null, 2));

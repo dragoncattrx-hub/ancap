@@ -161,7 +161,7 @@ export default function WalletCreditsPage() {
                 <div className="card">
                   <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Next move</div>
                   <div style={{ color: "var(--text)", fontWeight: 700 }}>
-                    Fund ACP / USDC path and connect it to paid workflow execution.
+                    Fund ACP / ACP path and connect it to paid workflow execution.
                   </div>
                 </div>
               </div>

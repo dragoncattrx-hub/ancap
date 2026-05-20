@@ -39,7 +39,7 @@ Current reality: a technical PancakeSwap bootstrap pair already exists. That is 
 Start with:
 - **DEX:** PancakeSwap V2
 - **First pair:** `wACP / USDT`
-- **Fallback pair:** `wACP / USDC`
+- **Fallback pair:** `wACP / ACP`
 
 Avoid first launch on:
 - `wACP / WBNB`

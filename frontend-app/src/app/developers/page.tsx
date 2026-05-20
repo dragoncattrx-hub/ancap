@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 
 const products = [
-  ["token-risk", "/paid-api/token-risk", "2.00 USDC", "Risk snapshot for token or project references"],
-  ["listing-readiness", "/paid-api/listing-readiness", "1.50 USDC", "Listing readiness score for exchange/directory submissions"],
-  ["wallet-risk", "/paid-api/wallet-risk", "2.00 USDC", "Wallet risk snapshot for operational checks"],
-  ["bridge-proof", "/paid-api/bridge-proof", "1.00 USDC", "Compact bridge proof readiness result"],
-  ["campaign-score", "/paid-api/campaign-score", "1.00 USDC", "Campaign clarity, proof quality, and spam-risk score"],
+  ["token-risk", "/paid-api/token-risk", "2.00 ACP", "Risk snapshot for token or project references"],
+  ["listing-readiness", "/paid-api/listing-readiness", "1.50 ACP", "Listing readiness score for exchange/directory submissions"],
+  ["wallet-risk", "/paid-api/wallet-risk", "2.00 ACP", "Wallet risk snapshot for operational checks"],
+  ["bridge-proof", "/paid-api/bridge-proof", "1.00 ACP", "Compact bridge proof readiness result"],
+  ["campaign-score", "/paid-api/campaign-score", "1.00 ACP", "Campaign clarity, proof quality, and spam-risk score"],
 ];
 
 export const metadata = {
@@ -65,7 +65,7 @@ export default function DevelopersPage() {
                 message: "Insufficient credits for paid API usage",
                 x402: {
                   version: "x402-compatible-preview",
-                  accepts: [{ scheme: "exact", network: "base", currency: "USDC", amount: "2.00" }],
+                  accepts: [{ scheme: "exact", network: "base", currency: "ACP", amount: "2.00" }],
                   resource: "https://ancap.cloud/api/v1/paid-api/token-risk",
                   pay_to: "ancap-workflow-treasury",
                 },

@@ -17,7 +17,7 @@ This keeps ANCAP in the safer zone of selling software and AI services for crypt
 Launch the first revenue loop without GPU dependence:
 
 1. User selects a workflow.
-2. User sees price in USD equivalent and can pay in ACP / wACP / USDC.
+2. User sees price in ACP equivalent and can pay in ACP / wACP.
 3. ANCAP executes a structured workflow.
 4. User receives preview or full result.
 5. ANCAP stores receipt, cost, status, and proof.
@@ -224,7 +224,7 @@ Other agents and external systems can pay ANCAP for machine-readable checks and 
 
 ## P0
 - Paid AI Workflow Store
-- Billing / Credits / ACP / wACP / USDC support
+- Billing / Credits / ACP / wACP support
 - Run history + result + cost
 - Token Listing Pack Generator
 - Crypto Campaign Builder

@@ -11,19 +11,19 @@ export function HomePage() {
   const topOffers = [
     {
       title: "Pro Launch Pack",
-      price: "349 USDC",
+      price: "349 ACP",
       href: "/ai/bundles/pro-launch-pack",
       result: "audit + exchange listing + KOL/Telegram + bounty + pro risk report",
     },
     {
       title: "Exchange Listing Submission Pack",
-      price: "149 USDC",
+      price: "149 ACP",
       href: "/ai/run/exchange-listing-submission-pack",
       result: "exchange answers, reviewer memo, due-diligence packet",
     },
     {
       title: "Token Risk Report Pro",
-      price: "59 USDC",
+      price: "59 ACP",
       href: "/ai/run/token-risk-report-pro",
       result: "risk score, evidence gaps, liquidity/holder flags",
     },

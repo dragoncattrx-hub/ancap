@@ -61,7 +61,7 @@ class WorkflowRunStatus(str, Enum):
 
 class WorkflowRunCreateRequest(BaseModel):
     workflow_slug: str
-    payment_currency: str = "USDC"
+    payment_currency: str = "ACP"
     unlock_full_result: bool = True
     inputs: dict[str, Any] = Field(default_factory=dict)
 
@@ -84,7 +84,7 @@ class WorkflowRunPaymentIntentCreateRequest(BaseModel):
 
 
 class WorkflowBundleCheckoutRequest(BaseModel):
-    payment_currency: str = "USDC"
+    payment_currency: str = "ACP"
     payment_method: str = Field(default="credits", min_length=3, max_length=64)
     project_name: Optional[str] = Field(default=None, max_length=120)
     unlock_full_result: bool = True
@@ -170,7 +170,7 @@ class WorkflowCreditPackagesResponse(BaseModel):
 
 
 class WorkflowCreditTopUpIntentCreateRequest(BaseModel):
-    payment_currency: str = "USDC"
+    payment_currency: str = "ACP"
     payment_method: str = Field(default="manual", min_length=3, max_length=64)
     note: Optional[str] = Field(default=None, max_length=500)
 

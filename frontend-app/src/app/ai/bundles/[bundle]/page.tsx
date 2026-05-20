@@ -26,7 +26,7 @@ export default function WorkflowBundlePage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [bundle, setBundle] = useState<WorkflowBundle | null>(null);
   const [projectName, setProjectName] = useState("");
-  const [paymentCurrency, setPaymentCurrency] = useState("USDC");
+  const [paymentCurrency, setPaymentCurrency] = useState("ACP");
   const [unlockFullResult, setUnlockFullResult] = useState(true);
   const [checkout, setCheckout] = useState<BundleCheckoutResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,13 +44,13 @@ export default function WorkflowBundlePage() {
         const data = await workflowStore.getBundle(slug);
         if (!cancelled) {
           setBundle(data);
-          setPaymentCurrency(data.accepted_currencies?.[0] || "USDC");
+          setPaymentCurrency(data.accepted_currencies?.[0] || "ACP");
         }
       } catch {
         const fallback = getFallbackWorkflowBundle(slug);
         if (!cancelled) {
           setBundle(fallback);
-          setPaymentCurrency(fallback?.accepted_currencies?.[0] || "USDC");
+          setPaymentCurrency(fallback?.accepted_currencies?.[0] || "ACP");
         }
       } finally {
         if (!cancelled) setLoading(false);

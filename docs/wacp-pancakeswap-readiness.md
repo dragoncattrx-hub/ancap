@@ -49,7 +49,7 @@ No rollback / pause posture -> no official scale-up.
 For the first meaningful market phase:
 - Primary venue: **PancakeSwap V2**
 - Primary pair: **wACP/USDT**
-- Secondary future option: **wACP/USDC**
+- Secondary future option: **wACP/ACP**
 - Avoid making `wACP/WBNB` the main reference market at launch
 
 Reason:

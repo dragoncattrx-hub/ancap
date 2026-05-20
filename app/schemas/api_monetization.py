@@ -52,7 +52,7 @@ class PaidApiAnalyzeResponse(BaseModel):
 
 
 class PaidApiSpendCapRequest(BaseModel):
-    currency: str = Field(default="USDC", min_length=2, max_length=10)
+    currency: str = Field(default="ACP", min_length=2, max_length=10)
     monthly_cap: Optional[str] = Field(default=None, max_length=40)
 
 
