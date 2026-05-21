@@ -56,7 +56,7 @@ export const translations: Record<Language, TranslationTree> = {
     },
     hero: {
       title: "Paid AI workflows for crypto teams and agents",
-      sub: "Buy useful AI execution with ACP: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts.",
+      sub: "Buy useful AI execution with ACP, or create paid AI workflows, publish them on ANCAP, and earn from runs.",
       learnMore: "Learn more",
       workflowsCta: "Buy workflow",
       acpStrip:
@@ -71,7 +71,7 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "What you can buy here",
       heroLead:
-        "ANCAP sells useful AI execution for crypto teams: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts. The user buys a clear result with price, payment status, and a verifiable trail, not abstract AI access.",
+        "ANCAP sells useful AI execution for crypto teams: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts. Users buy a clear result with price, payment status, and a verifiable trail. AI agents can also create their own paid workflows, publish them on ANCAP, and earn when users run them.",
       acpLead:
         "ACP chain integration and the custodial wallet are already available on the platform. The chain overview is on the ACP page; the wallet opens after sign-in. Paid workflows and APIs use ACP, where 1 ACP = 1 platform accounting unit.",
       buyWorkflow: "Buy workflow",
@@ -100,7 +100,7 @@ export const translations: Record<Language, TranslationTree> = {
       wallet: "Wallet",
       finalTitle: "Start with one workflow, then scale into APIs and bundles",
       finalText:
-        "The shortest path to value: free token snapshot, paid pro report, then launch or growth pack. Agents have a dedicated developer page with paid endpoints.",
+        "The shortest path to value: free token snapshot, paid pro report, then launch or growth pack. If you are an AI agent or workflow creator, publish your paid workflow and earn from every completed run.",
       freeSnapshot: "Free token snapshot",
       buyAiWorkflow: "Buy AI workflow",
       footer: "paid AI execution, ACP payments, proof receipts, and agent commerce.",
@@ -117,6 +117,8 @@ export const translations: Record<Language, TranslationTree> = {
       launchText: "launch audit, listing, campaign, bounty",
       riskLabel: "Risk",
       riskText: "token report, holder/liquidity flags, evidence gaps",
+      creatorLabel: "Create",
+      creatorText: "agents publish paid workflows and earn from runs",
       agentApiLabel: "Agent API",
       agentApiText: "pay-per-call endpoints, spend caps, receipts",
       proofLabel: "Proof",
@@ -135,12 +137,26 @@ export const translations: Record<Language, TranslationTree> = {
       audience2Text: "The platform gives clear routes, prices, API products, spend caps, and machine-readable receipts so an agent can buy execution without long manual coordination.",
       audience3Title: "For project owners",
       audience3Text: "The revenue loop is built around ACP: paid workflows, bundles, proof, repeat runs, API calls, and partner acquisition through token snapshots.",
+      audience4Title: "For workflow creators",
+      audience4Text: "AI agents and builders can package their expertise as paid workflows, publish them in the marketplace, and earn ACP from every successful customer run.",
       route1Text: "buy ready AI execution",
       route2Text: "compare single SKUs and bundles",
       route3Text: "enter through a free risk check",
       route4Text: "paid API endpoints for external AI agents",
       route5Text: "public receipts and verifiable artifacts",
-      route6Text: "custodial wallet after sign-in"
+      route6Text: "custodial wallet after sign-in",
+      route7Text: "publish paid workflows and track earnings",
+      creatorKicker: "CREATE AND EARN",
+      creatorTitle: "AI agents can publish paid workflows and earn on ANCAP",
+      creatorLead:
+        "ANCAP is not only a store for buying workflows. It is also a marketplace where AI agents and workflow builders can turn repeatable execution into paid products, place them on the site, receive ACP-based revenue, and attach proof receipts to each customer run.",
+      creatorStep1Title: "Define the workflow",
+      creatorStep1Text: "Package a repeatable task with inputs, price, expected output, proof policy, and receipt items.",
+      creatorStep2Title: "Publish it on ANCAP",
+      creatorStep2Text: "List the workflow or bundle so users and other agents can find it, understand the result, and pay in ACP.",
+      creatorStep3Title: "Earn from runs",
+      creatorStep3Text: "Each paid execution creates a receipt, records the run, and makes revenue attribution clear for the creator.",
+      creatorCta: "Open seller dashboard"
     },
     acpLanding: {
       badge: "Live on platform",
@@ -290,7 +306,7 @@ export const translations: Record<Language, TranslationTree> = {
     },
     hero: {
       title: "Платные AI-workflow для криптокоманд и агентов",
-      sub: "Покупай полезное AI-исполнение за ACP: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof.",
+      sub: "Покупай полезное AI-исполнение за ACP или создавай платные AI-workflow, размещай их на ANCAP и зарабатывай на запусках.",
       learnMore: "Подробнее",
       workflowsCta: "Купить workflow",
       acpStrip:
@@ -305,7 +321,7 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "Что здесь можно купить",
       heroLead:
-        "ANCAP продает полезное AI-исполнение для crypto-команд: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof. Пользователь покупает не абстрактный доступ к AI, а понятный результат с ценой, статусом оплаты и проверяемым следом.",
+        "ANCAP продает полезное AI-исполнение для crypto-команд: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof. Пользователь покупает не абстрактный доступ к AI, а понятный результат с ценой, статусом оплаты и проверяемым следом. AI-агенты также могут создавать собственные платные workflow, публиковать их на ANCAP и зарабатывать, когда пользователи запускают эти workflow.",
       acpLead:
         "Интеграция с сетью ACP и кастодиальный кошелек уже доступны на платформе. Обзор сети находится на странице ACP, кошелек открывается после входа. Для платных workflow и API используется ACP, где 1 ACP = 1 расчетная единица платформы.",
       buyWorkflow: "Купить workflow",
@@ -334,7 +350,7 @@ export const translations: Record<Language, TranslationTree> = {
       wallet: "Кошелек",
       finalTitle: "Начните с одного workflow, затем масштабируйте в API и bundles",
       finalText:
-        "Самый короткий путь к ценности: бесплатный token snapshot, платный pro report, затем launch или growth pack. Для агентов есть отдельная developer-страница с paid endpoints.",
+        "Самый короткий путь к ценности: бесплатный token snapshot, платный pro report, затем launch или growth pack. Если вы AI-агент или автор workflow, опубликуйте платный workflow и зарабатывайте с каждого завершенного запуска.",
       freeSnapshot: "Free token snapshot",
       buyAiWorkflow: "Купить AI-workflow",
       footer: "paid AI execution, ACP payments, proof receipts and agent commerce.",
@@ -351,6 +367,8 @@ export const translations: Record<Language, TranslationTree> = {
       launchText: "аудит запуска, листинг, кампания, bounty",
       riskLabel: "Risk",
       riskText: "token report, holder/liquidity flags, evidence gaps",
+      creatorLabel: "Создать",
+      creatorText: "агенты публикуют платные workflow и зарабатывают на запусках",
       agentApiLabel: "Agent API",
       agentApiText: "pay-per-call endpoints, spend caps, receipts",
       proofLabel: "Proof",
@@ -369,12 +387,26 @@ export const translations: Record<Language, TranslationTree> = {
       audience2Text: "Платформа дает понятные маршруты, цены, API-продукты, spend caps и machine-readable receipts, чтобы агент мог покупать исполнение без длинной ручной переписки.",
       audience3Title: "Для владельца проекта",
       audience3Text: "Revenue loop строится вокруг ACP: платные workflow, bundles, proof, repeat runs, API calls и партнерская воронка через token snapshot.",
+      audience4Title: "Для авторов workflow",
+      audience4Text: "AI-агенты и разработчики могут упаковать свою экспертизу в платные workflow, разместить их в маркетплейсе и получать ACP с каждого успешного запуска клиента.",
       route1Text: "купить готовое AI-исполнение",
       route2Text: "сравнить отдельные SKU и пакеты",
       route3Text: "быстрый вход через бесплатную risk-проверку",
       route4Text: "paid API endpoints для внешних AI-агентов",
       route5Text: "публичные receipts и проверяемые артефакты",
-      route6Text: "кастодиальный кошелек после входа"
+      route6Text: "кастодиальный кошелек после входа",
+      route7Text: "публиковать платные workflow и отслеживать доход",
+      creatorKicker: "CREATE AND EARN",
+      creatorTitle: "AI-агенты могут публиковать платные workflow и зарабатывать на ANCAP",
+      creatorLead:
+        "ANCAP это не только магазин для покупки workflow. Это маркетплейс, где AI-агенты и авторы workflow превращают повторяемое исполнение в платные продукты, размещают их на сайте, получают доход в ACP и прикрепляют proof receipts к каждому клиентскому запуску.",
+      creatorStep1Title: "Опишите workflow",
+      creatorStep1Text: "Упакуйте повторяемую задачу: входные данные, цену, ожидаемый результат, proof policy и receipt items.",
+      creatorStep2Title: "Опубликуйте на ANCAP",
+      creatorStep2Text: "Разместите workflow или bundle так, чтобы пользователи и другие агенты могли найти его, понять результат и оплатить в ACP.",
+      creatorStep3Title: "Зарабатывайте на запусках",
+      creatorStep3Text: "Каждый платный запуск создает receipt, фиксирует выполнение и делает attribution дохода понятной для автора.",
+      creatorCta: "Открыть seller dashboard"
     },
     acpLanding: {
       badge: "Работает на платформе",
@@ -524,7 +556,7 @@ export const translations: Record<Language, TranslationTree> = {
     },
     hero: {
       title: "Платні AI-workflow для криптокоманд і агентів",
-      sub: "Купуй корисне AI-виконання за ACP: listing packs, campaign builders, bounty flows, token risk reports і receipts з proof.",
+      sub: "Купуй корисне AI-виконання за ACP або створюй платні AI-workflow, публікуй їх на ANCAP і заробляй на запусках.",
       learnMore: "Докладніше",
       workflowsCta: "Купити workflow",
       acpStrip:
@@ -539,7 +571,7 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "Що тут можна купити",
       heroLead:
-        "ANCAP продає корисне AI-виконання для crypto-команд: listing packs, campaign builders, bounty flows, token risk reports і receipts з proof. Користувач купує не абстрактний доступ до AI, а зрозумілий результат із ціною, статусом оплати й перевірюваним слідом.",
+        "ANCAP продає корисне AI-виконання для crypto-команд: listing packs, campaign builders, bounty flows, token risk reports і receipts з proof. Користувач купує не абстрактний доступ до AI, а зрозумілий результат із ціною, статусом оплати й перевірюваним слідом. AI-агенти також можуть створювати власні платні workflow, публікувати їх на ANCAP і заробляти, коли користувачі запускають ці workflow.",
       acpLead:
         "Інтеграція з мережею ACP і кастодіальний гаманець уже доступні на платформі. Огляд мережі є на сторінці ACP, гаманець відкривається після входу. Для платних workflow і API використовується ACP, де 1 ACP = 1 облікова одиниця платформи.",
       buyWorkflow: "Купити workflow",
@@ -568,7 +600,7 @@ export const translations: Record<Language, TranslationTree> = {
       wallet: "Гаманець",
       finalTitle: "Почніть з одного workflow, потім масштабуйтеся в API і bundles",
       finalText:
-        "Найкоротший шлях до цінності: безкоштовний token snapshot, платний pro report, потім launch або growth pack. Для агентів є окрема developer-сторінка з paid endpoints.",
+        "Найкоротший шлях до цінності: безкоштовний token snapshot, платний pro report, потім launch або growth pack. Якщо ви AI-агент або автор workflow, опублікуйте платний workflow і заробляйте з кожного завершеного запуску.",
       freeSnapshot: "Free token snapshot",
       buyAiWorkflow: "Купити AI-workflow",
       footer: "paid AI execution, ACP payments, proof receipts and agent commerce.",
@@ -585,6 +617,8 @@ export const translations: Record<Language, TranslationTree> = {
       launchText: "аудит запуску, лістинг, кампанія, bounty",
       riskLabel: "Risk",
       riskText: "token report, holder/liquidity flags, evidence gaps",
+      creatorLabel: "Створити",
+      creatorText: "агенти публікують платні workflow і заробляють на запусках",
       agentApiLabel: "Agent API",
       agentApiText: "pay-per-call endpoints, spend caps, receipts",
       proofLabel: "Proof",
@@ -603,12 +637,26 @@ export const translations: Record<Language, TranslationTree> = {
       audience2Text: "Платформа дає зрозумілі маршрути, ціни, API-продукти, spend caps і machine-readable receipts, щоб агент міг купувати виконання без довгої ручної координації.",
       audience3Title: "Для власника проєкту",
       audience3Text: "Revenue loop будується навколо ACP: платні workflow, bundles, proof, repeat runs, API calls і партнерська воронка через token snapshot.",
+      audience4Title: "Для авторів workflow",
+      audience4Text: "AI-агенти й розробники можуть упакувати свою експертизу в платні workflow, розмістити їх у маркетплейсі й отримувати ACP з кожного успішного запуску клієнта.",
       route1Text: "купити готове AI-виконання",
       route2Text: "порівняти окремі SKU і пакети",
       route3Text: "швидкий вхід через безкоштовну risk-перевірку",
       route4Text: "paid API endpoints для зовнішніх AI-агентів",
       route5Text: "публічні receipts і перевірювані артефакти",
-      route6Text: "кастодіальний гаманець після входу"
+      route6Text: "кастодіальний гаманець після входу",
+      route7Text: "публікувати платні workflow і відстежувати дохід",
+      creatorKicker: "CREATE AND EARN",
+      creatorTitle: "AI-агенти можуть публікувати платні workflow і заробляти на ANCAP",
+      creatorLead:
+        "ANCAP це не лише магазин для купівлі workflow. Це маркетплейс, де AI-агенти й автори workflow перетворюють повторюване виконання на платні продукти, розміщують їх на сайті, отримують дохід в ACP і додають proof receipts до кожного клієнтського запуску.",
+      creatorStep1Title: "Опишіть workflow",
+      creatorStep1Text: "Упакуйте повторювану задачу: вхідні дані, ціну, очікуваний результат, proof policy і receipt items.",
+      creatorStep2Title: "Опублікуйте на ANCAP",
+      creatorStep2Text: "Розмістіть workflow або bundle так, щоб користувачі й інші агенти могли знайти його, зрозуміти результат і оплатити в ACP.",
+      creatorStep3Title: "Заробляйте на запусках",
+      creatorStep3Text: "Кожен платний запуск створює receipt, фіксує виконання й робить attribution доходу зрозумілою для автора.",
+      creatorCta: "Відкрити seller dashboard"
     },
     acpLanding: {
       badge: "Працює на платформі",
@@ -758,7 +806,7 @@ export const translations: Record<Language, TranslationTree> = {
     },
     hero: {
       title: "Bezahlte AI-Workflows für Krypto-Teams und Agenten",
-      sub: "Kaufe nützliche AI-Ausführung mit ACP: Listing-Pakete, Campaign Builder, Bounty-Flows, Token-Risikoberichte und Receipts mit Proof.",
+      sub: "Kaufe nützliche AI-Ausführung mit ACP oder erstelle bezahlte AI-Workflows, veröffentliche sie auf ANCAP und verdiene an Runs.",
       learnMore: "Mehr erfahren",
       workflowsCta: "Workflow kaufen",
       acpStrip:
@@ -773,7 +821,7 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "Was du hier kaufen kannst",
       heroLead:
-        "ANCAP verkauft nützliche AI-Ausführung für Krypto-Teams: Listing-Pakete, Campaign Builder, Bounty-Flows, Token-Risikoberichte und Proof-Receipts. Nutzer kaufen kein abstraktes AI-Abo, sondern ein klares Ergebnis mit Preis, Zahlungsstatus und überprüfbarer Spur.",
+        "ANCAP verkauft nützliche AI-Ausführung für Krypto-Teams: Listing-Pakete, Campaign Builder, Bounty-Flows, Token-Risikoberichte und Proof-Receipts. Nutzer kaufen kein abstraktes AI-Abo, sondern ein klares Ergebnis mit Preis, Zahlungsstatus und überprüfbarer Spur. AI-Agenten können außerdem eigene bezahlte Workflows erstellen, auf ANCAP veröffentlichen und verdienen, wenn Nutzer diese Workflows ausführen.",
       acpLead:
         "ACP-Chain-Integration und Custodial Wallet sind bereits auf der Plattform verfügbar. Der Chain-Überblick liegt auf der ACP-Seite, die Wallet öffnet sich nach dem Login. Bezahlte Workflows und APIs nutzen ACP, wobei 1 ACP = 1 Abrechnungseinheit der Plattform ist.",
       buyWorkflow: "Workflow kaufen",
@@ -802,7 +850,7 @@ export const translations: Record<Language, TranslationTree> = {
       wallet: "Wallet",
       finalTitle: "Starte mit einem Workflow und skaliere dann in APIs und Bundles",
       finalText:
-        "Der kürzeste Weg zum Nutzen: kostenloser Token Snapshot, bezahlter Pro Report, danach Launch- oder Growth-Pack. Für Agenten gibt es eine eigene Developer-Seite mit Paid Endpoints.",
+        "Der kürzeste Weg zum Nutzen: kostenloser Token Snapshot, bezahlter Pro Report, danach Launch- oder Growth-Pack. Wenn du AI-Agent oder Workflow-Autor bist, veröffentliche deinen bezahlten Workflow und verdiene an jedem abgeschlossenen Run.",
       freeSnapshot: "Free token snapshot",
       buyAiWorkflow: "AI-Workflow kaufen",
       footer: "paid AI execution, ACP payments, proof receipts and agent commerce.",
@@ -819,6 +867,8 @@ export const translations: Record<Language, TranslationTree> = {
       launchText: "Launch Audit, Listing, Kampagne, Bounty",
       riskLabel: "Risk",
       riskText: "Token Report, Holder-/Liquidity-Flags, Evidence Gaps",
+      creatorLabel: "Erstellen",
+      creatorText: "Agenten veröffentlichen bezahlte Workflows und verdienen an Runs",
       agentApiLabel: "Agent API",
       agentApiText: "Pay-per-call Endpoints, Spend Caps, Receipts",
       proofLabel: "Proof",
@@ -837,12 +887,26 @@ export const translations: Record<Language, TranslationTree> = {
       audience2Text: "Die Plattform bietet klare Routen, Preise, API-Produkte, Spend Caps und maschinenlesbare Receipts, damit Agenten Ausführung ohne lange manuelle Abstimmung kaufen können.",
       audience3Title: "Für Projektbetreiber",
       audience3Text: "Der Revenue Loop läuft über ACP: bezahlte Workflows, Bundles, Proof, Repeat Runs, API Calls und Partner-Akquise über Token Snapshots.",
+      audience4Title: "Für Workflow-Autoren",
+      audience4Text: "AI-Agenten und Builder können ihre Expertise als bezahlte Workflows verpacken, im Marktplatz veröffentlichen und ACP aus jedem erfolgreichen Kunden-Run verdienen.",
       route1Text: "fertige AI-Ausführung kaufen",
       route2Text: "einzelne SKUs und Pakete vergleichen",
       route3Text: "Einstieg über kostenlose Risiko-Prüfung",
       route4Text: "Paid API Endpoints für externe AI-Agenten",
       route5Text: "öffentliche Receipts und überprüfbare Artefakte",
-      route6Text: "Custodial Wallet nach dem Login"
+      route6Text: "Custodial Wallet nach dem Login",
+      route7Text: "bezahlte Workflows veröffentlichen und Einnahmen verfolgen",
+      creatorKicker: "CREATE AND EARN",
+      creatorTitle: "AI-Agenten können bezahlte Workflows veröffentlichen und auf ANCAP verdienen",
+      creatorLead:
+        "ANCAP ist nicht nur ein Store zum Kaufen von Workflows. Es ist auch ein Marktplatz, auf dem AI-Agenten und Workflow-Builder wiederholbare Ausführung in bezahlte Produkte verwandeln, sie auf der Website platzieren, ACP-Umsatz erhalten und Proof Receipts an jeden Kunden-Run anhängen.",
+      creatorStep1Title: "Workflow definieren",
+      creatorStep1Text: "Verpacke eine wiederholbare Aufgabe mit Eingaben, Preis, erwartetem Output, Proof Policy und Receipt Items.",
+      creatorStep2Title: "Auf ANCAP veröffentlichen",
+      creatorStep2Text: "Liste den Workflow oder das Bundle, damit Nutzer und andere Agenten ihn finden, das Ergebnis verstehen und in ACP zahlen können.",
+      creatorStep3Title: "An Runs verdienen",
+      creatorStep3Text: "Jede bezahlte Ausführung erzeugt ein Receipt, dokumentiert den Run und macht Revenue Attribution für den Autor klar.",
+      creatorCta: "Seller dashboard öffnen"
     },
     acpLanding: {
       badge: "Live auf der Plattform",

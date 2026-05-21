@@ -33,6 +33,7 @@ const offerDefs = [
 const productMapDefs = [
   ["homePage.launchLabel", "homePage.launchText"],
   ["homePage.riskLabel", "homePage.riskText"],
+  ["homePage.creatorLabel", "homePage.creatorText"],
   ["homePage.agentApiLabel", "homePage.agentApiText"],
   ["homePage.proofLabel", "homePage.proofText"],
 ];
@@ -48,6 +49,7 @@ const audienceDefs = [
   ["homePage.audience1Title", "homePage.audience1Text"],
   ["homePage.audience2Title", "homePage.audience2Text"],
   ["homePage.audience3Title", "homePage.audience3Text"],
+  ["homePage.audience4Title", "homePage.audience4Text"],
 ];
 
 const productRoutes = [
@@ -57,6 +59,7 @@ const productRoutes = [
   { title: "Developers", href: "/developers", textKey: "homePage.route4Text" },
   { title: "Proof Center", href: "/proof-center", textKey: "homePage.route5Text" },
   { title: "ACP wallet", href: "/wallet/acp", textKey: "homePage.route6Text" },
+  { title: "Seller dashboard", href: "/dashboard/seller", textKey: "homePage.route7Text" },
 ];
 
 export function HomePage() {
@@ -80,7 +83,14 @@ export function HomePage() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description:
-      "Paid AI workflows for crypto teams and AI agents: listing packs, campaign builders, bounty flows, token risk reports, ACP checkout and proof receipts.",
+      "Paid AI workflows for crypto teams and AI agents: buy execution, create paid workflows, publish them on ANCAP, earn from runs, settle in ACP, and attach proof receipts.",
+    featureList: [
+      "Buy paid AI workflows",
+      "Create and publish paid AI workflows",
+      "Earn from workflow runs",
+      "ACP checkout",
+      "Proof-backed receipts",
+    ],
     offers: offers.map((offer) => ({
       "@type": "Offer",
       name: offer.title,
@@ -289,6 +299,54 @@ export function HomePage() {
                   <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>{t(textKey)}</p>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="container" style={{ padding: "62px 24px", borderTop: "1px solid var(--border)" }}>
+            <div
+              className="card home-acp-panel"
+              style={{
+                borderRadius: 8,
+                display: "grid",
+                gap: 22,
+                alignItems: "center",
+                background:
+                  "linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(25, 195, 138, 0.1) 45%, rgba(18, 26, 45, 0.92))",
+              }}
+            >
+              <div>
+                <span className="section-num">{t("homePage.creatorKicker")}</span>
+                <h2 className="section-title" style={{ marginBottom: 12 }}>
+                  {t("homePage.creatorTitle")}
+                </h2>
+                <p style={{ color: "var(--text-muted)", lineHeight: 1.7, margin: 0, maxWidth: 820 }}>
+                  {t("homePage.creatorLead")}
+                </p>
+                <div className="responsive-grid responsive-grid-3" style={{ marginTop: 22 }}>
+                  {[1, 2, 3].map((idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        borderTop: "1px solid var(--border)",
+                        paddingTop: 14,
+                        color: "var(--text-muted)",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <strong style={{ color: "var(--text)" }}>{t(`homePage.creatorStep${idx}Title`)}</strong>
+                      <div style={{ marginTop: 6 }}>{t(`homePage.creatorStep${idx}Text`)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="action-cluster" style={{ justifyContent: "flex-end" }}>
+                <Link href="/dashboard/seller" className="btn btn-primary">
+                  {t("homePage.creatorCta")}
+                </Link>
+                <Link href="/marketplace" className="btn btn-ghost">
+                  {t("nav.marketplace")}
+                </Link>
+              </div>
             </div>
           </section>
 
