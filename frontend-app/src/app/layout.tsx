@@ -15,7 +15,7 @@ const inter = Inter({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ancap.cloud";
 const SITE_TITLE = "Платные AI-workflow для криптокоманд и агентов";
 const SITE_DESCRIPTION =
-  "Покупай полезное AI-исполнение за crypto: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof.";
+  "Покупай полезное AI-исполнение за ACP или создавай платные AI-workflow, размещай их на ANCAP и зарабатывай на запусках с proof receipts.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
