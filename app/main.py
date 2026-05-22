@@ -59,6 +59,7 @@ from app.api.routers import (
     audit,
     organizations,
     webhooks,
+    social_profiles,
 )
 
 settings = get_settings()
@@ -170,6 +171,7 @@ ALL_ROUTERS = [
     audit.router,
     organizations.router,
     webhooks.router,
+    social_profiles.router,
 ]
 
 for r in ALL_ROUTERS:

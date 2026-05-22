@@ -1,35 +1,29 @@
 from __future__ import annotations
 
-import hashlib
-import hmac
-import json
+import re
 import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, HttpUrl
-from sqlalchemy import select, desc
+from pydantic import BaseModel
+from sqlalchemy import desc, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.api.deps import DbSession, get_current_user_id
-from app.config import get_settings
+from app.db.models import Organization, OrganizationMember, OrgRoleEnum, User, Agent
 
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
 
-# Re-export models so the router can use them without importing from models.py directly
-# (models are added via migration; this module provides the API layer)
-class OrganizationCreate(BaseModel):
-    name: str
-    slug: str
-    description: str | None = None
+# --- Schemas ---
 
-
-class OrganizationMemberAdd(BaseModel):
+class OrgMemberPublic(BaseModel):
     user_id: str
-    role: str = "member"
+    role: str
+    joined_at: str | None = None
+    user_email: str | None = None
 
 
 class OrganizationPublic(BaseModel):
@@ -37,25 +31,102 @@ class OrganizationPublic(BaseModel):
     name: str
     slug: str
     description: str | None = None
+    billing_wallet_address: str | None = None
     member_count: int = 0
+    user_role: str | None = None
     created_at: str | None = None
 
 
-def _require_org_role(session: AsyncSession, org_id: str, user_id: str, required_role: str) -> bool:
-    """Check if user has required role in org. Returns True if allowed."""
-    return True  # Placeholder — actual implementation checks OrganizationMember table
+class OrganizationCreate(BaseModel):
+    name: str
+    description: str | None = None
 
+
+class OrganizationUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    billing_wallet_address: str | None = None
+
+
+class OrgInviteRequest(BaseModel):
+    email: str
+    role: str = "member"
+
+
+# --- Helpers ---
+
+def slugify(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[-\s]+", "-", text)
+    return text[:80]
+
+
+async def _get_member_role(session: AsyncSession, org_id: uuid.UUID, user_id: uuid.UUID) -> OrgRoleEnum | None:
+    q = select(OrganizationMember).where(
+        OrganizationMember.org_id == org_id,
+        OrganizationMember.user_id == user_id,
+    )
+    r = await session.execute(q)
+    member = r.scalar_one_or_none()
+    return member.role if member else None
+
+
+async def _require_role(session: AsyncSession, org_id: uuid.UUID, user_id: uuid.UUID, min_role: OrgRoleEnum) -> None:
+    role = await _get_member_role(session, org_id, user_id)
+    if role is None:
+        raise HTTPException(status_code=403, detail="Not a member of this organization")
+    hierarchy = [OrgRoleEnum.viewer, OrgRoleEnum.member, OrgRoleEnum.admin, OrgRoleEnum.owner]
+    if hierarchy.index(role) < hierarchy.index(min_role):
+        raise HTTPException(status_code=403, detail=f"Requires {min_role.value} role or higher")
+
+
+# --- Endpoints ---
 
 @router.get("", response_model=list[OrganizationPublic])
 async def list_user_organizations(
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
-    """List organizations the current user belongs to."""
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    # Placeholder: return empty list until Organization model is registered
-    return []
+    uid = uuid.UUID(user_id)
+
+    # Find orgs where user is a member
+    q = (
+        select(Organization)
+        .join(OrganizationMember, OrganizationMember.org_id == Organization.id)
+        .where(OrganizationMember.user_id == uid)
+        .order_by(desc(Organization.created_at))
+    )
+    r = await session.execute(q)
+    orgs = list(r.scalars().all())
+
+    result: list[OrganizationPublic] = []
+    for org in orgs:
+        # Count members
+        cnt_q = select(func.count()).select_from(OrganizationMember).where(OrganizationMember.org_id == org.id)
+        cnt_r = await session.execute(cnt_q)
+        member_count = cnt_r.scalar() or 0
+
+        role_q = select(OrganizationMember.role).where(
+            OrganizationMember.org_id == org.id,
+            OrganizationMember.user_id == uid,
+        )
+        role_r = await session.execute(role_q)
+        user_role = role_r.scalar_one_or_none()
+
+        result.append(OrganizationPublic(
+            id=str(org.id),
+            name=org.name,
+            slug=org.slug,
+            description=org.description,
+            billing_wallet_address=org.billing_wallet_address,
+            member_count=member_count,
+            user_role=user_role.value if user_role else None,
+            created_at=org.created_at.isoformat() if org.created_at else None,
+        ))
+    return result
 
 
 @router.post("", response_model=OrganizationPublic, status_code=201)
@@ -64,17 +135,49 @@ async def create_organization(
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
-    """Create a new organization. Creator becomes owner."""
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    # Placeholder: creates via ORM once migration runs
-    return OrganizationPublic(
-        id=str(uuid.uuid4()),
+    uid = uuid.UUID(user_id)
+
+    # Generate unique slug
+    base_slug = slugify(body.name)
+    slug = base_slug
+    for attempt in range(1, 1000):
+        existing = await session.execute(
+            select(Organization).where(Organization.slug == slug)
+        )
+        if existing.scalar_one_or_none() is None:
+            break
+        slug = f"{base_slug}-{attempt}"
+
+    org = Organization(
         name=body.name,
-        slug=body.slug,
+        slug=slug,
         description=body.description,
+        created_by_user_id=uid,
+    )
+    session.add(org)
+    await session.flush()
+
+    # Add creator as owner
+    member = OrganizationMember(
+        org_id=org.id,
+        user_id=uid,
+        role=OrgRoleEnum.owner,
+    )
+    session.add(member)
+    await session.commit()
+    await session.refresh(org)
+
+    return OrganizationPublic(
+        id=str(org.id),
+        name=org.name,
+        slug=org.slug,
+        description=org.description,
+        billing_wallet_address=org.billing_wallet_address,
         member_count=1,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        user_role="owner",
+        created_at=org.created_at.isoformat() if org.created_at else None,
     )
 
 
@@ -86,16 +189,298 @@ async def get_organization(
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return OrganizationPublic(id=org_id, name="", slug="", member_count=0)
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+
+    q = select(Organization).where(Organization.id == oid)
+    r = await session.execute(q)
+    org = r.scalar_one_or_none()
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    # Check membership
+    user_role = await _get_member_role(session, oid, uid)
+    if user_role is None:
+        raise HTTPException(status_code=403, detail="Not a member of this organization")
+
+    cnt_q = select(func.count()).select_from(OrganizationMember).where(OrganizationMember.org_id == oid)
+    cnt_r = await session.execute(cnt_q)
+    member_count = cnt_r.scalar() or 0
+
+    return OrganizationPublic(
+        id=str(org.id),
+        name=org.name,
+        slug=org.slug,
+        description=org.description,
+        billing_wallet_address=org.billing_wallet_address,
+        member_count=member_count,
+        user_role=user_role.value if user_role else None,
+        created_at=org.created_at.isoformat() if org.created_at else None,
+    )
 
 
-@router.post("/{org_id}/members", status_code=201)
-async def add_organization_member(
+@router.patch("/{org_id}", response_model=OrganizationPublic)
+async def update_organization(
     org_id: str,
-    body: OrganizationMemberAdd,
+    body: OrganizationUpdate,
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return {"org_id": org_id, "user_id": body.user_id, "role": body.role, "added": True}
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    q = select(Organization).where(Organization.id == oid)
+    r = await session.execute(q)
+    org = r.scalar_one_or_none()
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    if body.name is not None:
+        org.name = body.name
+    if body.description is not None:
+        org.description = body.description
+    if body.billing_wallet_address is not None:
+        org.billing_wallet_address = body.billing_wallet_address
+    org.updated_at = datetime.now(timezone.utc)
+
+    await session.commit()
+    await session.refresh(org)
+
+    user_role = await _get_member_role(session, oid, uid)
+    cnt_q = select(func.count()).select_from(OrganizationMember).where(OrganizationMember.org_id == oid)
+    cnt_r = await session.execute(cnt_q)
+
+    return OrganizationPublic(
+        id=str(org.id),
+        name=org.name,
+        slug=org.slug,
+        description=org.description,
+        billing_wallet_address=org.billing_wallet_address,
+        member_count=cnt_r.scalar() or 0,
+        user_role=user_role.value if user_role else None,
+        created_at=org.created_at.isoformat() if org.created_at else None,
+    )
+
+
+@router.delete("/{org_id}", status_code=204)
+async def delete_organization(
+    org_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.owner)
+
+    q = select(Organization).where(Organization.id == oid)
+    r = await session.execute(q)
+    org = r.scalar_one_or_none()
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    await session.delete(org)
+    await session.commit()
+
+
+@router.get("/{org_id}/members", response_model=list[OrgMemberPublic])
+async def list_organization_members(
+    org_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.viewer)
+
+    q = (
+        select(OrganizationMember)
+        .options(joinedload(OrganizationMember.user))
+        .where(OrganizationMember.org_id == oid)
+        .order_by(desc(OrganizationMember.created_at))
+    )
+    r = await session.execute(q)
+    members = list(r.scalars().all())
+
+    return [
+        OrgMemberPublic(
+            user_id=str(m.user_id),
+            role=m.role.value,
+            joined_at=m.created_at.isoformat() if m.created_at else None,
+            user_email=m.user.email if m.user else None,
+        )
+        for m in members
+    ]
+
+
+@router.post("/{org_id}/members", status_code=201)
+async def add_organization_member(
+    org_id: str,
+    body: OrgInviteRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    # Find user by email
+    email_q = select(User).where(User.email == body.email.lower().strip())
+    email_r = await session.execute(email_q)
+    target_user = email_r.scalar_one_or_none()
+    if target_user is None:
+        raise HTTPException(status_code=404, detail="User with this email not found")
+
+    # Check if already member
+    existing_q = select(OrganizationMember).where(
+        OrganizationMember.org_id == oid,
+        OrganizationMember.user_id == target_user.id,
+    )
+    existing_r = await session.execute(existing_q)
+    if existing_r.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="User is already a member")
+
+    # Validate role
+    try:
+        role = OrgRoleEnum(body.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be: owner, admin, member, viewer")
+
+    member = OrganizationMember(
+        org_id=oid,
+        user_id=target_user.id,
+        role=role,
+    )
+    session.add(member)
+    await session.commit()
+
+    return OrgMemberPublic(
+        user_id=str(target_user.id),
+        role=role.value,
+        joined_at=member.created_at.isoformat() if member.created_at else None,
+        user_email=target_user.email,
+    )
+
+
+@router.delete("/{org_id}/members/{target_user_id}", status_code=204)
+async def remove_organization_member(
+    org_id: str,
+    target_user_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    tid = uuid.UUID(target_user_id)
+
+    # Can remove if: you're admin+ OR you're removing yourself
+    if uid != tid:
+        await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    # Can't remove owner
+    target_q = select(OrganizationMember).where(
+        OrganizationMember.org_id == oid,
+        OrganizationMember.user_id == tid,
+    )
+    target_r = await session.execute(target_q)
+    target_member = target_r.scalar_one_or_none()
+    if target_member is None:
+        raise HTTPException(status_code=404, detail="Member not found")
+    if target_member.role == OrgRoleEnum.owner:
+        raise HTTPException(status_code=400, detail="Cannot remove organization owner")
+
+    await session.delete(target_member)
+    await session.commit()
+
+
+@router.patch("/{org_id}/members/{target_user_id}/role", response_model=OrgMemberPublic)
+async def update_member_role(
+    org_id: str,
+    target_user_id: str,
+    body: OrgInviteRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    tid = uuid.UUID(target_user_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    try:
+        new_role = OrgRoleEnum(body.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    target_q = select(OrganizationMember).where(
+        OrganizationMember.org_id == oid,
+        OrganizationMember.user_id == tid,
+    )
+    target_r = await session.execute(target_q)
+    target_member = target_r.scalar_one_or_none()
+    if target_member is None:
+        raise HTTPException(status_code=404, detail="Member not found")
+    if target_member.role == OrgRoleEnum.owner:
+        raise HTTPException(status_code=400, detail="Cannot change owner role")
+
+    target_member.role = new_role
+    await session.commit()
+    await session.refresh(target_member)
+
+    return OrgMemberPublic(
+        user_id=str(tid),
+        role=target_member.role.value,
+        joined_at=target_member.created_at.isoformat() if target_member.created_at else None,
+    )
+
+
+@router.post("/{org_id}/agents/{agent_id}", status_code=200)
+async def transfer_agent_to_org(
+    org_id: str,
+    agent_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Transfer an agent to be owned by an organization."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    aid = uuid.UUID(agent_id)
+
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    agent_q = select(Agent).where(Agent.id == aid)
+    agent_r = await session.execute(agent_q)
+    agent = agent_r.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    org_q = select(Organization).where(Organization.id == oid)
+    org_r = await session.execute(org_q)
+    org = org_r.scalar_one_or_none()
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    agent.owner_user_id = None
+    agent.metadata_ = dict(agent.metadata_ or {})
+    agent.metadata_["org_id"] = str(oid)
+    await session.commit()
+
+    return {"agent_id": str(aid), "org_id": str(oid), "transferred": True}

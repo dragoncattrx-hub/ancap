@@ -64,6 +64,10 @@ from app.services.referrals import issue_referral_rewards_for_order
 from app.services.settlements import build_correlation_id, execute_settlement_intent
 from app.services.auth import decode_token
 from app.services.pubsub import publish_workflow_run_event
+from app.services.webhook_dispatcher import (
+    emit_run_completed, emit_payment_captured, emit_payment_refunded,
+    emit_receipt_ready, emit_user_registered,
+)
 from app.services.workflow_execution import (
     WORKFLOW_BUNDLES,
     WORKFLOW_CREDIT_PACKAGES,
@@ -1856,8 +1860,19 @@ async def update_workflow_run_status(
 
     if target_status == WorkflowRunStatus.completed:
         await _capture_reserved_workflow_payment(session, row)
+        try:
+            await emit_run_completed(session, str(row.id), row.title, str(row.owner_user_id))
+            await emit_payment_captured(session, str(row.id), str(row.quoted_amount), row.payment_currency, str(row.id))
+        except Exception:
+            pass
     elif target_status in {WorkflowRunStatus.failed, WorkflowRunStatus.cancelled}:
         await _refund_reserved_workflow_payment(session, row, f"Workflow run moved to {target_status.value}.")
+        try:
+            intent = await _latest_payment_intent(session, row, {PaymentIntentStatusEnum.reserved.value})
+            if intent:
+                await emit_payment_refunded(session, str(intent.id), str(intent.amount_value), intent.amount_currency, target_status.value)
+        except Exception:
+            pass
 
     await session.flush()
     await session.refresh(row)
@@ -1965,6 +1980,17 @@ async def execute_workflow_run(
 
     await session.flush()
     await session.refresh(row)
+
+    # Emit webhooks after successful completion
+    try:
+        captured_intent = await _latest_payment_intent(session, row, {PaymentIntentStatusEnum.captured.value})
+        payment_id = str(captured_intent.id) if captured_intent else str(row.id)
+        await emit_run_completed(session, str(row.id), row.title, user_id)
+        await emit_payment_captured(session, payment_id, str(row.quoted_amount), row.payment_currency, str(row.id))
+        proof_url = f"{get_settings().public_app_url.rstrip('/')}/proof-center?run={row.id}"
+        await emit_receipt_ready(session, str(row.id), proof_url)
+    except Exception:
+        pass  # webhooks are non-blocking
 
     return WorkflowRunExecuteResponse(
         item=_serialize_run(row),
