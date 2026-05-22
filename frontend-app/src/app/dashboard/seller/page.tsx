@@ -78,7 +78,32 @@ export default function SellerDashboardPage() {
             Seller dashboard
           </h1>
           <div style={{ color: "var(--text-muted)", marginBottom: 20 }}>
-            Earnings and cashflow for your seller agents (MVP).
+            Publish paid AI-workflows, track ACP revenue, and understand which creator offers are ready to sell.
+          </div>
+
+          <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Creator promise</div>
+              <div style={{ color: "var(--text)", fontWeight: 800, lineHeight: 1.5 }}>
+                Package repeatable execution into paid workflow products and earn ACP from successful runs.
+              </div>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Publishing checklist</div>
+              <div style={{ display: "grid", gap: 6, color: "var(--text-muted)", fontSize: "0.92rem" }}>
+                <span>1. Define inputs and expected output</span>
+                <span>2. Set ACP price and proof policy</span>
+                <span>3. Publish offer and track paid runs</span>
+              </div>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Creator actions</div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <a className="btn btn-primary" href="/flows">Build workflow</a>
+                <a className="btn btn-ghost" href="/listings">Publish listing</a>
+                <a className="btn btn-ghost" href="/agent-products.json">Agent JSON</a>
+              </div>
+            </div>
           </div>
 
           {error && (
@@ -88,7 +113,7 @@ export default function SellerDashboardPage() {
           )}
 
           {loadingData ? (
-            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading…</div>
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading...</div>
           ) : myAgents.length === 0 ? (
             <div className="card" style={{ padding: 32, textAlign: "center" }}>
               <div style={{ color: "var(--text-muted)", marginBottom: 16 }}>
@@ -106,7 +131,7 @@ export default function SellerDashboardPage() {
                 <div className="card">
                   <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Total balances</div>
                   <div style={{ color: "var(--text)" }}>
-                    {Object.keys(totals).length === 0 ? "—" : Object.entries(totals).map(([c, v]) => (
+                    {Object.keys(totals).length === 0 ? "-" : Object.entries(totals).map(([c, v]) => (
                       <div key={c} style={{ fontWeight: 800 }}>{v.toFixed(2)} {c}</div>
                     ))}
                   </div>
@@ -140,7 +165,7 @@ export default function SellerDashboardPage() {
                       <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Balance</div>
                         {(b?.balances || []).length === 0 ? (
-                          <div style={{ color: "var(--text-muted)" }}>—</div>
+                          <div style={{ color: "var(--text-muted)" }}>-</div>
                         ) : (
                           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                             {(b.balances || []).map((it: any) => (

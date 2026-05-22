@@ -26,6 +26,31 @@ export default function PricingPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/68 sm:text-base">
             Start with a focused report, upgrade into a bundle, and keep receipts that prove payment, delivery, and reusable workflow output.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/token-snapshot" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+              Free token snapshot
+            </Link>
+            <Link href="/sample-reports/token-risk-report-pro" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Sample report
+            </Link>
+            <Link href="/dashboard/seller" className="rounded-full border border-sky-300/25 bg-sky-400/[0.08] px-5 py-2.5 text-sm font-semibold text-sky-100 transition hover:border-sky-200/45 hover:text-white">
+              Sell workflows
+            </Link>
+          </div>
+        </section>
+
+        <section className="mb-10 grid gap-4 md:grid-cols-4">
+          {[
+            ["Entry", "Free snapshot or 10-19 ACP starter workflow."],
+            ["Premium", "59-149 ACP reports, listing packs, and campaign builders."],
+            ["Bundle", "249-349 ACP launch and agent commerce packs."],
+            ["Creator", "Publish paid workflows and earn ACP from successful runs."],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-sm font-semibold text-white/90">{title}</div>
+              <p className="mt-2 text-sm leading-6 text-white/62">{text}</p>
+            </div>
+          ))}
         </section>
 
         <section className="mb-10 grid gap-5 lg:grid-cols-3">

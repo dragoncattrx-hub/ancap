@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { workflowStore } from "@/lib/api";
-import { getFallbackWorkflowBundle, type WorkflowBundle } from "@/lib/workflowStore";
+import { getFallbackWorkflowBundle, getFallbackWorkflowTemplate, type WorkflowBundle, type WorkflowTemplate } from "@/lib/workflowStore";
 
 type BundleCheckoutResponse = {
   bundle: WorkflowBundle;
@@ -67,6 +67,12 @@ export default function WorkflowBundlePage() {
     if (paymentCurrency === "wACP") return `${(base * 0.9).toFixed(2)} ${paymentCurrency}`;
     return `${base.toFixed(2)} ${paymentCurrency}`;
   }, [bundle, paymentCurrency]);
+  const includedWorkflows = useMemo(() => {
+    if (!bundle) return [];
+    return bundle.workflow_slugs
+      .map((slug) => getFallbackWorkflowTemplate(slug))
+      .filter((workflow): workflow is WorkflowTemplate => Boolean(workflow));
+  }, [bundle]);
 
   async function submitCheckout() {
     if (!bundle) return;
@@ -141,6 +147,18 @@ export default function WorkflowBundlePage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div className="mt-8">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/45">Included workflow samples</div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {includedWorkflows.map((workflow) => (
+                    <Link key={workflow.slug} href={`/sample-reports/${workflow.slug}`} className="rounded-2xl border border-white/10 bg-black/15 p-4 text-sm text-white/75 transition hover:border-emerald-400/25 hover:text-white">
+                      <div className="font-semibold text-white/90">{workflow.title}</div>
+                      <div className="mt-1 text-white/50">{workflow.price.amount} {workflow.price.currency} sample output</div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </section>
 

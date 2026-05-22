@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { getFallbackWorkflowTemplate } from "@/lib/workflowStore";
 
-const sampleBySlug: Record<string, { score: string; sections: string[]; summary: string }> = {
+type SampleReport = { score: string; sections: string[]; summary: string };
+
+const sampleBySlug: Record<string, SampleReport> = {
   "token-risk-report-pro": {
     score: "71 / 100",
     summary: "Medium risk until liquidity, holder concentration, and treasury controls are proven.",
@@ -31,6 +33,16 @@ const sampleBySlug: Record<string, { score: string; sections: string[]; summary:
   },
 };
 
+function sampleForWorkflow(slug: string): SampleReport | null {
+  const workflow = getFallbackWorkflowTemplate(slug);
+  if (!workflow) return null;
+  return sampleBySlug[slug] || {
+    score: "Sample-ready",
+    summary: `${workflow.title} sample: ${workflow.summary}`,
+    sections: workflow.output_items.slice(0, 4),
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const workflow = getFallbackWorkflowTemplate(slug);
@@ -43,7 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SampleReportPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const workflow = getFallbackWorkflowTemplate(slug);
-  const sample = sampleBySlug[slug];
+  const sample = sampleForWorkflow(slug);
   if (!workflow || !sample) notFound();
 
   return (

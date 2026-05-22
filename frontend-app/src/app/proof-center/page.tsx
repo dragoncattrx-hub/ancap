@@ -39,6 +39,28 @@ export default function ProofCenterPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72 sm:text-base">
             Verify paid workflow receipts, proof hashes, payment evidence, execution metadata, and chain receipt status.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/ai/workflows" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+              Buy workflow
+            </Link>
+            <a href="/agent-products.json" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Agent catalog
+            </a>
+          </div>
+        </section>
+
+        <section className="mb-6 grid gap-4 md:grid-cols-4">
+          {[
+            ["Receipt", "Workflow slug, price snapshot, ledger event, and status timeline."],
+            ["Input hash", "A deterministic reference to submitted inputs without exposing private details."],
+            ["Output items", "The delivered report sections, campaign assets, or API response artifacts."],
+            ["Share URL", "A proof link that can be sent to a team, buyer, partner, or AI agent."],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-sm font-semibold text-white/90">{title}</div>
+              <p className="mt-2 text-sm leading-6 text-white/62">{text}</p>
+            </div>
+          ))}
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.72fr_1fr]">
@@ -70,8 +92,19 @@ export default function ProofCenterPage() {
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
             {!proof ? (
-              <div className="text-sm text-white/55">
-                Proof bundles are generated for paid workflow runs and include receipt items, payment confirmation, execution metadata, settlement attempts, and a deterministic proof hash.
+              <div>
+                <div className="text-sm text-white/55">
+                  Proof bundles are generated for paid workflow runs and include receipt items, payment confirmation, execution metadata, settlement attempts, and a deterministic proof hash.
+                </div>
+                <pre className="mt-5 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/78">{JSON.stringify({
+                  workflow_slug: "token-risk-report-pro",
+                  price_snapshot: { amount: "59", currency: "ACP" },
+                  input_hash: "sha256:...",
+                  status_timeline: ["quoted", "paid", "running", "completed"],
+                  output_items: ["Risk scorecard", "Evidence gaps", "Proof receipt"],
+                  ledger_event: "credit_reserved_or_captured",
+                  share_url: "https://ancap.cloud/proof-center?run=RUN_ID",
+                }, null, 2)}</pre>
               </div>
             ) : (
               <>

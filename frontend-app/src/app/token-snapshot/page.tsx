@@ -31,6 +31,17 @@ export default function TokenSnapshotPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72 sm:text-base">
             Generate a lightweight first-pass score, then upgrade to Token Risk Report Pro for evidence gaps, liquidity/holder flags, and a proof-backed receipt.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a href="https://t.me/ancap24news" target="_blank" rel="noopener noreferrer" className="rounded-full border border-sky-300/25 bg-sky-400/[0.08] px-5 py-2.5 text-sm font-semibold text-sky-100 transition hover:border-sky-200/45 hover:text-white">
+              Telegram growth loop
+            </a>
+            <a href="https://x.com/ancap24news" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Follow on X
+            </a>
+            <Link href="/referrals" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Referral program
+            </Link>
+          </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.8fr_1fr]">
@@ -82,6 +93,9 @@ export default function TokenSnapshotPage() {
                   </Link>
                   <Link href="/sample-reports/token-risk-report-pro" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
                     View sample report
+                  </Link>
+                  <Link href="/ai/bundles/pro-launch-pack" className="rounded-full border border-emerald-400/25 px-5 py-3 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">
+                    Upgrade to Pro Launch Pack
                   </Link>
                 </div>
               </>

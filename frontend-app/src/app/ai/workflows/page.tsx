@@ -57,7 +57,7 @@ export default async function WorkflowsPage() {
             Buy paid AI execution for crypto teams and agents
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/70 sm:text-base">
-            Choose a workflow, pay with credits or crypto rails, receive a structured artifact, and keep a proof-backed receipt for repeat runs or API usage.
+            Choose a workflow, pay in ACP, receive a structured artifact, and keep a proof-backed receipt for repeat runs, team review, or API usage.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/dashboard" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
@@ -69,10 +69,27 @@ export default async function WorkflowsPage() {
             <Link href="/sample-reports/token-risk-report-pro" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               Sample report
             </Link>
+            <Link href="/dashboard/seller" className="rounded-full border border-sky-300/25 bg-sky-400/[0.08] px-5 py-2.5 text-sm font-semibold text-sky-100 transition hover:border-sky-200/45 hover:text-white">
+              Publish workflow
+            </Link>
             <a href="/api/docs" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               API docs
             </a>
           </div>
+        </section>
+
+        <section className="mb-10 grid gap-4 md:grid-cols-4">
+          {[
+            ["1. Quote", "See ACP price, ETA, outputs, and receipt items before sending inputs."],
+            ["2. Pay", "Use ACP credits or wallet rails so the run has a payment reference and status."],
+            ["3. Execute", "Submit structured inputs and receive a persistent workflow run."],
+            ["4. Prove", "Open the run receipt or Proof Center URL for a shareable audit trail."],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-sm font-semibold text-white/90">{title}</div>
+              <p className="mt-2 text-sm leading-6 text-white/62">{text}</p>
+            </div>
+          ))}
         </section>
 
         {premiumWorkflows.length > 0 && (
@@ -114,7 +131,7 @@ export default async function WorkflowsPage() {
         <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <div className="text-xs uppercase tracking-[0.18em] text-white/45">Core loop</div>
-            <div className="mt-3 text-lg font-semibold">AI task → crypto payment → verified result → receipt</div>
+            <div className="mt-3 text-lg font-semibold">AI task - ACP payment - verified result - receipt</div>
             <p className="mt-3 text-sm leading-6 text-white/65">
               Every paid run should end with a useful artifact, cost visibility, and a proof trail strong enough to justify repeat spend.
             </p>
@@ -158,7 +175,7 @@ export default async function WorkflowsPage() {
                   </div>
                   <h3 className="text-2xl font-semibold tracking-[-0.03em]">{bundle.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-white/72">{bundle.description}</p>
-                  <div className="mt-4 text-sm text-white/50">Estimated time: {bundle.estimated_time_minutes} min · {bundle.workflow_slugs.length} workflows</div>
+                  <div className="mt-4 text-sm text-white/50">Estimated time: {bundle.estimated_time_minutes} min - {bundle.workflow_slugs.length} workflows</div>
                   <ul className="mt-4 grid gap-2 text-sm text-white/75 sm:grid-cols-2">
                     {bundle.output_items.map((item) => (
                       <li key={item} className="flex items-center gap-2">
@@ -214,12 +231,35 @@ export default async function WorkflowsPage() {
                   <Link href={`/ai/run/${workflow.slug}`} className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90">
                     Open workflow
                   </Link>
+                  <Link href={`/sample-reports/${workflow.slug}`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white/25 hover:text-white">
+                    Sample output
+                  </Link>
                   <Link href="/ai/runs" className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white/25 hover:text-white">
                     View workflow runs
                   </Link>
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-3xl border border-sky-300/15 bg-sky-400/[0.055] p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-sky-100/75">For agents and creators</div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Buy workflows, publish workflows, or read the catalog as an AI agent</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/70">
+            ANCAP is both a store and a creator marketplace. External agents can inspect the product catalog,
+            creators can publish paid workflow offers, and buyers can verify completed runs in Proof Center.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/dashboard/seller" className="rounded-full bg-sky-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+              Seller dashboard
+            </Link>
+            <a href="/agent-products.json" className="rounded-full border border-sky-300/25 px-5 py-2.5 text-sm font-semibold text-sky-100 transition hover:border-sky-200/45 hover:text-white">
+              Agent product JSON
+            </a>
+            <Link href="/proof-center" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Proof Center
+            </Link>
           </div>
         </section>
       </main>

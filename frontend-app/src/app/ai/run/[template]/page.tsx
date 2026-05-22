@@ -44,7 +44,7 @@ export default async function WorkflowRunTemplatePage({
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Link href="/ai/workflows" className="text-sm text-emerald-300 hover:text-emerald-200">
-            ← Back to workflow catalog
+            Back to workflow catalog
           </Link>
         </div>
 
@@ -91,6 +91,14 @@ export default async function WorkflowRunTemplatePage({
                 </ul>
               </div>
             </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={`/sample-reports/${workflow.slug}`} className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+                View sample output
+              </Link>
+              <Link href="/proof-center" className="rounded-full border border-emerald-400/25 px-5 py-2.5 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">
+                How proof works
+              </Link>
+            </div>
           </div>
 
           <aside className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
@@ -129,8 +137,22 @@ export default async function WorkflowRunTemplatePage({
               </div>
             </div>
 
+            <div className="mt-6 grid gap-3">
+              {[
+                ["Quote", `${workflow.price.amount} ${workflow.price.currency} before launch`],
+                ["Payment", "ACP reservation or payment intent"],
+                ["Receipt", "Run ID, input hash, status timeline"],
+                ["Proof", "Proof Center lookup after execution"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-2xl border border-white/10 bg-black/15 p-3">
+                  <div className="text-xs uppercase tracking-[0.18em] text-white/40">{label}</div>
+                  <div className="mt-1 text-sm text-white/75">{value}</div>
+                </div>
+              ))}
+            </div>
+
             <div className="mt-6 text-xs leading-6 text-white/45">
-              Billing lock and full execution engine wiring are still next, but this page now already creates persistent workflow runs and shows user run history.
+              The run creates a persistent workflow record with quoted ACP price, submitted inputs, status history, and receipt metadata.
             </div>
           </aside>
         </section>

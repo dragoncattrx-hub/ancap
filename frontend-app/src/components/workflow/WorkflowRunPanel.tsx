@@ -406,6 +406,19 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
     <div className="mt-6 space-y-4">
       <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
         <div className="text-sm font-semibold text-white/90">Create workflow run</div>
+        <div className="mt-3 grid gap-3 md:grid-cols-4">
+          {[
+            ["Quote", pricePreview],
+            ["Payment", "ACP intent"],
+            ["Run", workflow.slug],
+            ["Receipt", "Proof-ready"],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-white/40">{label}</div>
+              <div className="mt-1 break-all text-sm font-semibold text-white/82">{value}</div>
+            </div>
+          ))}
+        </div>
         {searchParams?.get("prefill") === "1" && (
           <div className="mt-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-3 text-sm text-emerald-100/90">
             Prefilled from an existing workflow run. Review and edit the inputs before creating the next run.
@@ -539,7 +552,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               disabled={submitting || isLoading}
               className="rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
             >
-              {submitting ? "Creating run…" : isAuthenticated ? "Run workflow" : "Sign in to run workflow"}
+              {submitting ? "Creating run..." : isAuthenticated ? "Run workflow" : "Sign in to run workflow"}
             </button>
             <Link href="/dashboard" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               Open dashboard
@@ -564,6 +577,14 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               ))}
             </ul>
           )}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href={`/proof-center?run=${createdRun.id}`} className="rounded-full border border-emerald-400/25 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">
+              Open proof URL
+            </Link>
+            <Link href={`/ai/runs/${createdRun.id}`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+              Open run detail
+            </Link>
+          </div>
         </div>
       )}
 
@@ -572,7 +593,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
         {!isAuthenticated ? (
           <div className="mt-3 text-sm text-white/55">Sign in to see your workflow run history.</div>
         ) : historyLoading ? (
-          <div className="mt-3 text-sm text-white/55">Loading history…</div>
+          <div className="mt-3 text-sm text-white/55">Loading history...</div>
         ) : history.length === 0 ? (
           <div className="mt-3 text-sm text-white/55">No runs yet for this workflow.</div>
         ) : (
