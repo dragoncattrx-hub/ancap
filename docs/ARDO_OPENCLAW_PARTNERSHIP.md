@@ -1,0 +1,145 @@
+# ARDO + openclaw: Partnership & Task Coordination
+
+**Created:** 2026-05-22
+**Context:** ANCAP ecosystem — AI-Native Capital Allocation Platform
+
+---
+
+## Who We Are
+
+### ARDO (this agent)
+- Role: Senior AI engineer, full-stack developer, security auditor
+- Stack: Python/FastAPI, Next.js, TypeScript, Docker, PostgreSQL, Rust (ACP-crypto)
+- Responsibilities: backend architecture, API design, security hardening, monetization, documentation, CI/CD
+- Access: ANCAP repo, server via SSH (ancapadmin@185.114.117.241), HestiaCP panel
+- Current focus: monetization execution, server security, audit fixes, email relay, workflow store
+
+### openclaw
+- Role: AI coding partner, runs via Claude Code / OpenClaw framework
+- Stack: OpenClaw agent system with Claude Opus 4.7 via TenetaAI/Kiro proxy
+- Responsibilities: parallel coding tasks, code review, feature implementation, Telegram bot
+- Access: OpenClaw gateway on server (port 18789), Telegram bot (@ancap47_bot)
+- Configuration: `~/.openclaw/openclaw.json` with TenetaAI + Kiro providers
+
+---
+
+## Current State (2026-05-22)
+
+### ANCAP Platform Status
+- **Backend:** FastAPI + SQLAlchemy 2 + PostgreSQL (Docker, healthy)
+- **Frontend:** Next.js 15 + React 19, deployed on server
+- **ACP token:** Native chain, 210M supply, on-chain wallet
+- **wACP:** BEP-20 wrapped on BSC, live on PancakeSwap V2 (wACP/USDT)
+- **Bridge:** ACP↔BSC bidirectional, reserve proof endpoint live
+- **OpenClaw:** Installed on server (?), Telegram bot @ancap47_bot configured
+- **ARDO Control Center:** Next.js 14 app on local machine (port 3002), hrm-explorer
+- **Mail:** admin@ancap.cloud via HestiaCP/Dovecot, port 25 issue (external delivery broken)
+
+### Server: 185.114.117.241
+- Ubuntu 22.04.5 LTS, 40GB disk (87% used, 5.1GB free — WARNING)
+- Docker containers: api (healthy), frontend, postgres (healthy), acp-node, nginx proxy
+- SSH: pubkey only, `ancapadmin` user (no root login)
+- **No fail2ban** — SSH brute force attacks hitting constantly (blocked IPs visible in auth.log)
+- **No UFW** configured — firewall wide open
+- **Packages need updates:** bind9, galera-4, mariadb, nginx, libpq
+
+### Known Issues
+1. **Port 25** is open on server but mail delivery from external fails — likely provider-level block
+2. **Disk at 87%** — docker images 2GB+ each, need cleanup
+3. **No fail2ban** — dozens of failed SSH logins daily
+4. **API keys in docs** — Kiro API key visible in docs/openclaw-kiro-config.md
+5. **Postfix not running** — only exim4 binary exists but not active
+6. **Idempotency not implemented** — documented in AUDIT.md but not coded
+7. **`/v1/system/jobs/tick` unprotected** — anyone can trigger background jobs
+
+---
+
+## Task Division (avoid duplication)
+
+### ARDO owns:
+- Server security (fail2ban, UFW, updates, disk cleanup)
+- Mail server fix (port 25 / exim4 / mail relay)
+- Backend fixes (idempotency, tick protection, CORS)
+- Monetization execution (paid workflows, billing)
+- Documentation and roadmap updates
+- GitHub repo management and CI/CD
+- Security audits and fixes
+
+### openclaw owns:
+- Feature coding (new frontend pages, API endpoints)
+- Telegram bot improvements and OpenClaw config
+- Testing and code review
+- Parallel task execution when needed
+
+### Coordination:
+- **Before implementing a feature:** check if openclaw is already working on it
+- **After completing a security/infra fix:** notify openclaw so it knows the environment changed
+- **Before pushing to git:** check for exposed secrets (API keys, passwords)
+- **Weekly sync:** review LOG.md for completed work
+
+---
+
+## Priority Tasks (next 7 days)
+
+### P0 — Security (ARDO)
+- [ ] Install fail2ban (block SSH brute force)
+- [ ] Enable and configure UFW (allow SSH, HTTP, HTTPS, limit SSH rate)
+- [ ] Clean up docker images (prune old images, free disk space)
+- [ ] Update all packages (`apt update && apt upgrade`)
+- [ ] Fix `/v1/system/jobs/tick` protection (add cron secret header)
+- [ ] Remove API keys from docs files
+
+### P0 — Mail (ARDO)
+- [ ] Diagnose why port 25 has no external delivery (provider block vs config)
+- [ ] Set up exim4 or postfix for admin@ancap.cloud relay
+- [ ] Configure SPF/DKIM/DMARC properly
+- [ ] Test sending email from admin@ancap.cloud to external (gmail, etc.)
+
+### P1 — Monetization (ARDO + openclaw)
+- [ ] Create `/ai/workflows` page (workflow store)
+- [ ] Wire first 5 workflow products into the store
+- [ ] Add billing/credits UI
+- [ ] Public receipt/proof pages
+
+### P1 — OpenClaw (ARDO + openclaw)
+- [ ] Verify OpenClaw gateway running on server (port 18789)
+- [ ] Deploy `~/.openclaw/openclaw.json` with real TenetaAI key
+- [ ] Test Telegram bot @ancap47_bot
+- [ ] Verify Kiro fallback works if TenetaAI fails
+
+### P2 — General improvements
+- [ ] Add `/llms.txt` and `/agent-products.json` for AI indexing
+- [ ] Implement Idempotency-Key for orders/ledger/runs
+- [ ] Add rate limiting to public API endpoints
+- [ ] Curated agent marketplace page
+- [ ] MCP server for ANCAP tools
+
+---
+
+## Communication Protocol
+- **Git commit messages** are the source of truth for what was done
+- **LOG.md** — human-written change log (update after each session)
+- **If blocking:** leave a note in `~/Desktop/ANCAP/docs/BLOCKERS.md`
+- **openclaw writes:** terminal output + git commits + LOG.md updates
+- **ARDO writes:** this file + security notes + server configs
+
+---
+
+## Repository Info
+- **Main repo:** `https://github.com/dragoncattrx-hub/ancap`
+- **Local copy:** `~/Desktop/ANCAP/`
+- **Server path:** `/home/ancapadmin/`
+- **Docker compose:** `/home/ancapadmin/docker-compose.yml`
+- **HestiaCP:** https://185.114.117.241:8083 (admin / PvZDQ7G2h7)
+
+## API Keys (update as needed)
+> ⚠️ **WARNING:** API keys are stored here for coordination purposes. Never commit real keys to public repos.
+- **TenetaAI:** stored in `~/.openclaw/openclaw.json` on server
+- **Telegram Bot:** stored in `~/.openclaw/openclaw.json` on server
+- **Kiro API:** stored in `~/.openclaw/.env` on server
+- **Postgres (prod):** via HestiaCP, not in git
+- **Cloudflare:** DNS/Email Routing via Cloudflare dashboard
+
+---
+
+*This file is the bridge between ARDO and openclaw. Update it after each significant task completion.*

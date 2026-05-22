@@ -16,7 +16,7 @@ Ready snippet with key and default model: **`docs/openclaw-kiro-snippet.json5`**
 In `~/.openclaw/.env` or in the environment:
 
 ```bash
-export KIRO_API_KEY="sk-aw-4900ab96f0a2f10e1996e4f3bc80709c"
+export KIRO_API_KEY="sk-aw-YOUR_REAL_KEY_HERE"
 ```
 
 In **openclaw.json** in the `models.providers` section add:
@@ -51,7 +51,7 @@ If you don't use env, substitute the key in `apiKey` (don't commit this file to 
 ```json5
 "kiro": {
   "baseUrl": "https://api.kiro.cheap/v1",
-  "apiKey": "sk-aw-4900ab96f0a2f10e1996e4f3bc80709c",
+  "apiKey": "sk-aw-YOUR_REAL_KEY_HERE",
   "api": "openai-completions",
   "models": [
     { "id": "claude-opus-4.6", "name": "Claude Opus 4.6", "contextWindow": 200000 }
@@ -83,7 +83,7 @@ Internal OpenClaw tasks (slug-generator, session, etc.) can be requested by the 
 ```json5
 "anthropic": {
   "baseUrl": "https://api.kiro.cheap/v1",
-  "apiKey": "sk-aw-4900ab96f0a2f10e1996e4f3bc80709c",
+  "apiKey": "sk-aw-YOUR_REAL_KEY_HERE",
   "api": "openai-completions",
   "models": [
     { "id": "claude-opus-4.6", "name": "Claude Opus 4.6", "contextWindow": 200000 }

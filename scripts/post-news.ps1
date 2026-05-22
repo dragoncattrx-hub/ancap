@@ -2,27 +2,16 @@
 # Posts crypto/ANCAP news every 3 hours
 
 $ErrorActionPreference = "Stop"
+. "C:\Users\drago\Desktop\ANCAP\scripts\moltbook-api.ps1"
 
 # Load tokens from environment or local untracked files
 $TELEGRAM_BOT_TOKEN = $env:TELEGRAM_BOT_TOKEN
 $TELEGRAM_CHANNEL = if ($env:TELEGRAM_CHANNEL) { $env:TELEGRAM_CHANNEL } else { "@ancap24news" }
-$MOLTBOOK_API_TOKEN = $env:MOLTBOOK_API_TOKEN
 $MOLTBOOK_SUBMOLT = if ($env:MOLTBOOK_SUBMOLT) { $env:MOLTBOOK_SUBMOLT } else { "crypto" }
-
-if ((-not $MOLTBOOK_API_TOKEN) -and (Test-Path ".env.moltbook")) {
-    Get-Content ".env.moltbook" | ForEach-Object {
-        if ($_ -match '^\s*#' -or $_ -match '^\s*$') { return }
-        $parts = $_ -split '=', 2
-        if ($parts.Length -eq 2) {
-            [System.Environment]::SetEnvironmentVariable($parts[0].Trim(), $parts[1].Trim(), 'Process')
-        }
-    }
-    if (-not $MOLTBOOK_API_TOKEN) { $MOLTBOOK_API_TOKEN = $env:MOLTBOOK_API_TOKEN }
-    if (-not $env:MOLTBOOK_SUBMOLT) { $env:MOLTBOOK_SUBMOLT = $MOLTBOOK_SUBMOLT }
-}
+$MOLTBOOK_ENV_FILE = Join-Path (Get-Location) ".env.moltbook"
+$MOLTBOOK_API_TOKEN = Get-MoltbookApiToken -Token $env:MOLTBOOK_API_TOKEN -EnvFilePath $MOLTBOOK_ENV_FILE
 
 if (-not $TELEGRAM_BOT_TOKEN) { throw "TELEGRAM_BOT_TOKEN is not set" }
-if (-not $MOLTBOOK_API_TOKEN) { throw "MOLTBOOK_API_TOKEN is not set" }
 
 # Search for crypto/ANCAP news via SearXNG
 Write-Host "Searching for crypto/ANCAP news..."
@@ -103,15 +92,9 @@ try {
 # Post to Moltbook
 Write-Host "Posting to Moltbook..."
 try {
-    $moltbookUrl = "https://moltbook.com/api/v1/posts"
-    $moltbookBody = @{
-        submolt_name = $MOLTBOOK_SUBMOLT
-        title = $article.title
-        content = $post
-    } | ConvertTo-Json
-    
-    $moltbookResponse = Invoke-RestMethod -Uri $moltbookUrl -Method POST -Body $moltbookBody -ContentType "application/json" -Headers @{ "Authorization" = "Bearer $MOLTBOOK_API_TOKEN" } -TimeoutSec 10
-    Write-Host "✅ Moltbook: Posted successfully"
+    $moltbookResult = New-MoltbookVerifiedPost -Title $article.title -Content $post -Submolt $MOLTBOOK_SUBMOLT -Token $MOLTBOOK_API_TOKEN -EnvFilePath $MOLTBOOK_ENV_FILE -OutputPrefix "C:\Users\drago\Desktop\ANCAP\tmp\moltbook_post_latest"
+    Write-Host "✅ Moltbook: Posted and verified successfully"
+    Write-Host "Post URL: $($moltbookResult.Url)"
 } catch {
     Write-Host "❌ Moltbook: Error - $_"
 }
