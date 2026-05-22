@@ -37,6 +37,9 @@ export default function DevelopersPage() {
             <a href="/api/docs" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
               Open API docs
             </a>
+            <a href="/agent-products.json" className="rounded-full border border-sky-300/25 bg-sky-400/[0.08] px-5 py-2.5 text-sm font-semibold text-sky-100 transition hover:border-sky-200/45 hover:text-white">
+              Agent product JSON
+            </a>
           </div>
         </section>
 
@@ -85,6 +88,25 @@ export default function DevelopersPage() {
               Buy Agent API Readiness Pack
             </Link>
           </aside>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-sky-300/15 bg-sky-400/[0.055] p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-sky-100/75">AI-readable discovery</div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Machine-readable ANCAP catalog</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/70">
+            External AI agents can inspect ANCAP without scraping the UI. The catalog exposes paid workflows, bundles,
+            API endpoints, ACP prices, checkout URLs, sample reports, receipt expectations, and the creator program.
+          </p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <a href="/llms.txt" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/78 transition hover:border-sky-300/35 hover:text-white">
+              <div className="font-semibold text-sky-100">/llms.txt</div>
+              <div className="mt-2 leading-6">Short AI-facing summary, recommended routes, and representation rules.</div>
+            </a>
+            <a href="/agent-products.json" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/78 transition hover:border-sky-300/35 hover:text-white">
+              <div className="font-semibold text-sky-100">/agent-products.json</div>
+              <div className="mt-2 leading-6">Structured workflow, bundle, paid API, credits, proof, and seller catalog.</div>
+            </a>
+          </div>
         </section>
       </main>
     </div>

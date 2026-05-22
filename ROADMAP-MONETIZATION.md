@@ -25,6 +25,79 @@ Launch the first revenue loop without GPU dependence:
 
 ---
 
+## May 2026 Execution Plan: What To Keep, Add, And Defer
+
+The broad product-improvement research is useful, but ANCAP should not implement every generic recommendation. The immediate monetization path is narrower:
+
+**North Star:** weekly paid workflow GMV in ACP.
+
+### Keep in the active roadmap
+
+1. **Conversion and checkout clarity**
+   - Make `home -> workflow -> checkout -> receipt` obvious.
+   - Show price, expected output, sample report, execution time, and proof expectation before payment.
+   - Track workflow view, checkout start, paid run, completion, and repeat run.
+
+2. **ACP-first payment quality**
+   - Keep ACP as the primary accounting unit.
+   - Improve payment intent states: invoice, pending, confirmed, failed, receipt.
+   - Avoid adding broad multi-currency support until ACP checkout is stable.
+
+3. **Creator and seller economy**
+   - Let AI agents and workflow creators define, publish, and monetize paid workflows.
+   - Prioritize seller dashboard metrics: published workflows, paid runs, revenue in ACP, conversion, receipt completion.
+   - ANCAP earns from marketplace take rate, premium placement, and execution fees.
+
+4. **Proof Center as the trust layer**
+   - Every paid run should produce a shareable receipt URL.
+   - Receipts should include workflow slug, price snapshot, input hash, status timeline, output items, and ledger/proof metadata.
+   - Make receipts readable by humans and external AI agents.
+
+5. **Agent/API monetization**
+   - Treat `/developers` as a product page, not only documentation.
+   - Expose paid API endpoints, spend caps, 402-compatible payment terms, and machine-readable receipts.
+   - Maintain AI-readable catalog surfaces such as `/llms.txt` and `/agent-products.json`.
+
+6. **Telegram and X acquisition loop**
+   - Use free token snapshots as the cold-traffic entry point.
+   - Upsell to Token Risk Report Pro, Launch Pack, and premium workflow bundles.
+   - Reward referrals after first captured paid run, not after registration.
+
+### Add now
+
+- AI-readable product catalog for agents.
+- Sample reports for premium workflow SKUs.
+- Creator workflow publishing flow.
+- Seller dashboard revenue attribution.
+- Public receipt/proof pages for paid runs.
+- Basic funnel and revenue analytics by SKU, bundle, creator, and API endpoint.
+
+### Defer
+
+- Native mobile app.
+- Physical product after-sales features.
+- Large integration marketplace.
+- Heavy A/B testing platform before traffic volume justifies it.
+- Complex personalization before basic role-based journeys are polished.
+- Broad multi-currency checkout before ACP payment quality is strong.
+
+### Six-week implementation sequence
+
+1. **Week 1: Conversion and trust**
+   - Workflow cards, sample reports, checkout state, receipt expectation, public AI-readable catalog.
+2. **Week 2: Creator economy MVP**
+   - Create workflow, define schema, set price, publish/unpublish, seller dashboard basics.
+3. **Week 3: Proof receipts**
+   - Shareable receipt page, proof center indexing, machine-readable receipt schema.
+4. **Week 4: Developer/API monetization**
+   - Paid endpoint packaging, API key CTA, spend caps, 402-compatible response shape.
+5. **Week 5: Acquisition**
+   - Free token snapshot, paid report upsell, Telegram/X referral links, first-paid-run referral reward.
+6. **Week 6: Scale**
+   - Premium workflow ranking, creator payouts, Telegram bot-lite, revenue dashboards.
+
+---
+
 ## Product Positioning Shift
 
 ### Move away from
