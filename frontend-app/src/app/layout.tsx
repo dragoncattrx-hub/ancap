@@ -26,7 +26,14 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   icons: {
     icon: "/icon.svg",
+    manifest: "/manifest.json",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ANCAP",
+  },
+  manifest: "/manifest.json",
   openGraph: {
     siteName: SITE_TITLE,
     type: "website",

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
 import { useWallet } from "./WalletProvider";
+import { useTheme } from "./ThemeProvider";
 import { getPreferredEvmProvider } from "@/lib/evmProvider";
 
 type NavItem = {
@@ -20,6 +21,7 @@ function navItemLabel(item: NavItem, t: (key: string) => string): string {
 }
 
 const primaryNav: NavItem[] = [
+  { label: "Search", href: "/search" },
   { label: "Workflows", href: "/ai/workflows" },
   { label: "Pricing", href: "/pricing" },
   { label: "Developers", href: "/developers" },
@@ -36,6 +38,8 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
+  { label: "Analytics", href: "/dashboard/analytics" },
+  { label: "Search", href: "/search" },
   { label: "AI Console", href: "/ai-console" },
   { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },
@@ -216,6 +220,7 @@ export function Navigation() {
   const { isAuthenticated, user, logout, loginWithWallet } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const { isConnected, isConnecting, shortAddress, connect, clearError, chainId } = useWallet();
+  const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
@@ -355,6 +360,18 @@ export function Navigation() {
               </button>
             )}
             <div className="h-6 w-px shrink-0 bg-white/10" />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.03] text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+            >
+              {theme === "dark" ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              )}
+            </button>
             <LangSwitcher lang={lang} setLang={setLang} />
             <div className="h-6 w-px bg-white/10" />
             {isAuthenticated ? (
@@ -396,6 +413,14 @@ export function Navigation() {
               <span className="hidden sm:inline">{t("nav.acpWallet")}</span>
             </Link>
             <LangSwitcher lang={lang} setLang={setLang} size="compact" />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition hover:bg-white/[0.08] hover:text-white"
+            >
+              {theme === "dark" ? "☀" : "☾"}
+            </button>
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-lg text-white/90 transition hover:bg-white/[0.08] sm:h-11 sm:w-11"
