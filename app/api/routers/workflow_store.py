@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 from datetime import datetime, UTC, timedelta
 from uuid import UUID
 from uuid import uuid4
@@ -1257,6 +1259,91 @@ async def get_workflow_store_revenue_summary(
         estimated_cost_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in estimated_cost_totals.items()],
         estimated_margin_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in estimated_margin_totals.items()],
         referral_commission_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in referral_commission_totals.items()],
+    )
+
+
+@router.get("/admin/revenue/export")
+async def export_workflow_store_revenue_csv(
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    days: int = Query(30, ge=1, le=365),
+):
+    """Export workflow store revenue data as CSV."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    generated_at = datetime.now(UTC)
+    since = generated_at - timedelta(days=days)
+
+    run_rows = (
+        await session.execute(
+            select(WorkflowRunRecord)
+            .where(WorkflowRunRecord.created_at >= since)
+            .order_by(desc(WorkflowRunRecord.created_at))
+        )
+    ).scalars().all()
+
+    payment_rows = (
+        await session.execute(
+            select(PaymentIntent, WorkflowRunRecord)
+            .join(WorkflowRunRecord, WorkflowRunRecord.id == PaymentIntent.workflow_run_id)
+            .where(PaymentIntent.created_at >= since)
+            .order_by(desc(PaymentIntent.created_at))
+        )
+    ).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "type", "run_id", "workflow_slug", "title", "category", "status",
+        "payment_status", "currency", "amount", "referral_commission",
+        "created_at", "updated_at",
+    ])
+
+    for row in run_rows:
+        proof = (row.receipt_json or {}).get("proof", {}) if isinstance(row.receipt_json, dict) else {}
+        margin_snapshot = (proof.get("margin_snapshot") or {}) if isinstance(proof, dict) else {}
+        referral_commission = margin_snapshot.get("referral_commission_amount", "0")
+
+        writer.writerow([
+            "run",
+            str(row.id),
+            row.workflow_slug,
+            row.title,
+            row.category,
+            row.status,
+            "",
+            row.payment_currency,
+            str(row.quoted_amount),
+            str(referral_commission),
+            row.created_at.isoformat() if row.created_at else "",
+            row.updated_at.isoformat() if row.updated_at else "",
+        ])
+
+    for intent, run in payment_rows:
+        writer.writerow([
+            "payment_intent",
+            str(run.id),
+            run.workflow_slug,
+            run.title,
+            run.category,
+            run.status,
+            str(intent.status),
+            str(intent.amount_currency),
+            str(intent.amount_value),
+            "",
+            intent.created_at.isoformat() if intent.created_at else "",
+            intent.updated_at.isoformat() if intent.updated_at else "",
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=workflow-revenue-{since.strftime('%Y-%m-%d')}-to-{generated_at.strftime('%Y-%m-%d')}.csv"
+        },
     )
 
 
