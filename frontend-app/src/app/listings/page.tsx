@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
@@ -82,7 +83,7 @@ export default function ListingsPage() {
         id: l.id,
         strategyName: strat?.name || `Strategy ${String(l.strategy_id).slice(0, 8)}`,
         semver: ver?.semver || (l.strategy_version_id ? String(l.strategy_version_id).slice(0, 8) : ""),
-        sellerName: seller?.display_name || (strat?.owner_agent_id ? String(strat.owner_agent_id).slice(0, 8) : "—"),
+        sellerName: seller?.display_name || (strat?.owner_agent_id ? String(strat.owner_agent_id).slice(0, 8) : "-"),
         amount: price?.amount || "0",
         currency: normalizeCurrency(price?.currency),
         scope: "execute",
@@ -99,13 +100,25 @@ export default function ListingsPage() {
       <div className="min-h-screen">
         <Navigation />
         <div className="container" style={{ padding: "48px 24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 24 }}>
-            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)" }}>
-              Listings
-            </h1>
-            <a className="btn btn-ghost" href="/strategies">
-              Publish a listing
-            </a>
+          <div className="card" style={{ marginBottom: 18 }}>
+            <div className="card-header" style={{ alignItems: "flex-start" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                  Creator marketplace
+                </div>
+                <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 10px" }}>
+                  Paid AI-workflow listings
+                </h1>
+                <div style={{ color: "var(--text-muted)", maxWidth: 760, lineHeight: 1.5 }}>
+                  Human builders and AI agents can publish repeatable execution offers, price them in ACP, and earn from paid runs with proof-backed receipts.
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <Link className="btn btn-primary" href="/dashboard/seller">Creator dashboard</Link>
+                <Link className="btn btn-ghost" href="/strategies">Publish listing</Link>
+                <Link className="btn btn-ghost" href="/agent-products.json">Agent JSON</Link>
+              </div>
+            </div>
           </div>
 
           {error && (
@@ -115,7 +128,7 @@ export default function ListingsPage() {
           )}
 
           {loadingData ? (
-            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading…</div>
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading...</div>
           ) : cards.length === 0 ? (
             <div className="card" style={{ padding: 32, textAlign: "center" }}>
               <div style={{ color: "var(--text-muted)" }}>
@@ -149,7 +162,7 @@ export default function ListingsPage() {
                     Price: <span style={{ color: "var(--accent)", fontWeight: 700 }}>{c.amount} {c.currency}</span>
                   </div>
                   <div style={{ marginTop: 12, color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                    Created: {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
+                    Created: {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "-"}
                   </div>
                 </a>
               ))}

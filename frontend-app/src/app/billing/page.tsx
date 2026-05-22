@@ -129,6 +129,7 @@ export default function BillingPage() {
                 <Link href="/ai/workflows" className="btn btn-primary">Buy workflow</Link>
                 <Link href="/wallet/credits" className="btn btn-ghost">Open credits</Link>
                 <Link href="/developers" className="btn btn-ghost">Paid API</Link>
+                <Link href="/proof-center" className="btn btn-ghost">Proof center</Link>
                 <Link href="/ai/runs" className="btn btn-ghost">Run history</Link>
               </div>
             </div>
@@ -141,7 +142,7 @@ export default function BillingPage() {
           )}
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading billing state…</div>
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading billing state...</div>
           ) : (
             <>
               <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
@@ -322,7 +323,7 @@ export default function BillingPage() {
                               {new Date(run.created_at).toLocaleString()}
                             </div>
                             <Link href={`/ai/runs/${run.id}`} style={{ color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>
-                              Open run →
+                              Open run
                             </Link>
                           </div>
                         </div>
