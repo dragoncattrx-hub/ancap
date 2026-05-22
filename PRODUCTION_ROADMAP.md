@@ -19,7 +19,7 @@
 | P0 | Auth rate limiting | ✅ DONE |
 | P0 | Paid API idempotency | ✅ DONE |
 | P0 | Revenue margin totals | ✅ DONE |
-| P0 | Admin billing UI | 🟡 PARTIAL (admin/overview exists, no dedicated billing page) |
+| P0 | Admin billing UI | 🟡 PARTIAL |
 | P1 | LLM abstraction (3 providers) | ✅ DONE |
 | P1 | llm_usage_events table | ✅ DONE |
 | P1 | Real LLM in workflow execution | ✅ DONE |
@@ -27,60 +27,44 @@
 | P2 | Rate limits in Redis | ✅ DONE |
 | P2 | /system/health/full | ✅ DONE |
 | P2 | /metrics endpoint | ✅ DONE |
-| P2 | Structured JSON logging | ❌ MISSING |
-| P3 | WebSocket/SSE for workflow_runs | 🟡 PARTIAL (SSE only, no WebSocket) |
-| P3 | Redis pub/sub | ❌ MISSING |
+| P2 | Structured JSON logging | ✅ DONE (structlog) |
+| P3 | WebSocket/SSE for workflow_runs | 🟡 PARTIAL (SSE only) |
+| P3 | Redis pub/sub | ✅ DONE |
 | P3 | Email service with SMTP | ✅ DONE |
-| P3 | Notification fanout | 🟡 PARTIAL (model exists, tick is stub) |
+| P3 | Notification fanout | ✅ DONE (tick implemented, email by type) |
 | P4 | ACP checkout flow | ✅ DONE |
 | P4 | Creator listing flow | ✅ DONE |
 | P4 | Revenue dashboard | ✅ DONE |
 | P4 | Paid API spend caps | ✅ DONE |
 | P4 | Idempotency | ✅ DONE |
-| P4 | CSV export | ❌ MISSING |
-| P5 | PostgreSQL FTS | ❌ MISSING |
-| P5 | Analytics dashboard | ❌ MISSING |
+| P4 | CSV export | ✅ DONE |
+| P5 | PostgreSQL FTS | ✅ DONE (migration 048, /search endpoint) |
+| P5 | Analytics dashboard | ✅ DONE (/dashboard/analytics page) |
 | P5 | /docs help center | ✅ DONE |
 | P6 | React Flow strategy builder | ❌ MISSING |
-| P6 | Chart components | 🟡 PARTIAL (referenced, not comprehensive) |
+| P6 | Chart components | 🟡 PARTIAL (analytics bar charts exist) |
 | P6 | Social layer (profiles, follows) | 🟡 PARTIAL (models exist, no profile pages) |
-| P6 | Light theme toggle | ❌ MISSING |
-| P6 | PWA manifest | ❌ MISSING |
-| P7 | Audit log viewer | ❌ MISSING |
-| P7 | Organizations/teams | ❌ MISSING |
-| P7 | Webhooks | ❌ MISSING |
+| P6 | Light theme toggle | ✅ DONE (ThemeProvider) |
+| P6 | PWA manifest | ✅ DONE (manifest + SW + icons) |
+| P7 | Audit log viewer | ✅ DONE (/admin/audit + /admin/audit-log API) |
+| P7 | Organizations/teams | 🟡 PARTIAL (scaffold, migration 049) |
+| P7 | Webhooks | 🟡 PARTIAL (scaffold + HMAC signing, migration 049) |
 
 ---
 
-## Current Work Items
+## Remaining Work
 
-### Phase 0 — Stabilize Current Work ⏳ IN PROGRESS
-**Acceptance:** git status чистый; CI покрывает новые API поля.
+### Phase 6 — Strategy Builder (React Flow) ⏳ TODO
+Визуальный нодовый редактор стратегий поверх существующего JSON workflow spec. MVP: canvas + ноды + валидация + preview.
 
-### Phase 2 — Structured JSON Logging ⏳ TODO
-Добавить `structlog` для JSON-логирования: request id, user id, agent id, run id, provider, payment intent id.
+### Phase 6 — Social Profiles ⏳ TODO
+Публичные профили пользователей/агентов с follow/unfollow. Фронтенд профили, API endpoints.
 
-### Phase 3 Partial — Redis pub/sub + Notification Fanout ⏳ TODO
-- Redis pub/sub для realtime events
-- Реализовать `notifications_fanout_tick.py` (email + in-app из NotificationEvent)
+### Phase 7 — Organizations полная реализация ⏳ TODO
+ORM слой для Organization, OrganizationMember. Интеграция с billing wallet, org-owned agents.
 
-### Phase 4 — CSV Export ⏳ TODO
-`GET /workflow-store/admin/revenue/export` с CSV форматом.
-
-### Phase 5 — PostgreSQL FTS + Analytics ⏳ TODO
-- GIN indexes + `to_tsvector/to_tsquery` для workflows/listings/agents/strategies
-- Analytics dashboard page с charts
-
-### Phase 6 — UX ⏳ TODO
-- React Flow visual strategy builder
-- Social profiles/follows UI
-- Light theme toggle
-- PWA manifest + icons
-
-### Phase 7 — B2B ⏳ TODO
-- Audit log viewer UI
-- Organization model + router (orgs/teams/users, roles)
-- Webhook model + delivery infrastructure
+### Phase 7 — Webhooks полная реализация ⏳ TODO
+WebhookDispatcher сервис, background delivery, retry logic, dashboard управления.
 
 ---
 
