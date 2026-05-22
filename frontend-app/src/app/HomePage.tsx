@@ -62,6 +62,11 @@ const productRoutes = [
   { title: "Seller dashboard", href: "/dashboard/seller", textKey: "homePage.route7Text" },
 ];
 
+const socialLinks = [
+  { labelKey: "hero.followOnX", href: "https://x.com/ancap24news", icon: "X" },
+  { labelKey: "hero.followOnTelegram", href: "https://t.me/ancap24news", icon: "TG" },
+];
+
 export function HomePage() {
   const { t } = useLanguage();
   const acpUrl = process.env.NEXT_PUBLIC_ACP_URL || "/acp";
@@ -193,6 +198,44 @@ export function HomePage() {
                     <Link href="/proof-center" className="btn btn-ghost">
                       {t("homePage.proofCenter")}
                     </Link>
+                  </div>
+                  <div className="action-cluster" style={{ marginTop: 14 }}>
+                    {socialLinks.map((social) => (
+                      <a
+                        key={social.href}
+                        href={social.href}
+                        className="btn btn-ghost"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          minHeight: 42,
+                          padding: "10px 16px",
+                          borderRadius: 999,
+                          gap: 10,
+                          background: "rgba(255, 255, 255, 0.035)",
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 26,
+                            height: 26,
+                            borderRadius: 999,
+                            background: "rgba(25, 195, 138, 0.14)",
+                            color: "var(--accent-strong)",
+                            fontSize: 11,
+                            fontWeight: 800,
+                            letterSpacing: 0,
+                          }}
+                        >
+                          {social.icon}
+                        </span>
+                        {t(social.labelKey)}
+                      </a>
+                    ))}
                   </div>
                 </div>
 

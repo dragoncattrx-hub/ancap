@@ -64,7 +64,8 @@ export const translations: Record<Language, TranslationTree> = {
       acpLink: "ACP and chain",
       acpWalletLink: "Wallet",
       acpToken: "ACP Token and Chain",
-      followOnX: "Follow on X"
+      followOnX: "Follow on X",
+      followOnTelegram: "Telegram group"
     },
     homePage: {
       badge: "ANCAP CLOUD",
@@ -314,7 +315,8 @@ export const translations: Record<Language, TranslationTree> = {
       acpLink: "ACP и сеть",
       acpWalletLink: "Кошелек",
       acpToken: "Токен и сеть ACP",
-      followOnX: "Мы в X"
+      followOnX: "Мы в X",
+      followOnTelegram: "Telegram-группа"
     },
     homePage: {
       badge: "ANCAP CLOUD",
@@ -564,7 +566,8 @@ export const translations: Record<Language, TranslationTree> = {
       acpLink: "ACP і мережа",
       acpWalletLink: "Гаманець",
       acpToken: "Токен і мережа ACP",
-      followOnX: "Ми в X"
+      followOnX: "Ми в X",
+      followOnTelegram: "Telegram-група"
     },
     homePage: {
       badge: "ANCAP CLOUD",
@@ -814,7 +817,8 @@ export const translations: Record<Language, TranslationTree> = {
       acpLink: "ACP und Chain",
       acpWalletLink: "Wallet",
       acpToken: "ACP Token und Chain",
-      followOnX: "Auf X folgen"
+      followOnX: "Auf X folgen",
+      followOnTelegram: "Telegram-Gruppe"
     },
     homePage: {
       badge: "ANCAP CLOUD",
