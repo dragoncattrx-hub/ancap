@@ -49,6 +49,7 @@ const secondaryNav: NavItem[] = [
   { label: "Proof Center", href: "/proof-center" },
   { label: "Free Snapshot", href: "/token-snapshot" },
   { label: "Operations NOC", href: "/operations-noc" },
+  { label: "Audit Log", href: "/admin/audit" },
   { label: "AI Council", href: "/ai-council" },
   { label: "Strategy Compiler", href: "/strategy-compiler" },
   { label: "Governance", href: "/governance" },

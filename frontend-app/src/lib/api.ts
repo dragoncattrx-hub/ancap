@@ -1030,6 +1030,22 @@ export const search = {
     return apiFetch(`/search?${params.toString()}`);
   },
 };
+
+export const audit = {
+  async list(params: { type?: string; days?: number; limit?: number; offset?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.days) searchParams.set("days", String(params.days));
+    if (params.type) searchParams.set("type", params.type);
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    if (params.offset) searchParams.set("offset", String(params.offset));
+    return apiFetch(`/admin/audit-log?${searchParams.toString()}`);
+  },
+  exportUrl(params: { type?: string; days?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.days) searchParams.set("days", String(params.days));
+    if (params.type) searchParams.set("type", params.type);
+    return `${API_BASE}/admin/audit-log/export?${searchParams.toString()}`;
+  },
 };
 
 export const paidApi = {

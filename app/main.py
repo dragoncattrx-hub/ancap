@@ -56,6 +56,9 @@ from app.api.routers import (
     evolution,
     autonomy,
     search,
+    audit,
+    organizations,
+    webhooks,
 )
 
 settings = get_settings()
@@ -164,6 +167,9 @@ ALL_ROUTERS = [
     evolution.bounties_router,
     autonomy.router,
     search.router,
+    audit.router,
+    organizations.router,
+    webhooks.router,
 ]
 
 for r in ALL_ROUTERS:
