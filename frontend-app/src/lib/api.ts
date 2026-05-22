@@ -1019,8 +1019,17 @@ export const workflowStore = {
     return apiFetch(`/workflow-store/admin/revenue?days=${encodeURIComponent(String(days))}`);
   },
   revenueExportUrl(days = 30) {
-    return `${API_BASE}/workflow-store/admin/revenue?days=${encodeURIComponent(String(days))}`;
+    return `${API_BASE}/workflow-store/admin/revenue/export?days=${encodeURIComponent(String(days))}`;
   },
+};
+
+export const search = {
+  async query(q: string, type?: string, limit = 20, offset = 0) {
+    const params = new URLSearchParams({ q, limit: String(limit), offset: String(offset) });
+    if (type) params.set("type", type);
+    return apiFetch(`/search?${params.toString()}`);
+  },
+};
 };
 
 export const paidApi = {

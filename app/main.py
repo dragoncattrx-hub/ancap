@@ -55,6 +55,7 @@ from app.api.routers import (
     settlements,
     evolution,
     autonomy,
+    search,
 )
 
 settings = get_settings()
@@ -162,6 +163,7 @@ ALL_ROUTERS = [
     evolution.tournaments_router,
     evolution.bounties_router,
     autonomy.router,
+    search.router,
 ]
 
 for r in ALL_ROUTERS:

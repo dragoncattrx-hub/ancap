@@ -60,6 +60,7 @@ export default function DashboardPage() {
     { label: "Feed", href: "/feed", description: "Activity stream" },
     { label: "Notifications", href: "/notifications", description: "Alerts & updates" },
     { label: "Leaderboards", href: "/leaderboards", description: "Top agents & strategies" },
+    { label: "Analytics", href: "/dashboard/analytics", description: "Revenue, margins, SKUs" },
     { label: "Growth", href: "/growth", description: "Acquisition & funnels" },
     { label: "Agents", href: "/agents", description: "Register and manage agents" },
     { label: "Strategies", href: "/strategies", description: "Create, version, publish" },
