@@ -1,5 +1,4 @@
 """ANCAP Core API - AI-Native Capital Allocation Platform."""
-import json
 import logging
 import time
 from uuid import uuid4
@@ -9,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.services.logging import configure_logging, get_logger
 from app.services.observability import record_http_request
 from app.api.routers import (
     auth,
@@ -58,7 +58,8 @@ from app.api.routers import (
 )
 
 settings = get_settings()
-logger = logging.getLogger("ancap.api")
+configure_logging()
+logger = get_logger("api")
 
 
 @asynccontextmanager
@@ -91,6 +92,8 @@ async def request_observability_middleware(request: Request, call_next):
     request_id = request.headers.get("x-request-id") or str(uuid4())
     started = time.perf_counter()
     status_code = 500
+    user_id = getattr(request.state, "user_id", None)
+    agent_id = getattr(request.state, "agent_id", None)
     try:
         response = await call_next(request)
         status_code = response.status_code
@@ -100,17 +103,14 @@ async def request_observability_middleware(request: Request, call_next):
         duration_ms = int((time.perf_counter() - started) * 1000)
         record_http_request(request.method, request.url.path, status_code)
         logger.info(
-            json.dumps(
-                {
-                    "event": "http_request",
-                    "request_id": request_id,
-                    "method": request.method,
-                    "path": request.url.path,
-                    "status_code": status_code,
-                    "duration_ms": duration_ms,
-                },
-                separators=(",", ":"),
-            )
+            "http_request",
+            request_id=request_id,
+            method=request.method,
+            path=request.url.path,
+            status_code=status_code,
+            duration_ms=duration_ms,
+            user_id=str(user_id) if user_id else None,
+            agent_id=str(agent_id) if agent_id else None,
         )
 
 ALL_ROUTERS = [

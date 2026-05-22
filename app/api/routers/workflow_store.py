@@ -61,6 +61,7 @@ from app.services.notifications import create_notification
 from app.services.referrals import issue_referral_rewards_for_order
 from app.services.settlements import build_correlation_id, execute_settlement_intent
 from app.services.auth import decode_token
+from app.services.pubsub import publish_workflow_run_event
 from app.services.workflow_execution import (
     WORKFLOW_BUNDLES,
     WORKFLOW_CREDIT_PACKAGES,
@@ -180,6 +181,26 @@ def _append_status_transition(row: WorkflowRunRecord, from_status: WorkflowRunSt
     row.status = to_status.value
     row.receipt_json = receipt_json
     row.updated_at = datetime.now(UTC)
+
+
+async def _append_status_transition_and_broadcast(
+    row: WorkflowRunRecord,
+    from_status: WorkflowRunStatus | None,
+    to_status: WorkflowRunStatus,
+) -> None:
+    _append_status_transition(row, from_status, to_status)
+    await publish_workflow_run_event(
+        run_id=row.id,
+        event_type=f"status_change.{to_status.value}",
+        data={
+            "workflow_run_id": str(row.id),
+            "workflow_slug": row.workflow_slug,
+            "title": row.title,
+            "status": to_status.value,
+            "previous_status": from_status.value if from_status else None,
+            "receipt_ready": to_status in {WorkflowRunStatus.completed, WorkflowRunStatus.failed, WorkflowRunStatus.cancelled},
+        },
+    )
 
 
 def _set_receipt_payment_intent_proof(
@@ -1734,7 +1755,7 @@ async def update_workflow_run_status(
             detail="Use /confirm-payment to move a workflow run from quoted to paid",
         )
 
-    _append_status_transition(row, current_status, target_status)
+    await _append_status_transition_and_broadcast(row, current_status, target_status)
 
     if target_status == WorkflowRunStatus.completed and not row.result_json:
         template = find_workflow_template(row.workflow_slug)
@@ -1781,10 +1802,10 @@ async def execute_workflow_run(
         raise HTTPException(status_code=400, detail="Payment must be confirmed before execution")
 
     if current_status == WorkflowRunStatus.paid:
-        _append_status_transition(row, WorkflowRunStatus.paid, WorkflowRunStatus.queued)
+        await _append_status_transition_and_broadcast(row, WorkflowRunStatus.paid, WorkflowRunStatus.queued)
         current_status = WorkflowRunStatus.queued
     if current_status == WorkflowRunStatus.queued:
-        _append_status_transition(row, WorkflowRunStatus.queued, WorkflowRunStatus.running)
+        await _append_status_transition_and_broadcast(row, WorkflowRunStatus.queued, WorkflowRunStatus.running)
         current_status = WorkflowRunStatus.running
     if current_status != WorkflowRunStatus.running:
         raise HTTPException(status_code=400, detail="Workflow run is not executable from current status")
@@ -1797,7 +1818,7 @@ async def execute_workflow_run(
         workflow_run_id=row.id,
     )
     row.result_json = llm_result.result
-    _append_status_transition(row, WorkflowRunStatus.running, WorkflowRunStatus.completed)
+    await _append_status_transition_and_broadcast(row, WorkflowRunStatus.running, WorkflowRunStatus.completed)
 
     execution_summary = row.result_json.get("execution_summary", {}) if isinstance(row.result_json, dict) else {}
     execution_mode = str(execution_summary.get("mode") or "template_stub")
