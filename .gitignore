@@ -104,3 +104,9 @@ frontend-app/.env.production
 **/test-results/
 **/tsconfig.tsbuildinfo
 _backups/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
