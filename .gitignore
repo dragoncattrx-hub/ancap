@@ -33,6 +33,7 @@ env/
 .env
 .env.local
 .env.*.local
+.env.turnstile-backup
 *.key
 *.pem
 secrets/
@@ -83,6 +84,16 @@ ACP-crypto/.acp-node-data*/
 
 # Local scratch / agent notes
 update.md
+
+# Project planning docs (not source of truth)
+IMPROVEMENT_PLAN.md
+PRODUCTION_ROADMAP.md
+
+# Temporary scripts / migration artifacts
+tmp/
+_migration_out/
+.memory/
+memory/
 
 # Local secrets (Desktop)
 Sicret/
