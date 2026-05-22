@@ -143,3 +143,56 @@ def test_paid_api_usage_respects_agent_monthly_spend_cap(client):
     assert detail["code"] == "spend_cap_exceeded"
     assert detail["monthly_cap"] == "1.00"
     assert detail["x402"]["accepts"][0]["amount"] == "2.00"
+
+
+def test_paid_api_usage_export_and_idempotency(client):
+    user, headers = _register_user(client)
+    deposit = client.post(
+        "/v1/ledger/deposit",
+        headers=headers,
+        json={
+            "account_owner_type": "user",
+            "account_owner_id": user["id"],
+            "amount": {"amount": "10", "currency": "ACP"},
+            "reference": "paid-api-export-test",
+        },
+    )
+    assert deposit.status_code == 201, deposit.text
+
+    agent = client.post(
+        "/v1/agents",
+        json={"display_name": f"paid_api_export_{uuid4().hex[:8]}", "public_key": "x" * 32, "roles": ["buyer"]},
+        headers=headers,
+    )
+    assert agent.status_code == 201, agent.text
+    key = client.post("/v1/keys", json={"agent_id": agent.json()["id"], "scope": "paid-api"}, headers=headers)
+    assert key.status_code == 201, key.text
+    raw_key = key.json()["key"]
+
+    idempotency_key = f"paid-api-{uuid4().hex}"
+    body = {"subject": "EXPORT", "chain": "Base", "signals": {"owner": "known"}}
+    first = client.post(
+        "/v1/paid-api/token-risk",
+        headers={"Authorization": "", "X-API-Key": raw_key, "Idempotency-Key": idempotency_key},
+        json=body,
+    )
+    assert first.status_code == 200, first.text
+    second = client.post(
+        "/v1/paid-api/token-risk",
+        headers={"Authorization": "", "X-API-Key": raw_key, "Idempotency-Key": idempotency_key},
+        json=body,
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["usage"]["id"] == first.json()["usage"]["id"]
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("8.000000000000000000")
+
+    usage = client.get("/v1/paid-api/me/usage", headers=headers)
+    assert usage.status_code == 200, usage.text
+    assert usage.json()["totals_by_currency"]["ACP"] == "2.000000000000000000"
+    assert usage.json()["exported_at"]
+
+    export_res = client.get("/v1/paid-api/me/usage/export?limit=10", headers=headers)
+    assert export_res.status_code == 200, export_res.text
+    assert export_res.headers["content-type"].startswith("text/csv")
+    assert "product_slug" in export_res.text
+    assert first.json()["usage"]["id"] in export_res.text

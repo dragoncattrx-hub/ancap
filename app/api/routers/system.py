@@ -25,6 +25,7 @@ from app.jobs.bridge_rail_tick import bridge_rail_tick
 from app.jobs.graph_enforcement_tick import graph_enforcement_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
+from app.services.cache import redis_ping
 from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
 from app.schemas import DecisionLogPublic
 
@@ -34,6 +35,51 @@ router = APIRouter(prefix="/system", tags=["System"])
 @router.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@router.get("/health/full")
+async def health_full(session: DbSession):
+    s = get_settings()
+    checks: dict[str, dict[str, object]] = {}
+
+    try:
+        await session.execute(select(func.count()).select_from(DecisionLog))
+        checks["database"] = {"ok": True}
+    except Exception as exc:
+        checks["database"] = {"ok": False, "error": str(exc)}
+
+    redis_ok, redis_error = await redis_ping()
+    checks["redis"] = {"ok": redis_ok, "configured": bool(s.redis_url), "error": redis_error}
+
+    llm_configured = False
+    if (s.llm_provider or "").lower() == "teneta_claude":
+        llm_configured = bool(s.anthropic_api_key and s.anthropic_base_url)
+    elif (s.llm_provider or "").lower() == "openai":
+        llm_configured = bool(s.openai_api_key)
+    elif (s.llm_provider or "").lower() == "ollama":
+        llm_configured = bool(s.ollama_base_url)
+    checks["llm"] = {
+        "ok": llm_configured or s.llm_fallback_to_template,
+        "provider": s.llm_provider,
+        "model": s.llm_model,
+        "configured": llm_configured,
+        "fallback_enabled": s.llm_fallback_to_template,
+    }
+
+    checks["mail"] = {
+        "ok": (not s.mail_enabled) or bool(s.smtp_host and s.smtp_from_email),
+        "enabled": s.mail_enabled,
+        "configured": bool(s.smtp_host and s.smtp_from_email),
+    }
+    checks["bridge"] = {
+        "ok": not s.bridge_rail_paused,
+        "enabled": s.bridge_rail_enabled,
+        "paused": s.bridge_rail_paused,
+        "dry_run": s.bridge_dry_run,
+    }
+
+    status = "ok" if all(bool(item.get("ok")) for item in checks.values()) else "degraded"
+    return {"status": status, "checks": checks}
 
 
 @router.get("/diagnostics")

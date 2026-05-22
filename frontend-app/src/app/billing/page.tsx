@@ -49,6 +49,7 @@ export default function BillingPage() {
   const [runs, setRuns] = useState<WorkflowRun[]>([]);
   const [apiProducts, setApiProducts] = useState<any[]>([]);
   const [apiUsage, setApiUsage] = useState<any[]>([]);
+  const [apiUsageTotals, setApiUsageTotals] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -75,6 +76,7 @@ export default function BillingPage() {
       setRuns(runsData.items || []);
       setApiProducts(apiProductsData.items || []);
       setApiUsage(apiUsageData.items || []);
+      setApiUsageTotals(apiUsageData.totals_by_currency || {});
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -198,7 +200,10 @@ export default function BillingPage() {
 
                 <div className="responsive-grid responsive-grid-2">
                   <div>
-                    <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>Products</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                      <div style={{ fontWeight: 800, color: "var(--text)" }}>Products</div>
+                      <a href={paidApi.usageExportUrl(500)} className="btn btn-ghost">Export CSV</a>
+                    </div>
                     <div style={{ display: "grid", gap: 8 }}>
                       {apiProducts.slice(0, 5).map((product: any) => (
                         <div key={product.slug} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12, display: "flex", justifyContent: "space-between", gap: 12 }}>
@@ -216,6 +221,13 @@ export default function BillingPage() {
 
                   <div>
                     <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>Recent API usage</div>
+                    {Object.keys(apiUsageTotals).length > 0 && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                        {Object.entries(apiUsageTotals).map(([currency, amount]) => (
+                          <span key={currency} className="badge badge-active">30d {currency} {amount}</span>
+                        ))}
+                      </div>
+                    )}
                     {apiUsage.length === 0 ? (
                       <div style={{ color: "var(--text-muted)" }}>No paid API usage yet.</div>
                     ) : (

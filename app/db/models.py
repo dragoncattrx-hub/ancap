@@ -445,6 +445,35 @@ class PaymentIntent(Base):
     )
 
 
+class LlmUsageEvent(Base):
+    __tablename__ = "llm_usage_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    workflow_run_id = Column(UUID(as_uuid=False), ForeignKey("workflow_runs.id", ondelete="SET NULL"), nullable=True, index=True)
+    provider = Column(String(40), nullable=False, index=True)
+    model = Column(String(120), nullable=False)
+    prompt_hash = Column(String(64), nullable=False, index=True)
+    input_tokens_estimate = Column(Integer, nullable=False, default=0)
+    output_tokens_estimate = Column(Integer, nullable=False, default=0)
+    latency_ms = Column(Integer, nullable=False, default=0)
+    status = Column(String(32), nullable=False, index=True)
+    error = Column(String(1000), nullable=True)
+    cost_currency = Column(String(10), nullable=False, default="ACP")
+    cost_amount = Column(Numeric(36, 18), nullable=False, default=0)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+    workflow_run = relationship("WorkflowRunRecord", foreign_keys=[workflow_run_id])
+
+    __table_args__ = (
+        Index("ix_llm_usage_events_run_created", "workflow_run_id", "created_at"),
+        Index("ix_llm_usage_events_owner_created", "owner_user_id", "created_at"),
+        Index("ix_llm_usage_events_provider_status", "provider", "status"),
+    )
+
+
 class AccessGrant(Base):
     __tablename__ = "access_grants"
 

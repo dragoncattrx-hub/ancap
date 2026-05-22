@@ -81,7 +81,7 @@ export default function DevelopersPage() {
             <ul className="mt-4 space-y-3 text-sm text-white/70">
               <li>Monthly cap per agent through `/paid-api/agents/:id/spend-cap`.</li>
               <li>Prepaid credits are debited per captured API call.</li>
-              <li>Usage exports are available from `/paid-api/me/usage` and Billing.</li>
+              <li>Usage exports are available from `/paid-api/me/usage`, `/paid-api/me/usage/export`, and Billing.</li>
               <li>Receipts include product slug, endpoint, amount, request hash, and ledger event.</li>
             </ul>
             <Link href="/ai/run/agent-api-readiness-pack" className="mt-6 inline-flex rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90">

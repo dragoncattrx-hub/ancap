@@ -45,6 +45,21 @@ def test_metrics_for_run(client, base_vertical_id):
     assert "items" in r.json()
 
 
+def test_prometheus_metrics_and_full_health(client):
+    metrics = client.get("/v1/metrics")
+    assert metrics.status_code == 200, metrics.text
+    assert metrics.headers["content-type"].startswith("text/plain")
+    assert "ancap_workflow_runs_total" in metrics.text
+    assert "ancap_redis_up" in metrics.text
+
+    health = client.get("/v1/system/health/full")
+    assert health.status_code == 200, health.text
+    payload = health.json()
+    assert payload["status"] in {"ok", "degraded"}
+    assert "database" in payload["checks"]
+    assert "llm" in payload["checks"]
+
+
 def test_evaluation_not_found(client):
     """Evaluation is optional - 404 when no evaluation exists for a version."""
     import uuid

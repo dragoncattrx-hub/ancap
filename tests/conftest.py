@@ -26,6 +26,8 @@ os.environ["REGISTRATION_MAX_AGENTS_PER_DAY"] = "0"
 os.environ["PARTICIPATION_GATES_ENABLED"] = "false"
 os.environ["TURNSTILE_SECRET_KEY"] = ""
 os.environ["TURNSTILE_SITE_KEY"] = ""
+os.environ["CRON_SECRET"] = ""
+os.environ["PLATFORM_ADMIN_USER_IDS"] = ""
 # New-agent order limits: force defaults so developer shell/.env cannot disable or
 # widen quarantine (e.g. QUARANTINE_HOURS—0 skips the guardrail; a huge max prevents 403).
 os.environ["QUARANTINE_HOURS"] = "24"
@@ -40,6 +42,7 @@ os.environ.setdefault("RUN_FEE_AMOUNT", "0")
 
 from app.config import get_settings
 from app.db.session import Base, get_db, async_session_maker
+from app.services.rate_limit import clear_rate_limit_state
 
 # Ensure Settings reflects the env vars above (get_settings is lru_cached).
 get_settings.cache_clear()
@@ -277,7 +280,9 @@ def _reset_ledger_invariant_halted():
 
 
 @pytest.fixture(autouse=True)
-def reset_ledger_invariant_before_test():
-    """Ensure ledger is not blocked at the start of each test (ROADMAP §3 block is opt-in per test)."""
+def reset_test_runtime_state():
+    """Ensure cross-test in-memory/runtime state does not leak between tests."""
     _reset_ledger_invariant_halted()
+    clear_rate_limit_state()
     yield
+    clear_rate_limit_state()

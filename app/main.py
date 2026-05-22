@@ -1,10 +1,15 @@
 """ANCAP Core API - AI-Native Capital Allocation Platform."""
+import json
+import logging
+import time
+from uuid import uuid4
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.services.observability import record_http_request
 from app.api.routers import (
     auth,
     users,
@@ -53,6 +58,7 @@ from app.api.routers import (
 )
 
 settings = get_settings()
+logger = logging.getLogger("ancap.api")
 
 
 @asynccontextmanager
@@ -78,6 +84,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def request_observability_middleware(request: Request, call_next):
+    request_id = request.headers.get("x-request-id") or str(uuid4())
+    started = time.perf_counter()
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        response.headers["x-request-id"] = request_id
+        return response
+    finally:
+        duration_ms = int((time.perf_counter() - started) * 1000)
+        record_http_request(request.method, request.url.path, status_code)
+        logger.info(
+            json.dumps(
+                {
+                    "event": "http_request",
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": status_code,
+                    "duration_ms": duration_ms,
+                },
+                separators=(",", ":"),
+            )
+        )
 
 ALL_ROUTERS = [
     auth.router,

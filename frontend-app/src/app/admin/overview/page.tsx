@@ -132,6 +132,7 @@ export default function AdminOverviewPage() {
                       Last {workflowRevenue?.window_days || 30} days · quotes, reserved credits, captured revenue, refunds.
                     </div>
                   </div>
+                  <a className="btn btn-ghost" href={workflowStore.revenueExportUrl(30)}>Refresh JSON</a>
                 </div>
 
                 <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
@@ -158,6 +159,27 @@ export default function AdminOverviewPage() {
                   </div>
                 </div>
 
+                <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Estimated provider cost</div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text)" }}>
+                      {moneyLine(workflowRevenue?.estimated_cost_totals || [])}
+                    </div>
+                  </div>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Estimated margin</div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--accent)" }}>
+                      {moneyLine(workflowRevenue?.estimated_margin_totals || [])}
+                    </div>
+                  </div>
+                  <div style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 6 }}>Referral commission</div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text)" }}>
+                      {moneyLine(workflowRevenue?.referral_commission_totals || [])}
+                    </div>
+                  </div>
+                </div>
+
                 {topWorkflowSkus.length === 0 ? (
                   <div style={{ color: "var(--text-muted)" }}>No workflow revenue data yet.</div>
                 ) : (
@@ -177,6 +199,9 @@ export default function AdminOverviewPage() {
                             </div>
                             <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
                               quotes {sku.quote_count} · captured {sku.captured_count} · reserved {sku.reserved_count}
+                            </div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: 3 }}>
+                              est. cost {sku.estimated_cost_amount} {sku.currency} · est. margin {sku.estimated_margin_amount} {sku.currency} · referral {sku.referral_commission_amount} {sku.currency}
                             </div>
                           </div>
                         </div>

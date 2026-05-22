@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { workflowStore } from "@/lib/api";
+import { useRunEvents } from "@/lib/useRunEvents";
 
 type WorkflowRunStatus = "quoted" | "paid" | "queued" | "running" | "completed" | "failed" | "cancelled";
 
@@ -325,6 +326,14 @@ export default function WorkflowRunDetailPage() {
   const invoiceReference = useMemo(() => (run ? `ANCAP-${run.id.slice(0, 8)}-${run.workflow_slug}` : ""), [run]);
   const paymentTarget = "ancap-workflow-treasury";
   const shouldPollRun = Boolean(run && ["quoted", "paid", "queued", "running"].includes(run.status));
+  const { lastEvent: runEvent, connectionState: runEventState } = useRunEvents(run?.id, shouldPollRun);
+
+  useEffect(() => {
+    if (!runEvent || !run || runEvent.workflow_run_id !== run.id) return;
+    if (runEvent.status !== run.status || runEvent.receipt_ready) {
+      void loadRun();
+    }
+  }, [loadRun, run, runEvent]);
 
   useEffect(() => {
     if (!shouldPollRun) return;
@@ -420,6 +429,9 @@ export default function WorkflowRunDetailPage() {
                 <div className="text-right">
                   <div className="text-sm text-white/55">Status</div>
                   <div className="mt-1 text-lg font-semibold text-emerald-300">{run.status}</div>
+                  <div className="mt-1 text-xs text-white/45">
+                    Live: {shouldPollRun ? runEventState : "terminal"}
+                  </div>
                 </div>
               </div>
 

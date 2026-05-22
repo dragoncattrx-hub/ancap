@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, UTC, timedelta
 from uuid import UUID
 from uuid import uuid4
@@ -9,11 +10,13 @@ import json
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.config import get_settings
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
-from app.db.models import ChainReceipt, LedgerEventTypeEnum, PaymentIntent, PaymentIntentStatusEnum, SettlementIntent, WorkflowRunRecord
+from app.db.models import ChainReceipt, LedgerEventTypeEnum, PaymentIntent, PaymentIntentStatusEnum, ReferralRewardEvent, SettlementIntent, User, WorkflowRunRecord
 from app.schemas import (
     ChainReceiptPublic,
     Money,
@@ -36,6 +39,7 @@ from app.schemas import (
     WorkflowRunPaymentIntentCreateResponse,
     WorkflowRunPaymentIntentPublic,
     WorkflowRevenueCurrencyTotalPublic,
+    WorkflowRevenueMoneyPublic,
     WorkflowRevenueSkuPublic,
     WorkflowRevenueSummaryPublic,
     WorkflowRunProofBundlePublic,
@@ -51,8 +55,12 @@ from app.schemas import (
     WorkflowTemplatesResponse,
 )
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
+from app.services.llm import execute_paid_workflow_with_llm
+from app.services.mail import can_receive_system_email, send_email
+from app.services.notifications import create_notification
 from app.services.referrals import issue_referral_rewards_for_order
 from app.services.settlements import build_correlation_id, execute_settlement_intent
+from app.services.auth import decode_token
 from app.services.workflow_execution import (
     WORKFLOW_BUNDLES,
     WORKFLOW_CREDIT_PACKAGES,
@@ -1044,8 +1052,28 @@ async def get_workflow_store_revenue_summary(
         )
     ).scalars().all()
 
+    referral_reward_rows = (
+        await session.execute(
+            select(ReferralRewardEvent)
+            .where(
+                ReferralRewardEvent.trigger_type == "referral_commission_share",
+                ReferralRewardEvent.trigger_ref_type == "order",
+                ReferralRewardEvent.created_at >= since,
+            )
+        )
+    ).scalars().all()
+
+    referral_commission_by_run_id: dict[str, Decimal] = {}
+    for reward in referral_reward_rows:
+        run_id = str(reward.trigger_ref_id)
+        referral_commission_by_run_id[run_id] = referral_commission_by_run_id.get(run_id, Decimal(0)) + Decimal(reward.amount_value)
+
     run_status_counts: dict[str, int] = {}
     sku_map: dict[tuple[str, str], dict[str, object]] = {}
+    gross_captured_totals: dict[str, Decimal] = {}
+    estimated_cost_totals: dict[str, Decimal] = {}
+    estimated_margin_totals: dict[str, Decimal] = {}
+    referral_commission_totals: dict[str, Decimal] = {}
     for row in run_rows:
         run_status_counts[row.status] = run_status_counts.get(row.status, 0) + 1
         key = (row.workflow_slug, row.payment_currency)
@@ -1066,8 +1094,33 @@ async def get_workflow_store_revenue_summary(
                 "open_reserved_amount": Decimal(0),
                 "captured_amount": Decimal(0),
                 "refunded_amount": Decimal(0),
+                "estimated_cost_amount": Decimal(0),
+                "estimated_margin_amount": Decimal(0),
+                "referral_commission_amount": Decimal(0),
             }
-        sku_map[key]["quote_count"] = int(sku_map[key]["quote_count"]) + 1
+        sku = sku_map[key]
+        sku["quote_count"] = int(sku["quote_count"]) + 1
+        proof = (row.receipt_json or {}).get("proof", {}) if isinstance(row.receipt_json, dict) else {}
+        provider_cost = ((proof.get("provider_cost_estimate") or {}) if isinstance(proof, dict) else {})
+        margin_snapshot = ((proof.get("margin_snapshot") or {}) if isinstance(proof, dict) else {})
+        estimated_cost = ((margin_snapshot.get("estimated_cost") or provider_cost) if isinstance(margin_snapshot, dict) else provider_cost)
+        estimated_margin = (margin_snapshot.get("estimated_margin") if isinstance(margin_snapshot, dict) else None) or {}
+        try:
+            if estimated_cost:
+                sku["estimated_cost_amount"] = Decimal(sku["estimated_cost_amount"]) + Decimal(str(estimated_cost.get("amount", "0")))
+                estimated_cost_totals[row.payment_currency] = estimated_cost_totals.get(row.payment_currency, Decimal(0)) + Decimal(str(estimated_cost.get("amount", "0")))
+        except Exception:
+            pass
+        try:
+            if estimated_margin:
+                sku["estimated_margin_amount"] = Decimal(sku["estimated_margin_amount"]) + Decimal(str(estimated_margin.get("amount", "0")))
+                estimated_margin_totals[row.payment_currency] = estimated_margin_totals.get(row.payment_currency, Decimal(0)) + Decimal(str(estimated_margin.get("amount", "0")))
+        except Exception:
+            pass
+        commission_amount = referral_commission_by_run_id.get(str(row.id), Decimal(0))
+        if commission_amount > 0:
+            sku["referral_commission_amount"] = Decimal(sku["referral_commission_amount"]) + commission_amount
+            referral_commission_totals[row.payment_currency] = referral_commission_totals.get(row.payment_currency, Decimal(0)) + commission_amount
 
     payment_rows = (
         await session.execute(
@@ -1110,6 +1163,9 @@ async def get_workflow_store_revenue_summary(
                 "open_reserved_amount": Decimal(0),
                 "captured_amount": Decimal(0),
                 "refunded_amount": Decimal(0),
+                "estimated_cost_amount": Decimal(0),
+                "estimated_margin_amount": Decimal(0),
+                "referral_commission_amount": Decimal(0),
             }
         sku = sku_map[sku_key]
         sku["payment_intent_count"] = int(sku["payment_intent_count"]) + 1
@@ -1121,6 +1177,7 @@ async def get_workflow_store_revenue_summary(
         elif status == PaymentIntentStatusEnum.captured.value:
             sku["captured_count"] = int(sku["captured_count"]) + 1
             sku["captured_amount"] = Decimal(sku["captured_amount"]) + amount
+            gross_captured_totals[currency] = gross_captured_totals.get(currency, Decimal(0)) + amount
         elif status == PaymentIntentStatusEnum.refunded.value:
             sku["refunded_count"] = int(sku["refunded_count"]) + 1
             sku["refunded_amount"] = Decimal(sku["refunded_amount"]) + amount
@@ -1155,6 +1212,9 @@ async def get_workflow_store_revenue_summary(
             open_reserved_amount=str(item["open_reserved_amount"]),
             captured_amount=str(item["captured_amount"]),
             refunded_amount=str(item["refunded_amount"]),
+            estimated_cost_amount=str(item["estimated_cost_amount"]),
+            estimated_margin_amount=str(item["estimated_margin_amount"]),
+            referral_commission_amount=str(item["referral_commission_amount"]),
         )
         for item in sorted(
             sku_map.values(),
@@ -1172,6 +1232,10 @@ async def get_workflow_store_revenue_summary(
         payment_status_counts=payment_status_counts,
         totals=totals,
         skus=skus,
+        gross_captured_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in gross_captured_totals.items()],
+        estimated_cost_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in estimated_cost_totals.items()],
+        estimated_margin_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in estimated_margin_totals.items()],
+        referral_commission_totals=[WorkflowRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in referral_commission_totals.items()],
     )
 
 
@@ -1205,6 +1269,61 @@ async def get_workflow_run(
         raise HTTPException(status_code=401, detail="Not authenticated")
     row = await _get_owned_run(session, user_id, run_id)
     return _serialize_run(row)
+
+
+@router.get("/runs/{run_id}/events")
+async def stream_workflow_run_events(
+    run_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    token: str | None = Query(default=None),
+):
+    if user_id is None and token:
+        user_id = decode_token(token)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    row = await _get_owned_run(session, user_id, run_id)
+    initial_status = row.status
+
+    async def event_stream():
+        last_status = ""
+        last_timeline_len = -1
+        for _ in range(60):
+            current = (
+                await session.execute(
+                    select(WorkflowRunRecord).where(
+                        WorkflowRunRecord.id == UUID(run_id),
+                        WorkflowRunRecord.owner_user_id == UUID(user_id),
+                    )
+                )
+            ).scalar_one_or_none()
+            if current is None:
+                yield "event: error\ndata: {\"message\":\"Workflow run not found\"}\n\n"
+                return
+            proof = (current.receipt_json or {}).get("proof", {}) if isinstance(current.receipt_json, dict) else {}
+            timeline = proof.get("status_timeline") if isinstance(proof, dict) else []
+            timeline_len = len(timeline) if isinstance(timeline, list) else 0
+            if current.status != last_status or timeline_len != last_timeline_len:
+                payload = {
+                    "workflow_run_id": str(current.id),
+                    "status": current.status,
+                    "receipt_status": (current.receipt_json or {}).get("status"),
+                    "payment_confirmed": bool(proof.get("payment_confirmation")) if isinstance(proof, dict) else False,
+                    "receipt_ready": current.status in {"completed", "failed", "cancelled"},
+                    "execution_mode": proof.get("execution_mode") if isinstance(proof, dict) else None,
+                    "llm_usage": proof.get("llm_usage") if isinstance(proof, dict) else None,
+                    "timeline_length": timeline_len,
+                    "updated_at": current.updated_at.isoformat() if current.updated_at else None,
+                }
+                yield f"event: workflow_run\ndata: {json.dumps(payload, default=str)}\n\n"
+                last_status = current.status
+                last_timeline_len = timeline_len
+            if current.status in {"completed", "failed", "cancelled"} and current.status != initial_status:
+                return
+            await asyncio.sleep(2)
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @router.post("/runs/{run_id}/payment-intents", response_model=WorkflowRunPaymentIntentCreateResponse, status_code=201)
@@ -1670,7 +1789,14 @@ async def execute_workflow_run(
     if current_status != WorkflowRunStatus.running:
         raise HTTPException(status_code=400, detail="Workflow run is not executable from current status")
 
-    row.result_json = execute_workflow_template(template, row.inputs_json or {})
+    llm_result = await execute_paid_workflow_with_llm(
+        session,
+        template=template,
+        inputs=row.inputs_json or {},
+        owner_user_id=user_id,
+        workflow_run_id=row.id,
+    )
+    row.result_json = llm_result.result
     _append_status_transition(row, WorkflowRunStatus.running, WorkflowRunStatus.completed)
 
     execution_summary = row.result_json.get("execution_summary", {}) if isinstance(row.result_json, dict) else {}
@@ -1683,9 +1809,51 @@ async def execute_workflow_run(
     proof["template_title"] = template.title
     proof["artifact_kind"] = execution_summary.get("artifact_kind")
     proof["sections_generated"] = execution_summary.get("sections_generated")
+    proof["llm_usage"] = {
+        "event_id": llm_result.usage_event_id,
+        "provider": llm_result.provider,
+        "model": llm_result.model,
+        "status": llm_result.status,
+        "fallback_used": llm_result.fallback_used,
+    }
     receipt_json["proof"] = proof
     row.receipt_json = receipt_json
     await _capture_reserved_workflow_payment(session, row)
+
+    await create_notification(
+        session,
+        recipient_user_id=UUID(user_id),
+        recipient_agent_id=None,
+        type="workflow.completed",
+        priority="high",
+        payload={
+            "workflow_run_id": str(row.id),
+            "workflow_slug": row.workflow_slug,
+            "title": row.title,
+            "status": WorkflowRunStatus.completed.value,
+            "proof_url": f"/proof-center?run={row.id}",
+            "llm_usage_event_id": llm_result.usage_event_id,
+        },
+    )
+    user_row = (await session.execute(select(User).where(User.id == UUID(user_id)))).scalar_one_or_none()
+    if user_row and can_receive_system_email(user_row.email):
+        proof_url = f"{get_settings().public_app_url.rstrip('/')}/proof-center?run={row.id}"
+        send_email(
+            to_email=user_row.email,
+            subject=f"ANCAP workflow completed: {row.title}",
+            text_body=(
+                f"Your ANCAP workflow run is complete.\n\n"
+                f"Workflow: {row.title}\n"
+                f"Run: {row.id}\n"
+                f"Proof: {proof_url}\n"
+            ),
+            html_body=(
+                f"<p>Your ANCAP workflow run is complete.</p>"
+                f"<p><strong>Workflow:</strong> {row.title}</p>"
+                f"<p><strong>Run:</strong> {row.id}</p>"
+                f"<p><a href=\"{proof_url}\">Open proof receipt</a></p>"
+            ),
+        )
 
     await session.flush()
     await session.refresh(row)

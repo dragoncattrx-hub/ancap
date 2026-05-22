@@ -197,6 +197,11 @@ class WorkflowRevenueCurrencyTotalPublic(BaseModel):
     count: int
 
 
+class WorkflowRevenueMoneyPublic(BaseModel):
+    currency: str
+    amount: str
+
+
 class WorkflowRevenueSkuPublic(BaseModel):
     workflow_slug: str
     title: str
@@ -213,6 +218,9 @@ class WorkflowRevenueSkuPublic(BaseModel):
     open_reserved_amount: str = "0"
     captured_amount: str = "0"
     refunded_amount: str = "0"
+    estimated_cost_amount: str = "0"
+    estimated_margin_amount: str = "0"
+    referral_commission_amount: str = "0"
 
 
 class WorkflowRevenueSummaryPublic(BaseModel):
@@ -224,6 +232,10 @@ class WorkflowRevenueSummaryPublic(BaseModel):
     payment_status_counts: dict[str, int] = Field(default_factory=dict)
     totals: list[WorkflowRevenueCurrencyTotalPublic] = Field(default_factory=list)
     skus: list[WorkflowRevenueSkuPublic] = Field(default_factory=list)
+    gross_captured_totals: list[WorkflowRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_cost_totals: list[WorkflowRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_margin_totals: list[WorkflowRevenueMoneyPublic] = Field(default_factory=list)
+    referral_commission_totals: list[WorkflowRevenueMoneyPublic] = Field(default_factory=list)
 
 
 class WorkflowRunsResponse(BaseModel):

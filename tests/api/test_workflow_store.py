@@ -90,6 +90,10 @@ def test_workflow_payment_intent_reserves_and_captures_credits(client):
     executed_payload = execute.json()
     assert executed_payload["item"]["status"] == "completed"
     assert executed_payload["item"]["receipt"]["proof"]["payment_intent_status"] == "captured"
+    llm_usage = executed_payload["item"]["receipt"]["proof"]["llm_usage"]
+    assert llm_usage["provider"] == "teneta_claude"
+    assert llm_usage["status"] in {"succeeded", "fallback"}
+    assert executed_payload["item"]["result"]["llm_usage"]["event_id"] == llm_usage["event_id"]
 
     balance_after_capture = _user_balance(client, user["id"], "ACP", headers=headers)
     assert balance_after_capture == Decimal("6.000000000000000000")
@@ -149,6 +153,11 @@ def test_workflow_revenue_summary_reports_captured_sku(client):
     )
     assert sku["captured_count"] >= 1
     assert Decimal(sku["captured_amount"]) >= Decimal(run["price"]["amount"])
+    assert Decimal(sku["estimated_cost_amount"]) > Decimal("0")
+    assert Decimal(sku["estimated_margin_amount"]) > Decimal("0")
+    assert any(item["currency"] == "ACP" for item in payload["gross_captured_totals"])
+    assert any(item["currency"] == "ACP" for item in payload["estimated_cost_totals"])
+    assert any(item["currency"] == "ACP" for item in payload["estimated_margin_totals"])
 
 
 def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client):
@@ -179,6 +188,17 @@ def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client):
     assert execute.status_code == 200, execute.text
     executed_payload = execute.json()
     assert executed_payload["item"]["receipt"]["proof"]["referral_rewards"]["status"] == "rewarded"
+
+    revenue = client.get("/v1/workflow-store/admin/revenue?days=1", headers=owner_headers)
+    assert revenue.status_code == 200, revenue.text
+    revenue_payload = revenue.json()
+    sku = next(
+        item
+        for item in revenue_payload["skus"]
+        if item["workflow_slug"] == "token-risk-report" and item["currency"] == "ACP"
+    )
+    assert Decimal(sku["referral_commission_amount"]) > Decimal("0")
+    assert any(item["currency"] == "ACP" and Decimal(item["amount"]) > Decimal("0") for item in revenue_payload["referral_commission_totals"])
 
     summary = client.get("/v1/referrals/me/summary", headers=owner_headers)
     assert summary.status_code == 200, summary.text

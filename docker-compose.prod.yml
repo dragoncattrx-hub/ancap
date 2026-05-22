@@ -13,12 +13,23 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build: .
     env_file:
       - ./Sicret/bridge-bsc/bridge.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
+      REDIS_URL: redis://redis:6379/0
       SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
       CURSOR_SECRET: ${CURSOR_SECRET:-change-me-cursor-secret}
       CRON_SECRET: ${CRON_SECRET:-}
@@ -41,6 +52,7 @@ services:
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://ancap.cloud}
       PASSWORD_RESET_TOKEN_TTL_MINUTES: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:-30}
       ACP_WALLET_RECOVERY_MASTER_KEY: ${ACP_WALLET_RECOVERY_MASTER_KEY:-}
+      PLATFORM_ADMIN_USER_IDS: ${PLATFORM_ADMIN_USER_IDS:-}
       MAIL_ENABLED: ${MAIL_ENABLED:-false}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -52,6 +64,14 @@ services:
       SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
       SMTP_TIMEOUT_SECONDS: ${SMTP_TIMEOUT_SECONDS:-15}
       LOGIN_ALERTS_ENABLED: ${LOGIN_ALERTS_ENABLED:-true}
+      LLM_PROVIDER: ${LLM_PROVIDER:-teneta_claude}
+      LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.tenetauniversity.com}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-45}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-1800}
+      LLM_DAILY_BUDGET_ACP: ${LLM_DAILY_BUDGET_ACP:-250}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level
@@ -62,6 +82,8 @@ services:
       - ./Sicret:/run/secrets
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test:
@@ -122,4 +144,5 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
 

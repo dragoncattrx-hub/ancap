@@ -1008,8 +1008,18 @@ export const workflowStore = {
   async getProofBundle(id: string) {
     return apiFetch(`/workflow-store/runs/${id}/proof-bundle`);
   },
+  runEventsUrl(id: string) {
+    const params = new URLSearchParams();
+    const token = getToken();
+    if (token) params.set("token", token);
+    const query = params.toString();
+    return `${API_BASE}/workflow-store/runs/${encodeURIComponent(id)}/events${query ? `?${query}` : ""}`;
+  },
   async revenueSummary(days = 30) {
     return apiFetch(`/workflow-store/admin/revenue?days=${encodeURIComponent(String(days))}`);
+  },
+  revenueExportUrl(days = 30) {
+    return `${API_BASE}/workflow-store/admin/revenue?days=${encodeURIComponent(String(days))}`;
   },
 };
 
@@ -1019,6 +1029,9 @@ export const paidApi = {
   },
   async listMyUsage(limit = 50) {
     return apiFetch(`/paid-api/me/usage?limit=${encodeURIComponent(String(limit))}`);
+  },
+  usageExportUrl(limit = 500) {
+    return `${API_BASE}/paid-api/me/usage/export?limit=${encodeURIComponent(String(limit))}`;
   },
   async setSpendCap(agentId: string, data: { currency?: string; monthly_cap?: string | null }) {
     return apiFetch(`/paid-api/agents/${encodeURIComponent(agentId)}/spend-cap`, {

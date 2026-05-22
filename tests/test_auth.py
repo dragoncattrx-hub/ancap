@@ -1,6 +1,9 @@
 """Auth: register user, login, password reset flows."""
 import hashlib
+import uuid
 from datetime import datetime, timedelta, timezone
+
+import pytest
 
 from sqlalchemy import create_engine, select as sync_select
 from sqlalchemy.orm import Session
@@ -8,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.api.routers import auth as auth_router
 from app.db.models import PasswordResetToken, User, UserAcpWallet, UserEvmWallet
 from app.services.acp_wallet import decrypt_mnemonic, decrypt_wallet_secret_with_password, password_recovery_ready
+from app.services.rate_limit import clear_rate_limit_state
 from tests.conftest import _sync_database_url, unique_email
 
 
@@ -155,12 +159,17 @@ def test_password_reset_returns_structured_acp_wallet_block_error(client, monkey
     sync_engine.dispose()
 
 
+def _unique_wallet_address() -> str:
+    return f"0x{uuid.uuid4().hex}{uuid.uuid4().hex[:8]}"
+
+
+
 def test_password_recover_with_wallet_returns_structured_not_available_for_legacy_acp_wallet(client, monkeypatch):
     from app.config import get_settings
-    monkeypatch.delenv("ACP_WALLET_RECOVERY_MASTER_KEY", raising=False)
+    monkeypatch.setenv("ACP_WALLET_RECOVERY_MASTER_KEY", "")
     get_settings.cache_clear()
 
-    wallet_address = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa11"
+    wallet_address = _unique_wallet_address()
     email = unique_email()
     password = "password123"
     register = client.post(
@@ -220,7 +229,7 @@ def test_password_recover_with_wallet_succeeds_for_recovery_ready_wallet(client,
     from app.config import get_settings
     get_settings.cache_clear()
 
-    wallet_address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb22"
+    wallet_address = _unique_wallet_address()
     email = unique_email()
     password = "password123"
     register = client.post(

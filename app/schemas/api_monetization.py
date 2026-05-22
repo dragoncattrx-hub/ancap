@@ -64,3 +64,5 @@ class PaidApiSpendCapResponse(BaseModel):
 
 class PaidApiUsageEventsResponse(BaseModel):
     items: list[PaidApiUsagePublic] = Field(default_factory=list)
+    exported_at: Optional[datetime] = None
+    totals_by_currency: dict[str, str] = Field(default_factory=dict)

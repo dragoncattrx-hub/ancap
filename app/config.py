@@ -152,6 +152,25 @@ class Settings(BaseSettings):
     acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"  # can be overridden by env; default points to built-in ACP tx viewer
     turnstile_site_key: str = ""
 
+    # Production AI execution. Teneta/Claude-compatible Anthropic API is the
+    # default primary provider; local/dev can fall back to deterministic shells.
+    llm_provider: str = "teneta_claude"  # teneta_claude | openai | ollama | disabled
+    llm_model: str = "claude-sonnet-4-6"
+    anthropic_base_url: str = "https://api.tenetauniversity.com"
+    anthropic_api_key: str = ""
+    openai_api_key: str = ""
+    ollama_base_url: str = "http://localhost:11434"
+    llm_timeout_seconds: int = 45
+    llm_max_tokens: int = 1800
+    llm_daily_budget_acp: str = "250"
+    llm_fallback_to_template: bool = True
+
+    # Redis is optional at runtime; when unavailable, services use safe in-memory
+    # fallbacks so local tests and single-process development stay easy.
+    redis_url: str = ""
+    rate_limit_per_minute: int = 120
+    rate_limit_burst: int = 240
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -4,10 +4,12 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
+import csv
 import hashlib
+import io
 import json
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -26,6 +28,7 @@ from app.schemas import (
     PaidApiUsagePublic,
 )
 from app.services.api_keys import KEY_PREFIX_DISPLAY_LEN, resolve_key
+from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
 
 
@@ -330,7 +333,65 @@ async def list_my_paid_api_usage(
             .limit(limit)
         )
     ).scalars().all()
-    return PaidApiUsageEventsResponse(items=[_serialize_usage(row) for row in rows])
+    totals_by_currency: dict[str, Decimal] = {}
+    for row in rows:
+        currency = (row.amount_currency or "ACP").upper()
+        totals_by_currency[currency] = totals_by_currency.get(currency, Decimal("0")) + Decimal(str(row.amount_value or "0"))
+    return PaidApiUsageEventsResponse(
+        items=[_serialize_usage(row) for row in rows],
+        exported_at=datetime.now(UTC),
+        totals_by_currency={currency: str(amount) for currency, amount in totals_by_currency.items()},
+    )
+
+
+@router.get("/me/usage/export")
+async def export_my_paid_api_usage_csv(
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+    limit: int = Query(500, ge=1, le=5000),
+):
+    rows = (
+        await session.execute(
+            select(ApiUsageEvent)
+            .where(ApiUsageEvent.owner_user_id == UUID(user_id))
+            .order_by(desc(ApiUsageEvent.created_at))
+            .limit(limit)
+        )
+    ).scalars().all()
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow([
+        "id",
+        "created_at",
+        "agent_id",
+        "owner_user_id",
+        "api_key_prefix",
+        "product_slug",
+        "endpoint",
+        "status",
+        "amount_currency",
+        "amount_value",
+        "ledger_event_id",
+        "request_hash",
+    ])
+    for row in rows:
+        writer.writerow([
+            str(row.id),
+            row.created_at.isoformat() if row.created_at else "",
+            str(row.agent_id),
+            str(row.owner_user_id) if row.owner_user_id else "",
+            row.api_key_prefix or "",
+            row.product_slug,
+            row.endpoint,
+            row.status,
+            row.amount_currency,
+            str(row.amount_value),
+            str(row.ledger_event_id) if row.ledger_event_id else "",
+            row.request_hash,
+        ])
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    headers = {"Content-Disposition": f'attachment; filename="ancap-paid-api-usage-{timestamp}.csv"'}
+    return Response(content=buffer.getvalue(), media_type="text/csv; charset=utf-8", headers=headers)
 
 
 @router.post("/agents/{agent_id}/spend-cap", response_model=PaidApiSpendCapResponse)
@@ -376,7 +437,19 @@ async def _run_paid_api_product(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None,
+    idempotency_key: str | None,
 ) -> PaidApiAnalyzeResponse:
+    request_payload = body.model_dump(mode="json")
+    if idempotency_key:
+        hit = await get_idempotency_hit(
+            session,
+            scope=f"paid_api.{product_slug}",
+            key=idempotency_key,
+            request_payload=request_payload,
+        )
+        if hit is not None:
+            return PaidApiAnalyzeResponse.model_validate(hit.response_json)
+
     product = _product(product_slug)
     result = _build_result(product, body)
     usage = await _charge_usage(session, product=product, body=body, raw_api_key=x_api_key)
@@ -389,11 +462,11 @@ async def _run_paid_api_product(
     await session.flush()
     await session.refresh(usage)
     usage_public = _serialize_usage(usage)
-    return PaidApiAnalyzeResponse(
-        product=product,
-        usage=usage_public,
-        result=result,
-        receipt={
+    response_payload = {
+        "product": product.model_dump(mode="json"),
+        "usage": usage_public.model_dump(mode="json"),
+        "result": result,
+        "receipt": {
             "receipt_version": "paid-api-usage/v1",
             "product_slug": product.slug,
             "endpoint": product.endpoint,
@@ -402,7 +475,17 @@ async def _run_paid_api_product(
             "ledger_event_id": str(usage.ledger_event_id) if usage.ledger_event_id else None,
             "x402": product.x402,
         },
-    )
+    }
+    if idempotency_key:
+        await store_idempotency_result(
+            session,
+            scope=f"paid_api.{product_slug}",
+            key=idempotency_key,
+            request_payload=request_payload,
+            status_code=200,
+            response_json=response_payload,
+        )
+    return PaidApiAnalyzeResponse.model_validate(response_payload)
 
 
 @router.post("/token-risk", response_model=PaidApiAnalyzeResponse)
@@ -410,8 +493,9 @@ async def token_risk_snapshot(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
-    return await _run_paid_api_product("token-risk", body, session, x_api_key)
+    return await _run_paid_api_product("token-risk", body, session, x_api_key, idempotency_key)
 
 
 @router.post("/listing-readiness", response_model=PaidApiAnalyzeResponse)
@@ -419,8 +503,9 @@ async def listing_readiness_score(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
-    return await _run_paid_api_product("listing-readiness", body, session, x_api_key)
+    return await _run_paid_api_product("listing-readiness", body, session, x_api_key, idempotency_key)
 
 
 @router.post("/wallet-risk", response_model=PaidApiAnalyzeResponse)
@@ -428,8 +513,9 @@ async def wallet_risk_snapshot(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
-    return await _run_paid_api_product("wallet-risk", body, session, x_api_key)
+    return await _run_paid_api_product("wallet-risk", body, session, x_api_key, idempotency_key)
 
 
 @router.post("/bridge-proof", response_model=PaidApiAnalyzeResponse)
@@ -437,8 +523,9 @@ async def bridge_proof_check(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
-    return await _run_paid_api_product("bridge-proof", body, session, x_api_key)
+    return await _run_paid_api_product("bridge-proof", body, session, x_api_key, idempotency_key)
 
 
 @router.post("/campaign-score", response_model=PaidApiAnalyzeResponse)
@@ -446,5 +533,6 @@ async def campaign_score(
     body: PaidApiAnalyzeRequest,
     session: DbSession,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
-    return await _run_paid_api_product("campaign-score", body, session, x_api_key)
+    return await _run_paid_api_product("campaign-score", body, session, x_api_key, idempotency_key)

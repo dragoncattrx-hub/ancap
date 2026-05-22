@@ -45,12 +45,36 @@ from app.services.auth_flows import (
 from app.services.referrals import attribute_referral
 from app.services.turnstile import verify_turnstile
 from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
+from app.services.rate_limit import build_rate_limit_key, enforce_rate_limit, get_request_ip
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+async def _enforce_auth_rate_limit(
+    request: Request,
+    *,
+    scope: str,
+    subject: str | None = None,
+    limit: int,
+    window_seconds: int,
+) -> None:
+    await enforce_rate_limit(
+        key=build_rate_limit_key(scope=scope, ip=get_request_ip(request), subject=subject),
+        limit=limit,
+        window_seconds=window_seconds,
+    )
+
+
+
 @router.post("/login", response_model=AuthLoginResponse)
 async def login(body: AuthLoginRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_login",
+        subject=body.email,
+        limit=8,
+        window_seconds=300,
+    )
     await verify_turnstile(request, body.turnstile_token, "login")
     q = select(User).where(User.email == body.email)
     r = await session.execute(q)
@@ -84,6 +108,13 @@ async def login(body: AuthLoginRequest, request: Request, session: DbSession):
 
 @router.post("/wallet/nonce", response_model=WalletAuthNonceResponse)
 async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_wallet_nonce",
+        subject=body.address,
+        limit=12,
+        window_seconds=300,
+    )
     await verify_turnstile(request, body.turnstile_token, "login")
     forwarded_host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
     host = forwarded_host or (request.headers.get("host") or "ancap.cloud").split(",")[0].strip()
@@ -114,6 +145,13 @@ async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: 
 
 @router.post("/wallet/verify", response_model=AuthLoginResponse)
 async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_wallet_verify",
+        subject=body.address,
+        limit=10,
+        window_seconds=300,
+    )
     try:
         token, user = await verify_wallet_auth_and_issue_token(
             session,
@@ -172,6 +210,13 @@ async def wallet_link(
 
 @router.post("/users", response_model=UserPublic, status_code=201)
 async def create_user(body: UserCreateRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_register",
+        subject=body.email,
+        limit=6,
+        window_seconds=3600,
+    )
     await verify_turnstile(request, body.turnstile_token, "register")
     q = select(User).where(User.email == body.email)
     r = await session.execute(q)
@@ -213,6 +258,13 @@ async def create_user(body: UserCreateRequest, request: Request, session: DbSess
 
 @router.post("/password/forgot", response_model=PasswordForgotResponse)
 async def password_forgot(body: PasswordForgotRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_password_forgot",
+        subject=body.email,
+        limit=5,
+        window_seconds=900,
+    )
     await verify_turnstile(request, body.turnstile_token, "login")
     user = await find_user_by_email(session, body.email)
     if user is not None:
@@ -228,6 +280,13 @@ async def password_forgot(body: PasswordForgotRequest, request: Request, session
 
 @router.post("/password/reset", response_model=PasswordResetResponse)
 async def password_reset(body: PasswordResetRequest, request: Request, session: DbSession):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_password_reset",
+        subject=body.token[:12],
+        limit=8,
+        window_seconds=900,
+    )
     await verify_turnstile(request, body.turnstile_token, "login")
     try:
         reset = await get_password_reset_token(session, body.token)
@@ -271,8 +330,16 @@ async def password_reset(body: PasswordResetRequest, request: Request, session: 
 @router.post("/password/recover-with-wallet", response_model=PasswordRecoverWithWalletResponse)
 async def password_recover_with_wallet(
     body: PasswordRecoverWithWalletRequest,
+    request: Request,
     session: DbSession,
 ):
+    await _enforce_auth_rate_limit(
+        request,
+        scope="auth_password_recover_wallet",
+        subject=body.address,
+        limit=6,
+        window_seconds=900,
+    )
     try:
         _token, user = await verify_wallet_auth_and_issue_token(
             session,
