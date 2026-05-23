@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from app.config import get_settings
 from tests.conftest import unique_email, unique_name
 
 
@@ -44,6 +45,27 @@ def test_faucet_claim_idempotent_once(client):
     assert r2.status_code == 201, r2.text
     body2 = r2.json()
     assert body2["id"] == body1["id"]
+
+
+def test_quickstart_bypasses_owner_tier_gate_for_onboarding_flow(client, monkeypatch):
+    token = _register_and_login(client)
+    agent_id = _create_agent(client, token)
+
+    monkeypatch.setenv("PARTICIPATION_GATES_ENABLED", "true")
+    get_settings.cache_clear()
+    try:
+        quick = client.post(
+            "/v1/onboarding/quickstart/run",
+            headers={"Authorization": f"Bearer {token}", "Idempotency-Key": unique_name("idk_growth_qs")},
+            json={"owner_agent_id": agent_id},
+        )
+        assert quick.status_code == 201, quick.text
+        body = quick.json()
+        assert body["id"]
+        assert body["state"] in ("running", "succeeded", "queued", "failed")
+    finally:
+        monkeypatch.setenv("PARTICIPATION_GATES_ENABLED", "false")
+        get_settings.cache_clear()
 
 
 def test_referral_attribution_unique(client):

@@ -1090,6 +1090,85 @@ export const paidApi = {
   },
 };
 
+export const organizations = {
+  async list() {
+    return apiFetch("/organizations");
+  },
+  async get(id: string) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}`);
+  },
+  async create(data: { name: string; description?: string }) {
+    return apiFetch("/organizations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async update(id: string, data: { name?: string; description?: string | null; billing_wallet_address?: string | null }) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+  async remove(id: string) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+  async listMembers(id: string) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}/members`);
+  },
+  async addMember(id: string, data: { email: string; role: string }) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}/members`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async updateMemberRole(id: string, userId: string, data: { role: string }) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}/role`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+  async removeMember(id: string, userId: string) {
+    return apiFetch(`/organizations/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+export const webhooks = {
+  async list() {
+    return apiFetch("/webhooks");
+  },
+  async get(id: string) {
+    return apiFetch(`/webhooks/${encodeURIComponent(id)}`);
+  },
+  async create(data: { url: string; event_types: string[]; description?: string }) {
+    return apiFetch("/webhooks", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async remove(id: string) {
+    return apiFetch(`/webhooks/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+  async rotateSecret(id: string) {
+    return apiFetch(`/webhooks/${encodeURIComponent(id)}/rotate-secret`, {
+      method: "POST",
+    });
+  },
+  async listDeliveries(id: string, limit = 50) {
+    return apiFetch(`/webhooks/${encodeURIComponent(id)}/deliveries?limit=${encodeURIComponent(String(limit))}`);
+  },
+  async sendTest(id: string) {
+    return apiFetch(`/webhooks/${encodeURIComponent(id)}/test`, {
+      method: "POST",
+    });
+  },
+};
+
 export const system = {
   async fees() {
     return apiFetch("/system/fees");
@@ -1279,6 +1358,8 @@ export const api = {
   growthTasks,
   growthDashboard,
   referrals,
+  organizations,
+  webhooks,
   system,
   decisionLogs,
   governance,

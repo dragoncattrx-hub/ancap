@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
-import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/components/AuthProvider";
+import { organizations } from "@/lib/api";
 
 type Org = {
   id: string;
@@ -17,6 +20,8 @@ type Org = {
 };
 
 export default function OrganizationsPage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [items, setItems] = useState<Org[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -27,7 +32,7 @@ export default function OrganizationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch("/organizations");
+      const data = await organizations.list();
       setItems(data || []);
       setError("");
     } catch (e: any) {
@@ -38,17 +43,21 @@ export default function OrganizationsPage() {
   }, []);
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
     void load();
-  }, [load]);
+  }, [isAuthenticated, load]);
 
   async function createOrg(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
     try {
-      await apiFetch("/organizations", {
-        method: "POST",
-        body: JSON.stringify({ name, description: description || undefined }),
-      });
+      await organizations.create({ name, description: description || undefined });
       setName("");
       setDescription("");
       await load();
@@ -58,6 +67,8 @@ export default function OrganizationsPage() {
       setCreating(false);
     }
   }
+
+  if (authLoading || !isAuthenticated) return null;
 
   return (
     <>
@@ -99,7 +110,7 @@ export default function OrganizationsPage() {
             ) : (
               <div className="space-y-3">
                 {items.map((org) => (
-                  <a key={org.id} href={`/organizations/${encodeURIComponent(org.id)}`} className="block rounded-xl border border-[var(--border)] p-4 transition hover:border-[var(--accent)]/50">
+                  <Link key={org.id} href={`/organizations/${encodeURIComponent(org.id)}`} className="block rounded-xl border border-[var(--border)] p-4 transition hover:border-[var(--accent)]/50">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="font-semibold">{org.name}</div>
@@ -110,9 +121,9 @@ export default function OrganizationsPage() {
                     {org.description && <p className="mt-2 text-sm opacity-70">{org.description}</p>}
                     <div className="mt-3 flex gap-4 text-xs opacity-50">
                       <span>{org.member_count} members</span>
-                      {org.billing_wallet_address && <span>{org.billing_wallet_address}</span>}
+                      {org.billing_wallet_address && <span className="truncate">{org.billing_wallet_address}</span>}
                     </div>
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}

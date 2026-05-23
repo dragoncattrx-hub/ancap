@@ -2,8 +2,8 @@
 
 ## Status
 
-As of 2026-05-04, the pilot is no longer just a plan.
-It has already completed one real end-to-end ACP -> BSC run successfully.
+As of 2026-05-23, the pilot is no longer just a plan.
+It has already completed a real end-to-end ACP -> BSC run successfully, and the runtime also exposes a live reverse BSC -> ACP payout path.
 
 ### Current deployed contracts
 - `WACP`: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
@@ -13,8 +13,10 @@ It has already completed one real end-to-end ACP -> BSC run successfully.
 - `BRIDGE_RAIL_ENABLED=true`
 - `BRIDGE_RAIL_PAUSED=false`
 - `BRIDGE_DRY_RUN=false`
-- `BRIDGE_ACP_CONFIRMATIONS=3`
+- latest verified bridge status returned `confirmations_acp=1`
+- latest verified bridge status returned `confirmations_bsc=18`
 - BSC mint signer path is active
+- reverse public status currently resolves to live (`redeem_available=true`, `redeem_mode="live"`) when reserve health is not critical
 
 ### Confirmed successful pilot operation
 - operation id: `9320ecb4-c407-4ad2-8a4c-5c634b2259d8`
@@ -27,16 +29,17 @@ It has already completed one real end-to-end ACP -> BSC run successfully.
 
 1. Intent creation API FK ordering bug fixed.
 2. ACP watcher now detects real reserve deposits and matches them to pending intents.
-3. `BRIDGE_ACP_CONFIRMATIONS` is now actually passed through Docker runtime.
-4. Orchestrator now submits live BSC mint txs.
-5. BSC watcher now normalizes tx hashes with `0x` before receipt lookup.
-6. API now exposes:
+3. ACP confirmations are passed through runtime and currently verify as `1` in the latest checked environment.
+4. Orchestrator submits live BSC mint txs.
+5. BSC watcher normalizes tx hashes with `0x` before receipt lookup.
+6. API exposes:
    - `acp_tx_hash`
    - `bsc_tx_hash_mint`
    - `deposit_ref_hex`
    - `bsc_log_index`
    - `version`
-7. Frontend intent list now shows those result fields, links mint tx to BscScan, and links ACP deposit tx to the built-in ANCAP ACP tx viewer.
+7. Frontend intent list shows those result fields, links mint tx to BscScan, and links ACP deposit tx to the built-in ANCAP ACP tx viewer.
+8. Reverse path runtime now also covers burn detection, ACP payout submit, and payout confirmation.
 
 ## Current operator flow
 
@@ -59,7 +62,6 @@ Expected:
 - bridge enabled
 - not paused
 - `dry_run=false`
-- `confirmations_acp=3`
 - reconciliation `ok=true`
 
 ### 3. Create intent
@@ -96,16 +98,12 @@ Check all of:
 Run one more small controlled ACP -> BSC pilot.
 Goal is repeatability, not just one successful pass.
 
-In parallel, keep reverse rail staged but truthful:
-- reverse intent registration may be tested
-- reverse quote preview may be tested
-- reverse backend watcher/orchestrator/ACP-confirmation path may be tested internally
-- reverse payout must not be advertised as live yet
+In parallel, treat reverse rail truthfully:
+- reverse runtime is already live enough to process real burn -> payout -> confirmation flows
+- but it still needs replay/recovery hardening, broader validation, and possibly softer public wording if product does not want a plain `live` posture yet
+- if docs should say `pending-rollout`, then runtime/API/UI must be changed back intentionally; right now they do not
 
 ## Notes
 - Keep caps conservative until there is at least one more successful run.
 - Do not commit mnemonics or private keys.
-- Reverse direction `BSC -> ACP` is partially surfaced, but still separate operational work.
-- Public reverse status should remain:
-  - `redeem_available=false`
-  - `redeem_mode=pending-rollout`
+- Reverse direction `BSC -> ACP` is no longer just internal-only in runtime truth; docs must not pretend otherwise.

@@ -22,7 +22,7 @@ Fixed decisions:
 | P0 | Auth rate limiting | DONE |
 | P0 | Paid API idempotency/export/totals | DONE |
 | P0 | Revenue margin/referral totals | DONE |
-| P0 | Admin billing UI | PARTIAL |
+| P0 | Admin billing UI | DONE: resilient partial-failure loading + refresh + empty states verified |
 | P1 | LLM abstraction and `llm_usage_events` | DONE |
 | P1 | Real LLM in paid workflow execution | DONE |
 | P2 | Redis-backed rate limits/cache/pubsub | DONE |
@@ -36,34 +36,66 @@ Fixed decisions:
 | P5 | Product docs/help center | DONE |
 | P5 | AI/ISO governance notes and premium readiness SKU | DONE |
 | P5 | Project/ACP whitepapers, legal pages, cookie consent | DONE |
-| P6 | Strategy Builder MVP | PARTIAL: lightweight builder exists; React Flow canvas remains later |
+| P6 | Strategy Builder MVP | DONE for current lightweight builder: Suspense-safe, backend-derived strategy metadata, validation hardened; React Flow remains later |
 | P6 | Social profiles/follows | PARTIAL: backend and profile pages exist; feed polish remains |
 | P6 | Theme toggle and PWA shell | DONE |
 | P7 | Audit log viewer | DONE |
-| P7 | Organizations/teams | PARTIAL: backend complete, frontend UI in stabilization |
-| P7 | Webhooks | PARTIAL: dispatcher complete, frontend UI in stabilization |
-| Deploy | GitHub and production sync | PENDING: local `master` is ahead of `origin/master` |
+| P7 | Organizations/teams | DONE for current stabilization slice: frontend wrappers + detail/member-role flows + tests/build green |
+| P7 | Webhooks | DONE for current stabilization slice: frontend wrappers + create/test/rotate/delete + delivery view + tests/build green |
+| Deploy | GitHub and production sync | IN PROGRESS: `origin/master` matches local HEAD (`0 0`), but working tree is dirty and deploy truth still needs cleanup |
 
 ## Immediate Finish Plan
 
-1. Stabilize the open Phase 7 UI changes:
-   - Fix `/strategy-builder` production build by wrapping `useSearchParams()` in a Suspense boundary.
-   - Keep `apiFetch` exported for Webhooks and Organizations pages.
-   - Keep navigation entries for Webhooks, Organizations, and Builder.
-   - Verify Webhooks UI supports endpoint creation, delivery history, and test delivery.
-   - Verify Organizations UI supports org list, org detail, members, roles, and billing wallet.
+1. Deploy truth + docs sync:
+   - Verify real runtime state across local Docker, `origin/master`, and `ancap.cloud`.
+   - Correct docs that still describe outdated UI status or outdated bridge rollout status.
+   - Keep one truthful runtime story across roadmap, bridge docs, and operational notes.
 
-2. Commit and publish:
-   - Run frontend lint/build and backend targeted tests.
-   - Commit the remaining Phase 7 UI/build fixes as one clean commit.
-   - Push local commits to GitHub so `origin/master` matches local `HEAD`.
+2. Fix the remaining deploy-truth blockers before push/deploy:
+   - `internal/frontend-build` currently returns `NEXT_PUBLIC_APP_BUILD_ID: "unknown"` both locally and on `ancap.cloud`, so the frontend image provenance is not yet provable.
+   - Production security headers do not yet match the local proxy truth (`X-Frame-Options`, `Referrer-Policy`, duplicated HSTS/Permissions-Policy values).
+   - Working tree is still dirty with bridge/mobile/runtime changes that must be reviewed, grouped, committed, and then deployed intentionally.
 
-3. Deploy:
-   - Pull the pushed code on `/opt/ancap-migration/current`.
-   - Verify production env without printing secrets.
+3. Then push and deploy:
+   - Commit the verified roadmap slices cleanly.
+   - Push local changes to GitHub.
+   - Pull on the target server / host clone.
    - Run `alembic upgrade head`.
    - Rebuild/restart API, frontend, Redis, ACP node, and nginx stack.
-   - Smoke test `ancap.cloud` routes and API health endpoints.
+   - Smoke test `ancap.cloud` routes and API health endpoints again after deploy.
+
+## Verified runtime truth snapshot (2026-05-23)
+
+Local prod-like stack:
+- `http://localhost:8080/` -> `200`
+- `http://localhost:8080/api/v1/system/health` -> `200 {"status":"ok"}`
+- `http://localhost:8080/openapi.json` -> `200`
+- `http://localhost:8080/api/docs` -> `200`
+- `http://localhost:8080/api/v1/users/me` -> `401`
+- `http://localhost:9080` -> `200`
+- Docker containers up: `ancap-proxy-1`, `ancap-frontend-1`, `ancap-api-1 (healthy)`, `ancap-postgres-1 (healthy)`, `ancap-redis-1 (healthy)`, `ancap-acp-node-1`, `searxng`
+
+Production smoke:
+- `https://ancap.cloud/` -> `200`
+- `https://ancap.cloud/api/v1/system/health` -> `200 {"status":"ok"}`
+- `https://ancap.cloud/api/v1/system/health/full` -> `200` with healthy `database`, `redis`, `llm`, and `bridge` checks
+- `https://ancap.cloud/internal/frontend-build` -> `200`, but still reports `NEXT_PUBLIC_APP_BUILD_ID: "unknown"`
+
+Security/truth notes from the same check:
+- Local proxy currently returns the desired hardening posture: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), microphone=(), camera=()`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+- Production currently differs: `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: same-origin`, and duplicated `Permissions-Policy` / `Strict-Transport-Security` values were observed.
+- Static sensitive paths (`/.env`, `/.env.example`, `/.git/config`, `/docker-compose.yml`, `/admin`) returned `404` locally and on production.
+- `TRACE /` returned `405` locally and on production.
+
+## Bridge truth snapshot
+
+As of the latest verified runtime check:
+- `GET /api/v1/bridge/status` locally and on production shows bridge rail enabled and not paused.
+- Reverse public status is no longer `pending-rollout` in runtime; current API behavior exposes:
+  - `redeem_available=true` when reserve health is not critical
+  - `redeem_mode="live"`
+- Runtime code in `app/api/routers/bridge_rail.py` explicitly states that the `BSC -> ACP` redeem path is live with funded reserve and automated payout processing.
+- Therefore any docs still saying public reverse status must remain `pending-rollout` are stale and must be corrected.
 
 ## LLM Provider Reliability
 
@@ -110,7 +142,7 @@ Available or in progress:
 - `GET/POST /organizations/{id}/members`
 - `GET /admin/audit-log`
 
-Frontend routes to keep production-ready:
+Frontend routes currently verified locally/build-safe:
 
 - `/ai/workflows`
 - `/billing`
@@ -124,14 +156,14 @@ Frontend routes to keep production-ready:
 
 ## Test Plan
 
-Local quality gates:
+Recent local quality gates that passed during the current stabilization slice:
 
-- `npm run lint`
-- `npm run build`
-- `python -m pytest tests/api/test_workflow_store.py tests/api/test_paid_api.py tests/test_metrics.py -q`
-- Full `pytest -q` before final release when time allows.
+- `pytest.exe tests\api\test_paid_api.py tests\api\test_workflow_store.py tests\api\test_admin_access.py -q` -> `15 passed`
+- `pytest.exe tests\test_strategies.py tests\api\test_ai_console_wave1.py tests\api\test_growth_layer.py -q` -> `11 passed, 1 skipped`
+- `pytest.exe tests\api\test_webhooks.py tests\api\test_organizations.py -q` -> passed earlier in the same roadmap slice
+- `npm run build` -> success after billing and strategy-builder hardening
 
-Production smoke:
+Production smoke targets to keep using:
 
 - `https://ancap.cloud/`
 - `https://ancap.cloud/ai/workflows`
@@ -144,6 +176,7 @@ Production smoke:
 - `/api/v1/system/health`
 - `/api/v1/system/health/full`
 - `/api/v1/metrics`
+- `/internal/frontend-build`
 
 ## Later Expansion
 

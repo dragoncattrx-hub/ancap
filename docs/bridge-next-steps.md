@@ -1,8 +1,9 @@
 # Bridge next steps (current state)
 
-## Current state as of 2026-05-04
+## Current state as of 2026-05-23
 
 ACP -> BSC pilot rail is already working end-to-end.
+Reverse BSC -> ACP payout path is also live in runtime, but still needs operational hardening and clearer public UX metadata.
 
 ### Confirmed working
 - BSC contracts deployed on mainnet:
@@ -12,24 +13,34 @@ ACP -> BSC pilot rail is already working end-to-end.
   - `BRIDGE_RAIL_ENABLED=true`
   - `BRIDGE_RAIL_PAUSED=false`
   - `BRIDGE_DRY_RUN=false`
-  - `BRIDGE_ACP_CONFIRMATIONS=3`
+  - current verified runtime check exposed `confirmations_acp=1`
+  - current verified runtime check exposed `confirmations_bsc=18`
+- Recent live bridge status checks (local + prod) showed:
+  - bridge enabled
+  - not paused
+  - reconciliation `delta_wacp_wei=0`
+  - reverse completed liability tracked in reconciliation payload
+  - public status currently exposes `redeem_available=true` and `redeem_mode="live"` when reserve health is not critical
 - First real pilot intent completed:
   - operation id: `9320ecb4-c407-4ad2-8a4c-5c634b2259d8`
   - ACP deposit tx: `6c38d15141424819700e043fbd664826d37b0e0de14179a5f18906c2b3b4838e`
   - BSC mint tx: `a656c01758cd51f0fdd82627e6ac6ab5e7d24acbe4b694cd5e41cb1692ad8f8b`
   - final status: `COMPLETED`
-- Reconciliation is clean:
-  - `total_acp_smallest=100000000`
-  - `total_wacp_wei=1000000000000000000`
+- Reconciliation is clean in current checks:
   - `delta_wacp_wei=0`
-- On-chain balance verified:
-  - operator wallet `0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4` holds `1 wACP`
+- On-chain/public runtime notes currently include:
+  - built-in ACP tx viewer support via `/acp/tx/{txid}`
+  - reserve proof endpoint live
+  - reverse payout path described by runtime as live with funded reserve and automated payout processing
 
 ## Important fixes already applied
 - Intent creation API no longer fails on audit-event FK ordering.
 - ACP watcher now matches real deposits into reserve address and moves intents from `PENDING_DEPOSIT` to `CONFIRMED_ON_ACP`.
 - Orchestrator now submits live BSC mint transactions.
 - BSC watcher now normalizes tx hash with `0x` before receipt lookup.
+- Reverse watcher ingests `ReleaseRequested` burns.
+- Reverse orchestrator can submit ACP payout and record `ACP_PAYOUT_SENT`.
+- ACP watcher can confirm payout tx and move reverse operations to `COMPLETED`.
 - Bridge API now exposes:
   - `acp_tx_hash`
   - `bsc_tx_hash_mint`
@@ -57,18 +68,32 @@ Suggested flow:
    - reconciliation remains `delta_wacp_wei=0`
    - wallet `wACP` balance increases as expected
 
-### 2. Reverse rail: keep it truthful, then finish operations
+### 2. Reverse rail: keep docs honest, then harden operations
 Current status for `BSC -> ACP`:
-- public docs/UI/API already show it as **planned / pending rollout**
-- public status must stay:
-  - `redeem_available=false`
-  - `redeem_mode=pending-rollout`
-- redeem intent registration is now implemented
-- redeem quote preview is now implemented
+- runtime/public API currently exposes it as live when reserve health is acceptable
+- backend path is live enough to process:
+  - burn detection
+  - payout submission
+  - payout confirmation
+  - reconciliation accounting
+- however, this does **not** mean the reverse rail is “finished” operationally
+
+What remains before calling it mature:
+- hardened replay/idempotent burn-event confirmation across production recovery scenarios
+- broader production validation of ACP payout confirmation behavior
+- more operator recovery rehearsal and incident docs
+- explicit review of whether public UX copy should keep saying “live” or should move to a more nuanced “beta/live-with-limits” posture
 
 Already available for reverse rail:
 - `POST /api/v1/bridge/intents/bsc-to-acp`
 - `POST /api/v1/bridge/quote/bsc-to-acp`
+- public bridge status currently returns live redeem metadata
+- reverse admin listing: `GET /api/v1/bridge/admin/reverse/operations`
+- reverse liability summary: `GET /api/v1/bridge/admin/reverse/liability`
+- manual confirmed-burn attachment: `POST /api/v1/bridge/admin/reverse/bind-burn`
+- manual ACP payout attachment: `POST /api/v1/bridge/admin/reverse/bind-payout`
+- payout resend preparation: `POST /api/v1/bridge/admin/reverse/requeue-payout`
+- dispute escalation: `POST /api/v1/bridge/admin/reverse/mark-disputed`
 
 Quote response exposes:
 - `amount_wacp_wei`
@@ -78,21 +103,7 @@ Quote response exposes:
 - `remainder_wacp`
 - floor-rounding policy text
 
-Still not declared live:
-- public reverse enablement
-- hardened idempotent burn-event confirmation across production replay/recovery scenarios
-- reverse reconciliation / replay-safe recovery
-- wider production validation of ACP payout confirmation path
-
-What is now available for operator recovery:
-- reverse admin listing: `GET /api/v1/bridge/admin/reverse/operations`
-- reverse liability summary: `GET /api/v1/bridge/admin/reverse/liability`
-- manual confirmed-burn attachment: `POST /api/v1/bridge/admin/reverse/bind-burn`
-- manual ACP payout attachment: `POST /api/v1/bridge/admin/reverse/bind-payout`
-- payout resend preparation: `POST /api/v1/bridge/admin/reverse/requeue-payout`
-- dispute escalation: `POST /api/v1/bridge/admin/reverse/mark-disputed`
-
-All bridge admin recovery endpoints now require both platform-admin bearer auth and `X-Bridge-Operator-Secret`.
+All bridge admin recovery endpoints require both platform-admin bearer auth and `X-Bridge-Operator-Secret`.
 
 ### 3. Keep docs aligned with runtime truth
 Recommended:
@@ -101,9 +112,10 @@ Recommended:
 - update `bridge-launch-checklist.md`
 - update public wACP docs whenever status changes
 
-Main thing: docs must not imply that reverse payout is live when it is not.
+Main thing: docs must not claim `pending-rollout` for reverse public status if runtime already exposes `redeem_mode="live"`.
+If product wants a softer public story, runtime/API/UI should be changed to match that deliberately.
 
-### 4. ACP explorer link support is now wired
+### 4. ACP explorer link support is wired
 ACP deposit tx links no longer depend on a third-party explorer.
 ANCAP now provides a built-in tx viewer at:
 - `/acp/tx/{txid}`
@@ -114,7 +126,8 @@ Runtime/config default:
 That means bridge UI can link ACP deposit txs immediately, while still allowing override to an external ACP explorer later if one appears.
 
 ### 5. Finish reserve-proof maturity
-Current public reserve proof endpoint is live, but still intentionally reports `pending` because ACP reserve balance is not yet sourced from a dedicated snapshot table.
+Current public reserve proof endpoint is live.
+Reserve maturity is still not complete.
 
 Still needed:
 - dedicated reserve snapshot sourcing
@@ -122,7 +135,7 @@ Still needed:
 - stale-data detection
 - operator alerting on mismatch
 
-### 6. Runtime balance helper is now available
+### 6. Runtime balance helper is available
 A small helper script now exists:
 - `scripts/check_wacp_balance.py`
 
@@ -139,19 +152,20 @@ It reads:
 
 without depending on contract ABI files inside the API container.
 
-### 7. Reverse path status: ACP <- BSC is live, but still needs hardening
+### 7. Reverse path status: live in runtime, still needs hardening
 Current success is no longer only ACP -> BSC mint rail.
-Reverse direction is now live in the backend and public status:
+Reverse direction is live in backend/runtime truth:
 - BSC watcher ingests `ReleaseRequested`
 - orchestrator submits ACP payout and moves ops to `ACP_PAYOUT_SENT`
 - ACP watcher confirms payout tx and moves ops to `COMPLETED`
-- reconciliation reflects completed reverse payouts without outstanding liability
+- reconciliation reflects completed reverse payouts without outstanding liability in the latest verified check
 
-Remaining work after public enablement:
+Remaining work after public/runtime enablement:
 - production replay/idempotency hardening
 - broader reconciliation and operational validation
 - at least one additional controlled end-to-end reverse pilot for repeatability
-- decision on longer-term ACP finality policy beyond the current single-node runtime (`BRIDGE_ACP_CONFIRMATIONS=1`)
+- explicit finality-policy decision around current ACP confirmation settings
+- possible refinement of public UX/status wording if “live” is too strong for the desired operator posture
 
 ## Recommended operator checks before any next pilot
 - `GET /api/v1/bridge/status`
@@ -165,4 +179,4 @@ Remaining work after public enablement:
 - Keep secrets only in `Sicret/`
 - Do not commit mnemonics/private keys
 - Keep pilot caps conservative until at least one more successful run
-- Do not change `BRIDGE_ACP_CONFIRMATIONS=1` for this environment unless ACP block progression/finality model is changed deliberately
+- Do not silently let docs and runtime disagree about reverse-rail public status

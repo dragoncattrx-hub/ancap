@@ -52,6 +52,7 @@ export default function BillingPage() {
   const [apiUsageTotals, setApiUsageTotals] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -64,21 +65,61 @@ export default function BillingPage() {
     try {
       setLoading(true);
       setError("");
+      setNotice("");
+
       const balanceData = (await ledger.getBalance("user", user.id)) as BalanceResponse;
-      const [eventsData, runsData, apiProductsData, apiUsageData] = await Promise.all([
+      setBalance(balanceData);
+
+      const [eventsResult, runsResult, apiProductsResult, apiUsageResult] = await Promise.allSettled([
         ledger.getEvents(balanceData.account_id, 20),
         workflowStore.listRuns(20),
         paidApi.listProducts(),
         paidApi.listMyUsage(20),
       ]);
-      setBalance(balanceData);
-      setEvents(eventsData.items || []);
-      setRuns(runsData.items || []);
-      setApiProducts(apiProductsData.items || []);
-      setApiUsage(apiUsageData.items || []);
-      setApiUsageTotals(apiUsageData.totals_by_currency || {});
+
+      const partialFailures: string[] = [];
+
+      if (eventsResult.status === "fulfilled") {
+        setEvents(eventsResult.value.items || []);
+      } else {
+        setEvents([]);
+        partialFailures.push("billing events");
+      }
+
+      if (runsResult.status === "fulfilled") {
+        setRuns(runsResult.value.items || []);
+      } else {
+        setRuns([]);
+        partialFailures.push("paid runs");
+      }
+
+      if (apiProductsResult.status === "fulfilled") {
+        setApiProducts(apiProductsResult.value.items || []);
+      } else {
+        setApiProducts([]);
+        partialFailures.push("API products");
+      }
+
+      if (apiUsageResult.status === "fulfilled") {
+        setApiUsage(apiUsageResult.value.items || []);
+        setApiUsageTotals(apiUsageResult.value.totals_by_currency || {});
+      } else {
+        setApiUsage([]);
+        setApiUsageTotals({});
+        partialFailures.push("API usage");
+      }
+
+      if (partialFailures.length > 0) {
+        setNotice(`Billing overview loaded with partial data. Unavailable: ${partialFailures.join(", ")}.`);
+      }
     } catch (e: any) {
       setError(e?.message || String(e));
+      setBalance(null);
+      setEvents([]);
+      setRuns([]);
+      setApiProducts([]);
+      setApiUsage([]);
+      setApiUsageTotals({});
     } finally {
       setLoading(false);
     }
@@ -128,6 +169,7 @@ export default function BillingPage() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={() => void loadData()} className="btn btn-ghost" disabled={loading}>Refresh</button>
                 <Link href="/ai/workflows" className="btn btn-primary">Buy workflow</Link>
                 <Link href="/wallet/credits" className="btn btn-ghost">Open credits</Link>
                 <Link href="/developers" className="btn btn-ghost">Paid API</Link>
@@ -140,6 +182,12 @@ export default function BillingPage() {
           {error && (
             <div className="card" style={{ borderColor: "rgba(255,0,0,0.35)", marginBottom: 18 }}>
               <pre style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--text-muted)" }}>{error}</pre>
+            </div>
+          )}
+
+          {notice && !error && (
+            <div className="card" style={{ borderColor: "rgba(16,185,129,0.35)", marginBottom: 18 }}>
+              <div style={{ color: "var(--text-muted)" }}>{notice}</div>
             </div>
           )}
 
@@ -204,19 +252,23 @@ export default function BillingPage() {
                       <div style={{ fontWeight: 800, color: "var(--text)" }}>Products</div>
                       <a href={paidApi.usageExportUrl(500)} className="btn btn-ghost">Export CSV</a>
                     </div>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {apiProducts.slice(0, 5).map((product: any) => (
-                        <div key={product.slug} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12, display: "flex", justifyContent: "space-between", gap: 12 }}>
-                          <div>
-                            <div style={{ color: "var(--text)", fontWeight: 700 }}>{product.title}</div>
-                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>{product.endpoint}</div>
+                    {apiProducts.length === 0 ? (
+                      <div style={{ color: "var(--text-muted)" }}>No paid API products loaded.</div>
+                    ) : (
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {apiProducts.slice(0, 5).map((product: any) => (
+                          <div key={product.slug} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12, display: "flex", justifyContent: "space-between", gap: 12 }}>
+                            <div>
+                              <div style={{ color: "var(--text)", fontWeight: 700 }}>{product.title}</div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>{product.endpoint}</div>
+                            </div>
+                            <strong style={{ color: "var(--accent)", whiteSpace: "nowrap" }}>
+                              {product.price.amount} {product.price.currency}
+                            </strong>
                           </div>
-                          <strong style={{ color: "var(--accent)", whiteSpace: "nowrap" }}>
-                            {product.price.amount} {product.price.currency}
-                          </strong>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div>
