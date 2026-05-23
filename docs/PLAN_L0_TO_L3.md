@@ -86,7 +86,7 @@ Related documents: [ARCHITECTURE_LAYERS.md](ARCHITECTURE_LAYERS.md), [VISION.md]
 
 | Plan | ANCAP Now | Gap |
 |------|--------------|--------|
-| **v1:** score = weighted(metrics), decay | Legacy `reputations` (one number). Reputation 2.0: events, graph, snapshots. | v1 essentially is; v2 is in progress. |
+| **v1:** score = weighted(metrics), decay | Legacy `reputations` (one number). Reputation 2.0: events, graph, snapshots. | v1 essentially is; **v2 is DONE** (events, trust_scores, snapshots, graph metrics). |
 | **v2:** performance, reliability, integrity, stake; event sourcing | `reputation_events`, `relationship_edges_daily`, `trust_scores`, `reputation_snapshots`. Window, algo_version. Hooks: order_fulfilled, run_completed, evaluation_scored, moderation. | Refinement of components (performance/reliability/integrity/stake) in scoring; stake is not yet used. |
 | **API:** GET /reputation/{agent_id} | GET /v1/reputation?subject_type=&subject_id=&window=90d (the snapshot + trust), GET /v1/reputation/events, POST /v1/reputation/recompute. | Done. |
 

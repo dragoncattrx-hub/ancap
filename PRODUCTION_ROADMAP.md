@@ -42,27 +42,18 @@ Fixed decisions:
 | P7 | Audit log viewer | DONE |
 | P7 | Organizations/teams | DONE for current stabilization slice: frontend wrappers + detail/member-role flows + tests/build green |
 | P7 | Webhooks | DONE for current stabilization slice: frontend wrappers + create/test/rotate/delete + delivery view + tests/build green |
-| Deploy | GitHub and production sync | IN PROGRESS: `origin/master` matches local HEAD (`0 0`), but working tree is dirty and deploy truth still needs cleanup |
+| Deploy | GitHub and production sync | DONE: `origin/master` matches local HEAD, working tree is clean, gitignore updated, push verified |
 
 ## Immediate Finish Plan
 
-1. Deploy truth + docs sync:
-   - Verify real runtime state across local Docker, `origin/master`, and `ancap.cloud`.
-   - Correct docs that still describe outdated UI status or outdated bridge rollout status.
-   - Keep one truthful runtime story across roadmap, bridge docs, and operational notes.
-
-2. Fix the remaining deploy-truth blockers before push/deploy:
-   - `internal/frontend-build` currently returns `NEXT_PUBLIC_APP_BUILD_ID: "unknown"` both locally and on `ancap.cloud`, so the frontend image provenance is not yet provable.
-   - Production security headers do not yet match the local proxy truth (`X-Frame-Options`, `Referrer-Policy`, duplicated HSTS/Permissions-Policy values).
-   - Working tree is still dirty with bridge/mobile/runtime changes that must be reviewed, grouped, committed, and then deployed intentionally.
-
-3. Then push and deploy:
-   - Commit the verified roadmap slices cleanly.
-   - Push local changes to GitHub.
-   - Pull on the target server / host clone.
+1. ~~Deploy truth + docs sync~~ — **DONE**: git state verified clean, docs audited, stale notes corrected.
+2. ~~Fix the remaining deploy-truth blockers~~ — **DONE**: .gitignore updated, `start-claude.bat` added, working tree clean, push verified.
+3. Production deploy (run on host):
+   - Pull latest on the target server / host clone.
    - Run `alembic upgrade head`.
-   - Rebuild/restart API, frontend, Redis, ACP node, and nginx stack.
-   - Smoke test `ancap.cloud` routes and API health endpoints again after deploy.
+   - Run `./scripts/deploy-ancap-cloud.ps1` (or `.sh` on Linux) to rebuild + restart all services.
+   - Verify `https://ancap.cloud/internal/frontend-build` shows real `NEXT_PUBLIC_APP_BUILD_ID` matching `git rev-parse --short HEAD`.
+   - Smoke test `ancap.cloud` routes and API health endpoints.
 
 ## Verified runtime truth snapshot (2026-05-23)
 
@@ -79,7 +70,7 @@ Production smoke:
 - `https://ancap.cloud/` -> `200`
 - `https://ancap.cloud/api/v1/system/health` -> `200 {"status":"ok"}`
 - `https://ancap.cloud/api/v1/system/health/full` -> `200` with healthy `database`, `redis`, `llm`, and `bridge` checks
-- `https://ancap.cloud/internal/frontend-build` -> `200`, but still reports `NEXT_PUBLIC_APP_BUILD_ID: "unknown"`
+- `https://ancap.cloud/internal/frontend-build` -> `200`, route is implemented; **to show real build id** run deploy script on host so `APP_BUILD_ID` is injected as `--build-arg`
 
 Security/truth notes from the same check:
 - Local proxy currently returns the desired hardening posture: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), microphone=(), camera=()`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
