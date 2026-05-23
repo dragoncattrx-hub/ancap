@@ -66,14 +66,21 @@ def require_agent_id(
 async def require_platform_admin(
     user_id: Annotated[str, Depends(require_auth)],
 ) -> str:
-    """Require a platform operator account for admin monetization actions.
+    """Require a platform operator account for admin-only actions.
 
-    Production should set PLATFORM_ADMIN_USER_IDS to a comma-separated list of
-    user UUIDs. When it is empty, local/dev environments keep admin workflows
-    reachable for manual testing and legacy fixtures.
+    Production must explicitly configure PLATFORM_ADMIN_USER_IDS. If the
+    allowlist is empty, fail closed instead of exposing admin surfaces to any
+    authenticated user.
     """
-    raw = get_settings().platform_admin_user_ids or ""
-    allowed = {item.strip() for item in raw.split(",") if item.strip()}
-    if not allowed or user_id in allowed:
+    settings = get_settings()
+    allowed = set(settings.platform_admin_user_ids_allowlist)
+    if not allowed:
+        if settings.debug:
+            return user_id
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Platform admin access is not configured",
+        )
+    if user_id in allowed:
         return user_id
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform admin required")

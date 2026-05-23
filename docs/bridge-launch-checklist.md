@@ -50,7 +50,7 @@ Confirm:
 - `GET /api/v1/bridge/status`
 - `GET /api/v1/bridge/reserve-summary`
 - `POST /api/v1/system/jobs/tick`
-- `POST /api/v1/bridge/admin/reconcile`
+- `POST /api/v1/bridge/admin/reconcile` (requires platform-admin bearer token + `X-Bridge-Operator-Secret`)
 
 Expected bridge status:
 - enabled = true
@@ -122,6 +122,8 @@ Confirm at least one of:
 - Keep all secrets only in `Sicret/`
 - Never commit mnemonics/private keys
 - Keep pilot caps conservative
+- Bridge admin endpoints are dual-gated: they require both platform-admin bearer auth and `X-Bridge-Operator-Secret`
+- If `PLATFORM_ADMIN_USER_IDS` is empty, bridge admin endpoints must fail closed with `503 Platform admin access is not configured`
 - Reverse rail is now live, but do not assume that means it is fully hardened for replay/recovery edge-cases
 - Public status for reverse must always reflect the real runtime state; do not reintroduce stale `pending-rollout` copy while payouts are actually live
 - Reserve proof is public and live; keep improving snapshot/backing observability without lying about current availability

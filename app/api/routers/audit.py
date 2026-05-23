@@ -5,12 +5,12 @@ import io
 from datetime import datetime, UTC, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import desc, select, union_all, literal_column
+from sqlalchemy import desc, select
 
-from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.api.deps import DbSession, require_platform_admin
 from app.db.models import DecisionLog, GovernanceAuditLog, BridgeAuditEvent
 
 
@@ -40,7 +40,7 @@ class AuditLogResponse(BaseModel):
 @router.get("", response_model=AuditLogResponse)
 async def list_audit_logs(
     session: DbSession,
-    user_id: str | None = Depends(get_current_user_id),
+    admin_user_id: str = Depends(require_platform_admin),
     type: str | None = Query(default=None, description="Filter by type: decision, governance, bridge"),
     scope: str | None = Query(default=None),
     actor_id: str | None = Query(default=None),
@@ -50,34 +50,25 @@ async def list_audit_logs(
 ):
     """Combined audit log across all ANCAP subsystems.
 
-    Requires authentication. Platform admins see all events; regular users see only
-    their own events.
+    Admin-only surface: returns cross-user platform events including bridge
+    operations and governance/decision logs.
     """
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     since = datetime.now(UTC) - timedelta(days=days)
     items: list[AuditLogItem] = []
-    total = 0
 
-    try:
-        user_uuid = UUID(user_id)
-    except Exception:
-        user_uuid = None
-
-    is_admin = user_uuid and str(user_uuid) in get_settings().platform_admin_user_ids.split(",")
+    parsed_actor_id: UUID | None = None
+    if actor_id:
+        try:
+            parsed_actor_id = UUID(actor_id)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail="Invalid actor_id") from exc
 
     if type is None or type == "decision":
         q = select(DecisionLog).where(DecisionLog.created_at >= since)
-        if not is_admin and user_uuid:
-            q = q.where(DecisionLog.actor_id == user_uuid)
         if scope:
             q = q.where(DecisionLog.scope == scope)
-        if actor_id:
-            try:
-                q = q.where(DecisionLog.actor_id == UUID(actor_id))
-            except Exception:
-                pass
+        if parsed_actor_id is not None:
+            q = q.where(DecisionLog.actor_id == parsed_actor_id)
         q = q.order_by(desc(DecisionLog.created_at)).limit(limit).offset(offset)
         r = await session.execute(q)
         for row in r.scalars().all():
@@ -98,8 +89,8 @@ async def list_audit_logs(
 
     if type is None or type == "governance":
         q = select(GovernanceAuditLog).where(GovernanceAuditLog.created_at >= since)
-        if not is_admin and user_uuid:
-            q = q.where(GovernanceAuditLog.actor_id == user_uuid)
+        if parsed_actor_id is not None:
+            q = q.where(GovernanceAuditLog.actor_id == parsed_actor_id)
         q = q.order_by(desc(GovernanceAuditLog.created_at)).limit(limit).offset(offset)
         r = await session.execute(q)
         for row in r.scalars().all():
@@ -146,15 +137,12 @@ async def list_audit_logs(
 @router.get("/export")
 async def export_audit_logs_csv(
     session: DbSession,
-    user_id: str | None = Depends(get_current_user_id),
+    admin_user_id: str = Depends(require_platform_admin),
     type: str | None = Query(default=None),
     days: int = Query(7, ge=1, le=90),
 ):
     """Export audit log as CSV."""
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    resp = await list_audit_logs(session, user_id, type, None, None, days, 1000, 0)
+    resp = await list_audit_logs(session, admin_user_id, type, None, None, days, 1000, 0)
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["id", "type", "event_type", "actor_type", "actor_id", "scope", "subject_type", "subject_id", "message", "reason_code", "created_at"])
@@ -173,7 +161,3 @@ async def export_audit_logs_csv(
             "Content-Disposition": f"attachment; filename=audit-log-{datetime.now(UTC).strftime('%Y-%m-%d')}.csv"
         },
     )
-
-
-from fastapi import HTTPException
-from app.config import get_settings

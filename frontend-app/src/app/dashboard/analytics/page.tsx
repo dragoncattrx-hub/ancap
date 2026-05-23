@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
-import { workflowStore } from "@/lib/api";
+import { ApiError, workflowStore } from "@/lib/api";
 
 const DAYS_OPTIONS = [
   { label: "7 days", value: 7 },
@@ -70,7 +70,13 @@ export default function AnalyticsPage() {
       const data = await workflowStore.revenueSummary(days);
       setRevenue(data);
     } catch (e: any) {
-      setError(e?.message || String(e));
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for workflow revenue analytics.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Workflow revenue analytics are not configured for admin access yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
     } finally {
       setLoading(false);
     }

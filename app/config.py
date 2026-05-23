@@ -1,6 +1,7 @@
 """Application configuration."""
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -170,6 +171,11 @@ class Settings(BaseSettings):
     redis_url: str = ""
     rate_limit_per_minute: int = 120
     rate_limit_burst: int = 240
+
+    @property
+    def platform_admin_user_ids_allowlist(self) -> tuple[str, ...]:
+        raw = self.platform_admin_user_ids or ""
+        return tuple(item.strip() for item in raw.split(",") if item.strip())
 
 
 @lru_cache

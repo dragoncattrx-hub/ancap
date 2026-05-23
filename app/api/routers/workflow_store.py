@@ -1063,12 +1063,9 @@ async def checkout_workflow_bundle(
 @router.get("/admin/revenue", response_model=WorkflowRevenueSummaryPublic)
 async def get_workflow_store_revenue_summary(
     session: DbSession,
-    user_id: str | None = Depends(get_current_user_id),
+    admin_user_id: str = Depends(require_platform_admin),
     days: int = Query(30, ge=1, le=365),
 ):
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     generated_at = datetime.now(UTC)
     since = generated_at - timedelta(days=days)
     run_rows = (
@@ -1269,13 +1266,10 @@ async def get_workflow_store_revenue_summary(
 @router.get("/admin/revenue/export")
 async def export_workflow_store_revenue_csv(
     session: DbSession,
-    user_id: str | None = Depends(get_current_user_id),
+    admin_user_id: str = Depends(require_platform_admin),
     days: int = Query(30, ge=1, le=365),
 ):
     """Export workflow store revenue data as CSV."""
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     generated_at = datetime.now(UTC)
     since = generated_at - timedelta(days=days)
 

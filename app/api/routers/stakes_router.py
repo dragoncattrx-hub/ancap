@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, HTTPException, Depends
 
-from app.api.deps import DbSession, require_agent_id, require_auth
+from app.api.deps import DbSession, require_agent_id, require_auth, require_platform_admin
 from app.schemas.stakes import StakeCreateRequest, StakePublic, SlashRequest
 from app.db.models import Stake, Agent
 from sqlalchemy import select
@@ -163,10 +163,13 @@ async def list_stakes(
 
 
 @router.post("/slash/{agent_id}", status_code=200)
-async def slash_agent_endpoint(agent_id: UUID, body: SlashRequest, session: DbSession, user_id: str = Depends(require_auth)):
-    if user_id != "00000000-0000-0000-0000-000000000001":
-        raise HTTPException(status_code=403, detail="Moderator/system access required")
-    """Slash agent (moderator/system). Deducts from active stakes to platform."""
+async def slash_agent_endpoint(
+    agent_id: UUID,
+    body: SlashRequest,
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
+    """Slash agent (platform admin). Deducts from active stakes to platform."""
     try:
         amount = Decimal(body.amount)
         if amount <= 0:

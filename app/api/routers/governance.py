@@ -448,6 +448,7 @@ async def apply_action_from_case(
             reason=(body.reason or "").strip() or f"case:{row.id}:{row.reason_code}",
         ),
         session,
+        user_id,
     )
     await session.flush()
     return {"ok": True, "case_id": str(row.id), "action": mapped_action}

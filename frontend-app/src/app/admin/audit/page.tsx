@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { ApiError, audit } from "@/lib/api";
 
 const TYPE_OPTIONS = [
   { label: "All", value: "" },
@@ -80,15 +81,17 @@ export default function AuditPage() {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams({ days: String(days), limit: "100" });
-      if (type) params.set("type", type);
-      const res = await fetch(`/api/admin/audit-log?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await audit.list({ days, limit: 100, type: type || undefined });
       setItems(data.items || []);
       setTotal(data.total || 0);
     } catch (e: any) {
-      setError(e?.message || String(e));
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for the audit log.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Admin access is not configured yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
     } finally {
       setLoading(false);
     }
@@ -127,7 +130,7 @@ export default function AuditPage() {
               ))}
             </div>
             <a
-              href={`/api/admin/audit-log/export?days=${days}${type ? `&type=${type}` : ""}`}
+              href={audit.exportUrl({ days, type: type || undefined })}
               className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-elev-1)] text-xs hover:border-[var(--accent)] transition"
               download
             >

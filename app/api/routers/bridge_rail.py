@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import DBAPIError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import require_auth
+from app.api.deps import require_auth, require_platform_admin
 from app.config import get_settings
 from app.db.models import (
     BridgeAllowlistAddress,
@@ -645,6 +645,7 @@ async def list_my_intents(
 @router.post("/admin/reconcile", response_model=dict)
 async def admin_reconcile(
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -658,6 +659,7 @@ async def admin_reconcile(
 async def admin_allowlist_add(
     body: BridgeAllowlistAddRequest,
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -677,6 +679,7 @@ async def admin_allowlist_add(
 @router.get("/admin/reverse/operations", response_model=list[BridgeOperationPublic])
 async def admin_reverse_operations(
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
     status: str | None = None,
     limit: int = 100,
@@ -695,6 +698,7 @@ async def admin_reverse_operations(
 @router.get("/admin/reverse/liability", response_model=BridgeReverseLiabilitySummaryResponse)
 async def admin_reverse_liability(
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -706,6 +710,7 @@ async def admin_reverse_liability(
 async def admin_reverse_bind_burn(
     body: BridgeAdminReverseBindBurnRequest,
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -764,6 +769,7 @@ async def admin_reverse_bind_burn(
 async def admin_reverse_bind_payout(
     body: BridgeAdminReverseBindPayoutRequest,
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -808,6 +814,7 @@ async def admin_reverse_bind_payout(
 async def admin_reverse_requeue_payout(
     body: BridgeAdminReverseRequeuePayoutRequest,
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()
@@ -842,6 +849,7 @@ async def admin_reverse_requeue_payout(
 async def admin_reverse_mark_disputed(
     body: BridgeAdminReverseMarkDisputedRequest,
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
     x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
 ):
     s = get_settings()

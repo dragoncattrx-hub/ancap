@@ -35,6 +35,28 @@ Keep secrets only in:
 
 Do not commit any of the above.
 
+## Bridge admin auth model
+
+All `/api/v1/bridge/admin/*` endpoints are now dual-gated.
+They require both:
+- authenticated platform-admin user access (`PLATFORM_ADMIN_USER_IDS` allowlist)
+- `X-Bridge-Operator-Secret`
+
+Fail-closed behavior:
+- if platform-admin allowlist is unset/empty -> `503 Platform admin access is not configured`
+- if authenticated user is not allowlisted -> `403 Platform admin required`
+- if bridge operator secret is missing/wrong -> `403 Invalid bridge operator secret`
+
+This includes:
+- `POST /api/v1/bridge/admin/reconcile`
+- `POST /api/v1/bridge/admin/allowlist`
+- `GET /api/v1/bridge/admin/reverse/operations`
+- `GET /api/v1/bridge/admin/reverse/liability`
+- `POST /api/v1/bridge/admin/reverse/bind-burn`
+- `POST /api/v1/bridge/admin/reverse/bind-payout`
+- `POST /api/v1/bridge/admin/reverse/requeue-payout`
+- `POST /api/v1/bridge/admin/reverse/mark-disputed`
+
 ## Standard health check
 
 Before any new pilot or after any redeploy, verify all of this.
@@ -50,7 +72,7 @@ Before any new pilot or after any redeploy, verify all of this.
 - `GET /api/v1/bridge/status`
 - `GET /api/v1/bridge/reserve-summary`
 - `POST /api/v1/system/jobs/tick`
-- `POST /api/v1/bridge/admin/reconcile`
+- `POST /api/v1/bridge/admin/reconcile` (requires platform-admin bearer token + `X-Bridge-Operator-Secret`)
 
 Expected:
 - bridge enabled
@@ -220,14 +242,19 @@ What now exists in backend code:
 - burn-event watcher confirmation via `ReleaseRequested`
 - ACP payout submission worker path
 - reverse completion through ACP watcher confirmation
-- operator-safe reverse recovery endpoints protected by `X-Bridge-Operator-Secret`
+- operator-safe reverse recovery endpoints protected by dual-gate access:
+  - platform-admin bearer auth
+  - `X-Bridge-Operator-Secret`
 
 Current reverse admin endpoints:
 - `GET /api/v1/bridge/admin/reverse/operations`
+- `GET /api/v1/bridge/admin/reverse/liability`
 - `POST /api/v1/bridge/admin/reverse/bind-burn`
 - `POST /api/v1/bridge/admin/reverse/bind-payout`
 - `POST /api/v1/bridge/admin/reverse/requeue-payout`
 - `POST /api/v1/bridge/admin/reverse/mark-disputed`
+
+All of the above require both platform-admin bearer auth and `X-Bridge-Operator-Secret`.
 
 Operator rule:
 - reverse rail may be presented as live only when signer identity, payout execution, watcher confirmation, and reconciliation are all proven in the running container

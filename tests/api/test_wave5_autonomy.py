@@ -14,10 +14,18 @@ def _register_and_login(client) -> str:
     return login.json()["access_token"]
 
 
-def test_autonomy_ops_and_council(client):
+def test_autonomy_ops_and_council(client, monkeypatch):
     token = _register_and_login(client)
-    anomalies = client.get("/autonomy/ops/anomalies")
-    assert anomalies.status_code == 200, anomalies.text
+
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
+    get_settings.cache_clear()
+    try:
+        anomalies = client.get("/autonomy/ops/anomalies")
+        assert anomalies.status_code == 503, anomalies.text
+        assert anomalies.json()["detail"] == "Platform admin access is not configured"
+    finally:
+        get_settings.cache_clear()
+
     council = client.post(
         "/autonomy/ai-council/recommend",
         headers={"Authorization": f"Bearer {token}"},

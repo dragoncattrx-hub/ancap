@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { access, ledger, orders, runs as runsApi, workflowStore } from "@/lib/api";
+import { ApiError, access, ledger, orders, runs as runsApi, workflowStore } from "@/lib/api";
 
 export default function AdminOverviewPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -63,7 +63,13 @@ export default function AdminOverviewPage() {
         setWorkflowRevenue(workflowRevenueRes);
         setPendingTopUps(topUpsRes.items || []);
       } catch (e: any) {
-        setError(e?.message || String(e));
+        if (e instanceof ApiError && e.status === 403) {
+          setError("Admin access required for this page.");
+        } else if (e instanceof ApiError && e.status === 503) {
+          setError("Admin access is not configured yet.");
+        } else {
+          setError(e?.message || String(e));
+        }
       } finally {
         setLoading(false);
       }
@@ -92,7 +98,13 @@ export default function AdminOverviewPage() {
       const revenue = await workflowStore.revenueSummary(30);
       setWorkflowRevenue(revenue);
     } catch (e: any) {
-      setError(e?.message || String(e));
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for top-up approval.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Admin access is not configured yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
     }
   };
 

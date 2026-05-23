@@ -46,6 +46,17 @@ body {
   overflow-x: hidden;
 }
 
+main,
+section,
+article,
+aside,
+header,
+footer,
+.container,
+.card {
+  min-width: 0;
+}
+
 .canvas-wrap {
   position: fixed;
   inset: 0;
@@ -714,6 +725,27 @@ textarea {
   .card strong {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  main :where(h1, h2, h3, h4, p, li, dd, dt, label, strong, span),
+  main :where(a, button),
+  .container :where(h1, h2, h3, h4, p, li, dd, dt, label, strong, span),
+  .container :where(a, button) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  main :where(.btn, button, a[role="button"]),
+  .container :where(.btn, button, a[role="button"]) {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
   }
 }
 

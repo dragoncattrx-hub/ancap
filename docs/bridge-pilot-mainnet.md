@@ -52,7 +52,7 @@ Run these before any pilot:
 - `GET /api/v1/bridge/status`
 - `GET /api/v1/bridge/reserve-summary`
 - `POST /api/v1/system/jobs/tick`
-- `POST /api/v1/bridge/admin/reconcile`
+- `POST /api/v1/bridge/admin/reconcile` (requires platform-admin bearer token + `X-Bridge-Operator-Secret`)
 - open `/bridge/acp-bsc`
 
 Expected:

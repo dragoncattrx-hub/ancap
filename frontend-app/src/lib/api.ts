@@ -40,7 +40,7 @@ function clearToken(): void {
 }
 
 // Base fetch wrapper with auth
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
   code?: string;
   detail?: unknown;

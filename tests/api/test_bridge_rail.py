@@ -11,6 +11,35 @@ import uuid
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from app.config import get_settings
+
+
+_ADMIN_PASSWORD = "password123"
+
+
+def _register_bridge_admin(client, monkeypatch, email: str | None = None) -> dict[str, str]:
+    chosen_email = email or f"bridge_admin_{uuid.uuid4().hex[:10]}@example.com"
+    res = client.post(
+        "/v1/auth/users",
+        json={"email": chosen_email, "password": _ADMIN_PASSWORD, "display_name": "bridge-admin-test"},
+        headers={"Authorization": ""},
+    )
+    if res.status_code not in (200, 201):
+        chosen_email = f"bridge_admin_{uuid.uuid4().hex[:10]}@example.com"
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": chosen_email, "password": _ADMIN_PASSWORD, "display_name": "bridge-admin-test"},
+            headers={"Authorization": ""},
+        )
+    assert res.status_code in (200, 201), res.text
+    token = res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}", "X-Bridge-Operator-Secret": "test-secret"}
+    me = client.get("/v1/users/me", headers=headers)
+    assert me.status_code == 200, me.text
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", me.json()["id"])
+    get_settings.cache_clear()
+    return headers
+
 
 def _test_async_db_url() -> str:
     url = os.environ.get("DATABASE_URL", "")
@@ -545,8 +574,8 @@ def test_admin_reverse_bind_burn_promotes_pending_burn(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
     monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
-    from app.config import get_settings
     get_settings.cache_clear()
+    headers = _register_bridge_admin(client, monkeypatch)
 
     payload = {
         "user_bsc_address": "0x6666666666666666666666666666666666666666",
@@ -560,7 +589,7 @@ def test_admin_reverse_bind_burn_promotes_pending_burn(client, monkeypatch):
     burn_tx_hash = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
     r = client.post(
         "/v1/bridge/admin/reverse/bind-burn",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={
             "operation_id": op_id,
             "bsc_tx_hash_burn": burn_tx_hash,
@@ -580,8 +609,8 @@ def test_admin_reverse_bind_payout_and_requeue(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
     monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
-    from app.config import get_settings
     get_settings.cache_clear()
+    headers = _register_bridge_admin(client, monkeypatch)
 
     payload = {
         "user_bsc_address": "0x7777777777777777777777777777777777777777",
@@ -595,7 +624,7 @@ def test_admin_reverse_bind_payout_and_requeue(client, monkeypatch):
     burn_tx_hash = "0x" + uuid.uuid4().hex + uuid.uuid4().hex
     bind_burn = client.post(
         "/v1/bridge/admin/reverse/bind-burn",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={
             "operation_id": op_id,
             "bsc_tx_hash_burn": burn_tx_hash,
@@ -606,7 +635,7 @@ def test_admin_reverse_bind_payout_and_requeue(client, monkeypatch):
 
     bind_payout = client.post(
         "/v1/bridge/admin/reverse/bind-payout",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={
             "operation_id": op_id,
             "acp_tx_hash": "acp-manual-payout-1",
@@ -620,7 +649,7 @@ def test_admin_reverse_bind_payout_and_requeue(client, monkeypatch):
 
     requeue = client.post(
         "/v1/bridge/admin/reverse/requeue-payout",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": op_id, "note": "tx missing on chain"},
     )
     assert requeue.status_code == 200, requeue.text
@@ -633,8 +662,8 @@ def test_admin_reverse_mark_disputed_and_list(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
     monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
-    from app.config import get_settings
     get_settings.cache_clear()
+    headers = _register_bridge_admin(client, monkeypatch)
 
     payload = {
         "user_bsc_address": "0x8888888888888888888888888888888888888888",
@@ -647,7 +676,7 @@ def test_admin_reverse_mark_disputed_and_list(client, monkeypatch):
 
     dispute = client.post(
         "/v1/bridge/admin/reverse/mark-disputed",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": op_id, "note": "mismatch under investigation"},
     )
     assert dispute.status_code == 200, dispute.text
@@ -656,7 +685,7 @@ def test_admin_reverse_mark_disputed_and_list(client, monkeypatch):
 
     listed = client.get(
         "/v1/bridge/admin/reverse/operations?status=DISPUTED",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
     )
     assert listed.status_code == 200, listed.text
     rows = listed.json()
@@ -693,8 +722,8 @@ def test_admin_reverse_liability_summary(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
     monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
-    from app.config import get_settings
     get_settings.cache_clear()
+    headers = _register_bridge_admin(client, monkeypatch)
 
     burn_payload = {
         "user_bsc_address": "0x9999999999999999999999999999999999999999",
@@ -729,14 +758,14 @@ def test_admin_reverse_liability_summary(client, monkeypatch):
 
     r1 = client.post(
         "/v1/bridge/admin/reverse/bind-burn",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": burn_id, "bsc_tx_hash_burn": burn_tx_1, "bsc_log_index": 1},
     )
     assert r1.status_code == 200, r1.text
 
     r2 = client.post(
         "/v1/bridge/admin/reverse/bind-burn",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": sent_id, "bsc_tx_hash_burn": burn_tx_2, "bsc_log_index": 2},
     )
     assert r2.status_code == 200, r2.text
@@ -744,21 +773,21 @@ def test_admin_reverse_liability_summary(client, monkeypatch):
     payout_tx_hash = f"acp-liability-payout-{uuid.uuid4().hex}"
     r3 = client.post(
         "/v1/bridge/admin/reverse/bind-payout",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": sent_id, "acp_tx_hash": payout_tx_hash},
     )
     assert r3.status_code == 200, r3.text
 
     r4 = client.post(
         "/v1/bridge/admin/reverse/mark-disputed",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
         json={"operation_id": disputed_id, "note": "manual dispute"},
     )
     assert r4.status_code == 200, r4.text
 
     summary = client.get(
         "/v1/bridge/admin/reverse/liability",
-        headers={"X-Bridge-Operator-Secret": "test-secret"},
+        headers=headers,
     )
     assert summary.status_code == 200, summary.text
     data = summary.json()

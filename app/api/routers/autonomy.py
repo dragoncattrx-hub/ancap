@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.config import get_settings
 from app.services.ledger import is_ledger_invariant_halted, set_ledger_invariant_halted
 
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/autonomy", tags=["Autonomy"])
 
 
 @router.get("/ops/anomalies")
-async def ops_anomalies(session: DbSession):
+async def ops_anomalies(session: DbSession, _admin_user_id: str = Depends(require_platform_admin)):
     halted = await is_ledger_invariant_halted(session)
     items = []
     if halted:
@@ -26,7 +26,7 @@ async def ops_anomalies(session: DbSession):
 
 
 @router.post("/ops/remediations/apply")
-async def apply_remediation(body: dict, session: DbSession, _user_id: str = Depends(require_auth)):
+async def apply_remediation(body: dict, session: DbSession, _admin_user_id: str = Depends(require_platform_admin)):
     action = str((body or {}).get("action") or "").strip()
     if action == "reset_ledger_halt_after_verification":
         await set_ledger_invariant_halted(session, halted=False)

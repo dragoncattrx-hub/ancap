@@ -202,9 +202,9 @@ function MobileNavRow({
           : "border-white/[0.07] bg-white/[0.03] text-white/75 hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
       )}
     >
-      <span className="font-medium">{label}</span>
+      <span className="min-w-0 break-words font-medium">{label}</span>
       <span className="text-[11px] text-white/25" aria-hidden>
-        →
+        -&gt;
       </span>
     </Link>
   );
@@ -265,13 +265,13 @@ export function Navigation() {
 
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="flex min-h-[68px] items-center justify-between gap-2 sm:gap-4 lg:min-h-[76px]">
-          <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-6">
-            <Link href="/" className="group inline-flex items-center gap-3">
+          <div className="flex min-w-0 shrink items-center gap-2 sm:shrink-0 sm:gap-6">
+            <Link href="/" className="group inline-flex min-w-0 items-center gap-2 sm:gap-3">
               <span className="relative flex items-center justify-center">
                 <span className="absolute h-4 w-4 rounded-full bg-emerald-400/20 blur-md" />
                 <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.85)]" />
               </span>
-              <span className="text-[24px] font-semibold tracking-[-0.05em] text-white sm:text-[28px]">ANCAP</span>
+              <span className="truncate text-[21px] font-semibold text-white sm:text-[28px]">ANCAP</span>
             </Link>
           </div>
 
@@ -411,19 +411,27 @@ export function Navigation() {
           <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2 lg:hidden">
             <Link
               href="/wallet/acp"
-              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-emerald-400/45 bg-emerald-400/14 px-2 py-2 text-[10px] font-semibold text-emerald-50 shadow-[0_0_18px_rgba(52,211,153,0.15)] transition hover:bg-emerald-400/24 sm:min-h-11 sm:px-3 sm:text-[12px]"
+              aria-label={t("nav.acpWallet")}
+              title={t("nav.acpWallet")}
+              className="inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border border-emerald-400/45 bg-emerald-400/14 px-2 py-2 text-[10px] font-semibold text-emerald-50 shadow-[0_0_18px_rgba(52,211,153,0.15)] transition hover:bg-emerald-400/24 sm:h-11 sm:px-3 sm:text-[12px]"
             >
-              <span className="sm:hidden">{t("hero.acpWalletLink")}</span>
+              <span className="sm:hidden">ACP</span>
               <span className="hidden sm:inline">{t("nav.acpWallet")}</span>
             </Link>
-            <LangSwitcher lang={lang} setLang={setLang} size="compact" />
+            <div className="hidden min-[390px]:block">
+              <LangSwitcher lang={lang} setLang={setLang} size="compact" />
+            </div>
             <button
               type="button"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition hover:bg-white/[0.08] hover:text-white"
             >
-              {theme === "dark" ? "☀" : "☾"}
+              {theme === "dark" ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              )}
             </button>
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
@@ -431,7 +439,11 @@ export function Navigation() {
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              {mobileMenuOpen ? "✕" : "☰"}
+              {mobileMenuOpen ? (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M18 6 6 18M6 6l12 12"/></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+              )}
             </button>
           </div>
         </div>
@@ -447,6 +459,9 @@ export function Navigation() {
           />
           <div className="relative z-[95] border-t border-white/10 bg-gradient-to-b from-[#070d1c] to-[#040816] shadow-[0_-8px_40px_rgba(0,0,0,0.45)] lg:hidden">
             <div className="mx-auto max-h-[min(78dvh,32rem)] max-w-[1440px] overflow-y-auto overscroll-y-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent]">
+              <div className="mb-4 min-[390px]:hidden">
+                <LangSwitcher lang={lang} setLang={setLang} />
+              </div>
               {isAuthenticated ? (
                 <div className="grid gap-5">
                   <div>

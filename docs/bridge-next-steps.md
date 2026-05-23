@@ -86,10 +86,13 @@ Still not declared live:
 
 What is now available for operator recovery:
 - reverse admin listing: `GET /api/v1/bridge/admin/reverse/operations`
+- reverse liability summary: `GET /api/v1/bridge/admin/reverse/liability`
 - manual confirmed-burn attachment: `POST /api/v1/bridge/admin/reverse/bind-burn`
 - manual ACP payout attachment: `POST /api/v1/bridge/admin/reverse/bind-payout`
 - payout resend preparation: `POST /api/v1/bridge/admin/reverse/requeue-payout`
 - dispute escalation: `POST /api/v1/bridge/admin/reverse/mark-disputed`
+
+All bridge admin recovery endpoints now require both platform-admin bearer auth and `X-Bridge-Operator-Secret`.
 
 ### 3. Keep docs aligned with runtime truth
 Recommended:

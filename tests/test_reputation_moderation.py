@@ -1,6 +1,8 @@
 """Reputation and Moderation."""
 import uuid
 
+from app.config import get_settings
+
 
 def test_reputation_not_found(client):
     r = client.get(
@@ -44,29 +46,37 @@ def test_reputation_events_list_invalid_cursor(client):
     assert r.status_code == 400
 
 
-def test_reputation_recompute(client):
-    """POST /v1/reputation/recompute accepts subject_type and subject_id."""
-    r = client.post(
-        "/v1/reputation/recompute",
-        json={"subject_type": "agent", "subject_id": str(uuid.uuid4())},
-    )
-    assert r.status_code == 202
-    data = r.json()
-    assert data.get("status") == "accepted"
-    assert "subject_type" in data and "subject_id" in data
+def test_reputation_recompute_requires_platform_admin(client, monkeypatch):
+    """POST /v1/reputation/recompute is privileged and must require platform admin."""
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
+    get_settings.cache_clear()
+    try:
+        r = client.post(
+            "/v1/reputation/recompute",
+            json={"subject_type": "agent", "subject_id": str(uuid.uuid4())},
+        )
+        assert r.status_code == 503
+        assert r.json()["detail"] == "Platform admin access is not configured"
+    finally:
+        get_settings.cache_clear()
 
 
-def test_moderation_action(client):
-    r = client.post(
-        "/v1/moderation/actions",
-        json={
-            "target_type": "pool",
-            "target_id": "00000000-0000-0000-0000-000000000000",
-            "action": "halt",
-        },
-    )
-    assert r.status_code == 200
-    assert r.json()["ok"] is True
+def test_moderation_action_requires_platform_admin(client, monkeypatch):
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
+    get_settings.cache_clear()
+    try:
+        r = client.post(
+            "/v1/moderation/actions",
+            json={
+                "target_type": "pool",
+                "target_id": "00000000-0000-0000-0000-000000000000",
+                "action": "halt",
+            },
+        )
+        assert r.status_code == 503
+        assert r.json()["detail"] == "Platform admin access is not configured"
+    finally:
+        get_settings.cache_clear()
 
 
 def test_moderation_agent_graph_context(client):

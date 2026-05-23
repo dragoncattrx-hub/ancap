@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { agents, ledger, workflowStore } from "@/lib/api";
+import { ApiError, agents, ledger, workflowStore } from "@/lib/api";
 
 const fieldStyle = { display: "grid", gap: 6 } as const;
 
@@ -75,9 +75,13 @@ export default function SellerDashboardPage() {
           const summary = await workflowStore.revenueSummary(30);
           setRevenueSummary(summary);
           setRevenueError("");
-        } catch {
+        } catch (e: any) {
           setRevenueSummary(null);
-          setRevenueError("Owner revenue metrics require admin access.");
+          if (e instanceof ApiError && e.status === 503) {
+            setRevenueError("Owner revenue metrics are not configured for admin access yet.");
+          } else {
+            setRevenueError("Owner revenue metrics require admin access.");
+          }
         }
       } catch (e: any) {
         setError(e?.message || String(e));

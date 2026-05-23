@@ -15,7 +15,7 @@ from app.schemas.reputation import (
     ReputationEventOut,
     ReputationRecomputeRequest,
 )
-from app.api.deps import DbSession
+from app.api.deps import DbSession, require_platform_admin
 from app.db.models import Reputation, ReputationSnapshot, TrustScore, ReputationEvent
 from app.utils.cursor import CursorKeys, encode_cursor, decode_cursor
 from app.config import get_settings
@@ -163,7 +163,11 @@ async def list_reputation_events(
 
 
 @router.post("/recompute", status_code=202)
-async def recompute_reputation(body: ReputationRecomputeRequest, session: DbSession):
+async def recompute_reputation(
+    body: ReputationRecomputeRequest,
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
     """Trigger recompute for a subject. If subject_type and subject_id provided, runs worker synchronously."""
     from app.jobs.reputation_recompute import recompute_for_subject
 

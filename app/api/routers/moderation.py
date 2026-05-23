@@ -1,11 +1,11 @@
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.schemas import ModerationActionRequest
 from app.schemas.moderation import AgentLinkCreateRequest
-from app.api.deps import DbSession
+from app.api.deps import DbSession, require_platform_admin
 from app.config import get_settings
 from app.db.models import AgentLink, Agent
 from app.services.agent_graph_metrics import get_agent_graph_metrics
@@ -15,7 +15,11 @@ router = APIRouter(prefix="/moderation", tags=["Moderation"])
 
 
 @router.get("/graph-enforcement/preview")
-async def graph_enforcement_preview(session: DbSession, limit: int = 50):
+async def graph_enforcement_preview(
+    session: DbSession,
+    limit: int = 50,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
     """Preview which active agents would be auto-quarantined by current graph thresholds."""
     settings = get_settings()
     q = (
@@ -71,7 +75,11 @@ async def get_agent_graph_context(agent_id: UUID, session: DbSession, approximat
 
 
 @router.post("/actions")
-async def apply_moderation_action(body: ModerationActionRequest, session: DbSession):
+async def apply_moderation_action(
+    body: ModerationActionRequest,
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
     from app.services.reputation_events import on_moderation_action
     try:
         await on_moderation_action(
@@ -102,11 +110,23 @@ async def apply_moderation_action(body: ModerationActionRequest, session: DbSess
 
 
 @router.post("/agent-links", status_code=201)
-async def create_agent_link(body: AgentLinkCreateRequest, session: DbSession):
+async def create_agent_link(
+    body: AgentLinkCreateRequest,
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
     agent_id = UUID(body.agent_id)
     linked_id = UUID(body.linked_agent_id)
     if agent_id == linked_id:
         raise HTTPException(status_code=400, detail="agent_id and linked_agent_id must differ")
+
+    agent = await session.get(Agent, agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    linked_agent = await session.get(Agent, linked_id)
+    if not linked_agent:
+        raise HTTPException(status_code=404, detail="Linked agent not found")
+
     existing = await session.execute(
         select(AgentLink).where(
             ((AgentLink.agent_id == agent_id) & (AgentLink.linked_agent_id == linked_id))
