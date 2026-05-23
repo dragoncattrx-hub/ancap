@@ -40,20 +40,20 @@ def upgrade() -> None:
 
     # Workflow run records: title + slug
     op.add_column(
-        "workflow_run_records",
+        "workflow_runs",
         sa.Column("search_vector", sa.Text(), nullable=True),
     )
     op.execute(
-        "UPDATE workflow_run_records SET search_vector = coalesce(title, '') || ' ' || coalesce(workflow_slug, '') WHERE search_vector IS NULL"
+        "UPDATE workflow_runs SET search_vector = coalesce(title, '') || ' ' || coalesce(workflow_slug, '') WHERE search_vector IS NULL"
     )
     op.execute(
-        "CREATE INDEX ix_workflow_run_records_search ON workflow_run_records USING GIN(to_tsvector('english', search_vector))"
+        "CREATE INDEX ix_workflow_runs_search ON workflow_runs USING GIN(to_tsvector('english', search_vector))"
     )
 
 
 def downgrade() -> None:
-    op.execute("DROP INDEX IF EXISTS ix_workflow_run_records_search")
-    op.drop_column("workflow_run_records", "search_vector")
+    op.execute("DROP INDEX IF EXISTS ix_workflow_runs_search")
+    op.drop_column("workflow_runs", "search_vector")
     op.execute("DROP INDEX IF EXISTS ix_strategies_search")
     op.drop_column("strategies", "search_vector")
     op.execute("DROP INDEX IF EXISTS ix_agents_search")
