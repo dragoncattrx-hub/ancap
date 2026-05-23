@@ -17,14 +17,10 @@ def upgrade() -> None:
     # Agent: display_name + metadata bio
     op.add_column(
         "agents",
-        sa.Column(
-            "search_vector",
-            sa.Text(),
-            nullable=True,
-            server_default=sa.text(
-                "coalesce(display_name, '')"
-            ),
-        ),
+        sa.Column("search_vector", sa.Text(), nullable=True),
+    )
+    op.execute(
+        "UPDATE agents SET search_vector = coalesce(display_name, '') WHERE search_vector IS NULL"
     )
     op.execute(
         "CREATE INDEX ix_agents_search ON agents USING GIN(to_tsvector('english', search_vector))"
@@ -33,14 +29,10 @@ def upgrade() -> None:
     # Strategy: name + description
     op.add_column(
         "strategies",
-        sa.Column(
-            "search_vector",
-            sa.Text(),
-            nullable=True,
-            server_default=sa.text(
-                "coalesce(name, '') || ' ' || coalesce(description, '')"
-            ),
-        ),
+        sa.Column("search_vector", sa.Text(), nullable=True),
+    )
+    op.execute(
+        "UPDATE strategies SET search_vector = coalesce(name, '') || ' ' || coalesce(description, '') WHERE search_vector IS NULL"
     )
     op.execute(
         "CREATE INDEX ix_strategies_search ON strategies USING GIN(to_tsvector('english', search_vector))"
@@ -49,14 +41,10 @@ def upgrade() -> None:
     # Workflow run records: title + slug
     op.add_column(
         "workflow_run_records",
-        sa.Column(
-            "search_vector",
-            sa.Text(),
-            nullable=True,
-            server_default=sa.text(
-                "coalesce(title, '') || ' ' || coalesce(workflow_slug, '')"
-            ),
-        ),
+        sa.Column("search_vector", sa.Text(), nullable=True),
+    )
+    op.execute(
+        "UPDATE workflow_run_records SET search_vector = coalesce(title, '') || ' ' || coalesce(workflow_slug, '') WHERE search_vector IS NULL"
     )
     op.execute(
         "CREATE INDEX ix_workflow_run_records_search ON workflow_run_records USING GIN(to_tsvector('english', search_vector))"
