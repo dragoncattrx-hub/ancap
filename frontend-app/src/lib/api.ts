@@ -54,7 +54,7 @@ class ApiError extends Error {
   }
 }
 
-async function apiFetch(path: string, options: RequestInit = {}) {
+export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -266,8 +266,11 @@ export const strategies = {
   },
 
   async createVersion(strategyId: string, data: {
-    workflow_json: Record<string, any>;
+    semver: string;
+    workflow: Record<string, any>;
+    param_schema?: Record<string, any>;
     changelog?: string;
+    strategy_policy?: Record<string, any>;
   }) {
     return apiFetch(`/strategies/${strategyId}/versions`, {
       method: "POST",

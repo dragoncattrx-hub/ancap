@@ -208,8 +208,11 @@ export default function StrategyDetailPage() {
               <button className="btn btn-ghost" onClick={copyStrategy} disabled={!strategyId}>
                 Copy
               </button>
-              <button className="btn btn-primary" onClick={() => setShowVersionModal(true)} disabled={!strategy || publishing}>
-                Create version
+              <a className="btn btn-primary" href={`/strategy-builder?strategy=${encodeURIComponent(strategyId || "")}&vertical=${encodeURIComponent(strategy?.vertical_id || "")}`}>
+                Open builder
+              </a>
+              <button className="btn btn-ghost" onClick={() => setShowVersionModal(true)} disabled={!strategy || publishing}>
+                Raw JSON version
               </button>
               <button
                 className="btn btn-ghost"

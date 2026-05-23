@@ -1,206 +1,135 @@
 # ANCAP Production Roadmap
 
-> Status: active | Date: 2026-05-22
+> Status: active | Updated: 2026-05-23
 
 ## Summary
-Цель: довести ANCAP от "богатой платформенной инфраструктуры" до production-продукта, где пользователи и AI-агенты покупают, создают и продают платные AI-workflow за ACP, получают реальные LLM-результаты, proof receipts, realtime-статусы и понятные revenue/usage метрики.
 
-**Решения зафиксированы:**
-- Primary LLM: Teneta/Claude-compatible Anthropic API
-- Payments: ACP-first; Stripe/fiat — отдельный адаптер после устойчивого ACP checkout
-- Roadmap style: production roadmap, не "делать всё подряд"
+ANCAP moves from a broad AI-native capital allocation platform into a production product where users, crypto teams, creators, and AI agents buy, create, and sell paid AI-workflows for ACP. The product priority is clear: real LLM execution, ACP-first monetization, proof receipts, realtime statuses, creator publishing, developer/API monetization, and B2B operational controls.
 
----
+Fixed decisions:
 
-## Status Tracker (as of 2026-05-22)
+- Primary LLM: Teneta/Claude-compatible Anthropic API.
+- Payments: ACP-first. Stripe/fiat stays a later adapter after ACP checkout is stable.
+- Roadmap style: production roadmap, not a "build everything" backlog.
+- Fallback policy: template output is allowed only as explicitly degraded fallback, never as a hidden premium LLM result.
+
+## Current Status
 
 | Phase | Component | Status |
-|-------|-----------|--------|
-| P0 | Auth rate limiting | ✅ DONE |
-| P0 | Paid API idempotency | ✅ DONE |
-| P0 | Revenue margin totals | ✅ DONE |
-| P0 | Admin billing UI | 🟡 PARTIAL |
-| P1 | LLM abstraction (3 providers) | ✅ DONE |
-| P1 | llm_usage_events table | ✅ DONE |
-| P1 | Real LLM in workflow execution | ✅ DONE |
-| P2 | Redis in docker-compose | ✅ DONE |
-| P2 | Rate limits in Redis | ✅ DONE |
-| P2 | /system/health/full | ✅ DONE |
-| P2 | /metrics endpoint | ✅ DONE |
-| P2 | Structured JSON logging | ✅ DONE (structlog) |
-| P3 | WebSocket/SSE for workflow_runs | 🟡 PARTIAL (SSE only) |
-| P3 | Redis pub/sub | ✅ DONE |
-| P3 | Email service with SMTP | ✅ DONE |
-| P3 | Notification fanout | ✅ DONE (tick implemented, email by type) |
-| P4 | ACP checkout flow | ✅ DONE |
-| P4 | Creator listing flow | ✅ DONE |
-| P4 | Revenue dashboard | ✅ DONE |
-| P4 | Paid API spend caps | ✅ DONE |
-| P4 | Idempotency | ✅ DONE |
-| P4 | CSV export | ✅ DONE |
-| P5 | PostgreSQL FTS | ✅ DONE (migration 048, /search endpoint) |
-| P5 | Analytics dashboard | ✅ DONE (/dashboard/analytics page) |
-| P5 | /docs help center | ✅ DONE |
-| P6 | React Flow strategy builder | ❌ MISSING |
-| P6 | Chart components | 🟡 PARTIAL (analytics bar charts exist) |
-| P6 | Social layer (profiles, follows) | 🟡 PARTIAL (models exist, no profile pages) |
-| P6 | Light theme toggle | ✅ DONE (ThemeProvider) |
-| P6 | PWA manifest | ✅ DONE (manifest + SW + icons) |
-| P7 | Audit log viewer | ✅ DONE (/admin/audit + /admin/audit-log API) |
-| P7 | Organizations/teams | 🟡 PARTIAL (scaffold, migration 049) |
-| P7 | Webhooks | 🟡 PARTIAL (scaffold + HMAC signing, migration 049) |
+| --- | --- | --- |
+| P0 | Auth rate limiting | DONE |
+| P0 | Paid API idempotency/export/totals | DONE |
+| P0 | Revenue margin/referral totals | DONE |
+| P0 | Admin billing UI | PARTIAL |
+| P1 | LLM abstraction and `llm_usage_events` | DONE |
+| P1 | Real LLM in paid workflow execution | DONE |
+| P2 | Redis-backed rate limits/cache/pubsub | DONE |
+| P2 | `/system/health/full` and `/metrics` | DONE |
+| P2 | Structured JSON logging | DONE |
+| P3 | Workflow run SSE live status | DONE |
+| P3 | Notification fanout and SMTP email service | DONE |
+| P4 | ACP checkout, creator listing flow, revenue dashboard | DONE |
+| P4 | Paid API spend caps, idempotency, CSV export | DONE |
+| P5 | PostgreSQL FTS search and analytics dashboard | DONE |
+| P5 | Product docs/help center | DONE |
+| P6 | Strategy Builder MVP | PARTIAL: lightweight builder exists; React Flow canvas remains later |
+| P6 | Social profiles/follows | PARTIAL: backend and profile pages exist; feed polish remains |
+| P6 | Theme toggle and PWA shell | DONE |
+| P7 | Audit log viewer | DONE |
+| P7 | Organizations/teams | PARTIAL: backend complete, frontend UI in stabilization |
+| P7 | Webhooks | PARTIAL: dispatcher complete, frontend UI in stabilization |
+| Deploy | GitHub and production sync | PENDING: local `master` is ahead of `origin/master` |
 
----
+## Immediate Finish Plan
 
-## Remaining Work
+1. Stabilize the open Phase 7 UI changes:
+   - Fix `/strategy-builder` production build by wrapping `useSearchParams()` in a Suspense boundary.
+   - Keep `apiFetch` exported for Webhooks and Organizations pages.
+   - Keep navigation entries for Webhooks, Organizations, and Builder.
+   - Verify Webhooks UI supports endpoint creation, delivery history, and test delivery.
+   - Verify Organizations UI supports org list, org detail, members, roles, and billing wallet.
 
-### Phase 6 — Strategy Builder (React Flow) ⏳ TODO
-Визуальный нодовый редактор стратегий поверх существующего JSON workflow spec. MVP: canvas + ноды + валидация + preview.
+2. Commit and publish:
+   - Run frontend lint/build and backend targeted tests.
+   - Commit the remaining Phase 7 UI/build fixes as one clean commit.
+   - Push local commits to GitHub so `origin/master` matches local `HEAD`.
 
-### Phase 6 — Social Profiles ⏳ TODO
-Публичные профили пользователей/агентов с follow/unfollow. Фронтенд профили, API endpoints.
+3. Deploy:
+   - Pull the pushed code on `/opt/ancap-migration/current`.
+   - Verify production env without printing secrets.
+   - Run `alembic upgrade head`.
+   - Rebuild/restart API, frontend, Redis, ACP node, and nginx stack.
+   - Smoke test `ancap.cloud` routes and API health endpoints.
 
-### Phase 7 — Organizations полная реализация ⏳ TODO
-ORM слой для Organization, OrganizationMember. Интеграция с billing wallet, org-owned agents.
+## LLM Provider Reliability
 
-### Phase 7 — Webhooks полная реализация ⏳ TODO
-WebhookDispatcher сервис, background delivery, retry logic, dashboard управления.
+Claude Code logs from 2026-05-23 show repeated `503 service_unavailable` from the Claude/Teneta-compatible upstream. Older logs also show insufficient balance and invalid model failures. Production should expose these as separate operator signals.
 
----
+Required follow-up:
 
-## Phase 1 — Real AI Execution Core ✅ DONE
+- Classify LLM failures as provider unavailable, invalid model, auth/key issue, balance issue, timeout, and unknown.
+- Surface provider status in `/system/health/full` without leaking keys.
+- Record provider status, latency, retry count, and fallback mode in `llm_usage_events`.
+- Use retry/backoff for transient `503` and timeout errors.
+- Mark proof receipts as degraded when template fallback is used after a paid workflow.
+- Track degraded paid runs in revenue/quality dashboards for owner review.
 
-### Phase 2 — Rate Limits, Redis, Observability
+## Public APIs And Interfaces
 
-- Перевести rate limit state из in-memory в Redis; использовать один сервис для auth, paid API, workflow execution и LLM spend limits
-- Добавить Redis в dev/prod compose для rate limit, cache, pub/sub и realtime events
-- Добавить `/system/health/full`: DB, Redis, ACP RPC, LLM provider, mail config, bridge status
-- Добавить `/metrics` Prometheus-compatible endpoint: HTTP latency/status, paid runs, payment statuses, LLM calls/errors, API usage, Redis health
-- Структурировать логи JSON: request id, user id, agent id, run id, provider, payment intent id
+Available or in progress:
 
-**Acceptance:** production можно диагностировать без SSH-ручного чтения логов; 429 responses имеют Retry-After.
+- `GET /system/health/full`
+- `GET /metrics`
+- `GET /workflow-store/runs/{id}/events`
+- `GET /search`
+- `GET/POST /webhooks`
+- `GET /webhooks/{id}/deliveries`
+- `POST /webhooks/{id}/test`
+- `GET/POST /organizations`
+- `GET/PATCH /organizations/{id}`
+- `GET/POST /organizations/{id}/members`
+- `GET /admin/audit-log`
 
----
+Frontend routes to keep production-ready:
 
-## Phase 3 — Realtime Runs + Notifications
-
-- WebSocket/SSE канал для `workflow_runs/{id}`: quoted, payment_required, paid, queued, running, completed, failed, receipt_ready
-- Backend события публиковать через Redis pub/sub; frontend добавить `useRunEvents` hook и live status на run/payment/receipt страницах
-- Подключить email service к существующим SMTP config: registration, password reset, payment confirmed, workflow completed, receipt ready
-- Notification center оставить как in-app source of truth; email/Telegram alerts сделать fanout из тех же событий
-
-**Acceptance:** пользователь видит live status без refresh и получает уведомление после завершения paid run.
-
----
-
-## Phase 4 — ACP Monetization + Creator Economy
-
-- Довести ACP checkout до "без ручного ощущения": invoice, wallet/reference, polling, confirmed state, receipt/proof link
-- Расширить creator flow: AI-agent/human creator может собрать workflow offer, задать ACP price, input schema, output items, proof policy и опубликовать listing
-- Revenue dashboards: gross captured, reserved, refunds, referral commissions, estimated LLM/provider cost, estimated margin by SKU
-- Paid API: spend caps, usage CSV export, idempotency, machine-readable 402/x402-compatible payment terms
-- Stripe/fiat: добавить только PaymentProvider interface и `STRIPE_ENABLED=false` scaffold
-
-**Acceptance:** новый пользователь за 2 клика понимает что купить; creator понимает как разместить paid workflow; owner видит маржу по SKU.
-
----
-
-## Phase 5 — Discovery, Analytics, Docs
-
-- Полнотекстовый поиск сначала на PostgreSQL FTS; Meilisearch/Typesense отложить до роста объема данных
-- Search scope: workflows, listings, agents, strategies, sample reports, docs; фильтры: category, price, rating/reputation, tags
-- Analytics dashboard: workflow revenue, paid conversion, active agents, API usage, referral funnel, ACP balances, run completion
-- Docs/Help Center: `/docs` как продуктовая документация, `/api/docs` оставить Swagger; добавить guides для buyers, creators, agents, ACP wallet, paid API
-
-**Acceptance:** пользователь может найти workflow/listing, понять API и увидеть понятные графики роста/выручки.
-
----
-
-## Phase 6 — UX, Strategy Builder, Social, PWA
-
-- Strategy builder MVP: React Flow visual editor поверх текущего JSON workflow spec, validation before publish, sample run preview
-- Charts: shared chart components for equity curve, PnL, drawdown, governance votes, reputation
-- Social layer: улучшить уже существующие follows/feed/leaderboards публичными профилями, creator pages и activity cards
-- Theme/PWA: light theme toggle через CSS variables + localStorage/user preference; manifest, mobile icons, installable PWA shell
-
-**Acceptance:** создание стратегии/workflow не требует ручного JSON; mobile UX не ломает wallet, dashboard, workflow checkout.
-
----
-
-## Phase 7 — B2B/Ops Layer
-
-- Audit log viewer объединяет governance audit, bridge audit, ledger events, workflow payments, API usage; фильтры по actor/type/date/status и CSV export
-- Organizations: orgs/teams/users, роли owner/admin/member/viewer, org-owned agents, org billing wallet, org API keys
-- Webhooks: subscribe to run.completed, payment.captured, receipt.ready, api.usage.created; signed delivery, retries, dashboard
-- CI/CD: расширить backend CI на все API tests, добавить Playwright smoke, Bandit/Semgrep, Docker build check
-
-**Acceptance:** B2B-команда может управлять доступом, аудитом и интеграциями без ручного администрирования.
-
----
-
-## Phase 8 — Later / High-Cost Expansion
-
-- Mobile app на Expo делать только после стабильного PWA и подтвержденного retention
-- LayerZero/Wormhole рассматривать только после production hardening текущего ACP/wACP bridge
-- Advanced mutation/evolution/governance auto-apply включать только за feature flags и после audit log + monitoring
-- AI Council переводить на real LLM после общего LLM service, с отдельными moderation prompts и safety logs
-
----
-
-## Public APIs
-
-**New API groups:**
-- `GET /system/health/full` — full health check ✅
-- `GET /metrics` — Prometheus-compatible metrics ✅
-- `GET /workflow-store/runs/{id}/events` via SSE ✅
-- `GET /search` — PostgreSQL FTS ⏳ TODO
-- `POST/GET /webhooks` ⏳ TODO
-- `GET /admin/audit-log` ⏳ TODO
-- `POST/GET /organizations` ⏳ TODO
-
-**Existing APIs extended:**
-- paid API usage includes totals/export/idempotency ✅ partial (totals + idempotency done, export ⏳)
-- workflow revenue includes gross, reserved, refunds, provider cost, estimated margin, referral commission ✅
-- workflow receipts include LLM usage metadata and proof fields ✅
-
-**Frontend additions:**
-- live run status ✅ (SSE)
-- creator publishing flow ✅
-- analytics dashboard ⏳ TODO
-- help center ✅ (partial)
-- search UI ⏳ TODO
-- strategy builder ⏳ TODO
-- audit viewer ⏳ TODO
-- org settings ⏳ TODO
-
----
+- `/ai/workflows`
+- `/billing`
+- `/developers`
+- `/developers/webhooks`
+- `/organizations`
+- `/organizations/[id]`
+- `/strategy-builder`
+- `/dashboard/analytics`
+- `/proof-center`
 
 ## Test Plan
 
-**Backend:**
-- LLM provider success/failure/timeout/fallback, redacted logs, usage event creation ✅
-- Redis rate limit: per IP, per user, per agent, per API key, LLM spend limit ✅
-- Workflow execution: quote → ACP payment → LLM run → completed → receipt/proof ✅
-- Paid API: insufficient balance, spend cap, idempotency, CSV export ⏳ (CSV missing)
-- Webhooks: signature, retry, duplicate delivery handling ⏳ TODO
-- Organizations: role access matrix and org-owned resources ⏳ TODO
+Local quality gates:
 
-**Frontend:**
-- Playwright golden paths for home → workflow purchase → payment state → receipt
-- Creator dashboard → draft workflow → publish listing
-- Search, analytics, notifications, mobile PWA smoke
+- `npm run lint`
+- `npm run build`
+- `python -m pytest tests/api/test_workflow_store.py tests/api/test_paid_api.py tests/test_metrics.py -q`
+- Full `pytest -q` before final release when time allows.
 
-**Infra:**
-- Docker compose with Postgres + Redis + API + frontend + ACP node ✅
-- CI runs migrations, backend tests, frontend build, Playwright smoke
-- Production smoke: /, /ai/workflows, /billing, /developers, /proof-center, /api/v1/system/health, /api/v1/system/health/full
+Production smoke:
 
----
+- `https://ancap.cloud/`
+- `https://ancap.cloud/ai/workflows`
+- `https://ancap.cloud/billing`
+- `https://ancap.cloud/developers`
+- `https://ancap.cloud/developers/webhooks`
+- `https://ancap.cloud/organizations`
+- `https://ancap.cloud/strategy-builder`
+- `https://ancap.cloud/proof-center`
+- `/api/v1/system/health`
+- `/api/v1/system/health/full`
+- `/api/v1/metrics`
 
-## Assumptions
+## Later Expansion
 
-- ACP remains the primary accounting and pricing currency: 1 ACP = 1 platform accounting unit
-- Teneta/Claude-compatible endpoint is production default; OpenAI/Ollama are secondary providers
-- Existing simulation stays available only as fallback/dev mode, not as the default paid workflow result
-- Stripe is not a blocker for production launch; ACP checkout, paid API, bundles, creator listings, referrals and proof receipts are the main monetization engine
-- Phase 0 stabilized 2026-05-22
+- Replace the lightweight Strategy Builder with a React Flow canvas once the current builder and version API are stable.
+- Add Playwright smoke to CI for buyer, creator, developer, webhooks, organizations, and receipt flows.
+- Add Bandit/Semgrep and Docker build checks to CI.
+- Add Organizations-owned API keys, agents, billing wallet, and audit exports.
+- Add signed webhook retry dashboard with replay controls.
+- Consider fiat/Stripe only after ACP checkout, receipts, and creator payouts are stable.

@@ -1923,6 +1923,8 @@ async def execute_workflow_run(
     await _append_status_transition_and_broadcast(row, WorkflowRunStatus.running, WorkflowRunStatus.completed)
 
     execution_summary = row.result_json.get("execution_summary", {}) if isinstance(row.result_json, dict) else {}
+    if not isinstance(execution_summary, dict):
+        execution_summary = {}
     execution_mode = str(execution_summary.get("mode") or "template_stub")
 
     receipt_json = dict(row.receipt_json or {})

@@ -103,13 +103,13 @@ export default function AnalyticsPage() {
     referralTotals[r.currency] = parseFloat(r.amount);
   }
 
-  const totalCaptured = Object.values(grossByCurrency).reduce((a, b) => a + b, 0);
-  const totalMargin = Object.values(marginTotals).reduce((a, b) => a + b, 0);
-  const totalCost = Object.values(costTotals).reduce((a, b) => a + b, 0);
-  const totalReferral = Object.values(referralTotals).reduce((a, b) => a + b, 0);
+  const totalCaptured = Object.values(grossByCurrency).reduce((a: number, b: number) => a + b, 0);
+  const totalMargin = Object.values(marginTotals).reduce((a: number, b: number) => a + b, 0);
+  const totalCost = Object.values(costTotals).reduce((a: number, b: number) => a + b, 0);
+  const totalReferral = Object.values(referralTotals).reduce((a: number, b: number) => a + b, 0);
 
-  const runStatusCounts = revenue?.run_status_counts || {};
-  const paymentStatusCounts = revenue?.payment_status_counts || {};
+  const runStatusCounts: Record<string, number> = (revenue?.run_status_counts as Record<string, number> | undefined) || {};
+  const paymentStatusCounts: Record<string, number> = (revenue?.payment_status_counts as Record<string, number> | undefined) || {};
   const totalRuns = Object.values(runStatusCounts).reduce((a: number, b: number) => a + b, 0);
   const completedRuns = runStatusCounts["completed"] || 0;
 

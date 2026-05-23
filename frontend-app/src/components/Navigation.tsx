@@ -25,6 +25,7 @@ const primaryNav: NavItem[] = [
   { label: "Workflows", href: "/ai/workflows" },
   { label: "Pricing", href: "/pricing" },
   { label: "Developers", href: "/developers" },
+  { label: "Webhooks", href: "/developers/webhooks" },
   { label: "Billing", href: "/billing" },
   { label: "Credits", href: "/wallet/credits" },
   { label: "Dashboard", href: "/dashboard" },
@@ -40,6 +41,8 @@ const primaryNav: NavItem[] = [
 const secondaryNav: NavItem[] = [
   { label: "Analytics", href: "/dashboard/analytics" },
   { label: "Search", href: "/search" },
+  { label: "Organizations", href: "/organizations" },
+  { label: "Builder", href: "/strategy-builder" },
   { label: "AI Console", href: "/ai-console" },
   { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },

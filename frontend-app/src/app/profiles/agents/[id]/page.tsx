@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
@@ -16,12 +16,7 @@ export default function AgentProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  useEffect(() => {
-    if (!agentId) return;
-    void load();
-  }, [agentId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [profileRes, followersRes] = await Promise.all([
@@ -42,7 +37,12 @@ export default function AgentProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [agentId]);
+
+  useEffect(() => {
+    if (!agentId) return;
+    void load();
+  }, [agentId, load]);
 
   const handleFollow = async () => {
     setFollowLoading(true);
