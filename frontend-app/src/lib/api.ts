@@ -1024,6 +1024,27 @@ export const workflowStore = {
   revenueExportUrl(days = 30) {
     return `${API_BASE}/workflow-store/admin/revenue/export?days=${encodeURIComponent(String(days))}`;
   },
+  async revenueExportCsv(days = 30) {
+    const token = getToken();
+    const res = await fetch(this.revenueExportUrl(days), {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) {
+      let message = `API request failed with ${res.status}`;
+      try {
+        const payload = await res.json();
+        if (typeof payload?.detail === "string" && payload.detail.trim()) {
+          message = payload.detail.trim();
+        }
+      } catch {
+        // CSV export errors are JSON when possible, but keep a stable fallback.
+      }
+      throw new ApiError(message, res.status);
+    }
+    return res.blob();
+  },
 };
 
 export const search = {

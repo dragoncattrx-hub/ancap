@@ -36,7 +36,6 @@ function BarChart({ data, label, maxValue }: { data: { label: string; value: num
     </div>
   );
 }
-
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     captured: "bg-green-900/50 text-green-400 border-green-800",
@@ -57,7 +56,9 @@ export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const [revenue, setRevenue] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string>("");
+  const [exportError, setExportError] = useState<string>("");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push("/login");
@@ -85,6 +86,32 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (isAuthenticated) void loadData();
   }, [isAuthenticated, loadData]);
+
+  const handleExportCsv = useCallback(async () => {
+    setExporting(true);
+    setExportError("");
+    try {
+      const blob = await workflowStore.revenueExportCsv(days);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `workflow-revenue-${days}d.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      if (e instanceof ApiError && e.status === 403) {
+        setExportError("Admin access required to export workflow revenue.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setExportError("Platform admin access is not configured on the API server.");
+      } else {
+        setExportError(e?.message || String(e));
+      }
+    } finally {
+      setExporting(false);
+    }
+  }, [days]);
 
   if (isLoading || !isAuthenticated) return null;
 
@@ -141,14 +168,14 @@ export default function AnalyticsPage() {
       <Navigation />
       <NetworkBackground />
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold">Analytics</h1>
             <p className="text-sm opacity-60 mt-1">
               Workflow revenue · {revenue?.window_days || days}d window
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {DAYS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -250,16 +277,22 @@ export default function AnalyticsPage() {
 
             {/* Top SKUs */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
                 <h3 className="font-semibold">Top Workflows by Revenue</h3>
-                <a
-                  href={`/api/workflow-store/admin/revenue/export?days=${days}`}
-                  className="text-xs text-[var(--accent)] hover:underline"
-                  download
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  disabled={exporting}
+                  className="w-fit rounded-full border border-[var(--accent)]/30 px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Export CSV
-                </a>
+                  {exporting ? "Exporting..." : "Export CSV"}
+                </button>
               </div>
+              {exportError && (
+                <div className="mb-4 rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">
+                  {exportError}
+                </div>
+              )}
               {topSkus.length > 0 ? (
                 <BarChart
                   data={topSkus.map((s: any) => ({
@@ -334,9 +367,9 @@ export default function AnalyticsPage() {
                     const marginPct = gross > 0 ? (margin / gross) * 100 : 0;
                     return (
                       <div key={curr} className="space-y-1">
-                        <div className="flex justify-between text-xs opacity-60">
+                        <div className="flex flex-col gap-1 text-xs opacity-60 sm:flex-row sm:justify-between">
                           <span>{curr}</span>
-                          <span>Gross {gross.toFixed(2)} · Margin {margin.toFixed(2)} · Cost {cost.toFixed(2)} · Referral {referral.toFixed(2)}</span>
+                          <span className="break-words sm:text-right">Gross {gross.toFixed(2)} · Margin {margin.toFixed(2)} · Cost {cost.toFixed(2)} · Referral {referral.toFixed(2)}</span>
                         </div>
                         <div className="h-3 bg-[var(--border)] rounded overflow-hidden flex">
                           {gross > 0 && (
