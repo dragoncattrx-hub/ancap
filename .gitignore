@@ -116,6 +116,9 @@ frontend-app/.env.production
 **/tsconfig.tsbuildinfo
 _backups/
 
+# Local convenience scripts (not part of the project)
+start-claude.bat
+
 # wrangler files
 .wrangler
 .dev.vars*
