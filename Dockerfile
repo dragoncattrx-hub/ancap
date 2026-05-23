@@ -1,9 +1,20 @@
+FROM rust:1.86-slim AS wallet-builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc pkg-config ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ACP-crypto ./ACP-crypto
+RUN cargo build --manifest-path ACP-crypto/Cargo.toml --bin walletd --release --locked
+
 FROM python:3.12-slim
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc curl ca-certificates cargo rustc pkg-config \
+    libpq-dev gcc curl ca-certificates pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -13,8 +24,7 @@ COPY . .
 ENV PYTHONPATH=/app
 EXPOSE 8000
 
-RUN cargo build --manifest-path ACP-crypto/acp-wallet/Cargo.toml --bin walletd --release \
-    && cp ACP-crypto/acp-wallet/target/release/walletd /usr/local/bin/walletd \
-    && chmod +x /usr/local/bin/walletd
+COPY --from=wallet-builder /app/ACP-crypto/target/release/walletd /usr/local/bin/walletd
+RUN chmod +x /usr/local/bin/walletd
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
