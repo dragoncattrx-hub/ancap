@@ -5,6 +5,7 @@ import { LanguageProvider } from "./LanguageProvider";
 import { AuthProvider } from "./AuthProvider";
 import { WalletProvider } from "./WalletProvider";
 import { ThemeProvider } from "./ThemeProvider";
+import { CookieConsent } from "./CookieConsent";
 
 function ServiceWorkerRegister() {
   useEffect(() => {
@@ -23,6 +24,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
           <LanguageProvider>
             <ServiceWorkerRegister />
             {children}
+            <CookieConsent />
           </LanguageProvider>
         </WalletProvider>
       </AuthProvider>

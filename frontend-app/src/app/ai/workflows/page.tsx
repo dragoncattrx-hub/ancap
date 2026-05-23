@@ -42,7 +42,14 @@ export default async function WorkflowsPage() {
   const workflows = await getWorkflowTemplates();
   const bundles = await getWorkflowBundles();
   const premiumWorkflows = workflows.filter((workflow) =>
-    ["token-launch-audit-pack", "exchange-listing-submission-pack", "kol-telegram-campaign-builder", "token-risk-report-pro", "agent-api-readiness-pack"].includes(workflow.slug),
+    [
+      "token-launch-audit-pack",
+      "exchange-listing-submission-pack",
+      "kol-telegram-campaign-builder",
+      "token-risk-report-pro",
+      "agent-api-readiness-pack",
+      "ai-iso-governance-readiness-pack",
+    ].includes(workflow.slug),
   );
 
   return (

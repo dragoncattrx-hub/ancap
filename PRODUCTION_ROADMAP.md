@@ -12,6 +12,8 @@ Fixed decisions:
 - Payments: ACP-first. Stripe/fiat stays a later adapter after ACP checkout is stable.
 - Roadmap style: production roadmap, not a "build everything" backlog.
 - Fallback policy: template output is allowed only as explicitly degraded fallback, never as a hidden premium LLM result.
+- AI governance: AI/ISO readiness guidance is tracked in `docs/AI_ISO_GOVERNANCE_NOTES.md`.
+- Public trust layer: whitepapers, terms, privacy, and cookie consent are published on the site before broader paid acquisition.
 
 ## Current Status
 
@@ -32,6 +34,8 @@ Fixed decisions:
 | P4 | Paid API spend caps, idempotency, CSV export | DONE |
 | P5 | PostgreSQL FTS search and analytics dashboard | DONE |
 | P5 | Product docs/help center | DONE |
+| P5 | AI/ISO governance notes and premium readiness SKU | DONE |
+| P5 | Project/ACP whitepapers, legal pages, cookie consent | DONE |
 | P6 | Strategy Builder MVP | PARTIAL: lightweight builder exists; React Flow canvas remains later |
 | P6 | Social profiles/follows | PARTIAL: backend and profile pages exist; feed polish remains |
 | P6 | Theme toggle and PWA shell | DONE |
@@ -73,6 +77,22 @@ Required follow-up:
 - Use retry/backoff for transient `503` and timeout errors.
 - Mark proof receipts as degraded when template fallback is used after a paid workflow.
 - Track degraded paid runs in revenue/quality dashboards for owner review.
+
+## AI / ISO Governance Track
+
+The AI and ISO source review is captured in `docs/AI_ISO_GOVERNANCE_NOTES.md`. ANCAP should use ISO-style discipline as product infrastructure: repeatable SOPs, audit evidence, corrective actions, owner assignment, status tracking, and management review.
+
+Implemented now:
+
+- `AI / ISO Governance Readiness Pack` as a premium workflow SKU.
+- Sample report support for the new governance SKU.
+- Workflow/pricing catalog visibility for the new offer.
+
+Next controls:
+
+- Add AI system cards to premium workflow templates.
+- Add degraded-output and corrective-action filters to owner dashboards.
+- Add evidence export per paid workflow run for B2B buyers.
 
 ## Public APIs And Interfaces
 

@@ -31,6 +31,11 @@ const sampleBySlug: Record<string, SampleReport> = {
     summary: "Endpoint offer, pay-per-call pricing, x402-compatible terms, spend caps, and receipt schema.",
     sections: ["Endpoint offer", "x402 response plan", "Spend controls", "Developer docs outline"],
   },
+  "ai-iso-governance-readiness-pack": {
+    score: "76 / 100 readiness",
+    summary: "AI workflow governance pack with SOPs, ISO-style control matrix, audit evidence, and corrective-action flow.",
+    sections: ["AI governance memo", "SOP checklist", "Risk and control matrix", "Corrective-action plan"],
+  },
 };
 
 function sampleForWorkflow(slug: string): SampleReport | null {

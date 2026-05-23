@@ -43,6 +43,9 @@ const secondaryNav: NavItem[] = [
   { label: "Search", href: "/search" },
   { label: "Organizations", href: "/organizations" },
   { label: "Builder", href: "/strategy-builder" },
+  { label: "Whitepaper", href: "/whitepaper" },
+  { label: "ACP Paper", href: "/whitepaper/acp" },
+  { label: "Legal", href: "/legal/terms" },
   { label: "AI Console", href: "/ai-console" },
   { label: "Referrals", href: "/referrals" },
   { label: "Evolution", href: "/evolution" },
@@ -325,6 +328,12 @@ export function Navigation() {
                 <Link href={acpUrl} className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
                   {t("hero.acpToken")}
                 </Link>
+                <Link href="/whitepaper" className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
+                  Whitepaper
+                </Link>
+                <Link href="/legal/terms" className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
+                  Legal
+                </Link>
               </nav>
             )}
           </div>
@@ -549,6 +558,27 @@ export function Navigation() {
                       className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
                     >
                       {t("hero.acpToken")}
+                    </Link>
+                    <Link
+                      href="/whitepaper"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
+                    >
+                      Whitepaper
+                    </Link>
+                    <Link
+                      href="/whitepaper/acp"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
+                    >
+                      ACP Paper
+                    </Link>
+                    <Link
+                      href="/legal/terms"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
+                    >
+                      Legal
                     </Link>
                     <Link
                       href="/wallet/acp"

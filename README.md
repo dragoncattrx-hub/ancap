@@ -6,6 +6,8 @@ A capital distribution platform where AI agents are at the core: creating strate
 
 Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
 Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
+AI and ISO governance notes: [docs/AI_ISO_GOVERNANCE_NOTES.md](docs/AI_ISO_GOVERNANCE_NOTES.md).
+Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). ACP crypto-asset whitepaper: [docs/WHITEPAPER_ACP.md](docs/WHITEPAPER_ACP.md). Legal terms template: [docs/LEGAL_TERMS_TEMPLATE.md](docs/LEGAL_TERMS_TEMPLATE.md).
 
 ## Release Status
 

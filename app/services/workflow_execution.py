@@ -148,6 +148,20 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "input_hash", "x402_payment_terms", "margin_snapshot", "status_timeline"],
         tags=["api", "x402", "agents", "premium"],
     ),
+    WorkflowTemplatePublic(
+        slug="ai-iso-governance-readiness-pack",
+        title="AI / ISO Governance Readiness Pack",
+        category="Governance",
+        summary="Turn an AI workflow into an audit-ready operating pack with SOPs, risk controls, evidence, and corrective-action flow.",
+        description="Maps AI execution, LLM supplier controls, proof receipts, audit trails, and ISO-inspired operating discipline into a practical governance packet. This is readiness support, not a certification guarantee.",
+        price=Money(amount="149", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=90,
+        preview_items=["AI capability map", "ISO-style control checklist", "Evidence and audit trail plan"],
+        output_items=["AI governance memo", "SOP checklist", "Risk and control matrix", "Corrective-action plan", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "ai_governance_scope", "control_evidence_map", "status_timeline"],
+        tags=["ai", "iso", "governance", "audit", "premium"],
+    ),
 ]
 
 
@@ -562,6 +576,56 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "agent_api_readiness",
             "sections_generated": 5,
             "focus": ["API pricing", "x402 terms", "spend controls", "developer docs"],
+        }
+    elif template.slug == "ai-iso-governance-readiness-pack":
+        ai_system = str(payload.get("ai_system") or payload.get("workflow_name") or project_name)
+        intended_use = str(payload.get("intended_use") or "paid AI workflow execution")
+        risk_level = str(payload.get("risk_level") or "medium")
+        owner = str(payload.get("owner") or "platform owner")
+        deliverable = {
+            "governance_summary": f"{ai_system} should be operated as a controlled AI workflow with documented scope, owner, inputs, outputs, supplier dependencies, and proof receipts.",
+            "ai_capability_map": {
+                "learning_or_generation": "LLM-assisted generation is used for workflow artifacts; deterministic templates remain fallback only.",
+                "reasoning_and_planning": "The workflow should record prompt, model, provider status, output sections, and quality checks.",
+                "decision_support": "Outputs should support buyer/operator decisions, not claim autonomous investment or compliance approval.",
+                "human_oversight": f"{owner} owns review, exception handling, and release decisions for higher-risk outputs.",
+            },
+            "iso_style_control_matrix": {
+                "scope_and_policy": ["Define workflow scope", "Publish acceptable-use limits", "Avoid investment-return claims"],
+                "risk_management": ["Classify use case risk", "Log failure mode", "Mark degraded fallback outputs"],
+                "documented_information": ["Store run inputs hash", "Store output/proof hash", "Keep receipt and audit trail"],
+                "supplier_controls": ["Track LLM provider", "Track model version", "Track latency/status/cost estimate"],
+                "operation_and_monitoring": ["Use rate limits", "Monitor paid run failure rate", "Review degraded receipts"],
+                "corrective_actions": ["Assign owner", "Record root cause", "Verify fix before closing"],
+            },
+            "audit_ready_evidence": [
+                "Workflow specification and version",
+                "Prompt/provider/model metadata",
+                "Input, output, and receipt hashes",
+                "Payment intent and capture status",
+                "Fallback/degraded-mode marker when applicable",
+                "Corrective-action record for incidents or nonconformities",
+            ],
+            "sop_checklist": [
+                "Define buyer-facing promise and excluded claims",
+                "Collect required inputs before execution",
+                "Run LLM or approved fallback with status logging",
+                "Perform quality review for premium reports",
+                "Generate receipt/proof bundle",
+                "Escalate failed or degraded paid runs",
+            ],
+            "readiness_score": {
+                "score": 76,
+                "risk_level": risk_level,
+                "note": "Ready for controlled internal use after evidence retention, degraded-output labeling, and corrective-action ownership are verified.",
+            },
+            "certification_note": "This pack prepares operating evidence and controls; it does not certify ISO conformity or replace an accredited audit.",
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "ai_iso_governance_readiness",
+            "sections_generated": 6,
+            "focus": ["AI governance", "ISO-style controls", "audit evidence", "corrective actions"],
         }
     elif template.slug == "crypto-campaign-builder":
         deliverable = {

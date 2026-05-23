@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { fallbackWorkflowBundles, fallbackWorkflowTemplates } from "@/lib/workflowStore";
 
 const featuredBundles = ["pro-launch-pack", "agent-commerce-pack", "concierge-pack"];
-const featuredWorkflows = ["exchange-listing-submission-pack", "kol-telegram-campaign-builder", "token-risk-report-pro"];
+const featuredWorkflows = ["exchange-listing-submission-pack", "ai-iso-governance-readiness-pack", "token-risk-report-pro"];
 
 export const metadata = {
   title: "ANCAP Pricing | Paid AI workflows for crypto teams",

@@ -181,6 +181,20 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "input_hash", "x402_payment_terms", "margin_snapshot", "status_timeline"],
     tags: ["api", "x402", "agents", "premium"],
   },
+  {
+    slug: "ai-iso-governance-readiness-pack",
+    title: "AI / ISO Governance Readiness Pack",
+    category: "Governance",
+    summary: "Turn an AI workflow into an audit-ready operating pack with SOPs, risk controls, evidence, and corrective-action flow.",
+    description: "Maps AI execution, LLM supplier controls, proof receipts, audit trails, and ISO-inspired operating discipline into a practical governance packet. This is readiness support, not a certification guarantee.",
+    price: { amount: "149", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 90,
+    preview_items: ["AI capability map", "ISO-style control checklist", "Evidence and audit trail plan"],
+    output_items: ["AI governance memo", "SOP checklist", "Risk and control matrix", "Corrective-action plan", "Proof receipt"],
+    receipt_items: ["workflow_slug", "price_snapshot", "input_hash", "ai_governance_scope", "control_evidence_map", "status_timeline"],
+    tags: ["ai", "iso", "governance", "audit", "premium"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [
