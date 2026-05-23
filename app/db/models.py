@@ -459,6 +459,9 @@ class LlmUsageEvent(Base):
     latency_ms = Column(Integer, nullable=False, default=0)
     status = Column(String(32), nullable=False, index=True)
     error = Column(String(1000), nullable=True)
+    provider_status = Column(String(32), nullable=False, server_default="unknown")  # unknown | ok | degraded | failed
+    failure_reason = Column(String(128), nullable=True)  # unavailable | invalid_model | auth_error | balance_error | timeout | unknown
+    retry_count = Column(Integer, nullable=False, server_default="0")
     cost_currency = Column(String(10), nullable=False, default="ACP")
     cost_amount = Column(Numeric(36, 18), nullable=False, default=0)
     metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
@@ -471,6 +474,8 @@ class LlmUsageEvent(Base):
         Index("ix_llm_usage_events_run_created", "workflow_run_id", "created_at"),
         Index("ix_llm_usage_events_owner_created", "owner_user_id", "created_at"),
         Index("ix_llm_usage_events_provider_status", "provider", "status"),
+        Index("ix_llm_usage_events_provider_status_idx", "provider_status"),
+        Index("ix_llm_usage_events_failure_reason", "failure_reason"),
     )
 
 

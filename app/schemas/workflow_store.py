@@ -24,6 +24,11 @@ class WorkflowTemplatePublic(BaseModel):
     receipt_items: list[str] = Field(default_factory=list)
     status: str = "active"
     tags: list[str] = Field(default_factory=list)
+    # Phase 4: AI system card for governance workflows
+    ai_system_card: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="AI system card metadata for premium governance workflows: capability, supplier controls, audit evidence, corrective-action plan.",
+    )
 
 
 class WorkflowTemplatesResponse(BaseModel):
@@ -134,6 +139,9 @@ class WorkflowRunPublic(BaseModel):
     receipt: WorkflowRunReceiptPublic
     created_at: datetime
     owner_user_id: Optional[str] = None
+    # Phase 4: degraded run signal — present when LLM call failed and template fallback was used
+    degraded_run: bool = False
+    degraded_reason: Optional[str] = None
 
 
 class WorkflowRunPaymentIntentCreateResponse(BaseModel):

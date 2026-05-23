@@ -58,12 +58,32 @@ async def health_full(session: DbSession):
         llm_configured = bool(s.openai_api_key)
     elif (s.llm_provider or "").lower() == "ollama":
         llm_configured = bool(s.ollama_base_url)
+    # Probe LLM provider with a lightweight call
+    llm_probe_status = "unknown"
+    llm_probe_error: str | None = None
+    if llm_configured and not (s.llm_provider or "").startswith("disabled"):
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                headers = {"x-api-key": s.anthropic_api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+                payload = {"model": s.llm_model, "max_tokens": 1, "messages": [{"role": "user", "content": "ping"}]}
+                r = await client.post(f"{s.anthropic_base_url}/v1/messages", headers=headers, json=payload)
+                if r.status_code == 200:
+                    llm_probe_status = "ok"
+                else:
+                    llm_probe_status = "degraded"
+                    llm_probe_error = f"HTTP {r.status_code}"
+        except Exception as exc:
+            llm_probe_status = "degraded"
+            llm_probe_error = str(exc)[:120]
+
     checks["llm"] = {
-        "ok": llm_configured or s.llm_fallback_to_template,
+        "ok": llm_probe_status == "ok" or llm_configured or s.llm_fallback_to_template,
         "provider": s.llm_provider,
         "model": s.llm_model,
         "configured": llm_configured,
         "fallback_enabled": s.llm_fallback_to_template,
+        "probe_status": llm_probe_status,
+        "probe_error": llm_probe_error,
     }
 
     checks["mail"] = {

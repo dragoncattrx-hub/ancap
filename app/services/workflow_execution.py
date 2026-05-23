@@ -161,6 +161,14 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         output_items=["AI governance memo", "SOP checklist", "Risk and control matrix", "Corrective-action plan", "Proof receipt"],
         receipt_items=["workflow_slug", "price_snapshot", "input_hash", "ai_governance_scope", "control_evidence_map", "status_timeline"],
         tags=["ai", "iso", "governance", "audit", "premium"],
+        ai_system_card={
+            "capability": "structured-generation",
+            "capability_detail": "LLM-assisted generation of governance, audit, and compliance documentation",
+            "supplier": {"provider": "Anthropic (Teneta)", "model": "claude-sonnet-4-6"},
+            "fallback": "template-based shell with degraded_run=true when LLM is unavailable",
+            "audit_evidence": ["prompt", "model", "provider_status", "output_hash", "receipt"],
+            "corrective_action_plan": ["Owner assignment on degraded runs", "Human review for premium outputs", "Root cause logged in llm_usage_events"],
+        },
     ),
 ]
 

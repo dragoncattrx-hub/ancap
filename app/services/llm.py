@@ -1,9 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import json
 import time
-from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -17,14 +16,72 @@ from app.schemas import WorkflowTemplatePublic
 from app.services.workflow_execution import execute_workflow_template
 
 
-@dataclass
+# Retryable status codes: transient failures we should retry
+_RETRYABLE_STATUS_CODES = {429, 502, 503, 504}
+
+
+def _classify_failure(exc: Exception) -> str:
+    """Classify LLM failure into: unavailable | invalid_model | auth_error | balance_error | timeout | unknown."""
+    msg = str(exc).lower()
+    code = getattr(exc, "response", None)
+    if isinstance(code, httpx.Response):
+        status = code.status_code
+        if status in (401, 403):
+            return "auth_error"
+        if status == 402:
+            return "balance_error"
+        if status == 404:
+            return "invalid_model"
+        if status in (429, 502, 503, 504):
+            return "unavailable"
+        if status >= 500:
+            return "unavailable"
+    if "timeout" in msg or "timed out" in msg:
+        return "timeout"
+    if any(k in msg for k in ("unavailable", "503", "connection")):
+        return "unavailable"
+    if any(k in msg for k in ("401", "403", "forbidden", "unauthorized")):
+        return "auth_error"
+    if any(k in msg for k in ("balance", "insufficient")):
+        return "balance_error"
+    if any(k in msg for k in ("model", "not found")):
+        return "invalid_model"
+    return "unknown"
+
+
+def _is_retryable(exc: Exception) -> bool:
+    code = getattr(exc, "response", None)
+    if isinstance(code, httpx.Response):
+        return code.status_code in _RETRYABLE_STATUS_CODES
+    msg = str(exc).lower()
+    return any(k in msg for k in ("timeout", "unavailable", "503", "connection"))
+
+
 class LlmExecutionResult:
-    result: dict[str, Any]
-    usage_event_id: str | None
-    provider: str
-    model: str
-    status: str
-    fallback_used: bool
+    __slots__ = ("result", "usage_event_id", "provider", "model", "status",
+                 "fallback_used", "provider_status", "failure_reason", "retry_count")
+
+    def __init__(
+        self,
+        result: dict[str, Any],
+        usage_event_id: str | None,
+        provider: str,
+        model: str,
+        status: str,
+        fallback_used: bool,
+        provider_status: str = "unknown",
+        failure_reason: str | None = None,
+        retry_count: int = 0,
+    ):
+        self.result = result
+        self.usage_event_id = usage_event_id
+        self.provider = provider
+        self.model = model
+        self.status = status
+        self.fallback_used = fallback_used
+        self.provider_status = provider_status
+        self.failure_reason = failure_reason
+        self.retry_count = retry_count
 
 
 def _sha256_json(payload: Any) -> str:
@@ -85,12 +142,12 @@ def _workflow_prompt(template: WorkflowTemplatePublic, inputs: dict[str, Any]) -
     )
 
 
-async def _call_teneta_claude(prompt: str) -> tuple[str, dict[str, Any]]:
+async def _call_teneta_claude(prompt: str, timeout: int = 45) -> tuple[str, dict[str, Any]]:
     settings = get_settings()
     if not settings.anthropic_api_key:
         raise RuntimeError("ANTHROPIC_API_KEY is not configured")
     base_url = settings.anthropic_base_url.rstrip("/")
-    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         response = await client.post(
             f"{base_url}/v1/messages",
             headers={
@@ -109,11 +166,11 @@ async def _call_teneta_claude(prompt: str) -> tuple[str, dict[str, Any]]:
     return _extract_anthropic_text(payload), payload
 
 
-async def _call_openai(prompt: str) -> tuple[str, dict[str, Any]]:
+async def _call_openai(prompt: str, timeout: int = 45) -> tuple[str, dict[str, Any]]:
     settings = get_settings()
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY is not configured")
-    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         response = await client.post(
             "https://api.openai.com/v1/chat/completions",
             headers={"authorization": f"Bearer {settings.openai_api_key}", "content-type": "application/json"},
@@ -129,9 +186,9 @@ async def _call_openai(prompt: str) -> tuple[str, dict[str, Any]]:
     return str(text), payload
 
 
-async def _call_ollama(prompt: str) -> tuple[str, dict[str, Any]]:
+async def _call_ollama(prompt: str, timeout: int = 45) -> tuple[str, dict[str, Any]]:
     settings = get_settings()
-    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         response = await client.post(
             f"{settings.ollama_base_url.rstrip('/')}/api/generate",
             json={"model": settings.llm_model, "prompt": prompt, "stream": False},
@@ -154,6 +211,9 @@ async def _store_usage_event(
     status: str,
     error: str | None,
     metadata: dict[str, Any],
+    provider_status: str = "unknown",
+    failure_reason: str | None = None,
+    retry_count: int = 0,
 ) -> LlmUsageEvent:
     row = LlmUsageEvent(
         owner_user_id=owner_user_id,
@@ -166,6 +226,9 @@ async def _store_usage_event(
         latency_ms=latency_ms,
         status=status,
         error=(error[:1000] if error else None),
+        provider_status=provider_status,
+        failure_reason=failure_reason,
+        retry_count=retry_count,
         cost_currency="ACP",
         cost_amount=Decimal("0"),
         metadata_json=metadata,
@@ -173,6 +236,39 @@ async def _store_usage_event(
     session.add(row)
     await session.flush()
     return row
+
+
+async def _call_with_retry(
+    provider: str,
+    prompt: str,
+    max_retries: int = 2,
+) -> tuple[str, dict[str, Any], int, str, str | None]:
+    """Call LLM with exponential backoff retry.
+    Returns (text, raw_payload, retry_count, provider_status, failure_reason).
+    """
+    settings = get_settings()
+    timeout = settings.llm_timeout_seconds
+
+    last_exc: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            if provider == "openai":
+                output_text, raw = await _call_openai(prompt, timeout)
+            elif provider == "ollama":
+                output_text, raw = await _call_ollama(prompt, timeout)
+            else:
+                output_text, raw = await _call_teneta_claude(prompt, timeout)
+            return output_text, raw, attempt, "ok", None
+        except Exception as exc:
+            last_exc = exc
+            if not _is_retryable(exc) or attempt >= max_retries:
+                break
+            # Exponential backoff: 1s, 2s
+            time.sleep(2 ** attempt)
+
+    reason = _classify_failure(last_exc) if last_exc else "unknown"
+    provider_status = "failed" if reason in ("auth_error", "balance_error", "invalid_model") else "degraded"
+    return "", {}, max_retries, provider_status, reason
 
 
 async def execute_paid_workflow_with_llm(
@@ -188,19 +284,31 @@ async def execute_paid_workflow_with_llm(
     model = settings.llm_model
     prompt = _workflow_prompt(template, inputs or {})
     started = time.perf_counter()
-    output_text = ""
     metadata: dict[str, Any] = {"workflow_slug": template.slug, "provider_configured": provider}
 
-    try:
-        if provider == "disabled":
-            raise RuntimeError("LLM provider disabled")
-        if provider == "openai":
-            output_text, raw = await _call_openai(prompt)
-        elif provider == "ollama":
-            output_text, raw = await _call_ollama(prompt)
-        else:
-            output_text, raw = await _call_teneta_claude(prompt)
+    if provider == "disabled":
+        fallback = execute_workflow_template(template, inputs or {})
         latency_ms = int((time.perf_counter() - started) * 1000)
+        fallback["llm_usage"] = {
+            "status": "disabled",
+            "provider": provider,
+            "model": model,
+            "fallback_used": True,
+        }
+        fallback.setdefault("execution_summary", {})["mode"] = "template_fallback"
+        return LlmExecutionResult(
+            result=fallback,
+            usage_event_id=None,
+            provider=provider,
+            model=model,
+            status="disabled",
+            fallback_used=True,
+        )
+
+    output_text, raw, retry_count, provider_status, failure_reason = await _call_with_retry(provider, prompt)
+    latency_ms = int((time.perf_counter() - started) * 1000)
+
+    if output_text and provider_status == "ok":
         result = _parse_model_json(output_text)
         result.setdefault("status", "completed")
         result.setdefault("workflow_slug", template.slug)
@@ -223,40 +331,74 @@ async def execute_paid_workflow_with_llm(
             status="succeeded",
             error=None,
             metadata={"raw_response_hash": _sha256_json(raw), **metadata},
+            provider_status=provider_status,
+            failure_reason=failure_reason,
+            retry_count=retry_count,
         )
         result["llm_usage"] = {
             "event_id": str(event.id),
             "provider": provider,
             "model": model,
             "status": "succeeded",
+            "provider_status": provider_status,
+            "retry_count": retry_count,
         }
-        return LlmExecutionResult(result=result, usage_event_id=str(event.id), provider=provider, model=model, status="succeeded", fallback_used=False)
-    except Exception as exc:
-        latency_ms = int((time.perf_counter() - started) * 1000)
-        fallback = execute_workflow_template(template, inputs or {})
-        summary = fallback.setdefault("execution_summary", {})
-        if isinstance(summary, dict):
-            summary["mode"] = "template_fallback"
-            summary["llm_provider"] = provider
-            summary["llm_model"] = model
-        event = await _store_usage_event(
-            session,
-            owner_user_id=owner_user_id,
-            workflow_run_id=workflow_run_id,
+        return LlmExecutionResult(
+            result=result,
+            usage_event_id=str(event.id),
             provider=provider,
             model=model,
-            prompt=prompt,
-            output_text=json.dumps(fallback, default=str, ensure_ascii=False),
-            latency_ms=latency_ms,
-            status="fallback" if settings.llm_fallback_to_template else "failed",
-            error=str(exc),
-            metadata=metadata,
+            status="succeeded",
+            fallback_used=False,
+            provider_status=provider_status,
+            failure_reason=failure_reason,
+            retry_count=retry_count,
         )
-        fallback["llm_usage"] = {
-            "event_id": str(event.id),
-            "provider": provider,
-            "model": model,
-            "status": "fallback",
-            "error": str(exc)[:240],
-        }
-        return LlmExecutionResult(result=fallback, usage_event_id=str(event.id), provider=provider, model=model, status="fallback", fallback_used=True)
+
+    # LLM call failed -> template fallback, mark degraded
+    fallback = execute_workflow_template(template, inputs or {})
+    summary = fallback.setdefault("execution_summary", {})
+    if isinstance(summary, dict):
+        summary["mode"] = "template_fallback"
+        summary["llm_provider"] = provider
+        summary["llm_model"] = model
+        summary["degraded"] = True
+        summary["degraded_reason"] = failure_reason or "llm_call_failed"
+    fallback["degraded_run"] = True
+    fallback["degraded_reason"] = failure_reason or "llm_call_failed"
+    event = await _store_usage_event(
+        session,
+        owner_user_id=owner_user_id,
+        workflow_run_id=workflow_run_id,
+        provider=provider,
+        model=model,
+        prompt=prompt,
+        output_text=json.dumps(fallback, default=str, ensure_ascii=False),
+        latency_ms=latency_ms,
+        status="fallback" if settings.llm_fallback_to_template else "failed",
+        error=failure_reason,
+        metadata=metadata,
+        provider_status=provider_status,
+        failure_reason=failure_reason,
+        retry_count=retry_count,
+    )
+    fallback["llm_usage"] = {
+        "event_id": str(event.id),
+        "provider": provider,
+        "model": model,
+        "status": "fallback" if settings.llm_fallback_to_template else "failed",
+        "provider_status": provider_status,
+        "failure_reason": failure_reason,
+        "retry_count": retry_count,
+    }
+    return LlmExecutionResult(
+        result=fallback,
+        usage_event_id=str(event.id),
+        provider=provider,
+        model=model,
+        status="fallback",
+        fallback_used=True,
+        provider_status=provider_status,
+        failure_reason=failure_reason,
+        retry_count=retry_count,
+    )

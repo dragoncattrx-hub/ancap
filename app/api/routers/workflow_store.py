@@ -12,7 +12,7 @@ import json
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
@@ -103,6 +103,10 @@ def _serialize_run(row: WorkflowRunRecord) -> WorkflowRunPublic:
         "amount": str(row.quoted_amount),
         "currency": row.payment_currency,
     }
+    # Phase 4: extract degraded signals from result_json
+    result_json = row.result_json or {}
+    degraded_run = bool(result_json.get("degraded_run", False)) if isinstance(result_json, dict) else False
+    degraded_reason = result_json.get("degraded_reason") if isinstance(result_json, dict) else None
     return WorkflowRunPublic(
         id=str(row.id),
         workflow_slug=row.workflow_slug,
@@ -128,6 +132,8 @@ def _serialize_run(row: WorkflowRunRecord) -> WorkflowRunPublic:
         ),
         created_at=row.created_at,
         owner_user_id=str(row.owner_user_id),
+        degraded_run=degraded_run,
+        degraded_reason=degraded_reason,
     )
 
 
@@ -1350,6 +1356,8 @@ async def list_workflow_runs(
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
     limit: int = Query(20, ge=1, le=100),
+    # Phase 4: filter by degraded status
+    degraded: bool | None = Query(None, description="Filter runs by degraded status"),
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -1362,6 +1370,11 @@ async def list_workflow_runs(
     )
     r = await session.execute(q)
     items = [_serialize_run(row) for row in r.scalars().all()]
+
+    # Phase 4: filter in-memory by degraded_run signal from result_json
+    if degraded is not None:
+        items = [run for run in items if run.degraded_run == degraded]
+
     return WorkflowRunsResponse(items=items)
 
 
@@ -1637,6 +1650,79 @@ async def get_workflow_run_proof_bundle(
                 ).scalars().all()
 
     return _build_workflow_run_proof_bundle(row, settlement_intent, receipts)
+
+
+@router.get("/runs/{run_id}/evidence-export")
+async def export_workflow_run_evidence(
+    run_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Phase 4: Export full evidence bundle for B2B buyers and governance audits.
+
+    Returns a structured JSON evidence package containing:
+    - Run metadata and identity
+    - Input hash (inputs_json)
+    - Output hash (result_json)
+    - Proof bundle (settlement, chain receipts)
+    - LLM usage signals (degraded_run, degraded_reason, llm_usage)
+    - Owner and timestamps
+    """
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    row = await _get_owned_run(session, user_id, run_id)
+
+    result_json = row.result_json or {}
+    llm_usage = result_json.get("llm_usage", {}) if isinstance(result_json, dict) else {}
+    receipt_json = row.receipt_json or {}
+    proof = receipt_json.get("proof", {}) if isinstance(receipt_json, dict) else {}
+
+    import hashlib, json as _json
+    inputs_str = _json.dumps(row.inputs_json or {}, sort_keys=True, default=str, ensure_ascii=False)
+    inputs_hash = hashlib.sha256(inputs_str.encode("utf-8")).hexdigest()
+    outputs_str = _json.dumps(result_json, sort_keys=True, default=str, ensure_ascii=False)
+    outputs_hash = hashlib.sha256(outputs_str.encode("utf-8")).hexdigest()
+    prompt_str = llm_usage.get("prompt", "") if isinstance(llm_usage, dict) else ""
+    prompt_hash = hashlib.sha256(prompt_str.encode("utf-8")).hexdigest() if prompt_str else ""
+
+    evidence = {
+        "evidence_package_version": "v1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "workflow_run": {
+            "id": str(row.id),
+            "slug": row.workflow_slug,
+            "title": row.title,
+            "category": row.category,
+            "status": row.status,
+            "inputs_hash": inputs_hash,
+            "outputs_hash": outputs_hash,
+            "created_at": row.created_at.isoformat(),
+            "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+        },
+        "pricing": {
+            "quoted_amount": str(row.quoted_amount),
+            "payment_currency": row.payment_currency,
+        },
+        "llm_execution": {
+            "provider": llm_usage.get("provider"),
+            "model": llm_usage.get("model"),
+            "status": llm_usage.get("status"),
+            "provider_status": llm_usage.get("provider_status"),
+            "failure_reason": llm_usage.get("failure_reason"),
+            "retry_count": llm_usage.get("retry_count"),
+            "degraded_run": bool(result_json.get("degraded_run", False)) if isinstance(result_json, dict) else False,
+            "degraded_reason": result_json.get("degraded_reason") if isinstance(result_json, dict) else None,
+            "prompt_hash": prompt_hash,
+        },
+        "receipt": receipt_json,
+        "proof_bundle": proof,
+    }
+
+    return JSONResponse(
+        content=evidence,
+        headers={"Content-Disposition": f'attachment; filename="workflow-evidence-{row.workflow_slug}-{row.id}.json"'},
+    )
 
 
 @router.post("/runs/{run_id}/retry-settlement", response_model=WorkflowRunPaymentConfirmResponse)
