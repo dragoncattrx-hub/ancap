@@ -1,0 +1,22 @@
+{
+  "name": "@ancap/acp-wallet-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ANCAP ACP Wallet — React Native application",
+  "scripts": {
+    "start": "echo \"Run: npx @react-native-community/cli init (see README.md)\"",
+    "ios": "echo \"Native project not generated yet\"",
+    "android": "echo \"Native project not generated yet\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo \"lint: TODO\""
+  },
+  "dependencies": {
+    "@ancap/acp-api-client": "*",
+    "@ancap/acp-bridge-client": "*",
+    "@ancap/acp-bsc-client": "*",
+    "@ancap/acp-wallet-sdk": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

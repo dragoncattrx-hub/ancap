@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "ios"],
+  "ios": {
+    "modules": ["ExpoAcpCoreModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.acpcore.ExpoAcpCoreModule"]
+  }
+}

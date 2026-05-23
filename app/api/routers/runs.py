@@ -295,15 +295,14 @@ async def _resolve_policy(session, pool_id: UUID, vertical_id: UUID, strategy_id
     return merge_policy(layers)
 
 
-@router.post("", response_model=RunPublic, status_code=201)
-async def request_run(
+async def _request_run_impl(
     body: RunRequest,
     session: DbSession,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str | None = Depends(get_current_user_id),
+    idempotency_key: str,
+    user_id: str | None,
+    *,
+    skip_owner_agent_access_checks: bool = False,
 ):
-    if not idempotency_key:
-        raise HTTPException(status_code=400, detail="Missing Idempotency-Key header")
     from app.services.idempotency import get_idempotency_hit, store_idempotency_result
     hit = await get_idempotency_hit(session, scope="runs.create", key=idempotency_key, request_payload=body.model_dump())
     if hit:
@@ -332,7 +331,7 @@ async def request_run(
     strat = await session.get(Strategy, ver.strategy_id)
     if not strat:
         raise HTTPException(status_code=404, detail="Strategy not found")
-    if strat.owner_agent_id:
+    if strat.owner_agent_id and not skip_owner_agent_access_checks:
         await require_activated_if_stake_required(session, strat.owner_agent_id)
         gate = await evaluate_agent_gate(session, strat.owner_agent_id)
         if not gate.ok:
@@ -629,6 +628,18 @@ async def request_run(
         response_json=out.model_dump(),
     )
     return out
+
+
+@router.post("", response_model=RunPublic, status_code=201)
+async def request_run(
+    body: RunRequest,
+    session: DbSession,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    user_id: str | None = Depends(get_current_user_id),
+):
+    if not idempotency_key:
+        raise HTTPException(status_code=400, detail="Missing Idempotency-Key header")
+    return await _request_run_impl(body, session, idempotency_key, user_id)
 
 
 @router.post("/replay", response_model=RunPublic, status_code=201)

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This runbook is for the live ACP -> BSC custodial rail and the staged `BSC -> ACP` reverse rollout.
+This runbook is for the live ACP -> BSC custodial rail and the live-but-still-hardening `BSC -> ACP` reverse rail.
 
 It describes the operator reality after the first successful mainnet pilot on 2026-05-04.
 
@@ -16,7 +16,7 @@ It describes the operator reality after the first successful mainnet pilot on 20
 - `BRIDGE_RAIL_ENABLED=true`
 - `BRIDGE_RAIL_PAUSED=false`
 - `BRIDGE_DRY_RUN=false`
-- `BRIDGE_ACP_CONFIRMATIONS=3`
+- `BRIDGE_ACP_CONFIRMATIONS=1` in the current single-node ACP runtime
 
 ### Pilot proof
 First real pilot already completed successfully:
@@ -78,7 +78,7 @@ Expected:
 - bridge enabled
 - not paused
 - `dry_run=false`
-- `confirmations_acp=3`
+- `confirmations_acp=1` in the current single-node ACP runtime
 - reconciliation `ok=true`
 
 ### UI
@@ -138,10 +138,10 @@ Confirm all of:
 ## Known important implementation details
 
 ### ACP confirmations
-Runtime target is:
-- `BRIDGE_ACP_CONFIRMATIONS=3`
+Runtime target for the currently deployed single-node ACP environment is:
+- `BRIDGE_ACP_CONFIRMATIONS=1`
 
-This must be set both in env and actually passed through Docker compose.
+This must be set both in env and actually passed through Docker compose. Do not raise it blindly unless block progression and multi-node finality policy are verified.
 
 ### BSC tx hash normalization
 `bsc_tx_hash_mint` may be stored without `0x`.
@@ -185,7 +185,7 @@ without depending on ABI files inside the API container.
 Check:
 - ACP tx really went to reserve address
 - exact amount matches intent
-- confirmations reached 3
+- confirmations reached the currently deployed ACP policy (`1` in this single-node runtime)
 - ACP watcher tick ran successfully
 - ACP RPC reachable from API container
 

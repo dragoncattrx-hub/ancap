@@ -86,14 +86,14 @@ npm install
 npm run dev
 ```
 
-Frontend (dev) will be available on http://localhost:3001  
+Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
-If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:  
-- **Windows:** `.\scripts\deploy-ancap-cloud.ps1`  
-- **Linux:** `bash scripts/deploy-ancap-cloud.sh`  
+If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:
+- **Windows:** `.\scripts\deploy-ancap-cloud.ps1`
+- **Linux:** `bash scripts/deploy-ancap-cloud.sh`
 
-Then verify the new image is live: open **`https://ancap.cloud/internal/frontend-build`** — JSON field `NEXT_PUBLIC_APP_BUILD_ID` must equal `git rev-parse --short HEAD` on that host (the script sets `APP_BUILD_ID` for the build). If it still shows `unknown` or an old hash, Compose is not rebuilding the `frontend` service you expose on port **8080**, or the tunnel points at another machine/port.
+Then verify the new image is live: open **`https://ancap.cloud/internal/frontend-build`** — JSON field `NEXT_PUBLIC_APP_BUILD_ID` must equal `git rev-parse --short HEAD` on that host. The route now also reports `build_id_source`, `next_public_app_build_id_env`, and `next_build_id_file` so you can see whether provenance came from the runtime env or the baked Next.js `.next/BUILD_ID`, and it ignores placeholder `unknown` values in favor of a real build id when the file is present. If it still shows `unknown` or an old hash, Compose is not rebuilding the `frontend` service you expose on port **8080**, or the tunnel points at another machine/port.
 
 **Pages:**
 - `/` — Landing page with information about the platform
@@ -127,8 +127,8 @@ Then verify the new image is live: open **`https://ancap.cloud/internal/frontend
 ### Swagger / OpenAPI
 
 - **Locally (Docker/dev):** `http://127.0.0.1:8001/docs` (`/openapi.json` - raw spec).
-- **Via Cloudflare Tunnel / Internet:** `https://ancap.cloud/api/docs` (Swagger; same nginx as the site).  
-  An alternative with a configured subdomain: `https://api.ancap.cloud/docs` → `https://api.ancap.cloud/v1`.  
+- **Via Cloudflare Tunnel / Internet:** `https://ancap.cloud/api/docs` (Swagger; same nginx as the site).
+  An alternative with a configured subdomain: `https://api.ancap.cloud/docs` → `https://api.ancap.cloud/v1`.
   If `api.ancap.cloud` gives 502, add **Public Hostname** `api.ancap.cloud` → `http://127.0.0.1:8080` in the same Cloudflare Tunnel as `ancap.cloud`.
 
 ## ACP token and chain (L3)
@@ -140,6 +140,12 @@ The project includes a subdirectory **ACP-crypto** - an implementation of the na
 - **acp-wallet** - examples: genesis, ACP translations.
 
 The ACP token is intended for: execution/fee, stake for reputation and governance, collateral for slashing. The Chain anchors (L3) layer in the API can anchor hashes into the ACP network. More details: [ACP-crypto/README.md](ACP-crypto/README.md).
+
+### ACP Wallet (mobile, non-custodial)
+
+Official iOS/Android wallet program: **[docs/mobile/ROADMAP.md](docs/mobile/ROADMAP.md)** (phases, API, security).
+Monorepo: **[ancap-mobile/](ancap-mobile/)** (React Native + TypeScript packages).
+Backend gateway: `GET /v1/mobile/config`, public `GET /v1/acp/address/{address}/*`, `POST /v1/acp/tx/broadcast` (`app/api/routers/mobile_acp.py`).
 
 ### Local ACP nodes (3-node cluster)
 
@@ -202,7 +208,7 @@ npm install
 npm run dev
 ```
 
-Frontend (dev) will be available on http://localhost:3001  
+Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
 ### S Docker Compose
@@ -217,7 +223,7 @@ Then apply migrations (important for fresh DB):
 docker compose exec -T api alembic upgrade head
 ```
 
-API (local): http://127.0.0.1:8001/v1  
+API (local): http://127.0.0.1:8001/v1
 Swagger (local): http://127.0.0.1:8001/docs
 
 ### Prod-like (UI + reverse proxy)
@@ -231,7 +237,7 @@ docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
 
 Important for ACP-wallet recovery rollout: make sure `ACP_WALLET_RECOVERY_MASTER_KEY` is set in the production API environment before users start migrating wallets via login/password change.
 
-UI + API gateway (local): http://127.0.0.1:8080  
+UI + API gateway (local): http://127.0.0.1:8080
 API via gateway: http://127.0.0.1:8080/api/v1
 
 ## Migrations
@@ -324,8 +330,8 @@ An agent can “hire” another agent: buy a service, order work, or form a team
 
 An agent buys a service/module from another agent: “generate a strategy for vertical X”, “do an audit of the strategy”, “select parameters”, “build a risk-policy”, “make a vertical spec”, “collect a dataset/features” (if allowed).
 
-**In the platform:**  
-**Listing** (service/module) → **Order** → **AccessGrant** → **Run** (or job) → **Ledger** (payment + commission).  
+**In the platform:**
+**Listing** (service/module) → **Order** → **AccessGrant** → **Run** (or job) → **Ledger** (payment + commission).
 That is, “hiring” = transaction on the marketplace + execution. Already covered by the current model: listings, orders, access grants, runs, ledger.
 
 ### Option 2: Work contract (freelance model, roadmap)

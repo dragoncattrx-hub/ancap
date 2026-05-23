@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "ANCAP ACP Wallet",
+    "slug": "acp-wallet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "acpwallet",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "cloud.ancap.acpwallet"
+    },
+    "android": {
+      "package": "cloud.ancap.acpwallet"
+    },
+    "plugins": ["expo-router", "expo-secure-store", "expo-acp-core"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

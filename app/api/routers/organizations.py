@@ -53,13 +53,20 @@ class OrgInviteRequest(BaseModel):
     role: str = "member"
 
 
+class OrgRoleUpdateRequest(BaseModel):
+    role: str
+
+
+ASSIGNABLE_ORG_ROLES = {OrgRoleEnum.viewer, OrgRoleEnum.member, OrgRoleEnum.admin}
+
+
 # --- Helpers ---
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"[-\s]+", "-", text)
-    return text[:80]
+    text = re.sub(r"[-\s]+", "-", text).strip("-")
+    return (text or "organization")[:80]
 
 
 async def _get_member_role(session: AsyncSession, org_id: uuid.UUID, user_id: uuid.UUID) -> OrgRoleEnum | None:
@@ -239,11 +246,12 @@ async def update_organization(
     if org is None:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    if body.name is not None:
-        org.name = body.name
-    if body.description is not None:
+    fields_set = body.model_fields_set
+    if "name" in fields_set:
+        org.name = body.name or org.name
+    if "description" in fields_set:
         org.description = body.description
-    if body.billing_wallet_address is not None:
+    if "billing_wallet_address" in fields_set:
         org.billing_wallet_address = body.billing_wallet_address
     org.updated_at = datetime.now(timezone.utc)
 
@@ -356,7 +364,9 @@ async def add_organization_member(
     try:
         role = OrgRoleEnum(body.role)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid role. Must be: owner, admin, member, viewer")
+        raise HTTPException(status_code=400, detail="Invalid role. Must be: admin, member, viewer")
+    if role not in ASSIGNABLE_ORG_ROLES:
+        raise HTTPException(status_code=400, detail="Owner role cannot be assigned via this endpoint")
 
     member = OrganizationMember(
         org_id=oid,
@@ -411,7 +421,7 @@ async def remove_organization_member(
 async def update_member_role(
     org_id: str,
     target_user_id: str,
-    body: OrgInviteRequest,
+    body: OrgRoleUpdateRequest,
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
@@ -426,7 +436,9 @@ async def update_member_role(
     try:
         new_role = OrgRoleEnum(body.role)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid role")
+        raise HTTPException(status_code=400, detail="Invalid role. Must be: admin, member, viewer")
+    if new_role not in ASSIGNABLE_ORG_ROLES:
+        raise HTTPException(status_code=400, detail="Owner role cannot be assigned via this endpoint")
 
     target_q = select(OrganizationMember).where(
         OrganizationMember.org_id == oid,

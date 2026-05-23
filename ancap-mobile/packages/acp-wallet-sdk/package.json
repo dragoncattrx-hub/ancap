@@ -1,0 +1,25 @@
+{
+  "name": "@ancap/acp-wallet-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ACP wallet SDK — units, addresses, native signing (FFI stub)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo \"lint: TODO eslint\""
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

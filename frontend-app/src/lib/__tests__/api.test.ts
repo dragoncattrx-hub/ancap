@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { api, bridgeRail, walletAcp } from '../api';
+import { api, bridgeRail, organizations, walletAcp, webhooks } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
@@ -32,8 +32,32 @@ describe('API Client', () => {
     expect(bridgeRail.listMyIntents).toBeDefined();
   });
 
+  it('should expose organization client helpers', () => {
+    expect(organizations).toBeDefined();
+    expect(organizations.list).toBeDefined();
+    expect(organizations.get).toBeDefined();
+    expect(organizations.create).toBeDefined();
+    expect(organizations.updateMemberRole).toBeDefined();
+    expect(organizations.removeMember).toBeDefined();
+    expect(organizations.remove).toBeDefined();
+  });
+
+  it('should expose webhook client helpers', () => {
+    expect(webhooks).toBeDefined();
+    expect(webhooks.list).toBeDefined();
+    expect(webhooks.create).toBeDefined();
+    expect(webhooks.rotateSecret).toBeDefined();
+    expect(webhooks.sendTest).toBeDefined();
+    expect(webhooks.remove).toBeDefined();
+  });
+
   it('should expose public ACP transaction lookup client', () => {
     expect(walletAcp).toBeDefined();
     expect(walletAcp.getTransaction).toBeDefined();
+  });
+
+  it('should aggregate organization and webhook APIs', () => {
+    expect(api.organizations).toBe(organizations);
+    expect(api.webhooks).toBe(webhooks);
   });
 });

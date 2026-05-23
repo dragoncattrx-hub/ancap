@@ -17,7 +17,7 @@ from app.db.models import FaucetClaim, StarterPackAssignment
 from app.services.faucet import claim_faucet
 from app.services.starter_pack import assign_starter_pack, activate_starter_pack
 from app.services.quickstart import provision_quickstart
-from app.api.routers.runs import request_run
+from app.api.routers.runs import _request_run_impl
 
 
 router = APIRouter(prefix="/onboarding", tags=["Growth Onboarding"])
@@ -100,5 +100,11 @@ async def quickstart_run(
         contract_milestone_id=None,
         run_mode="mock",
     )
-    return await request_run(run_body, session=session, idempotency_key=idempotency_key, user_id=user_id)
+    return await _request_run_impl(
+        run_body,
+        session,
+        idempotency_key,
+        user_id,
+        skip_owner_agent_access_checks=True,
+    )
 

@@ -1,0 +1,23 @@
+[package]
+name = "acp-mobile-ffi"
+version = "0.1.0"
+edition = "2021"
+description = "Mobile wallet core for ACP (Rust library; UniFFI bindings in scripts/)"
+
+[lib]
+name = "acp_mobile_ffi"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[dependencies]
+uniffi = { version = "0.28", features = ["cli"] }
+acp-crypto = { path = "../acp-crypto", default-features = true }
+anyhow = "1"
+rand_core = "0.6"
+reqwest = { version = "0.12", default-features = false, features = ["json", "blocking", "rustls-tls-native-roots"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"

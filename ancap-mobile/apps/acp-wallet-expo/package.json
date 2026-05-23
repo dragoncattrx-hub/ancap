@@ -1,0 +1,38 @@
+{
+  "name": "@ancap/acp-wallet-expo",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "android:go": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ancap/acp-api-client": "*",
+    "@ancap/acp-wallet-sdk": "*",
+    "expo-acp-core": "*",
+    "@react-navigation/native": "^7.0.14",
+    "expo": "~52.0.28",
+    "expo-dev-client": "~5.0.12",
+    "expo-modules-core": "~2.2.0",
+    "expo-clipboard": "~7.0.1",
+    "expo-router": "~4.0.17",
+    "expo-secure-store": "~14.0.1",
+    "expo-status-bar": "~2.0.1",
+    "react": "18.3.1",
+    "react-native": "0.76.6",
+    "react-native-qrcode-svg": "^6.3.14",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-svg": "15.8.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@types/react": "~18.3.12",
+    "typescript": "^5.7.2"
+  }
+}

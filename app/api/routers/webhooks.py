@@ -208,9 +208,19 @@ async def list_webhook_deliveries(
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    endpoint_q = select(WebhookEndpoint).where(
+        WebhookEndpoint.id == uuid.UUID(webhook_id),
+        WebhookEndpoint.owner_user_id == uuid.UUID(user_id),
+    )
+    endpoint_r = await session.execute(endpoint_q)
+    endpoint = endpoint_r.scalar_one_or_none()
+    if endpoint is None:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
     q = (
         select(WebhookDelivery)
-        .where(WebhookDelivery.webhook_endpoint_id == uuid.UUID(webhook_id))
+        .where(WebhookDelivery.webhook_endpoint_id == endpoint.id)
         .order_by(desc(WebhookDelivery.created_at))
         .limit(limit)
     )

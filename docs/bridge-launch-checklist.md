@@ -35,7 +35,7 @@ Confirm `Sicret/bridge-bsc/bridge.env` contains correct live values:
 - `BRIDGE_RESERVE_ACP_ADDRESS`
 - `BRIDGE_OPERATOR_SECRET`
 - `BRIDGE_BSC_PRIVATE_KEY`
-- `BRIDGE_ACP_CONFIRMATIONS=3`
+- `BRIDGE_ACP_CONFIRMATIONS=1` for the current single-node ACP runtime
 
 ### 2. Docker/runtime
 Confirm containers are healthy:
@@ -56,7 +56,7 @@ Expected bridge status:
 - enabled = true
 - paused = false
 - dry_run = false
-- confirmations_acp = 3
+- confirmations_acp = 1 for the current single-node ACP runtime
 
 ### 4. UI health
 Confirm page loads:

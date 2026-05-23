@@ -38,7 +38,15 @@ SAFE_WORKFLOW = {
 
 
 async def _ensure_vertical(session: AsyncSession) -> Vertical:
-    r = await session.execute(select(Vertical).where(Vertical.status == VerticalStatusEnum.active).order_by(Vertical.created_at.asc()).limit(1))
+    r = await session.execute(
+        select(Vertical)
+        .where(
+            Vertical.name == "BaseVertical",
+            Vertical.status == VerticalStatusEnum.active,
+        )
+        .order_by(Vertical.created_at.asc())
+        .limit(1)
+    )
     v = r.scalar_one_or_none()
     if v:
         return v

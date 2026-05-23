@@ -153,6 +153,13 @@ class Settings(BaseSettings):
     acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"  # can be overridden by env; default points to built-in ACP tx viewer
     turnstile_site_key: str = ""
 
+    # ACP Wallet mobile app (non-custodial); see docs/mobile/ROADMAP.md
+    mobile_wallet_min_app_version: str = "1.0.0"
+    mobile_wallet_maintenance: bool = False
+    mobile_wallet_maintenance_message: str | None = None
+    mobile_wallet_support_url: str = "https://ancap.cloud/support"
+    mobile_wallet_bridge_reverse_enabled: bool = False
+
     # Production AI execution. Teneta/Claude-compatible Anthropic API is the
     # default primary provider; local/dev can fall back to deterministic shells.
     llm_provider: str = "teneta_claude"  # teneta_claude | openai | ollama | disabled

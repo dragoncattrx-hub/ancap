@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 acp-crypto = { path = "../acp-crypto", default-features = true }
+acp-mobile-ffi = { path = "../acp-mobile-ffi" }
 hex = "0.4"
 rand_core = "0.6"
 anyhow = "1"

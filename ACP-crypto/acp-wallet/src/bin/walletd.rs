@@ -6,6 +6,10 @@
 //! - `walletd balance --rpc URL --address acp1...` -> {"address":"acp1...","units":"123","acp":"1.23"}
 //! - `walletd transfer --rpc URL --mnemonic "..." --to acp1... --amount-acp 1.5`
 //!     -> {"accepted":true,"txid":"..."} (accepted=false includes "reason")
+//! - `walletd sign-transfer --rpc URL --mnemonic "..." --to acp1... --amount-acp 1.5`
+//!     -> {"raw_tx":"...","txid":"..."} (local sign only; use submit to broadcast)
+//! - `walletd submit --rpc URL --raw-tx HEX`
+//!     -> {"accepted":true,"txid":"..."}
 
 use anyhow::{anyhow, Context};
 use acp_crypto::{
@@ -263,6 +267,48 @@ fn cmd_balance(rpc_url: &str, address: &str) -> anyhow::Result<Value> {
     }))
 }
 
+fn cmd_sign_transfer(
+    rpc_url: &str,
+    keystore_json: &str,
+    to: &str,
+    amount_acp: &str,
+    fee_acp: Option<&str>,
+) -> anyhow::Result<Value> {
+    let signed = acp_mobile_ffi::acp_sign_transfer(
+        rpc_url.to_string(),
+        keystore_json.to_string(),
+        to.to_string(),
+        amount_acp.to_string(),
+        fee_acp.map(|s| s.to_string()),
+    )
+    .map_err(|e| anyhow!("{e}"))?;
+    Ok(json!({
+        "raw_tx": signed.raw_tx,
+        "txid": signed.txid
+    }))
+}
+
+fn cmd_submit(rpc_url: &str, raw_tx: &str) -> anyhow::Result<Value> {
+    let mut hex = raw_tx.trim().to_string();
+    if hex.starts_with("0x") || hex.starts_with("0X") {
+        hex = hex[2..].to_string();
+    }
+    let client = Client::builder().timeout(Duration::from_secs(60)).build()?;
+    let send_res = rpc(&client, rpc_url, "sendrawtransaction", json!({ "tx": hex }))?;
+    let accepted = send_res.get("accepted").and_then(|v| v.as_bool()).unwrap_or(false);
+    if accepted {
+        Ok(json!({
+            "accepted": true,
+            "txid": send_res.get("txid").and_then(|v| v.as_str()).unwrap_or("")
+        }))
+    } else {
+        Ok(json!({
+            "accepted": false,
+            "reason": send_res.get("reason").and_then(|v| v.as_str()).unwrap_or("unknown")
+        }))
+    }
+}
+
 fn cmd_transfer(
     rpc_url: &str,
     mnemonic: Option<&str>,
@@ -436,6 +482,56 @@ fn real_main() -> anyhow::Result<()> {
                 &amount_acp,
                 fee_acp.as_deref(),
             )?
+        }
+        "sign-transfer" => {
+            let mut rpc_url: Option<String> = None;
+            let mut keystore_json: Option<String> = None;
+            let mut keystore_file: Option<String> = None;
+            let mut to: Option<String> = None;
+            let mut amount_acp: Option<String> = None;
+            let mut fee_acp: Option<String> = None;
+            while let Some(a) = args.next() {
+                match a.as_str() {
+                    "--rpc" => rpc_url = args.next(),
+                    "--keystore-json" => keystore_json = args.next(),
+                    "--keystore-file" => keystore_file = args.next(),
+                    "--to" => to = args.next(),
+                    "--amount-acp" => amount_acp = args.next(),
+                    "--fee-acp" => fee_acp = args.next(),
+                    _ => {}
+                }
+            }
+            if keystore_json.is_none() {
+                if let Some(path) = keystore_file {
+                    keystore_json = Some(std::fs::read_to_string(path)?);
+                }
+            }
+            let rpc_url = rpc_url.ok_or_else(|| anyhow!("--rpc is required"))?;
+            let keystore_json =
+                keystore_json.ok_or_else(|| anyhow!("--keystore-json or --keystore-file is required"))?;
+            let to = to.ok_or_else(|| anyhow!("--to is required"))?;
+            let amount_acp = amount_acp.ok_or_else(|| anyhow!("--amount-acp is required"))?;
+            cmd_sign_transfer(
+                &rpc_url,
+                &keystore_json,
+                &to,
+                &amount_acp,
+                fee_acp.as_deref(),
+            )?
+        }
+        "submit" => {
+            let mut rpc_url: Option<String> = None;
+            let mut raw_tx: Option<String> = None;
+            while let Some(a) = args.next() {
+                match a.as_str() {
+                    "--rpc" => rpc_url = args.next(),
+                    "--raw-tx" => raw_tx = args.next(),
+                    _ => {}
+                }
+            }
+            let rpc_url = rpc_url.ok_or_else(|| anyhow!("--rpc is required"))?;
+            let raw_tx = raw_tx.ok_or_else(|| anyhow!("--raw-tx is required"))?;
+            cmd_submit(&rpc_url, &raw_tx)?
         }
         _ => anyhow::bail!("unknown command: {cmd}"),
     };
