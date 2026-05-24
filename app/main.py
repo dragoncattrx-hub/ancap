@@ -163,6 +163,7 @@ ALL_ROUTERS = [
     bridge_rail.router,
     wacp_public.router,
     system.router,
+    system._internal_router,
     flows.router,
     governance.router,
     governance.moderation_cases_router,

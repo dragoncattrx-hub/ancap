@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     secret_key: str = ""           # required in production -- no insecure default
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    debug: bool = False
     turnstile_secret_key: str = ""
     password_reset_token_ttl_minutes: int = 30
     public_app_url: str = "https://ancap.cloud"

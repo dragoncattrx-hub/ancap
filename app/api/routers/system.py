@@ -1,6 +1,6 @@
 import os
 import httpx
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy import desc
 from sqlalchemy import func
@@ -31,11 +31,37 @@ from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
 from app.schemas import DecisionLogPublic
 
 router = APIRouter(prefix="/system", tags=["System"])
+_internal_router = APIRouter(prefix="/internal/ops", tags=["Internal Ops"])
+
+
+def _require_platform_admin(user_id: str | None) -> None:
+    """Raise 403 if the caller is not a platform admin."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    settings = get_settings()
+    if user_id not in settings.platform_admin_user_ids_allowlist:
+        raise HTTPException(status_code=403, detail="Platform admin access required")
 
 
 @router.get("/health")
 async def health():
+    """Lightweight liveness probe. No external I/O."""
     return {"status": "ok"}
+
+
+@router.get("/ready")
+async def readiness(session: DbSession):
+    """Readiness probe: DB + Redis. No external HTTP calls."""
+    checks: dict[str, bool] = {}
+    try:
+        await session.execute(select(func.count()).select_from(DecisionLog))
+        checks["database"] = True
+    except Exception:
+        checks["database"] = False
+    redis_ok, _ = await redis_ping()
+    checks["redis"] = redis_ok
+    status = "ready" if checks.get("database", False) else "not_ready"
+    return {"status": status, "checks": checks}
 
 
 @router.get("/health/full")
@@ -103,8 +129,10 @@ async def health_full(session: DbSession):
     return {"status": status, "checks": checks}
 
 
-@router.get("/diagnostics")
-async def diagnostics():
+@_internal_router.get("/diagnostics")
+async def ops_diagnostics(user_id: str | None = None):
+    """Operational diagnostics. Admin auth required."""
+    _require_platform_admin(user_id)
     s = get_settings()
     return {
         "status": "ok",
@@ -117,9 +145,77 @@ async def diagnostics():
         "acp": {
             "chain_anchor_driver": s.chain_anchor_driver,
             "acp_rpc_url": s.acp_rpc_url,
-            "walletd_configured": bool(__import__("os").getenv("ACP_WALLETD_PATH", "").strip()),
+            "walletd_configured": bool(os.getenv("ACP_WALLETD_PATH", "").strip()),
         },
     }
+
+
+@_internal_router.get("/deep-health")
+async def deep_health(session: DbSession, user_id: str | None = None):
+    """Full system health with external probes (LLM, bridge). Admin auth required."""
+    _require_platform_admin(user_id)
+    s = get_settings()
+    checks: dict[str, dict[str, object]] = {}
+
+    try:
+        await session.execute(select(func.count()).select_from(DecisionLog))
+        checks["database"] = {"ok": True}
+    except Exception as exc:
+        checks["database"] = {"ok": False, "error": str(exc)}
+
+    redis_ok, redis_error = await redis_ping()
+    checks["redis"] = {"ok": redis_ok, "configured": bool(s.redis_url), "error": redis_error}
+
+    llm_configured = False
+    if (s.llm_provider or "").lower() == "teneta_claude":
+        llm_configured = bool(s.anthropic_api_key and s.anthropic_base_url)
+    elif (s.llm_provider or "").lower() == "openai":
+        llm_configured = bool(s.openai_api_key)
+    elif (s.llm_provider or "").lower() == "ollama":
+        llm_configured = bool(s.ollama_base_url)
+
+    llm_probe_status = "unknown"
+    llm_probe_error: str | None = None
+    if llm_configured and not (s.llm_provider or "").startswith("disabled"):
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                headers = {
+                    "x-api-key": s.anthropic_api_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                }
+                payload = {"model": s.llm_model, "max_tokens": 1, "messages": [{"role": "user", "content": "ping"}]}
+                r = await client.post(f"{s.anthropic_base_url}/v1/messages", headers=headers, json=payload)
+                llm_probe_status = "ok" if r.status_code == 200 else "degraded"
+                if r.status_code != 200:
+                    llm_probe_error = f"HTTP {r.status_code}"
+        except Exception as exc:
+            llm_probe_status = "degraded"
+            llm_probe_error = str(exc)[:120]
+
+    checks["llm"] = {
+        "ok": llm_probe_status == "ok" or llm_configured or s.llm_fallback_to_template,
+        "provider": s.llm_provider,
+        "model": s.llm_model,
+        "configured": llm_configured,
+        "fallback_enabled": s.llm_fallback_to_template,
+        "probe_status": llm_probe_status,
+        "probe_error": llm_probe_error,
+    }
+    checks["mail"] = {
+        "ok": (not s.mail_enabled) or bool(s.smtp_host and s.smtp_from_email),
+        "enabled": s.mail_enabled,
+        "configured": bool(s.smtp_host and s.smtp_from_email),
+    }
+    checks["bridge"] = {
+        "ok": not s.bridge_rail_paused,
+        "enabled": s.bridge_rail_enabled,
+        "paused": s.bridge_rail_paused,
+        "dry_run": s.bridge_dry_run,
+    }
+
+    overall = "ok" if all(bool(item.get("ok")) for item in checks.values()) else "degraded"
+    return {"status": overall, "checks": checks}
 
 
 @router.get("/fees")
@@ -151,11 +247,13 @@ async def staking_economics():
     }
 
 
-@router.get("/economy-health")
-async def economy_health(session: DbSession):
+@_internal_router.get("/economy-health")
+async def ops_economy_health(session: DbSession, user_id: str | None = None):
+    """Bridge swap queue + referral payout job health. Admin auth required."""
+    _require_platform_admin(user_id)
     s = get_settings()
     rpc_ok = False
-    rpc_error = None
+    rpc_error: str | None = None
     rpc_url = (s.acp_rpc_url or "").strip()
     if rpc_url:
         try:
@@ -164,7 +262,8 @@ async def economy_health(session: DbSession):
             token = os.getenv("ACP_RPC_TOKEN", "").strip()
             if token:
                 headers["x-acp-rpc-token"] = token
-            r = httpx.post(rpc_url, json=body, headers=headers, timeout=5.0)
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                r = await client.post(rpc_url, json=body, headers=headers)
             payload = r.json()
             rpc_ok = bool(r.status_code == 200 and not payload.get("error"))
             if not rpc_ok:
@@ -197,20 +296,23 @@ async def economy_health(session: DbSession):
     }
 
 
-@router.get("/ledger-invariant-status")
-async def ledger_invariant_status(session: DbSession):
-    """Return whether ledger operations are blocked due to invariant violation (ROADMAP §3)."""
+@_internal_router.get("/ledger-invariant-status")
+async def ops_ledger_invariant_status(session: DbSession, user_id: str | None = None):
+    """Ledger invariant halt status. Admin auth required."""
+    _require_platform_admin(user_id)
     halted = await is_ledger_invariant_halted(session)
     return {"halted": halted}
 
 
-@router.get("/decision-logs", response_model=list[DecisionLogPublic])
-async def list_decision_logs(
+@_internal_router.get("/decision-logs", response_model=list[DecisionLogPublic])
+async def ops_list_decision_logs(
     session: DbSession,
+    user_id: str | None = None,
     limit: int = 100,
     scope: str | None = None,
     reason_code: str | None = None,
 ):
+    _require_platform_admin(user_id)
     q = select(DecisionLog).order_by(desc(DecisionLog.created_at)).limit(min(max(limit, 1), 500))
     if scope:
         q = q.where(DecisionLog.scope == scope)
@@ -239,19 +341,8 @@ async def list_decision_logs(
     return out
 
 
-@router.post("/jobs/tick")
-async def jobs_tick(request: Request, session: DbSession):
-    """
-    Sprint-2 + L3 job tick: edges_daily, agent_relationships, auto_limits, auto_quarantine, auto_ab.
-    Call periodically (e.g. every 1–5 min). Protected by optional CRON_SECRET (X-Cron-Secret header).
-    """
-    # Security: check cron secret if configured
-    settings = get_settings()
-    if settings.cron_secret:
-        provided_secret = request.headers.get("X-Cron-Secret")
-        if provided_secret != settings.cron_secret:
-            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
-    
+async def _run_all_jobs(session: DbSession) -> dict:
+    """Execute all scheduled jobs. Called by both sync and async tick endpoints."""
     processed = await upsert_edges_daily_from_orders(session, batch_size=2000, commit=False)
     agent_rel_processed = await upsert_agent_relationships_from_orders(session, batch_size=2000, commit=False)
     limits_updated = await auto_limits_tick(session, max_updates=100)
@@ -294,3 +385,45 @@ async def jobs_tick(request: Request, session: DbSession):
         "bridge_rail": bridge_rail,
         "mobile_indexer": mobile_indexer,
     }
+
+
+@router.post("/jobs/tick/async")
+async def jobs_tick_async(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    session: DbSession,
+):
+    """
+    Async job tick: enqueues all jobs as a background task and returns immediately.
+    Use this for normal scheduled runs (e.g., cron every 5 min).
+    Protected by optional CRON_SECRET (X-Cron-Secret header).
+    """
+    settings = get_settings()
+    if settings.cron_secret:
+        provided_secret = request.headers.get("X-Cron-Secret")
+        if provided_secret != settings.cron_secret:
+            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
+
+    async def _bg_wrapper():
+        from app.api.deps import AsyncSessionLocal
+        async with AsyncSessionLocal() as bg_session:
+            return await _run_all_jobs(bg_session)
+
+    background_tasks.add_task(_bg_wrapper)
+    return {"status": "queued", "message": "All jobs are running in the background"}
+
+
+@router.post("/jobs/tick")
+async def jobs_tick(request: Request, session: DbSession):
+    """
+    Synchronous job tick: runs all jobs in the request path.
+    Use only for manual emergency triggers (ops console).
+    Prefer /jobs/tick/async for scheduling.
+    Protected by optional CRON_SECRET (X-Cron-Secret header).
+    """
+    settings = get_settings()
+    if settings.cron_secret:
+        provided_secret = request.headers.get("X-Cron-Secret")
+        if provided_secret != settings.cron_secret:
+            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
+    return await _run_all_jobs(session)
