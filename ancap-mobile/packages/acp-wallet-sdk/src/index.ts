@@ -2,11 +2,18 @@ export { ACP_DECIMALS, UNITS_PER_ACP, parseUnits, formatUnits } from "./units.js
 export { validateAcpAddress, assertAcpAddress } from "./address.js";
 export { nativeCore } from "./native-stub.js";
 export {
+  addressFromKeystore,
   createWallet,
+  estimateFeeDefault,
   setNativeWalletModule,
   signAndPrepareTransfer,
+  validateAddressWithNative,
 } from "./wallet-service.js";
-export type { CreatedWalletResult, NativeWalletModule } from "./wallet-service.js";
+export type {
+  CreatedWalletResult,
+  FeeEstimateResult,
+  NativeWalletModule,
+} from "./wallet-service.js";
 export type {
   WalletMeta,
   TransferRequest,

@@ -7,11 +7,16 @@ export type CreatedWalletResult = {
   keystoreJson: string;
 };
 
+export type FeeEstimateResult = {
+  feeAcp: string;
+  feeUnits: number;
+};
+
 export type NativeWalletModule = {
   createWallet(): Promise<CreatedWalletResult>;
   validateAddress(address: string): Promise<boolean>;
   addressFromKeystore(keystoreJson: string): Promise<string>;
-  estimateFeeDefault(): Promise<{ feeAcp: string; feeUnits: number }>;
+  estimateFeeDefault(): Promise<FeeEstimateResult>;
   signTransfer(params: {
     rpcUrl: string;
     keystoreJson: string;
@@ -42,6 +47,22 @@ export async function createWallet(): Promise<CreatedWalletResult> {
     address: w.address,
     mnemonic: w.mnemonic,
     keystoreJson: w.keystoreJson,
+  };
+}
+
+export async function validateAddressWithNative(address: string): Promise<boolean> {
+  return requireNative().validateAddress(address.trim());
+}
+
+export async function addressFromKeystore(keystoreJson: string): Promise<string> {
+  return requireNative().addressFromKeystore(keystoreJson);
+}
+
+export async function estimateFeeDefault(): Promise<FeeEstimateResult> {
+  const fee = await requireNative().estimateFeeDefault();
+  return {
+    feeAcp: fee.feeAcp,
+    feeUnits: fee.feeUnits,
   };
 }
 
