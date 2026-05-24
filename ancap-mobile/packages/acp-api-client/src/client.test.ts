@@ -84,6 +84,7 @@ describe("AcpApiClient", () => {
       wacpContract: "0x0",
       bscChainId: 56,
       acpRpcUrl: "https://rpc.test",
+      bscRpcUrl: "https://bsc-dataseed.binance.org",
       acpExplorerTxBase: "https://ancap.cloud/acp/tx",
       bscExplorerBase: "https://bscscan.com",
       supportUrl: "https://ancap.cloud/support",
