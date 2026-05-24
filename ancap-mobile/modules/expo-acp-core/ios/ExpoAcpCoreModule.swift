@@ -4,22 +4,19 @@ import ExpoModulesCore
 import acp_mobile_ffiFFI
 #endif
 
-#if canImport(acp_mobile_ffi)
-import acp_mobile_ffi
-#endif
-
 private func acpNativeAvailabilityMessage() -> String {
-  "ACP native core is not linked on iOS yet. Generate the Swift UniFFI bindings, bundle the Rust static library/XCFramework, then rebuild the Expo dev client. Use Import wallet until native iOS wiring is finished."
+  "ACP native core is not linked on iOS yet. Run ancap-mobile/scripts/build-ios-native.ps1 on macOS to stage the UniFFI bindings and package acp_mobile_ffiFFI.xcframework, then rebuild the Expo dev client. Use Import wallet until native iOS wiring is finished."
 }
 
 private func requireAcpNativeLinked() throws {
-  #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+  #if canImport(acp_mobile_ffiFFI)
   return
   #else
   throw Exceptions.NotImplemented(acpNativeAvailabilityMessage())
   #endif
 }
 
+#if canImport(acp_mobile_ffiFFI)
 private func mapWalletError(_ error: AcpWalletException) -> Exception {
   switch error {
   case .InvalidAddress:
@@ -38,6 +35,7 @@ private func mapWalletError(_ error: AcpWalletException) -> Exception {
     return Exception(name: "ERR_INTERNAL", description: error.localizedDescription)
   }
 }
+#endif
 
 public class ExpoAcpCoreModule: Module {
   public func definition() -> ModuleDefinition {
@@ -45,7 +43,7 @@ public class ExpoAcpCoreModule: Module {
 
     AsyncFunction("createWallet") { () -> [String: Any] in
       try requireAcpNativeLinked()
-      #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+      #if canImport(acp_mobile_ffiFFI)
       do {
         let wallet = try acpCreateWalletFfi()
         return [
@@ -62,7 +60,7 @@ public class ExpoAcpCoreModule: Module {
     }
 
     Function("validateAddress") { (address: String) -> Bool in
-      #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+      #if canImport(acp_mobile_ffiFFI)
       return acpValidateAddressFfi(address: address)
       #else
       return false
@@ -71,7 +69,7 @@ public class ExpoAcpCoreModule: Module {
 
     AsyncFunction("addressFromKeystore") { (keystoreJson: String) -> String in
       try requireAcpNativeLinked()
-      #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+      #if canImport(acp_mobile_ffiFFI)
       do {
         return try acpAddressFromKeystoreFfi(keystoreJson: keystoreJson)
       } catch let error as AcpWalletException {
@@ -84,7 +82,7 @@ public class ExpoAcpCoreModule: Module {
 
     AsyncFunction("estimateFeeDefault") { () -> [String: Any] in
       try requireAcpNativeLinked()
-      #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+      #if canImport(acp_mobile_ffiFFI)
       do {
         let fee = try acpEstimateFeeDefaultFfi()
         return [
@@ -101,7 +99,7 @@ public class ExpoAcpCoreModule: Module {
 
     AsyncFunction("signTransfer") { (rpcUrl: String, keystoreJson: String, toAddress: String, amountAcp: String, feeAcp: String?) -> [String: Any] in
       try requireAcpNativeLinked()
-      #if canImport(acp_mobile_ffiFFI) && canImport(acp_mobile_ffi)
+      #if canImport(acp_mobile_ffiFFI)
       do {
         let signed = try acpSignTransferFfi(
           rpcUrl: rpcUrl,

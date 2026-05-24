@@ -64,6 +64,22 @@ cd apps/acp-wallet-expo
 npx expo run:android
 ```
 
+### Native core (iOS dev build)
+
+Run this on **macOS** with Xcode + Rust installed:
+
+```powershell
+# 1) Stage Swift UniFFI bindings + acp_mobile_ffiFFI.xcframework
+.\ancap-mobile\scripts\build-ios-native.ps1
+
+# 2) Dev client + run on simulator/device
+cd ancap-mobile\apps\acp-wallet-expo
+npx expo run:ios
+```
+
+The iOS script copies generated Swift files into `modules/expo-acp-core/ios/generated/`
+and packages the Rust static libraries into `modules/expo-acp-core/ios/native/acp_mobile_ffiFFI.xcframework`.
+
 Native code: `ACP-crypto/acp-mobile-ffi` + `modules/expo-acp-core`.
 
 ## Environment

@@ -32,7 +32,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P1-4 | walletd `sign-transfer` + `submit` | [x] | CLI for dev / bridge testing |
 | P1-5 | Kotlin/Swift bindgen (`scripts/uniffi-generate.ps1`) | [x] | `acp-mobile-ffi/bindings/` |
 | P1-6 | Link bindings in `expo-acp-core` Android | [~] | Kotlin + JNI wired; `build-android-native.ps1` now auto-detects SDK/NDK, but this host still needs an installed Android NDK to emit `.so` libs |
-| P1-7 | iOS Swift UniFFI link | [~] | Swift UniFFI bindings generated; Expo module now maps native ACP calls/errors, but Rust static lib/XCFramework packaging is still pending |
+| P1-7 | iOS Swift UniFFI link | [~] | Expo iOS podspec now stages generated Swift/modulemap artifacts and can vend `acp_mobile_ffiFFI.xcframework`; `ancap-mobile/scripts/build-ios-native.ps1` added for macOS packaging, but runtime build verification still needs a macOS/iOS run |
 | P1-7 | Golden-vector tests | [x] | `wallet_smoke.rs` |
 
 ---

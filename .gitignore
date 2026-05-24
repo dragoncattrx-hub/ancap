@@ -119,6 +119,10 @@ _backups/
 # Local convenience scripts (not part of the project)
 start-claude.bat
 
+# Mobile local iOS native staging artifacts
+ancap-mobile/modules/expo-acp-core/ios/generated/
+ancap-mobile/modules/expo-acp-core/ios/native/
+
 # wrangler files
 .wrangler
 .dev.vars*
