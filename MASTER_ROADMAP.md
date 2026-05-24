@@ -117,12 +117,17 @@ Phase 5 is mostly operational. The implementation foundation is in place:
 - ACP → BSC pilot rail: live, first run completed ✅
 - Reverse BSC → ACP rail: live in runtime (burn detection, payout, reconciliation) ✅
 - Reconciliation `delta_wacp_wei=0` verified ✅
+- Reserve proof maturity: snapshots model, stale-data detection, mismatch alerting ✅
 
 Still needed (operational, not code):
 - Run second controlled ACP → BSC pilot for repeatability
 - Reverse rail replay/idempotency/recovery hardening
-- Reserve proof maturity: dedicated snapshots, stale-data detection, operator mismatch alerting
 - See `docs/bridge-next-steps.md` and `docs/bridge-operator-runbook.md` for full operational checklist
+
+New operator endpoints shipped:
+- `GET /api/v1/bridge/admin/snapshots?limit=24` — recent reserve health snapshots
+- `GET /api/v1/bridge/admin/alerts` — stale-snapshot + reconciliation-mismatch checks
+- Migration `052_bridge_reserve_snapshots` required on next deploy
 
 ### Phase 6 — ACP mobile wallet MVP completion (IN PROGRESS)
 

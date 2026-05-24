@@ -136,6 +136,8 @@ Available or in progress:
 - `GET /organizations/{id}/audit`
 - `GET /organizations/{id}/audit/export`
 - `GET /admin/audit-log`
+- `GET /bridge/admin/snapshots`
+- `GET /bridge/admin/alerts`
 
 Frontend routes currently verified locally/build-safe:
 
