@@ -77,16 +77,15 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-4 | Tabs: Wallet / Activity / Send / Settings | [x] | |
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
-| P4-4 | Backup + confirm seed | [ ] | screenshot block |
-| P4-5 | PIN + biometrics | [ ] | |
-| P4-6 | SecureVault (Keychain / Keystore) | [ ] | |
-| P4-7 | Dashboard (ACP + wACP) | [ ] | |
-| P4-8 | Receive + QR | [ ] | |
-| P4-9 | Send + preview + sign | [ ] | needs P1 FFI |
-| P4-10 | Transaction history | [ ] | |
-| P4-11 | Bridge flows | [~] | status tab + docs links; intents in v1.1 |
-| P4-12 | Settings + legal links | [ ] | |
-| P4-13 | i18n EN/RU/UK/DE | [ ] | |
+| P4-7 | Backup + confirm seed | [x] | backup prompt before save; native FFI still needed for real generation |
+| P4-8 | PIN + biometrics | [ ] | |
+| P4-9 | SecureVault (Keychain / Keystore) | [ ] | |
+| P4-10 | Dashboard (ACP + wACP) | [x] | wACP via BSC RPC (fetchWacpBalanceWei); ACP via ACP API |
+| P4-11 | Send + preview + sign | [ ] | needs P1 FFI |
+| P4-12 | Transaction history | [x] | |
+| P4-13 | Bridge flows | [~] | status tab + docs links; intents in v1.1 |
+| P4-14 | Settings + legal links | [ ] | |
+| P4-15 | i18n EN/RU/UK/DE | [ ] | |
 
 ---
 
@@ -96,10 +95,10 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|
 | P5-1 | OWASP MASVS L1 checklist | [ ] |
 | P5-2 | Screenshot block on seed screens | [ ] |
-| P5-3 | Clipboard auto-clear | [ ] |
-| P5-4 | Root/jailbreak warning | [ ] |
-| P5-5 | No secrets in Sentry/logs | [ ] |
-| P5-6 | App auto-lock timer | [ ] |
+| P5-3 | Clipboard auto-clear | [x] | 30s auto-clear after copy |
+| P5-4 | Root/jailbreak warning | [ ] | |
+| P5-5 | No secrets in Sentry/logs | [ ] | |
+| P5-6 | App auto-lock timer | [x] | 5-min inactivity auto-lock |
 
 ---
 
