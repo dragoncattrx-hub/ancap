@@ -77,6 +77,27 @@ class BridgeReserveSummaryResponse(BaseModel):
     operations_completed: int
 
 
+class BridgeSnapshotResponse(BaseModel):
+    id: str
+    snapshot_at: datetime
+    reserve_balance_acp_smallest: int
+    total_wacp_wei_completed: int
+    total_wacp_wei_implied: int
+    backing_ratio: float | None
+    delta_wacp_wei: int
+    reconciliation_ok: bool
+    status: str
+    reserve_health: str
+    notes: list[str]
+    last_acp_block_height: int | None
+    last_bsc_block_number: int | None
+
+
+class BridgeAlertsResponse(BaseModel):
+    stale_snapshot: dict | None = None
+    reconciliation_mismatch: dict | None = None
+
+
 class WacpReserveProofResponse(BaseModel):
     status: str
     bridge_enabled: bool

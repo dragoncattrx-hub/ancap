@@ -1598,6 +1598,35 @@ class BridgeAuditEvent(Base):
     )
 
 
+class BridgeReserveSnapshot(Base):
+    """Point-in-time snapshot of reserve health for the wACP bridge.
+
+    Written by the bridge reconciliation job. Used for stale-data detection,
+    operator mismatch alerting, and historical backing-ratio records.
+    """
+    __tablename__ = "bridge_reserve_snapshots"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    snapshot_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    reserve_balance_acp_smallest = Column(BigInteger, nullable=False, default=0)
+    total_wacp_wei_completed = Column(BigInteger, nullable=False, default=0)
+    total_wacp_wei_implied = Column(BigInteger, nullable=False, default=0)
+    backing_ratio = Column(Numeric(12, 6), nullable=True)
+    delta_wacp_wei = Column(BigInteger, nullable=False, default=0)
+    reconciliation_ok = Column(Boolean, nullable=False, default=True)
+    acp_reserve_address = Column(String(128), nullable=True)
+    wacp_contract = Column(String(64), nullable=True)
+    status = Column(String(32), nullable=False, default="pending")
+    reserve_health = Column(String(32), nullable=False, default="pending")
+    notes = Column(JSONB, nullable=False, default=list)
+    last_acp_block_height = Column(BigInteger, nullable=True)
+    last_bsc_block_number = Column(BigInteger, nullable=True)
+
+    __table_args__ = (
+        Index("ix_bridge_snapshots_time", "snapshot_at"),
+    )
+
+
 class OrgRoleEnum(str, enum.Enum):
     owner = "owner"
     admin = "admin"

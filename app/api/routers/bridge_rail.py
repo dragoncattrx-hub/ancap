@@ -34,12 +34,18 @@ from app.schemas.bridge_rail import (
     BridgeRedeemQuoteResponse,
     BridgeReserveSummaryResponse,
     BridgeReverseLiabilitySummaryResponse,
+    BridgeSnapshotResponse,
+    BridgeAlertsResponse,
     BridgeStatusResponse,
     WacpPublicStatusResponse,
     WacpReserveProofResponse,
 )
 from app.services.bridge_decimal import acp_smallest_to_wacp_wei, wacp_wei_to_acp_smallest_floor
-from app.services.bridge_reconciliation import run_reconciliation
+from app.services.bridge_reconciliation import (
+    check_reconciliation_mismatch_alert,
+    check_stale_snapshots,
+    run_reconciliation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -513,6 +519,67 @@ async def bridge_reserve_summary(session: AsyncSession = Depends(get_db)):
         total_wacp_wei_completed_mints=str(int(total_wacp or 0)),
         operations_pending=int(pending or 0),
         operations_completed=int(completed or 0),
+    )
+
+
+# --- Reserve snapshot + operator alerting endpoints (Phase 5 maturity) ---
+
+@router.get(
+    "/admin/snapshots",
+    response_model=list[BridgeSnapshotResponse],
+)
+async def list_reserve_snapshots(
+    session: AsyncSession = Depends(get_db),
+    limit: int = 24,
+):
+    """List recent bridge reserve snapshots (operator use).
+
+    Returns the most recent N snapshot records, newest first.
+    Use to observe reserve health history and detect stale periods.
+    """
+    from sqlalchemy import desc, select as sa_select
+
+    rows = await session.execute(
+        sa_select(BridgeReserveSnapshot)
+        .order_by(desc(BridgeReserveSnapshot.snapshot_at))
+        .limit(limit)
+    )
+    snapshots = rows.scalars().all()
+    return [
+        BridgeSnapshotResponse(
+            id=str(s.id),
+            snapshot_at=s.snapshot_at,
+            reserve_balance_acp_smallest=int(s.reserve_balance_acp_smallest),
+            total_wacp_wei_completed=int(s.total_wacp_wei_completed),
+            total_wacp_wei_implied=int(s.total_wacp_wei_implied),
+            backing_ratio=float(s.backing_ratio) if s.backing_ratio else None,
+            delta_wacp_wei=int(s.delta_wacp_wei),
+            reconciliation_ok=s.reconciliation_ok,
+            status=s.status,
+            reserve_health=s.reserve_health,
+            notes=list(s.notes) if s.notes else [],
+            last_acp_block_height=int(s.last_acp_block_height) if s.last_acp_block_height else None,
+            last_bsc_block_number=int(s.last_bsc_block_number) if s.last_bsc_block_number else None,
+        )
+        for s in snapshots
+    ]
+
+
+@router.get(
+    "/admin/alerts",
+    response_model=BridgeAlertsResponse,
+)
+async def get_bridge_alerts(session: AsyncSession = Depends(get_db)):
+    """Run stale-snapshot and reconciliation-mismatch checks.
+
+    Returns any active alerts. Call after /admin/reconcile to confirm
+    the latest snapshot is healthy.
+    """
+    stale = await check_stale_snapshots(session)
+    mismatch = await check_reconciliation_mismatch_alert(session)
+    return BridgeAlertsResponse(
+        stale_snapshot=stale,
+        reconciliation_mismatch=mismatch,
     )
 
 
