@@ -1,4 +1,4 @@
-"""SQLAlchemy models for ANCAP Core Engine."""
+﻿"""SQLAlchemy models for ANCAP Core Engine."""
 import enum
 import uuid
 from datetime import datetime
@@ -1688,3 +1688,56 @@ class WebhookDelivery(Base):
     )
 
     webhook_endpoint = relationship("WebhookEndpoint", foreign_keys=[webhook_endpoint_id])
+
+# ── Phase 6: Mobile ACP indexer (DB-backed tx history) ────────────────────────
+
+
+class MobileAcpTx(Base):
+    """DB-backed ACP transaction history for mobile wallet."""
+    __tablename__ = "mobile_acp_txs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    address = Column(String(64), nullable=False, index=True)
+    txid = Column(String(128), nullable=False, unique=True, index=True)
+    block_height = Column(Integer, nullable=True)
+    block_time = Column(String(32), nullable=True)
+    direction = Column(String(8), nullable=False)
+    sent_units = Column(BigInteger, nullable=False, default=0)
+    received_units = Column(BigInteger, nullable=False, default=0)
+    net_units = Column(BigInteger, nullable=False, default=0)
+    fee_units = Column(BigInteger, nullable=False, default=0)
+    confirmations = Column(Integer, nullable=False, default=0)
+    raw_tx_json = Column(JSONB, nullable=True)
+    scanned_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_mobile_acp_txs_address_height", "address", "block_height"),
+        Index("ix_mobile_acp_txs_address_created", "address", "scanned_at"),
+    )
+
+
+class MobileAddressIndexerState(Base):
+    """Watermark state for mobile ACP indexer tick."""
+    __tablename__ = "mobile_address_indexer_state"
+
+    id = Column(Integer, primary_key=True, default=1)
+    last_scanned_height = Column(Integer, nullable=False, default=0)
+    last_scanned_at = Column(DateTime(timezone=True), nullable=True)
+    indexed_addresses = Column(JSONB, nullable=False, default=list)
+    watermark = Column(String(64), nullable=True)
+
+
+class MobileDevice(Base):
+    """Registered mobile devices for push notifications."""
+    __tablename__ = "mobile_devices"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    device_token = Column(String(512), nullable=False, unique=True)
+    platform = Column(String(16), nullable=False)
+    app_version = Column(String(16), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True, index=True)
+    last_seen_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])

@@ -1,4 +1,7 @@
-from __future__ import annotations
+﻿from __future__ import annotations
+
+from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -79,3 +82,35 @@ class AcpBroadcastResponse(BaseModel):
     accepted: bool
     txid: str | None = None
     reason: str | None = None
+
+
+# ── Device registration ────────────────────────────────────────────────────────
+
+
+class MobileDeviceRegisterRequest(BaseModel):
+    device_token: str = Field(min_length=1, max_length=512, description="Push notification token from iOS (APNs) or Android (FCM)")
+    platform: Literal["ios", "android"] = Field(description="Device platform")
+    app_version: str | None = Field(default=None, max_length=16, description="App version string e.g. 1.0.0")
+
+
+class MobileDeviceRegisterResponse(BaseModel):
+    device_id: str
+    registered: bool
+    message: str = "Device registered"
+
+
+class MobileDeviceUnregisterRequest(BaseModel):
+    device_token: str = Field(min_length=1, max_length=512)
+
+
+class MobileDeviceListResponse(BaseModel):
+    devices: list[MobileDeviceInfo] = Field(default_factory=list)
+
+
+class MobileDeviceInfo(BaseModel):
+    device_id: str
+    platform: str
+    app_version: str | None = None
+    is_active: bool
+    last_seen_at: datetime | None = None
+    created_at: datetime

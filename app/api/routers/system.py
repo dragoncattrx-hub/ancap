@@ -24,6 +24,7 @@ from app.jobs.governance_checks_tick import governance_checks_tick
 from app.jobs.bridge_rail_tick import bridge_rail_tick
 from app.jobs.graph_enforcement_tick import graph_enforcement_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
+from app.jobs.mobile_acp_indexer_tick import mobile_acp_indexer_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
 from app.services.cache import redis_ping
 from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
@@ -270,6 +271,7 @@ async def jobs_tick(request: Request, session: DbSession):
     ledger_violations = await check_ledger_invariant(session)
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     bridge_rail = await bridge_rail_tick(session)
+    mobile_indexer = await mobile_acp_indexer_tick(session)
     return {
         "ok": True,
         "edges_daily_orders_processed": processed,
@@ -290,4 +292,5 @@ async def jobs_tick(request: Request, session: DbSession):
         "staking_rewards": staking_rewards,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
         "bridge_rail": bridge_rail,
+        "mobile_indexer": mobile_indexer,
     }

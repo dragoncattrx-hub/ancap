@@ -133,8 +133,8 @@ Still needed (operational, not code):
 - Complete `acp-api-client`, `acp-bridge-client`, `acp-bsc-client` [~]
 
 #### 6.2 Backend mobile gateway
-- ACP indexer (DB-backed history) [DONE: `app/api/routers/mobile_acp.py`, `GET /v1/mobile/config`]
-- device registration endpoint [ ]
+- ACP indexer (DB-backed history) [DONE: migration 051, MobileAcpTx + MobileAddressIndexerState models, `mobile_acp_indexer_tick` job, wired to `/v1/system/jobs/tick`]
+- device registration endpoint [DONE: `POST /v1/mobile/devices/register`, `POST /v1/mobile/devices/unregister`, `GET /v1/mobile/devices`]
 - broadcast rate limits [TODO P3-10 in API_MOBILE.md]
 
 #### 6.3 App product completion
