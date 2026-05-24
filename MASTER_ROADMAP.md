@@ -163,6 +163,7 @@ Still needed (operational, not code):
 ### Phase 7 — CI hardening and later platform expansion (PARTIAL ✅)
 - Bandit SAST + Docker build check in CI ✅ (`.github/workflows/backend-ci.yml`, `requirements.txt`)
 - Playwright browser install in frontend CI ✅ (browser binary ready for later smoke job)
+- Mobile SDK unit tests in CI ✅ (`test-mobile-sdk` job in frontend CI, 40 tests across 4 packages)
 - Playwright smoke in CI [P2 — needs separate job with backend service + postgres]
 - signed webhook retry dashboard with replay controls [DONE: `GET /webhooks/{id}/deliveries/{id}`, `POST /webhooks/{id}/deliveries/{id}/replay`, owner-scoped]
 - organizations-owned API keys, agents, billing wallet, audit exports [PARTIAL: org-scoped audit log + CSV export, GET /organizations/{id}/audit, GET /organizations/{id}/audit/export]
