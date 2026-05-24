@@ -31,8 +31,8 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P1-3 | `acp_sign_transfer` (local sign, no broadcast) | [x] | uses keystore_json |
 | P1-4 | walletd `sign-transfer` + `submit` | [x] | CLI for dev / bridge testing |
 | P1-5 | Kotlin/Swift bindgen (`scripts/uniffi-generate.ps1`) | [x] | `acp-mobile-ffi/bindings/` |
-| P1-6 | Link bindings in `expo-acp-core` Android | [~] | Kotlin + JNI; run `build-android-native.ps1` |
-| P1-7 | iOS Swift UniFFI link | [ ] | stub throws NotImplemented |
+| P1-6 | Link bindings in `expo-acp-core` Android | [~] | Kotlin + JNI wired; `build-android-native.ps1` now auto-detects SDK/NDK, but this host still needs an installed Android NDK to emit `.so` libs |
+| P1-7 | iOS Swift UniFFI link | [~] | Swift UniFFI bindings generated; Expo module now maps native ACP calls/errors, but Rust static lib/XCFramework packaging is still pending |
 | P1-7 | Golden-vector tests | [x] | `wallet_smoke.rs` |
 
 ---
