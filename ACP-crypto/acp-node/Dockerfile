@@ -15,15 +15,10 @@ COPY acp-node /build/acp-node
 WORKDIR /build/acp-node
 RUN cargo build --release
 
-FROM debian:bookworm-slim
+FROM builder AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libgcc-s1 libc6 \
-    libsnappy1v5 liblz4-1 libzstd1 zlib1g libbz2-1.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /opt/acp/bin /etc/acp
-COPY --from=builder /build/acp-node/target/release/acp-node /opt/acp/bin/acp-node
+RUN mkdir -p /opt/acp/bin /etc/acp \
+    && cp /build/acp-node/target/release/acp-node /opt/acp/bin/acp-node
 
 ENTRYPOINT ["/opt/acp/bin/acp-node"]
 CMD []
