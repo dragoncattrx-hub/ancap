@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +21,7 @@ import {
 } from "expo-screen-capture";
 
 export default function CreateWalletScreen() {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [address, setAddress] = useState("");
@@ -27,7 +29,9 @@ export default function CreateWalletScreen() {
 
   useEffect(() => {
     void preventScreenCaptureAsync();
-    return () => { allowScreenCaptureAsync().catch(() => {}); };
+    return () => {
+      allowScreenCaptureAsync().catch(() => {});
+    };
   }, []);
 
   const onGenerate = async () => {
@@ -39,25 +43,20 @@ export default function CreateWalletScreen() {
       setAddress(w.address);
       setKeystoreJson(w.keystoreJson);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Create failed";
+      const msg = e instanceof Error ? e.message : t("createWallet.couldNotCreate");
       if (msg.includes("not linked") || msg.includes("Native ACP")) {
         const nativeSteps = Platform.select({
-          ios:
-            "On macOS: run ancap-mobile/scripts/build-ios-native.ps1\nThen: npx expo run:ios",
-          android:
-            "Run: ancap-mobile/scripts/build-android-native.ps1\nThen: npx expo run:android",
-          default:
-            "Link expo-acp-core in a native Expo dev build, then rebuild the app.",
+          ios: t("createWallet.nativeStepsIos"),
+          android: t("createWallet.nativeStepsAndroid"),
+          default: t("createWallet.nativeStepsDefault"),
         });
         Alert.alert(
-          "Native build required",
-          "Create wallet needs the native ACP core linked.\n\n" +
-            `${nativeSteps}\n\n` +
-            "For quick testing in Expo Go, use Import instead.",
-          [{ text: "Use Import", onPress: () => router.push("/onboarding/import") }]
+          t("createWallet.nativeBuildRequiredTitle"),
+          t("createWallet.nativeBuildRequiredBody", { nativeSteps }),
+          [{ text: t("createWallet.useImport"), onPress: () => router.push("/onboarding/import") }]
         );
       } else {
-        Alert.alert("Could not create wallet", msg);
+        Alert.alert(t("createWallet.couldNotCreate"), msg);
       }
     } finally {
       setBusy(false);
@@ -66,35 +65,32 @@ export default function CreateWalletScreen() {
 
   const onBackupConfirm = () => {
     Alert.alert(
-      "Confirm your backup",
-      "Write down the 12 words in order and store them somewhere safe.\n\n" +
-        "Anyone with these words can access your ACP.",
+      t("createWallet.backupTitle"),
+      t("createWallet.backupBody"),
       [
-        { text: "I wrote it down", style: "cancel" },
-        { text: "Let me check again", style: "destructive" },
+        { text: t("createWallet.backupDone"), style: "cancel" },
+        { text: t("createWallet.backupReview"), style: "destructive" },
       ]
     );
   };
 
   const onSaveAndContinue = async () => {
     if (!address || !keystoreJson || words.length === 0) {
-      Alert.alert("Generate a wallet first");
+      Alert.alert(t("createWallet.generateFirst"));
       return;
     }
     await saveVault({ address, keystoreJson, mnemonic: words.join(" ") });
     Alert.alert(
-      "Wallet saved",
-      "Your wallet is stored on this device only. Keep your seed safe.",
-      [{ text: "Continue", onPress: () => router.replace("/(tabs)") }]
+      t("createWallet.savedTitle"),
+      t("createWallet.savedBody"),
+      [{ text: t("createWallet.continue"), onPress: () => router.replace("/(tabs)") }]
     );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create wallet</Text>
-      <Text style={styles.body}>
-        Generated on-device. ANCAP never receives your seed or keystore.
-      </Text>
+      <Text style={styles.title}>{t("createWallet.title")}</Text>
+      <Text style={styles.body}>{t("createWallet.body")}</Text>
 
       {words.length > 0 ? (
         <View style={styles.seedBox}>
@@ -117,7 +113,7 @@ export default function CreateWalletScreen() {
           <ActivityIndicator color="#042f1a" />
         ) : (
           <Text style={styles.primaryText}>
-            {words.length ? "Regenerate" : "Generate wallet"}
+            {words.length ? t("createWallet.regenerate") : t("createWallet.generate")}
           </Text>
         )}
       </Pressable>
@@ -125,13 +121,11 @@ export default function CreateWalletScreen() {
       {words.length > 0 ? (
         <>
           <Pressable style={styles.warning} onPress={onBackupConfirm}>
-            <Text style={styles.warningText}>
-              Read before continuing — backup your seed
-            </Text>
+            <Text style={styles.warningText}>{t("createWallet.readBeforeContinuing")}</Text>
           </Pressable>
 
           <Pressable style={styles.secondary} onPress={onSaveAndContinue}>
-            <Text style={styles.secondaryText}>I've backed up my seed → save wallet</Text>
+            <Text style={styles.secondaryText}>{t("createWallet.saveWallet")}</Text>
           </Pressable>
         </>
       ) : null}

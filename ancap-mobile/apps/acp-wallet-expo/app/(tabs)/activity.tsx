@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,6 +14,7 @@ import { loadVaultAddress } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
 export default function ActivityScreen() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<AcpTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,7 +23,7 @@ export default function ActivityScreen() {
     setError("");
     const address = await loadVaultAddress();
     if (!address) {
-      setError("No wallet on device.");
+      setError(t("activity.noWallet"));
       setItems([]);
       return;
     }
@@ -29,9 +31,9 @@ export default function ActivityScreen() {
       const txs = await getApi().getTransactions(address, 50);
       setItems(txs);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load history");
+      setError(e instanceof Error ? e.message : t("activity.failedLoadHistory"));
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -63,18 +65,16 @@ export default function ActivityScreen() {
           tintColor="#6ee7b7"
         />
       }
-      ListEmptyComponent={
-        <Text style={styles.empty}>{error || "No transactions yet."}</Text>
-      }
+      ListEmptyComponent={<Text style={styles.empty}>{error || t("activity.noTransactions")}</Text>}
       renderItem={({ item }) => (
         <View style={styles.row}>
           <View>
-            <Text style={styles.dir}>{item.direction.toUpperCase()}</Text>
+            <Text style={styles.dir}>{t(`activity.direction.${item.direction}`)}</Text>
             <Text style={styles.time}>{item.block_time}</Text>
           </View>
           <View style={styles.right}>
             <Text style={styles.amount}>{item.net_acp} ACP</Text>
-            <Text style={styles.conf}>{item.confirmations} conf</Text>
+            <Text style={styles.conf}>{t("activity.confirmations", { count: item.confirmations })}</Text>
           </View>
         </View>
       )}

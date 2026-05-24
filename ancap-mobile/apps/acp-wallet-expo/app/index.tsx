@@ -1,5 +1,6 @@
 import { Link, router } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +16,7 @@ const API_BASE =
   process.env.EXPO_PUBLIC_ANCAP_API_BASE ?? "https://api.ancap.cloud/v1";
 
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [maintenance, setMaintenance] = useState(false);
   const [vaultExists, setVaultExists] = useState(false);
@@ -33,13 +35,13 @@ export default function WelcomeScreen() {
         /* offline — allow local wallet */
       }
       const exists = await hasVault();
-      const pinEnabled = exists ? await hasPinLock() : false;
+      const pinOn = exists ? await hasPinLock() : false;
       if (!cancelled) {
         setVaultExists(exists);
-        setPinEnabled(pinEnabled);
+        setPinEnabled(pinOn);
         setLoading(false);
         if (exists) {
-          router.replace((pinEnabled && !isSessionUnlocked() ? "/unlock" : "/(tabs)") as never);
+          router.replace((pinOn && !isSessionUnlocked() ? "/unlock" : "/(tabs)") as never);
         }
       }
     })();
@@ -59,10 +61,8 @@ export default function WelcomeScreen() {
   if (maintenance) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Maintenance</Text>
-        <Text style={styles.sub}>
-          ACP Wallet is temporarily unavailable. Try again later.
-        </Text>
+        <Text style={styles.title}>{t("welcome.maintenanceTitle")}</Text>
+        <Text style={styles.sub}>{t("welcome.maintenanceBody")}</Text>
       </View>
     );
   }
@@ -70,36 +70,31 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.brand}>ANCAP</Text>
-      <Text style={styles.title}>ACP Wallet</Text>
-      <Text style={styles.sub}>
-        Non-custodial wallet for ACP and wACP. Your keys stay on this device.
-      </Text>
+      <Text style={styles.title}>{t("welcome.title")}</Text>
+      <Text style={styles.sub}>{t("welcome.subtitle")}</Text>
 
       {vaultExists ? (
         <Link href={pinEnabled && !isSessionUnlocked() ? "/unlock" : "/(tabs)"} asChild>
           <Pressable style={styles.primary}>
-            <Text style={styles.primaryText}>Open wallet</Text>
+            <Text style={styles.primaryText}>{t("welcome.openWallet")}</Text>
           </Pressable>
         </Link>
       ) : (
         <>
           <Link href="/onboarding/create" asChild>
             <Pressable style={styles.primary}>
-              <Text style={styles.primaryText}>Create new wallet</Text>
+              <Text style={styles.primaryText}>{t("welcome.createWallet")}</Text>
             </Pressable>
           </Link>
           <Link href="/onboarding/import" asChild>
             <Pressable style={styles.secondary}>
-              <Text style={styles.secondaryText}>Import wallet</Text>
+              <Text style={styles.secondaryText}>{t("welcome.importWallet")}</Text>
             </Pressable>
           </Link>
         </>
       )}
 
-      <Text style={styles.risk}>
-        Not investment advice. Bridge uses an operator-backed clearing rail — see
-        docs on ancap.cloud.
-      </Text>
+      <Text style={styles.risk}>{t("welcome.risk")}</Text>
     </View>
   );
 }

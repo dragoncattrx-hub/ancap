@@ -85,7 +85,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-12 | Transaction history | [x] | |
 | P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
-| P4-15 | i18n EN/RU/UK/DE | [ ] | |
+| P4-15 | i18n EN/RU/UK/DE | [x] | `react-i18next` wired in Expo app with persisted language selection and translated core wallet flows/screens |
 
 ---
 

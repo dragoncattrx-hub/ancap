@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Pressable,
   ScrollView,
@@ -13,6 +14,7 @@ import { loadVaultAddress } from "@/lib/vault";
 const CLIPBOARD_CLEAR_MS = 30_000; // P5-3: auto-clear address from clipboard after 30s
 
 export default function ReceiveScreen() {
+  const { t } = useTranslation();
   const [address, setAddress] = useState("");
   const [copied, setCopied] = useState(false);
   const clipboardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -39,8 +41,8 @@ export default function ReceiveScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Receive ACP</Text>
-      <Text style={styles.warn}>Send only native ACP to this address.</Text>
+      <Text style={styles.title}>{t("receive.title")}</Text>
+      <Text style={styles.warn}>{t("receive.warning")}</Text>
 
       {address ? (
         <View style={styles.qrWrap}>
@@ -53,7 +55,7 @@ export default function ReceiveScreen() {
       </Text>
 
       <Pressable style={styles.btn} onPress={onCopy}>
-        <Text style={styles.btnText}>{copied ? "Copied" : "Copy address"}</Text>
+        <Text style={styles.btnText}>{copied ? t("receive.copied") : t("receive.copyAddress")}</Text>
       </Pressable>
     </ScrollView>
   );

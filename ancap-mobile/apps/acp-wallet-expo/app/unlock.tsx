@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/lock";
 
 export default function UnlockScreen() {
+  const { t } = useTranslation();
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(true);
   const [biometricReady, setBiometricReady] = useState(false);
@@ -48,7 +50,7 @@ export default function UnlockScreen() {
   const onUnlock = async () => {
     const ok = await verifyPin(pin);
     if (!ok) {
-      Alert.alert("Wrong PIN", "Try again.");
+      Alert.alert(t("unlock.wrongPinTitle"), t("unlock.wrongPinBody"));
       return;
     }
     markSessionUnlocked();
@@ -62,7 +64,7 @@ export default function UnlockScreen() {
       router.replace("/(tabs)");
       return;
     }
-    Alert.alert("Biometric unlock failed", "Use your PIN instead.");
+    Alert.alert(t("unlock.biometricFailedTitle"), t("unlock.biometricFailedBody"));
   };
 
   if (busy) {
@@ -75,14 +77,14 @@ export default function UnlockScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Unlock wallet</Text>
-      <Text style={styles.sub}>Enter your PIN to open ACP Wallet on this device.</Text>
+      <Text style={styles.title}>{t("unlock.title")}</Text>
+      <Text style={styles.sub}>{t("unlock.subtitle")}</Text>
 
       <TextInput
         style={styles.input}
         value={pin}
         onChangeText={setPin}
-        placeholder="PIN"
+        placeholder={t("unlock.pinPlaceholder")}
         placeholderTextColor="#64748b"
         keyboardType="number-pad"
         secureTextEntry
@@ -90,12 +92,12 @@ export default function UnlockScreen() {
       />
 
       <Pressable style={styles.primary} onPress={() => void onUnlock()}>
-        <Text style={styles.primaryText}>Unlock</Text>
+        <Text style={styles.primaryText}>{t("unlock.unlock")}</Text>
       </Pressable>
 
       {biometricReady ? (
         <Pressable style={styles.secondary} onPress={() => void onBiometricUnlock()}>
-          <Text style={styles.secondaryText}>Use biometrics</Text>
+          <Text style={styles.secondaryText}>{t("unlock.useBiometrics")}</Text>
         </Pressable>
       ) : null}
     </View>

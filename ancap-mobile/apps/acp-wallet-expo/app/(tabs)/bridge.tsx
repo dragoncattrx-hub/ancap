@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Linking,
@@ -15,6 +16,7 @@ import { loadVaultAddress } from "@/lib/vault";
 import { getBridgeClient } from "@/lib/bridge";
 
 export default function BridgeScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [bridgeStatus, setBridgeStatus] = useState("—");
   const [bridgeEnabled, setBridgeEnabled] = useState(false);
@@ -51,7 +53,7 @@ export default function BridgeScreen() {
       });
     } catch (e) {
       setBridgeStatus("offline");
-      setError(e instanceof Error ? e.message : "Bridge status unavailable");
+      setError(e instanceof Error ? e.message : t("bridge.statusUnavailable"));
       setReserveProof(null);
       setWacpStatus(null);
       setSampleRedeemQuote(null);
@@ -69,7 +71,7 @@ export default function BridgeScreen() {
     } catch {
       setRecentIntents([]);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -77,6 +79,12 @@ export default function BridgeScreen() {
       void refresh().finally(() => setLoading(false));
     }, [refresh])
   );
+
+  const enabledLabel = t("common.enabled");
+  const disabledLabel = t("common.disabled");
+  const yesLabel = t("common.yes");
+  const noLabel = t("common.no");
+  const unknownLabel = t("common.unknown");
 
   return (
     <ScrollView
@@ -92,87 +100,80 @@ export default function BridgeScreen() {
         />
       }
     >
-      <Text style={styles.title}>ACP ↔ wACP</Text>
-      <Text style={styles.disclaimer}>
-        Custodial clearing rail (operator-backed peg). Not a trustless bridge. Read risks before
-        converting.
-      </Text>
+      <Text style={styles.title}>{t("bridge.title")}</Text>
+      <Text style={styles.disclaimer}>{t("bridge.disclaimer")}</Text>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Rail status</Text>
+        <Text style={styles.label}>{t("bridge.railStatus")}</Text>
         <Text style={styles.value}>{bridgeStatus}</Text>
-        <Text style={styles.meta}>Mint: {bridgeEnabled ? "enabled" : "disabled"}</Text>
+        <Text style={styles.meta}>{t("bridge.mint", { status: bridgeEnabled ? enabledLabel : disabledLabel })}</Text>
         <Text style={styles.meta}>
-          Redeem: {reverseEnabled ? "enabled" : "pending / disabled"}
+          {t("bridge.redeem", {
+            status: reverseEnabled ? enabledLabel : t("bridge.redeemPendingDisabled"),
+          })}
         </Text>
-        <Text style={styles.meta}>wACP contract: {wacpContract}</Text>
+        <Text style={styles.meta}>{t("bridge.contract", { value: wacpContract })}</Text>
       </View>
 
       {reserveProof ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Reserve proof</Text>
-          <Text style={styles.meta}>Health: {reserveProof.reserve_health}</Text>
-          <Text style={styles.meta}>Backing ratio: {reserveProof.backing_ratio ?? "—"}</Text>
-          <Text style={styles.meta}>Reserve address: {reserveProof.acp_reserve_address || "—"}</Text>
-          <Text style={styles.meta}>Reserve balance: {reserveProof.acp_reserve_balance_smallest} smallest ACP</Text>
+          <Text style={styles.label}>{t("bridge.reserveProof")}</Text>
+          <Text style={styles.meta}>{t("bridge.health", { value: reserveProof.reserve_health })}</Text>
+          <Text style={styles.meta}>{t("bridge.backingRatio", { value: reserveProof.backing_ratio ?? unknownLabel })}</Text>
+          <Text style={styles.meta}>{t("bridge.reserveAddress", { value: reserveProof.acp_reserve_address || unknownLabel })}</Text>
+          <Text style={styles.meta}>{t("bridge.reserveBalance", { value: reserveProof.acp_reserve_balance_smallest })}</Text>
         </View>
       ) : null}
 
       {sampleRedeemQuote ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Redeem example</Text>
-          <Text style={styles.meta}>1 wACP → {sampleRedeemQuote.acp_amount_floor} ACP</Text>
-          <Text style={styles.meta}>Remainder: {sampleRedeemQuote.remainder_wacp} wACP</Text>
+          <Text style={styles.label}>{t("bridge.redeemExample")}</Text>
+          <Text style={styles.meta}>{t("bridge.redeemExampleLine", { amount: sampleRedeemQuote.acp_amount_floor })}</Text>
+          <Text style={styles.meta}>{t("bridge.remainder", { value: sampleRedeemQuote.remainder_wacp })}</Text>
           <Text style={styles.meta}>{sampleRedeemQuote.policy}</Text>
         </View>
       ) : null}
 
       {wacpStatus ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Public market status</Text>
-          <Text style={styles.meta}>Pair live: {wacpStatus.pair_live ? "yes" : "no"}</Text>
-          <Text style={styles.meta}>DEX: {wacpStatus.pair_dex ?? "—"}</Text>
-          <Text style={styles.meta}>Contract verified: {wacpStatus.bsc_contract_verified ? "yes" : "no"}</Text>
-          <Text style={styles.meta}>Token metadata live: {wacpStatus.token_metadata_live ? "yes" : "no"}</Text>
+          <Text style={styles.label}>{t("bridge.publicMarketStatus")}</Text>
+          <Text style={styles.meta}>{t("bridge.pairLive", { value: wacpStatus.pair_live ? yesLabel : noLabel })}</Text>
+          <Text style={styles.meta}>{t("bridge.dex", { value: wacpStatus.pair_dex ?? unknownLabel })}</Text>
+          <Text style={styles.meta}>{t("bridge.contractVerified", { value: wacpStatus.bsc_contract_verified ? yesLabel : noLabel })}</Text>
+          <Text style={styles.meta}>{t("bridge.tokenMetadataLive", { value: wacpStatus.token_metadata_live ? yesLabel : noLabel })}</Text>
         </View>
       ) : null}
 
       <View style={styles.card}>
-        <Text style={styles.label}>Your bridge intents</Text>
+        <Text style={styles.label}>{t("bridge.yourIntents")}</Text>
         {recentIntents.length > 0 ? (
           recentIntents.slice(0, 3).map((item) => (
             <View key={item.id} style={styles.intentRow}>
               <Text style={styles.intentPrimary}>{item.direction} · {item.status}</Text>
-              <Text style={styles.intentMeta}>{item.amount_acp_smallest} ACP-smallest</Text>
+              <Text style={styles.intentMeta}>{t("bridge.intentAmount", { value: item.amount_acp_smallest })}</Text>
             </View>
           ))
         ) : (
-          <Text style={styles.meta}>
-            Authenticated mobile intent history wiring is ready in the SDK client, but the app is not
-            logging users into ANCAP yet, so in-app intent polling stays off for now.
-          </Text>
+          <Text style={styles.meta}>{t("bridge.intentsUnavailable")}</Text>
         )}
       </View>
 
-      <Text style={styles.note}>
-        Full in-app bridge intents (deposit → mint / burn → payout) ship in v1.1. This screen now
-        reflects live reserve + market status and a real redeem quote.
-      </Text>
+      <Text style={styles.note}>{t("bridge.note")}</Text>
 
       {docs ? (
         <View style={styles.links}>
           <Pressable onPress={() => Linking.openURL(docs.bridge)}>
-            <Text style={styles.link}>Bridge documentation</Text>
+            <Text style={styles.link}>{t("bridge.docs")}</Text>
           </Pressable>
           <Pressable onPress={() => Linking.openURL(docs.risks)}>
-            <Text style={styles.link}>Risk disclosure</Text>
+            <Text style={styles.link}>{t("bridge.risks")}</Text>
           </Pressable>
           <Pressable onPress={() => Linking.openURL(docs.reserve)}>
-            <Text style={styles.link}>Reserve proof docs</Text>
+            <Text style={styles.link}>{t("bridge.reserveDocs")}</Text>
           </Pressable>
           {wacpStatus?.swap_url ? (
             <Pressable onPress={() => Linking.openURL(wacpStatus.swap_url!)}>
-              <Text style={styles.link}>Open PancakeSwap</Text>
+              <Text style={styles.link}>{t("bridge.openSwap")}</Text>
             </Pressable>
           ) : null}
         </View>

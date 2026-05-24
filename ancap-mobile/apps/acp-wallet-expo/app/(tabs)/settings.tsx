@@ -1,6 +1,7 @@
 import { Linking } from "react-native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   canUseBiometricUnlock,
@@ -13,6 +14,7 @@ import {
   lockSession,
   setPinLock,
 } from "@/lib/lock";
+import { LANGUAGE_OPTIONS, loadLanguagePreference, setLanguagePreference, type AppLanguage } from "@/lib/i18n";
 import {
   disableVaultBiometricProtection,
   enableVaultBiometricProtection,
@@ -23,58 +25,62 @@ import {
 const BASE = "https://ancap.cloud";
 
 // P5-4: basic root/jailbreak/emulator detection (no native dependency needed)
-function checkInsecureEnvironment(): string | null {
+function checkInsecureEnvironment(message: string): string | null {
   if (typeof __DEV__ !== "undefined" && __DEV__) {
-    return "Running on a development/simulator build. Do not use with real funds.";
+    return message;
   }
   return null;
 }
 
-const LINKS = [
-  { label: "Terms of Service", url: `${BASE}/legal/terms` },
-  { label: "Privacy Policy", url: `${BASE}/legal/privacy` },
-  { label: "Bridge Risk Disclosure", url: `${BASE}/docs/wacp/risks` },
-  { label: "Bridge Documentation", url: `${BASE}/docs/bridge` },
-  { label: "Reserve Proof", url: `${BASE}/docs/wacp/reserve` },
-  { label: "Support", url: `${BASE}/support` },
-];
-
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const [envWarning, setEnvWarning] = useState<string | null>(null);
   const [pinEnabled, setPinEnabled] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [vaultBiometricProtected, setVaultBiometricProtected] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("en");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
 
-  useEffect(() => {
-    const w = checkInsecureEnvironment();
-    if (w) setEnvWarning(w);
-    void refreshLockState();
-  }, []);
+  const links = [
+    { label: t("settings.terms"), url: `${BASE}/legal/terms` },
+    { label: t("settings.privacy"), url: `${BASE}/legal/privacy` },
+    { label: t("settings.bridgeRiskDisclosure"), url: `${BASE}/docs/wacp/risks` },
+    { label: t("settings.bridgeDocumentation"), url: `${BASE}/docs/bridge` },
+    { label: t("settings.reserveProof"), url: `${BASE}/docs/wacp/reserve` },
+    { label: t("settings.support"), url: `${BASE}/support` },
+  ];
 
-  const refreshLockState = async () => {
-    const [pinOn, biometricOn, biometricCapable, vaultProtected] = await Promise.all([
+  useEffect(() => {
+    const warning = checkInsecureEnvironment(t("settings.envWarning"));
+    if (warning) setEnvWarning(warning);
+    void refreshState();
+  }, [t]);
+
+  const refreshState = async () => {
+    const [pinOn, biometricOn, biometricCapable, vaultProtected, language] = await Promise.all([
       hasPinLock(),
       isBiometricUnlockEnabled(),
       canUseBiometricUnlock(),
       isVaultBiometricProtected(),
+      loadLanguagePreference(),
     ]);
     setPinEnabled(pinOn);
     setBiometricEnabled(biometricOn);
     setBiometricAvailable(biometricCapable);
     setVaultBiometricProtected(vaultProtected);
+    setSelectedLanguage(language);
   };
 
   const onWipe = () => {
     Alert.alert(
-      "Remove wallet from device?",
-      "Your seed is not stored on ANCAP servers. Make sure you have a backup before removing.",
+      t("settings.removeWalletTitle"),
+      t("settings.removeWalletBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("settings.cancel"), style: "cancel" },
         {
-          text: "Remove",
+          text: t("settings.remove"),
           style: "destructive",
           onPress: async () => {
             await wipeVault();
@@ -91,33 +97,33 @@ export default function SettingsScreen() {
 
   const onSavePin = async () => {
     if (!isValidPin(pin)) {
-      Alert.alert("Invalid PIN", "PIN must be 4 to 8 digits.");
+      Alert.alert(t("settings.invalidPinTitle"), t("settings.invalidPinBody"));
       return;
     }
     if (pin !== confirmPin) {
-      Alert.alert("PIN mismatch", "PIN entries do not match.");
+      Alert.alert(t("settings.pinMismatchTitle"), t("settings.pinMismatchBody"));
       return;
     }
     await setPinLock(pin);
     setPin("");
     setConfirmPin("");
-    await refreshLockState();
-    Alert.alert("PIN enabled", "Wallet unlock PIN is now active on this device.");
+    await refreshState();
+    Alert.alert(t("settings.pinEnabledTitle"), t("settings.pinEnabledBody"));
   };
 
   const onDisablePin = async () => {
     Alert.alert(
-      "Disable lock?",
-      "This removes the local PIN and biometric unlock requirement from this device.",
+      t("settings.disableLockTitle"),
+      t("settings.disableLockBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("settings.cancel"), style: "cancel" },
         {
-          text: "Disable",
+          text: t("settings.disableTitle"),
           style: "destructive",
           onPress: async () => {
             await disableVaultBiometricProtection();
             await clearPinLock();
-            await refreshLockState();
+            await refreshState();
           },
         },
       ]
@@ -128,29 +134,26 @@ export default function SettingsScreen() {
     try {
       await enableBiometricUnlock();
       await enableVaultBiometricProtection();
-      await refreshLockState();
-      Alert.alert(
-        "Biometrics enabled",
-        "You can now unlock the wallet with device biometrics, and vault secrets are stored behind biometric-gated secure storage."
-      );
+      await refreshState();
+      Alert.alert(t("settings.biometricsEnabledTitle"), t("settings.biometricsEnabledBody"));
     } catch (e) {
-      Alert.alert("Could not enable biometrics", e instanceof Error ? e.message : "Unknown error");
+      Alert.alert(t("settings.biometricsErrorTitle"), e instanceof Error ? e.message : "Unknown error");
     }
   };
 
   const onDisableBiometrics = async () => {
     Alert.alert(
-      "Disable biometric unlock?",
-      "This removes biometric unlock and moves vault secrets back to device-only secure storage without biometric gating.",
+      t("settings.disableBiometricTitle"),
+      t("settings.disableBiometricBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("settings.cancel"), style: "cancel" },
         {
-          text: "Disable",
+          text: t("settings.disableTitle"),
           style: "destructive",
           onPress: async () => {
             await disableVaultBiometricProtection();
             await disableBiometricUnlock();
-            await refreshLockState();
+            await refreshState();
           },
         },
       ]
@@ -162,9 +165,18 @@ export default function SettingsScreen() {
     router.replace("/unlock");
   };
 
+  const onLanguageChange = async (language: AppLanguage) => {
+    await setLanguagePreference(language);
+    setSelectedLanguage(language);
+  };
+
+  const statusParts = [pinEnabled ? t("settings.pinEnabled") : t("settings.pinDisabled")];
+  if (biometricEnabled) statusParts.push(t("settings.biometricsEnabled"));
+  if (vaultBiometricProtected) statusParts.push(t("settings.secureVaultGated"));
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>About</Text>
+      <Text style={styles.title}>{t("settings.title")}</Text>
 
       {envWarning ? (
         <View style={styles.warnCard}>
@@ -173,49 +185,59 @@ export default function SettingsScreen() {
       ) : null}
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>ANCAP ACP Wallet</Text>
-        <Text style={styles.meta}>Version 1.0.0</Text>
-        <Text style={styles.meta}>Non-custodial · Device-only keys</Text>
+        <Text style={styles.cardLabel}>{t("settings.appTitle")}</Text>
+        <Text style={styles.meta}>{t("settings.version")}</Text>
+        <Text style={styles.meta}>{t("settings.nonCustodial")}</Text>
       </View>
 
-      <Text style={styles.section}>Legal & Documentation</Text>
-      {LINKS.map((l) => (
-        <Pressable key={l.url} style={styles.linkRow} onPress={() => onOpen(l.url)}>
-          <Text style={styles.linkText}>{l.label}</Text>
+      <Text style={styles.section}>{t("settings.language")}</Text>
+      <View style={styles.card}>
+        <Text style={styles.meta}>{t("settings.languageHelp")}</Text>
+        <View style={styles.languageGrid}>
+          {LANGUAGE_OPTIONS.map((option) => {
+            const active = selectedLanguage === option.code;
+            return (
+              <Pressable
+                key={option.code}
+                style={[styles.languageButton, active ? styles.languageButtonActive : null]}
+                onPress={() => void onLanguageChange(option.code)}
+              >
+                <Text style={[styles.languageButtonText, active ? styles.languageButtonTextActive : null]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <Text style={styles.section}>{t("settings.legalDocs")}</Text>
+      {links.map((link) => (
+        <Pressable key={link.url} style={styles.linkRow} onPress={() => onOpen(link.url)}>
+          <Text style={styles.linkText}>{link.label}</Text>
           <Text style={styles.arrow}>›</Text>
         </Pressable>
       ))}
 
-      <Text style={styles.section}>Security</Text>
+      <Text style={styles.section}>{t("settings.security")}</Text>
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Key storage</Text>
-        <Text style={styles.meta}>
-          Keys and keystore are stored in device-only secure storage. When biometric unlock is
-          enabled, vault secrets move behind biometric-gated secure storage. ANCAP never receives
-          or stores your seed or private key.
-        </Text>
+        <Text style={styles.cardLabel}>{t("settings.keyStorageTitle")}</Text>
+        <Text style={styles.meta}>{t("settings.keyStorageBody")}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Bridge risk</Text>
-        <Text style={styles.meta}>
-          The ACP ↔ wACP bridge is a custodial clearing rail. Read the full risk disclosure before
-          converting.
-        </Text>
+        <Text style={styles.cardLabel}>{t("settings.bridgeRiskTitle")}</Text>
+        <Text style={styles.meta}>{t("settings.bridgeRiskBody")}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>App lock</Text>
-        <Text style={styles.meta}>
-          Status: {pinEnabled ? "PIN enabled" : "PIN disabled"}
-          {biometricEnabled ? " · biometrics enabled" : ""}
-          {vaultBiometricProtected ? " · secure vault gated by biometrics" : ""}
-        </Text>
+        <Text style={styles.cardLabel}>{t("settings.appLockTitle")}</Text>
+        <Text style={styles.meta}>{t("settings.statusLine", { status: statusParts.join(" · ") })}</Text>
         <TextInput
           style={styles.input}
           value={pin}
           onChangeText={setPin}
-          placeholder="Set PIN (4–8 digits)"
+          placeholder={t("settings.setPin")}
           placeholderTextColor="#64748b"
           keyboardType="number-pad"
           secureTextEntry
@@ -225,39 +247,39 @@ export default function SettingsScreen() {
           style={styles.input}
           value={confirmPin}
           onChangeText={setConfirmPin}
-          placeholder="Confirm PIN"
+          placeholder={t("settings.confirmPin")}
           placeholderTextColor="#64748b"
           keyboardType="number-pad"
           secureTextEntry
           maxLength={8}
         />
         <Pressable style={styles.primary} onPress={() => void onSavePin()}>
-          <Text style={styles.primaryText}>{pinEnabled ? "Update PIN" : "Enable PIN"}</Text>
+          <Text style={styles.primaryText}>{pinEnabled ? t("settings.updatePin") : t("settings.enablePin")}</Text>
         </Pressable>
         {pinEnabled ? (
           <Pressable style={styles.secondary} onPress={onDisablePin}>
-            <Text style={styles.secondaryText}>Disable PIN lock</Text>
+            <Text style={styles.secondaryText}>{t("settings.disablePinLock")}</Text>
           </Pressable>
         ) : null}
         {pinEnabled && biometricAvailable && !biometricEnabled ? (
           <Pressable style={styles.secondary} onPress={() => void onEnableBiometrics()}>
-            <Text style={styles.secondaryText}>Enable biometric unlock + secure vault</Text>
+            <Text style={styles.secondaryText}>{t("settings.enableBiometricUnlock")}</Text>
           </Pressable>
         ) : null}
         {pinEnabled && biometricEnabled ? (
           <Pressable style={styles.secondary} onPress={onDisableBiometrics}>
-            <Text style={styles.secondaryText}>Disable biometric unlock</Text>
+            <Text style={styles.secondaryText}>{t("settings.disableBiometricUnlock")}</Text>
           </Pressable>
         ) : null}
         {pinEnabled ? (
           <Pressable style={styles.secondary} onPress={onLockNow}>
-            <Text style={styles.secondaryText}>Lock now</Text>
+            <Text style={styles.secondaryText}>{t("settings.lockNow")}</Text>
           </Pressable>
         ) : null}
       </View>
 
       <Pressable style={styles.danger} onPress={onWipe}>
-        <Text style={styles.dangerText}>Remove wallet from this device</Text>
+        <Text style={styles.dangerText}>{t("settings.removeWallet")}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -266,7 +288,15 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { padding: 24, flexGrow: 1 },
   title: { color: "#f5f7ff", fontSize: 20, fontWeight: "700", marginBottom: 16 },
-  section: { color: "#94a3b8", fontSize: 13, fontWeight: "600", marginTop: 20, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 },
+  section: {
+    color: "#94a3b8",
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: 20,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   card: {
     backgroundColor: "#111827",
     borderRadius: 12,
@@ -286,6 +316,26 @@ const styles = StyleSheet.create({
   },
   warnText: { color: "#fecaca", fontSize: 13, lineHeight: 20 },
   meta: { color: "#94a3b8", fontSize: 13, lineHeight: 20 },
+  languageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  languageButton: {
+    borderColor: "#334155",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#0f172a",
+  },
+  languageButtonActive: {
+    backgroundColor: "#10b981",
+    borderColor: "#10b981",
+  },
+  languageButtonText: { color: "#f5f7ff", fontWeight: "600" },
+  languageButtonTextActive: { color: "#042f1a" },
   linkRow: {
     flexDirection: "row",
     justifyContent: "space-between",

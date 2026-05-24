@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +19,7 @@ const RPC_URL =
   process.env.EXPO_PUBLIC_ACP_RPC_URL ?? "https://acp1.ancap.cloud/rpc";
 
 export default function SendScreen() {
+  const { t } = useTranslation();
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [fee, setFee] = useState("");
@@ -27,7 +29,7 @@ export default function SendScreen() {
   const onEstimate = async () => {
     try {
       const vault = await loadVault();
-      if (!vault) throw new Error("No wallet");
+      if (!vault) throw new Error(t("send.noWallet"));
       const from = assertAcpAddress(vault.address, "from");
       const toAddr = assertAcpAddress(to.trim(), "to");
       const est = await getApi().estimateFee({
@@ -36,9 +38,9 @@ export default function SendScreen() {
         amountAcp: amount.trim(),
       });
       setFee(est.feeAcp);
-      setPreview(`Fee: ${est.feeAcp} ACP (min ${est.minFeeAcp})`);
+      setPreview(t("send.feePreview", { fee: est.feeAcp, minFee: est.minFeeAcp }));
     } catch (e) {
-      Alert.alert("Estimate failed", e instanceof Error ? e.message : "Error");
+      Alert.alert(t("send.estimateFailedTitle"), e instanceof Error ? e.message : t("send.genericError"));
     }
   };
 
@@ -47,7 +49,7 @@ export default function SendScreen() {
     setPreview("");
     try {
       const vault = await loadVault();
-      if (!vault) throw new Error("No wallet on device");
+      if (!vault) throw new Error(t("send.noWalletOnDevice"));
 
       const signed = await signAndPrepareTransfer(RPC_URL, vault.keystoreJson, {
         from: vault.address,
@@ -58,24 +60,18 @@ export default function SendScreen() {
 
       const result = await getApi().broadcast(signed.rawTx);
       if (!result.accepted) {
-        throw new Error(result.reason ?? "Broadcast rejected");
+        throw new Error(result.reason ?? t("send.broadcastRejected"));
       }
-      Alert.alert(
-        "Sent",
-        `Transaction broadcasted.\nTxID: ${result.txid ?? signed.txid}`
-      );
+      Alert.alert(t("send.sentTitle"), t("send.sentBody", { txid: result.txid ?? signed.txid }));
       setTo("");
       setAmount("");
       setFee("");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Send failed";
+      const msg = e instanceof Error ? e.message : t("send.sendFailedTitle");
       if (msg.includes("native module")) {
-        Alert.alert(
-          "Native signing required",
-          "Build the app with expo-acp-core (UniFFI) linked, or use walletd sign-transfer + broadcast API in dev."
-        );
+        Alert.alert(t("send.nativeSigningRequiredTitle"), t("send.nativeSigningRequiredBody"));
       } else {
-        Alert.alert("Send failed", msg);
+        Alert.alert(t("send.sendFailedTitle"), msg);
       }
     } finally {
       setBusy(false);
@@ -84,7 +80,7 @@ export default function SendScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Recipient (acp1...)</Text>
+      <Text style={styles.label}>{t("send.recipientLabel")}</Text>
       <TextInput
         style={styles.input}
         value={to}
@@ -94,7 +90,7 @@ export default function SendScreen() {
         placeholderTextColor="#64748b"
       />
 
-      <Text style={styles.label}>Amount (ACP)</Text>
+      <Text style={styles.label}>{t("send.amountLabel")}</Text>
       <TextInput
         style={styles.input}
         value={amount}
@@ -104,7 +100,7 @@ export default function SendScreen() {
         placeholderTextColor="#64748b"
       />
 
-      <Text style={styles.label}>Fee (ACP, optional)</Text>
+      <Text style={styles.label}>{t("send.feeLabel")}</Text>
       <TextInput
         style={styles.input}
         value={fee}
@@ -117,14 +113,14 @@ export default function SendScreen() {
       {preview ? <Text style={styles.preview}>{preview}</Text> : null}
 
       <Pressable style={styles.secondary} onPress={onEstimate} disabled={busy}>
-        <Text style={styles.secondaryText}>Estimate fee</Text>
+        <Text style={styles.secondaryText}>{t("send.estimateFee")}</Text>
       </Pressable>
 
       <Pressable style={styles.primary} onPress={onSend} disabled={busy}>
         {busy ? (
           <ActivityIndicator color="#042f1a" />
         ) : (
-          <Text style={styles.primaryText}>Sign & send</Text>
+          <Text style={styles.primaryText}>{t("send.signAndSend")}</Text>
         )}
       </Pressable>
     </ScrollView>

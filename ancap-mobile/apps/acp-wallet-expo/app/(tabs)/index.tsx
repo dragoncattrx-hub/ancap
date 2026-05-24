@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +16,7 @@ import { loadVaultAddress } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
 export default function WalletHomeScreen() {
+  const { t } = useTranslation();
   const [address, setAddress] = useState("");
   const [acp, setAcp] = useState("—");
   const [wacp, setWacp] = useState("—");
@@ -26,18 +28,15 @@ export default function WalletHomeScreen() {
 
   const refresh = useCallback(async () => {
     setError("");
-    const address = await loadVaultAddress();
-    if (!address) {
-      setError("No wallet on device.");
+    const walletAddress = await loadVaultAddress();
+    if (!walletAddress) {
+      setError(t("walletHome.noWallet"));
       return;
     }
-    setAddress(address);
+    setAddress(walletAddress);
     try {
       const api = getApi();
-      const [bal, cfg] = await Promise.all([
-        api.getBalance(address),
-        api.getConfig(),
-      ]);
+      const [bal, cfg] = await Promise.all([api.getBalance(walletAddress), api.getConfig()]);
       setAcp(bal.acp);
       setUtxos(bal.utxo_count);
       setBridgeStatus(cfg.bridgeStatus);
@@ -49,7 +48,7 @@ export default function WalletHomeScreen() {
           const wei = await fetchWacpBalanceWei({
             rpcUrl: cfg.bscRpcUrl,
             contract: cfg.wacpContract,
-            holder: address,
+            holder: walletAddress,
           });
           setWacp(formatWacp(wei));
         } catch {
@@ -60,9 +59,9 @@ export default function WalletHomeScreen() {
         setWacp("—");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load balance");
+      setError(e instanceof Error ? e.message : t("walletHome.failedLoadBalance"));
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,7 +82,7 @@ export default function WalletHomeScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onPull} tintColor="#6ee7b7" />
       }
     >
-      <Text style={styles.label}>ACP address</Text>
+      <Text style={styles.label}>{t("walletHome.addressLabel")}</Text>
       <Text style={styles.address} selectable>
         {address || "…"}
       </Text>
@@ -91,33 +90,33 @@ export default function WalletHomeScreen() {
       <View style={styles.actions}>
         <Link href="/receive" asChild>
           <Pressable style={styles.actionBtn}>
-            <Text style={styles.actionText}>Receive</Text>
+            <Text style={styles.actionText}>{t("walletHome.receive")}</Text>
           </Pressable>
         </Link>
         <Link href="/(tabs)/send" asChild>
           <Pressable style={styles.actionBtn}>
-            <Text style={styles.actionText}>Send</Text>
+            <Text style={styles.actionText}>{t("walletHome.send")}</Text>
           </Pressable>
         </Link>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>ACP</Text>
+        <Text style={styles.cardLabel}>{t("walletHome.acpLabel")}</Text>
         <Text style={styles.balance}>{acp}</Text>
-        <Text style={styles.meta}>UTXOs: {utxos}</Text>
+        <Text style={styles.meta}>{t("walletHome.utxos", { count: utxos })}</Text>
       </View>
 
       {wacpEnabled ? (
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>wACP (BSC)</Text>
+          <Text style={styles.cardLabel}>{t("walletHome.wacpLabel")}</Text>
           <Text style={styles.balanceWacp}>{wacp}</Text>
-          <Text style={styles.meta}>BEP-20 · earn via bridge</Text>
+          <Text style={styles.meta}>{t("walletHome.wacpMeta")}</Text>
         </View>
       ) : null}
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Bridge</Text>
-        <Text style={styles.meta}>Status: {bridgeStatus}</Text>
+        <Text style={styles.cardLabel}>{t("walletHome.bridgeLabel")}</Text>
+        <Text style={styles.meta}>{t("walletHome.bridgeStatus", { status: bridgeStatus })}</Text>
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}

@@ -1,8 +1,10 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { setNativeWalletModule } from "@ancap/acp-wallet-sdk";
 import { getExpoAcpCoreModule } from "expo-acp-core";
+import { loadLanguagePreference } from "@/lib/i18n";
 import { hasPinLock, isSessionUnlocked, lockSession } from "@/lib/lock";
 import { hasVault } from "@/lib/vault";
 
@@ -12,8 +14,10 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const lastActive = useRef(Date.now());
+  const { t } = useTranslation();
 
   useEffect(() => {
+    void loadLanguagePreference();
     setNativeWalletModule(getExpoAcpCoreModule());
   }, []);
 
@@ -76,10 +80,13 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="receive" options={{ title: "Receive ACP" }} />
-        <Stack.Screen name="onboarding/create" options={{ title: "Create wallet" }} />
-        <Stack.Screen name="onboarding/import" options={{ title: "Import wallet" }} />
-        <Stack.Screen name="unlock" options={{ title: "Unlock wallet", headerBackVisible: false }} />
+        <Stack.Screen name="receive" options={{ title: t("screenTitles.receive") }} />
+        <Stack.Screen name="onboarding/create" options={{ title: t("screenTitles.createWallet") }} />
+        <Stack.Screen name="onboarding/import" options={{ title: t("screenTitles.importWallet") }} />
+        <Stack.Screen
+          name="unlock"
+          options={{ title: t("screenTitles.unlockWallet"), headerBackVisible: false }}
+        />
       </Stack>
     </>
   );

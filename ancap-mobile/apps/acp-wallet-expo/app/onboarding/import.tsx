@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Pressable,
   ScrollView,
@@ -12,6 +13,7 @@ import { assertAcpAddress, validateAcpAddress } from "@ancap/acp-wallet-sdk";
 import { saveVault } from "@/lib/vault";
 
 export default function ImportWalletScreen() {
+  const { t } = useTranslation();
   const [address, setAddress] = useState("");
   const [keystoreJson, setKeystoreJson] = useState("");
   const [mnemonic, setMnemonic] = useState("");
@@ -32,18 +34,16 @@ export default function ImportWalletScreen() {
       });
       router.replace("/(tabs)");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Import failed");
+      setError(e instanceof Error ? e.message : t("importWallet.importFailed"));
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Import wallet</Text>
-      <Text style={styles.hint}>
-        After `walletd new`, paste address, mnemonic (backup), and keystore_json.
-      </Text>
+      <Text style={styles.title}>{t("importWallet.title")}</Text>
+      <Text style={styles.hint}>{t("importWallet.hint")}</Text>
 
-      <Text style={styles.label}>ACP address</Text>
+      <Text style={styles.label}>{t("importWallet.addressLabel")}</Text>
       <TextInput
         style={styles.input}
         value={address}
@@ -53,7 +53,7 @@ export default function ImportWalletScreen() {
         autoCapitalize="none"
       />
 
-      <Text style={styles.label}>Mnemonic (12 words)</Text>
+      <Text style={styles.label}>{t("importWallet.mnemonicLabel")}</Text>
       <TextInput
         style={[styles.input, styles.multiline]}
         value={mnemonic}
@@ -63,7 +63,7 @@ export default function ImportWalletScreen() {
         multiline
       />
 
-      <Text style={styles.label}>Keystore JSON</Text>
+      <Text style={styles.label}>{t("importWallet.keystoreLabel")}</Text>
       <TextInput
         style={[styles.input, styles.multiline, styles.tall]}
         value={keystoreJson}
@@ -76,11 +76,11 @@ export default function ImportWalletScreen() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Pressable style={styles.primary} onPress={onSave}>
-        <Text style={styles.primaryText}>Save on device</Text>
+        <Text style={styles.primaryText}>{t("importWallet.saveOnDevice")}</Text>
       </Pressable>
 
       {address && !validateAcpAddress(address) ? (
-        <Text style={styles.warn}>Address format looks invalid.</Text>
+        <Text style={styles.warn}>{t("importWallet.invalidAddressWarning")}</Text>
       ) : null}
     </ScrollView>
   );
