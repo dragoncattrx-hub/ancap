@@ -1,0 +1,4 @@
+module acp_mobile_ffiFFI {
+    header "acp_mobile_ffiFFI.h"
+    export *
+}

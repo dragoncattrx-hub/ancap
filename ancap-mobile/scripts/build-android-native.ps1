@@ -1,16 +1,75 @@
 # Build libacp_mobile_ffi.so for Android ABIs and copy into expo-acp-core/jniLibs.
-# Requires: rustup, Android NDK, cargo-ndk (`cargo install cargo-ndk`)
+# Requires: rustup, Android SDK + NDK, cargo-ndk (`cargo install cargo-ndk`)
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $crypto = Join-Path $root "ACP-crypto"
 $jniRoot = Join-Path $root "ancap-mobile\modules\expo-acp-core\android\src\main\jniLibs"
 
+function Resolve-AndroidSdkPath {
+  $candidates = @(
+    $env:ANDROID_HOME,
+    $env:ANDROID_SDK_ROOT,
+    (Join-Path $env:LOCALAPPDATA "Android\Sdk"),
+    (Join-Path $env:USERPROFILE "AppData\Local\Android\Sdk")
+  ) | Where-Object { $_ }
+
+  foreach ($path in $candidates) {
+    if (Test-Path $path) {
+      return (Resolve-Path $path).Path
+    }
+  }
+
+  return $null
+}
+
+function Resolve-AndroidNdkPath([string]$sdkPath) {
+  $candidates = @()
+  if ($env:ANDROID_NDK_HOME) {
+    $candidates += $env:ANDROID_NDK_HOME
+  }
+  if ($sdkPath) {
+    $candidates += (Join-Path $sdkPath "ndk-bundle")
+    $ndkRoot = Join-Path $sdkPath "ndk"
+    if (Test-Path $ndkRoot) {
+      $versionDirs = Get-ChildItem $ndkRoot -Directory | Sort-Object Name -Descending
+      foreach ($dir in $versionDirs) {
+        $candidates += $dir.FullName
+      }
+    }
+  }
+
+  foreach ($path in $candidates | Where-Object { $_ }) {
+    if (Test-Path $path) {
+      return (Resolve-Path $path).Path
+    }
+  }
+
+  return $null
+}
+
+$env:ANDROID_HOME = Resolve-AndroidSdkPath
+if (-not $env:ANDROID_HOME) {
+  Write-Error "Android SDK not found. Install Android Studio SDK or set ANDROID_HOME / ANDROID_SDK_ROOT."
+}
+
+$env:ANDROID_NDK_HOME = Resolve-AndroidNdkPath $env:ANDROID_HOME
+if (-not $env:ANDROID_NDK_HOME) {
+  $sdkManagerHint = Join-Path $env:ANDROID_HOME "cmdline-tools\latest\bin\sdkmanager.bat"
+  $hint = if (Test-Path $sdkManagerHint) {
+    "Install an NDK, e.g. `"$sdkManagerHint`" `"ndk;27.1.12297006`""
+  } else {
+    "Install an NDK from Android Studio → SDK Manager → SDK Tools / SDK Platforms."
+  }
+  Write-Error "Android NDK not found under '$($env:ANDROID_HOME)'. $hint"
+}
+
+New-Item -ItemType Directory -Force -Path $jniRoot | Out-Null
+
+Write-Host "Using Android SDK: $($env:ANDROID_HOME)"
+Write-Host "Using Android NDK: $($env:ANDROID_NDK_HOME)"
+
 Set-Location $crypto
 rustup target add aarch64-linux-android x86_64-linux-android armv7-linux-androideabi | Out-Null
-
-if (-not $env:ANDROID_HOME -and -not $env:ANDROID_NDK_HOME) {
-  Write-Error "Set ANDROID_HOME (Android Studio SDK) before building native libs."
-}
 
 if (-not (Get-Command cargo-ndk -ErrorAction SilentlyContinue)) {
   Write-Host "Installing cargo-ndk (needs network)..."
