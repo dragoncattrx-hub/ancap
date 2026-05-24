@@ -188,7 +188,7 @@ async def _reverse_liability_summary(session: AsyncSession) -> BridgeReverseLiab
 
     return BridgeReverseLiabilitySummaryResponse(
         reverse_enabled_runtime=True,
-        reverse_public_mode="pending-rollout",
+        reverse_public_mode="live",
         counts_by_status=counts,
         total_pending_burn_wacp_wei=str(pending_burn_wacp),
         total_confirmed_burn_wacp_wei=str(confirmed_burn_wacp),

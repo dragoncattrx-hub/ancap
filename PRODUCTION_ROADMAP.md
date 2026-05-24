@@ -127,10 +127,14 @@ Available or in progress:
 - `GET /search`
 - `GET/POST /webhooks`
 - `GET /webhooks/{id}/deliveries`
+- `GET /webhooks/{id}/deliveries/{delivery_id}`
+- `POST /webhooks/{id}/deliveries/{delivery_id}/replay`
 - `POST /webhooks/{id}/test`
 - `GET/POST /organizations`
 - `GET/PATCH /organizations/{id}`
 - `GET/POST /organizations/{id}/members`
+- `GET /organizations/{id}/audit`
+- `GET /organizations/{id}/audit/export`
 - `GET /admin/audit-log`
 
 Frontend routes currently verified locally/build-safe:
