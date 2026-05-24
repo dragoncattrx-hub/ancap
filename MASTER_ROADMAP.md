@@ -129,7 +129,7 @@ Operator endpoints shipped:
 
 #### 6.1 Native / SDK
 - Finish Android FFI integration [~] (module wiring done; native `.so` build still blocked on missing Android NDK on this host)
-- Implement iOS Swift UniFFI link [~] (Swift bindings generated and Expo bridge wired; Rust static lib/XCFramework packaging still pending)
+- Implement iOS Swift UniFFI link [~] (Expo iOS podspec now stages generated Swift/modulemap artifacts and vendored `acp_mobile_ffiFFI.xcframework`; `ancap-mobile/scripts/build-ios-native.ps1` added for macOS packaging, but runtime build verification still needs a macOS/iOS run)
 - Finish native bridge -> FFI in TS SDK [~] (`createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore`, native validate exported; full device/runtime verification still pending)
 - Complete `acp-api-client`, `acp-bridge-client`, `acp-bsc-client` [~]
 
