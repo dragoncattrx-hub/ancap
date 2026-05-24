@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 
 from app.api.deps import DbSession, require_auth
@@ -67,7 +67,7 @@ async def _enforce_auth_rate_limit(
 
 
 @router.post("/login", response_model=AuthLoginResponse)
-async def login(body: AuthLoginRequest, request: Request, session: DbSession):
+async def login(body: AuthLoginRequest, request: Request, response: Response, session: DbSession):
     await _enforce_auth_rate_limit(
         request,
         scope="auth_login",
@@ -98,6 +98,15 @@ async def login(body: AuthLoginRequest, request: Request, session: DbSession):
         await send_login_alert(user=user, request=request, via="password")
     except Exception:
         pass
+    response.set_cookie(
+        key="ancap_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=3600,
+        path="/",
+    )
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
@@ -144,7 +153,7 @@ async def wallet_nonce(body: WalletAuthNonceRequest, request: Request, session: 
 
 
 @router.post("/wallet/verify", response_model=AuthLoginResponse)
-async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, session: DbSession):
+async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, response: Response, session: DbSession):
     await _enforce_auth_rate_limit(
         request,
         scope="auth_wallet_verify",
@@ -166,6 +175,15 @@ async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, session
         await send_login_alert(user=user, request=request, via="wallet")
     except Exception:
         pass
+    response.set_cookie(
+        key="ancap_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=3600,
+        path="/",
+    )
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
@@ -209,7 +227,7 @@ async def wallet_link(
 
 
 @router.post("/users", response_model=UserPublic, status_code=201)
-async def create_user(body: UserCreateRequest, request: Request, session: DbSession):
+async def create_user(body: UserCreateRequest, request: Request, response: Response, session: DbSession):
     await _enforce_auth_rate_limit(
         request,
         scope="auth_register",
@@ -244,6 +262,15 @@ async def create_user(body: UserCreateRequest, request: Request, session: DbSess
         )
     await session.refresh(user)
     token = create_access_token(str(user.id))
+    response.set_cookie(
+        key="ancap_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=3600,
+        path="/",
+    )
     return UserPublic(
         id=str(user.id),
         email=user.email,
@@ -423,3 +450,16 @@ async def password_change(
     user.password_hash = hash_password(body.new_password)
     await migrate_wallet_to_recovery_ready(session, str(user.id), body.new_password)
     return PasswordChangeResponse(success=True)
+
+
+@router.post("/logout")
+async def logout(response: Response, user_id: str = Depends(require_auth)):
+    """Clear the HttpOnly auth cookie. Returns 200 even if the user is not fully authenticated."""
+    response.delete_cookie(
+        key="ancap_token",
+        path="/",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    return {"ok": True}

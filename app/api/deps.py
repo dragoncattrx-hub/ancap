@@ -2,7 +2,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Cookie, Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,10 +16,17 @@ security = HTTPBearer(auto_error=False)
 
 async def get_current_user_id(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
+    cookie_token: Annotated[str | None, Cookie(alias="ancap_token")] = None,
 ) -> str | None:
-    if credentials is None:
+    """Resolve user_id from either the Authorization: Bearer header or an HttpOnly cookie.
+
+    Cookie takes precedence so that a browser that already has the HttpOnly cookie
+    automatically gets auth even when the caller does not manually set the header.
+    """
+    token = cookie_token or (credentials.credentials if credentials else None)
+    if not token:
         return None
-    sub = decode_token(credentials.credentials)
+    sub = decode_token(token)
     return sub
 
 

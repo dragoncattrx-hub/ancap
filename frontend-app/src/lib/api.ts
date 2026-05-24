@@ -1,5 +1,3 @@
-import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/safeStorage";
-
 // Prefer an explicit URL if provided.
 // Fallbacks:
 // - development: same-origin /api/v1 (proxied to localhost:8000/v1 by next.config.ts)
@@ -11,12 +9,12 @@ const isLoopback =
   /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i.test(rawApiBase);
 
 const API_BASE =
-  (!isProd && rawApiBase) || // V dev can be explicitly specified localhost
+  (!isProd && rawApiBase) || // dev can be explicitly specified localhost
   (isProd && rawApiBase && !isLoopback ? rawApiBase : undefined) ||
   (process.env.NODE_ENV === "development"
     ? "/api/v1"
     : "https://ancap.cloud/api/v1");
-const TOKEN_KEY = "ancap_token";
+const TOKEN_COOKIE = "ancap_token";
 
 function genIdempotencyKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -26,17 +24,23 @@ function genIdempotencyKey(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`;
 }
 
-// Token management
+// Token management — token is stored in an HttpOnly cookie set by the backend.
+// Client-side read only (no JS write — HttpOnly prevents it anyway).
 function getToken(): string | null {
-  return safeGetItem(TOKEN_KEY);
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(
+    new RegExp("(?:^|; )" + TOKEN_COOKIE.replace(/([$*+?.()|[\]{}\\])/g, "\\$1") + "=([^;]*)")
+  );
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
-function setToken(token: string): void {
-  safeSetItem(TOKEN_KEY, token);
+// setToken/clearToken are no-ops — cookie is managed exclusively by the backend.
+// Kept as no-ops so existing callers (tests / edge cases) do not break.
+function setToken(_token: string): void {
+  // intentional no-op
 }
-
 function clearToken(): void {
-  safeRemoveItem(TOKEN_KEY);
+  // intentional no-op; logout calls /auth/logout which clears the cookie server-side
 }
 
 // Base fetch wrapper with auth
@@ -65,6 +69,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
+    credentials: "include",
   });
 
   if (!res.ok) {
@@ -182,8 +187,22 @@ export const auth = {
     return data;
   },
 
-  logout() {
+  async logout() {
     clearToken();
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: "{}",
+      });
+    } catch {
+      // best-effort
+    }
+    // Also clear cookie client-side for immediate effect
+    if (typeof document !== "undefined") {
+      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Lax`;
+    }
   },
 
   isAuthenticated(): boolean {

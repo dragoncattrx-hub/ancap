@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           safeRemoveItem(WALLET_ONLY_USER_KEY);
         })
         .catch(() => {
-          auth.logout();
+          auth.logout().catch(() => {});
           safeRemoveItem("ancap_user");
           setUser(null);
         })
