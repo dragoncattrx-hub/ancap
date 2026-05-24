@@ -4,7 +4,7 @@ import time
 from uuid import uuid4
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
@@ -119,6 +119,35 @@ async def request_observability_middleware(request: Request, call_next):
             user_id=str(user_id) if user_id else None,
             agent_id=str(agent_id) if agent_id else None,
         )
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Add hardening security headers to every response.
+
+    - X-Frame-Options: DENY — prevents clickjacking (was SAMEORIGIN)
+    - X-Content-Type-Options: nosniff — prevents MIME sniffing
+    - Referrer-Policy: strict-origin-when-cross-origin — controls referrer leakage
+    - Permissions-Policy: disable unneeded browser features
+    - Strict-Transport-Security: enforced in production (also set at reverse-proxy level)
+    """
+    response: Response = await call_next(request)
+    # Skip health probes — no browser-facing headers needed there
+    path = request.url.path
+    if not path.startswith("/health") and not path.startswith("/ready"):
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=(), payment=()",
+        )
+        if settings.environment == "production":
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+    return response
+
 
 ALL_ROUTERS = [
     auth.router,
