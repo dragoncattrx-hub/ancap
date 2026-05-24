@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,11 +12,22 @@ import {
 import { createWallet } from "@ancap/acp-wallet-sdk";
 import { saveVault } from "@/lib/vault";
 
+// P5-2: block screenshots while seed phrase is visible
+import {
+  allowScreenCaptureAsync,
+  preventScreenCaptureAsync,
+} from "expo-screen-capture";
+
 export default function CreateWalletScreen() {
   const [busy, setBusy] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [address, setAddress] = useState("");
   const [keystoreJson, setKeystoreJson] = useState("");
+
+  useEffect(() => {
+    void preventScreenCaptureAsync();
+    return () => { allowScreenCaptureAsync().catch(() => {}); };
+  }, []);
 
   const onGenerate = async () => {
     setBusy(true);

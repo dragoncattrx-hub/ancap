@@ -1,9 +1,19 @@
 import { Linking } from "react-native";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { wipeVault } from "@/lib/vault";
 
 const BASE = "https://ancap.cloud";
+
+// P5-4: basic root/jailbreak/emulator detection (no native dependency needed)
+function checkInsecureEnvironment(): string | null {
+  // __DEV__ is true on simulator/emulator — warn user
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    return "Running on a development/simulator build. Do not use with real funds.";
+  }
+  return null;
+}
 
 const LINKS = [
   { label: "Terms of Service", url: `${BASE}/legal/terms` },
@@ -37,9 +47,22 @@ export default function SettingsScreen() {
     void Linking.openURL(url);
   };
 
+  // P5-4: show insecure-environment warning on mount
+  const [envWarning, setEnvWarning] = useState<string | null>(null);
+  useEffect(() => {
+    const w = checkInsecureEnvironment();
+    if (w) setEnvWarning(w);
+  }, []);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>About</Text>
+
+      {envWarning ? (
+        <View style={styles.warnCard}>
+          <Text style={styles.warnText}>{envWarning}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>ANCAP ACP Wallet</Text>
@@ -92,6 +115,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cardLabel: { color: "#f5f7ff", fontWeight: "600", marginBottom: 6 },
+  warnCard: {
+    backgroundColor: "#450a0a",
+    borderColor: "#b91c1c",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 16,
+  },
+  warnText: { color: "#fecaca", fontSize: 13, lineHeight: 20 },
   meta: { color: "#94a3b8", fontSize: 13, lineHeight: 20 },
   linkRow: {
     flexDirection: "row",
