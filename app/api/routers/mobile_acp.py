@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from app.api.routers import wallet_acp
@@ -22,6 +22,8 @@ from app.schemas.mobile_acp import (
     MobileDocsLinks,
 )
 from app.schemas.wallets import AcpTransactionDetailsPublic, AcpTransactionPublic
+from app.services.rate_limit import enforce_rate_limit, get_request_ip
+
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +185,15 @@ async def acp_estimate_fee(body: AcpFeeEstimateRequest):
 
 
 @router.post("/acp/tx/broadcast", response_model=AcpBroadcastResponse)
-async def acp_broadcast(body: AcpBroadcastRequest):
+async def acp_broadcast(request: Request, body: AcpBroadcastRequest):
+    s = get_settings()
+    ip = get_request_ip(request)
+    await enforce_rate_limit(
+        key=f"mobile:broadcast:{ip}",
+        limit=s.mobile_broadcast_rate_limit_per_minute,
+        window_seconds=60,
+    )
+
     raw = (body.raw_tx or "").strip()
     if not raw:
         raise HTTPException(status_code=400, detail="rawTx is required")

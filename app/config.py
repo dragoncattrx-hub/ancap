@@ -159,6 +159,8 @@ class Settings(BaseSettings):
     mobile_wallet_maintenance_message: str | None = None
     mobile_wallet_support_url: str = "https://ancap.cloud/support"
     mobile_wallet_bridge_reverse_enabled: bool = False
+    mobile_broadcast_rate_limit_per_minute: int = 10
+    mobile_broadcast_rate_limit_burst: int = 5
 
     # Production AI execution. Teneta/Claude-compatible Anthropic API is the
     # default primary provider; local/dev can fall back to deterministic shells.

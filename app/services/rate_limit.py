@@ -40,8 +40,14 @@ async def enforce_rate_limit(*, key: str, limit: int, window_seconds: int) -> No
     if limit <= 0 or window_seconds <= 0:
         return
 
+    # Skip Redis in tests when REDIS_URL is not set (forces in-memory path).
+    # In-memory path is deterministic and does not need a running Redis server.
+    import os as _os
+    redis_url = _os.environ.get("REDIS_URL", "").strip()
+    use_redis = bool(redis_url)
+
     client = await get_redis_client()
-    if client is not None:
+    if use_redis and client is not None:
         redis_key = f"rate_limit:{key}"
         try:
             count = await client.incr(redis_key)

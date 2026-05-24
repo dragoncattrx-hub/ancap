@@ -135,7 +135,7 @@ Still needed (operational, not code):
 #### 6.2 Backend mobile gateway
 - ACP indexer (DB-backed history) [DONE: migration 051, MobileAcpTx + MobileAddressIndexerState models, `mobile_acp_indexer_tick` job, wired to `/v1/system/jobs/tick`]
 - device registration endpoint [DONE: `POST /v1/mobile/devices/register`, `POST /v1/mobile/devices/unregister`, `GET /v1/mobile/devices`]
-- broadcast rate limits [TODO P3-10 in API_MOBILE.md]
+- broadcast rate limits [DONE: 10 req/min per IP, configurable, `POST /acp/tx/broadcast`]
 
 #### 6.3 App product completion
 - Create wallet via native FFI [ ]

@@ -117,5 +117,5 @@ Mobile should bind intents by `(acp_address, bsc_address)`; optional ANCAP login
 ## Auth
 
 Mobile **read** endpoints: no auth.
-Broadcast: rate-limited by IP (TODO P3-10).
+Broadcast: rate-limited by IP (10 req/min, configurable via `MOBILE_BROADCAST_RATE_LIMIT_PER_MINUTE`).
 Bridge intents with `require_auth`: optional link to ANCAP account later.
