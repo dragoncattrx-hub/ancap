@@ -144,3 +144,27 @@ def test_organization_owner_can_delete_but_admin_cannot(client):
 
     missing = client.get(f"/v1/organizations/{org['id']}", headers=owner_headers)
     assert missing.status_code == 404, missing.text
+
+
+def test_org_audit_requires_auth(client_unauth):
+    """GET /organizations/{id}/audit requires auth."""
+    import uuid
+    r = client_unauth.get(f"/v1/organizations/{uuid.uuid4()}/audit")
+    assert r.status_code == 401, r.text
+
+
+def test_org_audit_returns_403_for_non_member(client):
+    """GET /organizations/{id}/audit returns 403 for authenticated non-member."""
+    _, headers, _ = _register_and_login(client, "Audit Tester")
+    import uuid
+    fake_org = str(uuid.uuid4())
+    r = client.get(f"/v1/organizations/{fake_org}/audit", headers=headers)
+    # Not a member → 403 (role check fails before UUID lookup)
+    assert r.status_code == 403, f"expected 403, got {r.status_code}"
+
+
+def test_org_audit_export_requires_auth(client_unauth):
+    """GET /organizations/{id}/audit/export requires auth."""
+    import uuid
+    r = client_unauth.get(f"/v1/organizations/{uuid.uuid4()}/audit/export")
+    assert r.status_code == 401, r.text

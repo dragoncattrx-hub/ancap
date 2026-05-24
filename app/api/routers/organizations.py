@@ -1,17 +1,30 @@
 from __future__ import annotations
 
+import csv
+import io
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta, UTC
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import desc, select, func
+from sqlalchemy import desc, select, func, or_ as sql_or
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.api.deps import DbSession, get_current_user_id
-from app.db.models import Organization, OrganizationMember, OrgRoleEnum, User, Agent
+from app.db.models import (
+    Agent,
+    ApiKey,
+    ApiUsageEvent,
+    DecisionLog,
+    Organization,
+    OrganizationMember,
+    OrgRoleEnum,
+    User,
+    WebhookEndpoint,
+)
 
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
@@ -496,3 +509,158 @@ async def transfer_agent_to_org(
     await session.commit()
 
     return {"agent_id": str(aid), "org_id": str(oid), "transferred": True}
+
+
+# ── Org-scoped audit export ────────────────────────────────────────────────────
+
+
+class OrgAuditEvent(BaseModel):
+    id: str
+    event_type: str
+    resource_type: str  # agent | api_key | webhook | member | usage
+    resource_id: str | None
+    message: str | None
+    created_at: str | None
+
+
+@router.get("/{org_id}/audit", response_model=list[OrgAuditEvent])
+async def list_org_audit_events(
+    org_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    days: int = Query(7, ge=1, le=90),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
+    """Org-scoped audit log: returns org's agents, API keys, webhooks, and usage events."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.viewer)  # even viewers can see audit
+
+    since = datetime.now(UTC) - timedelta(days=days)
+    events: list[OrgAuditEvent] = []
+
+    # Agents owned by this org
+    agent_q = select(Agent).where(
+        Agent.metadata_["org_id"].astext == str(oid),
+    )
+    agent_r = await session.execute(agent_q)
+    org_agent_ids = [a.id for a in agent_r.scalars().all()]
+
+    # API keys for org's agents
+    if org_agent_ids:
+        key_q = (
+            select(ApiKey)
+            .where(ApiKey.agent_id.in_(org_agent_ids))
+            .where(ApiKey.created_at >= since)
+            .order_by(desc(ApiKey.created_at))
+            .limit(limit)
+        )
+        key_r = await session.execute(key_q)
+        for k in key_r.scalars().all():
+            events.append(OrgAuditEvent(
+                id=str(k.id),
+                event_type="api_key.created",
+                resource_type="api_key",
+                resource_id=str(k.id),
+                message=f"API key {k.key_prefix}*** created for agent {k.agent_id}",
+                created_at=k.created_at.isoformat() if k.created_at else None,
+            ))
+
+    # API usage events for org's agents
+    if org_agent_ids:
+        usage_q = (
+            select(ApiUsageEvent)
+            .where(ApiUsageEvent.agent_id.in_(org_agent_ids))
+            .where(ApiUsageEvent.created_at >= since)
+            .order_by(desc(ApiUsageEvent.created_at))
+            .limit(limit)
+        )
+        usage_r = await session.execute(usage_q)
+        for u in usage_r.scalars().all():
+            events.append(OrgAuditEvent(
+                id=str(u.id),
+                event_type="api_usage",
+                resource_type="usage",
+                resource_id=str(u.id),
+                message=f"{u.endpoint} → {u.status} ({u.amount_currency} {u.amount_value})",
+                created_at=u.created_at.isoformat() if u.created_at else None,
+            ))
+
+    # Decision log entries for org's agents
+    if org_agent_ids:
+        decision_q = (
+            select(DecisionLog)
+            .where(DecisionLog.actor_id.in_(org_agent_ids))
+            .where(DecisionLog.created_at >= since)
+            .order_by(desc(DecisionLog.created_at))
+            .limit(limit)
+        )
+        decision_r = await session.execute(decision_q)
+        for d in decision_r.scalars().all():
+            events.append(OrgAuditEvent(
+                id=str(d.id),
+                event_type=d.reason_code or "decision",
+                resource_type="agent",
+                resource_id=str(d.actor_id),
+                message=d.message,
+                created_at=d.created_at.isoformat() if d.created_at else None,
+            ))
+
+    events.sort(key=lambda x: x.created_at or "", reverse=True)
+    return events[offset:offset + limit]
+
+
+@router.get("/{org_id}/audit/export")
+async def export_org_audit_csv(
+    org_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    days: int = Query(30, ge=1, le=365),
+):
+    """Export org audit log as CSV (admin only)."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    since = datetime.now(UTC) - timedelta(days=days)
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    agent_q = select(Agent).where(
+        Agent.metadata_["org_id"].astext == str(oid),
+    )
+    agent_r = await session.execute(agent_q)
+    org_agent_ids = [a.id for a in agent_r.scalars().all()]
+
+    writer.writerow(["id", "event_type", "resource_type", "resource_id", "message", "created_at"])
+
+    if org_agent_ids:
+        key_q = select(ApiKey).where(
+            ApiKey.agent_id.in_(org_agent_ids), ApiKey.created_at >= since
+        ).order_by(ApiKey.created_at)
+        for k in (await session.execute(key_q)).scalars().all():
+            writer.writerow([
+                str(k.id), "api_key.created", "api_key", str(k.id),
+                f"API key {k.key_prefix}*** created", k.created_at.isoformat() if k.created_at else "",
+            ])
+
+        usage_q = select(ApiUsageEvent).where(
+            ApiUsageEvent.agent_id.in_(org_agent_ids), ApiUsageEvent.created_at >= since
+        ).order_by(ApiUsageEvent.created_at).limit(10000)
+        for u in (await session.execute(usage_q)).scalars().all():
+            writer.writerow([
+                str(u.id), "api_usage", "usage", str(u.id),
+                f"{u.endpoint} → {u.status}", u.created_at.isoformat() if u.created_at else "",
+            ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=org-audit-{org_id}-{datetime.now(UTC).strftime('%Y-%m-%d')}.csv"},
+    )
