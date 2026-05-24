@@ -145,7 +145,7 @@ Frontend routes currently verified locally/build-safe:
 
 Current test status (2026-05-24):
 - `pytest -q` -> **258 passed, 3 skipped** ✅
-- `npm test --workspaces --if-present` (mobile SDK) -> **40 tests across 4 packages** ✅
+- `npm test --workspaces --if-present` (mobile SDK) -> **56 tests across 5 packages** ✅ (added `wallet-service` unit tests)
 - `npx tsc -p apps/acp-wallet-expo/tsconfig.json --noEmit` -> ✅
 
 All backend phases green. Mobile SDK TypeScript clean.

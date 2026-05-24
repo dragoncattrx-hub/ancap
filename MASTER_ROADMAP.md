@@ -164,7 +164,7 @@ Operator endpoints shipped:
 ### Phase 7 — CI hardening and later platform expansion (PARTIAL ✅)
 - Bandit SAST + Docker build check in CI ✅ (`.github/workflows/backend-ci.yml`, `requirements.txt`)
 - Playwright browser install in frontend CI ✅ (browser binary ready for later smoke job)
-- Mobile SDK unit tests in CI ✅ (`test-mobile-sdk` job in frontend CI, 40 tests across 4 packages)
+- Mobile SDK unit tests in CI ✅ (`test-mobile-sdk` job in frontend CI, 56 tests across 5 packages; `wallet-service` unit tests added)
 - Playwright smoke in CI [P2 — needs separate job with backend service + postgres]
 - signed webhook retry dashboard with replay controls [DONE: `GET /webhooks/{id}/deliveries/{id}`, `POST /webhooks/{id}/deliveries/{id}/replay`, owner-scoped]
 - organizations-owned API keys, agents, billing wallet, audit exports [DONE: org-owned API keys — POST/GET/DELETE /organizations/{id}/api-keys, admin+ create/delete, member+ list; org-scoped audit log + CSV export]
