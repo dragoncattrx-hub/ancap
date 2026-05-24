@@ -231,6 +231,23 @@ def client_unauth(client):
     bare.close()
 
 
+@pytest.fixture(scope="session")
+def db_cursor():
+    """Raw DBAPI cursor for direct SQL (injecting malformed events, bypassing API).
+
+    Uses the same sync engine as the `client` fixture so both share the same test DB.
+    Caller is responsible for committing if needed.
+    """
+    sync_url = _sync_database_url()
+    engine = create_engine(sync_url, pool_pre_ping=True)
+    raw_conn = engine.connect().connection.driver_connection
+    raw_conn.commit()  # ensure connection is in a clean state
+    yield raw_conn.cursor()
+    raw_conn.commit()
+    raw_conn.close()
+    engine.dispose()
+
+
 def get_base_vertical_id_from_db():
     """Return BaseVertical id by querying DB directly (same DB as app)."""
     sync_url = _sync_database_url()

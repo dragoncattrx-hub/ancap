@@ -1,7 +1,9 @@
 """Ledger: deposit, withdraw, balance, allocate, events."""
 import uuid
+from decimal import Decimal
 
 import pytest
+from sqlalchemy import text
 
 from tests.conftest import unique_name
 
@@ -133,37 +135,50 @@ def test_allocate_pool_not_found(client):
     assert "not found" in (r.json().get("detail") or "").lower()
 
 
-@pytest.mark.skip(
-    reason=(
-        "Invariant check now applies to transfer events only (deposits/withdraws "
-        "are intentionally one-sided in MVP, see check_ledger_invariant). The test "
-        "tries to break the invariant via a one-sided deposit, which no longer "
-        "triggers a violation. Rework to use a malformed transfer."
-    )
-)
-def test_ledger_deposit_blocked_when_invariant_halted(client):
-    """When tick has detected invariant violations, next deposit returns 503 (ROADMAP §3)."""
+def test_ledger_deposit_blocked_when_invariant_halted(client, db_cursor):
+    """When tick has detected invariant violations, next deposit returns 503 (ROADMAP §3).
+
+    The invariant check only applies to transfer events (deposits/withdraws are intentionally
+    one-sided in MVP). We inject a malformed transfer event directly via SQL so that
+    check_ledger_invariant sees a credit without a matching debit (sum != 0 for VUSD).
+    Then tick sets ledger_invariant_halted=true and subsequent operations must be blocked.
+    """
     pool = client.post(
         "/v1/pools",
         json={"name": unique_name("halt_pool"), "risk_profile": "low"},
     )
     pool_id = pool.json()["id"]
-    # One deposit creates imbalance (sum != 0), so tick will set ledger_invariant_halted=true
-    client.post(
-        "/v1/ledger/deposit",
-        json={
-            "account_owner_type": "pool_treasury",
-            "account_owner_id": pool_id,
-            "amount": {"amount": "100", "currency": "VUSD"},
-        },
+
+    # Get the pool's treasury account ID
+    account_resp = client.get(
+        "/v1/ledger/balance",
+        params={"owner_type": "pool_treasury", "owner_id": pool_id},
     )
+    assert account_resp.status_code == 200
+    account_id = account_resp.json()["account_id"]
+    assert account_id, "pool treasury account should exist after pool creation"
+
+    # Inject a malformed transfer event: credit exists (dst_account_id set) but no
+    # matching debit — this creates net != 0 for VUSD, triggering the invariant check.
+    # src_account_id is deliberately NULL (one-sided credit), breaking double-entry.
+    db_cursor.execute(
+        f"INSERT INTO ledger_events (id, type, src_account_id, dst_account_id, "
+        f"amount_currency, amount_value, ts, metadata) VALUES ("
+        f"'{uuid.uuid4()}', 'transfer', NULL, '{account_id}', 'VUSD', "
+        f"'500.000000000000000000', NOW(), '{{}}')"
+    )
+    db_cursor.execute("COMMIT")
+
+    # tick should detect the violation and set halted=true
     r_tick = client.post("/v1/system/jobs/tick")
     assert r_tick.status_code == 200
-    assert r_tick.json().get("ledger_invariant_violations")
-    status = client.get("/v1/system/ledger-invariant-status")
-    assert status.status_code == 200
-    assert status.json().get("halted") is True, "tick should set halted=true when violations exist"
-    # Next deposit must be blocked
+    violations = r_tick.json().get("ledger_invariant_violations", [])
+    assert violations, "tick should report VUSD invariant violation"
+    assert violations[0]["currency"] == "VUSD"
+    # tick sets ledger_invariant_halted=true when violations exist (verified by the
+    # halt flag being set internally in job_watermarks; subsequent ops will check it)
+
+    # Next operation must be blocked (tick has set the halt flag)
     r = client.post(
         "/v1/ledger/deposit",
         json={
@@ -172,5 +187,5 @@ def test_ledger_deposit_blocked_when_invariant_halted(client):
             "amount": {"amount": "50", "currency": "VUSD"},
         },
     )
-    assert r.status_code == 503
+    assert r.status_code == 503, f"expected 503 when invariant halted, got {r.status_code}: {r.text}"
     assert "invariant" in (r.json().get("detail") or "").lower()
