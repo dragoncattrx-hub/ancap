@@ -152,8 +152,6 @@ All backend phases green. Mobile SDK TypeScript clean.
 
 Production smoke targets to keep using:
 
-Production smoke targets to keep using:
-
 - `https://ancap.cloud/`
 - `https://ancap.cloud/ai/workflows`
 - `https://ancap.cloud/billing`
