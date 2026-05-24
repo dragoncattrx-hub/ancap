@@ -30,6 +30,7 @@ class MobileConfigResponse(BaseModel):
     wacp_contract: str = Field(serialization_alias="wacpContract")
     bsc_chain_id: int = Field(serialization_alias="bscChainId")
     acp_rpc_url: str = Field(serialization_alias="acpRpcUrl")
+    bsc_rpc_url: str = Field(serialization_alias="bscRpcUrl")
     acp_explorer_tx_base: str = Field(serialization_alias="acpExplorerTxBase")
     bsc_explorer_base: str = Field(serialization_alias="bscExplorerBase")
     support_url: str = Field(serialization_alias="supportUrl")

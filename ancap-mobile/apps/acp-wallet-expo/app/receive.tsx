@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -10,21 +10,31 @@ import QRCode from "react-native-qrcode-svg";
 import * as Clipboard from "expo-clipboard";
 import { loadVault } from "@/lib/vault";
 
+const CLIPBOARD_CLEAR_MS = 30_000; // P5-3: auto-clear address from clipboard after 30s
+
 export default function ReceiveScreen() {
   const [address, setAddress] = useState("");
   const [copied, setCopied] = useState(false);
+  const clipboardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     void loadVault().then((v) => {
       if (v) setAddress(v.address);
     });
+    return () => {
+      if (clipboardTimer.current) clearTimeout(clipboardTimer.current);
+    };
   }, []);
 
   const onCopy = async () => {
     if (!address) return;
     await Clipboard.setStringAsync(address);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (clipboardTimer.current) clearTimeout(clipboardTimer.current);
+    clipboardTimer.current = setTimeout(async () => {
+      await Clipboard.setStringAsync("");
+      setCopied(false);
+    }, CLIPBOARD_CLEAR_MS);
   };
 
   return (

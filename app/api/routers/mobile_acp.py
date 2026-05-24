@@ -98,6 +98,7 @@ async def mobile_config():
         wacp_contract=(s.bridge_wacp_contract or "").strip(),
         bsc_chain_id=56,
         acp_rpc_url=(s.acp_rpc_url or "").strip(),
+        bsc_rpc_url=(s.bridge_bsc_rpc_url or "").strip(),
         acp_explorer_tx_base=(s.acp_explorer_tx_base or "https://ancap.cloud/acp/tx").rstrip("/"),
         bsc_explorer_base=(s.bsc_explorer_base or "https://bscscan.com").rstrip("/"),
         support_url=(s.mobile_wallet_support_url or "https://ancap.cloud/support").strip(),

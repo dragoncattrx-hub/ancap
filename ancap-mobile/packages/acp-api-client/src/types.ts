@@ -12,6 +12,7 @@ export type MobileConfig = {
   wacpContract: string;
   bscChainId: number;
   acpRpcUrl: string;
+  bscRpcUrl: string;
   acpExplorerTxBase: string;
   bscExplorerBase: string;
   supportUrl: string;

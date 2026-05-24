@@ -10,14 +10,17 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { fetchWacpBalanceWei, formatWacp } from "@ancap/acp-bsc-client";
 import { loadVault } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
 export default function WalletHomeScreen() {
   const [address, setAddress] = useState("");
   const [acp, setAcp] = useState("—");
+  const [wacp, setWacp] = useState("—");
   const [utxos, setUtxos] = useState(0);
   const [bridgeStatus, setBridgeStatus] = useState("—");
+  const [wacpEnabled, setWacpEnabled] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,6 +41,24 @@ export default function WalletHomeScreen() {
       setAcp(bal.acp);
       setUtxos(bal.utxo_count);
       setBridgeStatus(cfg.bridgeStatus);
+
+      // Fetch wACP balance from BSC
+      if (cfg.bscRpcUrl && cfg.wacpContract) {
+        setWacpEnabled(true);
+        try {
+          const wei = await fetchWacpBalanceWei({
+            rpcUrl: cfg.bscRpcUrl,
+            contract: cfg.wacpContract,
+            holder: vault.address,
+          });
+          setWacp(formatWacp(wei));
+        } catch {
+          setWacp("—");
+        }
+      } else {
+        setWacpEnabled(false);
+        setWacp("—");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load balance");
     }
@@ -81,10 +102,18 @@ export default function WalletHomeScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>ACP balance</Text>
+        <Text style={styles.cardLabel}>ACP</Text>
         <Text style={styles.balance}>{acp}</Text>
         <Text style={styles.meta}>UTXOs: {utxos}</Text>
       </View>
+
+      {wacpEnabled ? (
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>wACP (BSC)</Text>
+          <Text style={styles.balanceWacp}>{wacp}</Text>
+          <Text style={styles.meta}>BEP-20 · earn via bridge</Text>
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Bridge</Text>
@@ -119,6 +148,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: { color: "#94a3b8", marginBottom: 8 },
   balance: { color: "#6ee7b7", fontSize: 36, fontWeight: "700" },
+  balanceWacp: { color: "#a78bfa", fontSize: 36, fontWeight: "700" },
   meta: { color: "#cbd5e1", marginTop: 8 },
   error: { color: "#f87171", marginTop: 12 },
 });

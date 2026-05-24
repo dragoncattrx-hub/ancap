@@ -16,6 +16,7 @@ export default function CreateWalletScreen() {
   const [busy, setBusy] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [address, setAddress] = useState("");
+  const [keystoreJson, setKeystoreJson] = useState("");
 
   const onGenerate = async () => {
     setBusy(true);
@@ -24,31 +25,48 @@ export default function CreateWalletScreen() {
       const wordsList = w.mnemonic.split(/\s+/).filter(Boolean);
       setWords(wordsList);
       setAddress(w.address);
-      await saveVault({
-        address: w.address,
-        keystoreJson: w.keystoreJson,
-        mnemonic: w.mnemonic,
-      });
+      setKeystoreJson(w.keystoreJson);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Create failed";
-      Alert.alert(
-        "Could not create wallet",
-        `${msg}\n\nFor Expo Go use Import. For dev build: run build-android-native.ps1 then npx expo run:android.`
-      );
+      if (msg.includes("not linked") || msg.includes("Native ACP")) {
+        Alert.alert(
+          "Native build required",
+          "Create wallet needs the native ACP core linked.\n\n" +
+            "Run: build-android-native.ps1\n" +
+            "Then: npx expo run:android\n\n" +
+            "For quick testing in Expo Go, use Import instead.",
+          [{ text: "Use Import", onPress: () => router.push("/onboarding/import") }]
+        );
+      } else {
+        Alert.alert("Could not create wallet", msg);
+      }
     } finally {
       setBusy(false);
     }
   };
 
-  const onDone = () => {
-    if (!address) {
-      Alert.alert("Create a wallet first");
+  const onBackupConfirm = () => {
+    Alert.alert(
+      "Confirm your backup",
+      "Write down the 12 words in order and store them somewhere safe.\n\n" +
+        "Anyone with these words can access your ACP.",
+      [
+        { text: "I wrote it down", style: "cancel" },
+        { text: "Let me check again", style: "destructive" },
+      ]
+    );
+  };
+
+  const onSaveAndContinue = async () => {
+    if (!address || !keystoreJson || words.length === 0) {
+      Alert.alert("Generate a wallet first");
       return;
     }
+    await saveVault({ address, keystoreJson, mnemonic: words.join(" ") });
     Alert.alert(
-      "Backup your seed",
-      "Write down the 12 words. Anyone with the seed controls your ACP.",
-      [{ text: "I saved it", onPress: () => router.replace("/(tabs)") }]
+      "Wallet saved",
+      "Your wallet is stored on this device only. Keep your seed safe.",
+      [{ text: "Continue", onPress: () => router.replace("/(tabs)") }]
     );
   };
 
@@ -80,15 +98,23 @@ export default function CreateWalletScreen() {
           <ActivityIndicator color="#042f1a" />
         ) : (
           <Text style={styles.primaryText}>
-            {words.length ? "Regenerate (dev)" : "Generate wallet"}
+            {words.length ? "Regenerate" : "Generate wallet"}
           </Text>
         )}
       </Pressable>
 
       {words.length > 0 ? (
-        <Pressable style={styles.secondary} onPress={onDone}>
-          <Text style={styles.secondaryText}>Continue to wallet</Text>
-        </Pressable>
+        <>
+          <Pressable style={styles.warning} onPress={onBackupConfirm}>
+            <Text style={styles.warningText}>
+              Read before continuing — backup your seed
+            </Text>
+          </Pressable>
+
+          <Pressable style={styles.secondary} onPress={onSaveAndContinue}>
+            <Text style={styles.secondaryText}>I've backed up my seed → save wallet</Text>
+          </Pressable>
+        </>
       ) : null}
     </ScrollView>
   );
@@ -115,6 +141,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryText: { color: "#042f1a", textAlign: "center", fontWeight: "600" },
+  warning: {
+    backgroundColor: "#450a0a",
+    borderColor: "#b91c1c",
+    borderWidth: 1,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  warningText: { color: "#fecaca", textAlign: "center", fontWeight: "600" },
   secondary: {
     borderColor: "#334155",
     borderWidth: 1,
