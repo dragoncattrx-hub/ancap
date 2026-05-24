@@ -135,6 +135,7 @@ Available or in progress:
 - `GET/POST /organizations/{id}/members`
 - `GET /organizations/{id}/audit`
 - `GET /organizations/{id}/audit/export`
+- `POST/GET/DELETE /organizations/{id}/api-keys`
 - `GET /admin/audit-log`
 - `GET /bridge/admin/snapshots`
 - `GET /bridge/admin/alerts`

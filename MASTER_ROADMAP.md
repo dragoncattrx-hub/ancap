@@ -112,22 +112,18 @@ For the stabilized surfaces above:
 - `app/api/routers/workflow_store.py` — degraded filter, evidence-export endpoint
 - `app/services/workflow_execution.py` — ai_system_card metadata for governance pack
 
-### Phase 5 — Bridge hardening (IN PROGRESS)
-Phase 5 is mostly operational. The implementation foundation is in place:
-- ACP → BSC pilot rail: live, first run completed ✅
-- Reverse BSC → ACP rail: live in runtime (burn detection, payout, reconciliation) ✅
-- Reconciliation `delta_wacp_wei=0` verified ✅
-- Reserve proof maturity: snapshots model, stale-data detection, mismatch alerting ✅
-
-Still needed (operational, not code):
+### Phase 5 — Bridge hardening (CODE DONE ✅, operational checklist remaining)
+Phase 5 code is complete. Operational items remaining (not code):
 - Run second controlled ACP → BSC pilot for repeatability
 - Reverse rail replay/idempotency/recovery hardening
-- See `docs/bridge-next-steps.md` and `docs/bridge-operator-runbook.md` for full operational checklist
+- See `docs/bridge-next-steps.md` and `docs/bridge-operator-runbook.md`
 
-New operator endpoints shipped:
+Operator endpoints shipped:
 - `GET /api/v1/bridge/admin/snapshots?limit=24` — recent reserve health snapshots
 - `GET /api/v1/bridge/admin/alerts` — stale-snapshot + reconciliation-mismatch checks
-- Migration `052_bridge_reserve_snapshots` required on next deploy
+- `BridgeReserveSnapshot` model + migration 052
+- `check_stale_snapshots()` (30-min threshold) + `check_reconciliation_mismatch_alert()`
+- Migration 052 `bridge_reserve_snapshots` required on next deploy
 
 ### Phase 6 — ACP mobile wallet MVP completion (IN PROGRESS)
 
@@ -171,7 +167,7 @@ New operator endpoints shipped:
 - Mobile SDK unit tests in CI ✅ (`test-mobile-sdk` job in frontend CI, 40 tests across 4 packages)
 - Playwright smoke in CI [P2 — needs separate job with backend service + postgres]
 - signed webhook retry dashboard with replay controls [DONE: `GET /webhooks/{id}/deliveries/{id}`, `POST /webhooks/{id}/deliveries/{id}/replay`, owner-scoped]
-- organizations-owned API keys, agents, billing wallet, audit exports [PARTIAL: org-scoped audit log + CSV export, GET /organizations/{id}/audit, GET /organizations/{id}/audit/export]
+- organizations-owned API keys, agents, billing wallet, audit exports [DONE: org-owned API keys — POST/GET/DELETE /organizations/{id}/api-keys, admin+ create/delete, member+ list; org-scoped audit log + CSV export]
 - React Flow strategy canvas after current builder is stable [ ]
 - Fiat/Stripe only after ACP checkout and creator payout flows are stable [ ]
 
@@ -180,7 +176,7 @@ New operator endpoints shipped:
 Always work the first incomplete item in the highest active phase unless blocked.
 If blocked, document blocker, move to the next unblocked item in the same phase, and keep momentum.
 
-## Current active phase: Phase 5 — Bridge hardening (operational)
+## Current active phase: Phase 5 — Bridge hardening (code done, operational checklist remaining)
 
 ### Immediate active batch
 
