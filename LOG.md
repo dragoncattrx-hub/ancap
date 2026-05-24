@@ -4,6 +4,37 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-05-24 — Mobile SDK native helper exports + Phase 6 roadmap sync
+
+### What landed
+
+- **`ancap-mobile/packages/acp-wallet-sdk/src/wallet-service.ts`**
+  - added exported native-helper wrappers for:
+    - `validateAddressWithNative`
+    - `addressFromKeystore`
+    - `estimateFeeDefault`
+  - introduced shared `FeeEstimateResult` type so SDK callers get a stable typed fee payload.
+- **`ancap-mobile/packages/acp-wallet-sdk/src/index.ts`**
+  - re-exported the new native helper functions and types from the SDK entrypoint.
+- **`docs/mobile/ROADMAP.md`**
+  - updated P2-3 from fully open to partial/in-progress.
+  - documented that `createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore`, and native validation are now wired through the SDK, while full native app verification is still pending.
+- **`MASTER_ROADMAP.md`**
+  - synced Phase 6.1 status to reflect that TS native bridge → FFI work is now partial rather than untouched.
+
+### Verification
+
+- `npm run build -w @ancap/acp-wallet-sdk` ✅
+- `npm run typecheck -w @ancap/acp-wallet-expo` ✅
+
+### Current honest blocker
+
+- Full runtime/device verification is still blocked by the unfinished native packaging side:
+  - Android `.so` output still depends on installing the Android NDK on the host.
+  - iOS still needs the Rust static library / XCFramework packaging before a real Expo dev client build can verify the Swift bridge end-to-end.
+
+---
+
 ## 2026-04-30 — ACP wallet balance: correct vesting labels + genesis vout layout
 
 The API/UI were showing **“Vested locked: 1,000,000 ACP”** for any address that
