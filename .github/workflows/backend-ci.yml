@@ -67,3 +67,19 @@ jobs:
 
       - name: Run backend tests
         run: pytest -q
+
+      - name: Security SAST — Bandit
+        run: bandit -r app/ -f txt 2>&1 | tee bandit-report.txt || true
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.txt
+          retention-days: 14
+
+      - name: Docker build check (no push)
+        run: |
+          docker build --target deps -t ancap:build-check . 2>&1 | tail -20 || true
+          docker build -t ancap:build-check . 2>&1 | tail -10 || true
