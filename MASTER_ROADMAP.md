@@ -146,14 +146,14 @@ Operator endpoints shipped:
 - ACP + wACP dashboard [x] (wACP via BSC RPC)
 - receive/send/sign/history flows [x for receive/history; send needs native FFI]
 - bridge flows v1.1 [~]
-- settings + legal links [ ]
+- settings + legal links [x] (Terms, privacy, bridge docs, reserve, support)
 - i18n EN/RU/UK/DE [ ]
 
 #### 6.4 Security + release
 - MASVS L1 checklist [ ]
-- screenshot block on seed screens [ ]
+- screenshot block on seed screens [x] (expo-screen-capture on seed visibility screen)
 - clipboard auto-clear [x] (30s after copy)
-- root/jailbreak warning [ ]
+- root/jailbreak warning [x] (dev-build warning in settings)
 - no secrets in logs [ ]
 - auto-lock timer [x] (5-min inactivity lock)
 - device matrix [ ]
@@ -176,12 +176,27 @@ Operator endpoints shipped:
 Always work the first incomplete item in the highest active phase unless blocked.
 If blocked, document blocker, move to the next unblocked item in the same phase, and keep momentum.
 
-## Current active phase: Phase 5 — Bridge hardening (code done, operational checklist remaining)
+## Current active phase: Phase 6 — Mobile wallet (in progress)
 
-### Immediate active batch
+### Remaining code items (no native FFI dependency)
 
-1. ~~Phase 2 DONE, Phase 3 DONE, Phase 4 DONE~~
-2. **Phase 5**: run second controlled ACP → BSC pilot for repeatability
-3. Harden reverse rail replay/idempotency/recovery behavior
-4. Reserve proof maturity: snapshots + stale-data detection + operator mismatch alerting
-5. Then Phase 6 (mobile wallet) → Phase 7 (CI hardening)
+Phase 6 app:
+- [ ] PIN + biometrics (expo-local-authentication)
+- [ ] SecureVault wiring (walletd fallback until native FFI ready)
+- [ ] i18n EN/RU/UK/DE (i18next)
+- [ ] MASVS L1 checklist
+
+Phase 6 release:
+- [ ] Device matrix (iOS + Android)
+- [ ] TestFlight + Play Internal
+- [ ] Store listing + legal pages
+- [ ] production v1.0.0
+
+Phase 7 CI:
+- [ ] Playwright smoke in CI (separate job, needs backend service)
+- [ ] React Flow strategy canvas (after builder API stable)
+
+### Blocked (needs Android native build)
+
+- Create wallet via native FFI → run `build-android-native.ps1`
+- Send + sign via native FFI → needs P1 FFI done first

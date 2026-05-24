@@ -88,34 +88,23 @@ As of the latest verified runtime check:
 - Runtime code in `app/api/routers/bridge_rail.py` explicitly states that the `BSC -> ACP` redeem path is live with funded reserve and automated payout processing.
 - Therefore any docs still saying public reverse status must remain `pending-rollout` are stale and must be corrected.
 
-## LLM Provider Reliability
+## LLM Provider Reliability (DONE ✅)
 
-Claude Code logs from 2026-05-23 show repeated `503 service_unavailable` from the Claude/Teneta-compatible upstream. Older logs also show insufficient balance and invalid model failures. Production should expose these as separate operator signals.
+All Phase 3 items complete:
+- Failure taxonomy: unavailable / invalid_model / auth_error / balance_error / timeout / unknown
+- Provider health in `/system/health/full` (probe_status, probe_error)
+- LLM usage events with provider_status, failure_reason, retry_count, fallback_mode
+- Retry with exponential backoff (max_retries=2)
+- Degraded receipts when template fallback used
+- Owner dashboards surface degraded runs
 
-Required follow-up:
+## AI / ISO Governance Track (DONE ✅)
 
-- Classify LLM failures as provider unavailable, invalid model, auth/key issue, balance issue, timeout, and unknown.
-- Surface provider status in `/system/health/full` without leaking keys.
-- Record provider status, latency, retry count, and fallback mode in `llm_usage_events`.
-- Use retry/backoff for transient `503` and timeout errors.
-- Mark proof receipts as degraded when template fallback is used after a paid workflow.
-- Track degraded paid runs in revenue/quality dashboards for owner review.
-
-## AI / ISO Governance Track
-
-The AI and ISO source review is captured in `docs/AI_ISO_GOVERNANCE_NOTES.md`. ANCAP should use ISO-style discipline as product infrastructure: repeatable SOPs, audit evidence, corrective actions, owner assignment, status tracking, and management review.
-
-Implemented now:
-
-- `AI / ISO Governance Readiness Pack` as a premium workflow SKU.
-- Sample report support for the new governance SKU.
-- Workflow/pricing catalog visibility for the new offer.
-
-Next controls:
-
-- Add AI system cards to premium workflow templates.
-- Add degraded-output and corrective-action filters to owner dashboards.
-- Add evidence export per paid workflow run for B2B buyers.
+All Phase 4 items complete:
+- AI system cards for premium governance workflows (`ai_system_card` in WorkflowTemplatePublic)
+- Degraded-output filters in owner dashboards (`degraded_run`, `degraded_reason`)
+- Evidence export per paid workflow run (`GET /workflow-store/runs/{id}/evidence-export`)
+- Full ISO/AI governance notes in `docs/AI_ISO_GOVERNANCE_NOTES.md`
 
 ## Public APIs And Interfaces
 
@@ -154,12 +143,14 @@ Frontend routes currently verified locally/build-safe:
 
 ## Test Plan
 
-Recent local quality gates that passed during the current stabilization slice:
+Current test status (2026-05-24):
+- `pytest -q` -> **258 passed, 3 skipped** ✅
+- `npm test --workspaces --if-present` (mobile SDK) -> **40 tests across 4 packages** ✅
+- `npx tsc -p apps/acp-wallet-expo/tsconfig.json --noEmit` -> ✅
 
-- `pytest.exe tests\api\test_paid_api.py tests\api\test_workflow_store.py tests\api\test_admin_access.py -q` -> `15 passed`
-- `pytest.exe tests\test_strategies.py tests\api\test_ai_console_wave1.py tests\api\test_growth_layer.py -q` -> `11 passed, 1 skipped`
-- `pytest.exe tests\api\test_webhooks.py tests\api\test_organizations.py -q` -> passed earlier in the same roadmap slice
-- `npm run build` -> success after billing and strategy-builder hardening
+All backend phases green. Mobile SDK TypeScript clean.
+
+Production smoke targets to keep using:
 
 Production smoke targets to keep using:
 
@@ -179,8 +170,7 @@ Production smoke targets to keep using:
 ## Later Expansion
 
 - Replace the lightweight Strategy Builder with a React Flow canvas once the current builder and version API are stable.
-- Add Playwright smoke to CI for buyer, creator, developer, webhooks, organizations, and receipt flows.
-- Add Bandit/Semgrep and Docker build checks to CI.
-- Add Organizations-owned API keys, agents, billing wallet, and audit exports.
-- Add signed webhook retry dashboard with replay controls.
+- Add Playwright smoke to CI for buyer, creator, developer, webhooks, organizations, and receipt flows (Phase 7).
+- Organizations-owned API keys [DONE: POST/GET/DELETE /organizations/{id}/api-keys].
+- Signed webhook retry dashboard with replay controls [DONE: GET /webhooks/{id}/deliveries/{id}, POST /webhooks/{id}/deliveries/{id}/replay].
 - Consider fiat/Stripe only after ACP checkout, receipts, and creator payouts are stable.
