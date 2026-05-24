@@ -9,7 +9,7 @@ Base URL: `https://api.kiro.cheap`. For OpenAI-compatible chat: `POST /v1/chat/c
 
 Configuration file: **`~/.openclaw/openclaw.json`** (JSON5 format).
 
-Ready snippet with key and default model: **`docs/openclaw-kiro-snippet.json5`** - copy its contents to `~/.openclaw/openclaw.json` (or paste it into the appropriate sections).
+> **Note:** The previously referenced `docs/openclaw-kiro-snippet.json5` has been deleted — do not use it as a reference. Generate your own API key and use the environment-variable approach below (Option A).
 
 ### Option A: Key in an environment variable (recommended)
 
@@ -91,7 +91,7 @@ Internal OpenClaw tasks (slug-generator, session, etc.) can be requested by the 
 }
 ```
 
-Ready config with both providers (kiro + anthropic → Kiro): **`docs/openclaw-kiro-snippet.json5`**.
+Ready config with both providers (kiro + anthropic → Kiro): use Option A above with `${KIRO_API_KEY}` — do not commit keys to git.
 
 ## 4. Ollama: «Failed to discover Ollama models: TypeError: fetch failed»
 
