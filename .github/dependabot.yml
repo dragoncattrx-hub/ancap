@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "python"]
+    groups:
+      production:
+        dependency-type: "production"
+      development:
+        dependency-type: "development"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend-app"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "frontend"]
+
+  - package-ecosystem: "npm"
+    directory: "/ancap-mobile"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "mobile"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "ci"]
