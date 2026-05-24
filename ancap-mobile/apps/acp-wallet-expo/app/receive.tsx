@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import * as Clipboard from "expo-clipboard";
-import { loadVault } from "@/lib/vault";
+import { loadVaultAddress } from "@/lib/vault";
 
 const CLIPBOARD_CLEAR_MS = 30_000; // P5-3: auto-clear address from clipboard after 30s
 
@@ -18,8 +18,8 @@ export default function ReceiveScreen() {
   const clipboardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    void loadVault().then((v) => {
-      if (v) setAddress(v.address);
+    void loadVaultAddress().then((value) => {
+      if (value) setAddress(value);
     });
     return () => {
       if (clipboardTimer.current) clearTimeout(clipboardTimer.current);

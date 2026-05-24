@@ -131,7 +131,7 @@ Operator endpoints shipped:
 - Finish Android FFI integration [~] (module wiring done; native `.so` build still blocked on missing Android NDK on this host)
 - Implement iOS Swift UniFFI link [~] (Expo iOS podspec now stages generated Swift/modulemap artifacts and vendored `acp_mobile_ffiFFI.xcframework`; `ancap-mobile/scripts/build-ios-native.ps1` added for macOS packaging, but runtime build verification still needs a macOS/iOS run)
 - Finish native bridge -> FFI in TS SDK [~] (`createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore`, native validate exported; full device/runtime verification still pending)
-- Complete `acp-api-client`, `acp-bridge-client`, `acp-bsc-client` [~]
+- Complete `acp-api-client`, `acp-bridge-client`, `acp-bsc-client` [x] (all three packages now build cleanly and their current test suites pass: 12 API client tests, 9 bridge client tests, 13 BSC client tests)
 
 #### 6.2 Backend mobile gateway
 - ACP indexer (DB-backed history) [DONE: migration 051, MobileAcpTx + MobileAddressIndexerState models, `mobile_acp_indexer_tick` job, wired to `/v1/system/jobs/tick`]
@@ -142,7 +142,7 @@ Operator endpoints shipped:
 - Create wallet via native FFI [ ] (needs Android build)
 - backup + confirm seed [x]
 - PIN + biometrics [~] (Expo app now has PIN lock, dedicated unlock screen, explicit biometric prompt via `expo-local-authentication`, and 5-minute auto-lock; still needs real device verification)
-- SecureVault [ ]
+- SecureVault [~] (device-only SecureStore wired; biometric unlock now migrates mnemonic + keystore into biometric-gated secure storage; real device verification still pending)
 - ACP + wACP dashboard [x] (wACP via BSC RPC)
 - receive/send/sign/history flows [x for receive/history; send needs native FFI]
 - bridge flows v1.1 [~]
@@ -182,7 +182,7 @@ If blocked, document blocker, move to the next unblocked item in the same phase,
 
 Phase 6 app:
 - [~] PIN + biometrics (expo-local-authentication; wired in app, but still needs real device verification)
-- [ ] SecureVault wiring (walletd fallback until native FFI ready)
+- [~] SecureVault wiring (device-only SecureStore wired; biometric unlock now migrates mnemonic + keystore into biometric-gated secure storage; real device verification still pending)
 - [ ] i18n EN/RU/UK/DE (i18next)
 - [ ] MASVS L1 checklist
 

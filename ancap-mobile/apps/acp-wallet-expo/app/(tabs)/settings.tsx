@@ -5,6 +5,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import {
   canUseBiometricUnlock,
   clearPinLock,
+  disableBiometricUnlock,
   enableBiometricUnlock,
   hasPinLock,
   isBiometricUnlockEnabled,
@@ -12,7 +13,12 @@ import {
   lockSession,
   setPinLock,
 } from "@/lib/lock";
-import { wipeVault } from "@/lib/vault";
+import {
+  disableVaultBiometricProtection,
+  enableVaultBiometricProtection,
+  isVaultBiometricProtected,
+  wipeVault,
+} from "@/lib/vault";
 
 const BASE = "https://ancap.cloud";
 
@@ -38,6 +44,7 @@ export default function SettingsScreen() {
   const [pinEnabled, setPinEnabled] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [vaultBiometricProtected, setVaultBiometricProtected] = useState(false);
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
 
@@ -48,14 +55,16 @@ export default function SettingsScreen() {
   }, []);
 
   const refreshLockState = async () => {
-    const [pinOn, biometricOn, biometricCapable] = await Promise.all([
+    const [pinOn, biometricOn, biometricCapable, vaultProtected] = await Promise.all([
       hasPinLock(),
       isBiometricUnlockEnabled(),
       canUseBiometricUnlock(),
+      isVaultBiometricProtected(),
     ]);
     setPinEnabled(pinOn);
     setBiometricEnabled(biometricOn);
     setBiometricAvailable(biometricCapable);
+    setVaultBiometricProtected(vaultProtected);
   };
 
   const onWipe = () => {
@@ -106,6 +115,7 @@ export default function SettingsScreen() {
           text: "Disable",
           style: "destructive",
           onPress: async () => {
+            await disableVaultBiometricProtection();
             await clearPinLock();
             await refreshLockState();
           },
@@ -117,11 +127,34 @@ export default function SettingsScreen() {
   const onEnableBiometrics = async () => {
     try {
       await enableBiometricUnlock();
+      await enableVaultBiometricProtection();
       await refreshLockState();
-      Alert.alert("Biometrics enabled", "You can now unlock the wallet with device biometrics.");
+      Alert.alert(
+        "Biometrics enabled",
+        "You can now unlock the wallet with device biometrics, and vault secrets are stored behind biometric-gated secure storage."
+      );
     } catch (e) {
       Alert.alert("Could not enable biometrics", e instanceof Error ? e.message : "Unknown error");
     }
+  };
+
+  const onDisableBiometrics = async () => {
+    Alert.alert(
+      "Disable biometric unlock?",
+      "This removes biometric unlock and moves vault secrets back to device-only secure storage without biometric gating.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Disable",
+          style: "destructive",
+          onPress: async () => {
+            await disableVaultBiometricProtection();
+            await disableBiometricUnlock();
+            await refreshLockState();
+          },
+        },
+      ]
+    );
   };
 
   const onLockNow = () => {
@@ -157,8 +190,9 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Key storage</Text>
         <Text style={styles.meta}>
-          Keys and keystore are stored in the device secure store only. ANCAP never receives or
-          stores your seed or private key.
+          Keys and keystore are stored in device-only secure storage. When biometric unlock is
+          enabled, vault secrets move behind biometric-gated secure storage. ANCAP never receives
+          or stores your seed or private key.
         </Text>
       </View>
 
@@ -175,6 +209,7 @@ export default function SettingsScreen() {
         <Text style={styles.meta}>
           Status: {pinEnabled ? "PIN enabled" : "PIN disabled"}
           {biometricEnabled ? " · biometrics enabled" : ""}
+          {vaultBiometricProtected ? " · secure vault gated by biometrics" : ""}
         </Text>
         <TextInput
           style={styles.input}
@@ -206,7 +241,12 @@ export default function SettingsScreen() {
         ) : null}
         {pinEnabled && biometricAvailable && !biometricEnabled ? (
           <Pressable style={styles.secondary} onPress={() => void onEnableBiometrics()}>
-            <Text style={styles.secondaryText}>Enable biometric unlock</Text>
+            <Text style={styles.secondaryText}>Enable biometric unlock + secure vault</Text>
+          </Pressable>
+        ) : null}
+        {pinEnabled && biometricEnabled ? (
+          <Pressable style={styles.secondary} onPress={onDisableBiometrics}>
+            <Text style={styles.secondaryText}>Disable biometric unlock</Text>
           </Pressable>
         ) : null}
         {pinEnabled ? (

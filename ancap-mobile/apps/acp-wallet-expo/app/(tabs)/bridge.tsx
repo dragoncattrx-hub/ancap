@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { BridgeIntent, RedeemQuote, ReserveProof, WacpStatus } from "@ancap/acp-bridge-client";
-import { loadVault } from "@/lib/vault";
+import { loadVaultAddress } from "@/lib/vault";
 import { getBridgeClient } from "@/lib/bridge";
 
 export default function BridgeScreen() {
@@ -60,8 +60,8 @@ export default function BridgeScreen() {
     }
 
     try {
-      const vault = await loadVault();
-      if (!vault) {
+      const address = await loadVaultAddress();
+      if (!address) {
         setRecentIntents([]);
         return;
       }

@@ -20,12 +20,17 @@ Baseline: [OWASP MASVS](https://mas.owasp.org/MASVS/) Level 1.
 
 ## Vault design
 
-1. Generate random DEK (data encryption key).
-2. Encrypt seed with AES-256-GCM.
-3. Wrap DEK with key from **iOS Keychain** / **Android Keystore** (biometric-gated optional).
-4. Store ciphertext + nonce in app sandbox only.
+Current MVP implementation:
 
-Libraries: `react-native-keychain`, `react-native-biometrics`.
+1. Cache address in device-only secure storage (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`).
+2. Store mnemonic + `keystore_json` in device-only secure storage by default.
+3. When the user enables biometric unlock, migrate mnemonic + `keystore_json` into biometric-gated secure storage (`requireAuthentication: true`) so reading signing secrets requires device authentication.
+4. If device biometrics change and the secure item is invalidated, require wallet re-import from the backup phrase / keystore.
+
+Current libraries: `expo-secure-store`, `expo-local-authentication`.
+
+Future hardening target:
+- move from direct secret storage to DEK-wrapped ciphertext + nonce in app sandbox, with the DEK protected by iOS Keychain / Android Keystore.
 
 ## App controls
 

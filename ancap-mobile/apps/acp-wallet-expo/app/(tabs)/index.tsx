@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchWacpBalanceWei, formatWacp } from "@ancap/acp-bsc-client";
-import { loadVault } from "@/lib/vault";
+import { loadVaultAddress } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
 export default function WalletHomeScreen() {
@@ -26,16 +26,16 @@ export default function WalletHomeScreen() {
 
   const refresh = useCallback(async () => {
     setError("");
-    const vault = await loadVault();
-    if (!vault) {
+    const address = await loadVaultAddress();
+    if (!address) {
       setError("No wallet on device.");
       return;
     }
-    setAddress(vault.address);
+    setAddress(address);
     try {
       const api = getApi();
       const [bal, cfg] = await Promise.all([
-        api.getBalance(vault.address),
+        api.getBalance(address),
         api.getConfig(),
       ]);
       setAcp(bal.acp);
@@ -49,7 +49,7 @@ export default function WalletHomeScreen() {
           const wei = await fetchWacpBalanceWei({
             rpcUrl: cfg.bscRpcUrl,
             contract: cfg.wacpContract,
-            holder: vault.address,
+            holder: address,
           });
           setWacp(formatWacp(wei));
         } catch {
