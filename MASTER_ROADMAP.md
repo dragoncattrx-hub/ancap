@@ -143,23 +143,23 @@ New operator endpoints shipped:
 - broadcast rate limits [DONE: 10 req/min per IP, configurable, `POST /acp/tx/broadcast`]
 
 #### 6.3 App product completion
-- Create wallet via native FFI [ ]
-- backup + confirm seed [ ]
+- Create wallet via native FFI [ ] (needs Android build)
+- backup + confirm seed [x]
 - PIN + biometrics [ ]
 - SecureVault [ ]
-- ACP + wACP dashboard [ ]
-- receive/send/sign/history flows [ ]
-- bridge flows v1.1 [ ]
+- ACP + wACP dashboard [x] (wACP via BSC RPC)
+- receive/send/sign/history flows [x for receive/history; send needs native FFI]
+- bridge flows v1.1 [~]
 - settings + legal links [ ]
 - i18n EN/RU/UK/DE [ ]
 
 #### 6.4 Security + release
 - MASVS L1 checklist [ ]
 - screenshot block on seed screens [ ]
-- clipboard auto-clear [ ]
+- clipboard auto-clear [x] (30s after copy)
 - root/jailbreak warning [ ]
 - no secrets in logs [ ]
-- auto-lock timer [ ]
+- auto-lock timer [x] (5-min inactivity lock)
 - device matrix [ ]
 - TestFlight / Play Internal [ ]
 - store listing + legal pages [ ]
