@@ -791,7 +791,7 @@ def test_admin_reverse_liability_summary(client, monkeypatch):
     )
     assert summary.status_code == 200, summary.text
     data = summary.json()
-    assert data["reverse_public_mode"] == "pending-rollout"
+    assert data["reverse_public_mode"] == "live"
     assert int(data["counts_by_status"].get("BURN_CONFIRMED", 0)) >= 1
     assert int(data["counts_by_status"].get("ACP_PAYOUT_SENT", 0)) >= 1
     assert int(data["counts_by_status"].get("DISPUTED", 0)) >= 1
