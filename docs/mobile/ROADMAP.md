@@ -84,7 +84,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-11 | Send + preview + sign | [ ] | needs P1 FFI |
 | P4-12 | Transaction history | [x] | |
 | P4-13 | Bridge flows | [~] | status tab + docs links; intents in v1.1 |
-| P4-14 | Settings + legal links | [ ] | |
+| P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
 | P4-15 | i18n EN/RU/UK/DE | [ ] | |
 
 ---
@@ -94,10 +94,10 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | ID | Task | Status |
 |----|------|--------|
 | P5-1 | OWASP MASVS L1 checklist | [ ] |
-| P5-2 | Screenshot block on seed screens | [ ] |
+| P5-2 | Screenshot block on seed screens | [x] | expo-screen-capture, active on seed visibility screen |
 | P5-3 | Clipboard auto-clear | [x] | 30s auto-clear after copy |
-| P5-4 | Root/jailbreak warning | [ ] | |
-| P5-5 | No secrets in Sentry/logs | [ ] | |
+| P5-4 | Root/jailbreak warning | [x] | dev-build warning on settings screen |
+| P5-5 | No secrets in Sentry/logs | [ ] |
 | P5-6 | App auto-lock timer | [x] | 5-min inactivity auto-lock |
 
 ---
