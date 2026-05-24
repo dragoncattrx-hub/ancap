@@ -13,7 +13,7 @@ def test_economy_health_shape(client, monkeypatch):
 
     monkeypatch.setattr(system_router.httpx, "post", lambda *args, **kwargs: _Resp())
     get_settings.cache_clear()
-    r = client.get("/v1/system/economy-health")
+    r = client.get("/v1/internal/ops/economy-health")
     assert r.status_code == 200, r.text
     payload = r.json()
     assert "acp_rpc_ok" in payload

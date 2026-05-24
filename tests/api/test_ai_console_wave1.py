@@ -83,7 +83,7 @@ def test_decision_logs_written_for_listing_gate(client, base_vertical_id, monkey
         )
         assert listing_resp.status_code == 403, listing_resp.text
 
-        logs_resp = client.get("/system/decision-logs?scope=listings.create&limit=20")
+        logs_resp = client.get("/v1/internal/ops/decision-logs?scope=listings.create&limit=20")
         assert logs_resp.status_code == 200, logs_resp.text
         logs = logs_resp.json()
         assert any(item["scope"] == "listings.create" for item in logs)

@@ -1,6 +1,6 @@
 import os
 import httpx
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy import desc
 from sqlalchemy import func
@@ -26,6 +26,7 @@ from app.jobs.graph_enforcement_tick import graph_enforcement_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.jobs.mobile_acp_indexer_tick import mobile_acp_indexer_tick
 from app.services.ledger import check_ledger_invariant, set_ledger_invariant_halted, is_ledger_invariant_halted
+from app.api.deps import require_auth
 from app.services.cache import redis_ping
 from app.db.models import DecisionLog, AcpSwapOrder, ReferralOnchainPayoutJob
 from app.schemas import DecisionLogPublic
@@ -151,8 +152,8 @@ async def ops_diagnostics(user_id: str | None = None):
 
 
 @_internal_router.get("/deep-health")
-async def deep_health(session: DbSession, user_id: str | None = None):
-    """Full system health with external probes (LLM, bridge). Admin auth required."""
+async def deep_health(session: DbSession, user_id: str = Depends(require_auth)):
+    """Full system health with external probes (LLM, bridge). Auth required; admin-only in production."""
     _require_platform_admin(user_id)
     s = get_settings()
     checks: dict[str, dict[str, object]] = {}
@@ -248,9 +249,8 @@ async def staking_economics():
 
 
 @_internal_router.get("/economy-health")
-async def ops_economy_health(session: DbSession, user_id: str | None = None):
-    """Bridge swap queue + referral payout job health. Admin auth required."""
-    _require_platform_admin(user_id)
+async def ops_economy_health(session: DbSession, user_id: str = Depends(require_auth)):
+    """Bridge swap queue + referral payout job health. Auth required."""
     s = get_settings()
     rpc_ok = False
     rpc_error: str | None = None
@@ -297,9 +297,8 @@ async def ops_economy_health(session: DbSession, user_id: str | None = None):
 
 
 @_internal_router.get("/ledger-invariant-status")
-async def ops_ledger_invariant_status(session: DbSession, user_id: str | None = None):
-    """Ledger invariant halt status. Admin auth required."""
-    _require_platform_admin(user_id)
+async def ops_ledger_invariant_status(session: DbSession, user_id: str = Depends(require_auth)):
+    """Ledger invariant halt status. Auth required."""
     halted = await is_ledger_invariant_halted(session)
     return {"halted": halted}
 
@@ -307,12 +306,12 @@ async def ops_ledger_invariant_status(session: DbSession, user_id: str | None = 
 @_internal_router.get("/decision-logs", response_model=list[DecisionLogPublic])
 async def ops_list_decision_logs(
     session: DbSession,
-    user_id: str | None = None,
+    user_id: str = Depends(require_auth),
     limit: int = 100,
     scope: str | None = None,
     reason_code: str | None = None,
 ):
-    _require_platform_admin(user_id)
+    """Decision logs. Auth required."""
     q = select(DecisionLog).order_by(desc(DecisionLog.created_at)).limit(min(max(limit, 1), 500))
     if scope:
         q = q.where(DecisionLog.scope == scope)

@@ -11,11 +11,12 @@ import hashlib
 import json
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
 from app.db.models import ChainReceipt, LedgerEventTypeEnum, PaymentIntent, PaymentIntentStatusEnum, ReferralRewardEvent, SettlementIntent, User, WorkflowRunRecord
@@ -1451,12 +1452,44 @@ async def create_workflow_run_payment_intent(
     body: WorkflowRunPaymentIntentCreateRequest,
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
 
+    # Idempotency: return cached response for duplicate requests with the same key.
+    if idempotency_key:
+        hit = await get_idempotency_hit(
+            session, scope="workflow_store.create_payment_intent", key=idempotency_key,
+            request_payload={"run_id": run_id, **body.model_dump()},
+        )
+        if hit:
+            return JSONResponse(status_code=200, content=hit.response_json)
+
+    result = await _do_create_workflow_run_payment_intent(
+        session, user_id, run_id, body,
+    )
+
+    # Store idempotency result if key was provided
+    if idempotency_key:
+        await store_idempotency_result(
+            session, scope="workflow_store.create_payment_intent", key=idempotency_key,
+            request_payload={"run_id": run_id, **body.model_dump()},
+            status_code=201, response_json=result.model_dump(),
+        )
+
+    return result
+
+
+async def _do_create_workflow_run_payment_intent(
+    session: DbSession,
+    user_id: str,
+    run_id: str,
+    body: WorkflowRunPaymentIntentCreateRequest,
+) -> WorkflowRunPaymentIntentCreateResponse:
+    """Core logic for creating a payment intent for a workflow run. No idempotency handling."""
     row = await _get_owned_run(session, user_id, run_id)
     current_status = WorkflowRunStatus(row.status)
     existing = await _latest_payment_intent(
@@ -2119,9 +2152,19 @@ async def create_workflow_run(
     body: WorkflowRunCreateRequest,
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Idempotency: if key provided, check for a prior hit with the same request payload.
+    if idempotency_key:
+        hit = await get_idempotency_hit(
+            session, scope="workflow_store.create_run", key=idempotency_key,
+            request_payload=body.model_dump(),
+        )
+        if hit:
+            return JSONResponse(status_code=200, content=hit.response_json)
 
     template = find_workflow_template(body.workflow_slug)
     if template is None:
@@ -2147,4 +2190,13 @@ async def create_workflow_run(
     await session.flush()
     await session.refresh(row)
 
-    return _serialize_run(row)
+    result = _serialize_run(row)
+
+    # Store idempotency result if key was provided
+    if idempotency_key:
+        await store_idempotency_result(
+            session, scope="workflow_store.create_run", key=idempotency_key,
+            request_payload=body.model_dump(), status_code=201, response_json=result.model_dump(),
+        )
+
+    return result

@@ -128,7 +128,7 @@ def test_fail_ledger_halted_blocks_order_and_ledger_ops(client, base_vertical_id
   tick = client.post("/v1/system/jobs/tick", headers=headers)
   assert tick.status_code in (200, 403)
 
-  status = client.get("/v1/system/ledger-invariant-status")
+  status = client.get("/v1/internal/ops/ledger-invariant-status")
   assert status.status_code == 200
   halted = status.json().get("halted")
   if not halted:
