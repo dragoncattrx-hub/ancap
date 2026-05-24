@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npm run build -w @ancap/acp-wallet-sdk && npm run build -w @ancap/acp-api-client && npm run build -w @ancap/acp-bridge-client && npm run build -w @ancap/acp-bsc-client",
     "postinstall": "npm run build",
-    "test": "npm run test -w @ancap/acp-wallet-sdk",
+    "test": "npm run test -ws --if-present",
     "typecheck": "npm run typecheck -ws --if-present",
     "app:start": "npm run start -w @ancap/acp-wallet-expo",
     "app:expo": "npm run start -w @ancap/acp-wallet-expo"
