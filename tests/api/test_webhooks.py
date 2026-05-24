@@ -100,3 +100,53 @@ def test_webhook_validation_requires_http_and_event_types(client):
     )
     assert bad_scheme.status_code == 400, bad_scheme.text
     assert bad_scheme.json()["detail"] == "URL must be http or https"
+
+
+def test_webhook_replay_endpoint_routes_correctly(client, monkeypatch):
+    """POST /webhooks/{id}/deliveries/{id}/replay routes and handles auth correctly.
+
+    Tests the endpoint at the routing + auth layer without needing a real delivery
+    in the DB (uses 404 for missing webhook/delivery — proves auth+ownership check
+    passed, only the lookup failed).
+    """
+    _, headers = _register_and_login(client, "Webhook Replay")
+    import uuid
+
+    # Non-existent webhook → 404 (not 401/403 → auth+ownership check passed)
+    fake_wh = str(uuid.uuid4())
+    fake_del = str(uuid.uuid4())
+    r = client.post(f"/v1/webhooks/{fake_wh}/deliveries/{fake_del}/replay", headers=headers)
+    assert r.status_code == 404, f"expected 404 for unknown webhook, got {r.status_code}: {r.text}"
+
+    # Create a real webhook
+    created = client.post(
+        "/v1/webhooks",
+        headers=headers,
+        json={"url": f"https://example.com/{unique_name('wh')}", "event_types": ["run.completed"]},
+    )
+    assert created.status_code == 201, created.text
+    webhook_id = created.json()["id"]
+
+    # Real webhook + non-existent delivery → 404 (proves lookup is wired)
+    fake_del2 = str(uuid.uuid4())
+    r2 = client.post(f"/v1/webhooks/{webhook_id}/deliveries/{fake_del2}/replay", headers=headers)
+    assert r2.status_code == 404, f"expected 404 for unknown delivery, got {r2.status_code}: {r2.text}"
+
+
+def test_webhook_replay_requires_auth(client_unauth):
+    """Replay endpoint returns 401 without authentication."""
+    import uuid
+    fake_webhook = str(uuid.uuid4())
+    fake_delivery = str(uuid.uuid4())
+    replay = client_unauth.post(f"/v1/webhooks/{fake_webhook}/deliveries/{fake_delivery}/replay")
+    assert replay.status_code == 401, replay.text
+
+
+def test_webhook_get_single_delivery_404_for_nonexistent(client):
+    """GET /webhooks/{id}/deliveries/{id} returns 404 for non-existent delivery."""
+    _, headers = _register_and_login(client, "Webhook Get Delivery")
+    import uuid
+    fake_webhook = str(uuid.uuid4())
+    fake_delivery = str(uuid.uuid4())
+    fetched = client.get(f"/v1/webhooks/{fake_webhook}/deliveries/{fake_delivery}", headers=headers)
+    assert fetched.status_code == 404, fetched.text

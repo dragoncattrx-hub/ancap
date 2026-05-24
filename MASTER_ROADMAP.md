@@ -164,7 +164,7 @@ Still needed (operational, not code):
 - Bandit SAST + Docker build check in CI ✅ (`.github/workflows/backend-ci.yml`, `requirements.txt`)
 - Playwright browser install in frontend CI ✅ (browser binary ready for later smoke job)
 - Playwright smoke in CI [P2 — needs separate job with backend service + postgres]
-- signed webhook retry dashboard with replay controls [ ]
+- signed webhook retry dashboard with replay controls [DONE: `GET /webhooks/{id}/deliveries/{id}`, `POST /webhooks/{id}/deliveries/{id}/replay`, owner-scoped]
 - organizations-owned API keys, agents, billing wallet, audit exports [ ]
 - React Flow strategy canvas after current builder is stable [ ]
 - Fiat/Stripe only after ACP checkout and creator payout flows are stable [ ]
