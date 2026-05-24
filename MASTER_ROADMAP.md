@@ -141,7 +141,7 @@ Operator endpoints shipped:
 #### 6.3 App product completion
 - Create wallet via native FFI [ ] (needs Android build)
 - backup + confirm seed [x]
-- PIN + biometrics [ ]
+- PIN + biometrics [~] (Expo app now has PIN lock, dedicated unlock screen, explicit biometric prompt via `expo-local-authentication`, and 5-minute auto-lock; still needs real device verification)
 - SecureVault [ ]
 - ACP + wACP dashboard [x] (wACP via BSC RPC)
 - receive/send/sign/history flows [x for receive/history; send needs native FFI]
@@ -181,7 +181,7 @@ If blocked, document blocker, move to the next unblocked item in the same phase,
 ### Remaining code items (no native FFI dependency)
 
 Phase 6 app:
-- [ ] PIN + biometrics (expo-local-authentication)
+- [~] PIN + biometrics (expo-local-authentication; wired in app, but still needs real device verification)
 - [ ] SecureVault wiring (walletd fallback until native FFI ready)
 - [ ] i18n EN/RU/UK/DE (i18next)
 - [ ] MASVS L1 checklist

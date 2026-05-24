@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -40,11 +41,18 @@ export default function CreateWalletScreen() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Create failed";
       if (msg.includes("not linked") || msg.includes("Native ACP")) {
+        const nativeSteps = Platform.select({
+          ios:
+            "On macOS: run ancap-mobile/scripts/build-ios-native.ps1\nThen: npx expo run:ios",
+          android:
+            "Run: ancap-mobile/scripts/build-android-native.ps1\nThen: npx expo run:android",
+          default:
+            "Link expo-acp-core in a native Expo dev build, then rebuild the app.",
+        });
         Alert.alert(
           "Native build required",
           "Create wallet needs the native ACP core linked.\n\n" +
-            "Run: build-android-native.ps1\n" +
-            "Then: npx expo run:android\n\n" +
+            `${nativeSteps}\n\n` +
             "For quick testing in Expo Go, use Import instead.",
           [{ text: "Use Import", onPress: () => router.push("/onboarding/import") }]
         );

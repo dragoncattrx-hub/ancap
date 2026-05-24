@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { AcpApiClient } from "@ancap/acp-api-client";
+import { hasPinLock, isSessionUnlocked } from "@/lib/lock";
 import { hasVault } from "@/lib/vault";
 
 const API_BASE =
@@ -17,6 +18,7 @@ export default function WelcomeScreen() {
   const [loading, setLoading] = useState(true);
   const [maintenance, setMaintenance] = useState(false);
   const [vaultExists, setVaultExists] = useState(false);
+  const [pinEnabled, setPinEnabled] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,9 +33,14 @@ export default function WelcomeScreen() {
         /* offline — allow local wallet */
       }
       const exists = await hasVault();
+      const pinEnabled = exists ? await hasPinLock() : false;
       if (!cancelled) {
         setVaultExists(exists);
+        setPinEnabled(pinEnabled);
         setLoading(false);
+        if (exists) {
+          router.replace((pinEnabled && !isSessionUnlocked() ? "/unlock" : "/(tabs)") as never);
+        }
       }
     })();
     return () => {
@@ -69,7 +76,7 @@ export default function WelcomeScreen() {
       </Text>
 
       {vaultExists ? (
-        <Link href="/(tabs)" asChild>
+        <Link href={pinEnabled && !isSessionUnlocked() ? "/unlock" : "/(tabs)"} asChild>
           <Pressable style={styles.primary}>
             <Text style={styles.primaryText}>Open wallet</Text>
           </Pressable>

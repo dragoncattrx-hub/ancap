@@ -44,8 +44,8 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P2-1 | `@ancap/acp-wallet-sdk` types + interface | [x] | `ancap-mobile/packages/acp-wallet-sdk` |
 | P2-2 | `parseUnits` / `formatUnits` (8 decimals) | [x] | pure TS |
 | P2-3 | Native bridge stub → FFI | [~] | `createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore`, native validate exports wired in SDK; full native app verification still pending |
-| P2-4 | `@ancap/acp-api-client` | [x] | wired to `/v1/mobile/*`, 6 tests |
-| P2-5 | `@ancap/acp-bridge-client` | [x] | `/v1/bridge/*`, 5 tests |
+| P2-4 | `@ancap/acp-api-client` | [x] | now covers config, network status, tx detail, device registration/listing, broadcast + fee flows; 12 tests |
+| P2-5 | `@ancap/acp-bridge-client` | [x] | now covers status, reserve proof, redeem quote, and intent create/list helpers; 9 tests |
 | P2-6 | `@ancap/acp-bsc-client` | [x] | read-only wACP balance, 13 tests |
 
 ---
@@ -78,12 +78,12 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
 | P4-7 | Backup + confirm seed | [x] | backup prompt before save; native FFI still needed for real generation |
-| P4-8 | PIN + biometrics | [ ] | |
+| P4-8 | PIN + biometrics | [~] | PIN lock + biometric unlock preference wired in Expo app; still needs real device verification |
 | P4-9 | SecureVault (Keychain / Keystore) | [ ] | |
 | P4-10 | Dashboard (ACP + wACP) | [x] | wACP via BSC RPC (fetchWacpBalanceWei); ACP via ACP API |
 | P4-11 | Send + preview + sign | [ ] | needs P1 FFI |
 | P4-12 | Transaction history | [x] | |
-| P4-13 | Bridge flows | [~] | status tab + docs links; intents in v1.1 |
+| P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
 | P4-15 | i18n EN/RU/UK/DE | [ ] | |
 

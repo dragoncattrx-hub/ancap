@@ -58,17 +58,24 @@ $generatedFile = Join-Path $generatedSwiftDir "${crateName}.swift"
 $generatedHeader = Join-Path $generatedSwiftDir "${crateName}FFI.h"
 $generatedModuleMap = Join-Path $generatedSwiftDir "${crateName}FFI.modulemap"
 
-cargo run -p acp-mobile-ffi --bin uniffi-bindgen -- generate `
+& cargo run -p acp-mobile-ffi --bin uniffi-bindgen -- generate `
   --library $hostLib `
   --language swift `
   --out-dir $generatedSwiftDir
+
+if ($LASTEXITCODE -ne 0) {
+  Write-Error "uniffi-bindgen failed while generating Swift bindings"
+}
 
 if (-not (Test-Path $generatedFile) -or -not (Test-Path $generatedHeader) -or -not (Test-Path $generatedModuleMap)) {
   Write-Error "UniFFI generation did not produce the expected Swift artifacts in $generatedSwiftDir"
 }
 
 Write-Host "Building iPhoneOS static library..."
-cargo build -p acp-mobile-ffi --release --target $deviceTarget
+& cargo build -p acp-mobile-ffi --release --target $deviceTarget
+if ($LASTEXITCODE -ne 0) {
+  Write-Error "cargo build failed for $deviceTarget"
+}
 $deviceLib = Join-Path (Join-Path (Join-Path (Join-Path $crypto "target") $deviceTarget) "release") $libName
 if (-not (Test-Path $deviceLib)) {
   Write-Error "Missing device static library: $deviceLib"
@@ -78,7 +85,10 @@ Copy-Item $deviceLib (Join-Path $deviceOutDir $libName) -Force
 $simLibs = @()
 foreach ($target in $simTargets) {
   Write-Host "Building iOS simulator static library for $target..."
-  cargo build -p acp-mobile-ffi --release --target $target
+  & cargo build -p acp-mobile-ffi --release --target $target
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error "cargo build failed for $target"
+  }
   $builtLib = Join-Path (Join-Path (Join-Path (Join-Path $crypto "target") $target) "release") $libName
   if (-not (Test-Path $builtLib)) {
     Write-Error "Missing simulator static library: $builtLib"

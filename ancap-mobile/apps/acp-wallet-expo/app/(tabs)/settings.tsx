@@ -1,14 +1,23 @@
 import { Linking } from "react-native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  canUseBiometricUnlock,
+  clearPinLock,
+  enableBiometricUnlock,
+  hasPinLock,
+  isBiometricUnlockEnabled,
+  isValidPin,
+  lockSession,
+  setPinLock,
+} from "@/lib/lock";
 import { wipeVault } from "@/lib/vault";
 
 const BASE = "https://ancap.cloud";
 
 // P5-4: basic root/jailbreak/emulator detection (no native dependency needed)
 function checkInsecureEnvironment(): string | null {
-  // __DEV__ is true on simulator/emulator — warn user
   if (typeof __DEV__ !== "undefined" && __DEV__) {
     return "Running on a development/simulator build. Do not use with real funds.";
   }
@@ -25,6 +34,30 @@ const LINKS = [
 ];
 
 export default function SettingsScreen() {
+  const [envWarning, setEnvWarning] = useState<string | null>(null);
+  const [pinEnabled, setPinEnabled] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+
+  useEffect(() => {
+    const w = checkInsecureEnvironment();
+    if (w) setEnvWarning(w);
+    void refreshLockState();
+  }, []);
+
+  const refreshLockState = async () => {
+    const [pinOn, biometricOn, biometricCapable] = await Promise.all([
+      hasPinLock(),
+      isBiometricUnlockEnabled(),
+      canUseBiometricUnlock(),
+    ]);
+    setPinEnabled(pinOn);
+    setBiometricEnabled(biometricOn);
+    setBiometricAvailable(biometricCapable);
+  };
+
   const onWipe = () => {
     Alert.alert(
       "Remove wallet from device?",
@@ -47,12 +80,54 @@ export default function SettingsScreen() {
     void Linking.openURL(url);
   };
 
-  // P5-4: show insecure-environment warning on mount
-  const [envWarning, setEnvWarning] = useState<string | null>(null);
-  useEffect(() => {
-    const w = checkInsecureEnvironment();
-    if (w) setEnvWarning(w);
-  }, []);
+  const onSavePin = async () => {
+    if (!isValidPin(pin)) {
+      Alert.alert("Invalid PIN", "PIN must be 4 to 8 digits.");
+      return;
+    }
+    if (pin !== confirmPin) {
+      Alert.alert("PIN mismatch", "PIN entries do not match.");
+      return;
+    }
+    await setPinLock(pin);
+    setPin("");
+    setConfirmPin("");
+    await refreshLockState();
+    Alert.alert("PIN enabled", "Wallet unlock PIN is now active on this device.");
+  };
+
+  const onDisablePin = async () => {
+    Alert.alert(
+      "Disable lock?",
+      "This removes the local PIN and biometric unlock requirement from this device.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Disable",
+          style: "destructive",
+          onPress: async () => {
+            await clearPinLock();
+            await refreshLockState();
+          },
+        },
+      ]
+    );
+  };
+
+  const onEnableBiometrics = async () => {
+    try {
+      await enableBiometricUnlock();
+      await refreshLockState();
+      Alert.alert("Biometrics enabled", "You can now unlock the wallet with device biometrics.");
+    } catch (e) {
+      Alert.alert("Could not enable biometrics", e instanceof Error ? e.message : "Unknown error");
+    }
+  };
+
+  const onLockNow = () => {
+    lockSession();
+    router.replace("/unlock");
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -93,6 +168,52 @@ export default function SettingsScreen() {
           The ACP ↔ wACP bridge is a custodial clearing rail. Read the full risk disclosure before
           converting.
         </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>App lock</Text>
+        <Text style={styles.meta}>
+          Status: {pinEnabled ? "PIN enabled" : "PIN disabled"}
+          {biometricEnabled ? " · biometrics enabled" : ""}
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={pin}
+          onChangeText={setPin}
+          placeholder="Set PIN (4–8 digits)"
+          placeholderTextColor="#64748b"
+          keyboardType="number-pad"
+          secureTextEntry
+          maxLength={8}
+        />
+        <TextInput
+          style={styles.input}
+          value={confirmPin}
+          onChangeText={setConfirmPin}
+          placeholder="Confirm PIN"
+          placeholderTextColor="#64748b"
+          keyboardType="number-pad"
+          secureTextEntry
+          maxLength={8}
+        />
+        <Pressable style={styles.primary} onPress={() => void onSavePin()}>
+          <Text style={styles.primaryText}>{pinEnabled ? "Update PIN" : "Enable PIN"}</Text>
+        </Pressable>
+        {pinEnabled ? (
+          <Pressable style={styles.secondary} onPress={onDisablePin}>
+            <Text style={styles.secondaryText}>Disable PIN lock</Text>
+          </Pressable>
+        ) : null}
+        {pinEnabled && biometricAvailable && !biometricEnabled ? (
+          <Pressable style={styles.secondary} onPress={() => void onEnableBiometrics()}>
+            <Text style={styles.secondaryText}>Enable biometric unlock</Text>
+          </Pressable>
+        ) : null}
+        {pinEnabled ? (
+          <Pressable style={styles.secondary} onPress={onLockNow}>
+            <Text style={styles.secondaryText}>Lock now</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <Pressable style={styles.danger} onPress={onWipe}>
@@ -139,6 +260,30 @@ const styles = StyleSheet.create({
   },
   linkText: { color: "#f5f7ff", fontSize: 15 },
   arrow: { color: "#64748b", fontSize: 20 },
+  input: {
+    backgroundColor: "#0f172a",
+    borderColor: "#334155",
+    borderWidth: 1,
+    borderRadius: 10,
+    color: "#f5f7ff",
+    padding: 12,
+    marginTop: 12,
+  },
+  primary: {
+    backgroundColor: "#10b981",
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  primaryText: { color: "#042f1a", textAlign: "center", fontWeight: "600" },
+  secondary: {
+    borderColor: "#334155",
+    borderWidth: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  secondaryText: { color: "#f5f7ff", textAlign: "center", fontWeight: "600" },
   danger: {
     backgroundColor: "#450a0a",
     borderColor: "#b91c1c",

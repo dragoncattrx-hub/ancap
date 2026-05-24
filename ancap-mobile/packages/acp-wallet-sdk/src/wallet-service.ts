@@ -35,7 +35,7 @@ export function setNativeWalletModule(mod: NativeWalletModule | null): void {
 function requireNative(): NativeWalletModule {
   if (!nativeModule) {
     throw new Error(
-      "ACP native module is not linked. Use a dev build with expo-acp-core or import via walletd."
+      "ACP native module is not linked. Use a native Expo dev build with expo-acp-core (Android: build-android-native.ps1, iOS/macOS: build-ios-native.ps1) or import via walletd."
     );
   }
   return nativeModule;
