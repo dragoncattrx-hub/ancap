@@ -499,6 +499,7 @@ class Pool(Base):
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     name = Column(String(120), nullable=False, index=True)
+    owner_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id"), nullable=True, index=True)
     risk_profile = Column(SQLEnum(RiskProfileEnum), nullable=False)
     status = Column(SQLEnum(PoolStatusEnum), default=PoolStatusEnum.active)
     rules = Column(JSONB, nullable=True)

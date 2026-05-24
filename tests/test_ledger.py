@@ -51,14 +51,8 @@ def test_ledger_events(client):
     assert "items" in r.json()
 
 
-@pytest.mark.skip(
-    reason=(
-        "Pool model has no `owner_agent_id` column, and POST /v1/ledger/allocate "
-        "now requires the caller to own the pool's agent. Restoring this test "
-        "needs a Pool ownership migration; see services/participation_gates.py."
-    )
-)
-def test_allocate(client):
+def test_allocate_requires_pool_owner(client):
+    """POST /v1/ledger/allocate to a pool without owner_agent_id returns 403."""
     pool = client.post(
         "/v1/pools",
         json={"name": unique_name("alloc_pool"), "risk_profile": "high"},
@@ -91,6 +85,7 @@ def test_allocate(client):
         },
     )
     strat_id = strat.json()["id"]
+    # Pool has no owner_agent_id set -> allocate should fail with 403
     r = client.post(
         "/v1/ledger/allocate",
         json={
@@ -99,7 +94,7 @@ def test_allocate(client):
             "amount": {"amount": "100", "currency": "VUSD"},
         },
     )
-    assert r.status_code == 201
+    assert r.status_code == 403, f"expected 403 for pool without owner, got {r.status_code}: {r.text}"
 
 
 def test_allocate_pool_not_found(client):
