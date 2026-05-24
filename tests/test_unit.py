@@ -55,10 +55,7 @@ def test_vertical_spec_schema():
 
 
 def test_password_hash_verify():
-    try:
-        h = hash_password("secret123")
-    except (ValueError, AttributeError):
-        pytest.skip("bcrypt backend not available")
+    h = hash_password("secret123")
     assert h != "secret123"
     assert verify_password("secret123", h) is True
     assert verify_password("wrong", h) is False
