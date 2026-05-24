@@ -61,9 +61,9 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P3-5 | Fee estimate | [x] | `POST /v1/acp/tx/estimate-fee` |
 | P3-6 | Broadcast signed tx | [x] | `POST /v1/acp/tx/broadcast` |
 | P3-7 | Network status | [x] | `GET /v1/acp/network/status` |
-| P3-8 | ACP indexer (DB-backed history) | [ ] | replace full-chain scan |
-| P3-9 | Push device registration | [ ] | `POST /v1/mobile/devices/register` |
-| P3-10 | Rate limits on broadcast | [ ] | |
+| P3-8 | ACP indexer (DB-backed history) | [x] | `mobile_acp_indexer_tick` + `MobileAcpTx` model |
+| P3-9 | Push device registration | [x] | `POST /v1/mobile/devices/register` + `unregister` + `GET` |
+| P3-10 | Rate limits on broadcast | [x] | 10 req/min per IP |
 
 ---
 
