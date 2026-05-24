@@ -41,12 +41,12 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 | ID | Task | Status | Package |
 |----|------|--------|---------|
-| P2-1 | `@ancap/acp-wallet-sdk` types + interface | [~] | `ancap-mobile/packages/acp-wallet-sdk` |
+| P2-1 | `@ancap/acp-wallet-sdk` types + interface | [x] | `ancap-mobile/packages/acp-wallet-sdk` |
 | P2-2 | `parseUnits` / `formatUnits` (8 decimals) | [x] | pure TS |
 | P2-3 | Native bridge stub → FFI | [ ] | |
-| P2-4 | `@ancap/acp-api-client` | [~] | wired to `/v1/mobile/*` |
-| P2-5 | `@ancap/acp-bridge-client` | [~] | `/v1/bridge/*` |
-| P2-6 | `@ancap/acp-bsc-client` | [~] | read-only wACP balance |
+| P2-4 | `@ancap/acp-api-client` | [x] | wired to `/v1/mobile/*`, 6 tests |
+| P2-5 | `@ancap/acp-bridge-client` | [x] | `/v1/bridge/*`, 5 tests |
+| P2-6 | `@ancap/acp-bsc-client` | [x] | read-only wACP balance, 13 tests |
 
 ---
 
@@ -107,7 +107,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 | ID | Task | Status |
 |----|------|--------|
-| P6-1 | Unit tests (SDK decimals, API client) | [~] |
+| P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` in all 4 packages, 40 tests |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
 | P6-3 | Device matrix (iOS + Android) | [ ] |
 | P6-4 | TestFlight + Play Internal | [ ] |
