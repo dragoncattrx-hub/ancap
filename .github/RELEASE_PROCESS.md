@@ -1,0 +1,113 @@
+# Release Process
+
+This document describes the release workflow for the ANCAP backend and frontend.
+
+---
+
+## Versioning
+
+ANCAP follows **semver** for the application stack:
+- `X.Y.Z` — public API / feature releases
+- Commits to `master` auto-increment the patch version for hotfixes
+
+The `version.txt` file (if present) reflects the currently deployed build.
+
+---
+
+## Pre-release Checklist
+
+Complete **all** items before cutting a release branch:
+
+```bash
+# 1. Tests green on master
+git checkout master && git pull
+python -m pytest tests/ -q --tb=short
+
+# 2. No secrets in the working tree
+git diff HEAD --staged -- . | grep -i "secret\|password\|key" || true
+git status --short
+
+# 3. Alembic migrations are at head
+alembic upgrade head
+# If new migrations exist, ensure they are backwards-compatible
+alembic downgrade --sql -1 | psql $DATABASE_URL  # dry-run downgrade
+
+# 4. Frontend builds
+cd frontend-app && npm run build && cd ..
+
+# 5. Docker build succeeds
+docker build -t ancap:release-check .
+
+# 6. Bandit scan — zero HIGH severity findings
+bandit -r app/ -f txt 2>&1 | tee bandit-report.txt
+# Review bandit-report.txt before proceeding
+
+# 7. Pin dependency versions (if not using lock files)
+# npm: npm install --package-lock-only && npm audit
+# pip:  pip-compile requirements.in --generate-hashes
+```
+
+---
+
+## Cutting a Release
+
+```bash
+VERSION=v1.X.Y
+git checkout -b release/${VERSION}
+# ... apply version bumps, update CHANGELOG ...
+
+# Tag
+git tag -a ${VERSION} -m "Release ${VERSION}"
+git push origin release/${VERSION} --tags
+```
+
+---
+
+## Deployment
+
+1. **Staging**: merge release branch → `staging`, deploy `docker-compose.prod.yml`
+2. **Smoke test**:
+   ```bash
+   curl -sf https://staging.ancap.cloud/v1/system/health
+   curl -sf https://staging.ancap.cloud/v1/system/ready
+   ```
+3. **Production**: promote staging → production via the same compose stack
+
+---
+
+## Hotfix Procedure
+
+```bash
+git checkout master
+git pull
+git checkout -b hotfix/<description>
+# ... apply minimal fix ...
+python -m pytest tests/ -q
+git tag -a v1.X.Y+1 -m "Hotfix: <description>"
+git push origin hotfix/<description> --tags
+git checkout master && git merge --no-ff hotfix/<description>
+```
+
+---
+
+## Rollback
+
+```bash
+# Roll back the database migration
+alembic downgrade -1
+
+# Re-deploy previous image
+docker pull ancap/app:<previous-tag>
+docker-compose -f docker-compose.prod.yml up -d --no-deps api
+```
+
+---
+
+## Release Artifacts
+
+| Artifact | Location |
+|---|---|
+| Release notes | `docs/RELEASE_<VERSION>.md` |
+| Migration diff | `alembic/versions/` |
+| Docker image | GHCR `ghcr.io/ancap-cloud/api:<tag>` |
+| Helm chart | `k8s/` (if applicable) |

@@ -32,7 +32,11 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: dev-secret-change-in-production
+      ENVIRONMENT: development
+      # In dev mode a key is required but no fail-fast (no prod assets at stake).
+      # Generate with: python -c "import secrets; print(secrets.token_urlsafe(64))"
+      SECRET_KEY: ${SECRET_KEY:-dev-insecure-only-local}
+      CURSOR_SECRET: ${CURSOR_SECRET:-}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
       ACP_RPC_URL: ${ACP_RPC_URL:-https://acp1.ancap.cloud/rpc}
