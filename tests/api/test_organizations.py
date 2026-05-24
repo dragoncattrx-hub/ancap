@@ -168,3 +168,125 @@ def test_org_audit_export_requires_auth(client_unauth):
     import uuid
     r = client_unauth.get(f"/v1/organizations/{uuid.uuid4()}/audit/export")
     assert r.status_code == 401, r.text
+
+
+# ── Org-scoped API keys ────────────────────────────────────────────────────────
+
+
+def test_org_api_keys_requires_auth(client_unauth):
+    """Org API key endpoints require authentication."""
+    import uuid
+    org_id = str(uuid.uuid4())
+    key_id = str(uuid.uuid4())
+    r = client_unauth.get(f"/v1/organizations/{org_id}/api-keys")
+    assert r.status_code == 401, r.text
+    r = client_unauth.post(f"/v1/organizations/{org_id}/api-keys", json={"name": "test"})
+    assert r.status_code == 401, r.text
+    r = client_unauth.delete(f"/v1/organizations/{org_id}/api-keys/{key_id}")
+    assert r.status_code == 401, r.text
+
+
+def test_org_api_keys_create_and_list(client):
+    """Admin can create and list org-owned API keys."""
+    _, owner_headers, _ = _register_and_login(client, "API Key Owner")
+    org = _create_org(client, owner_headers, "key_org")
+
+    # Create
+    create = client.post(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=owner_headers,
+        json={"name": "Test CI Key", "scope": "read"},
+    )
+    assert create.status_code == 201, create.text
+    body = create.json()
+    assert body["name"] == "Test CI Key"
+    assert body["org_id"] == org["id"]
+    assert body["key"].startswith("ancap_")
+    assert body["key_prefix"].startswith("ancap_")
+    key_id = body["id"]
+
+    # List
+    listing = client.get(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=owner_headers,
+    )
+    assert listing.status_code == 200, listing.text
+    keys = listing.json()
+    assert any(k["id"] == key_id for k in keys)
+    assert all(k["name"] for k in keys)
+
+
+def test_org_api_keys_member_can_list_not_create(client):
+    """Member can list org keys but not create them."""
+    _, owner_headers, _ = _register_and_login(client, "Key Org Owner 2")
+    _, member_headers, member_email = _register_and_login(client, "Key Org Member 2")
+    org = _create_org(client, owner_headers, "key_org2")
+
+    # Add member to the org
+    add = client.post(
+        f"/v1/organizations/{org['id']}/members",
+        headers=owner_headers,
+        json={"email": member_email, "role": "member"},
+    )
+    assert add.status_code == 201, add.text
+
+    # Owner creates a key
+    create = client.post(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=owner_headers,
+        json={"name": "Member Test Key"},
+    )
+    assert create.status_code == 201, create.text
+
+    # Member can list
+    listing = client.get(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=member_headers,
+    )
+    assert listing.status_code == 200, listing.text
+
+    # Member cannot create
+    member_create = client.post(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=member_headers,
+        json={"name": "Unauthorized Key"},
+    )
+    assert member_create.status_code == 403, member_create.text
+
+
+def test_org_api_keys_delete(client):
+    """Admin can delete org API key."""
+    _, owner_headers, _ = _register_and_login(client, "Key Del Owner")
+    org = _create_org(client, owner_headers, "key_del_org")
+
+    create = client.post(
+        f"/v1/organizations/{org['id']}/api-keys",
+        headers=owner_headers,
+        json={"name": "To Be Deleted"},
+    )
+    assert create.status_code == 201, create.text
+    key_id = create.json()["id"]
+
+    delete = client.delete(
+        f"/v1/organizations/{org['id']}/api-keys/{key_id}",
+        headers=owner_headers,
+    )
+    assert delete.status_code == 204, delete.text
+
+    # Confirm gone
+    listing = client.get(f"/v1/organizations/{org['id']}/api-keys", headers=owner_headers)
+    keys = listing.json()
+    assert not any(k["id"] == key_id for k in keys)
+
+
+def test_org_api_keys_delete_not_found(client):
+    """Delete returns 404 for unknown key."""
+    _, owner_headers, _ = _register_and_login(client, "Key Not Found Owner")
+    org = _create_org(client, owner_headers, "key_notfound_org")
+    import uuid
+    fake_key = str(uuid.uuid4())
+    r = client.delete(
+        f"/v1/organizations/{org['id']}/api-keys/{fake_key}",
+        headers=owner_headers,
+    )
+    assert r.status_code == 404, r.text

@@ -27,6 +27,26 @@ class ApiKeyPublic(BaseModel):
     """Public key info (no secret)."""
     id: str
     agent_id: str
+    org_id: Optional[str] = None
+    key_prefix: str
+    scope: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    created_at: datetime
+
+
+# --- Org-scoped API key schemas ---
+
+class OrgApiKeyCreateRequest(BaseModel):
+    """Create an API key owned by the organization (no agent required)."""
+    name: str = Field(..., max_length=80, description="Descriptive name for this key")
+    scope: Optional[str] = Field(None, max_length=64)
+    expires_at: Optional[datetime] = None
+
+
+class OrgApiKeyPublic(BaseModel):
+    id: str
+    org_id: str
+    name: str
     key_prefix: str
     scope: Optional[str] = None
     expires_at: Optional[datetime] = None

@@ -18,5 +18,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "expo-screen-capture": "~7.0.1"
   }
 }

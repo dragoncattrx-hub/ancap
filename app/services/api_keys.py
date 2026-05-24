@@ -31,11 +31,11 @@ def hash_key(key: str) -> str:
 
 async def create_key(
     session: AsyncSession,
-    agent_id: UUID,
+    agent_id: UUID | None,
     scope: str | None = None,
     expires_at: datetime | None = None,
 ) -> tuple[ApiKey, str]:
-    """Create and persist an API key for the agent. Returns (ApiKey row, raw_key)."""
+    """Create and persist an API key. agent_id=None for org-owned keys."""
     full_key, key_prefix, key_hash = generate_key()
     row = ApiKey(
         agent_id=agent_id,

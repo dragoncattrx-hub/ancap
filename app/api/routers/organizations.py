@@ -4,7 +4,7 @@ import csv
 import io
 import re
 import uuid
-from datetime import datetime, timezone, timedelta, UTC
+from datetime import datetime, timedelta, timezone, UTC
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -25,6 +25,8 @@ from app.db.models import (
     User,
     WebhookEndpoint,
 )
+from app.services.api_keys import generate_key
+from app.schemas.keys import OrgApiKeyCreateRequest, OrgApiKeyPublic
 
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
@@ -664,3 +666,117 @@ async def export_org_audit_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=org-audit-{org_id}-{datetime.now(UTC).strftime('%Y-%m-%d')}.csv"},
     )
+
+
+# ── Org-scoped API keys ────────────────────────────────────────────────────────
+
+@router.post("/{org_id}/api-keys", response_model=dict, status_code=201)
+async def create_org_api_key(
+    org_id: str,
+    body: OrgApiKeyCreateRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Create an API key owned directly by the organization (admin+ only)."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    org = await session.get(Organization, oid)
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    # Generate key directly — set org_id at row creation to avoid update-after-flush issue
+    full_key, key_prefix, key_hash = generate_key()
+    row = ApiKey(
+        id=uuid.uuid4(),
+        org_id=oid,
+        agent_id=None,
+        name=body.name,
+        key_prefix=key_prefix,
+        key_hash=key_hash,
+        scope=body.scope,
+        expires_at=body.expires_at,
+    )
+    session.add(row)
+    await session.commit()
+
+    return {
+        "id": str(row.id),
+        "org_id": str(oid),
+        "name": body.name,
+        "key_prefix": row.key_prefix,
+        "key": full_key,
+        "scope": row.scope,
+        "expires_at": row.expires_at.isoformat() if row.expires_at else None,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+    }
+
+
+@router.get("/{org_id}/api-keys", response_model=list[OrgApiKeyPublic])
+async def list_org_api_keys(
+    org_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """List API keys owned by the organization (any org member)."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.member)
+
+    q = select(ApiKey).where(ApiKey.org_id == oid).order_by(desc(ApiKey.created_at))
+    r = await session.execute(q)
+    rows = r.scalars().all()
+    return [
+        OrgApiKeyPublic(
+            id=str(k.id),
+            org_id=str(oid),
+            name=k.name or "",
+            key_prefix=k.key_prefix,
+            scope=k.scope,
+            expires_at=k.expires_at,
+            created_at=k.created_at,
+        )
+        for k in rows
+    ]
+
+
+@router.delete("/{org_id}/api-keys/{key_id}", status_code=204)
+async def delete_org_api_key(
+    org_id: str,
+    key_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Delete an org-owned API key (admin+ only)."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    kid = uuid.UUID(key_id)
+
+    # Check role first
+    role_q = select(OrganizationMember).where(
+        OrganizationMember.org_id == oid,
+        OrganizationMember.user_id == uid,
+    )
+    role_r = await session.execute(role_q)
+    member = role_r.scalar_one_or_none()
+    if member is None:
+        raise HTTPException(status_code=403, detail="Not a member")
+
+    # Use a direct DELETE statement: check org_id match in WHERE, return rowcount
+    from sqlalchemy import delete
+    del_q = (
+        delete(ApiKey)
+        .where(ApiKey.id == kid)
+        .where(ApiKey.org_id == oid)
+    )
+    result = await session.execute(del_q)
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="API key not found")
+    await session.commit()

@@ -222,7 +222,9 @@ class ApiKey(Base):
     __tablename__ = "api_keys"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=False, index=True)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=True, index=True)
+    name = Column(String(80), nullable=True)
     key_prefix = Column(String(24), nullable=False, unique=True, index=True)
     key_hash = Column(String(64), nullable=False)
     scope = Column(String(64), nullable=True)
