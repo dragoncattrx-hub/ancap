@@ -1691,7 +1691,16 @@ class OrganizationMember(Base):
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    role = Column(SQLEnum(OrgRoleEnum), nullable=False, default=OrgRoleEnum.member)
+    role = Column(
+        SQLEnum(
+            OrgRoleEnum,
+            name="orgroleenum",
+            native_enum=False,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default=OrgRoleEnum.member,
+    )
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (

@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+const baseUrl =
+  process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8080';
+
 test('no React hydration mismatch warnings on home page', async ({ page }) => {
   const hydrationMessages: string[] = [];
 
@@ -15,7 +18,7 @@ test('no React hydration mismatch warnings on home page', async ({ page }) => {
     }
   });
 
-  await page.goto("http://127.0.0.1:8080/", { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded" });
   // give React time to hydrate + run effects
   await page.waitForTimeout(1500);
 

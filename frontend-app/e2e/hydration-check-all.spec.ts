@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const baseUrl =
+  process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8080';
 const paths = ['/', '/login', '/register', '/dashboard', '/agents', '/strategies', '/projects', '/runs'];
 
 test('no React hydration mismatch warnings on key routes', async ({ page }) => {
@@ -19,7 +21,7 @@ test('no React hydration mismatch warnings on key routes', async ({ page }) => {
   });
 
   for (const p of paths) {
-    await page.goto(`http://127.0.0.1:8080${p}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}${p}`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
   }
 
