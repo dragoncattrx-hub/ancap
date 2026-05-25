@@ -99,13 +99,17 @@ async def tick(request: Request):
     # ... rest of tick logic
 ```
 
-### 1.6 Idempotency Not Implemented
-**Status:** 🔴 HIGH (per AUDIT.md)
-**Finding:** README claims Idempotency-Key support for orders/ledger/runs, but code has no implementation.
+### 1.6 Idempotency implementation follow-through
+**Status:** 🟡 MEDIUM
+**Finding:** the old audit note is stale; current repo now has idempotency key storage and tests, so the remaining work is verification/documentation drift cleanup rather than first implementation.
 
-**Fix:** Implement idempotency key storage (recommend Redis or a DB table `idempotency_keys`):
-- Store `{key: request_hash, response: {...}, created_at}` with TTL
-- Check on POST — if key exists, return cached response
+**Current repo truth:**
+- `app/services/idempotency.py` implements request-hash checking and cached response storage
+- current tests exercise `Idempotency-Key` usage across mutable order / ledger / run flows
+
+**Fix / follow-through:**
+- keep endpoint coverage honest in docs and tests
+- add more endpoint-level verification only where a mutable flow still lacks explicit idempotency handling
 
 ---
 
@@ -220,10 +224,10 @@ sudo apt install postfix -y
 **Finding:** `allow_origins=["*"]` in production
 **Fix:** Restrict to known domains in production
 
-### 4.3 SECRET_KEY Default
+### 4.3 Production secret defaults
 **Status:** 🟡 MEDIUM
-**Finding:** `docker-compose.prod.yml` may have dev secrets
-**Fix:** Ensure `SECRET_KEY`, `CURSOR_SECRET` are set from env in production
+**Finding:** production startup must not rely on dev fallbacks or partially supplied compose env
+**Fix:** Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` are supplied from host env / repo-root `.env` in production and fail fast when missing
 
 ### 4.4 No Rate Limiting
 **Status:** 🟡 MEDIUM

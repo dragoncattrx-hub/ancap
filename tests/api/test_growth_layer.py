@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import uuid4
 
 from app.config import get_settings
 from tests.conftest import unique_email, unique_name
@@ -135,39 +136,36 @@ def test_social_follow_and_copy(client):
     assert c.json()["id"] != strategy_id
 
 
-import pytest
-
-
-@pytest.mark.skip(
-    reason=(
-        "Ledger invariant check now applies only to transfer events (deposits "
-        "and withdraws are intentionally one-sided in MVP, see "
-        "services/ledger.py::check_ledger_invariant). The test tries to break "
-        "the invariant via a one-sided deposit, which no longer triggers a "
-        "violation. Rework to use a malformed transfer."
-    )
-)
-def test_jobs_tick_sets_ledger_halt_blocks_faucet(client):
+def test_jobs_tick_sets_ledger_halt_blocks_faucet(client, db_cursor):
     token = _register_and_login(client)
     agent_id = _create_agent(client, token)
 
-    # Break invariant with a deposit (no matching negative). The deposit must be
-    # authorized as the same user that owns the target account, so we forward
-    # the freshly-registered user's token instead of letting the conftest auto-
-    # auth attach the session-default user's token.
-    dep = client.post(
-        "/v1/ledger/deposit",
-        headers={
-            "Idempotency-Key": unique_name("idk_growth_dep"),
-            "Authorization": f"Bearer {token}",
-        },
-        json={
-            "account_owner_type": "user",
-            "account_owner_id": client.get("/v1/users/me", headers={"Authorization": f"Bearer {token}"}).json()["id"],
-            "amount": {"amount": "1", "currency": "USD"},
-        },
+    user_me = client.get("/v1/users/me", headers={"Authorization": f"Bearer {token}"})
+    assert user_me.status_code == 200, user_me.text
+    user_id = user_me.json()["id"]
+
+    balance = client.get(
+        "/v1/ledger/balance",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"owner_type": "user", "owner_id": user_id},
     )
-    assert dep.status_code == 201, dep.text
+    assert balance.status_code == 200, balance.text
+    account_id = balance.json()["account_id"]
+    assert account_id
+
+    malformed_transfer_id = str(uuid4())
+    db_cursor.execute(
+        """
+        INSERT INTO ledger_events (
+            id, ts, type, amount_currency, amount_value, src_account_id, dst_account_id, metadata
+        )
+        VALUES (
+            %s, NOW(), 'transfer', 'USD', 1, NULL, %s, '{}'::jsonb
+        )
+        """,
+        (malformed_transfer_id, account_id),
+    )
+    db_cursor.connection.commit()
 
     jt = client.post("/v1/system/jobs/tick")
     assert jt.status_code == 200, jt.text

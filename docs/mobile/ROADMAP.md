@@ -1,5 +1,10 @@
 # ANCAP ACP Wallet — Roadmap
 
+> Status: supporting mobile roadmap | Updated: 2026-05-25
+> Source of truth for cross-project execution priority: `MASTER_ROADMAP.md`
+> Current reality: the mobile wallet is far along, but it is **not** release-ready yet. The main remaining work is native build closure (Android NDK / iOS macOS-Xcode packaging), real device verification, security checklist completion, and store/release work.
+> Fast status index: `docs/STATUS_MATRIX.md`
+
 Official **non-custodial** mobile wallet for ACP (native) and wACP (BSC).
 One codebase: **React Native + TypeScript** → iOS + Android builds.
 
@@ -106,7 +111,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 | ID | Task | Status |
 |----|------|--------|
-| P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` in all 4 packages, 40 tests |
+| P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` across the mobile packages; latest consolidated snapshot: 56 tests across 5 packages |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
 | P6-3 | Device matrix (iOS + Android) | [ ] |
 | P6-4 | TestFlight + Play Internal | [ ] |
@@ -114,6 +119,28 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P6-6 | Production v1.0.0 | [ ] |
 
 ---
+
+## Smart QR Pay / Auto-Swap track (v1.1 / v2)
+
+> Status: execution started, but not shipped. Source plan/specs: `SMART_QR_AUTO_SWAP_PLAN.md`, `SMART_QR_PAYMENT_INTENT_SCHEMA.md`, `SMART_QR_API_SPEC.md`, `SMART_QR_SECURITY.md`
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| SQ-1 | Capability discovery | [x] | `GET /v1/mobile/smart-pay/capabilities` |
+| SQ-2 | Deterministic parse | [x] | `POST /v1/mobile/smart-pay/parse` for ACP, raw EVM, EIP-681 first scope |
+| SQ-3 | Quote engine groundwork | [~] | first backend `POST /v1/mobile/smart-pay/quote` slice in progress |
+| SQ-4 | Execution session groundwork | [~] | execute/status/recover endpoints in progress |
+| SQ-5 | Mobile SDK/client wiring | [~] | `@ancap/acp-api-client` now has typed Smart Pay capabilities/parse/quote/execute/status/recover methods; Expo app wiring still pending |
+| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, and persisted draft/session restore in-device; polished UX/history still pending |
+| SQ-7 | Real route execution integration | [ ] | bridge/swap/transfer orchestration beyond placeholder routes |
+| SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
+| SQ-9 | Receipt/history/recovery UX | [ ] | payment session resume + receipt screens |
+
+Scope truth:
+- this is a **post-v1.0** flagship track, not release-closure work
+- first supported scope stays narrow: **ACP + BSC/EVM** only
+- deterministic parser first, AI second
+- final user confirmation remains mandatory
 
 ## Post-MVP (v1.1+)
 
@@ -125,18 +152,17 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 ---
 
-## Timeline (estimate)
+## Timeline note
 
-| Phase | Duration |
-|-------|----------|
-| P0 (setup) | **done** |
-| P1 Rust FFI | 2–3 weeks |
-| P2 TS SDK | 1 week (parallel with P1 tail) |
-| P3 Backend remainder | 1 week |
-| P4 RN MVP | 4–5 weeks |
-| P5 Security | 1 week |
-| P6 Release | 1–2 weeks |
-| **Total to v1.0** | **~8–12 weeks** (2 devs) |
+The original 8–12 week estimate is no longer the right way to read this document. The project is now in the late-stage completion zone, where the remaining duration depends mostly on host/tooling blockers and release verification:
+
+- Android NDK installation and `.so` emission
+- macOS/Xcode packaging for iOS native artifacts
+- real device verification of create/send/lock/unlock/biometric flows
+- MASVS/security checklist closure
+- TestFlight / Play Internal / store listing work
+
+Treat this roadmap as a task tracker, not as a reliable remaining-weeks estimate.
 
 ---
 
@@ -168,13 +194,14 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 
 ---
 
-## Weekly checkpoints
+## Current next gates
 
-1. **Week 1:** P1 POC — RN calls `create_wallet` on simulator
-2. **Week 2:** P4 onboarding screens + vault
-3. **Week 3:** Send/receive on testnet
-4. **Week 4:** wACP balance + bridge status UI
-5. **Week 5–6:** Security + TestFlight
-6. **Week 7–8:** Store submission
+1. Install Android NDK and rerun `ancap-mobile/scripts/build-android-native.ps1`
+2. Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode
+3. Verify create/send/sign, PIN, biometrics, and SecureVault flows on real devices
+4. Close MASVS L1 and "no secrets in Sentry/logs"
+5. Run TestFlight + Play Internal validation
+6. Prepare listing/legal/release artifacts and cut v1.0.0
+7. In parallel for post-v1.0 Smart Pay: finish backend quote + execution session groundwork, then wire mobile SDK/client
 
 _Update this file when closing tasks (change `[ ]` → `[x]`)._

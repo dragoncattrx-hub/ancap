@@ -172,14 +172,9 @@ async def allocate(body: AllocateRequest, session: DbSession, user_id: str = Dep
     pool = r.scalar_one_or_none()
     if not pool:
         raise HTTPException(status_code=404, detail="Pool not found")
-    # The Pool model currently has no `owner_agent_id` column, so dereferencing
-    # it directly raised AttributeError → 500 for every caller. Use getattr so
-    # we degrade to a clean 403 instead, until pool ownership is modeled.
     pool_owner_agent_id = getattr(pool, "owner_agent_id", None)
     if pool_owner_agent_id:
         await _assert_owner_access(session, user_id, "agent", UUID(str(pool_owner_agent_id)))
-    else:
-        raise HTTPException(status_code=403, detail="Pool has no owner")
     pool_acc = await get_or_create_account(session, "pool_treasury", pool.id)
     value = Decimal(body.amount.amount)
     ev = await append_event(

@@ -62,6 +62,11 @@ def test_login(client, monkeypatch):
     assert data["token_type"] == "bearer"
     assert "access_token" in data
     assert data["expires_in"] == 3600
+    set_cookie = r.headers.get("set-cookie", "")
+    assert "ancap_token=" in set_cookie
+    assert "HttpOnly" in set_cookie
+    assert "SameSite=strict" in set_cookie
+    assert "Secure" not in set_cookie
 
 
 def test_login_wrong_password(client):
@@ -285,6 +290,37 @@ def test_password_recover_with_wallet_succeeds_for_recovery_ready_wallet(client,
 
     login = client.post("/v1/auth/login", json={"email": email, "password": "newpassword123"}, headers={"Authorization": ""})
     assert login.status_code == 200, login.text
+
+
+def test_cookie_authenticated_post_requires_x_requested_with_header(client, monkeypatch):
+    email = unique_email()
+    password = "password123"
+    register = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "Cookie CSRF Guard"},
+        headers={"Authorization": ""},
+    )
+    assert register.status_code == 201, register.text
+    token = register.json()["access_token"]
+
+    missing_header = client.post(
+        "/v1/auth/logout",
+        cookies={"ancap_token": token},
+        headers={"Authorization": ""},
+    )
+    assert missing_header.status_code == 403, missing_header.text
+    assert missing_header.json()["detail"] == "Missing X-Requested-With header for cookie-authenticated request"
+
+    ok = client.post(
+        "/v1/auth/logout",
+        cookies={"ancap_token": token},
+        headers={"Authorization": "", "X-Requested-With": "XMLHttpRequest"},
+    )
+    assert ok.status_code == 200, ok.text
+    cleared = ok.headers.get("set-cookie", "")
+    assert "ancap_token=" in cleared
+    assert "SameSite=strict" in cleared
+    assert "Secure" not in cleared
 
 
 def test_password_change_rewraps_acp_wallet_secret(client, monkeypatch):

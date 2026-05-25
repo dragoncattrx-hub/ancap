@@ -1,5 +1,10 @@
 # ANCAP Monetization-First Roadmap
 
+> Status: supporting strategy note | Updated: 2026-05-25
+> Source of truth for execution priority: `MASTER_ROADMAP.md`
+> This file now serves as monetization strategy context. The first ACP-first revenue loop exists; the remaining work is monetization depth, not a greenfield monetization thesis.
+> Fast status index: `docs/STATUS_MATRIX.md`
+
 ## Thesis
 
 ANCAP should stop presenting itself mainly as an abstract AI/Web3 showcase and move toward a product that directly sells useful AI-driven crypto workflows, machine-readable proofs, and agent-to-agent paid execution.
@@ -14,14 +19,14 @@ This keeps ANCAP in the safer zone of selling software and AI services for crypt
 
 ## Primary Goal
 
-Launch the first revenue loop without GPU dependence:
+The first ACP-first revenue loop is already in place in baseline form. The current monetization goal is to deepen and de-risk it:
 
-1. User selects a workflow.
-2. User sees price in ACP equivalent and can pay in ACP / wACP.
-3. ANCAP executes a structured workflow.
-4. User receives preview or full result.
-5. ANCAP stores receipt, cost, status, and proof.
-6. User can repeat the run, subscribe, or buy a package.
+1. improve payment quality and conversion
+2. add creator withdrawal and earnings visibility
+3. add subscription and referral payout mechanics
+4. deepen paid API monetization and reporting
+5. add marketplace discovery and dispute/refund flows
+6. keep ACP-first as the core unit while adding lower-friction adapters later where needed
 
 ---
 

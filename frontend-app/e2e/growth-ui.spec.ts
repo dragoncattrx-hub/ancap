@@ -27,12 +27,21 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
     display_name: meJson.display_name || (meJson.email || "user").split("@")[0],
   };
   await page.addInitScript(
-    ({ t, u }) => {
-      localStorage.setItem("ancap_token", t);
+    ({ u }) => {
       localStorage.setItem("ancap_user", JSON.stringify(u));
     },
-    { t: token, u: userData },
+    { u: userData },
   );
+  await page.context().addCookies([
+    {
+      name: "ancap_token",
+      value: token,
+      url: baseUrl,
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
+    },
+  ]);
   await page.route("**/api/v1/users/me", async (route) => {
     await route.fulfill({
       status: 200,

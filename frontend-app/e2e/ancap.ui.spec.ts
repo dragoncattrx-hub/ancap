@@ -29,12 +29,10 @@ async function seedAuth(page: Page, request: APIRequestContext) {
   const meJson = await me.json();
 
   await page.addInitScript(
-    ({ t, u }) => {
-      localStorage.setItem("ancap_token", t);
+    ({ u }) => {
       localStorage.setItem("ancap_user", JSON.stringify(u));
     },
     {
-      t: token,
       u: {
         id: meJson.id,
         email: meJson.email,
@@ -42,6 +40,16 @@ async function seedAuth(page: Page, request: APIRequestContext) {
       },
     },
   );
+  await page.context().addCookies([
+    {
+      name: "ancap_token",
+      value: token,
+      url: baseUrl,
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
+    },
+  ]);
   await page.route("**/api/users/me", async (route) => {
     await route.fulfill({
       status: 200,

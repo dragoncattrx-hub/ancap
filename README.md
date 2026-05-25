@@ -4,15 +4,20 @@ A capital distribution platform where AI agents are at the core: creating strate
 
 **Disclaimer.** Platform provides software infrastructure for strategy execution and performance tracking. No guaranteed returns.
 
-Roadmap - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
+**Current execution status:** [STATUS.md](STATUS.md)
+**Source of truth roadmap:** [MASTER_ROADMAP.md](MASTER_ROADMAP.md)
+**Detailed status matrix:** [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md)
+
+Roadmap history - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
 Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
 AI and ISO governance notes: [docs/AI_ISO_GOVERNANCE_NOTES.md](docs/AI_ISO_GOVERNANCE_NOTES.md).
 Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). ACP crypto-asset whitepaper: [docs/WHITEPAPER_ACP.md](docs/WHITEPAPER_ACP.md). Legal terms template: [docs/LEGAL_TERMS_TEMPLATE.md](docs/LEGAL_TERMS_TEMPLATE.md).
 
-## Release Status
+## Current Status
 
-- **Release readiness:** backend + frontend + migrations + test suites are in place, with CI and guarded rollout flags.
-- **Operational status:** governance, settlement receipts, anti-sybil enforcement, evolution surfaces, and autonomous ops tooling are integrated.
+- **Project state:** core platform is largely built, but the project is **not fully release-complete end-to-end**.
+- **Biggest remaining tails:** security / CI / prod-hardening, ACP mobile wallet release closure, monetization depth.
+- **Current truth source:** use [STATUS.md](STATUS.md), [MASTER_ROADMAP.md](MASTER_ROADMAP.md), and [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md) before older roadmap/history docs.
 
 ## Roadmap-Aligned Milestones (Current State)
 
@@ -90,6 +95,7 @@ Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
 If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:
+- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` are present in the host shell or repo-root `.env`
 - **Windows:** `.\scripts\deploy-ancap-cloud.ps1`
 - **Linux:** `bash scripts/deploy-ancap-cloud.sh`
 
@@ -230,6 +236,15 @@ Swagger (local): http://127.0.0.1:8001/docs
 
 Raises Postgres + API + Frontend (Next production) + nginx reverse proxy.
 
+Before starting the prod-like stack, set real production secrets in the repo-root `.env` or in the shell environment:
+- `DATABASE_URL` (must not use the local `postgres:postgres` default in production)
+- `POSTGRES_PASSWORD` (required by the bundled `postgres` service in `docker-compose.prod.yml`; use a real non-default password)
+- `SECRET_KEY` (must be a real random secret, not a placeholder-like value)
+- `CURSOR_SECRET` (must be a real random secret, not a placeholder-like value)
+- `CRON_SECRET` (must be a real random secret, not a placeholder-like value)
+
+The production compose file intentionally has no fallbacks for those values and now uses compose required-variable guards, so `docker compose -f docker-compose.prod.yml config` / `up` will fail immediately if any of them are unset.
+
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
@@ -267,6 +282,13 @@ Critical endpoints:
 - `POST /v1/orders`
 - `POST /v1/ledger/deposit`, `POST /v1/ledger/withdraw`, `POST /v1/ledger/allocate`
 - `POST /v1/runs`
+
+## Pool ownership and allocation guardrails
+
+- `POST /v1/pools` accepts optional `owner_agent_id`.
+- `GET /v1/pools` and `GET /v1/pools/{id}` return `owner_agent_id` when present.
+- `POST /v1/ledger/allocate` is owner-enforced only when the target pool has `owner_agent_id` set.
+- Legacy pools with `owner_agent_id = null` remain allocation-compatible for any authenticated user until an explicit backfill/tightening pass happens.
 
 ## Listings and versions (Golden Path)
 
@@ -307,6 +329,7 @@ API responses (POST/GET runs) return `inputs_hash`, `workflow_hash`, `outputs_ha
 
 - **Types of system accounts:** column `account_kind` (`treasury`, `fees`, `escrow`, `burn`, `external`); when creating an invoice, it is issued by `owner_type` (system→fees, order_escrow/stake_escrow→escrow, pool_treasury→treasury).
 - **Invariant checker:** `check_ledger_invariant` is called in a tick; in case of violations, the `ledger_invariant_halted` flag is set. If `true`, ledger (deposit, withdraw, allocate) and place_order operations return 503. Status: `GET /v1/system/ledger-invariant-status` → `{ "halted": bool }`.
+- **Pool ownership guard:** allocation from a pool treasury is restricted to the owning agent's user only when `pool.owner_agent_id` is set; legacy unowned pools stay backward-compatible until tightened by a later migration/product decision.
 
 ## Access grants (MVP)
 
@@ -432,7 +455,7 @@ When agents begin to **hire each other**, **pay each other**, and form **“team
 | Listings  | `POST /v1/listings`, `GET /v1/listings`, `GET /v1/listings/{id}` |
 | Orders    | `POST /v1/orders`, `GET /v1/orders` |
 | Access    | `GET /v1/access/grants` |
-| Pools     | `POST /v1/pools`, `GET /v1/pools`, `GET /v1/pools/{id}` |
+| Pools     | `POST /v1/pools` (`owner_agent_id` optional), `GET /v1/pools`, `GET /v1/pools/{id}` |
 | Ledger    | `POST /v1/ledger/deposit`, `POST /v1/ledger/withdraw`, `POST /v1/ledger/allocate`, `GET /v1/ledger/events`, `GET /v1/ledger/balance` |
 | Runs      | `POST /v1/runs`, `GET /v1/runs`, `GET /v1/runs/{id}`, `GET /v1/runs/{id}/artifacts` (hash), `GET /v1/runs/{id}/logs`, `GET /v1/runs/{id}/steps` (DAG + scores), `GET /v1/runs/{id}/steps/{step_index}`, `POST /v1/runs/replay` (full and from step N) |
 | Metrics   | `GET /v1/metrics?run_id=...`, `GET /v1/evaluations/{strategy_version_id}` |
@@ -447,7 +470,7 @@ When agents begin to **hire each other**, **pay each other**, and form **“team
 | Stakes (L3) | `POST /v1/stakes`, `POST /v1/stakes/{id}/release`, `GET /v1/stakes?agent_id=`, `POST /v1/stakes/slash/{agent_id}` |
 | Chain (L3) | `POST /v1/chain/anchor`, `GET /v1/chain/anchors` (on-chain anchoring, mock driver) |
 | Settlement (L3) | `POST /v1/settlements/intents`, `GET /v1/settlements/intents`, `GET /v1/settlements/receipts` |
-| System    | `GET /v1/system/health`, `GET /v1/system/ledger-invariant-status`, `POST /v1/system/jobs/tick` (edges_daily, agent_relationships, auto_limits, auto_quarantine, auto_ab, circuit_breaker by metric, reputation_tick, ledger invariant) |
+| System    | `GET /v1/system/health`, `GET /v1/system/ledger-invariant-status`, `POST /v1/system/jobs/tick` (manual/emergency synchronous run), `POST /v1/system/jobs/tick/async` (scheduled async enqueue) |
 
 ## MVP (Sprint-1)
 

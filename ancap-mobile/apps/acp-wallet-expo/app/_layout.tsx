@@ -81,6 +81,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="receive" options={{ title: t("screenTitles.receive") }} />
+        <Stack.Screen name="smart-pay" options={{ title: "Smart Pay beta" }} />
         <Stack.Screen name="onboarding/create" options={{ title: t("screenTitles.createWallet") }} />
         <Stack.Screen name="onboarding/import" options={{ title: t("screenTitles.importWallet") }} />
         <Stack.Screen

@@ -1,32 +1,45 @@
 # Roadmap & Architecture Notes
 
+> Status: historical architecture roadmap | Updated: 2026-05-25
+> Source of truth for current execution priority: `MASTER_ROADMAP.md`
+> This file is retained as architecture/history context. It must not be read as the final delivery truth or release-readiness verdict.
+> Fast status index: `docs/STATUS_MATRIX.md`
+
 ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISION.md). **Final architecture in 3 levels (L1/L2/L3)** — [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Step by step plan «zero to L3»** with a comparison of the plan and the current code — [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Here — sprint priorities; in README — current state and launch.
 
 ---
 
-## Final Program Status (Apr 2026)
+## Status Note (2026-05-25)
 
-- **AI-Maximal roadmap is fully implemented end-to-end** (Wave 0 → Wave 5).
-- All waves now include concrete backend/API/schema changes, UI surfaces, migrations, and automated tests.
-- The platform is in **release-ready state** with delivery guardrails, feature flags, risk register, CI pipelines, and smoke/chaos validation.
+This document was becoming too optimistic when read as a live delivery tracker. The architecture direction here is still useful, but the project is **not** finished end-to-end in the execution sense.
 
-## Next Milestones (Roadmap-Aligned, Updated)
+Current repo-wide truth is:
+- core platform capability is largely built
+- the biggest remaining tails are **security / CI / prod-hardening**
+- the ACP mobile wallet still needs **native build closure, device verification, and release work**
+- monetization now needs **depth** rather than another thesis document
 
-1. **Public governance surface — delivered**
+For delivery order, blockers, and true remaining work, use `MASTER_ROADMAP.md`.
+
+## Historical milestone summary
+
+The items below describe major architecture and capability waves that were substantially delivered, but they do **not** mean the overall project is fully release-complete.
+
+1. **Public governance surface — substantially delivered**
    - Formal proposal lifecycle for policy/vertical changes is already in production.
    - Full audit trail and moderation hooks are operational across governance and moderation APIs/UI.
 
-2. **On-chain settlement paths — delivered**
+2. **On-chain settlement paths — substantially delivered**
    - Settlement intents and chain receipts are implemented and integrated into the core settlement flow.
    - Stake/slash/settlement paths are covered with receipt persistence and trust metadata.
 
-3. **Anti-sybil reinforcement — delivered**
+3. **Anti-sybil reinforcement — substantially delivered**
    - ACP stake and Reputation 2.0 are integrated with graph metrics and participation gates.
    - Runs/listings/orders are protected by explainable trust and graph policy checks.
 
-4. **Autonomous operations and AI-native controls — delivered**
-   - Operations NOC, decision logs, AI council tooling, and strategy compiler beta are delivered.
-   - Feature flags and safety controls are in place for guarded production rollout.
+4. **Autonomous operations and AI-native controls — partial / evolving**
+   - Operations NOC, decision logs, AI council tooling, and strategy compiler beta exist in some form.
+   - Operational hardening and release discipline still continue in `MASTER_ROADMAP.md`.
 
 5. **ACP tokenomics and distribution — active governance track**
    - ACP base supply: **210,000,000 ACP**.

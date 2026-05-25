@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 
 from app.api.deps import DbSession, require_auth
+from app.config import get_settings
 from app.db.models import User, UserEvmWallet
 from app.schemas import (
     AuthLoginRequest,
@@ -48,6 +49,37 @@ from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet
 from app.services.rate_limit import build_rate_limit_key, enforce_rate_limit, get_request_ip
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+def _auth_cookie_secure(request: Request) -> bool:
+    settings = get_settings()
+    if settings.environment == "production":
+        return True
+    forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip().lower()
+    scheme = forwarded_proto or (request.url.scheme or "").strip().lower()
+    return scheme == "https"
+
+
+def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
+    response.set_cookie(
+        key="ancap_token",
+        value=token,
+        httponly=True,
+        secure=_auth_cookie_secure(request),
+        samesite="strict",
+        max_age=3600,
+        path="/",
+    )
+
+
+def _clear_auth_cookie(response: Response, request: Request) -> None:
+    response.delete_cookie(
+        key="ancap_token",
+        path="/",
+        httponly=True,
+        secure=_auth_cookie_secure(request),
+        samesite="strict",
+    )
 
 
 async def _enforce_auth_rate_limit(
@@ -98,15 +130,7 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
         await send_login_alert(user=user, request=request, via="password")
     except Exception:
         pass
-    response.set_cookie(
-        key="ancap_token",
-        value=token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=3600,
-        path="/",
-    )
+    _set_auth_cookie(response, token, request)
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
@@ -175,15 +199,7 @@ async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, respons
         await send_login_alert(user=user, request=request, via="wallet")
     except Exception:
         pass
-    response.set_cookie(
-        key="ancap_token",
-        value=token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=3600,
-        path="/",
-    )
+    _set_auth_cookie(response, token, request)
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
@@ -262,15 +278,7 @@ async def create_user(body: UserCreateRequest, request: Request, response: Respo
         )
     await session.refresh(user)
     token = create_access_token(str(user.id))
-    response.set_cookie(
-        key="ancap_token",
-        value=token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=3600,
-        path="/",
-    )
+    _set_auth_cookie(response, token, request)
     return UserPublic(
         id=str(user.id),
         email=user.email,
@@ -453,13 +461,7 @@ async def password_change(
 
 
 @router.post("/logout")
-async def logout(response: Response, user_id: str = Depends(require_auth)):
+async def logout(request: Request, response: Response, user_id: str = Depends(require_auth)):
     """Clear the HttpOnly auth cookie. Returns 200 even if the user is not fully authenticated."""
-    response.delete_cookie(
-        key="ancap_token",
-        path="/",
-        httponly=True,
-        secure=True,
-        samesite="lax",
-    )
+    _clear_auth_cookie(response, request)
     return {"ok": True}

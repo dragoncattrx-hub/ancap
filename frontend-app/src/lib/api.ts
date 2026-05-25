@@ -15,6 +15,7 @@ const API_BASE =
     ? "/api/v1"
     : "https://ancap.cloud/api/v1");
 const TOKEN_COOKIE = "ancap_token";
+const SAME_ORIGIN_REQUEST_HEADER = "XMLHttpRequest";
 
 function genIdempotencyKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -62,6 +63,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    "X-Requested-With": SAME_ORIGIN_REQUEST_HEADER,
     ...options.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
@@ -201,7 +203,7 @@ export const auth = {
     }
     // Also clear cookie client-side for immediate effect
     if (typeof document !== "undefined") {
-      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Lax`;
+      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Strict`;
     }
   },
 

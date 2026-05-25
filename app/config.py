@@ -28,6 +28,7 @@ class Settings(BaseSettings):
         for name, value in [
             ("SECRET_KEY", self.secret_key),
             ("CURSOR_SECRET", self.cursor_secret),
+            ("CRON_SECRET", self.cron_secret),
         ]:
             if not value:
                 raise ValueError(
@@ -39,6 +40,18 @@ class Settings(BaseSettings):
                     f"[PRODUCTION] {name} has an insecure placeholder: '{value}'. "
                     f"Set a real secret via environment variable."
                 )
+
+        database_url = (self.database_url or "").strip()
+        if not database_url:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL is not set. "
+                "Set DATABASE_URL before starting in production."
+            )
+        if "://postgres:postgres@" in database_url.lower():
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL still uses the insecure postgres:postgres default. "
+                "Set a real database password before starting in production."
+            )
         return self
 
     # Auth -- required secrets validated above when environment=production
@@ -186,6 +199,12 @@ class Settings(BaseSettings):
     mobile_wallet_bridge_reverse_enabled: bool = False
     mobile_broadcast_rate_limit_per_minute: int = 10
     mobile_broadcast_rate_limit_burst: int = 5
+    mobile_smart_pay_enabled: bool = True
+    mobile_smart_pay_ai_fallback_enabled: bool = False
+    mobile_smart_pay_auto_swap_enabled: bool = False
+    mobile_smart_pay_max_image_bytes: int = 5_242_880
+    mobile_smart_pay_max_slippage_bps: int = 500
+    mobile_smart_pay_min_acp_fee_reserve: str = "1.0"
 
     # LLM
     llm_provider: str = "teneta_claude"
@@ -198,6 +217,9 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 1800
     llm_daily_budget_acp: str = "250"
     llm_fallback_to_template: bool = True
+    # LLM cost tracking (ACP per 1M tokens; used to compute real provider cost)
+    llm_cost_per_1m_input_tokens: str = "0"
+    llm_cost_per_1m_output_tokens: str = "0"
 
     # Redis
     redis_url: str = ""

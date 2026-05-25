@@ -43,24 +43,24 @@ The project is a mature platform for capital distribution with AI agents: FastAP
 ## 3. Notes and risks
 
 ### 3.1 Security and secrets (critical for production)
-- **SECRET_KEY** by default `"change-me-in-production-use-long-random-string"` - must be redefined via env in production; in docker-compose for the api, `SECRET_KEY: dev-secret-change-in-production` is specified - this is not enough for production.
-- **cursor_secret** default `"change-me-cursor-secret"` - used for HMAC in cursor pagination; in production there should be a separate random secret.
-- **CORS:** `allow_origins=["*"]` - for production you need to limit domains.
-- **POST /v1/system/jobs/tick** - the code states: “In production, protect (e.g. internal only / cron secret)” - protection is not implemented; without this, anyone can pull the tick and affect the watermark/reputation/ledger invariant.
+> Historical note: this section was written on 2025-02-24 and parts of it are now stale relative to current repo truth.
 
-**Recommendations:**  
-- In the README or deployment doc, explicitly require the SECRET_KEY, CURSOR_SECRET and CORS limit in production.  
-- Add optional header/key check for `/v1/system/jobs/tick` (e.g. X-Cron-Secret from env).
+- **POSTGRES_PASSWORD / SECRET_KEY / CURSOR_SECRET / CRON_SECRET:** production startup is now expected to fail fast when these are missing or placeholder-like, and `docker-compose.prod.yml` now also requires a real `POSTGRES_PASSWORD` for the bundled compose postgres service instead of hardcoding `postgres`.
+- **CORS:** current repo no longer uses `allow_origins=["*"]` in `app/main.py`; it uses configured origin allowlists plus explicit methods/headers.
+- **POST /v1/system/jobs/tick:** current repo now supports `CRON_SECRET` / `X-Cron-Secret` protection for jobs tick endpoints, with tests covering the guarded async route.
 
-### 3.2 Idempotency (divergence from README)
-- The README states: mutable financial and order transactions accept **Idempotency-Key** and guarantee exactly-once for:
-  - `POST /v1/orders`
-  - `POST /v1/ledger/deposit`, `withdraw`, `allocate`
-  - `POST /v1/runs`
-- There is **no** processing of the Idempotency-Key header in the code (grep by idempotency / Idempotency-Key in `app/` is empty).
+**Remaining recommendations:**  
+- Keep deployment docs explicit that production requires host-side `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` when using the bundled compose postgres service.  
+- Keep runtime/proxy verification honest for CORS and cron-guarded jobs endpoints.
 
-**Recommendation:**  
-Either implement the Idempotency-Key technique and save the result by key (with the return of the saved response when repeated), or remove/weaken the wording in the README to “recommended for implementation.”
+### 3.2 Idempotency (historical audit note)
+> Historical note: this section is stale relative to current repo truth.
+
+- The README still documents **Idempotency-Key** for mutable financial/order/run flows.
+- Current repo now includes idempotency handling code (`app/services/idempotency.py`) and tests exercising `Idempotency-Key` usage across those mutable flows.
+
+**Remaining recommendation:**  
+Keep endpoint-by-endpoint docs and tests aligned with the actual idempotency behavior instead of treating this as an unimplemented feature.
 
 ### 3.3 Versions and warnings
 - **alembic.ini:** `sqlalchemy.url` is set by default in ini. In `alembic/env.py` the URL is taken from `get_settings().database_url` (env), so in production an environment variable is used. It makes sense not to commit real passwords to ini and rely on env.
@@ -96,7 +96,7 @@ There were no comments regarding gross antipatterns or duplication.
 | Tall | Protect `POST /v1/system/jobs/tick` (internal access or secret). |
 | Tall | Implement Idempotency-Key for orders/ledger/runs or adjust the README. |
 | Tall | Add root `.gitignore` and don't commit `.env` and artifacts. |
-| Medium | In the deployment documentation, record the mandatory change of SECRET_KEY, CURSOR_SECRET and CORS in production. |
+| Medium | In the deployment documentation, record the mandatory production requirements for `SECRET_KEY`, `CURSOR_SECRET`, `CRON_SECRET`, and restricted CORS / fail-fast startup behavior. |
 | Medium | Check that Alembic in production uses the URL from env (env.py) and not from alembic.ini. |
 | Low | Eliminate Pydantic deprecation in their models (ConfigDict, serialization). |
 | Low | Consider rate limiting and a queue for background jobs as the load increases. |

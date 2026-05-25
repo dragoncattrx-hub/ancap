@@ -11,9 +11,11 @@ downloads/
 eggs/
 .eggs/
 lib/
-# Frontend source should not be ignored by the generic Python `lib/` rule.
+# Frontend/mobile source should not be ignored by the generic Python `lib/` rule.
 !frontend-app/src/lib/
 !frontend-app/src/lib/**
+!ancap-mobile/apps/acp-wallet-expo/lib/
+!ancap-mobile/apps/acp-wallet-expo/lib/**
 lib64/
 parts/
 sdist/

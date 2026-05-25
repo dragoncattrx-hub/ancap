@@ -790,6 +790,30 @@ class JobWatermark(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class SystemJobRun(Base):
+    __tablename__ = "system_job_runs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    job_name = Column(String(64), nullable=False, index=True)
+    trigger_source = Column(String(32), nullable=False, default="api")
+    status = Column(String(16), nullable=False, default="queued", index=True)  # queued|running|retry|succeeded|dead_letter
+    attempts = Column(Integer, nullable=False, default=0)
+    max_attempts = Column(Integer, nullable=False, default=3)
+    payload_json = Column(JSONB, nullable=False, default=dict)
+    result_json = Column(JSONB, nullable=True)
+    last_error = Column(Text, nullable=True)
+    next_retry_at = Column(DateTime(timezone=True), nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_system_job_runs_job_status_created", "job_name", "status", "created_at"),
+        Index("ix_system_job_runs_job_retry", "job_name", "status", "next_retry_at"),
+    )
+
+
 class DecisionLog(Base):
     __tablename__ = "decision_logs"
 

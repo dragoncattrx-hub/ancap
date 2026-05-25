@@ -100,6 +100,13 @@ export default function WalletHomeScreen() {
         </Link>
       </View>
 
+      <Link href="/smart-pay" asChild>
+        <Pressable style={styles.smartPayBtn}>
+          <Text style={styles.smartPayTitle}>Smart Pay beta</Text>
+          <Text style={styles.smartPayText}>Paste/import payment payload → parse → quote → execute</Text>
+        </Pressable>
+      </Link>
+
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t("walletHome.acpLabel")}</Text>
         <Text style={styles.balance}>{acp}</Text>
@@ -137,6 +144,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   actionText: { color: "#042f1a", textAlign: "center", fontWeight: "600" },
+  smartPayBtn: {
+    backgroundColor: "#0f172a",
+    borderColor: "#10b981",
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 16,
+  },
+  smartPayTitle: { color: "#6ee7b7", fontSize: 16, fontWeight: "700", marginBottom: 6 },
+  smartPayText: { color: "#cbd5e1", lineHeight: 20 },
   card: {
     backgroundColor: "#111827",
     borderRadius: 16,

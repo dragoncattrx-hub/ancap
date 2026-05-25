@@ -49,8 +49,8 @@
 3. **No fail2ban** — dozens of failed SSH logins daily
 4. **API keys in docs** — Kiro API key visible in docs/openclaw-kiro-config.md
 5. **Postfix not running** — only exim4 binary exists but not active
-6. **Idempotency not implemented** — documented in AUDIT.md but not coded
-7. **`/v1/system/jobs/tick` unprotected** — anyone can trigger background jobs
+6. **Historical audit note:** old `AUDIT.md` still says idempotency was not implemented, but the current repo now includes idempotency support for mutable financial/order/run endpoints; keep the audit doc treated as dated context, not current truth
+7. **Historical audit note:** old `AUDIT.md` also says `/v1/system/jobs/tick` was unprotected, but the current repo now supports `CRON_SECRET` / `X-Cron-Secret` protection for jobs tick endpoints; treat that audit note as stale
 
 ---
 

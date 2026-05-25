@@ -83,16 +83,32 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend-app
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
-      - name: Start services (api + postgres + redis)
-        run: docker-compose up -d
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend-app/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Start backend services (api + postgres + redis)
+        working-directory: .
+        run: docker compose up -d postgres redis api
 
       - name: Wait for API to be healthy
+        working-directory: .
         run: |
-          echo "Waiting for API..." &&           for i in $(seq 1 30); do
-            if curl -sf http://localhost:8001/v1/system/health -o /dev/null 2>&1; then
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8001/v1/system/health > /dev/null; then
               echo "API is up"
               exit 0
             fi
@@ -100,26 +116,67 @@ jobs:
             sleep 5
           done
           echo "API failed to start after 150s"
-          docker-compose logs api
+          docker compose logs api
           exit 1
 
-      - name: Setup Playwright
+      - name: Build frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8001/v1
+          NEXT_PUBLIC_ACP_URL: http://127.0.0.1:8001/acp
+        run: npm run build
+
+      - name: Start frontend server
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8001/v1
+          NEXT_PUBLIC_ACP_URL: http://127.0.0.1:8001/acp
+        run: |
+          npm run start > ../frontend-e2e-server.log 2>&1 &
+          echo $! > ../frontend-e2e-server.pid
+
+      - name: Wait for frontend to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3001 > /dev/null; then
+              echo "Frontend is up"
+              exit 0
+            fi
+            echo "Attempt $i/30: frontend not ready yet..."
+            sleep 2
+          done
+          echo "Frontend failed to start after 60s"
+          cat ../frontend-e2e-server.log || true
+          exit 1
+
+      - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests
-        run: npx playwright test
-        working-directory: frontend-app
         env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8001
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3001
+          PLAYWRIGHT_UI_BASE_URL: http://127.0.0.1:3001
+          PLAYWRIGHT_API_BASE_URL: http://127.0.0.1:8001/v1
+        run: npx playwright test
 
-      - name: Upload E2E report
+      - name: Upload E2E artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: frontend-app/test-results/
+          path: |
+            frontend-app/playwright-report/
+            frontend-app/test-results/
+            frontend-e2e-server.log
           retention-days: 14
 
-      - name: Stop services
+      - name: Stop frontend server
         if: always()
-        run: docker-compose down -v
+        working-directory: .
+        run: |
+          if [ -f frontend-e2e-server.pid ]; then
+            kill $(cat frontend-e2e-server.pid) || true
+          fi
+
+      - name: Stop backend services
+        if: always()
+        working-directory: .
+        run: docker compose down -v

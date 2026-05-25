@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, HTTPException
 
 from app.schemas import PoolCreateRequest, PoolPublic, Pagination, PoolStatus
 from app.api.deps import DbSession
-from app.db.models import Pool, RiskProfileEnum, PoolStatusEnum
+from app.db.models import Agent, Pool, RiskProfileEnum, PoolStatusEnum
 from sqlalchemy import select
 
 router = APIRouter(prefix="/pools", tags=["Pools"])
@@ -12,8 +12,18 @@ router = APIRouter(prefix="/pools", tags=["Pools"])
 
 @router.post("", response_model=PoolPublic, status_code=201)
 async def create_pool(body: PoolCreateRequest, session: DbSession):
+    owner_agent_id = None
+    if body.owner_agent_id:
+        try:
+            owner_agent_id = UUID(body.owner_agent_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="Invalid owner_agent_id") from exc
+        owner_agent = await session.get(Agent, owner_agent_id)
+        if not owner_agent:
+            raise HTTPException(status_code=404, detail="Owner agent not found")
     pool = Pool(
         name=body.name,
+        owner_agent_id=owner_agent_id,
         risk_profile=RiskProfileEnum(body.risk_profile),
         status=PoolStatusEnum.active,
         rules=body.rules,
@@ -25,6 +35,7 @@ async def create_pool(body: PoolCreateRequest, session: DbSession):
     return PoolPublic(
         id=str(pool.id),
         name=pool.name,
+        owner_agent_id=str(pool.owner_agent_id) if pool.owner_agent_id else None,
         risk_profile=pool.risk_profile.value,
         status=PoolStatus(pool.status.value),
         created_at=pool.created_at,
@@ -58,6 +69,7 @@ async def list_pools(
             PoolPublic(
                 id=str(p.id),
                 name=p.name,
+                owner_agent_id=str(p.owner_agent_id) if p.owner_agent_id else None,
                 risk_profile=p.risk_profile.value,
                 status=PoolStatus(p.status.value),
                 created_at=p.created_at,
@@ -78,6 +90,7 @@ async def get_pool(pool_id: UUID, session: DbSession):
     return PoolPublic(
         id=str(pool.id),
         name=pool.name,
+        owner_agent_id=str(pool.owner_agent_id) if pool.owner_agent_id else None,
         risk_profile=pool.risk_profile.value,
         status=PoolStatus(pool.status.value),
         created_at=pool.created_at,

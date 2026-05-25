@@ -1,3 +1,5 @@
+import pytest
+
 from app.config import Settings
 
 
@@ -15,3 +17,57 @@ def test_settings_keeps_raw_platform_admin_user_ids_string_for_env_loading():
 def test_settings_parses_empty_platform_admin_user_ids_as_empty_tuple():
     settings = Settings(platform_admin_user_ids="   ,  , ")
     assert settings.platform_admin_user_ids_allowlist == ()
+
+
+def test_settings_requires_secret_key_cursor_secret_and_cron_secret_in_production():
+    valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
+    valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
+    valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] SECRET_KEY is not set"):
+        Settings(environment="production", secret_key="", cursor_secret=valid_cursor, cron_secret=valid_cron)
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] CURSOR_SECRET is not set"):
+        Settings(environment="production", secret_key=valid_secret, cursor_secret="", cron_secret=valid_cron)
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] CRON_SECRET is not set"):
+        Settings(environment="production", secret_key=valid_secret, cursor_secret=valid_cursor, cron_secret="")
+
+
+def test_settings_rejects_placeholder_production_secrets():
+    valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
+    valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
+    valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] SECRET_KEY has an insecure placeholder"):
+        Settings(environment="production", secret_key="change-me-in-production", cursor_secret=valid_cursor, cron_secret=valid_cron)
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] CURSOR_SECRET has an insecure placeholder"):
+        Settings(environment="production", secret_key=valid_secret, cursor_secret="dev-secret-cursor", cron_secret=valid_cron)
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] CRON_SECRET has an insecure placeholder"):
+        Settings(environment="production", secret_key=valid_secret, cursor_secret=valid_cursor, cron_secret="example-cron-secret")
+
+
+def test_settings_rejects_insecure_default_database_url_in_production():
+    valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
+    valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
+    valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL is not set"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure postgres:postgres default"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap",
+        )

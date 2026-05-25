@@ -5,7 +5,60 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 COMPOSE="$ROOT/docker-compose.prod.yml"
+DOTENV="$ROOT/.env"
 test -f "$COMPOSE" || { echo "Missing $COMPOSE"; exit 1; }
+
+if [[ -f "$DOTENV" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$DOTENV"
+  set +a
+  echo "Loaded compose substitution secrets from: $DOTENV"
+fi
+
+REQUIRED_PROD_SECRETS=(DATABASE_URL POSTGRES_PASSWORD SECRET_KEY CURSOR_SECRET CRON_SECRET)
+MISSING=()
+for name in "${REQUIRED_PROD_SECRETS[@]}"; do
+  if [[ -z "${!name:-}" ]]; then
+    MISSING+=("$name")
+  fi
+done
+if (( ${#MISSING[@]} > 0 )); then
+  echo "Missing required production secrets for docker-compose.prod.yml: ${MISSING[*]}. Set them in $DOTENV or export them in the shell before running this deploy script." >&2
+  exit 1
+fi
+
+UNSAFE_SECRET_PHRASES=(change dev-secret change-me changeme secret example placeholder)
+for secret_name in SECRET_KEY CURSOR_SECRET CRON_SECRET; do
+  secret_value="${!secret_name:-}"
+  if [[ -z "$secret_value" ]]; then
+    continue
+  fi
+
+  normalized_secret_value="${secret_value,,}"
+  for phrase in "${UNSAFE_SECRET_PHRASES[@]}"; do
+    if [[ "$normalized_secret_value" == *"$phrase"* ]]; then
+      echo "$secret_name still uses an insecure placeholder-like value. Set a real random secret before running this deploy script." >&2
+      exit 1
+    fi
+  done
+done
+
+if [[ "${DATABASE_URL,,}" == *"://postgres:postgres@"* ]]; then
+  echo "DATABASE_URL still uses the insecure postgres:postgres default. Set a real database password before running this deploy script." >&2
+  exit 1
+fi
+
+POSTGRES_PASSWORD_NORMALIZED="${POSTGRES_PASSWORD,,}"
+if [[ "$POSTGRES_PASSWORD_NORMALIZED" == "postgres" || "$POSTGRES_PASSWORD_NORMALIZED" == *"change-me"* || "$POSTGRES_PASSWORD_NORMALIZED" == *"placeholder"* || "$POSTGRES_PASSWORD_NORMALIZED" == *"example"* ]]; then
+  echo "POSTGRES_PASSWORD is still using an insecure default or placeholder. Set a real non-default password before running this deploy script." >&2
+  exit 1
+fi
+
+BRIDGE_ENV="$ROOT/Sicret/bridge-bsc/bridge.env"
+if [[ -f "$BRIDGE_ENV" ]]; then
+  echo "Bridge runtime secrets remain sourced by docker-compose.prod.yml via service env_file: $BRIDGE_ENV"
+fi
 
 SKIP_PULL=0
 SKIP_MIG=0

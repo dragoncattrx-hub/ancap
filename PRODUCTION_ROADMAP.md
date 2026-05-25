@@ -1,10 +1,13 @@
 # ANCAP Production Roadmap
 
-> Status: active | Updated: 2026-05-23
+> Status: supporting snapshot | Updated: 2026-05-25
+> Source of truth: `MASTER_ROADMAP.md`
+> Purpose: product/deploy status snapshot. This file is useful for historical and operational context, but execution priority and final truth now live in `MASTER_ROADMAP.md`.
+> Fast status index: `docs/STATUS_MATRIX.md`
 
 ## Summary
 
-ANCAP moves from a broad AI-native capital allocation platform into a production product where users, crypto teams, creators, and AI agents buy, create, and sell paid AI-workflows for ACP. The product priority is clear: real LLM execution, ACP-first monetization, proof receipts, realtime statuses, creator publishing, developer/API monetization, and B2B operational controls.
+ANCAP moves from a broad AI-native capital allocation platform into a production product where users, crypto teams, creators, and AI agents buy, create, and sell paid AI-workflows for ACP. The product priority is still real LLM execution, ACP-first monetization, proof receipts, realtime statuses, creator publishing, developer/API monetization, and B2B operational controls.
 
 Fixed decisions:
 
@@ -15,7 +18,9 @@ Fixed decisions:
 - AI governance: AI/ISO readiness guidance is tracked in `docs/AI_ISO_GOVERNANCE_NOTES.md`.
 - Public trust layer: whitepapers, terms, privacy, and cookie consent are published on the site before broader paid acquisition.
 
-## Current Status
+## Snapshot Status
+
+Reality note: this section is a capability snapshot, not a claim that the whole project is release-complete. The main remaining tails are security / CI / prod-hardening, finishing the mobile wallet to a real device-ready release, and monetization depth beyond the first ACP-first loop.
 
 | Phase | Component | Status |
 | --- | --- | --- |
@@ -50,6 +55,8 @@ Fixed decisions:
 2. ~~Fix the remaining deploy-truth blockers~~ — **DONE**: .gitignore updated, `start-claude.bat` added, working tree clean, push verified.
 3. Production deploy (run on host):
    - Pull latest on the target server / host clone.
+   - Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env` before starting `docker-compose.prod.yml`.
+   - `docker compose -f docker-compose.prod.yml config` should now fail immediately if any of those required secrets are unset.
    - Run `alembic upgrade head`.
    - Run `./scripts/deploy-ancap-cloud.ps1` (or `.sh` on Linux) to rebuild + restart all services.
    - Verify `https://ancap.cloud/internal/frontend-build` shows real `NEXT_PUBLIC_APP_BUILD_ID` matching `git rev-parse --short HEAD`.

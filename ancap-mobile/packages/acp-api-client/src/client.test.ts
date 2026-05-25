@@ -185,6 +185,143 @@ describe("AcpApiClient", () => {
     expect(result.devices[0]?.device_id).toBe("dev-1");
   });
 
+  it("getSmartPayCapabilities calls /mobile/smart-pay/capabilities", async () => {
+    const mock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        enabled: true,
+        smartQrParseEnabled: true,
+        smartQrAiFallbackEnabled: false,
+        autoSwapEnabled: false,
+        supportedNetworks: ["acp", "bsc"],
+        supportedAssets: [{ network: "acp", symbol: "ACP" }],
+        maxImageBytes: 5242880,
+        maxSlippageBps: 500,
+        minAcpFeeReserve: "1.0",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });
+    const result = await client.getSmartPayCapabilities();
+    expect(mock).toHaveBeenCalledWith("https://api.test/mobile/smart-pay/capabilities", expect.any(Object));
+    expect(result.supportedNetworks).toEqual(["acp", "bsc"]);
+  });
+
+  it("parseSmartQr posts raw payload to /mobile/smart-pay/parse", async () => {
+    const mock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        paymentIntent: {
+          id: "pi_1",
+          createdAt: "2026-05-25T10:00:00Z",
+          source: "camera",
+          rawPayload: "acp1...",
+          payloadHash: "hash",
+          parseMethod: "deterministic",
+          confidence: 1,
+          status: "parsed",
+          network: "acp",
+          asset: { kind: "native", symbol: "ACP", isSupported: true, isAllowlisted: true },
+          recipient: { address: "acp1...", addressType: "acp" },
+          amount: { value: "1", currencySymbol: "ACP", isExact: true, isMax: false },
+          memo: null,
+          merchant: null,
+          riskFlags: [],
+          warnings: [],
+          unsupportedReasons: [],
+          requiresUserConfirmation: true,
+          metadata: { aiUsed: false, parserVersion: "1" },
+        },
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });
+    const result = await client.parseSmartQr({ source: "camera", rawPayload: "acp1..." });
+    const [url, opts] = mock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.test/mobile/smart-pay/parse");
+    expect(JSON.parse(String(opts.body))).toEqual({ source: "camera", rawPayload: "acp1..." });
+    expect(result.paymentIntent.id).toBe("pi_1");
+  });
+
+  it("quoteSmartPay posts quote request", async () => {
+    const mock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        quote: {
+          quoteId: "q_1",
+          paymentIntentId: "pi_1",
+          mode: "direct_send",
+          expiresAt: "2026-05-25T10:05:00Z",
+          sourceAsset: { network: "acp", symbol: "ACP" },
+          targetAsset: { network: "acp", symbol: "ACP" },
+          targetAmount: "1",
+          requiredSourceAmount: "1.75000100",
+          serviceFeeAcp: "0.75",
+          networkFee: [],
+          slippageBps: 150,
+          route: [],
+          warnings: [],
+          riskFlags: [],
+        },
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });
+    const result = await client.quoteSmartPay({
+      paymentIntentId: "pi_1",
+      sourcePreference: {
+        preferredAsset: "ACP",
+        allowedAssets: ["ACP"],
+        maxSlippageBps: 150,
+        minAcpFeeReserve: "1.0",
+      },
+    });
+    const [url, opts] = mock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.test/mobile/smart-pay/quote");
+    expect(JSON.parse(String(opts.body)).paymentIntentId).toBe("pi_1");
+    expect(result.quote.quoteId).toBe("q_1");
+  });
+
+  it("execute/get/recover Smart Pay calls correct endpoints", async () => {
+    const mock = vi.fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "pending_reconciliation", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:01:00Z", recoverable: true, nextAction: null, txRefs: [{ role: "client_known", network: "unknown", txid: "0xabc" }], error: null } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      );
+    const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });
+
+    await client.executeSmartPay({
+      paymentIntentId: "pi_1",
+      quoteId: "q_1",
+      confirmationAccepted: true,
+      deviceContext: { platform: "android", appVersion: "1.1.0" },
+    });
+    await client.getSmartPayExecution("pe_1");
+    const recovered = await client.recoverSmartPay("pe_1", { clientKnownTxs: ["0xabc"] });
+
+    expect(mock.mock.calls[0]?.[0]).toBe("https://api.test/mobile/smart-pay/execute");
+    expect(mock.mock.calls[1]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1");
+    expect(mock.mock.calls[2]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/recover");
+    expect(recovered.execution.status).toBe("pending_reconciliation");
+  });
+
   it("explorerTxUrl builds correct URL from config", () => {
     const mock = vi.fn();
     const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });

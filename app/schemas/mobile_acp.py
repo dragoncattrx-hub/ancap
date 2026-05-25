@@ -1,9 +1,252 @@
 ﻿from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class SmartPaySupportedAsset(BaseModel):
+    network: str
+    symbol: str
+    token_address: str | None = Field(default=None, serialization_alias="tokenAddress")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayCapabilitiesResponse(BaseModel):
+    enabled: bool
+    smart_qr_parse_enabled: bool = Field(serialization_alias="smartQrParseEnabled")
+    smart_qr_ai_fallback_enabled: bool = Field(serialization_alias="smartQrAiFallbackEnabled")
+    auto_swap_enabled: bool = Field(serialization_alias="autoSwapEnabled")
+    supported_networks: list[str] = Field(serialization_alias="supportedNetworks")
+    supported_assets: list[SmartPaySupportedAsset] = Field(serialization_alias="supportedAssets")
+    max_image_bytes: int = Field(serialization_alias="maxImageBytes")
+    max_slippage_bps: int = Field(serialization_alias="maxSlippageBps")
+    min_acp_fee_reserve: str = Field(serialization_alias="minAcpFeeReserve")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartQrParseHint(BaseModel):
+    locale: str | None = None
+    platform: Literal["ios", "android"] | None = None
+
+
+class SmartQrParseRequest(BaseModel):
+    source: Literal["camera", "photo", "paste", "share"]
+    raw_payload: str = Field(alias="rawPayload", min_length=1, max_length=4096)
+    hint: SmartQrParseHint | None = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class PaymentAsset(BaseModel):
+    kind: Literal["native", "erc20", "unknown"]
+    symbol: str | None = None
+    name: str | None = None
+    token_address: str | None = Field(default=None, serialization_alias="tokenAddress")
+    decimals: int | None = None
+    is_supported: bool = Field(serialization_alias="isSupported")
+    is_allowlisted: bool = Field(serialization_alias="isAllowlisted")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class PaymentRecipient(BaseModel):
+    address: str
+    resolved_display: str | None = Field(default=None, serialization_alias="resolvedDisplay")
+    address_type: Literal["acp", "evm", "unknown"] = Field(serialization_alias="addressType")
+    checksum_valid: bool | None = Field(default=None, serialization_alias="checksumValid")
+    ens_or_alias: str | None = Field(default=None, serialization_alias="ensOrAlias")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class PaymentAmount(BaseModel):
+    value: str
+    atomic_value: str | None = Field(default=None, serialization_alias="atomicValue")
+    currency_symbol: str | None = Field(default=None, serialization_alias="currencySymbol")
+    is_exact: bool = Field(serialization_alias="isExact")
+    is_max: bool = Field(serialization_alias="isMax")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class PaymentMemo(BaseModel):
+    value: str
+    type: Literal["memo", "tag", "reference", "note"]
+    required: bool
+
+
+class MerchantHint(BaseModel):
+    label: str | None = None
+    category: str | None = None
+    website: str | None = None
+    invoice_id: str | None = Field(default=None, serialization_alias="invoiceId")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class PaymentIntentMetadata(BaseModel):
+    detected_standard: str | None = Field(default=None, serialization_alias="detectedStandard")
+    invoice_type: str | None = Field(default=None, serialization_alias="invoiceType")
+    ai_model: str | None = Field(default=None, serialization_alias="aiModel")
+    ai_used: bool = Field(serialization_alias="aiUsed")
+    parser_version: str = Field(serialization_alias="parserVersion")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class PaymentIntentResponseItem(BaseModel):
+    id: str
+    created_at: str = Field(serialization_alias="createdAt")
+    source: Literal["camera", "photo", "paste", "share"]
+    raw_payload: str = Field(serialization_alias="rawPayload")
+    payload_hash: str = Field(serialization_alias="payloadHash")
+    parse_method: Literal["deterministic", "heuristic", "ai"] = Field(serialization_alias="parseMethod")
+    confidence: float
+    status: Literal["parsed", "unsupported", "needs_review", "rejected"]
+    network: Literal["acp", "bsc", "base", "ethereum", "unknown"]
+    asset: PaymentAsset
+    recipient: PaymentRecipient
+    amount: PaymentAmount | None = None
+    memo: PaymentMemo | None = None
+    merchant: MerchantHint | None = None
+    risk_flags: list[str] = Field(default_factory=list, serialization_alias="riskFlags")
+    warnings: list[str] = Field(default_factory=list)
+    unsupported_reasons: list[str] = Field(default_factory=list, serialization_alias="unsupportedReasons")
+    requires_user_confirmation: bool = Field(serialization_alias="requiresUserConfirmation")
+    metadata: PaymentIntentMetadata
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartQrParseResponse(BaseModel):
+    payment_intent: PaymentIntentResponseItem = Field(serialization_alias="paymentIntent")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPaySourcePreference(BaseModel):
+    preferred_asset: str = Field(alias="preferredAsset", serialization_alias="preferredAsset", min_length=1, max_length=16)
+    allowed_assets: list[str] = Field(default_factory=list, alias="allowedAssets", serialization_alias="allowedAssets")
+    max_slippage_bps: int = Field(default=150, alias="maxSlippageBps", serialization_alias="maxSlippageBps", ge=0, le=5000)
+    min_acp_fee_reserve: str = Field(default="1.0", alias="minAcpFeeReserve", serialization_alias="minAcpFeeReserve")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayQuoteRequest(BaseModel):
+    payment_intent_id: str = Field(alias="paymentIntentId", serialization_alias="paymentIntentId", min_length=1)
+    source_preference: SmartPaySourcePreference = Field(alias="sourcePreference", serialization_alias="sourcePreference")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayQuoteAsset(BaseModel):
+    network: str
+    symbol: str
+    token_address: str | None = Field(default=None, serialization_alias="tokenAddress")
+    decimals: int | None = None
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayNetworkFeeItem(BaseModel):
+    network: str
+    asset_symbol: str = Field(serialization_alias="assetSymbol")
+    amount: str
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayRouteStep(BaseModel):
+    kind: Literal["bridge", "swap", "transfer"]
+    network: str
+    dex_or_rail: str | None = Field(default=None, serialization_alias="dexOrRail")
+    from_asset: str = Field(serialization_alias="fromAsset")
+    to_asset: str = Field(serialization_alias="toAsset")
+    estimated_out: str = Field(serialization_alias="estimatedOut")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayQuoteItem(BaseModel):
+    quote_id: str = Field(serialization_alias="quoteId")
+    payment_intent_id: str = Field(serialization_alias="paymentIntentId")
+    mode: Literal["direct_send", "swap_then_send"]
+    expires_at: str = Field(serialization_alias="expiresAt")
+    source_asset: SmartPayQuoteAsset = Field(serialization_alias="sourceAsset")
+    target_asset: SmartPayQuoteAsset = Field(serialization_alias="targetAsset")
+    target_amount: str = Field(serialization_alias="targetAmount")
+    required_source_amount: str = Field(serialization_alias="requiredSourceAmount")
+    service_fee_acp: str = Field(serialization_alias="serviceFeeAcp")
+    network_fee: list[SmartPayNetworkFeeItem] = Field(default_factory=list, serialization_alias="networkFee")
+    slippage_bps: int = Field(serialization_alias="slippageBps")
+    route: list[SmartPayRouteStep] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    risk_flags: list[str] = Field(default_factory=list, serialization_alias="riskFlags")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayQuoteResponse(BaseModel):
+    quote: SmartPayQuoteItem
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayDeviceContext(BaseModel):
+    platform: Literal["ios", "android"]
+    app_version: str | None = Field(default=None, alias="appVersion", serialization_alias="appVersion")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayExecuteRequest(BaseModel):
+    payment_intent_id: str = Field(alias="paymentIntentId", serialization_alias="paymentIntentId", min_length=1)
+    quote_id: str = Field(alias="quoteId", serialization_alias="quoteId", min_length=1)
+    confirmation_accepted: bool = Field(alias="confirmationAccepted", serialization_alias="confirmationAccepted")
+    device_context: SmartPayDeviceContext | None = Field(default=None, alias="deviceContext", serialization_alias="deviceContext")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayTxRef(BaseModel):
+    role: str
+    network: str
+    txid: str
+    explorer_url: str | None = Field(default=None, serialization_alias="explorerUrl")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayExecutionItem(BaseModel):
+    id: str
+    payment_intent_id: str = Field(serialization_alias="paymentIntentId")
+    quote_id: str = Field(serialization_alias="quoteId")
+    status: Literal["awaiting_local_signature", "pending_reconciliation", "completed", "failed"]
+    created_at: str = Field(serialization_alias="createdAt")
+    updated_at: str = Field(serialization_alias="updatedAt")
+    recoverable: bool
+    next_action: str | None = Field(default=None, serialization_alias="nextAction")
+    tx_refs: list[SmartPayTxRef] = Field(default_factory=list, serialization_alias="txRefs")
+    error: str | None = None
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayExecutionResponse(BaseModel):
+    execution: SmartPayExecutionItem
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayRecoverRequest(BaseModel):
+    client_known_txs: list[str] = Field(default_factory=list, alias="clientKnownTxs", serialization_alias="clientKnownTxs")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
 
 class MobileDocsLinks(BaseModel):
@@ -58,9 +301,9 @@ class MobileAcpBalanceResponse(BaseModel):
 
 
 class AcpFeeEstimateRequest(BaseModel):
-    from_address: str = Field(validation_alias="from")
-    to_address: str = Field(validation_alias="to")
-    amount_acp: str = Field(validation_alias="amountAcp")
+    from_address: Annotated[str, Field(validation_alias="from")]
+    to_address: Annotated[str, Field(validation_alias="to")]
+    amount_acp: Annotated[str, Field(validation_alias="amountAcp")]
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -74,7 +317,7 @@ class AcpFeeEstimateResponse(BaseModel):
 
 
 class AcpBroadcastRequest(BaseModel):
-    raw_tx: str = Field(validation_alias="rawTx", min_length=16)
+    raw_tx: str = Field(alias="rawTx", min_length=16)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -86,6 +329,15 @@ class AcpBroadcastResponse(BaseModel):
 
 
 # ── Device registration ────────────────────────────────────────────────────────
+
+
+class MobileDeviceInfo(BaseModel):
+    device_id: str
+    platform: str
+    app_version: str | None = None
+    is_active: bool
+    last_seen_at: datetime | None = None
+    created_at: datetime
 
 
 class MobileDeviceRegisterRequest(BaseModel):
@@ -106,12 +358,3 @@ class MobileDeviceUnregisterRequest(BaseModel):
 
 class MobileDeviceListResponse(BaseModel):
     devices: list[MobileDeviceInfo] = Field(default_factory=list)
-
-
-class MobileDeviceInfo(BaseModel):
-    device_id: str
-    platform: str
-    app_version: str | None = None
-    is_active: bool
-    last_seen_at: datetime | None = None
-    created_at: datetime

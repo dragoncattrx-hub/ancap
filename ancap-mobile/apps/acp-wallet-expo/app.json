@@ -27,6 +27,18 @@
           "faceIDPermission": "Allow ANCAP ACP Wallet to verify it is really you before unlocking the wallet."
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ANCAP ACP Wallet to import QR payment images for Smart Pay."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow ANCAP ACP Wallet to scan QR payment codes for Smart Pay."
+        }
+      ],
       "expo-acp-core"
     ],
     "experiments": {

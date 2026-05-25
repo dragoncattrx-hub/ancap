@@ -1,5 +1,46 @@
 """System and health endpoints."""
 
+import os
+import time
+
+from sqlalchemy import create_engine, text
+
+from app.api.routers import system as system_router
+from app.config import get_settings
+
+
+def _sync_database_url() -> str:
+    url = os.environ.get("DATABASE_URL", "")
+    if "+asyncpg" in url:
+        return url.replace("+asyncpg", "").replace("postgresql+asyncpg", "postgresql")
+    return url
+
+
+def _get_system_job_run(job_run_id: str):
+    engine = create_engine(_sync_database_url(), pool_pre_ping=True)
+    try:
+        with engine.connect() as conn:
+            return conn.execute(
+                text(
+                    "SELECT job_name, trigger_source, status, attempts, max_attempts, result_json, last_error, next_retry_at "
+                    "FROM system_job_runs WHERE id = :job_run_id"
+                ),
+                {"job_run_id": job_run_id},
+            ).mappings().first()
+    finally:
+        engine.dispose()
+
+
+def _wait_for_system_job_run(job_run_id: str, *, statuses: set[str], timeout_s: float = 5.0):
+    deadline = time.time() + timeout_s
+    last_row = None
+    while time.time() < deadline:
+        last_row = _get_system_job_run(job_run_id)
+        if last_row is not None and last_row["status"] in statuses:
+            return last_row
+        time.sleep(0.1)
+    return last_row
+
 
 def test_root(client):
     r = client.get("/")
@@ -31,6 +72,113 @@ def test_jobs_tick(client):
     assert isinstance(data["reputation_recomputed"], int)
     assert "ledger_invariant_violations" in data
     assert isinstance(data["ledger_invariant_violations"], list)
+
+
+def test_jobs_tick_async_returns_accepted(client):
+    r = client.post("/v1/system/jobs/tick/async")
+    assert r.status_code == 202, r.text
+    payload = r.json()
+    assert payload["status"] == "queued"
+    assert "background" in payload["message"].lower()
+    assert payload["job_run_id"]
+    assert payload["max_attempts"] == 3
+
+
+def test_jobs_tick_async_requires_matching_cron_secret_when_configured(client, monkeypatch):
+    monkeypatch.setenv("CRON_SECRET", "cron-secret-test")
+    get_settings.cache_clear()
+    try:
+        missing = client.post("/v1/system/jobs/tick/async")
+        assert missing.status_code == 403, missing.text
+        assert missing.json()["detail"] == "Invalid or missing cron secret"
+
+        wrong = client.post("/v1/system/jobs/tick/async", headers={"X-Cron-Secret": "wrong-secret"})
+        assert wrong.status_code == 403, wrong.text
+        assert wrong.json()["detail"] == "Invalid or missing cron secret"
+
+        ok = client.post("/v1/system/jobs/tick/async", headers={"X-Cron-Secret": "cron-secret-test"})
+        assert ok.status_code == 202, ok.text
+        assert ok.json()["status"] == "queued"
+    finally:
+        monkeypatch.setenv("CRON_SECRET", "")
+        get_settings.cache_clear()
+
+
+def test_system_jobs_tick_run_records_success(client, monkeypatch):
+    async def fake_run_all_jobs(session):
+        return {"ok": True, "stub": "success"}
+
+    monkeypatch.setattr(system_router, "_run_all_jobs", fake_run_all_jobs)
+
+    response = client.post("/v1/system/jobs/tick/async")
+    assert response.status_code == 202, response.text
+    job_run_id = response.json()["job_run_id"]
+
+    row = _wait_for_system_job_run(job_run_id, statuses={"succeeded"})
+    assert row is not None
+    assert row["job_name"] == "system_jobs_tick"
+    assert row["trigger_source"] == "api"
+    assert row["status"] == "succeeded"
+    assert row["attempts"] == 1
+    assert row["max_attempts"] == 3
+    assert row["result_json"] == {"ok": True, "stub": "success"}
+    assert row["last_error"] is None
+    assert row["next_retry_at"] is None
+
+
+def test_system_jobs_tick_run_records_retry_then_dead_letter(client, monkeypatch):
+    async def always_fail(session):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(system_router, "_run_all_jobs", always_fail)
+
+    response = client.post("/v1/system/jobs/tick/async")
+    assert response.status_code == 202, response.text
+    job_run_id = response.json()["job_run_id"]
+
+    row = _wait_for_system_job_run(job_run_id, statuses={"retry"})
+    assert row is not None
+    assert row["status"] == "retry"
+    assert row["attempts"] == 1
+    assert row["last_error"] == "boom"
+    assert row["next_retry_at"] is not None
+
+    engine = create_engine(_sync_database_url(), pool_pre_ping=True)
+    try:
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE system_job_runs SET next_retry_at = created_at WHERE id = :job_run_id"),
+                {"job_run_id": job_run_id},
+            )
+    finally:
+        engine.dispose()
+
+    retry_response = client.post("/v1/system/jobs/tick/async")
+    assert retry_response.status_code == 202, retry_response.text
+    row = _wait_for_system_job_run(job_run_id, statuses={"retry"})
+    assert row is not None
+    assert row["status"] == "retry"
+    assert row["attempts"] == 2
+    assert row["next_retry_at"] is not None
+
+    engine = create_engine(_sync_database_url(), pool_pre_ping=True)
+    try:
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE system_job_runs SET next_retry_at = created_at WHERE id = :job_run_id"),
+                {"job_run_id": job_run_id},
+            )
+    finally:
+        engine.dispose()
+
+    dead_letter_response = client.post("/v1/system/jobs/tick/async")
+    assert dead_letter_response.status_code == 202, dead_letter_response.text
+    row = _wait_for_system_job_run(job_run_id, statuses={"dead_letter"})
+    assert row is not None
+    assert row["status"] == "dead_letter"
+    assert row["attempts"] == 3
+    assert row["next_retry_at"] is None
+    assert row["last_error"] == "boom"
 
 
 def test_openapi_schema(client):

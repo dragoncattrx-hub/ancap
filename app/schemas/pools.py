@@ -16,13 +16,15 @@ class PoolCreateRequest(BaseModel):
     risk_profile: str = Field(..., pattern="^(low|medium|high|experimental)$")
     rules: Optional[dict[str, Any]] = None
     fee_model: Optional[dict[str, Any]] = None
+    owner_agent_id: Optional[str] = None
 
 
 class PoolPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: str
     name: str
+    owner_agent_id: Optional[str] = None
     risk_profile: str
     status: PoolStatus
     created_at: datetime

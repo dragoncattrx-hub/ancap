@@ -2,7 +2,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Cookie, Depends, Header, HTTPException, status
+from fastapi import Cookie, Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,15 +15,26 @@ security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user_id(
+    request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     cookie_token: Annotated[str | None, Cookie(alias="ancap_token")] = None,
+    x_requested_with: Annotated[str | None, Header(alias="X-Requested-With")] = None,
 ) -> str | None:
-    """Resolve user_id from either the Authorization: Bearer header or an HttpOnly cookie.
+    """Resolve user_id from either the Authorization header or the HttpOnly cookie.
 
-    Cookie takes precedence so that a browser that already has the HttpOnly cookie
-    automatically gets auth even when the caller does not manually set the header.
+    For cookie-authenticated unsafe methods, require the frontend's same-origin
+    X-Requested-With header so cross-site form posts cannot ride the session cookie.
+    Bearer-token API clients are unaffected.
     """
-    token = cookie_token or (credentials.credentials if credentials else None)
+    header_token = credentials.credentials if credentials else None
+    if cookie_token and not header_token and request.method.upper() not in {"GET", "HEAD", "OPTIONS"}:
+        if (x_requested_with or "").strip().lower() != "xmlhttprequest":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Missing X-Requested-With header for cookie-authenticated request",
+            )
+
+    token = header_token or cookie_token
     if not token:
         return None
     sub = decode_token(token)

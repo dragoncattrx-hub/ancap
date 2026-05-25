@@ -104,46 +104,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = auth.getToken();
-    if (token) {
-      const storedUser = safeGetItem("ancap_user");
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser) as Partial<User>;
-          if (parsed && typeof parsed === "object" && "email" in parsed) {
-            setUser(userFromApiPayload(parsed));
-          } else {
-            safeRemoveItem("ancap_user");
-          }
-        } catch {
+    const storedUser = safeGetItem("ancap_user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser) as Partial<User>;
+        if (parsed && typeof parsed === "object" && "email" in parsed) {
+          setUser(userFromApiPayload(parsed));
+        } else {
           safeRemoveItem("ancap_user");
         }
-      } else {
-        setUser({ id: "", email: "", display_name: "User" });
+      } catch {
+        safeRemoveItem("ancap_user");
       }
-      users
-        .me()
-        .then((u) => {
-          const userData = userFromApiPayload(u);
-          setUser(userData);
-          setIsWalletOnlyAuthenticated(false);
-          safeSetItem("ancap_user", JSON.stringify(userData));
-          safeRemoveItem(WALLET_ONLY_USER_KEY);
-        })
-        .catch(() => {
-          auth.logout().catch(() => {});
-          safeRemoveItem("ancap_user");
-          setUser(null);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-      return;
     }
 
-    safeRemoveItem(WALLET_ONLY_USER_KEY);
-    setIsWalletOnlyAuthenticated(false);
-    setIsLoading(false);
+    users
+      .me()
+      .then((u) => {
+        const userData = userFromApiPayload(u);
+        setUser(userData);
+        setIsWalletOnlyAuthenticated(false);
+        safeSetItem("ancap_user", JSON.stringify(userData));
+        safeRemoveItem(WALLET_ONLY_USER_KEY);
+      })
+      .catch(() => {
+        safeRemoveItem("ancap_user");
+        safeRemoveItem(WALLET_ONLY_USER_KEY);
+        setIsWalletOnlyAuthenticated(false);
+        setUser(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const refreshUser = async () => {

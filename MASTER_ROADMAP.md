@@ -1,9 +1,11 @@
 ﻿# ANCAP Master Roadmap
 
-> Status: active | Major revision: 2026-05-24
-> Created: 2026-05-23 | Last updated: 2026-05-24
+> Status: active | Major revision: 2026-05-25
+> Created: 2026-05-23 | Last updated: 2026-05-25
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
+> Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
+> Fast status index: `docs/STATUS_MATRIX.md`
 
 ---
 
@@ -18,6 +20,15 @@ Ship ANCAP as a production ACP-first AI workflow platform:
 - completed ACP mobile wallet MVP
 - hardened CI/CD and security automation
 - operational stability for real-money flows
+
+## Current top-line truth (2026-05-25)
+
+The biggest remaining tails are:
+1. security / CI / prod-hardening
+2. finishing the ACP mobile wallet to a real device-ready release state
+3. deepening monetization after the first ACP-first revenue loop
+
+Important: some older roadmap documents still read as more complete than the repo-wide execution truth. When there is any conflict, trust this file.
 
 ## Fixed decisions
 
@@ -43,7 +54,14 @@ Ship ANCAP as a production ACP-first AI workflow platform:
 
 ### 0.1 Leaked API key remediation [CRITICAL]
 
-File: \docs/openclaw-kiro-snippet.json5\ contains plaintext API key \sk-aw-4900ab96f0a2f10e1996e4f3bc80709c\
+Status: [~] Repo-side cleanup is now tighter and no longer includes token-shaped example strings in tracked docs. Provider-side revocation/rotation and GitHub settings changes still require credentialed manual follow-through.
+
+File: `docs/openclaw-kiro-snippet.json5` previously contained a plaintext API key (redacted here; treat as compromised).
+
+Verification (2026-05-25):
+- `docs/openclaw-kiro-snippet.json5` is absent from the repo
+- `docs/openclaw-kiro-config.md` now documents env-only key handling, avoids direct key embedding, and uses a neutral placeholder instead of a token-shaped example
+- repo scan found no other live leaked-token patterns; the only remaining `sk-aw-...` matches are this roadmap's own remediation notes / grep example
 
 Action (in order):
 1. Revoke the key at the provider (kiro.cheap / Kiro API dashboard)
@@ -62,11 +80,21 @@ Reference: GitHub Docs -- any exposed secret = assume compromised, revoke immedi
 
 ### 0.2 Insecure dev defaults in production configs [CRITICAL]
 
+Status: [~] Repo-side hardening is in place and test-covered; production deployment still needs real secrets supplied in env/CI.
+
 Files: \docker-compose.prod.yml\, \pp/config.py\
+
+Verification (2026-05-25):
+- `docker-compose.prod.yml` now requires `DATABASE_URL`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` without production fallbacks; compose `${VAR:?message}` guards make `docker compose config/up` fail immediately when any required secret is unset
+- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, and now also rejects blank `DATABASE_URL` or the insecure `postgres:postgres` default
+- `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, and avoid shadowing compose interpolation with the bridge-only env file
+- deploy-facing docs now consistently call out those required secrets before production compose startup, including `README.md`, `PRODUCTION_ROADMAP.md`, `.github/RELEASE_PROCESS.md`, and the bridge pilot env example note
+- `pytest tests/test_config_admin_ids.py tests/test_system.py -q` passes with coverage for the production secret guard and cron-secret-gated jobs endpoints
 
 Fix:
 - \secret_key\ must not have a fallback default in production-configured files -- must be a required env var with no insecure fallback
 - \cursor_secret\ dev fallback must not exist in any file that could be docker-compose-prodd
+- production \DATABASE_URL\ must not silently keep the insecure local `postgres:postgres` default
 - Add startup guard: if \ENV == "production"\ and a required secret is missing -- fail fast
 
 ---
@@ -74,6 +102,8 @@ Fix:
 ## Priority 1 -- CI/CD honesty and security automation
 
 ### 1.1 Fix backend CI soft-fails [HIGH]
+
+Status: [x] Done. `backend-ci.yml` now fails on Bandit findings and on Docker build errors (no `|| true`, no invalid `--target deps`).
 
 File: \.github/workflows/backend-ci.yml\
 
@@ -94,6 +124,8 @@ File: \.github/workflows/backend-ci.yml\
 Exit criteria: CI build fails on Bandit HIGH/medium findings. CI build fails on Docker build error.
 
 ### 1.2 Enable Dependabot [HIGH]
+
+Status: [~] Repo file exists and covers pip, frontend npm, mobile npm, and GitHub Actions; GitHub-side toggles still need to be enabled in repository settings.
 
 File to add: \.github/dependabot.yml\
 
@@ -122,6 +154,8 @@ Also enable in GitHub Settings:
 
 ### 1.3 Add CodeQL scanning [HIGH]
 
+Status: [~] Workflow exists and now covers Python, JavaScript/TypeScript, and GitHub Actions on PR/push plus the weekly 06:00 UTC schedule; GitHub-side code-scanning enablement still needs repository settings access.
+
 File to add: \.github/workflows/codeql.yml\
 
 Languages: python, javascript, typescript, github-actions
@@ -129,6 +163,8 @@ Queries: security-and-quality
 Schedule: weekly (Mondays 06:00 UTC)
 
 ### 1.4 Playwright E2E in CI [HIGH]
+
+Status: [~] Workflow job exists and is now wired to boot backend services, build/start the frontend, and run Playwright against a real local UI/API pairing in CI. Still needs a live GitHub run to confirm timing/stability.
 
 Status: Playwright browsers are installed in frontend CI but tests are never run.
 
@@ -146,6 +182,8 @@ Files needed: \playwright.config.ts\ already exists, E2E specs already exist in 
 Exit criteria: E2E tests run on every PR touching \rontend-app/\ or \pp/\.
 
 ### 1.5 RESTRICT ops/diagnostics endpoints [HIGH]
+
+Status: [~] Repo-side tier split and platform-admin protection are now implemented/test-covered. Proxy exposure is already broad `/api` passthrough in `infra/nginx/default.conf`, so no extra proxy rule was required in-repo; live latency/production verification still remains.
 
 Files: \pp/api/routers/system.py\, nginx/proxy config
 
@@ -168,6 +206,8 @@ Exit criteria: Public endpoints return < 200ms without external I/O.
 
 ### 1.6 Separate jobs_tick from HTTP [HIGH]
 
+Status: [~] Async enqueue endpoint now returns `202 Accepted`, uses an isolated DB session in the background task, persists queued/retry/dead-letter state in `system_job_runs`, has targeted retry/dead-letter test coverage, and a scheduled GitHub Actions workflow now calls the async route every 5 minutes. Live GitHub/deployment verification still remains.
+
 File: \pp/api/routers/system.py\
 
 Problem: \POST /system/jobs/tick\ runs 20+ sequential jobs (edges_daily, agent relationships, auto limits, circuit breaker, reputation, referrals, notifications, leaderboards, activity feed, governance checks, graph enforcement, staking rewards, ledger invariant check, bridge reconciliation, mobile indexer) -- all in one HTTP request. This is a mini-orchestrator in a request handler.
@@ -186,49 +226,40 @@ Exit criteria: \POST /system/jobs/tick\ returns in < 1s. Heavy jobs run asynchro
 
 ### 2.1 Pool ownership model [HIGH]
 
-Files: \pp/db/models.py\ (Pool class), \	ests/test_ledger.py\, \services/participation_gates.py\
+Status: [~] Core repo/model work is now in place and test-covered. `Pool.owner_agent_id` and its migration already exist; pool create/read APIs now expose the field, and `POST /v1/ledger/allocate` now follows the intended rule: owner-enforced when set, backward-compatible when unset.
 
-Current state:
-- \Pool\ model has NO \owner_agent_id\ column
-- \	est_allocate\ is skipped with explicit reason: "Pool model has no \owner_agent_id\ column"
-- \POST /v1/ledger/allocate\ was failing; partially worked around (returns 403 "Pool has no owner")
+Files: `app/db/models.py` (Pool class), `alembic/versions/911774c4bec4_add_owner_agent_id_to_pools.py`, `app/api/routers/pools.py`, `app/api/routers/ledger.py`, `tests/test_ledger.py`, `tests/test_pools.py`
 
-Fix:
-\\\python
-# Migration 055: add owner_agent_id to pools
-# Pool model:
-owner_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id"), nullable=True, index=True)
+Verification (2026-05-25):
+- `Pool.owner_agent_id` already exists in `app/db/models.py`
+- migration `911774c4bec4_add_owner_agent_id_to_pools.py` already adds the column in-repo
+- pool create/get/list responses now include `owner_agent_id`
+- creating a pool can now optionally validate and persist `owner_agent_id`
+- `POST /v1/ledger/allocate` now:
+  - requires caller ownership when `pool.owner_agent_id` is set
+  - allows authenticated backward-compatible allocation when it is unset
+- targeted pool + ledger tests pass, including owner-enforced and unowned-backward-compat cases
 
-# Update allocate endpoint:
-# - If pool has owner_agent_id: require caller to own it
-# - If pool has no owner_agent_id: allow any authenticated caller (backward compat)
-# Remove workaround in services/participation_gates.py
-
-# After migration:
-# - Remove skip from test_allocate
-# - Run the test
-# - Confirm it passes
-\\\
-
-Command: \lembic revision --autogenerate -m "add owner_agent_id to pools"\
-
-Exit criteria: \	est_allocate\ unskipped and passing.
+Remaining follow-through:
+- if strict product policy later decides all pools must become owned, add a backfill/cleanup plan for legacy null-owner pools before tightening the backward-compat path
+- README/API docs now mention `owner_agent_id`; re-check any external/public docs later if that surface expands
 
 ### 2.2 Fix economy_health async/sync bug [MEDIUM]
 
-File: \pp/api/routers/system.py\
+Status: [x] Done. `ops_economy_health` is already async in `app/api/routers/system.py`, and ACP RPC probing now uses cached `httpx.AsyncClient` background refresh helpers instead of synchronous `httpx.post()` in-request.
 
-Problem: \economy_health()\ is \sync def\ but calls \httpx.post()\ (synchronous) inside the event loop.
+File: `app/api/routers/system.py`
 
-Fix: Replace sync httpx with async httpx.AsyncClient.
+Verification (2026-05-25):
+- `@_internal_router.get("/economy-health")` is implemented as `async def ops_economy_health(...)`
+- ACP RPC probing is handled through `_refresh_acp_rpc_probe_cache()` with `httpx.AsyncClient`
+- `tests/api/test_system_economy_health.py` passes against the current internal ops surface
 
 ### 2.3 Unskip ledger invariant test [MEDIUM]
 
+Status: [x] Done. `tests/api/test_growth_layer.py::test_jobs_tick_sets_ledger_halt_blocks_faucet` now injects a malformed one-sided `transfer` event directly, runs `/v1/system/jobs/tick`, and verifies the faucet is blocked once the ledger invariant halt flag is raised.
+
 File: \	ests/api/test_growth_layer.py\
-
-Current skip: \	est_jobs_tick_sets_ledger_halt_blocks_faucet\ tries to break invariant via one-sided deposit (no longer triggers violation).
-
-Fix: Rework test to use a malformed transfer. Then unskip.
 
 ### 2.4 Resolve test_unit.py bcrypt skip [LOW]
 
@@ -244,33 +275,36 @@ Fix: Ensure \crypt\ C library installed in CI environment. Remove skip.
 
 ### 3.1 Auth token: localStorage to HttpOnly cookies [MEDIUM]
 
-Files: \rontend-app/src/components/AuthProvider.tsx\
+Status: [~] Repo-side browser auth flow now prefers HttpOnly `ancap_token` cookies instead of JS-readable token storage. Frontend bootstrap now resolves auth from `/users/me`, shared API requests send `X-Requested-With`, and Playwright auth seeding now uses cookies instead of `localStorage` tokens. Remaining follow-through is broader runtime verification across browser surfaces and any direct `fetch("/api/...")` calls that bypass the shared API client.
 
-Problem: OWASP and GitHub security guidance explicitly recommend against storing session identifiers in localStorage. Any XSS can exfiltrate them. For a financial platform (wallets, bridge, payments) this is not theoretical.
+Files: `frontend-app/src/components/AuthProvider.tsx`, `frontend-app/src/lib/api.ts`, `app/api/deps.py`, `app/api/routers/auth.py`, `frontend-app/e2e/*.spec.ts`
 
-Fix:
-\\\	ypescript
-// Backend: set cookie on login
-Set-Cookie: session_token=<token>; HttpOnly; Secure; SameSite=Strict; Path=/
-
-// Frontend: read from cookie, NOT localStorage
-// Use js-cookie or document.cookie parsing
-
-// CSRF protection: SameSite=Strict + X-Requested-With header check in FastAPI
-\\\
-
-Migration: dual-write period (both methods work), then remove localStorage.
+Verification (2026-05-25):
+- `AuthProvider` no longer depends on `auth.getToken()` to decide signed-in bootstrap; it restores cached user display data only and then resolves real auth from `/users/me`
+- frontend shared API client now always sends `X-Requested-With: XMLHttpRequest`
+- cookie-authenticated unsafe requests now fail closed in `app/api/deps.py` unless `X-Requested-With` is present, while explicit Bearer-token clients remain allowed
+- auth cookie set/clear paths now use `SameSite=strict`
+- Playwright UI auth seeders now stage `ancap_token` as a cookie and only keep `ancap_user` in localStorage for UI display bootstrap
+- `pytest tests/test_auth.py tests/test_system.py tests/api/test_system_economy_health.py -q` passes
+- `npm run build` in `frontend-app` passes
 
 Exit criteria: No Bearer tokens stored in localStorage for auth. CSRF protection active.
 
 ### 3.2 SameSite cookie + CORS hardening [MEDIUM]
 
-File: \pp/main.py\ or auth router
+Status: [~] Repo-side auth cookie policy is now `SameSite=strict`, security headers already align to `DENY`/HSTS in app + nginx, and CORS is now explicit rather than wildcard methods/headers. Remaining follow-through is live preflight/runtime verification for direct browser fetch surfaces.
 
-Actions:
-- All auth cookies: \SameSite=Strict\ or \SameSite=Lax\
-- CORS: explicit \llow_origins\, no wildcard in production
-- Audit \X-Content-Type-Options\, \Permissions-Policy\ on all routes
+Files: `app/main.py`, `app/api/routers/auth.py`, `infra/nginx/default.conf`
+
+Verification (2026-05-25):
+- auth cookie set/clear paths now use `SameSite=strict`
+- `app.main` CORS middleware now keeps explicit `allow_origins` and explicit allowed methods/headers (`Authorization`, `Content-Type`, `Idempotency-Key`, `X-API-Key`, `X-Bridge-Operator-Secret`, `X-Cron-Secret`, `X-Requested-With`, `X-Request-Id`)
+- `app.main` already injects `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and `Permissions-Policy`
+- `infra/nginx/default.conf` already matches `DENY` + HSTS across public locations
+
+Remaining follow-through:
+- run live browser preflight verification against deployed/staging surfaces that use direct `fetch("/api/...")` calls
+- if any route needs an additional custom header in browsers, add it deliberately to the explicit CORS allowlist instead of returning to wildcards
 
 ### 3.3 Production security header alignment [LOW]
 
@@ -308,7 +342,7 @@ Exit criteria: User can buy ACP credits via Stripe without leaving the platform.
 
 ### 4.2 Creator earnings withdrawal [HIGH]
 
-\eferral_reward\ ledger event triggers on first-paid-workflow, but no withdrawal exists.
+`referral_reward` ledger event triggers on first-paid-workflow, but no withdrawal exists.
 
 New endpoints:
 - \POST /v1/payouts/request\ -- creator requests withdrawal
@@ -355,7 +389,7 @@ Remaining from MONETIZATION_EXECUTION_PLAN.md:
 
 ### 4.6 Referral commission auto-payout [MEDIUM]
 
-\eferral_reward\ trigger exists but commission is never paid out.
+`referral_reward` trigger exists but commission is never paid out.
 
 Model: \ReferralCommission\ (id, referrer_id, referred_user_id, trigger_type: first_paid_workflow|subscription_created, commission_amount_acp, status: pending|payable|paid|cancelled, paid_at)
 
@@ -413,6 +447,31 @@ Endpoints:
 | P4-11 | Send + preview + sign | Needs P1 FFI |
 | P1-7 | iOS Swift UniFFI link | Run \uild-ios-native.ps1\ (needs macOS) |
 
+### 5.3 Smart QR Pay / Auto-Swap track (v1.1 / v2, after wallet release closure)
+
+Status: [~] Execution started. Docs/specs are written, backend `capabilities` + deterministic `parse` are implemented and tested, and the next backend orchestration slice (`quote` + execution session groundwork) is now in progress in repo code. This is **not** v1.0-complete and must not be marketed as shipped.
+
+Execution order inside this track:
+1. [x] docs/spec split: plan + schema + API + security
+2. [x] backend `GET /v1/mobile/smart-pay/capabilities`
+3. [x] backend `POST /v1/mobile/smart-pay/parse` (deterministic ACP + raw EVM + EIP-681 first scope)
+4. [~] backend `POST /v1/mobile/smart-pay/quote` for first supported routes
+5. [~] backend execution-session groundwork:
+   - `POST /v1/mobile/smart-pay/execute`
+   - `GET /v1/mobile/smart-pay/payments/{executionId}`
+   - `POST /v1/mobile/smart-pay/payments/{executionId}/recover`
+6. [~] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods added; app integration still pending)
+7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, status flow, and persisted draft/session restore; polish/history still pending)
+8. [ ] real route engine / bridge-swap execution integration
+9. [ ] AI fallback classifier (only after deterministic/heuristic path is solid)
+10. [ ] receipt/history/recovery UX hardening
+
+Truth constraints:
+- deterministic parser first, AI second
+- user confirmation mandatory before any payment
+- ACP fee reserve required
+- first release scope stays narrow: ACP + BSC/EVM supported paths only
+
 ---
 
 ## Priority 6 -- Architecture and release hygiene
@@ -429,12 +488,12 @@ Fix: Either delete \wrangler.jsonc\ and cloudflare/ dir, OR fully migrate to Clo
 
 ### 6.2 Dependency management consolidation [MEDIUM]
 
-Problem: \equirements.txt\ (exact pins) and \pyproject.toml\ (range pins) coexist.
+Problem: `requirements.txt` (exact pins) and `pyproject.toml` (range pins) coexist.
 
 Fix:
-- \equirements.txt\ -> source of truth for runtime deps
-- \pyproject.toml\ -> source of truth for dev deps + build config
-- Add pip-compile workflow: when \equirements.in\ changes -> regenerate \equirements.txt\ with locked hashes
+- `requirements.txt` -> source of truth for runtime deps
+- `pyproject.toml` -> source of truth for dev deps + build config
+- Add pip-compile workflow: when `requirements.in` changes -> regenerate `requirements.txt` with locked hashes
 - Align Python version: 3.11 (CI) vs prod (check)
 
 ### 6.3 Formal releases and tags [MEDIUM]

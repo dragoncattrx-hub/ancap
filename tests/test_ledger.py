@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import text
 
-from tests.conftest import unique_name
+from tests.conftest import unique_email, unique_name
 
 
 def test_deposit_and_balance(client):
@@ -53,13 +53,24 @@ def test_ledger_events(client):
     assert "items" in r.json()
 
 
-def test_allocate_requires_pool_owner(client):
-    """POST /v1/ledger/allocate to a pool without owner_agent_id returns 403."""
+def test_allocate_allows_unowned_pool_for_authenticated_user(client):
+    """POST /v1/ledger/allocate allows backward-compatible access when pool has no owner_agent_id."""
     pool = client.post(
         "/v1/pools",
         json={"name": unique_name("alloc_pool"), "risk_profile": "high"},
     )
+    assert pool.status_code == 201, pool.text
     pool_id = pool.json()["id"]
+    deposit = client.post(
+        "/v1/ledger/deposit",
+        json={
+            "account_owner_type": "pool_treasury",
+            "account_owner_id": pool_id,
+            "amount": {"amount": "250", "currency": "VUSD"},
+        },
+    )
+    assert deposit.status_code == 201, deposit.text
+
     agent = client.post(
         "/v1/agents",
         json={"display_name": unique_name("a"), "public_key": "p" * 32, "roles": ["seller"]},
@@ -87,7 +98,7 @@ def test_allocate_requires_pool_owner(client):
         },
     )
     strat_id = strat.json()["id"]
-    # Pool has no owner_agent_id set -> allocate should fail with 403
+
     r = client.post(
         "/v1/ledger/allocate",
         json={
@@ -96,7 +107,93 @@ def test_allocate_requires_pool_owner(client):
             "amount": {"amount": "100", "currency": "VUSD"},
         },
     )
-    assert r.status_code == 403, f"expected 403 for pool without owner, got {r.status_code}: {r.text}"
+    assert r.status_code == 201, f"expected 201 for unowned pool backward-compat allocate, got {r.status_code}: {r.text}"
+    payload = r.json()
+    assert payload["type"] == "allocate"
+    assert payload["src_account_id"] is not None
+
+
+def test_allocate_requires_matching_pool_owner(client):
+    email = unique_email()
+    password = "password123"
+    register = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "other_pool_owner"},
+        headers={"Authorization": ""},
+    )
+    assert register.status_code in (200, 201), register.text
+    login = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""},
+    )
+    assert login.status_code == 200, login.text
+    other_headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    owner_agent = client.post(
+        "/v1/agents",
+        json={"display_name": unique_name("owner"), "public_key": "o" * 32, "roles": ["seller"]},
+        headers=other_headers,
+    )
+    assert owner_agent.status_code == 201, owner_agent.text
+    pool = client.post(
+        "/v1/pools",
+        json={
+            "name": unique_name("owned_alloc_pool"),
+            "risk_profile": "high",
+            "owner_agent_id": owner_agent.json()["id"],
+        },
+        headers=other_headers,
+    )
+    assert pool.status_code == 201, pool.text
+    pool_id = pool.json()["id"]
+    deposit = client.post(
+        "/v1/ledger/deposit",
+        json={
+            "account_owner_type": "pool_treasury",
+            "account_owner_id": pool_id,
+            "amount": {"amount": "250", "currency": "VUSD"},
+        },
+        headers=other_headers,
+    )
+    assert deposit.status_code == 201, deposit.text
+
+    other_agent = client.post(
+        "/v1/agents",
+        json={"display_name": unique_name("other"), "public_key": "q" * 32, "roles": ["seller"]},
+    )
+    vert = client.post(
+        "/v1/verticals/propose",
+        json={
+            "name": unique_name("v2"),
+            "spec": {
+                "allowed_actions": [{"name": "a", "args_schema": {}}],
+                "required_resources": ["data_feed"],
+                "metrics": [{"name": "m", "value_schema": {}}],
+                "risk_spec": {},
+            },
+        },
+    )
+    vid = vert.json()["id"]
+    client.post(f"/v1/verticals/{vid}/review", json={"decision": "approve"})
+    strat = client.post(
+        "/v1/strategies",
+        json={
+            "name": unique_name("s2"),
+            "vertical_id": vid,
+            "owner_agent_id": other_agent.json()["id"],
+        },
+    )
+
+    r = client.post(
+        "/v1/ledger/allocate",
+        json={
+            "pool_id": pool_id,
+            "strategy_id": strat.json()["id"],
+            "amount": {"amount": "100", "currency": "VUSD"},
+        },
+    )
+    assert r.status_code == 403, f"expected 403 for pool owned by another user, got {r.status_code}: {r.text}"
 
 
 def test_allocate_pool_not_found(client):

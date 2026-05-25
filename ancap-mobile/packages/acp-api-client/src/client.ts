@@ -9,6 +9,14 @@ import type {
   MobileDeviceRegisterInput,
   MobileDeviceRegisterResponse,
   MobileDeviceUnregisterResponse,
+  SmartPayCapabilities,
+  SmartPayExecuteInput,
+  SmartPayExecutionResponse,
+  SmartPayQuoteInput,
+  SmartPayQuoteResponse,
+  SmartPayRecoverInput,
+  SmartQrParseInput,
+  SmartQrParseResponse,
 } from "./types.js";
 
 export type AcpApiClientOptions = {
@@ -112,6 +120,44 @@ export class AcpApiClient {
 
   listDevices(): Promise<MobileDeviceListResponse> {
     return this.request<MobileDeviceListResponse>("/mobile/devices");
+  }
+
+  getSmartPayCapabilities(): Promise<SmartPayCapabilities> {
+    return this.request<SmartPayCapabilities>("/mobile/smart-pay/capabilities");
+  }
+
+  parseSmartQr(body: SmartQrParseInput): Promise<SmartQrParseResponse> {
+    return this.request<SmartQrParseResponse>("/mobile/smart-pay/parse", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  quoteSmartPay(body: SmartPayQuoteInput): Promise<SmartPayQuoteResponse> {
+    return this.request<SmartPayQuoteResponse>("/mobile/smart-pay/quote", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  executeSmartPay(body: SmartPayExecuteInput): Promise<SmartPayExecutionResponse> {
+    return this.request<SmartPayExecutionResponse>("/mobile/smart-pay/execute", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  getSmartPayExecution(executionId: string): Promise<SmartPayExecutionResponse> {
+    const enc = encodeURIComponent(executionId);
+    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}`);
+  }
+
+  recoverSmartPay(executionId: string, body: SmartPayRecoverInput): Promise<SmartPayExecutionResponse> {
+    const enc = encodeURIComponent(executionId);
+    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}/recover`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   }
 
   explorerTxUrl(config: MobileConfig, txid: string): string {
