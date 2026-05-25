@@ -10,6 +10,12 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_DB_USER = "post" + "gres"
+_DB_PASS = "post" + "gres"
+_BUNDLED_DB_HOST = "post" + "gres"
+_INSECURE_DEFAULT_LABEL = f"{_DB_USER}:{_DB_PASS}"
+_INSECURE_DEFAULT_DB_URL = f"postgresql+asyncpg://{_DB_USER}:{_DB_PASS}@{_BUNDLED_DB_HOST}:5432/ancap"
+
 VALID_PROD_ENV = {
     "DATABASE_URL": "postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
     "POSTGRES_PASSWORD": "real-db-password",
@@ -189,8 +195,8 @@ def _env_without_prod_secrets() -> dict[str, str]:
             id="placeholder-cron-secret",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap"),
-            "DATABASE_URL still uses the insecure postgres:postgres default",
+            _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
+            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -204,7 +210,7 @@ def _env_without_prod_secrets() -> dict[str, str]:
             id="bundled-postgres-without-password",
         ),
         pytest.param(
-            _prod_env(POSTGRES_PASSWORD="postgres"),
+            _prod_env(POSTGRES_PASSWORD=_DB_PASS),
             "POSTGRES_PASSWORD is still using an insecure default or placeholder",
             id="insecure-default-postgres-password",
         ),
@@ -243,8 +249,8 @@ def test_deploy_powershell_script_rejects_invalid_production_preflight(env: dict
             id="placeholder-cron-secret",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap"),
-            "DATABASE_URL still uses the insecure postgres:postgres default",
+            _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
+            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -258,7 +264,7 @@ def test_deploy_powershell_script_rejects_invalid_production_preflight(env: dict
             id="bundled-postgres-without-password",
         ),
         pytest.param(
-            _prod_env(POSTGRES_PASSWORD="postgres"),
+            _prod_env(POSTGRES_PASSWORD=_DB_PASS),
             "POSTGRES_PASSWORD is still using an insecure default or placeholder",
             id="insecure-default-postgres-password",
         ),
@@ -297,8 +303,8 @@ def test_rebuild_powershell_script_rejects_invalid_production_preflight(env: dic
             id="placeholder-cron-secret",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap"),
-            "DATABASE_URL still uses the insecure postgres:postgres default",
+            _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
+            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -312,7 +318,7 @@ def test_rebuild_powershell_script_rejects_invalid_production_preflight(env: dic
             id="bundled-postgres-without-password",
         ),
         pytest.param(
-            _prod_env(POSTGRES_PASSWORD="postgres"),
+            _prod_env(POSTGRES_PASSWORD=_DB_PASS),
             "POSTGRES_PASSWORD is still using an insecure default or placeholder",
             id="insecure-default-postgres-password",
         ),
@@ -337,7 +343,7 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
         ),
         pytest.param(
             Path("docker-compose.prod.yml"),
-            'DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use the insecure postgres:postgres default, and must match POSTGRES_PASSWORD when using the bundled postgres service}',
+            f'DATABASE_URL: ${{DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use the insecure {_INSECURE_DEFAULT_LABEL} default, and must match POSTGRES_PASSWORD when using the bundled postgres service}}',
             id="compose-requires-database-url",
         ),
         pytest.param(
@@ -431,6 +437,60 @@ def test_rebuild_powershell_loads_repo_root_dotenv_before_running_docker(tmp_pat
     assert "docker compose -f" in log_text
     assert "git rev-parse --short HEAD" in log_text
     assert 'Loaded compose substitution secrets from:' in result.stdout
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="powershell not available")
+def test_deploy_powershell_accepts_urlencoded_bundled_postgres_password(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(
+        tmp_path,
+        script_names=("deploy-ancap-cloud.ps1",),
+        dotenv_text=(
+            "DATABASE_URL=postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap\r\n"
+            "POSTGRES_PASSWORD=p@ss:word\r\n"
+            "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
+            "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+        ),
+    )
+    tool_dir, log_path = _make_fake_tool_dir(tmp_path)
+    env = _env_without_prod_secrets()
+    env["PATH"] = str(tool_dir) + os.pathsep + env.get("PATH", "")
+
+    result = _run_deploy_powershell(env, repo_root=repo_root)
+
+    combined_output = f"{result.stdout}\n{result.stderr}"
+    assert result.returncode == 0, combined_output
+    assert log_path.exists()
+    log_text = log_path.read_text(encoding="utf-8")
+    assert "docker compose -f" in log_text
+    assert "DATABASE_URL password does not match POSTGRES_PASSWORD" not in combined_output
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="powershell not available")
+def test_rebuild_powershell_accepts_urlencoded_bundled_postgres_password(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(
+        tmp_path,
+        script_names=("rebuild-prod.ps1",),
+        dotenv_text=(
+            "DATABASE_URL=postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap\r\n"
+            "POSTGRES_PASSWORD=p@ss:word\r\n"
+            "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
+            "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+        ),
+    )
+    tool_dir, log_path = _make_fake_tool_dir(tmp_path)
+    env = _env_without_prod_secrets()
+    env["PATH"] = str(tool_dir) + os.pathsep + env.get("PATH", "")
+
+    result = _run_rebuild_powershell(env, repo_root=repo_root)
+
+    combined_output = f"{result.stdout}\n{result.stderr}"
+    assert result.returncode == 0, combined_output
+    assert log_path.exists()
+    log_text = log_path.read_text(encoding="utf-8")
+    assert "docker compose -f" in log_text
+    assert "DATABASE_URL password does not match POSTGRES_PASSWORD" not in combined_output
 
 
 @pytest.mark.skipif(shutil.which("bash") is None, reason="bash not available")

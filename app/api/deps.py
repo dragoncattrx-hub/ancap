@@ -19,6 +19,7 @@ async def get_current_user_id(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     cookie_token: Annotated[str | None, Cookie(alias="ancap_token")] = None,
     x_requested_with: Annotated[str | None, Header(alias="X-Requested-With")] = None,
+    authorization: Annotated[str | None, Header(alias="Authorization")] = None,
 ) -> str | None:
     """Resolve user_id from either the Authorization header or the HttpOnly cookie.
 
@@ -27,6 +28,8 @@ async def get_current_user_id(
     Bearer-token API clients are unaffected.
     """
     header_token = credentials.credentials if credentials else None
+    if authorization is not None and not authorization.strip():
+        cookie_token = None
     if cookie_token and not header_token and request.method.upper() not in {"GET", "HEAD", "OPTIONS"}:
         if (x_requested_with or "").strip().lower() != "xmlhttprequest":
             raise HTTPException(

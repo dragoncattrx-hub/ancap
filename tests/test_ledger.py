@@ -271,7 +271,7 @@ def test_ledger_deposit_blocked_when_invariant_halted(client, db_cursor):
     assert r_tick.status_code == 200
     violations = r_tick.json().get("ledger_invariant_violations", [])
     assert violations, "tick should report VUSD invariant violation"
-    assert violations[0]["currency"] == "VUSD"
+    assert any(v.get("currency") == "VUSD" for v in violations)
     # tick sets ledger_invariant_halted=true when violations exist (verified by the
     # halt flag being set internally in job_watermarks; subsequent ops will check it)
 

@@ -155,8 +155,13 @@ class _AuthedTestClient(TestClient):
                 if value == "":
                     # Caller wants an unauthenticated request; strip the header
                     # entirely so the server replies 401 (not 422 on a bad token).
+                    # If the test did not pass an explicit per-request cookies=...
+                    # payload, also force an empty Cookie header so the TestClient
+                    # session jar cannot silently re-authenticate via ancap_token.
                     headers.pop("Authorization", None)
                     headers.pop("authorization", None)
+                    if kwargs.get("cookies") is None and "Cookie" not in headers and "cookie" not in headers:
+                        headers["Cookie"] = ""
             kwargs["headers"] = headers
         return super().request(method, url, **kwargs)
 

@@ -6,8 +6,8 @@ from app.services import wallet_auth
 from tests.conftest import unique_email
 
 
-def test_me_unauthorized(client):
-    r = client.get("/v1/users/me", headers={"Authorization": ""})
+def test_me_unauthorized(client_unauth):
+    r = client_unauth.get("/v1/users/me")
     assert r.status_code == 401
 
 
