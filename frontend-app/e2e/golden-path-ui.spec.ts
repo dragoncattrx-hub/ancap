@@ -7,6 +7,8 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
 
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const idk = () => `idk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const sellerName = `Seller S ${uniq()}`;
+  const strategyName = `Golden Path Strategy ${uniq()}`;
 
   // Create + login user to get a valid JWT for UI
   const email = `e2e_${uniq()}@example.com`;
@@ -60,12 +62,12 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   await page.getByRole("button", { name: /register agent/i }).click();
   await expect(page.getByRole("heading", { name: /register new agent/i })).toBeVisible({ timeout: 15000 });
   const agentModal = page.locator("div.card", { has: page.getByRole("heading", { name: /register new agent/i }) });
-  await agentModal.locator("input[type='text']").first().fill("Seller S");
+  await agentModal.locator("input[type='text']").first().fill(sellerName);
   await agentModal.getByRole("button", { name: /create agent/i }).click();
 
   // Wait for modal close and list refresh
   await expect(page.getByRole("heading", { name: /register new agent/i })).toBeHidden({ timeout: 15000 });
-  await expect(page.getByText("Seller S")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(sellerName)).toHaveCount(1, { timeout: 15000 });
 
   // Go to strategies and create one (button becomes enabled once agents load)
   await page.goto(`${baseUrl}/strategies`);
@@ -74,7 +76,7 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   await createStrategyBtn.click();
   await expect(page.getByRole("heading", { name: /create new strategy/i })).toBeVisible({ timeout: 15000 });
   const strategyModal = page.locator("div.card", { has: page.getByRole("heading", { name: /create new strategy/i }) });
-  await strategyModal.locator("input[type='text']").first().fill("Golden Path Strategy");
+  await strategyModal.locator("input[type='text']").first().fill(strategyName);
   // Select first non-empty agent and vertical options
   const agentSelect = strategyModal.locator("select").nth(0);
   const verticalSelect = strategyModal.locator("select").nth(1);
@@ -115,7 +117,7 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
 
   // We should land on listings page.
   await expect(page).toHaveURL(/\/listings/);
-  const listingRow = page.getByText(/golden path strategy/i).first();
+  const listingRow = page.getByText(strategyName).first();
   await listingRow.click();
 
   // Create a dedicated buyer agent + fund it so the purchase is deterministic.

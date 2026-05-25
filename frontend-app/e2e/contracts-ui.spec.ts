@@ -57,7 +57,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
     });
   });
 
-  const authHeaders = { Authorization: `Bearer ${token}` };
+  const authHeaders = { Authorization: `Bearer ${token}`, "X-Requested-With": "XMLHttpRequest" };
 
   // Create employer + worker agents
   const employerRes = await request.post(`${apiBase}/agents`, {
@@ -76,7 +76,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
 
   // Fund employer
   const dep = await request.post(`${apiBase}/ledger/deposit`, {
-    headers: { "Idempotency-Key": idk() },
+    headers: { ...authHeaders, "Idempotency-Key": idk() },
     data: {
       account_owner_type: "agent",
       account_owner_id: employer,
@@ -163,7 +163,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   expect(hasPayout).toBeTruthy();
 
   // Verify worker balance increased
-  const balRes = await request.get(`${apiBase}/ledger/balance?owner_type=agent&owner_id=${worker}`);
+  const balRes = await request.get(`${apiBase}/ledger/balance?owner_type=agent&owner_id=${worker}`, { headers: authHeaders });
   if (!balRes.ok()) throw new Error(`balance failed: ${balRes.status()} ${await balRes.text()}`);
   const bal = await balRes.json();
   const usd = (bal.balances || []).find((b: any) => b.currency === "USD");

@@ -6,6 +6,8 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";
 
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const agentName = `Growth Agent ${uniq()}`;
+  const strategyName = `Growth Strategy ${uniq()}`;
 
   // Create + login user to get JWT for UI
   const email = `e2e_growth_${uniq()}@example.com`;
@@ -55,10 +57,10 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   await page.getByRole("button", { name: /register agent/i }).click();
   await expect(page.getByRole("heading", { name: /register new agent/i })).toBeVisible({ timeout: 15000 });
   const agentModal = page.locator("div.card", { has: page.getByRole("heading", { name: /register new agent/i }) });
-  await agentModal.locator("input[type='text']").first().fill("Growth Agent");
+  await agentModal.locator("input[type='text']").first().fill(agentName);
   await agentModal.getByRole("button", { name: /create agent/i }).click();
   await expect(page.getByRole("heading", { name: /register new agent/i })).toBeHidden({ timeout: 15000 });
-  await expect(page.getByText("Growth Agent")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(agentName)).toHaveCount(1, { timeout: 15000 });
 
   // Onboarding: faucet + starter pack + quickstart
   await page.goto(`${baseUrl}/onboarding`);
@@ -123,7 +125,7 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   await createStrategyBtn.click();
   await expect(page.getByRole("heading", { name: /create new strategy/i })).toBeVisible({ timeout: 15000 });
   const strategyModal = page.locator("div.card", { has: page.getByRole("heading", { name: /create new strategy/i }) });
-  await strategyModal.locator("input[type='text']").first().fill("Growth Strategy");
+  await strategyModal.locator("input[type='text']").first().fill(strategyName);
   const agentSelect = strategyModal.locator("select").nth(0);
   const verticalSelect = strategyModal.locator("select").nth(1);
   const agentEl = await agentSelect.elementHandle();

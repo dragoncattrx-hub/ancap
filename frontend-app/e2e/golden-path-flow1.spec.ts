@@ -16,6 +16,7 @@ test("golden path flow1: idempotent buy → grant → idempotent run → seller 
   });
   await expect(flow).toBeOK();
   const flowJson: any = await flow.json();
+  expect(flowJson.errors || [], JSON.stringify(flowJson.errors || [])).toEqual([]);
 
   const artifacts: any[] = flowJson.artifacts || [];
   const listingId = artifacts.find((a) => a.kind === "listing")?.id;

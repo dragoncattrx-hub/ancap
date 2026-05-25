@@ -23,6 +23,9 @@ frontend-app/playwright-report
 **/target
 
 # Local secrets / data
+.env
+.env.*
+!.env.example
 Sicret
 **/Sicret
 
