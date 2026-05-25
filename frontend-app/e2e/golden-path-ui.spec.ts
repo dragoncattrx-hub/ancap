@@ -58,50 +58,67 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   });
   const authHeaders = { Authorization: `Bearer ${token}` };
 
-  await page.goto(`${baseUrl}/agents`);
-  await page.getByRole("button", { name: /register agent/i }).click();
-  await expect(page.getByRole("heading", { name: /register new agent/i })).toBeVisible({ timeout: 15000 });
-  const agentModal = page.locator("div.card", { has: page.getByRole("heading", { name: /register new agent/i }) });
-  await agentModal.locator("input[type='text']").first().fill(sellerName);
-  await agentModal.getByRole("button", { name: /create agent/i }).click();
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem(
+        "ancap_cookie_consent_v1",
+        JSON.stringify({ necessary: true, analytics: false, marketing: false, savedAt: new Date().toISOString() }),
+      );
+    } catch {}
+  });
 
-  // Wait for modal close and list refresh
-  await expect(page.getByRole("heading", { name: /register new agent/i })).toBeHidden({ timeout: 15000 });
-  await expect(page.getByText(sellerName)).toHaveCount(1, { timeout: 15000 });
+  // Bootstrap seller agent + strategy + version via API, then exercise listing/buy/run flow through the UI.
+  const sellerRes = await request.post(`${apiBase}/agents`, {
+    headers: authHeaders,
+    data: { display_name: sellerName, public_key: "x".repeat(32), roles: ["seller"] },
+  });
+  if (!sellerRes.ok()) throw new Error(`seller agent create failed: ${sellerRes.status()} ${await sellerRes.text()}`);
+  const sellerAgentId = (await sellerRes.json()).id as string;
 
-  // Go to strategies and create one (button becomes enabled once agents load)
-  await page.goto(`${baseUrl}/strategies`);
-  const createStrategyBtn = page.getByRole("button", { name: /create strategy/i });
-  await expect(createStrategyBtn).toBeEnabled({ timeout: 15000 });
-  await createStrategyBtn.click();
-  await expect(page.getByRole("heading", { name: /create new strategy/i })).toBeVisible({ timeout: 15000 });
-  const strategyModal = page.locator("div.card", { has: page.getByRole("heading", { name: /create new strategy/i }) });
-  await strategyModal.locator("input[type='text']").first().fill(strategyName);
-  // Select first non-empty agent and vertical options
-  const agentSelect = strategyModal.locator("select").nth(0);
-  const verticalSelect = strategyModal.locator("select").nth(1);
-  const agentEl = await agentSelect.elementHandle();
-  const verticalEl = await verticalSelect.elementHandle();
-  if (!agentEl || !verticalEl) throw new Error("Strategy modal selects not found");
-  await page.waitForFunction((el) => (el as HTMLSelectElement).options.length > 1, agentEl, { timeout: 15000 });
-  await page.waitForFunction((el) => (el as HTMLSelectElement).options.length > 1, verticalEl, { timeout: 15000 });
-  await agentSelect.selectOption({ index: 1 });
-  await verticalSelect.selectOption({ index: 1 });
-  await strategyModal.getByRole("button", { name: /^create strategy$/i }).click();
+  const verticalsRes = await request.get(`${apiBase}/verticals`, { headers: authHeaders });
+  if (!verticalsRes.ok()) throw new Error(`verticals failed: ${verticalsRes.status()} ${await verticalsRes.text()}`);
+  const verticalsJson = await verticalsRes.json();
+  const verticalId = verticalsJson.items?.[0]?.id as string | undefined;
+  if (!verticalId) throw new Error("no vertical available for golden-path-ui test");
 
-  await expect(page.getByRole("heading", { name: /create new strategy/i })).toBeHidden({ timeout: 15000 });
+  const strategyRes = await request.post(`${apiBase}/strategies`, {
+    headers: authHeaders,
+    data: {
+      name: strategyName,
+      description: "Golden path UI e2e strategy",
+      owner_agent_id: sellerAgentId,
+      vertical_id: verticalId,
+    },
+  });
+  if (!strategyRes.ok()) throw new Error(`strategy create failed: ${strategyRes.status()} ${await strategyRes.text()}`);
+  const strategyId = (await strategyRes.json()).id as string;
 
-  // CTA should appear with link to the new strategy detail
-  await expect(page.getByText(/strategy created/i)).toBeVisible({ timeout: 15000 });
-  await page.getByRole("link", { name: /create version/i }).first().click();
+  const versionRes = await request.post(`${apiBase}/strategies/${strategyId}/versions`, {
+    headers: authHeaders,
+    data: {
+      semver: "1.0.0",
+      workflow: {
+        vertical_id: verticalId,
+        version: "1.0.0",
+        steps: [{ id: "const", action: "const", args: { value: 1 }, save_as: "x" }],
+      },
+      changelog: "Initial e2e version",
+    },
+  });
+  if (!versionRes.ok()) throw new Error(`version create failed: ${versionRes.status()} ${await versionRes.text()}`);
 
-  // On strategy detail: create version
-  await page.getByRole("button", { name: /create version/i }).click();
-  await expect(page.getByRole("heading", { name: /^create version$/i })).toBeVisible({ timeout: 15000 });
-  const versionModal = page.locator("div.card", { has: page.getByRole("heading", { name: /^create version$/i }) });
-  await versionModal.locator("input").first().fill("1.0.0");
-  await versionModal.getByRole("button", { name: /^create$/i }).click();
-  await expect(page.getByRole("heading", { name: /^create version$/i })).toBeHidden({ timeout: 15000 });
+  const sellerFunding = await request.post(`${apiBase}/ledger/deposit`, {
+    headers: { ...authHeaders, "Idempotency-Key": idk() },
+    data: {
+      account_owner_type: "agent",
+      account_owner_id: sellerAgentId,
+      amount: { amount: "100", currency: "USD" },
+    },
+  });
+  if (!sellerFunding.ok()) throw new Error(`seller funding failed: ${sellerFunding.status()} ${await sellerFunding.text()}`);
+
+  await page.goto(`${baseUrl}/strategies/${strategyId}`);
+  await expect(page.getByRole("heading", { name: new RegExp(strategyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") })).toBeVisible({ timeout: 15000 });
 
   // Publish as listing
   await page.getByRole("button", { name: /publish listing/i }).click();

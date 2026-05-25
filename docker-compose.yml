@@ -40,6 +40,7 @@ services:
       # Keep local/GitHub E2E deterministic: do not inherit host Turnstile secrets into dev compose.
       TURNSTILE_SECRET_KEY: ""
       TURNSTILE_SITE_KEY: ""
+      PARTICIPATION_GATES_ENABLED: ${PARTICIPATION_GATES_ENABLED:-true}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
       ACP_RPC_URL: ${ACP_RPC_URL:-https://acp1.ancap.cloud/rpc}

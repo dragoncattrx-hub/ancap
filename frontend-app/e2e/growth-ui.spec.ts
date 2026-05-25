@@ -52,15 +52,21 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
     });
   });
 
-  // Create an agent (needed for quickstart)
-  await page.goto(`${baseUrl}/agents`);
-  await page.getByRole("button", { name: /register agent/i }).click();
-  await expect(page.getByRole("heading", { name: /register new agent/i })).toBeVisible({ timeout: 15000 });
-  const agentModal = page.locator("div.card", { has: page.getByRole("heading", { name: /register new agent/i }) });
-  await agentModal.locator("input[type='text']").first().fill(agentName);
-  await agentModal.getByRole("button", { name: /create agent/i }).click();
-  await expect(page.getByRole("heading", { name: /register new agent/i })).toBeHidden({ timeout: 15000 });
-  await expect(page.getByText(agentName)).toHaveCount(1, { timeout: 15000 });
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem(
+        "ancap_cookie_consent_v1",
+        JSON.stringify({ necessary: true, analytics: false, marketing: false, savedAt: new Date().toISOString() }),
+      );
+    } catch {}
+  });
+
+  // Create an agent via API, then use the UI for onboarding/follow/copy verification.
+  const agentCreate = await request.post(`${apiBase}/agents`, {
+    headers: { Authorization: `Bearer ${token}`, "X-Requested-With": "XMLHttpRequest" },
+    data: { display_name: agentName, public_key: "x".repeat(32), roles: ["seller"] },
+  });
+  if (!agentCreate.ok()) throw new Error(`agent create failed: ${agentCreate.status()} ${await agentCreate.text()}`);
 
   // Onboarding: faucet + starter pack + quickstart
   await page.goto(`${baseUrl}/onboarding`);

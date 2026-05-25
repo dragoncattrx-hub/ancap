@@ -1,16 +1,16 @@
 // Prefer an explicit URL if provided.
 // Fallbacks:
-// - development: same-origin /api/v1 (proxied to localhost:8000/v1 by next.config.ts)
-// - production: ancap.cloud API gateway
+// - development: same-origin /api/v1 (proxied to localhost:8001/v1 by next.config.ts)
+// - production without override: ancap.cloud API gateway
+//
+// Important: CI/local production-like builds intentionally pass a loopback
+// NEXT_PUBLIC_API_URL (for example 127.0.0.1:8001). Respect it instead of
+// silently falling back to ancap.cloud, otherwise auth/UI tests talk to the
+// wrong backend.
 const rawApiBase = process.env.NEXT_PUBLIC_API_URL;
-const isProd = process.env.NODE_ENV === "production";
-const isLoopback =
-  rawApiBase &&
-  /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i.test(rawApiBase);
 
 const API_BASE =
-  (!isProd && rawApiBase) || // dev can be explicitly specified localhost
-  (isProd && rawApiBase && !isLoopback ? rawApiBase : undefined) ||
+  rawApiBase ||
   (process.env.NODE_ENV === "development"
     ? "/api/v1"
     : "https://ancap.cloud/api/v1");

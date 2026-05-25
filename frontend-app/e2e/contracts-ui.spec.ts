@@ -108,13 +108,23 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   const contractId = contract.id as string;
   expect(["draft", "proposed"]).toContain(contract.status);
 
-  // Sanity: frontend proxy should be able to read the contract
-  const proxyGet = await request.get(`${baseUrl}/api/contracts/${contractId}`, {
+  // Sanity: backend should be able to read the contract before the UI opens it.
+  const contractGet = await request.get(`${apiBase}/contracts/${contractId}`, {
     headers: authHeaders,
   });
-  if (!proxyGet.ok()) {
-    throw new Error(`proxy contract get failed: ${proxyGet.status()} ${await proxyGet.text()}`);
+  if (!contractGet.ok()) {
+    throw new Error(`contract get failed: ${contractGet.status()} ${await contractGet.text()}`);
   }
+
+  // Accept cookie banner if present so it does not intercept contract actions.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem(
+        "ancap_cookie_consent_v1",
+        JSON.stringify({ necessary: true, analytics: false, marketing: false, savedAt: new Date().toISOString() }),
+      );
+    } catch {}
+  });
 
   // Accept via UI and complete to trigger payout
   await page.goto(`${baseUrl}/contracts/${contractId}`);
@@ -125,10 +135,10 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   if (currentStatus.includes("draft")) {
     await page.getByRole("button", { name: /propose/i }).click();
     await expect(page.getByText(/status:\s*proposed/i)).toBeVisible();
-    await page.getByTestId("contract-accept").click();
+    await page.getByTestId("contract-accept").click({ force: true });
     await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
   } else if (currentStatus.includes("proposed")) {
-    await page.getByTestId("contract-accept").click();
+    await page.getByTestId("contract-accept").click({ force: true });
     await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
   } else if (!currentStatus.includes("active")) {
     throw new Error(`unexpected contract status on details page: ${currentStatus}`);

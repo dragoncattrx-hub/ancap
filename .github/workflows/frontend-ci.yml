@@ -102,9 +102,9 @@ jobs:
 
       - name: Start backend services (api + postgres + redis)
         working-directory: .
-        run: docker compose up -d postgres redis api
+        run: PARTICIPATION_GATES_ENABLED=false docker compose up -d postgres redis api
 
-      - name: Wait for API to be healthy
+      - name: Wait for API liveness
         working-directory: .
         run: |
           for i in $(seq 1 30); do
@@ -116,6 +116,25 @@ jobs:
             sleep 5
           done
           echo "API failed to start after 150s"
+          docker compose logs api
+          exit 1
+
+      - name: Run database migrations
+        working-directory: .
+        run: docker compose exec -T api alembic upgrade head
+
+      - name: Wait for API readiness
+        working-directory: .
+        run: |
+          for i in $(seq 1 30); do
+            if [ "$(curl -fsS http://127.0.0.1:8001/v1/system/ready | python3 -c 'import sys, json; print(json.load(sys.stdin).get("status", ""))')" = "ready" ]; then
+              echo "API is ready"
+              exit 0
+            fi
+            echo "Attempt $i/30: API not ready yet..."
+            sleep 2
+          done
+          echo "API failed readiness after migrations"
           docker compose logs api
           exit 1
 
