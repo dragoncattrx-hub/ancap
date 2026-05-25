@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Language, isSupportedLanguage } from "@/locales/translations";
 import { LanguageProvider } from "./LanguageProvider";
 import { AuthProvider } from "./AuthProvider";
 import { WalletProvider } from "./WalletProvider";
@@ -16,12 +17,14 @@ function ServiceWorkerRegister() {
   return null;
 }
 
-export function ClientProviders({ children }: { children: React.ReactNode }) {
+export function ClientProviders({ children, initialLang }: { children: React.ReactNode; initialLang?: string }) {
+  const resolvedInitialLang: Language = isSupportedLanguage(initialLang) ? initialLang : "en";
+
   return (
     <ThemeProvider>
       <AuthProvider>
         <WalletProvider>
-          <LanguageProvider>
+          <LanguageProvider initialLang={resolvedInitialLang}>
             <ServiceWorkerRegister />
             {children}
             <CookieConsent />

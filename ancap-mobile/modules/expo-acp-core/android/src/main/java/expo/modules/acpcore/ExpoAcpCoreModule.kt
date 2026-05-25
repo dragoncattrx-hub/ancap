@@ -19,7 +19,7 @@ private fun mapWalletError(e: AcpWalletException): CodedException {
     is AcpWalletException.Rpc -> "ERR_RPC"
     is AcpWalletException.Internal -> "ERR_INTERNAL"
   }
-  return CodedException(code, e.message ?: "ACP wallet error")
+  return CodedException(code, e.message ?: "ACP wallet error", e)
 }
 
 class ExpoAcpCoreModule : Module() {

@@ -62,24 +62,15 @@ export default function VerticalsPage() {
     setProposing(true);
     setError("");
     try {
-      await fetch("/api/verticals/propose", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          spec: {
-            description: formData.description || formData.name,
-            allowed_actions: [],
-            required_resources: [],
-            metrics: [],
-            risk_spec: {},
-          },
-        }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: "Unknown error" }));
-          throw new Error(err.detail || `API error: ${res.status}`);
-        }
+      await verticals.propose({
+        name: formData.name,
+        spec: {
+          description: formData.description || formData.name,
+          allowed_actions: [],
+          required_resources: [],
+          metrics: [],
+          risk_spec: {},
+        },
       });
       setShowProposeModal(false);
       setFormData({ name: "", description: "" });

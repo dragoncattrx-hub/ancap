@@ -65,7 +65,7 @@ git push origin release/${VERSION} --tags
 
 ## Deployment
 
-Before any staging or production deploy using `docker-compose.prod.yml`, ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env`; the production stack is expected to fail fast if any of them are missing, and `docker compose -f docker-compose.prod.yml config` should now fail immediately when one is unset.
+Before any staging or production deploy using `docker-compose.prod.yml`, ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password, not a placeholder-like password, and that password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env`; the production stack is expected to fail fast if any of them are missing or inconsistent, and `docker compose -f docker-compose.prod.yml config` should now fail immediately when one is unset.
 
 1. **Staging**: merge release branch → `staging`, deploy `docker-compose.prod.yml`
 2. **Smoke test**:

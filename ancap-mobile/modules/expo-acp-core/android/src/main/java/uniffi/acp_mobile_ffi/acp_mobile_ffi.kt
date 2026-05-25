@@ -1185,18 +1185,18 @@ sealed class AcpWalletException: kotlin.Exception() {
 
     class Rpc(
 
-        val `message`: kotlin.String
+        val `details`: kotlin.String
         ) : AcpWalletException() {
-        override val message
-            get() = "message=${ `message` }"
+        override val message: kotlin.String
+            get() = "message=${ `details` }"
     }
 
     class Internal(
 
-        val `message`: kotlin.String
+        val `details`: kotlin.String
         ) : AcpWalletException() {
-        override val message
-            get() = "message=${ `message` }"
+        override val message: kotlin.String
+            get() = "message=${ `details` }"
     }
 
 
@@ -1250,12 +1250,12 @@ public object FfiConverterTypeAcpWalletException : FfiConverterRustBuffer<AcpWal
             is AcpWalletException.Rpc -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`details`)
             )
             is AcpWalletException.Internal -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`details`)
             )
         }
     }
@@ -1280,12 +1280,12 @@ public object FfiConverterTypeAcpWalletException : FfiConverterRustBuffer<AcpWal
             }
             is AcpWalletException.Rpc -> {
                 buf.putInt(5)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`details`, buf)
                 Unit
             }
             is AcpWalletException.Internal -> {
                 buf.putInt(6)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`details`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

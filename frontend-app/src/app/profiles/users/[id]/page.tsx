@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { profiles } from "@/lib/api";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -17,14 +18,9 @@ export default function UserProfilePage() {
     void (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/profiles/users/${encodeURIComponent(userId)}`);
-        if (res.ok) {
-          setProfile(await res.json());
-        } else {
-          setError("User not found");
-        }
+        setProfile(await profiles.getUser(userId));
       } catch (e: any) {
-        setError(e?.message || "Failed to load");
+        setError(e?.status === 404 ? "User not found" : e?.message || "Failed to load");
       } finally {
         setLoading(false);
       }

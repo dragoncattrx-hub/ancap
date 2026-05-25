@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'maven-publish'
 
 group = 'expo.modules.acpcore'
 version = '0.1.0'
@@ -31,15 +30,9 @@ android {
     }
   }
 
-  publishing {
-    singleVariant("release") {
-      withSourcesJar()
-    }
-  }
 }
 
 dependencies {
-  implementation project(':expo-modules-core')
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${safeExtGet('kotlinVersion', '2.0.21')}"
   implementation "net.java.dev.jna:jna:5.14.0@aar"
 }

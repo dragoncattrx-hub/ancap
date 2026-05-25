@@ -69,7 +69,19 @@ Write-Host "Using Android SDK: $($env:ANDROID_HOME)"
 Write-Host "Using Android NDK: $($env:ANDROID_NDK_HOME)"
 
 Set-Location $crypto
-rustup target add aarch64-linux-android x86_64-linux-android armv7-linux-androideabi | Out-Null
+
+$targetsToEnsure = @("aarch64-linux-android", "x86_64-linux-android", "armv7-linux-androideabi")
+$installedTargets = @((& rustup target list --installed 2>$null) | ForEach-Object { $_.Trim() })
+$missingTargets = $targetsToEnsure | Where-Object { $_ -notin $installedTargets }
+if ($missingTargets.Count -gt 0) {
+  Write-Host "Installing missing Rust Android targets: $($missingTargets -join ', ')"
+  & rustup target add @missingTargets
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to install Rust Android targets: $($missingTargets -join ', ')"
+  }
+} else {
+  Write-Host "Rust Android targets already installed"
+}
 
 if (-not (Get-Command cargo-ndk -ErrorAction SilentlyContinue)) {
   Write-Host "Installing cargo-ndk (needs network)..."

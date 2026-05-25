@@ -59,20 +59,26 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+function getApiHeaders(options: RequestInit = {}, includeJsonContentType = true): HeadersInit {
   const token = getToken();
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
+  return {
+    ...(includeJsonContentType ? { "Content-Type": "application/json" } : {}),
     "X-Requested-With": SAME_ORIGIN_REQUEST_HEADER,
     ...options.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
 
-  const res = await fetch(`${API_BASE}${path}`, {
+async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
+  return fetch(`${API_BASE}${path}`, {
     ...options,
-    headers,
+    headers: getApiHeaders(options, includeJsonContentType),
     credentials: "include",
   });
+}
+
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const res = await apiFetchRaw(path, options);
 
   if (!res.ok) {
     let detail = "";
@@ -192,10 +198,8 @@ export const auth = {
   async logout() {
     clearToken();
     try {
-      await fetch(`${API_BASE}/auth/logout`, {
+      await apiFetchRaw("/auth/logout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: "{}",
       });
     } catch {
@@ -385,6 +389,22 @@ export const verticals = {
 
   async get(id: string) {
     return apiFetch(`/verticals/${id}`);
+  },
+
+  async propose(data: {
+    name: string;
+    spec: {
+      description: string;
+      allowed_actions: any[];
+      required_resources: any[];
+      metrics: any[];
+      risk_spec: Record<string, any>;
+    };
+  }) {
+    return apiFetch("/verticals/propose", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   },
 };
 
@@ -768,6 +788,16 @@ export const funds = {
     return apiFetch(`/funds/${id}`);
   },
 
+  async create(data: {
+    name: string;
+    pool_id: string;
+  }) {
+    return apiFetch("/funds", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
   async allocate(fundId: string, data: {
     strategy_version_id: string;
     weight: number;
@@ -847,6 +877,18 @@ export const growthPublic = {
   },
   async getFeed(limit = 50) {
     return apiFetch(`/public/feed/public?limit=${limit}`);
+  },
+};
+
+export const profiles = {
+  async getAgent(id: string) {
+    return apiFetch(`/profiles/agents/${encodeURIComponent(id)}`);
+  },
+  async listAgentFollowers(id: string) {
+    return apiFetch(`/profiles/agents/${encodeURIComponent(id)}/followers`);
+  },
+  async getUser(id: string) {
+    return apiFetch(`/profiles/users/${encodeURIComponent(id)}`);
   },
 };
 
@@ -1046,12 +1088,11 @@ export const workflowStore = {
     return `${API_BASE}/workflow-store/admin/revenue/export?days=${encodeURIComponent(String(days))}`;
   },
   async revenueExportCsv(days = 30) {
-    const token = getToken();
-    const res = await fetch(this.revenueExportUrl(days), {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    const res = await apiFetchRaw(
+      `/workflow-store/admin/revenue/export?days=${encodeURIComponent(String(days))}`,
+      {},
+      false,
+    );
     if (!res.ok) {
       let message = `API request failed with ${res.status}`;
       try {
@@ -1196,6 +1237,12 @@ export const system = {
   },
   async stakingEconomics() {
     return apiFetch("/system/staking-economics");
+  },
+  async health() {
+    return apiFetch("/system/health");
+  },
+  async ledgerInvariantStatus() {
+    return apiFetch("/system/ledger-invariant-status");
   },
 };
 

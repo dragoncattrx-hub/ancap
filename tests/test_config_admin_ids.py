@@ -71,3 +71,46 @@ def test_settings_rejects_insecure_default_database_url_in_production():
             cron_secret=valid_cron,
             database_url="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap",
         )
+
+
+def test_settings_rejects_placeholder_or_default_database_passwords_in_production():
+    valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
+    valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
+    valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure postgres database password"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:postgres@db.example.com:5432/ancap",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL uses a placeholder-like database password"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:change-me-db-password@db.example.com:5432/ancap",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL targets the bundled postgres service but does not include a password"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap@postgres:5432/ancap",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
+            postgres_password="different-db-password",
+        )

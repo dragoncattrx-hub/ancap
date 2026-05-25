@@ -95,7 +95,7 @@ Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
 If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:
-- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` are present in the host shell or repo-root `.env`
+- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, its password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are present in the host shell or repo-root `.env`
 - **Windows:** `.\scripts\deploy-ancap-cloud.ps1`
 - **Linux:** `bash scripts/deploy-ancap-cloud.sh`
 
@@ -237,13 +237,13 @@ Swagger (local): http://127.0.0.1:8001/docs
 Raises Postgres + API + Frontend (Next production) + nginx reverse proxy.
 
 Before starting the prod-like stack, set real production secrets in the repo-root `.env` or in the shell environment:
-- `DATABASE_URL` (must not use the local `postgres:postgres` default in production)
-- `POSTGRES_PASSWORD` (required by the bundled `postgres` service in `docker-compose.prod.yml`; use a real non-default password)
+- `DATABASE_URL` (must not use the local `postgres:postgres` default in production; if you target the bundled `postgres` service, the URL must include the real database password, must not use a placeholder-like password, and must match `POSTGRES_PASSWORD`)
+- `POSTGRES_PASSWORD` (required by the bundled `postgres` service in `docker-compose.prod.yml`; use a real non-default password, not a placeholder-like value)
 - `SECRET_KEY` (must be a real random secret, not a placeholder-like value)
 - `CURSOR_SECRET` (must be a real random secret, not a placeholder-like value)
 - `CRON_SECRET` (must be a real random secret, not a placeholder-like value)
 
-The production compose file intentionally has no fallbacks for those values and now uses compose required-variable guards, so `docker compose -f docker-compose.prod.yml config` / `up` will fail immediately if any of them are unset.
+The production compose file intentionally has no fallbacks for those values and now uses compose required-variable guards, while the app and deploy/rebuild helper scripts reject insecure defaults, placeholder-like secret values, and bundled-postgres password drift between `DATABASE_URL` and `POSTGRES_PASSWORD`, so `docker compose -f docker-compose.prod.yml config` / `up` will fail immediately if any of them are unset or inconsistent.
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d

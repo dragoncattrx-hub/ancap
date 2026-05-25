@@ -86,10 +86,11 @@ Files: \docker-compose.prod.yml\, \pp/config.py\
 
 Verification (2026-05-25):
 - `docker-compose.prod.yml` now requires `DATABASE_URL`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` without production fallbacks; compose `${VAR:?message}` guards make `docker compose config/up` fail immediately when any required secret is unset
-- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, and now also rejects blank `DATABASE_URL` or the insecure `postgres:postgres` default
-- `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, and avoid shadowing compose interpolation with the bridge-only env file
-- deploy-facing docs now consistently call out those required secrets before production compose startup, including `README.md`, `PRODUCTION_ROADMAP.md`, `.github/RELEASE_PROCESS.md`, and the bridge pilot env example note
-- `pytest tests/test_config_admin_ids.py tests/test_system.py -q` passes with coverage for the production secret guard and cron-secret-gated jobs endpoints
+- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, rejects blank `DATABASE_URL` or the insecure `postgres:postgres` default, rejects placeholder/default DB passwords hidden inside `DATABASE_URL`, and now also rejects mismatches between `DATABASE_URL` and `POSTGRES_PASSWORD` when the bundled compose `postgres` service is targeted
+- `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, reject placeholder/default DB passwords embedded in `DATABASE_URL`, reject `DATABASE_URL` / `POSTGRES_PASSWORD` drift for the bundled compose postgres service, avoid shadowing compose interpolation with the bridge-only env file, and the bash helper now parses repo-root `.env` directly so CRLF-authored env files do not break preflight on Linux/WSL
+- `tests/test_prod_deploy_scripts.py` now goes beyond string-presence assertions and actually exercises the deploy/rebuild helpers against staged minimal repos, confirming that PowerShell deploy/rebuild and bash deploy can bootstrap required production secrets from a repo-root `.env` without relying on pre-exported shell state, including the CRLF-authored `.env` case for the bash helper
+- deploy-facing docs now consistently call out those required secrets before production compose startup, including `README.md`, `PRODUCTION_ROADMAP.md`, `.github/RELEASE_PROCESS.md`, and the bridge pilot env example note, and they now explicitly note that `DATABASE_URL` must include the same real DB password as `POSTGRES_PASSWORD` when targeting the bundled compose postgres service
+- `pytest tests/test_config_admin_ids.py tests/test_system.py tests/test_prod_deploy_scripts.py -q` passes with coverage for the production secret guard, deploy-script preflight rejection of placeholder-like app secrets and insecure/default DB settings, repo-root `.env` bootstrap behavior, `DATABASE_URL` / `POSTGRES_PASSWORD` mismatch rejection, and cron-secret-gated jobs endpoints
 
 Fix:
 - \secret_key\ must not have a fallback default in production-configured files -- must be a required env var with no insecure fallback
@@ -263,11 +264,16 @@ File: \	ests/api/test_growth_layer.py\
 
 ### 2.4 Resolve test_unit.py bcrypt skip [LOW]
 
-File: \	ests/test_unit.py:61\
+Status: [x] Done. `tests/test_unit.py` no longer contains the old bcrypt-backend skip, unit auth hashing tests pass directly against `bcrypt`, and dependency metadata now matches the actual runtime implementation instead of still declaring the stale `passlib[bcrypt]` extra.
 
-Issue: \pytest.skip("bcrypt backend not available")\ -- missing system dependency in CI.
+Files: `tests/test_unit.py`, `app/services/auth.py`, `requirements.txt`, `pyproject.toml`
 
-Fix: Ensure \crypt\ C library installed in CI environment. Remove skip.
+Verification (2026-05-25):
+- `tests/test_unit.py` contains no `pytest.skip("bcrypt backend not available")` guard anymore
+- `app/services/auth.py` hashes/verifies passwords directly with `bcrypt`
+- `requirements.txt` now pins `bcrypt==5.0.0`
+- `pyproject.toml` now declares `bcrypt>=5.0` instead of the stale `passlib[bcrypt]` extra
+- `pytest tests/test_unit.py -q` passes
 
 ---
 
@@ -275,13 +281,14 @@ Fix: Ensure \crypt\ C library installed in CI environment. Remove skip.
 
 ### 3.1 Auth token: localStorage to HttpOnly cookies [MEDIUM]
 
-Status: [~] Repo-side browser auth flow now prefers HttpOnly `ancap_token` cookies instead of JS-readable token storage. Frontend bootstrap now resolves auth from `/users/me`, shared API requests send `X-Requested-With`, and Playwright auth seeding now uses cookies instead of `localStorage` tokens. Remaining follow-through is broader runtime verification across browser surfaces and any direct `fetch("/api/...")` calls that bypass the shared API client.
+Status: [~] Repo-side browser auth flow now prefers HttpOnly `ancap_token` cookies instead of JS-readable token storage. Frontend bootstrap now resolves auth from `/users/me`, shared API requests send `X-Requested-With`, and the previously remaining client-side direct authenticated `fetch("/api/...")` mutation/read surfaces were moved onto shared API helpers. Remaining follow-through is live browser/runtime verification against deployed/staging surfaces.
 
 Files: `frontend-app/src/components/AuthProvider.tsx`, `frontend-app/src/lib/api.ts`, `app/api/deps.py`, `app/api/routers/auth.py`, `frontend-app/e2e/*.spec.ts`
 
 Verification (2026-05-25):
 - `AuthProvider` no longer depends on `auth.getToken()` to decide signed-in bootstrap; it restores cached user display data only and then resolves real auth from `/users/me`
 - frontend shared API client now always sends `X-Requested-With: XMLHttpRequest`
+- `frontend-app/src/lib/api.ts` now centralizes raw authenticated fetch helpers (`apiFetchRaw` / shared headers), and the admin overview, funds create, vertical propose, profile loads, agent follow/unfollow, logout, and workflow revenue CSV export flows now all use that shared path instead of bespoke client-side fetch calls
 - cookie-authenticated unsafe requests now fail closed in `app/api/deps.py` unless `X-Requested-With` is present, while explicit Bearer-token clients remain allowed
 - auth cookie set/clear paths now use `SameSite=strict`
 - Playwright UI auth seeders now stage `ancap_token` as a cookie and only keep `ancap_user` in localStorage for UI display bootstrap
@@ -292,7 +299,7 @@ Exit criteria: No Bearer tokens stored in localStorage for auth. CSRF protection
 
 ### 3.2 SameSite cookie + CORS hardening [MEDIUM]
 
-Status: [~] Repo-side auth cookie policy is now `SameSite=strict`, security headers already align to `DENY`/HSTS in app + nginx, and CORS is now explicit rather than wildcard methods/headers. Remaining follow-through is live preflight/runtime verification for direct browser fetch surfaces.
+Status: [~] Repo-side auth cookie policy is now `SameSite=strict`, security headers already align to `DENY`/HSTS in app + nginx, CORS is explicit rather than wildcard methods/headers, and the remaining browser-side direct authenticated `fetch("/api/...")` surfaces in the frontend app were collapsed onto shared helpers that always attach the explicit same-origin header. Remaining follow-through is live preflight/runtime verification on deployed/staging surfaces.
 
 Files: `app/main.py`, `app/api/routers/auth.py`, `infra/nginx/default.conf`
 
@@ -303,7 +310,7 @@ Verification (2026-05-25):
 - `infra/nginx/default.conf` already matches `DENY` + HSTS across public locations
 
 Remaining follow-through:
-- run live browser preflight verification against deployed/staging surfaces that use direct `fetch("/api/...")` calls
+- run live browser preflight verification against deployed/staging auth/browser surfaces to confirm the shared-header path behaves correctly end-to-end
 - if any route needs an additional custom header in browsers, add it deliberately to the explicit CORS allowlist instead of returning to wildcards
 
 ### 3.3 Production security header alignment [LOW]
@@ -447,9 +454,13 @@ Endpoints:
 | P4-11 | Send + preview + sign | Needs P1 FFI |
 | P1-7 | iOS Swift UniFFI link | Run \uild-ios-native.ps1\ (needs macOS) |
 
-### 5.3 Smart QR Pay / Auto-Swap track (v1.1 / v2, after wallet release closure)
+### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)
 
-Status: [~] Execution started. Docs/specs are written, backend `capabilities` + deterministic `parse` are implemented and tested, and the next backend orchestration slice (`quote` + execution session groundwork) is now in progress in repo code. This is **not** v1.0-complete and must not be marketed as shipped.
+Status: [~] Execution started. Docs/specs are written, backend `capabilities` + deterministic `parse` are implemented and tested, `quote` + execution-session groundwork is in repo code, and the Expo beta flow already supports paste, QR import, camera scan, review, and session restore. The broader **AI Payment Scanner** (photo / OCR / invoice decode) and **ANCAP Claim Codes** layers are now formal roadmap targets, but they are **not shipped** and must not be marketed as live.
+
+Product formula inside this track:
+- `Photo / QR -> AI Decode -> Payment Intent -> Smart Swap -> Pay`
+- `Lock crypto -> Generate claim code -> Share code -> Redeem -> Receive crypto`
 
 Execution order inside this track:
 1. [x] docs/spec split: plan + schema + API + security
@@ -460,17 +471,49 @@ Execution order inside this track:
    - `POST /v1/mobile/smart-pay/execute`
    - `GET /v1/mobile/smart-pay/payments/{executionId}`
    - `POST /v1/mobile/smart-pay/payments/{executionId}/recover`
-6. [~] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods added; app integration still pending)
+6. [~] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods added; app integration started)
 7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, status flow, and persisted draft/session restore; polish/history still pending)
 8. [ ] real route engine / bridge-swap execution integration
-9. [ ] AI fallback classifier (only after deterministic/heuristic path is solid)
+9. [ ] AI fallback classifier for ambiguous payloads (only after deterministic/heuristic path is solid)
 10. [ ] receipt/history/recovery UX hardening
+11. [ ] AI Payment Scanner MVP:
+   - camera/photo upload in wallet and website
+   - QR recognition + OCR for receipts, invoices, payment screens, and payment documents
+   - detect amount, recipient, network, asset, memo/tag/comment, payment deadline, and payment currency
+   - build `paymentIntent` preview with manual correction before execute
+   - service fee charged in ACP
+12. [ ] Smart Payment Flow expansion:
+   - automatic asset matching
+   - smart swap before payment
+   - multi-chain routing beyond narrow first-scope routes
+   - suspicious-address / risk scoring
+   - duplicate invoice/payment detection
+   - saved recipients, templates, and merchant payment mode
+13. [ ] ANCAP Claim Codes / Crypto Voucher layer:
+   - lock internal balance or escrowed asset
+   - generate redeemable public claim code
+   - redeem from website or wallet
+   - one-time and multi-use codes
+   - expiration, cancel/refund before redemption, and proof receipt
+   - creation / redeem fees charged in ACP
+14. [ ] Secure escrow and code-verification layer:
+   - `claim_code` as public user code
+   - `secret_hash` only in storage (never store redeem codes in plain text)
+   - `locked_balance`, `status`, expiry, and redemption metadata
+   - brute-force protection, rate limits, anti-fraud monitoring, optional PIN/password
+15. [ ] Merchant / growth layer:
+   - businesses create payment QR codes
+   - users create gift or payout claim codes
+   - campaigns distribute ACP/wACP through claim codes
+   - referral claim codes, airdrop claim links, and QR vouchers for Telegram / X / web
 
 Truth constraints:
 - deterministic parser first, AI second
 - user confirmation mandatory before any payment
+- AI/OCR may prepare a payment, but it must never auto-send without explicit user confirmation
 - ACP fee reserve required
 - first release scope stays narrow: ACP + BSC/EVM supported paths only
+- claim-code storage must be hash-based and abuse-resistant, not plain-text voucher storage
 
 ---
 

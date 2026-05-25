@@ -8,13 +8,59 @@ COMPOSE="$ROOT/docker-compose.prod.yml"
 DOTENV="$ROOT/.env"
 test -f "$COMPOSE" || { echo "Missing $COMPOSE"; exit 1; }
 
-if [[ -f "$DOTENV" ]]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$DOTENV"
-  set +a
-  echo "Loaded compose substitution secrets from: $DOTENV"
-fi
+import_dotenv_if_present() {
+  local dotenv_path="$1"
+  if [[ ! -f "$dotenv_path" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+    local line="${raw_line%$'\r'}"
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+
+    if [[ ! "$line" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*=(.*)$ ]]; then
+      continue
+    fi
+
+    local name="${BASH_REMATCH[1]}"
+    local value="${BASH_REMATCH[2]}"
+
+    value="${value%$'\r'}"
+    if [[ ${#value} -ge 2 ]]; then
+      local first_char="${value:0:1}"
+      local last_char="${value: -1}"
+      if [[ "$first_char" == '"' && "$last_char" == '"' ]]; then
+        value="${value:1:${#value}-2}"
+      elif [[ "$first_char" == "'" && "$last_char" == "'" ]]; then
+        value="${value:1:${#value}-2}"
+      fi
+    fi
+
+    if [[ -z "${!name:-}" ]]; then
+      export "$name=$value"
+    fi
+  done < "$dotenv_path"
+
+  echo "Loaded compose substitution secrets from: $dotenv_path"
+}
+
+import_dotenv_if_present "$DOTENV"
+
+placeholder_like_secret() {
+  local value="${1:-}"
+  if [[ -z "$value" ]]; then
+    return 1
+  fi
+
+  local normalized_value="${value,,}"
+  for phrase in change dev-secret change-me changeme secret example placeholder; do
+    if [[ "$normalized_value" == *"$phrase"* ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 REQUIRED_PROD_SECRETS=(DATABASE_URL POSTGRES_PASSWORD SECRET_KEY CURSOR_SECRET CRON_SECRET)
 MISSING=()
@@ -28,20 +74,12 @@ if (( ${#MISSING[@]} > 0 )); then
   exit 1
 fi
 
-UNSAFE_SECRET_PHRASES=(change dev-secret change-me changeme secret example placeholder)
 for secret_name in SECRET_KEY CURSOR_SECRET CRON_SECRET; do
   secret_value="${!secret_name:-}"
-  if [[ -z "$secret_value" ]]; then
-    continue
+  if placeholder_like_secret "$secret_value"; then
+    echo "$secret_name still uses an insecure placeholder-like value. Set a real random secret before running this deploy script." >&2
+    exit 1
   fi
-
-  normalized_secret_value="${secret_value,,}"
-  for phrase in "${UNSAFE_SECRET_PHRASES[@]}"; do
-    if [[ "$normalized_secret_value" == *"$phrase"* ]]; then
-      echo "$secret_name still uses an insecure placeholder-like value. Set a real random secret before running this deploy script." >&2
-      exit 1
-    fi
-  done
 done
 
 if [[ "${DATABASE_URL,,}" == *"://postgres:postgres@"* ]]; then
@@ -49,9 +87,46 @@ if [[ "${DATABASE_URL,,}" == *"://postgres:postgres@"* ]]; then
   exit 1
 fi
 
+DATABASE_URL_NO_SCHEME="${DATABASE_URL#*://}"
+DATABASE_URL_AUTHORITY="${DATABASE_URL_NO_SCHEME%%/*}"
+DATABASE_URL_CREDENTIALS=""
+DATABASE_URL_HOSTPORT="$DATABASE_URL_AUTHORITY"
+if [[ "$DATABASE_URL_AUTHORITY" == *"@"* ]]; then
+  DATABASE_URL_CREDENTIALS="${DATABASE_URL_AUTHORITY%@*}"
+  DATABASE_URL_HOSTPORT="${DATABASE_URL_AUTHORITY#*@}"
+fi
+DATABASE_URL_HOST="${DATABASE_URL_HOSTPORT%%[:?]*}"
+DATABASE_URL_PASSWORD=""
+DATABASE_URL_PASSWORD_DECODED=""
+if [[ -n "$DATABASE_URL_CREDENTIALS" && "$DATABASE_URL_CREDENTIALS" == *:* ]]; then
+  DATABASE_URL_PASSWORD="${DATABASE_URL_CREDENTIALS#*:}"
+fi
+
+if [[ -n "$DATABASE_URL_PASSWORD" ]]; then
+  printf -v DATABASE_URL_PASSWORD_DECODED '%b' "${DATABASE_URL_PASSWORD//%/\\x}"
+  if [[ "${DATABASE_URL_PASSWORD_DECODED,,}" == "postgres" ]]; then
+    echo "DATABASE_URL still uses the insecure postgres database password. Set a real database password before running this deploy script." >&2
+    exit 1
+  fi
+  if placeholder_like_secret "$DATABASE_URL_PASSWORD_DECODED"; then
+    echo "DATABASE_URL uses a placeholder-like database password. Set a real database password before running this deploy script." >&2
+    exit 1
+  fi
+fi
+
+if [[ "${DATABASE_URL_HOST,,}" == "postgres" && -z "$DATABASE_URL_PASSWORD" ]]; then
+  echo "DATABASE_URL targets the bundled postgres service but does not include a password. Set DATABASE_URL with the real POSTGRES_PASSWORD before running this deploy script." >&2
+  exit 1
+fi
+
 POSTGRES_PASSWORD_NORMALIZED="${POSTGRES_PASSWORD,,}"
-if [[ "$POSTGRES_PASSWORD_NORMALIZED" == "postgres" || "$POSTGRES_PASSWORD_NORMALIZED" == *"change-me"* || "$POSTGRES_PASSWORD_NORMALIZED" == *"placeholder"* || "$POSTGRES_PASSWORD_NORMALIZED" == *"example"* ]]; then
+if [[ "$POSTGRES_PASSWORD_NORMALIZED" == "postgres" ]] || placeholder_like_secret "$POSTGRES_PASSWORD"; then
   echo "POSTGRES_PASSWORD is still using an insecure default or placeholder. Set a real non-default password before running this deploy script." >&2
+  exit 1
+fi
+
+if [[ "${DATABASE_URL_HOST,,}" == "postgres" && -n "$DATABASE_URL_PASSWORD" && "$DATABASE_URL_PASSWORD_DECODED" != "$POSTGRES_PASSWORD" ]]; then
+  echo "DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service. Keep them in sync before running this deploy script." >&2
   exit 1
 fi
 

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClientProviders } from "@/components/ClientProviders";
 import { ChunkErrorRecovery } from "@/components/ChunkErrorRecovery";
+import { detectPreferredLanguage } from "@/lib/language";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,9 +15,9 @@ const inter = Inter({
 // Build a sane absolute base for canonical/OG links. Override via NEXT_PUBLIC_SITE_URL
 // in Docker/CI when serving from a different host, otherwise default to ancap.cloud.
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ancap.cloud";
-const SITE_TITLE = "Платные AI-workflow для криптокоманд и агентов";
+const SITE_TITLE = "ANCAP — AI Native Capital Allocation Platform";
 const SITE_DESCRIPTION =
-  "Покупай полезное AI-исполнение за ACP или создавай платные AI-workflow, размещай их на ANCAP и зарабатывай на запусках с proof receipts.";
+  "ANCAP is an AI-native capital allocation platform for smart payments, ACP settlement, AI-assisted payment decoding, verifiable execution, and crypto-native financial workflows.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -47,16 +49,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const initialLang = detectPreferredLanguage({
+    cookieLang: cookieStore.get("ancap-lang")?.value,
+    countryCode:
+      headerStore.get("x-vercel-ip-country") ||
+      headerStore.get("cf-ipcountry") ||
+      headerStore.get("x-country-code") ||
+      headerStore.get("cloudfront-viewer-country"),
+    acceptLanguage: headerStore.get("accept-language"),
+  });
+
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang={initialLang} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <ChunkErrorRecovery />
-        <ClientProviders>{children}</ClientProviders>
+        <ClientProviders initialLang={initialLang}>{children}</ClientProviders>
       </body>
     </html>
   );

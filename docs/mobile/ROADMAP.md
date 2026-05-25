@@ -120,7 +120,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 ---
 
-## Smart QR Pay / Auto-Swap track (v1.1 / v2)
+## Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2)
 
 > Status: execution started, but not shipped. Source plan/specs: `SMART_QR_AUTO_SWAP_PLAN.md`, `SMART_QR_PAYMENT_INTENT_SCHEMA.md`, `SMART_QR_API_SPEC.md`, `SMART_QR_SECURITY.md`
 
@@ -130,17 +130,36 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | SQ-2 | Deterministic parse | [x] | `POST /v1/mobile/smart-pay/parse` for ACP, raw EVM, EIP-681 first scope |
 | SQ-3 | Quote engine groundwork | [~] | first backend `POST /v1/mobile/smart-pay/quote` slice in progress |
 | SQ-4 | Execution session groundwork | [~] | execute/status/recover endpoints in progress |
-| SQ-5 | Mobile SDK/client wiring | [~] | `@ancap/acp-api-client` now has typed Smart Pay capabilities/parse/quote/execute/status/recover methods; Expo app wiring still pending |
+| SQ-5 | Mobile SDK/client wiring | [~] | `@ancap/acp-api-client` now has typed Smart Pay capabilities/parse/quote/execute/status/recover methods; Expo app integration started |
 | SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, and persisted draft/session restore in-device; polished UX/history still pending |
 | SQ-7 | Real route execution integration | [ ] | bridge/swap/transfer orchestration beyond placeholder routes |
 | SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
 | SQ-9 | Receipt/history/recovery UX | [ ] | payment session resume + receipt screens |
+| SQ-10 | AI Payment Scanner MVP | [ ] | camera/photo upload, QR recognition, OCR for invoices/receipts/payment screens, and payment-intent preview with manual correction |
+| SQ-11 | Smart Payment Flow expansion | [ ] | auto asset matching, smart swap before payment, multi-chain routing, duplicate payment detection, merchant mode |
+| SQ-12 | ANCAP Claim Codes / Crypto Voucher MVP | [ ] | lock balance, generate redeemable claim code, redeem from wallet/site, expiry/cancel/refund, ACP fees |
+| SQ-13 | Secure escrow + claim verification layer | [ ] | hash-based code storage, status lifecycle, rate limits, anti-fraud, optional PIN/password |
+| SQ-14 | Merchant / growth distribution layer | [ ] | gift codes, promo claim codes, airdrop claim links, QR vouchers for Telegram/X/web |
+
+Scanner target formula:
+- `Photo / QR -> AI Decode -> Payment Intent -> Smart Swap -> Pay`
+
+Claim-code target formula:
+- `Lock crypto -> Generate claim code -> Share code -> Redeem -> Receive crypto`
+
+Claim-code storage model target:
+- `claim_code` = public code shown to user
+- `secret_hash` = only stored hash of redeem secret
+- `locked_balance` = reserved amount
+- `status` = `active | redeemed | expired | cancelled | locked`
 
 Scope truth:
 - this is a **post-v1.0** flagship track, not release-closure work
 - first supported scope stays narrow: **ACP + BSC/EVM** only
 - deterministic parser first, AI second
+- AI/OCR may prepare a payment, but must never auto-send without explicit user confirmation
 - final user confirmation remains mandatory
+- claim-code storage must be hash-based and abuse-resistant, not plain-text voucher storage
 
 ## Post-MVP (v1.1+)
 

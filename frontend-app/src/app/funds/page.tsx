@@ -68,18 +68,9 @@ export default function FundsPage() {
     setError("");
 
     try {
-      await fetch("/api/funds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          pool_id: formData.pool_id,
-        }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: "Unknown error" }));
-          throw new Error(err.detail || `API error: ${res.status}`);
-        }
+      await funds.create({
+        name: formData.name,
+        pool_id: formData.pool_id,
       });
 
       setShowCreateModal(false);

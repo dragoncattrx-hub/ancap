@@ -1,5 +1,6 @@
 """Application configuration."""
 from functools import lru_cache
+from urllib.parse import unquote, urlsplit
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,6 +12,17 @@ class Settings(BaseSettings):
 
     environment: str = "development"  # "development" | "production"
 
+    @staticmethod
+    def _is_placeholder_like(value: str) -> bool:
+        normalized = (value or "").strip().lower()
+        if not normalized:
+            return False
+        unsafe_phrases = {
+            "change", "dev-secret", "change-me", "changeme",
+            "secret", "example", "placeholder",
+        }
+        return any(phrase in normalized for phrase in unsafe_phrases)
+
     @field_validator("environment", mode="before")
     @classmethod
     def _normalize_env(cls, v):
@@ -21,10 +33,6 @@ class Settings(BaseSettings):
         """Fail fast if required production secrets are missing or have insecure placeholders."""
         if self.environment != "production":
             return self
-        unsafe_phrases = {
-            "change", "dev-secret", "change-me", "changeme",
-            "secret", "example", "placeholder",
-        }
         for name, value in [
             ("SECRET_KEY", self.secret_key),
             ("CURSOR_SECRET", self.cursor_secret),
@@ -35,7 +43,7 @@ class Settings(BaseSettings):
                     f"[PRODUCTION] {name} is not set. "
                     f"Set {name} as an environment variable before starting in production."
                 )
-            if any(p in value.lower() for p in unsafe_phrases):
+            if self._is_placeholder_like(value):
                 raise ValueError(
                     f"[PRODUCTION] {name} has an insecure placeholder: '{value}'. "
                     f"Set a real secret via environment variable."
@@ -51,6 +59,34 @@ class Settings(BaseSettings):
             raise ValueError(
                 "[PRODUCTION] DATABASE_URL still uses the insecure postgres:postgres default. "
                 "Set a real database password before starting in production."
+            )
+
+        parsed_database_url = urlsplit(database_url)
+        database_password = parsed_database_url.password
+        if database_password is not None:
+            database_password = unquote(database_password)
+            if database_password.strip().lower() == "postgres":
+                raise ValueError(
+                    "[PRODUCTION] DATABASE_URL still uses the insecure postgres database password. "
+                    "Set a real database password before starting in production."
+                )
+            if self._is_placeholder_like(database_password):
+                raise ValueError(
+                    "[PRODUCTION] DATABASE_URL uses a placeholder-like database password. "
+                    "Set a real database password before starting in production."
+                )
+
+        if (parsed_database_url.hostname or "").lower() == "postgres" and not database_password:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL targets the bundled postgres service but does not include a password. "
+                "Set DATABASE_URL with the real POSTGRES_PASSWORD before starting in production."
+            )
+
+        postgres_password = (self.postgres_password or "").strip()
+        if (parsed_database_url.hostname or "").lower() == "postgres" and postgres_password and database_password != postgres_password:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service. "
+                "Keep them in sync before starting in production."
             )
         return self
 
@@ -228,6 +264,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap"
+    postgres_password: str = ""
 
 
 @lru_cache

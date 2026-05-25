@@ -55,7 +55,7 @@ Reality note: this section is a capability snapshot, not a claim that the whole 
 2. ~~Fix the remaining deploy-truth blockers~~ — **DONE**: .gitignore updated, `start-claude.bat` added, working tree clean, push verified.
 3. Production deploy (run on host):
    - Pull latest on the target server / host clone.
-   - Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env` before starting `docker-compose.prod.yml`.
+   - Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password, not a placeholder-like password, and that password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env` before starting `docker-compose.prod.yml`.
    - `docker compose -f docker-compose.prod.yml config` should now fail immediately if any of those required secrets are unset.
    - Run `alembic upgrade head`.
    - Run `./scripts/deploy-ancap-cloud.ps1` (or `.sh` on Linux) to rebuild + restart all services.

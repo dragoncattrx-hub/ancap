@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
-import { ApiError, access, ledger, orders, runs as runsApi, workflowStore } from "@/lib/api";
+import { ApiError, access, ledger, orders, runs as runsApi, system, workflowStore } from "@/lib/api";
 
 export default function AdminOverviewPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,8 +37,8 @@ export default function AdminOverviewPage() {
         setError("");
         const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes, workflowRevenueRes, topUpsRes] =
           await Promise.all([
-            fetch("/api/system/health").then((r) => r.json()),
-            fetch("/api/system/ledger-invariant-status").then((r) => r.json()),
+            system.health(),
+            system.ledgerInvariantStatus(),
             orders.list(20),
             access.listGrants(20),
             runsApi.list(20),

@@ -12,20 +12,33 @@ type LanguageContextType = {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 const LANG_STORAGE_KEY = "ancap-lang-v3";
+const LANG_COOKIE_KEY = "ancap-lang";
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>("ru");
+function persistLanguage(lang: Language) {
+  safeSetItem(LANG_STORAGE_KEY, lang);
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = lang;
+    document.cookie = `${LANG_COOKIE_KEY}=${lang}; path=/; max-age=31536000; samesite=lax`;
+  }
+}
+
+export function LanguageProvider({ children, initialLang = "en" }: { children: React.ReactNode; initialLang?: Language }) {
+  const [lang, setLangState] = useState<Language>(initialLang);
 
   useEffect(() => {
     const stored = safeGetItem(LANG_STORAGE_KEY) as Language;
     if (isSupportedLanguage(stored)) {
       setLangState(stored);
+      persistLanguage(stored);
+      return;
     }
-  }, []);
+
+    persistLanguage(initialLang);
+  }, [initialLang]);
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
-    safeSetItem(LANG_STORAGE_KEY, newLang);
+    persistLanguage(newLang);
   };
 
   const t = (key: string) => translate(lang, key);

@@ -47,6 +47,23 @@ function Import-DotEnvIfPresent {
     }
 }
 
+function Test-PlaceholderLikeSecret {
+    param([string] $Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $false
+    }
+
+    $normalizedValue = $Value.Trim().ToLowerInvariant()
+    foreach ($phrase in @("change", "dev-secret", "change-me", "changeme", "secret", "example", "placeholder")) {
+        if ($normalizedValue.Contains($phrase)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Assert-RequiredSecrets {
     param([string[]] $Names)
 
@@ -65,21 +82,13 @@ function Assert-RequiredSecrets {
         )
     }
 
-    $unsafeSecretPhrases = @("change", "dev-secret", "change-me", "changeme", "secret", "example", "placeholder")
     foreach ($secretName in @("SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")) {
         $secretValue = [Environment]::GetEnvironmentVariable($secretName, 'Process')
-        if ([string]::IsNullOrWhiteSpace($secretValue)) {
-            continue
-        }
-
-        $normalizedSecretValue = $secretValue.Trim().ToLowerInvariant()
-        foreach ($phrase in $unsafeSecretPhrases) {
-            if ($normalizedSecretValue.Contains($phrase)) {
-                throw (
-                    ($secretName + " still uses an insecure placeholder-like value. ") +
-                    "Set a real random secret before running this rebuild script."
-                )
-            }
+        if (Test-PlaceholderLikeSecret -Value $secretValue) {
+            throw (
+                ($secretName + " still uses an insecure placeholder-like value. ") +
+                "Set a real random secret before running this rebuild script."
+            )
         }
     }
 
@@ -91,18 +100,75 @@ function Assert-RequiredSecrets {
         )
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
+        try {
+            $databaseUri = [System.Uri] $databaseUrl
+        }
+        catch {
+            throw "DATABASE_URL is not a valid URI. Fix it before running this rebuild script."
+        }
+
+        $databaseUserInfo = $databaseUri.UserInfo
+        $databasePassword = $null
+        if (-not [string]::IsNullOrWhiteSpace($databaseUserInfo) -and $databaseUserInfo.Contains(':')) {
+            $databasePassword = [System.Uri]::UnescapeDataString(($databaseUserInfo.Split(':', 2)[1]))
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($databasePassword)) {
+            $normalizedDatabasePassword = $databasePassword.Trim().ToLowerInvariant()
+            if ($normalizedDatabasePassword -eq "postgres") {
+                throw (
+                    "DATABASE_URL still uses the insecure postgres database password. " +
+                    "Set a real database password before running this rebuild script."
+                )
+            }
+            if (Test-PlaceholderLikeSecret -Value $databasePassword) {
+                throw (
+                    "DATABASE_URL uses a placeholder-like database password. " +
+                    "Set a real database password before running this rebuild script."
+                )
+            }
+        }
+
+        if ($databaseUri.Host.ToLowerInvariant() -eq "postgres" -and [string]::IsNullOrWhiteSpace($databasePassword)) {
+            throw (
+                "DATABASE_URL targets the bundled postgres service but does not include a password. " +
+                "Set DATABASE_URL with the real POSTGRES_PASSWORD before running this rebuild script."
+            )
+        }
+    }
+
     $postgresPassword = [Environment]::GetEnvironmentVariable("POSTGRES_PASSWORD", 'Process')
     if (-not [string]::IsNullOrWhiteSpace($postgresPassword)) {
         $normalizedPostgresPassword = $postgresPassword.Trim().ToLowerInvariant()
         if (
             $normalizedPostgresPassword -eq "postgres" -or
-            $normalizedPostgresPassword.Contains("change-me") -or
-            $normalizedPostgresPassword.Contains("placeholder") -or
-            $normalizedPostgresPassword.Contains("example")
+            (Test-PlaceholderLikeSecret -Value $postgresPassword)
         ) {
             throw (
                 "POSTGRES_PASSWORD is still using an insecure default or placeholder. " +
                 "Set a real non-default password before running this rebuild script."
+            )
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
+        $databaseUri = [System.Uri] $databaseUrl
+        $databaseUserInfo = $databaseUri.UserInfo
+        $databasePassword = $null
+        if (-not [string]::IsNullOrWhiteSpace($databaseUserInfo) -and $databaseUserInfo.Contains(':')) {
+            $databasePassword = [System.Uri]::UnescapeDataString(($databaseUserInfo.Split(':', 2)[1]))
+        }
+
+        if (
+            $databaseUri.Host.ToLowerInvariant() -eq "postgres" -and
+            -not [string]::IsNullOrWhiteSpace($databasePassword) -and
+            -not [string]::IsNullOrWhiteSpace($postgresPassword) -and
+            $databasePassword -ne $postgresPassword
+        ) {
+            throw (
+                "DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service. " +
+                "Keep them in sync before running this rebuild script."
             )
         }
     }

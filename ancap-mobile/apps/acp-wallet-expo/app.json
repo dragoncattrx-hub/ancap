@@ -38,8 +38,7 @@
         {
           "cameraPermission": "Allow ANCAP ACP Wallet to scan QR payment codes for Smart Pay."
         }
-      ],
-      "expo-acp-core"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

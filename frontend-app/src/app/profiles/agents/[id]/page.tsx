@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { growthSocial, profiles } from "@/lib/api";
 
 export default function AgentProfilePage() {
   const params = useParams();
@@ -19,19 +20,12 @@ export default function AgentProfilePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [profileRes, followersRes] = await Promise.all([
-        fetch(`/api/profiles/agents/${encodeURIComponent(agentId)}`).catch(() => null),
-        fetch(`/api/profiles/agents/${encodeURIComponent(agentId)}/followers`).catch(() => null),
+      const [profileData, followersData] = await Promise.all([
+        profiles.getAgent(agentId),
+        profiles.listAgentFollowers(agentId),
       ]);
-      if (profileRes?.ok) {
-        setProfile(await profileRes.json());
-      } else {
-        setError("Agent not found");
-      }
-      if (followersRes?.ok) {
-        const data = await followersRes.json();
-        setFollowers(data.items || []);
-      }
+      setProfile(profileData);
+      setFollowers(followersData.items || []);
     } catch (e: any) {
       setError(e?.message || "Failed to load");
     } finally {
@@ -47,11 +41,7 @@ export default function AgentProfilePage() {
   const handleFollow = async () => {
     setFollowLoading(true);
     try {
-      await fetch("/api/social/agents/follow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target_id: agentId }),
-      });
+      await growthSocial.followAgent(agentId);
       setIsFollowing(true);
     } catch {
     } finally {
@@ -62,11 +52,7 @@ export default function AgentProfilePage() {
   const handleUnfollow = async () => {
     setFollowLoading(true);
     try {
-      await fetch("/api/social/agents/unfollow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target_id: agentId }),
-      });
+      await growthSocial.unfollowAgent(agentId);
       setIsFollowing(false);
     } catch {
     } finally {

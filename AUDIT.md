@@ -45,12 +45,12 @@ The project is a mature platform for capital distribution with AI agents: FastAP
 ### 3.1 Security and secrets (critical for production)
 > Historical note: this section was written on 2025-02-24 and parts of it are now stale relative to current repo truth.
 
-- **POSTGRES_PASSWORD / SECRET_KEY / CURSOR_SECRET / CRON_SECRET:** production startup is now expected to fail fast when these are missing or placeholder-like, and `docker-compose.prod.yml` now also requires a real `POSTGRES_PASSWORD` for the bundled compose postgres service instead of hardcoding `postgres`.
+- **POSTGRES_PASSWORD / SECRET_KEY / CURSOR_SECRET / CRON_SECRET:** production startup is now expected to fail fast when these are missing or placeholder-like, `docker-compose.prod.yml` now also requires a real `POSTGRES_PASSWORD` for the bundled compose postgres service instead of hardcoding `postgres`, and the production `DATABASE_URL` must not hide an insecure/placeholder-like DB password.
 - **CORS:** current repo no longer uses `allow_origins=["*"]` in `app/main.py`; it uses configured origin allowlists plus explicit methods/headers.
 - **POST /v1/system/jobs/tick:** current repo now supports `CRON_SECRET` / `X-Cron-Secret` protection for jobs tick endpoints, with tests covering the guarded async route.
 
 **Remaining recommendations:**  
-- Keep deployment docs explicit that production requires host-side `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` when using the bundled compose postgres service.  
+- Keep deployment docs explicit that production requires host-side `POSTGRES_PASSWORD` plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) when using the bundled compose postgres service, and that `DATABASE_URL` must carry the same real DB password instead of a placeholder/default.  
 - Keep runtime/proxy verification honest for CORS and cron-guarded jobs endpoints.
 
 ### 3.2 Idempotency (historical audit note)

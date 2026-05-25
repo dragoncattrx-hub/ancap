@@ -86,6 +86,9 @@ ACP-crypto/.acp-node-data*/
 
 # Local scratch / agent notes
 update.md
+tmp_ndk_bits_full/
+tmp_ndk_probe/
+tmp_npx_node20_cache/
 
 # Project planning docs (not source of truth)
 IMPROVEMENT_PLAN.md

@@ -4,14 +4,14 @@ import { Navigation } from "@/components/Navigation";
 export const metadata = {
   title: "ANCAP Project Whitepaper",
   description:
-    "Whitepaper for ANCAP: ACP-first AI workflow marketplace, real AI execution, proof receipts, creator economy, and paid API for crypto teams and agents.",
+    "Whitepaper for ANCAP: AI Native Capital Allocation Platform, smart payments, ACP settlement, AI payment decoding, proof receipts, and crypto-native execution flows.",
 };
 
 const sections = [
   {
     title: "1. Purpose",
     body:
-      "ANCAP is an ACP-first marketplace where crypto teams, operators, and AI agents buy useful AI execution instead of generic chatbot access. The product focuses on concrete deliverables: listing packs, campaign builders, bounty flows, token risk reports, API readiness checks, AI/ISO governance packs, and proof-backed receipts.",
+      "ANCAP stands for AI Native Capital Allocation Platform. It is being built as a practical crypto payment and execution layer where users, merchants, operators, and AI agents can understand payment requests, prepare safe payment intents, allocate capital with clearer intent, settle through ACP-aware rails, and receive proof-backed execution artifacts instead of vague chatbot output.",
   },
   {
     title: "2. Problem",
@@ -21,7 +21,7 @@ const sections = [
   {
     title: "3. Solution",
     body:
-      "ANCAP packages repeatable AI work as paid workflow SKUs. A buyer chooses a workflow, receives a quoted ACP price, pays through the platform wallet or checkout intent, tracks run status, and receives a result with receipt metadata and proof links. Creators can publish workflow offers and earn ACP from successful paid runs.",
+      "ANCAP packages repeatable AI work as paid workflow SKUs and extends that logic into smart payments. A buyer can choose a workflow, receive a quoted ACP price, pay through the platform wallet or checkout intent, track run status, and receive a result with receipt metadata and proof links. The roadmap also includes AI Payment Scanner flows where a photo, QR code, invoice, receipt, or payment screen can be decoded into a safe payment intent before user confirmation.",
   },
   {
     title: "4. Core Architecture",
@@ -41,7 +41,7 @@ const sections = [
   {
     title: "7. Monetization",
     body:
-      "Primary revenue comes from pay-per-run workflows, bundles, paid API calls, credit packages, creator marketplace take rates, referral-attributed paid runs, and future enterprise/API agreements. ACP remains the primary accounting currency for the platform.",
+      "Primary revenue comes from pay-per-run workflows, bundles, paid API calls, credit packages, creator marketplace take rates, referral-attributed paid runs, smart payment service fees, future voucher or claim-code issuance/redeem fees, and enterprise/API agreements. ACP remains the primary accounting currency and fee utility layer for the platform.",
   },
   {
     title: "8. Governance and Compliance Direction",
@@ -55,6 +55,8 @@ const roadmap = [
   "ACP checkout with invoice state, payment reference, polling, proof receipt, revenue metrics, and creator earnings.",
   "Public trust layer: proof center, sample reports, project whitepaper, ACP crypto-asset paper, terms, privacy, and cookies.",
   "Growth funnels for buyers, creators, and developers: sample reports, free token snapshot, paid upsell, API keys, spend caps.",
+  "AI Payment Scanner: photo upload, QR decode, OCR for receipts and invoices, payment preview, smart swap, and ACP fee rails.",
+  "ANCAP Claim Codes: lock crypto, generate redeemable codes, redeem in wallet or web, and use proof-backed voucher flows for growth and distribution.",
   "B2B layer: organizations, webhooks, audit log, role-based access, exportable evidence, and partner dashboards.",
 ];
 
@@ -66,12 +68,12 @@ export default function ProjectWhitepaperPage() {
         <section className="rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.06] p-6 sm:p-8">
           <div className="text-xs uppercase tracking-[0.18em] text-emerald-200/75">Project whitepaper</div>
           <h1 className="mt-3 max-w-4xl text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
-            ANCAP: paid AI execution for crypto teams and autonomous agents
+            ANCAP: AI Native Capital Allocation Platform
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72 sm:text-base">
-            ANCAP turns AI work into priced, verifiable, ACP-settled workflow products. The goal is a practical
-            commerce layer where buyers get useful artifacts, creators earn from repeatable workflow execution,
-            and agents can discover, pay for, and verify services programmatically.
+            ANCAP combines smart payments, ACP-settled execution, AI-assisted payment decoding, and verifiable
+            crypto-native workflow flows. The goal is a practical layer where users and agents can understand what
+            to pay, where capital should move, and how to verify the result after execution.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/ai/workflows" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
