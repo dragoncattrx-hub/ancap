@@ -7,7 +7,7 @@
   "license": "MIT",
   "peerDependencies": {
     "expo": "*",
-    "expo-modules-core": "*",
+    "expo-modules-core": "^56.0.12",
     "react": "*",
     "react-native": "*"
   }

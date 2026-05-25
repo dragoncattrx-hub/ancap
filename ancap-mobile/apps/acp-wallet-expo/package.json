@@ -23,7 +23,7 @@
     "expo-dev-client": "~5.0.12",
     "expo-image-picker": "~16.0.6",
     "expo-local-authentication": "~15.0.2",
-    "expo-modules-core": "~2.2.0",
+    "expo-modules-core": "~56.0.12",
     "expo-router": "~4.0.17",
     "expo-secure-store": "~14.0.1",
     "expo-status-bar": "~2.0.1",
