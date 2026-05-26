@@ -49,7 +49,7 @@ def test_settings_rejects_placeholder_production_secrets():
         Settings(environment="production", secret_key=valid_secret, cursor_secret=valid_cursor, cron_secret="example-cron-secret")
 
 
-def test_settings_rejects_insecure_default_database_url_in_production():
+def test_settings_rejects_insecure_default_or_invalid_database_url_in_production():
     valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
     valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
     valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
@@ -61,6 +61,24 @@ def test_settings_rejects_insecure_default_database_url_in_production():
             cursor_secret=valid_cursor,
             cron_secret=valid_cron,
             database_url="",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL is not a valid absolute URI"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="not-a-uri",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL is not a valid absolute URI"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:real-db-password@/ancap?ghost=postgres",
         )
 
     with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure postgres:postgres default"):
@@ -105,6 +123,36 @@ def test_settings_rejects_placeholder_or_default_database_passwords_in_productio
             database_url="postgresql+asyncpg://ancap@postgres:5432/ancap",
         )
 
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD is not set"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
+            postgres_password="",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD still uses the insecure postgres default"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
+            postgres_password="postgres",
+        )
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD uses a placeholder-like value"):
+        Settings(
+            environment="production",
+            secret_key=valid_secret,
+            cursor_secret=valid_cursor,
+            cron_secret=valid_cron,
+            database_url="postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
+            postgres_password="change-me-db-password",
+        )
+
     with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service"):
         Settings(
             environment="production",
@@ -114,3 +162,59 @@ def test_settings_rejects_placeholder_or_default_database_passwords_in_productio
             database_url="postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
             postgres_password="different-db-password",
         )
+
+
+def test_settings_accepts_urlencoded_bundled_postgres_password_when_it_matches_postgres_password():
+    settings = Settings(
+        environment="production",
+        secret_key="7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890",
+        cursor_secret="9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd",
+        cron_secret="3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987",
+        database_url="postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap",
+        postgres_password="p@ss:word",
+    )
+
+    assert settings.database_url == "postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap"
+    assert settings.postgres_password == "p@ss:word"
+
+
+def test_settings_enforces_bundled_postgres_guards_for_socket_style_host_query():
+    valid_secret = "7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890"
+    valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
+    valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
+
+    for socket_host in ("postgres", "%70ostgres"):
+        with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL targets the bundled postgres service but does not include a password"):
+            Settings(
+                environment="production",
+                secret_key=valid_secret,
+                cursor_secret=valid_cursor,
+                cron_secret=valid_cron,
+                database_url=f"postgresql+asyncpg://ancap@/ancap?host={socket_host}",
+                postgres_password="real-db-password",
+            )
+
+        with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service"):
+            Settings(
+                environment="production",
+                secret_key=valid_secret,
+                cursor_secret=valid_cursor,
+                cron_secret=valid_cron,
+                database_url=f"postgresql+asyncpg://ancap:real-db-password@/ancap?host={socket_host}",
+                postgres_password="different-db-password",
+            )
+
+
+def test_settings_accepts_urlencoded_bundled_postgres_password_for_socket_style_host_query():
+    for socket_host in ("postgres", "%70ostgres"):
+        settings = Settings(
+            environment="production",
+            secret_key="7b6e8a4c1d2f3a5b7c9e0f1234567890abcdef1234567890abcdef1234567890",
+            cursor_secret="9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd",
+            cron_secret="3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987",
+            database_url=f"postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host={socket_host}",
+            postgres_password="p@ss:word",
+        )
+
+        assert settings.database_url == f"postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host={socket_host}"
+        assert settings.postgres_password == "p@ss:word"

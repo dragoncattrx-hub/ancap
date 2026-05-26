@@ -55,10 +55,10 @@ Reality note: this section is a capability snapshot, not a claim that the whole 
 2. ~~Fix the remaining deploy-truth blockers~~ — **DONE**: .gitignore updated, `start-claude.bat` added, working tree clean, push verified.
 3. Production deploy (run on host):
    - Pull latest on the target server / host clone.
-   - Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password, not a placeholder-like password, and that password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env` before starting `docker-compose.prod.yml`.
-   - `docker compose -f docker-compose.prod.yml config` should now fail immediately if any of those required secrets are unset.
+   - Ensure a real absolute `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service — whether via authority host `@postgres:...` or socket/query host `?host=postgres` — it must include the real DB password, not a placeholder-like password), a real non-default `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are set in the host shell or repo-root `.env` before starting `docker-compose.prod.yml`; when using the bundled compose postgres service, `DATABASE_URL` and `POSTGRES_PASSWORD` must stay in sync, and the compose file now passes `POSTGRES_PASSWORD` through to the API container so the app can enforce that parity at runtime instead of only in helper-script preflight.
+   - `docker compose -f docker-compose.prod.yml config --quiet` should now fail immediately if any of those required secrets are unset, without printing resolved secrets.
    - Run `alembic upgrade head`.
-   - Run `./scripts/deploy-ancap-cloud.ps1` (or `.sh` on Linux) to rebuild + restart all services.
+   - Run `./scripts/deploy-ancap-cloud.ps1` (or `.sh` on Linux); both helpers now run `docker compose -f docker-compose.prod.yml config --quiet` before build/start, then verify the live proxy path end-to-end via `/api/v1/system/health`, `/api/v1/system/ready`, and `/internal/frontend-build` before declaring success. The `-SkipPostDeployChecks` / `--skip-post-deploy-checks` bypass exists only for controlled staged-test contexts and must stay off for the real host deploy path.
    - Verify `https://ancap.cloud/internal/frontend-build` shows real `NEXT_PUBLIC_APP_BUILD_ID` matching `git rev-parse --short HEAD`.
    - Smoke test `ancap.cloud` routes and API health endpoints.
 
@@ -77,11 +77,13 @@ Production smoke:
 - `https://ancap.cloud/` -> `200`
 - `https://ancap.cloud/api/v1/system/health` -> `200 {"status":"ok"}`
 - `https://ancap.cloud/api/v1/system/health/full` -> `200` with healthy `database`, `redis`, `llm`, and `bridge` checks
-- `https://ancap.cloud/internal/frontend-build` -> `200`, route is implemented; **to show real build id** run deploy script on host so `APP_BUILD_ID` is injected as `--build-arg`
+- `https://ancap.cloud/internal/frontend-build` -> `200`, route is implemented; **to show real build id** run deploy script on host so `APP_BUILD_ID` is injected as `--build-arg`, and only treat the deploy as successful once that route reports the same build id through the live proxy
 
 Security/truth notes from the same check:
 - Local proxy currently returns the desired hardening posture: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), microphone=(), camera=()`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
-- Production currently differs: `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: same-origin`, and duplicated `Permissions-Policy` / `Strict-Transport-Security` values were observed.
+- `infra/nginx/default.conf` now also hides upstream `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Strict-Transport-Security` on every proxied location before re-adding the canonical proxy header set, preventing duplicate FastAPI+nginx security headers in the prod-like stack.
+- Local live re-check after `nginx -s reload` confirms `/` and `/api/v1/system/health` now return a single canonical header set instead of duplicate upstream+proxy copies.
+- Production currently still differs: `https://ancap.cloud/api/v1/system/health` returns stale headers (`X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: same-origin`), so ancap.cloud still needs a real deploy/reload of the updated nginx config.
 - Static sensitive paths (`/.env`, `/.env.example`, `/.git/config`, `/docker-compose.yml`, `/admin`) returned `404` locally and on production.
 - `TRACE /` returned `405` locally and on production.
 

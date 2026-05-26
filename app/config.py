@@ -1,6 +1,6 @@
 """Application configuration."""
 from functools import lru_cache
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -62,6 +62,13 @@ class Settings(BaseSettings):
             )
 
         parsed_database_url = urlsplit(database_url)
+        socket_hosts = [value.strip() for value in parse_qs(parsed_database_url.query).get("host", []) if value.strip()]
+        if not parsed_database_url.scheme or (parsed_database_url.hostname is None and not socket_hosts):
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL is not a valid absolute URI. "
+                "Set a full SQLAlchemy database URL before starting in production."
+            )
+
         database_password = parsed_database_url.password
         if database_password is not None:
             database_password = unquote(database_password)
@@ -76,18 +83,36 @@ class Settings(BaseSettings):
                     "Set a real database password before starting in production."
                 )
 
-        if (parsed_database_url.hostname or "").lower() == "postgres" and not database_password:
+        database_host = (parsed_database_url.hostname or "").lower()
+        uses_bundled_postgres = database_host == "postgres" or any(host.lower() == "postgres" for host in socket_hosts)
+        if uses_bundled_postgres and not database_password:
             raise ValueError(
                 "[PRODUCTION] DATABASE_URL targets the bundled postgres service but does not include a password. "
                 "Set DATABASE_URL with the real POSTGRES_PASSWORD before starting in production."
             )
 
         postgres_password = (self.postgres_password or "").strip()
-        if (parsed_database_url.hostname or "").lower() == "postgres" and postgres_password and database_password != postgres_password:
-            raise ValueError(
-                "[PRODUCTION] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service. "
-                "Keep them in sync before starting in production."
-            )
+        if uses_bundled_postgres:
+            if not postgres_password:
+                raise ValueError(
+                    "[PRODUCTION] POSTGRES_PASSWORD is not set. "
+                    "Set POSTGRES_PASSWORD when DATABASE_URL targets the bundled postgres service."
+                )
+            if postgres_password.lower() == "postgres":
+                raise ValueError(
+                    "[PRODUCTION] POSTGRES_PASSWORD still uses the insecure postgres default. "
+                    "Set a real database password before starting in production."
+                )
+            if self._is_placeholder_like(postgres_password):
+                raise ValueError(
+                    "[PRODUCTION] POSTGRES_PASSWORD uses a placeholder-like value. "
+                    "Set a real database password before starting in production."
+                )
+            if database_password != postgres_password:
+                raise ValueError(
+                    "[PRODUCTION] DATABASE_URL password does not match POSTGRES_PASSWORD for the bundled postgres service. "
+                    "Keep them in sync before starting in production."
+                )
         return self
 
     # Auth -- required secrets validated above when environment=production
@@ -184,8 +209,8 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: str = (
         "https://ancap.cloud,https://www.ancap.cloud,"
-        "http://localhost:3000,http://localhost:3001,"
-        "http://127.0.0.1:3000,http://127.0.0.1:3001"
+        "http://localhost:3000,http://localhost:3001,http://localhost:3201,"
+        "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3201"
     )
 
     # Quality scorer

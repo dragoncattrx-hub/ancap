@@ -179,7 +179,8 @@ if [[ -n "$DATABASE_URL_QUERY" ]]; then
   IFS='&' read -r -a DATABASE_URL_QUERY_PARTS <<< "$DATABASE_URL_QUERY"
   for query_part in "${DATABASE_URL_QUERY_PARTS[@]}"; do
     if [[ "$query_part" == host=* ]]; then
-      SOCKET_HOST_VALUE="${query_part#host=}"
+      SOCKET_HOST_VALUE_RAW="${query_part#host=}"
+      printf -v SOCKET_HOST_VALUE '%b' "${SOCKET_HOST_VALUE_RAW//%/\\x}"
       HAS_SOCKET_HOST_QUERY=1
       break
     fi

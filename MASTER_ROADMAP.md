@@ -365,10 +365,10 @@ Schedule: weekly (Mondays 06:00 UTC)
 
 ### 1.4 Playwright E2E in CI [HIGH]
 
-Status: [~] Workflow job exists and is wired correctly; the full local CI-like end-to-end smoke path is green again against a real API + built frontend + Playwright run. Remaining blocker is still the first successful GitHub Actions execution of that same path.
+Status: [x] Done. The full local CI-like smoke path is green and the same GitHub Actions `Frontend CI` / `e2e-tests` path completed successfully on a real push.
 
 Verification (2026-05-26):
-- `.github/workflows/frontend-ci.yml` already contains an `e2e-tests` job that:
+- `.github/workflows/frontend-ci.yml` contains an `e2e-tests` job that:
   - boots `postgres`, `redis`, and `api`
   - waits for `/v1/system/health`
   - runs `alembic upgrade head`
@@ -391,14 +391,19 @@ Verification (2026-05-26):
   - `tests/test_cors_dev_stack.py` now locks that compose-level env pass-through in place
   - the remaining last red spec in the full smoke run turned out to be a false Playwright assumption in `frontend-app/e2e/ancap.ui.spec.ts`, not an app/runtime defect: the responsive unauthenticated header intentionally renders duplicate `/login` and `/register` links across desktop/mobile layouts, so the old raw `locator('a[href="/login"]')` assertion hit strict-mode ambiguity with one hidden duplicate
   - `frontend-app/e2e/ancap.ui.spec.ts` now scopes those assertions to the visible header and uses role-based link expectations, which matches the real responsive UI contract
+- first real GitHub Actions success is now recorded:
+  - workflow: `Frontend CI`
+  - run: `26460162796`
+  - conclusion: `success`
+  - push SHA: `59a59b0d38397b34f0f26992a183a90d59efc340`
+  - URL: `https://github.com/dragoncattrx-hub/ancap/actions/runs/26460162796`
+  - the `e2e-tests` job completed successfully in `4m44s`
 
-Current blocker: local CI-like smoke is green again and the helper now fails cleanly on pre-existing Docker port conflicts, but this item should only be marked done after the same `e2e-tests` path completes successfully in GitHub Actions on a real PR/push.
-
-Fix: Keep the `e2e-tests` job in `frontend-ci.yml`, keep `scripts/run-e2e-ci-smoke.ps1` as the repeatable repro path, preserve the compose-level `CORS_ORIGINS` pass-through, and use the first successful GitHub Actions run as the final exit signal instead of assuming workflow-definition-only coverage.
+Fix: Keep the `e2e-tests` job in `frontend-ci.yml`, keep `scripts/run-e2e-ci-smoke.ps1` as the repeatable repro path, and preserve the compose-level `CORS_ORIGINS` pass-through that made the CI-faithful browser path honest again.
 
 Files needed: `playwright.config.ts` and the E2E specs already exist; local repro helper now lives in `scripts/run-e2e-ci-smoke.ps1`.
 
-Exit criteria: E2E tests run successfully on PRs touching `frontend-app/` or `app/`, not just by workflow definition.
+Exit criteria: satisfied — the same E2E path now runs successfully in GitHub Actions on a real push.
 
 ### 1.5 RESTRICT ops/diagnostics endpoints [HIGH]
 
@@ -549,7 +554,7 @@ Remaining follow-through:
 
 ### 3.3 Production security header alignment [LOW]
 
-Status: [~] Source-of-truth nginx config is now explicitly hardened against duplicate upstream/proxy security headers and verified live in the local prod-like stack; deployed ancap.cloud is still stale and needs a real production reload/deploy to pick up the corrected proxy config.
+Status: [~] Inner prod proxy and outer origin nginx are now aligned and deduplicated, but public `ancap.cloud` / `api.ancap.cloud` still show Cloudflare-edge header rewriting that requires zone/dashboard access not currently available through the provided API token.
 
 Files: `infra/nginx/default.conf`, production nginx config
 
@@ -564,12 +569,26 @@ Verification (2026-05-26):
   - `Referrer-Policy: strict-origin-when-cross-origin`
   - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
   - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
-- direct live fetch to `https://ancap.cloud/api/v1/system/health` still returns stale production headers (`X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: same-origin`), confirming deploy/runtime follow-through remains open
-- `tests/test_nginx_security_headers.py` now guards the in-repo nginx config so proxied locations must hide upstream security headers before re-adding the canonical set
+- production follow-through on the server was partially completed:
+  - `/opt/ancap-migration/current/infra/nginx/default.conf` on `ancap-server` already contains `proxy_hide_header` rules for proxied locations
+  - `docker compose -f docker-compose.prod.yml exec -T proxy nginx -t` on `ancap-server` succeeds
+  - `docker compose -f docker-compose.prod.yml exec -T proxy nginx -s reload` on `ancap-server` succeeds
+  - direct origin checks now show the inner container proxy is clean: `http://127.0.0.1:8080/api/v1/system/health` returns a single canonical set
+  - direct HTTPS-to-origin checks with `Host: ancap.cloud` / `Host: api.ancap.cloud` initially exposed duplicate headers at the outer nginx layer, so the outer vhost files under `/etc/nginx/conf.d/domains/*.conf` and `*.ssl.conf` were patched to hide upstream security headers before `proxy_pass`, then `sudo systemctl reload nginx` was applied
+  - after that outer-nginx patch, direct origin HTTPS checks return the canonical single set (`DENY`, `nosniff`, `strict-origin-when-cross-origin`, `camera=(), microphone=(), geolocation()`, HSTS) with no duplicates
+- public Cloudflare-routed responses are still not the same as origin truth:
+  - `https://ancap.cloud/api/v1/system/health` still returns `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`
+  - `https://api.ancap.cloud/v1/system/health` also still returns `SAMEORIGIN` / `same-origin`, even while preserving the origin debug header `X-Debug-Vhost: api-https`
+  - this proves the remaining mismatch is now at the Cloudflare edge layer, not the ANCAP app, inner proxy, or origin nginx
+- Cloudflare access is currently insufficient to fix that edge rewrite from this runtime:
+  - the provided bearer token verifies as active via `/user/tokens/verify`
+  - but `GET /zones` returns an empty result set for this token, so no zone/rules management scope is currently exposed through it
+- `tests/test_nginx_security_headers.py` still guards the in-repo nginx config so proxied locations must hide upstream security headers before re-adding the canonical set
 
 Remaining follow-through:
-- deploy/reload the updated production nginx config on ancap.cloud
-- re-run live production header inspection after deploy and only then mark this item done
+- obtain Cloudflare zone/dashboard access with permission to inspect response-header / transform / managed rules for `ancap.cloud`
+- remove the edge-layer rewrite that forces `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`
+- re-run public production header inspection after the Cloudflare change and only then mark this item done
 
 ---
 

@@ -29,6 +29,7 @@ services:
       - ./Sicret/bridge-bsc/bridge.env
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use the insecure postgres:postgres default, and must match POSTGRES_PASSWORD when using the bundled postgres service}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for docker-compose.prod.yml and must match DATABASE_URL when using the bundled postgres service}
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: production
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set for docker-compose.prod.yml}       # required — no fallback; compose/app fail fast if missing

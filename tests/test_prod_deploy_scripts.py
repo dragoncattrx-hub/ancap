@@ -32,17 +32,24 @@ def _prod_env(**overrides: str) -> dict[str, str]:
     return env
 
 
-def _run_deploy_powershell(env: dict[str, str], repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
+def _run_deploy_powershell(
+    env: dict[str, str],
+    repo_root: Path = REPO_ROOT,
+    *,
+    skip_post_deploy_checks: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        "powershell",
+        "-NoProfile",
+        "-File",
+        str(repo_root / "scripts" / "deploy-ancap-cloud.ps1"),
+        "-SkipGitPull",
+        "-SkipMigrations",
+    ]
+    if skip_post_deploy_checks:
+        command.append("-SkipPostDeployChecks")
     return subprocess.run(
-        [
-            "powershell",
-            "-NoProfile",
-            "-File",
-            str(repo_root / "scripts" / "deploy-ancap-cloud.ps1"),
-            "-SkipGitPull",
-            "-SkipMigrations",
-            "-SkipPostDeployChecks",
-        ],
+        command,
         cwd=repo_root,
         env=env,
         text=True,
@@ -67,18 +74,26 @@ def _run_rebuild_powershell(env: dict[str, str], repo_root: Path = REPO_ROOT) ->
     )
 
 
-def _run_deploy_bash(env: dict[str, str], repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
+def _run_deploy_bash(
+    env: dict[str, str],
+    repo_root: Path = REPO_ROOT,
+    *,
+    skip_post_deploy_checks: bool = True,
+) -> subprocess.CompletedProcess[str]:
     export_pairs = " ".join(
         f"{name}={shlex.quote(env[name])}"
         for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET"]
         if name in env
     )
     bootstrap = f"export {export_pairs}; " if export_pairs else ""
+    command = "bash scripts/deploy-ancap-cloud.sh --skip-git-pull --skip-migrations"
+    if skip_post_deploy_checks:
+        command += " --skip-post-deploy-checks"
     return subprocess.run(
         [
             "bash",
             "-lc",
-            f"{bootstrap}bash scripts/deploy-ancap-cloud.sh --skip-git-pull --skip-migrations --skip-post-deploy-checks",
+            f"{bootstrap}{command}",
         ],
         cwd=repo_root,
         env=env,
@@ -107,7 +122,13 @@ def _run_prod_compose_config_quiet(
     )
 
 
-def _stage_minimal_prod_repo(tmp_path: Path, *, script_names: tuple[str, ...], dotenv_text: str | None = None) -> Path:
+def _stage_minimal_prod_repo(
+    tmp_path: Path,
+    *,
+    script_names: tuple[str, ...],
+    dotenv_text: str | None = None,
+    bridge_env_text: str | None = None,
+) -> Path:
     repo_root = tmp_path / "repo"
     (repo_root / "scripts").mkdir(parents=True)
     shutil.copy2(REPO_ROOT / "docker-compose.prod.yml", repo_root / "docker-compose.prod.yml")
@@ -115,10 +136,14 @@ def _stage_minimal_prod_repo(tmp_path: Path, *, script_names: tuple[str, ...], d
         shutil.copy2(REPO_ROOT / "scripts" / script_name, repo_root / "scripts" / script_name)
     if dotenv_text is not None:
         (repo_root / ".env").write_text(dotenv_text, encoding="utf-8", newline="")
+    if bridge_env_text is not None:
+        bridge_env_path = repo_root / "Sicret" / "bridge-bsc" / "bridge.env"
+        bridge_env_path.parent.mkdir(parents=True, exist_ok=True)
+        bridge_env_path.write_text(bridge_env_text, encoding="utf-8", newline="")
     return repo_root
 
 
-def _make_fake_tool_dir(tmp_path: Path) -> tuple[Path, Path]:
+def _make_fake_tool_dir(tmp_path: Path, *, app_build_id: str = "deadbee") -> tuple[Path, Path]:
     tool_dir = tmp_path / "fake-bin"
     tool_dir.mkdir()
     log_path = tmp_path / "fake-tool.log"
@@ -130,7 +155,20 @@ def _make_fake_tool_dir(tmp_path: Path) -> tuple[Path, Path]:
         "\r\n".join(
             [
                 "@echo off",
+                "setlocal EnableDelayedExpansion",
                 f'echo docker %*>>"{log_path}"',
+                'echo %* | findstr /C:"http://127.0.0.1/api/v1/system/health" >nul && (',
+                '  echo {"status":"ok"}',
+                '  exit /b 0',
+                ')',
+                'echo %* | findstr /C:"http://127.0.0.1/api/v1/system/ready" >nul && (',
+                '  echo {"status":"ready","checks":{"database":true,"redis":true}}',
+                '  exit /b 0',
+                ')',
+                'echo %* | findstr /C:"http://127.0.0.1/internal/frontend-build" >nul && (',
+                f'  echo {{"NEXT_PUBLIC_APP_BUILD_ID":"{app_build_id}","build_id_source":"fake-test"}}',
+                '  exit /b 0',
+                ')',
                 "exit /b 0",
             ]
         )
@@ -142,7 +180,7 @@ def _make_fake_tool_dir(tmp_path: Path) -> tuple[Path, Path]:
             [
                 "@echo off",
                 f'echo git %*>>"{log_path}"',
-                'if /I "%1"=="rev-parse" echo deadbee',
+                f'if /I "%1"=="rev-parse" echo {app_build_id}',
                 "exit /b 0",
             ]
         )
@@ -156,6 +194,17 @@ def _make_fake_tool_dir(tmp_path: Path) -> tuple[Path, Path]:
             [
                 "#!/usr/bin/env bash",
                 f'echo "docker $*" >> "{bash_log_path}"',
+                'case "$*" in',
+                '  *"http://127.0.0.1/api/v1/system/health"*)',
+                '    printf "%s\\n" \'{"status":"ok"}\'',
+                '    ;;',
+                '  *"http://127.0.0.1/api/v1/system/ready"*)',
+                '    printf "%s\\n" \'{"status":"ready","checks":{"database":true,"redis":true}}\'',
+                '    ;;',
+                '  *"http://127.0.0.1/internal/frontend-build"*)',
+                f'    printf "%s\\n" \'{{"NEXT_PUBLIC_APP_BUILD_ID":"{app_build_id}","build_id_source":"fake-test"}}\'',
+                '    ;;',
+                'esac',
             ]
         )
         + "\n",
@@ -171,7 +220,7 @@ def _make_fake_tool_dir(tmp_path: Path) -> tuple[Path, Path]:
                 "#!/usr/bin/env bash",
                 f'echo "git $*" >> "{bash_log_path}"',
                 'if [[ "$1" == "rev-parse" ]]; then',
-                '  echo deadbee',
+                f'  echo {app_build_id}',
                 'fi',
             ]
         )
@@ -393,6 +442,11 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
         ),
         pytest.param(
             Path("docker-compose.prod.yml"),
+            '      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for docker-compose.prod.yml and must match DATABASE_URL when using the bundled postgres service}',
+            id="api-service-receives-postgres-password",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
             f'DATABASE_URL: ${{DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use the insecure {_INSECURE_DEFAULT_LABEL} default, and must match POSTGRES_PASSWORD when using the bundled postgres service}}',
             id="compose-requires-database-url",
         ),
@@ -435,6 +489,7 @@ def test_prod_stack_files_keep_all_critical_secret_guards(relative_path: Path, e
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")
 def test_prod_compose_config_quiet_succeeds_with_valid_required_env(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(tmp_path, script_names=(), bridge_env_text="")
     env_file = tmp_path / "empty.env"
     env_file.write_text("", encoding="utf-8")
     env = _env_without_prod_secrets()
@@ -448,14 +503,53 @@ def test_prod_compose_config_quiet_succeeds_with_valid_required_env(tmp_path: Pa
         }
     )
 
-    result = _run_prod_compose_config_quiet(env, env_file=env_file)
+    result = _run_prod_compose_config_quiet(env, repo_root=repo_root, env_file=env_file)
 
     combined_output = f"{result.stdout}\n{result.stderr}"
     assert result.returncode == 0, combined_output
 
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")
+def test_prod_compose_config_passes_postgres_password_through_to_api_service(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(tmp_path, script_names=(), bridge_env_text="")
+    env_file = tmp_path / "empty.env"
+    env_file.write_text("", encoding="utf-8")
+    env = _env_without_prod_secrets()
+    env.update(
+        {
+            "DATABASE_URL": "postgresql+asyncpg://ancap:compose-pass@postgres:5432/ancap",
+            "POSTGRES_PASSWORD": "compose-pass",
+            "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+        }
+    )
+
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            str(env_file),
+            "-f",
+            str(repo_root / "docker-compose.prod.yml"),
+            "config",
+        ],
+        cwd=repo_root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    combined_output = f"{result.stdout}\n{result.stderr}"
+    assert result.returncode == 0, combined_output
+    assert "POSTGRES_PASSWORD: compose-pass" in result.stdout
+
+
+@pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")
 def test_prod_compose_config_quiet_fails_fast_without_printing_other_secret_values(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(tmp_path, script_names=(), bridge_env_text="")
     env_file = tmp_path / "empty.env"
     env_file.write_text("", encoding="utf-8")
     env = _env_without_prod_secrets()
@@ -468,7 +562,7 @@ def test_prod_compose_config_quiet_fails_fast_without_printing_other_secret_valu
         }
     )
 
-    result = _run_prod_compose_config_quiet(env, env_file=env_file)
+    result = _run_prod_compose_config_quiet(env, repo_root=repo_root, env_file=env_file)
 
     combined_output = f"{result.stdout}\n{result.stderr}"
     assert result.returncode != 0
@@ -540,6 +634,41 @@ def test_rebuild_powershell_loads_repo_root_dotenv_before_running_docker(tmp_pat
     assert 'Validating docker-compose.prod.yml interpolation and required vars without printing resolved secrets...' in result.stdout
 
 
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="powershell not available")
+def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(
+        tmp_path,
+        script_names=("deploy-ancap-cloud.ps1",),
+        dotenv_text=(
+            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\r\n"
+            "POSTGRES_PASSWORD=from-dotenv\r\n"
+            "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
+            "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+        ),
+    )
+    tool_dir, log_path = _make_fake_tool_dir(tmp_path, app_build_id="deadbee")
+    env = _env_without_prod_secrets()
+    env["PATH"] = str(tool_dir) + os.pathsep + env.get("PATH", "")
+
+    result = _run_deploy_powershell(env, repo_root=repo_root, skip_post_deploy_checks=False)
+
+    combined_output = f"{result.stdout}\n{result.stderr}"
+    assert result.returncode == 0, combined_output
+    assert log_path.exists()
+    log_text = log_path.read_text(encoding="utf-8")
+    assert "http://127.0.0.1/api/v1/system/health" in log_text
+    assert "http://127.0.0.1/api/v1/system/ready" in log_text
+    assert "http://127.0.0.1/internal/frontend-build" in log_text
+    assert 'Verifying live proxy liveness via /api/v1/system/health ...' in result.stdout
+    assert 'OK /api/v1/system/health -> status=ok' in result.stdout
+    assert 'Verifying live proxy readiness via /api/v1/system/ready ...' in result.stdout
+    assert 'OK /api/v1/system/ready -> status=ready' in result.stdout
+    assert 'Verifying frontend build provenance via /internal/frontend-build ...' in result.stdout
+    assert 'OK /internal/frontend-build -> NEXT_PUBLIC_APP_BUILD_ID=deadbee (source=fake-test)' in result.stdout
+    assert 'Skipping live proxy/frontend verification by request (-SkipPostDeployChecks).' not in result.stdout
+
+
 @pytest.mark.parametrize(
     ("script_name", "runner", "dotenv_line_ending", "database_url", "postgres_password"),
     [
@@ -590,6 +719,30 @@ def test_rebuild_powershell_loads_repo_root_dotenv_before_running_docker(tmp_pat
             "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=postgres",
             "p@ss:word",
             id="bash-deploy-socket-host-urlencoded-password",
+        ),
+        pytest.param(
+            "deploy-ancap-cloud.ps1",
+            _run_deploy_powershell,
+            "\r\n",
+            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "p@ss:word",
+            id="powershell-deploy-encoded-socket-host-urlencoded-password",
+        ),
+        pytest.param(
+            "rebuild-prod.ps1",
+            _run_rebuild_powershell,
+            "\r\n",
+            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "p@ss:word",
+            id="powershell-rebuild-encoded-socket-host-urlencoded-password",
+        ),
+        pytest.param(
+            "deploy-ancap-cloud.sh",
+            _run_deploy_bash,
+            "\n",
+            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "p@ss:word",
+            id="bash-deploy-encoded-socket-host-urlencoded-password",
         ),
     ],
 )
@@ -695,3 +848,38 @@ def test_deploy_bash_accepts_urlencoded_bundled_postgres_password(tmp_path: Path
     assert "DATABASE_URL password does not match POSTGRES_PASSWORD" not in combined_output
     assert "Validating docker-compose.prod.yml interpolation and required vars without printing resolved secrets..." in result.stdout
     assert "Skipping live proxy/frontend verification by request (--skip-post-deploy-checks)." in result.stdout
+
+
+@pytest.mark.skipif(shutil.which("bash") is None, reason="bash not available")
+def test_deploy_bash_runs_live_post_deploy_verification_by_default(tmp_path: Path):
+    repo_root = _stage_minimal_prod_repo(
+        tmp_path,
+        script_names=("deploy-ancap-cloud.sh",),
+        dotenv_text=(
+            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\n"
+            "POSTGRES_PASSWORD=from-dotenv\n"
+            "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
+            "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\n"
+        ),
+    )
+    tool_dir, log_path = _make_fake_tool_dir(tmp_path, app_build_id="unknown")
+    env = _env_without_prod_secrets()
+    env["PATH"] = str(tool_dir) + os.pathsep + env.get("PATH", "")
+
+    result = _run_deploy_bash(env, repo_root=repo_root, skip_post_deploy_checks=False)
+
+    combined_output = f"{result.stdout}\n{result.stderr}"
+    assert result.returncode == 0, combined_output
+    assert log_path.exists()
+    log_text = log_path.read_text(encoding="utf-8")
+    assert "http://127.0.0.1/api/v1/system/health" in log_text
+    assert "http://127.0.0.1/api/v1/system/ready" in log_text
+    assert "http://127.0.0.1/internal/frontend-build" in log_text
+    assert "Verifying live proxy liveness via /api/v1/system/health ..." in result.stdout
+    assert "OK /api/v1/system/health -> status=ok" in result.stdout
+    assert "Verifying live proxy readiness via /api/v1/system/ready ..." in result.stdout
+    assert "OK /api/v1/system/ready -> status=ready" in result.stdout
+    assert "Verifying frontend build provenance via /internal/frontend-build ..." in result.stdout
+    assert "OK /internal/frontend-build -> NEXT_PUBLIC_APP_BUILD_ID=unknown" in result.stdout
+    assert "Skipping live proxy/frontend verification by request (--skip-post-deploy-checks)." not in result.stdout
