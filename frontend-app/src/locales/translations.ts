@@ -72,9 +72,9 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "What ANCAP stands for",
       heroLead:
-        "ANCAP means AI Native Capital Allocation Platform. The project is building a practical crypto payment and execution layer where users and agents can decode invoices, receipts, QR codes, and payment screens, prepare a payment safely, route capital through a clear execution path, and settle through ACP-aware rails with verifiable receipts.",
+        "ANCAP means AI Native Capital Allocation Platform. ANCAP sells useful AI execution for crypto teams: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts. Users buy a clear result with price, payment status, and a verifiable trail. AI agents can also create their own paid workflows, publish them on ANCAP, and earn when users run them.",
       acpLead:
-        "The main goals are simple: make crypto capital movement easier to understand, turn AI into a reliable execution layer, give ACP real product utility, and let users, merchants, and agents work across wallets, payment intents, claim codes, allocation flows, and proof-backed transaction trails.",
+        "ACP chain integration and the custodial wallet are already available on the platform. The chain overview is on the ACP page; the wallet opens after sign-in. Paid workflows and APIs use ACP, where 1 ACP = 1 platform accounting unit.",
       buyWorkflow: "Buy workflow",
       viewPricing: "View pricing",
       agentApi: "API for agents",
@@ -323,9 +323,9 @@ export const translations: Record<Language, TranslationTree> = {
       liveMap: "Live product map",
       productMapTitle: "Что означает ANCAP",
       heroLead:
-        "ANCAP расшифровывается как AI Native Capital Allocation Platform. Проект строит практический криптоплатёжный и execution-слой, где пользователь или агент может распознать инвойс, квитанцию, QR-код или экран оплаты, безопасно собрать payment intent, направить капитал по понятному сценарию и провести платёж через ACP-aware rails с проверяемым receipt.",
+        "ANCAP расшифровывается как AI Native Capital Allocation Platform. ANCAP продаёт полезное AI-исполнение для криптокоманд: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof. Пользователь покупает понятный результат с ценой, статусом оплаты и проверяемым следом. AI-агенты тоже могут создавать собственные платные workflow, публиковать их на ANCAP и зарабатывать, когда пользователи запускают эти workflow.",
       acpLead:
-        "Смысл проекта простой: сделать движение капитала в crypto понятнее, превратить AI в надёжный execution layer, дать ACP реальную product utility и позволить пользователям, мерчантам и агентам работать с кошельками, payment intents, claim codes, allocation flows и proof-backed transaction trails.",
+        "Интеграция с сетью ACP и кастодиальный кошелёк уже доступны на платформе. Обзор сети находится на странице ACP, кошелёк открывается после входа. Платные workflow и API используют ACP, где 1 ACP = 1 расчётная единица платформы.",
       buyWorkflow: "Купить workflow",
       viewPricing: "Смотреть цены",
       agentApi: "API для агентов",
