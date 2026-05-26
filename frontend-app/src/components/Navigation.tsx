@@ -312,29 +312,40 @@ export function Navigation() {
                 </NavScrollWithFades>
               </div>
             ) : (
-              <nav className="flex flex-wrap items-center justify-end gap-2 text-[13px]">
-                <Link
-                  href="/#product"
-                  className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                >
-                  {t("nav.product")}
-                </Link>
-                <Link
-                  href="/#vision"
-                  className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                >
-                  {t("nav.vision")}
-                </Link>
-                <Link href={acpUrl} className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
-                  {t("hero.acpToken")}
-                </Link>
-                <Link href="/whitepaper" className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
-                  Whitepaper
-                </Link>
-                <Link href="/legal/terms" className="rounded-full px-3 py-1.5 text-white/60 transition hover:bg-white/[0.06] hover:text-white/90">
-                  Legal
-                </Link>
-              </nav>
+              <NavScrollWithFades>
+                <nav className={cn(navScrollRow, "justify-start gap-1.5 py-1")} aria-label={t("nav.main")}>
+                  <Link
+                    href="/#product"
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
+                  >
+                    {t("nav.product")}
+                  </Link>
+                  <Link
+                    href="/#vision"
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
+                  >
+                    {t("nav.vision")}
+                  </Link>
+                  <Link
+                    href={acpUrl}
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
+                  >
+                    {t("hero.acpToken")}
+                  </Link>
+                  <Link
+                    href="/whitepaper"
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
+                  >
+                    Whitepaper
+                  </Link>
+                  <Link
+                    href="/legal/terms"
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
+                  >
+                    Legal
+                  </Link>
+                </nav>
+              </NavScrollWithFades>
             )}
           </div>
 
