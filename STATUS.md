@@ -12,6 +12,9 @@ The three biggest remaining tails are:
 2. **ACP mobile wallet completion to a real device-ready release**
 3. **monetization depth after the first ACP-first revenue loop**
 
+Active trust/adoption track running alongside those priorities:
+- **GitHub-first open-source transparency**, where public-safe components become easier to audit, integrate, and contribute to, while keys, bridge signer operations, deploy secrets, and sensitive infrastructure stay private.
+
 ## Read this next
 
 1. **Execution source of truth:** [MASTER_ROADMAP.md](MASTER_ROADMAP.md)

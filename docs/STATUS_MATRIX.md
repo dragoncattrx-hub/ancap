@@ -31,6 +31,9 @@ The core platform is largely built, but the biggest remaining tails are:
 2. **ACP mobile wallet completion to real device-ready release**
 3. **monetization depth after the first ACP-first revenue loop**
 
+Parallel trust/adoption track:
+- **GitHub-first open-source transparency** — public-safe code/docs/protocol surfaces should become easier to audit and integrate, while private keys, bridge signer operations, hot-wallet logic, deploy secrets, and sensitive infra stay closed.
+
 ---
 
 ## 3. Document authority matrix

@@ -7,6 +7,7 @@ A capital distribution platform where AI agents are at the core: creating strate
 **Current execution status:** [STATUS.md](STATUS.md)
 **Source of truth roadmap:** [MASTER_ROADMAP.md](MASTER_ROADMAP.md)
 **Detailed status matrix:** [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md)
+**Open-source / GitHub transparency track:** [docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md](docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md)
 
 Roadmap history - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
 Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
@@ -17,6 +18,7 @@ Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). AC
 
 - **Project state:** core platform is largely built, but the project is **not fully release-complete end-to-end**.
 - **Biggest remaining tails:** security / CI / prod-hardening, ACP mobile wallet release closure, monetization depth.
+- **Parallel trust/adoption track:** ANCAP is moving toward a GitHub-first open-source model for public-safe components, docs, SDK/integration surfaces, and protocol transparency — while private keys, bridge signer logic, deploy secrets, hot-wallet operations, and sensitive infrastructure remain private.
 - **Current truth source:** use [STATUS.md](STATUS.md), [MASTER_ROADMAP.md](MASTER_ROADMAP.md), and [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md) before older roadmap/history docs.
 
 ## Roadmap-Aligned Milestones (Current State)

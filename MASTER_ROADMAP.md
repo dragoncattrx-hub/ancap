@@ -38,6 +38,202 @@ Important: some older roadmap documents still read as more complete than the rep
 - AI governance: tracked in \docs/AI_ISO_GOVERNANCE_NOTES.md\
 - Public trust layer: whitepapers, terms, privacy, cookie consent published before broader paid acquisition
 - CI rule: no \|| true\ soft-fails. A failing gate must fail the build.
+- Open-source positioning rule: **ANCAP will be open-source where transparency increases trust, integration and adoption — while security-critical infrastructure, private keys, bridge signer operations, wallet hot-key logic and production secrets remain protected.**
+
+## Open Source & GitHub Transparency
+
+Status: [~] Active execution track. The public GitHub repo already exists, but the project still needs the full GitHub-first foundation, clearer public-safe scope boundaries, stronger repo governance, and a cleaner split between publishable components and sensitive operational infrastructure.
+
+Goal:
+- increase trust in ACP / wACP;
+- make the project publicly auditable and easier to verify;
+- simplify developer integrations;
+- attract external contributors;
+- prepare the project for audits, grants, listings, and partnerships.
+
+Critical boundary:
+- publish what improves trust, integration, and adoption;
+- do **not** publish private keys, seed phrases, bridge signer internals, admin wallets, production `.env`, deploy secrets, hot-wallet operation logic, real RPC/API keys, or sensitive anti-fraud internals that would make abuse easier.
+
+Reference detail: `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`
+
+### Phase 1 — GitHub Public Foundation
+
+Execution targets:
+- create a public GitHub org (`ANCAP` or `ancap-network`) when ownership/naming is finalized;
+- keep the main project repo public-safe and contributor-ready;
+- add `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`;
+- add public docs for architecture, roadmap, API, ACP/wACP, and trust/security boundaries;
+- add GitHub issue templates and a PR template;
+- enable GitHub secret scanning, push protection, Dependabot, CodeQL, and branch protection.
+
+### Phase 2 — Open Source Scope
+
+Safe-to-open scope:
+1. Core documentation
+   - roadmap
+   - architecture docs
+   - tokenomics docs
+   - ACP / wACP explanation
+   - bridge concept
+   - wallet feature docs
+   - security model
+   - API overview
+2. Frontend
+   - public site
+   - wallet UI without production secrets
+   - landing pages
+   - docs UI
+3. SDK / integration layer
+   - TypeScript SDK
+   - API client
+   - examples
+   - payment QR parser
+   - wallet integration examples
+4. Smart contracts / token contracts
+   - wACP BEP-20 contract
+   - bridge-related public contracts
+   - verification scripts
+   - testnet deployment instructions
+5. Protocol specs
+   - ACP decimals
+   - ACP ↔ wACP conversion rules
+   - bridge reserve model
+   - transaction receipt model
+   - payment intent model
+   - QR Pay spec
+   - Smart QR Pay flow
+
+Explicitly private scope:
+- private keys
+- seed phrases
+- bridge signer private logic
+- admin wallets
+- production `.env`
+- real RPC/API keys
+- exchange/listing accounts
+- deployment secrets
+- server credentials
+- abuse-sensitive operational thresholds that should not be public
+
+### Phase 3 — Repository Structure
+
+Target public structure after the current monorepo hardening phase:
+- `ancap-docs` — public documentation, roadmap, whitepaper, architecture, tokenomics
+- `ancap-web` — public website and landing frontend
+- `ancap-wallet` — mobile/web wallet interface and Smart QR Pay UI
+- `ancap-sdk` — TypeScript SDK for ACP / wACP integrations
+- `ancap-contracts` — wACP contract, bridge public contracts, deployment scripts
+- `ancap-examples` — merchant/payment/API/QR integration examples
+- `ancap-core` — publishable protocol components safe for public review
+
+Private target repos:
+- `ancap-infra`
+- `ancap-bridge-operator`
+- `ancap-admin`
+
+### Phase 4 — Licensing
+
+Default licensing direction:
+- Apache-2.0 for core / protocol / SDK / contracts
+- MIT for frontend / examples when frictionless adoption matters more
+- CC BY 4.0 or Apache-2.0 for docs, depending on repo split
+
+Current repo decision:
+- this mixed monorepo defaults to **Apache-2.0** until the codebase is split into dedicated public repos with component-specific licensing if needed.
+
+### Phase 5 — GitHub Security Baseline
+
+Before publishing any additional repo or public split:
+- remove `.env`, private keys, mnemonics, tokens, and RPC keys;
+- keep `.env.example` only;
+- check git history for secrets;
+- enable GitHub secret scanning + push protection;
+- enable Dependabot + CodeQL;
+- block direct pushes to the default branch;
+- require review before merge;
+- define revoke/rotate procedure for leaked credentials;
+- publish `SECURITY.md` and responsible disclosure instructions.
+
+### Phase 6 — Public Transparency for ACP / wACP
+
+Public docs must explain:
+- what ACP is;
+- what wACP is;
+- why wACP exists on BSC;
+- how ACP → wACP works;
+- how wACP → ACP works;
+- decimals and conversion rules;
+- reserve/backing model;
+- fee model;
+- bridge risks;
+- official contract addresses;
+- scam/fake contract warnings;
+- how users verify contracts and transactions.
+
+### Phase 7 — Community Contribution Model
+
+Community baseline:
+- GitHub Issues for bug reports and feature requests;
+- GitHub Discussions for ideas and technical questions;
+- label system (`good first issue`, `help wanted`, `security`, `wallet`, `bridge`, `docs`, `sdk`, `contracts`, `frontend`);
+- contributor guide;
+- public roadmap board;
+- monthly development update;
+- changelog;
+- release notes.
+
+### Phase 8 — GitHub as Trust Layer
+
+GitHub should function as public proof that ANCAP is a live technical project.
+
+Publish and maintain:
+- roadmap progress
+- commits
+- releases
+- smart contract source code
+- SDK updates
+- security updates
+- audit preparation
+- integration examples
+- public issues
+- public milestones
+
+### Immediate execution queue — Open Source Preparation
+
+Sprint 1 — Open Source Preparation
+- [ ] Create GitHub organization
+- [ ] Create public `ancap-docs`
+- [x] Add README.md
+- [x] Add LICENSE
+- [x] Add SECURITY.md
+- [x] Add CONTRIBUTING.md
+- [x] Add public roadmap
+- [x] Add architecture overview
+- [x] Add ACP / wACP docs
+- [x] Add `.env.example`
+- [x] Enable GitHub secret scanning
+- [x] Enable branch protection
+
+Sprint 2 — Public Developer Base
+- [x] Publish API overview
+- [x] Publish Smart QR Pay specification
+- [x] Publish ACP / wACP conversion rules
+- [ ] Publish wACP contract source
+- [x] Publish SDK skeleton
+- [ ] Add example payment integration
+- [ ] Add example wallet connection flow
+- [x] Add GitHub issue templates
+
+Sprint 3 — Community + Audit Readiness
+- [x] Add public security policy
+- [x] Add responsible disclosure process
+- [ ] Add bridge risk documentation
+- [ ] Add contract verification guide
+- [ ] Add public changelog
+- [ ] Add release tags
+- [ ] Add testnet deployment guide
+- [ ] Add audit checklist
 
 ## Source documents this roadmap supersedes
 

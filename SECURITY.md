@@ -1,0 +1,54 @@
+# Security Policy
+
+## Security boundary
+
+ANCAP aims to be open-source where transparency increases trust, integration, and adoption.
+
+However, the following remain private and must never be published in public issues, PRs, docs, or examples:
+- private keys
+- seed phrases / mnemonics
+- bridge signer logic and operational controls
+- admin wallets
+- production `.env` values
+- deploy secrets and tokens
+- real RPC / API credentials
+- hot-wallet operational internals
+- sensitive anti-fraud thresholds that would materially help abuse
+
+## Reporting a vulnerability
+
+Please report security issues responsibly.
+
+Preferred report contents:
+- affected component
+- impact
+- reproduction steps
+- proof-of-concept if safe
+- suggested mitigation if known
+
+Until a dedicated security email exists, open a **private security advisory** in GitHub if available for the repository owner, or contact the maintainer through a private channel instead of a public issue.
+
+## Disclosure policy
+
+- Do not publish exploit details before the issue is triaged and mitigated.
+- Give maintainers time to reproduce and patch.
+- If a secret may have leaked, assume compromise and rotate/revoke it immediately.
+
+## Scope examples
+
+In scope:
+- auth bypass
+- privilege escalation
+- secret exposure
+- insecure defaults in production paths
+- unsafe wallet / bridge / receipt handling
+- chain settlement integrity issues
+- injection / SSRF / unsafe deserialization / RCE risks
+
+Out of scope unless there is a concrete exploitable path:
+- generic best-practice suggestions without a demonstrated project-specific weakness
+- purely theoretical attacks with no plausible exploit chain
+
+## Hard rule
+
+Never commit real secrets to the repository. If you discover one, stop and rotate/revoke it first.
