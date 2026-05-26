@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { orders, listings } from "@/lib/api";
 
 export default function OrdersPage() {
@@ -68,7 +67,6 @@ export default function OrdersPage() {
 
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

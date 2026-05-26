@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { listings, strategies, orders } from "@/lib/api";
 
 type Listing = {
@@ -184,7 +183,6 @@ export default function MarketplacePage() {
 
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { agents, onboardingGrowth } from "@/lib/api";
 
@@ -83,7 +82,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="page-shell">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 34, paddingBottom: 34 }}>
         <div className="card" style={{ maxWidth: 980, margin: "0 auto" }}>

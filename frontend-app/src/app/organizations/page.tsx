@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { organizations } from "@/lib/api";
 
@@ -73,7 +72,6 @@ export default function OrganizationsPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Organizations</h1>

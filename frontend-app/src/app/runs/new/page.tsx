@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { pools, runs, strategies, system as systemApi } from "@/lib/api";
 
@@ -91,8 +90,8 @@ function RunNewPageInner() {
   }, [isAuthenticated, preStrategyId, preStrategyVersionId]);
 
   const canSubmit = useMemo(() => {
-    return !!form.pool_id && !!form.strategy_version_id;
-  }, [form.pool_id, form.strategy_version_id]);
+    return !!form.pool_id && !!form.strategy_version_id && !loadingData;
+  }, [form.pool_id, form.strategy_version_id, loadingData]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,7 +122,6 @@ function RunNewPageInner() {
 
   return (
     <>
-      <NetworkBackground />
       <div className="min-h-screen">
         <Navigation />
         <div className="container" style={{ padding: "48px 24px" }}>
@@ -227,7 +225,7 @@ function RunNewPageInner() {
                 </div>
 
                 <div style={{ marginTop: 18, display: "flex", gap: 12 }}>
-                  <button className="btn btn-primary" type="submit" disabled={!canSubmit || creating}>
+                  <button className="btn btn-primary" type="submit" disabled={!canSubmit || creating} aria-busy={creating}>
                     {creating ? "Executing…" : "Execute run"}
                   </button>
                   <a className="btn btn-ghost" href="/runs">View runs</a>

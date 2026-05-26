@@ -7,7 +7,6 @@ import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 
 export function LoginForm() {
@@ -90,12 +89,7 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <NetworkBackground />
       <Navigation />
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[radial-gradient(ellipse_85%_55%_at_50%_-25%,rgba(52,211,153,0.11),transparent_55%)]"
-        aria-hidden
-      />
       <div
         className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center"
         style={{ padding: "24px" }}

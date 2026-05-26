@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { growthSocial, profiles } from "@/lib/api";
 
 export default function AgentProfilePage() {
@@ -63,7 +62,6 @@ export default function AgentProfilePage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-8 space-y-6">
         {loading && <div className="text-center py-16 opacity-60">Loading...</div>}
         {error && <div className="text-center py-16 text-red-400">{error}</div>}

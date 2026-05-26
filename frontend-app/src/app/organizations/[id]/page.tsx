@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { organizations } from "@/lib/api";
 
@@ -182,7 +181,6 @@ export default function OrganizationDetailPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 mx-auto max-w-6xl space-y-6 px-4 py-8">
         {error && <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
         {notice && <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div>}

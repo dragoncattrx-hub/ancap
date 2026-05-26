@@ -118,24 +118,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    let cancelled = false;
+    const hasPersistedUser = !!storedUser;
+
     users
       .me()
       .then((u) => {
+        if (cancelled) return;
         const userData = userFromApiPayload(u);
         setUser(userData);
         setIsWalletOnlyAuthenticated(false);
         safeSetItem("ancap_user", JSON.stringify(userData));
         safeRemoveItem(WALLET_ONLY_USER_KEY);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        const status = typeof error === "object" && error !== null && "status" in error ? Number((error as { status?: unknown }).status) : null;
+        if (status === 401 && hasPersistedUser) {
+          return;
+        }
         safeRemoveItem("ancap_user");
         safeRemoveItem(WALLET_ONLY_USER_KEY);
         setIsWalletOnlyAuthenticated(false);
         setUser(null);
       })
       .finally(() => {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const refreshUser = async () => {

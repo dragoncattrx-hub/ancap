@@ -1,10 +1,6 @@
-import { NetworkBackground } from "@/components/NetworkBackground";
 
 export default function NotFound() {
   return (
-    <>
-      <NetworkBackground />
-      
       <div className="min-h-screen flex items-center justify-center">
         <div className="container" style={{ textAlign: "center", padding: "48px 24px" }}>
           <h1 style={{ 
@@ -38,6 +34,5 @@ export default function NotFound() {
           </a>
         </div>
       </div>
-    </>
   );
 }

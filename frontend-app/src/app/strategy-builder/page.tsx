@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { strategies } from "@/lib/api";
 
@@ -207,7 +206,6 @@ function StrategyBuilderPageContent() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { profiles } from "@/lib/api";
 
 export default function UserProfilePage() {
@@ -30,7 +29,6 @@ export default function UserProfilePage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 max-w-2xl mx-auto px-4 py-8 space-y-6">
         {loading && <div className="text-center py-16 opacity-60">Loading...</div>}
         {error && <div className="text-center py-16 text-red-400">{error}</div>}

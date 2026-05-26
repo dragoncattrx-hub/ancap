@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { search } from "@/lib/api";
 
 const TYPE_OPTIONS = [
@@ -168,7 +167,6 @@ export default function SearchPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <Suspense fallback={<main className="relative z-10 max-w-3xl mx-auto px-4 py-8"><div className="text-center py-12 opacity-60">Loading search…</div></main>}>
         <SearchPageContent />
       </Suspense>

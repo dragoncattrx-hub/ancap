@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClientProviders } from "@/components/ClientProviders";
 import { ChunkErrorRecovery } from "@/components/ChunkErrorRecovery";
+import { NetworkBackground } from "@/components/NetworkBackground";
 import { detectPreferredLanguage } from "@/lib/language";
 
 const inter = Inter({
@@ -70,7 +71,10 @@ export default async function RootLayout({
     <html lang={initialLang} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <ChunkErrorRecovery />
-        <ClientProviders initialLang={initialLang}>{children}</ClientProviders>
+        <ClientProviders initialLang={initialLang}>
+          <NetworkBackground />
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );

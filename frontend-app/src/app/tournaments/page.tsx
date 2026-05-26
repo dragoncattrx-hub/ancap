@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { competitions } from "@/lib/api";
 
 export default function TournamentsPage() {
@@ -37,7 +36,6 @@ export default function TournamentsPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const offerDefs = [
@@ -107,20 +106,10 @@ export function HomePage() {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg)]">
-      <NetworkBackground />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 42% at 50% -18%, rgba(25, 195, 138, 0.12), transparent 58%)",
-        }}
-        aria-hidden
-      />
-
       <div className="min-h-screen">
         <Navigation />
 

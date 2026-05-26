@@ -52,12 +52,21 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def _auth_cookie_secure(request: Request) -> bool:
-    settings = get_settings()
-    if settings.environment == "production":
-        return True
     forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip().lower()
     scheme = forwarded_proto or (request.url.scheme or "").strip().lower()
-    return scheme == "https"
+    if scheme != "https":
+        return False
+
+    host = (
+        (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
+        or (request.headers.get("host") or "").split(",")[0].strip()
+        or request.url.hostname
+        or ""
+    )
+    hostname = host.split(":", 1)[0].strip().lower()
+    if hostname in {"127.0.0.1", "localhost", "::1", "[::1]"}:
+        return False
+    return True
 
 
 def _set_auth_cookie(response: Response, token: str, request: Request) -> None:

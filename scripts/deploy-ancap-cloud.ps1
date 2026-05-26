@@ -5,10 +5,12 @@
 #   .\scripts\deploy-ancap-cloud.ps1
 #   .\scripts\deploy-ancap-cloud.ps1 -SkipGitPull
 #   .\scripts\deploy-ancap-cloud.ps1 -SkipMigrations
+#   .\scripts\deploy-ancap-cloud.ps1 -SkipPostDeployChecks
 
 param(
     [switch] $SkipGitPull,
-    [switch] $SkipMigrations
+    [switch] $SkipMigrations,
+    [switch] $SkipPostDeployChecks
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,6 +73,57 @@ function Test-PlaceholderLikeSecret {
     return $false
 }
 
+function Parse-DatabaseUrlLikeString {
+    param([string] $Value)
+
+    $match = [regex]::Match($Value, '^(?<scheme>[A-Za-z][A-Za-z0-9+.-]*)://(?<authority>[^/?#]*)(?<path>/[^?#]*)?(?:\?(?<query>[^#]*))?(?:#.*)?$')
+    if (-not $match.Success) {
+        return $null
+    }
+
+    $authority = $match.Groups['authority'].Value
+    $query = $match.Groups['query'].Value
+    $dbHost = ""
+    $password = $null
+
+    if (-not [string]::IsNullOrWhiteSpace($authority)) {
+        $authorityHost = $authority
+        if ($authority.Contains('@')) {
+            $userInfo, $authorityHost = $authority.Split('@', 2)
+            if ($userInfo.Contains(':')) {
+                $password = [System.Uri]::UnescapeDataString(($userInfo.Split(':', 2)[1]))
+            }
+        }
+
+        if ($authorityHost.StartsWith('[')) {
+            $ipv6Match = [regex]::Match($authorityHost, '^\[(?<host>[^\]]+)\](?::\d+)?$')
+            if ($ipv6Match.Success) {
+                $dbHost = $ipv6Match.Groups['host'].Value
+            }
+        } else {
+            $dbHost = ($authorityHost.Split(':', 2)[0])
+        }
+    }
+
+    $socketHostQuery = $null
+    if (-not [string]::IsNullOrWhiteSpace($query)) {
+        foreach ($pair in $query.Split('&', [System.StringSplitOptions]::RemoveEmptyEntries)) {
+            $parts = $pair.Split('=', 2)
+            if ($parts[0] -eq 'host') {
+                $socketHostQuery = [System.Uri]::UnescapeDataString(($parts | Select-Object -Skip 1 -First 1))
+                break
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        Scheme = $match.Groups['scheme'].Value
+        Host = $dbHost
+        SocketHostQuery = $socketHostQuery
+        Password = $password
+    }
+}
+
 function Assert-RequiredSecrets {
     param([string[]] $Names)
 
@@ -108,19 +161,13 @@ function Assert-RequiredSecrets {
     }
 
     if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
-        try {
-            $databaseUri = [System.Uri] $databaseUrl
-        }
-        catch {
+        $parsedDatabaseUrl = Parse-DatabaseUrlLikeString -Value $databaseUrl
+        $hasSocketHostQuery = $null -ne $parsedDatabaseUrl -and -not [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.SocketHostQuery)
+        if ($null -eq $parsedDatabaseUrl -or [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.Scheme) -or ([string]::IsNullOrWhiteSpace($parsedDatabaseUrl.Host) -and -not $hasSocketHostQuery)) {
             throw "DATABASE_URL is not a valid URI. Fix it before running this deploy script."
         }
 
-        $databaseUserInfo = $databaseUri.UserInfo
-        $databasePassword = $null
-        if (-not [string]::IsNullOrWhiteSpace($databaseUserInfo) -and $databaseUserInfo.Contains(':')) {
-            $databasePassword = [System.Uri]::UnescapeDataString(($databaseUserInfo.Split(':', 2)[1]))
-        }
-
+        $databasePassword = $parsedDatabaseUrl.Password
         if (-not [string]::IsNullOrWhiteSpace($databasePassword)) {
             $normalizedDatabasePassword = $databasePassword.Trim().ToLowerInvariant()
             if ($normalizedDatabasePassword -eq "postgres") {
@@ -137,7 +184,11 @@ function Assert-RequiredSecrets {
             }
         }
 
-        if ($databaseUri.Host.ToLowerInvariant() -eq "postgres" -and [string]::IsNullOrWhiteSpace($databasePassword)) {
+        $usesBundledPostgres = $parsedDatabaseUrl.Host.ToLowerInvariant() -eq "postgres" -or (
+            -not [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.SocketHostQuery) -and $parsedDatabaseUrl.SocketHostQuery.ToLowerInvariant() -eq "postgres"
+        )
+
+        if ($usesBundledPostgres -and [string]::IsNullOrWhiteSpace($databasePassword)) {
             throw (
                 "DATABASE_URL targets the bundled postgres service but does not include a password. " +
                 "Set DATABASE_URL with the real POSTGRES_PASSWORD before running this deploy script."
@@ -160,15 +211,14 @@ function Assert-RequiredSecrets {
     }
 
     if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
-        $databaseUri = [System.Uri] $databaseUrl
-        $databaseUserInfo = $databaseUri.UserInfo
-        $databasePassword = $null
-        if (-not [string]::IsNullOrWhiteSpace($databaseUserInfo) -and $databaseUserInfo.Contains(':')) {
-            $databasePassword = [System.Uri]::UnescapeDataString(($databaseUserInfo.Split(':', 2)[1]))
-        }
+        $parsedDatabaseUrl = Parse-DatabaseUrlLikeString -Value $databaseUrl
+        $databasePassword = $parsedDatabaseUrl.Password
+        $usesBundledPostgres = $parsedDatabaseUrl.Host.ToLowerInvariant() -eq "postgres" -or (
+            -not [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.SocketHostQuery) -and $parsedDatabaseUrl.SocketHostQuery.ToLowerInvariant() -eq "postgres"
+        )
 
         if (
-            $databaseUri.Host.ToLowerInvariant() -eq "postgres" -and
+            $usesBundledPostgres -and
             -not [string]::IsNullOrWhiteSpace($databasePassword) -and
             -not [string]::IsNullOrWhiteSpace($postgresPassword) -and
             $databasePassword -ne $postgresPassword
@@ -179,6 +229,89 @@ function Assert-RequiredSecrets {
             )
         }
     }
+}
+
+function Invoke-ProxyJsonGet {
+    param([string] $Path)
+
+    $url = 'http://127.0.0.1' + $Path
+    $output = docker compose @composeArgs exec -T proxy wget -qO- $url 2>$null
+    return [pscustomobject]@{
+        ExitCode = $LASTEXITCODE
+        Output = ($output | Out-String).Trim()
+        Url = $url
+    }
+}
+
+function Wait-ForProxyStatus {
+    param(
+        [string] $Path,
+        [string] $ExpectedStatus,
+        [string] $Label,
+        [int] $Attempts = 30,
+        [int] $DelaySeconds = 2
+    )
+
+    $lastPayload = $null
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        $result = Invoke-ProxyJsonGet -Path $Path
+        if ($result.ExitCode -eq 0 -and $result.Output) {
+            $lastPayload = $result.Output
+            try {
+                $payload = $result.Output | ConvertFrom-Json
+                if ($payload.status -eq $ExpectedStatus) {
+                    return $payload
+                }
+            } catch {
+                $lastPayload = $result.Output
+            }
+        }
+
+        if ($attempt -lt $Attempts) {
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    $lastPayloadText = if ($null -ne $lastPayload) { [string] $lastPayload } else { '<none>' }
+    throw (
+        $Label + ' did not reach status ''' + $ExpectedStatus + ''' via ' +
+        ('http://127.0.0.1' + $Path) + '. Last payload: ' + $lastPayloadText
+    )
+}
+
+function Assert-FrontendBuildId {
+    param(
+        [string] $ExpectedBuildId,
+        [int] $Attempts = 30,
+        [int] $DelaySeconds = 2
+    )
+
+    $path = '/internal/frontend-build'
+    $lastPayload = $null
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        $result = Invoke-ProxyJsonGet -Path $path
+        if ($result.ExitCode -eq 0 -and $result.Output) {
+            $lastPayload = $result.Output
+            try {
+                $payload = $result.Output | ConvertFrom-Json
+                if ($payload.NEXT_PUBLIC_APP_BUILD_ID -eq $ExpectedBuildId) {
+                    return $payload
+                }
+            } catch {
+                $lastPayload = $result.Output
+            }
+        }
+
+        if ($attempt -lt $Attempts) {
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    $lastPayloadText = if ($null -ne $lastPayload) { [string] $lastPayload } else { '<none>' }
+    throw (
+        'Frontend build id behind proxy did not match APP_BUILD_ID=' + $ExpectedBuildId +
+        ' via http://127.0.0.1/internal/frontend-build. Last payload: ' + $lastPayloadText
+    )
 }
 
 Import-DotEnvIfPresent -Path $dotenv
@@ -204,6 +337,10 @@ if ($LASTEXITCODE -eq 0 -and $rev) {
 }
 Write-Host ('APP_BUILD_ID=' + $env:APP_BUILD_ID + ' -- after deploy, https://ancap.cloud/internal/frontend-build must show the same id')
 
+Write-Host 'Validating docker-compose.prod.yml interpolation and required vars without printing resolved secrets...'
+docker compose @composeArgs config --quiet
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host 'Building images (no cache)...'
 docker compose @composeArgs build --no-cache
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -218,4 +355,23 @@ if (-not $SkipMigrations) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Write-Host 'Done. Open https://ancap.cloud/bridge/acp-bsc -- if still 404, purge Cloudflare cache for the hostname.'
+if ($SkipPostDeployChecks) {
+    Write-Host 'Skipping live proxy/frontend verification by request (-SkipPostDeployChecks).'
+    Write-Host 'Done. Build/start completed without live post-deploy verification.'
+    exit 0
+}
+
+Write-Host 'Verifying live proxy liveness via /api/v1/system/health ...'
+$healthPayload = Wait-ForProxyStatus -Path '/api/v1/system/health' -ExpectedStatus 'ok' -Label 'Proxy liveness'
+Write-Host ('OK /api/v1/system/health -> status=' + $healthPayload.status)
+
+Write-Host 'Verifying live proxy readiness via /api/v1/system/ready ...'
+$readyPayload = Wait-ForProxyStatus -Path '/api/v1/system/ready' -ExpectedStatus 'ready' -Label 'Proxy readiness'
+Write-Host ('OK /api/v1/system/ready -> status=' + $readyPayload.status)
+
+Write-Host 'Verifying frontend build provenance via /internal/frontend-build ...'
+$buildPayload = Assert-FrontendBuildId -ExpectedBuildId $env:APP_BUILD_ID
+$buildIdSource = if ($null -ne $buildPayload.build_id_source -and -not [string]::IsNullOrWhiteSpace([string] $buildPayload.build_id_source)) { [string] $buildPayload.build_id_source } else { '<null>' }
+Write-Host ('OK /internal/frontend-build -> NEXT_PUBLIC_APP_BUILD_ID=' + $buildPayload.NEXT_PUBLIC_APP_BUILD_ID + ' (source=' + $buildIdSource + ')')
+
+Write-Host 'Done. Open https://ancap.cloud/bridge/acp-bsc -- if still 404, first confirm the verified build id at https://ancap.cloud/internal/frontend-build before blaming cache.'

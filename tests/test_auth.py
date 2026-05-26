@@ -69,6 +69,44 @@ def test_login(client, monkeypatch):
     assert "Secure" not in set_cookie
 
 
+def test_login_sets_secure_cookie_for_https_origin(client, monkeypatch):
+    email = unique_email()
+    client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": "password123", "display_name": "HTTPS Login Test"},
+        headers={"Authorization": ""},
+    )
+    monkeypatch.setattr(auth_router, "send_login_alert", _async_return(False))
+    r = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": "password123"},
+        headers={"Authorization": "", "X-Forwarded-Proto": "https", "Host": "ancap.cloud"},
+    )
+    assert r.status_code == 200, r.text
+    set_cookie = r.headers.get("set-cookie", "")
+    assert "ancap_token=" in set_cookie
+    assert "Secure" in set_cookie
+
+
+def test_login_does_not_set_secure_cookie_for_https_loopback_origin(client, monkeypatch):
+    email = unique_email()
+    client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": "password123", "display_name": "Loopback Login Test"},
+        headers={"Authorization": ""},
+    )
+    monkeypatch.setattr(auth_router, "send_login_alert", _async_return(False))
+    r = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": "password123"},
+        headers={"Authorization": "", "X-Forwarded-Proto": "https", "Host": "127.0.0.1:8001"},
+    )
+    assert r.status_code == 200, r.text
+    set_cookie = r.headers.get("set-cookie", "")
+    assert "ancap_token=" in set_cookie
+    assert "Secure" not in set_cookie
+
+
 def test_login_wrong_password(client):
     email = unique_email()
     client.post(

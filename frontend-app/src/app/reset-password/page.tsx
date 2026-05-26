@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { useAuth } from "@/components/AuthProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
@@ -233,7 +232,6 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)]">
-      <NetworkBackground />
       <Navigation />
       <Suspense fallback={<div className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center" style={{ padding: "24px", color: "var(--text-muted)" }}>Loading...</div>}>
         <ResetPasswordForm />

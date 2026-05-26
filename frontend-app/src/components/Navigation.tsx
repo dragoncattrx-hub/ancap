@@ -75,13 +75,21 @@ const secondaryNav: NavItem[] = [
   { label: "Listings", href: "/listings" },
 ];
 
+const publicNav: NavItem[] = [
+  { label: "Product", href: "/#product", i18nKey: "nav.product" },
+  { label: "Vision", href: "/#vision", i18nKey: "nav.vision" },
+  { label: "ACP Token and Chain", href: "/whitepaper/acp", i18nKey: "hero.acpToken" },
+  { label: "Whitepaper", href: "/whitepaper" },
+  { label: "Legal", href: "/legal/terms" },
+];
+
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
 /** Horizontal pill rail + thin scrollbar (Linear / Vercel–style dense top nav). */
 const navScrollRow =
-  "flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0.5 py-0.5 touch-pan-x [-ms-overflow-style:none] [scrollbar-color:rgba(255,255,255,0.22)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent";
+  "flex w-full max-w-full flex-nowrap items-center gap-1 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0.5 py-0.5 touch-pan-x whitespace-nowrap [-ms-overflow-style:none] [scrollbar-color:rgba(255,255,255,0.22)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent";
 
 const fadeL =
   "pointer-events-none absolute inset-y-0.5 left-0 z-[1] w-7 rounded-l-xl bg-gradient-to-r from-[#050a18] via-[#050a18]/90 to-transparent";
@@ -267,7 +275,7 @@ export function Navigation() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/25 to-transparent" />
 
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className={cn("flex items-center justify-between gap-2 sm:gap-4", isAuthenticated ? "min-h-[68px] lg:min-h-[76px]" : "min-h-[68px] py-2 lg:min-h-0 lg:flex-wrap lg:items-start lg:gap-y-2")}>
+        <div className={cn("flex items-center justify-between gap-2 sm:gap-4", isAuthenticated ? "min-h-[68px] lg:min-h-[76px]" : "min-h-[72px] py-2")}>
           <div className="flex min-w-0 shrink items-center gap-2 sm:shrink-0 sm:gap-6">
             <Link href="/" className="group inline-flex min-w-0 items-center gap-2 sm:gap-3">
               <span className="relative flex items-center justify-center">
@@ -278,9 +286,9 @@ export function Navigation() {
             </Link>
           </div>
 
-          <div className="hidden min-w-0 flex-1 lg:flex lg:flex-col lg:justify-center lg:px-2">
+          <div className="hidden min-w-0 flex-1 lg:flex lg:items-center lg:px-2">
             {isAuthenticated ? (
-              <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="w-full rounded-2xl border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 <NavScrollWithFades>
                   <nav className={navScrollRow} aria-label={t("nav.main")}>
                     {primaryNav.map((item) => (
@@ -312,7 +320,21 @@ export function Navigation() {
                 </NavScrollWithFades>
               </div>
             ) : (
-              <div className="hidden" aria-hidden="true" />
+              <div className="w-full rounded-2xl border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <NavScrollWithFades>
+                  <nav className={cn(navScrollRow, "justify-center px-6")} aria-label={t("nav.main")}>
+                    {publicNav.map((item) => (
+                      <PillNavLink
+                        key={item.href}
+                        item={item}
+                        label={navItemLabel(item, t)}
+                        active={item.href.startsWith("/#") ? pathname === "/" : pathname === item.href}
+                        tier="primary"
+                      />
+                    ))}
+                  </nav>
+                </NavScrollWithFades>
+              </div>
             )}
           </div>
 
@@ -394,48 +416,6 @@ export function Navigation() {
               </>
             )}
           </div>
-
-          {!isAuthenticated ? (
-            <div className="hidden w-full lg:block">
-              <NavScrollWithFades>
-                <nav
-                  className={cn(navScrollRow, "justify-start gap-1.5 rounded-2xl border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.02] px-1 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]")}
-                  aria-label={t("nav.main")}
-                >
-                  <Link
-                    href="/#product"
-                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                  >
-                    {t("nav.product")}
-                  </Link>
-                  <Link
-                    href="/#vision"
-                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                  >
-                    {t("nav.vision")}
-                  </Link>
-                  <Link
-                    href={acpUrl}
-                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                  >
-                    {t("hero.acpToken")}
-                  </Link>
-                  <Link
-                    href="/whitepaper"
-                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                  >
-                    Whitepaper
-                  </Link>
-                  <Link
-                    href="/legal/terms"
-                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-white/60 transition hover:bg-white/[0.06] hover:text-white/90"
-                  >
-                    Legal
-                  </Link>
-                </nav>
-              </NavScrollWithFades>
-            </div>
-          ) : null}
 
           <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2 lg:hidden">
             <Link
@@ -558,48 +538,16 @@ export function Navigation() {
               ) : (
                 <div className="grid gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <Link
-                      href="/#product"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      {t("nav.product")}
-                    </Link>
-                    <Link
-                      href="/#vision"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      {t("nav.vision")}
-                    </Link>
-                    <Link
-                      href={acpUrl}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      {t("hero.acpToken")}
-                    </Link>
-                    <Link
-                      href="/whitepaper"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      Whitepaper
-                    </Link>
-                    <Link
-                      href="/whitepaper/acp"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      ACP Paper
-                    </Link>
-                    <Link
-                      href="/legal/terms"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      Legal
-                    </Link>
+                    {publicNav.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex min-h-[44px] items-center rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[14px] text-white/75 transition hover:border-white/12 hover:bg-white/[0.05]"
+                      >
+                        {navItemLabel(item, t)}
+                      </Link>
+                    ))}
                     <Link
                       href="/wallet/acp"
                       onClick={() => setMobileMenuOpen(false)}

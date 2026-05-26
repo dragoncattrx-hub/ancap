@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { referrals } from "@/lib/api";
 
 function formatAmount(value: any): string {
@@ -73,7 +72,6 @@ export default function ReferralsPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="section-header" style={{ marginBottom: 16 }}>

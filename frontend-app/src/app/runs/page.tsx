@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { runs, strategies, pools, system as systemApi } from "@/lib/api";
 
 interface Run {
@@ -119,7 +118,6 @@ export default function RunsPage() {
 
   return (
     <>
-      <NetworkBackground />
       
       <div className="min-h-screen">
         <Navigation />

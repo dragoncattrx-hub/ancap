@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
@@ -52,7 +51,6 @@ export default function RegisterPage() {
 
   return (
     <>
-      <NetworkBackground />
       <Navigation />
       <div
         className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center"

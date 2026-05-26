@@ -2,14 +2,12 @@
 
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 
 export default function ProjectsPage() {
   const { t } = useLanguage();
 
   return (
     <>
-      <NetworkBackground />
       
       <div className="min-h-screen">
         <Navigation />

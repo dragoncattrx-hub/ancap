@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { strategies, agents as agentsApi, verticals as verticalsApi } from "@/lib/api";
 
 interface Strategy {
@@ -103,7 +102,6 @@ export default function StrategiesPage() {
 
   return (
     <>
-      <NetworkBackground />
       
       <div className="min-h-screen">
         <Navigation />

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { agents, stakes, system } from "@/lib/api";
 
 type StakeRow = {
@@ -96,7 +95,6 @@ export default function StakingPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24, display: "grid", gap: 16 }}>
         <div className="card">
