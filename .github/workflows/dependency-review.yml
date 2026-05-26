@@ -1,0 +1,28 @@
+name: "Dependency Review"
+
+on:
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "requirements.txt"
+      - "pyproject.toml"
+      - "frontend-app/package.json"
+      - "frontend-app/package-lock.json"
+      - "ancap-mobile/package.json"
+      - "ancap-mobile/package-lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: "Dependency review"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Review dependencies"
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
