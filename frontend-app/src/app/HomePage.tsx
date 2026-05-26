@@ -105,7 +105,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[var(--bg)]">
+    <div className="relative min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}

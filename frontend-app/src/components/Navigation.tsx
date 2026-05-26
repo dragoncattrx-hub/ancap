@@ -175,11 +175,16 @@ function PillNavLink({
   tier: "primary" | "secondary";
   onClick?: () => void;
 }) {
-  const base =
-    "relative shrink-0 whitespace-nowrap rounded-full font-medium transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050a18]";
-  const primary = active
-    ? "bg-gradient-to-b from-white/[0.14] to-white/[0.06] px-3.5 py-1.5 text-[13px] text-white shadow-[0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-white/18"
-    : "px-3.5 py-1.5 text-[13px] text-white/58 hover:bg-white/[0.07] hover:text-white";
+  const isSectionJump = item.href.startsWith("/#");
+  const base = cn(
+    "relative shrink-0 whitespace-nowrap font-medium transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050a18]",
+    isSectionJump ? "rounded-none" : "rounded-full"
+  );
+  const primary = isSectionJump
+    ? "px-1 py-1.5 text-[13px] text-white/72 hover:text-white"
+    : active
+      ? "bg-gradient-to-b from-white/[0.14] to-white/[0.06] px-3.5 py-1.5 text-[13px] text-white shadow-[0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-white/18"
+      : "px-3.5 py-1.5 text-[13px] text-white/58 hover:bg-white/[0.07] hover:text-white";
   const secondary = active
     ? "bg-violet-500/18 px-2.5 py-1 text-[11.5px] leading-tight text-violet-50 ring-1 ring-violet-400/30 sm:px-3 sm:text-[12px]"
     : "px-2.5 py-1 text-[11.5px] leading-tight text-violet-200/55 hover:bg-violet-500/12 hover:text-violet-100 sm:px-3 sm:text-[12px]";
@@ -328,7 +333,7 @@ export function Navigation() {
                         key={item.href}
                         item={item}
                         label={navItemLabel(item, t)}
-                        active={item.href.startsWith("/#") ? pathname === "/" : pathname === item.href}
+                        active={!item.href.startsWith("/#") && pathname === item.href}
                         tier="primary"
                       />
                     ))}
