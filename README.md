@@ -97,9 +97,12 @@ Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
 If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:
-- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, its password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for the bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are present in the host shell or repo-root `.env`
+- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password), a real non-default `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are present in the host shell or repo-root `.env`; `DATABASE_URL` and `POSTGRES_PASSWORD` must stay in sync for the bundled compose postgres service
+- verify interpolation first without echoing resolved secrets: `docker compose -f docker-compose.prod.yml config --quiet`
 - **Windows:** `.\scripts\deploy-ancap-cloud.ps1`
 - **Linux:** `bash scripts/deploy-ancap-cloud.sh`
+
+The deploy helpers now do not stop at `docker compose up -d`: they also verify the live proxy path end-to-end by requiring `http://127.0.0.1/api/v1/system/health -> {"status":"ok"}`, `http://127.0.0.1/api/v1/system/ready -> {"status":"ready"}`, and `http://127.0.0.1/internal/frontend-build` to report `NEXT_PUBLIC_APP_BUILD_ID` equal to the host `git rev-parse --short HEAD` / injected `APP_BUILD_ID` before they declare success. For controlled staged tests only, the PowerShell/Linux deploy helpers now also expose `-SkipPostDeployChecks` / `--skip-post-deploy-checks` to bypass those live checks after build/start; do not use that bypass for the real host deploy path.
 
 Then verify the new image is live: open **`https://ancap.cloud/internal/frontend-build`** — JSON field `NEXT_PUBLIC_APP_BUILD_ID` must equal `git rev-parse --short HEAD` on that host. The route now also reports `build_id_source`, `next_public_app_build_id_env`, and `next_build_id_file` so you can see whether provenance came from the runtime env or the baked Next.js `.next/BUILD_ID`, and it ignores placeholder `unknown` values in favor of a real build id when the file is present. If it still shows `unknown` or an old hash, Compose is not rebuilding the `frontend` service you expose on port **8080**, or the tunnel points at another machine/port.
 
@@ -245,7 +248,7 @@ Before starting the prod-like stack, set real production secrets in the repo-roo
 - `CURSOR_SECRET` (must be a real random secret, not a placeholder-like value)
 - `CRON_SECRET` (must be a real random secret, not a placeholder-like value)
 
-The production compose file intentionally has no fallbacks for those values and now uses compose required-variable guards, while the app and deploy/rebuild helper scripts reject insecure defaults, placeholder-like secret values, and bundled-postgres password drift between `DATABASE_URL` and `POSTGRES_PASSWORD`, so `docker compose -f docker-compose.prod.yml config` / `up` will fail immediately if any of them are unset or inconsistent.
+The production compose file intentionally has no fallbacks for those values and now uses compose required-variable guards, while the app and deploy/rebuild helper scripts reject insecure defaults, placeholder-like secret values, malformed/non-absolute `DATABASE_URL` values, and bundled-postgres password drift between `DATABASE_URL` and `POSTGRES_PASSWORD` for both authority-host DSNs (`...@postgres:5432/...`) and socket/query-host DSNs (`...?host=postgres`). `docker-compose.prod.yml` also now passes `POSTGRES_PASSWORD` through to the API container whenever the bundled compose postgres service is used, so the app-level production parity guard can actually validate that the runtime `DATABASE_URL` password and `POSTGRES_PASSWORD` stay in sync. As a result, `docker compose -f docker-compose.prod.yml config --quiet` / `up` will fail immediately if any of them are unset or inconsistent without dumping resolved secrets to stdout.
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
@@ -504,6 +507,26 @@ python -m pytest tests -v --tb=short
 ```
 
 **UI / E2E (Playwright)**:
+
+Quick CI-like local smoke on Windows/PowerShell:
+
+```powershell
+.\scripts\run-e2e-ci-smoke.ps1
+```
+
+What it does:
+- raises an isolated `ancap-e2e-ci` compose stack on the GitHub-CI-faithful default ports (`8001` API, `3001` frontend) while still isolating Postgres/Redis on disposable host ports (`55432`, `56379`)
+- waits for `/v1/system/health`, applies `alembic upgrade head`, and requires `/v1/system/ready` to become `ready`
+- restores frontend dependencies with `npm ci` when `frontend-app/node_modules/.bin/next.cmd` is missing
+- builds the frontend, starts `next start` on port `3001`, installs Playwright Chromium, and runs `npx playwright test`
+- tears the isolated stack down afterward unless you pass `-KeepStack`
+
+Useful switches:
+- `-KeepStack` — leave the isolated compose stack running for inspection
+- `-SkipBrowserInstall` — skip `npx playwright install chromium` when the browser is already installed
+- `-SkipNpmCi` — skip the frontend dependency restore check
+
+Manual flow:
 
 1) Raise the backend (Docker compose) and apply migrations:
 

@@ -380,7 +380,7 @@ Verification (2026-05-26):
 - local CI-like backend validation succeeds in isolated compose projects, including the current honest `3001/8001` path:
   - `docker compose -p ancap-e2e-ci up -d postgres redis api`
   - `docker compose -p ancap-e2e-ci exec -T api alembic upgrade head`
-  - `http://127.0.0.1:58001/v1/system/ready` returned `{"status":"ready","checks":{"database":true,"redis":true}}`
+  - `http://127.0.0.1:8001/v1/system/ready` returned `{"status":"ready","checks":{"database":true,"redis":true}}`
   - `scripts/run-e2e-ci-smoke.ps1 -ProjectName ancap-ci-cycle -KeepStack -SkipBrowserInstall -SkipNpmCi` passes on the GitHub-faithful `3001/8001` path with `13 passed, 1 skipped`
   - `scripts/run-e2e-ci-smoke.ps1 -ProjectName ancap-ci-verify-20260526b -ApiPort 18002 -PostgresPort 15433 -RedisPort 16380 -FrontendPort 3312 -SkipBrowserInstall -SkipNpmCi` also passes on a fully isolated alternate-port path with `13 passed, 1 skipped`
 - `scripts/run-e2e-ci-smoke.ps1` now does a stricter real-stack check on isolated ports, cleans up stale repo-owned frontend listeners before retrying `next start`, and fails fast with an explicit reusable message when Docker port bindings are already occupied by another smoke stack instead of surfacing the raw daemon bind error later during `docker compose up`
