@@ -27,6 +27,14 @@ jobs:
             exit 0
           fi
 
+          case "$SYSTEM_JOBS_TICK_URL" in
+            */v1/system/jobs/tick/async) ;;
+            *)
+              echo "ANCAP_SYSTEM_JOBS_TICK_URL must target /v1/system/jobs/tick/async, not the synchronous/manual endpoint."
+              exit 1
+              ;;
+          esac
+
           curl --fail-with-body --silent --show-error \
             -X POST \
             -H "X-Cron-Secret: $CRON_SECRET" \

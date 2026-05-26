@@ -1,7 +1,7 @@
 ﻿# ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-05-25
+> Created: 2026-05-23 | Last updated: 2026-05-26
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
 > Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
@@ -281,13 +281,16 @@ Status: [~] Repo-side hardening is in place and test-covered; production deploym
 Files: \docker-compose.prod.yml\, \pp/config.py\
 
 Verification (2026-05-25):
-- `docker-compose.prod.yml` now requires `DATABASE_URL`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` without production fallbacks; compose `${VAR:?message}` guards make `docker compose config/up` fail immediately when any required secret is unset
-- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, rejects blank `DATABASE_URL` or the insecure `postgres:postgres` default, rejects placeholder/default DB passwords hidden inside `DATABASE_URL`, and now also rejects mismatches between `DATABASE_URL` and `POSTGRES_PASSWORD` when the bundled compose `postgres` service is targeted
-- `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, reject placeholder/default DB passwords embedded in `DATABASE_URL`, reject `DATABASE_URL` / `POSTGRES_PASSWORD` drift for the bundled compose postgres service, avoid shadowing compose interpolation with the bridge-only env file, and the bash helper now parses repo-root `.env` directly so CRLF-authored env files do not break preflight on Linux/WSL
-- PowerShell deploy/rebuild and bash deploy preflight now also correctly accept URL-encoded bundled-postgres passwords inside `DATABASE_URL` (for example `p%40ss%3Aword`) while still comparing them against the raw `POSTGRES_PASSWORD` value, avoiding false mismatch failures when real secrets contain reserved URL characters
-- `tests/test_prod_deploy_scripts.py` now goes beyond string-presence assertions and actually exercises the deploy/rebuild helpers against staged minimal repos, confirming that PowerShell deploy/rebuild and bash deploy can bootstrap required production secrets from a repo-root `.env` without relying on pre-exported shell state, including the CRLF-authored `.env` case for the bash helper and URL-encoded `DATABASE_URL` password handling across all deploy helpers
-- deploy-facing docs now consistently call out those required secrets before production compose startup, including `README.md`, `PRODUCTION_ROADMAP.md`, `.github/RELEASE_PROCESS.md`, and the bridge pilot env example note, and they now explicitly note that `DATABASE_URL` must include the same real DB password as `POSTGRES_PASSWORD` when targeting the bundled compose postgres service
-- `pytest tests/test_config_admin_ids.py tests/test_system.py tests/test_prod_deploy_scripts.py -q` passes with coverage for the production secret guard, deploy-script preflight rejection of placeholder-like app secrets and insecure/default DB settings, repo-root `.env` bootstrap behavior, `DATABASE_URL` / `POSTGRES_PASSWORD` mismatch rejection, and cron-secret-gated jobs endpoints
+- `docker-compose.prod.yml` now requires `DATABASE_URL`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` without production fallbacks; compose `${VAR:?message}` guards make `docker compose config/up` fail immediately when any required secret is unset, and the API service now explicitly receives `POSTGRES_PASSWORD` too so the app-level production parity guard can validate bundled-postgres `DATABASE_URL` / `POSTGRES_PASSWORD` consistency at runtime instead of only in deploy-script preflight
+- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, rejects blank or non-absolute `DATABASE_URL` values and the insecure `postgres:postgres` default, rejects placeholder/default DB passwords hidden inside `DATABASE_URL`, URL-decodes bundled-postgres passwords before comparison, and when the bundled compose `postgres` service is targeted — whether via authority host `@postgres:...` or socket/query host `?host=postgres` — it now also requires a real non-default non-placeholder `POSTGRES_PASSWORD` plus exact `DATABASE_URL` / `POSTGRES_PASSWORD` parity
+- `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, reject placeholder/default DB passwords embedded in `DATABASE_URL`, reject `DATABASE_URL` / `POSTGRES_PASSWORD` drift for the bundled compose postgres service (including socket/query-host DSNs such as `?host=postgres`), avoid shadowing compose interpolation with the bridge-only env file, and the bash helper now parses repo-root `.env` directly so CRLF-authored env files do not break preflight on Linux/WSL
+- PowerShell deploy/rebuild and bash deploy preflight now also correctly accept URL-encoded bundled-postgres passwords inside `DATABASE_URL` (for example `p%40ss%3Aword`) while still comparing them against the raw `POSTGRES_PASSWORD` value, avoiding false mismatch failures when real secrets contain reserved URL characters, including the socket/query-host `?host=postgres` DSN form and percent-encoded socket-host query variants such as `?host=%70ostgres`
+- `tests/test_prod_deploy_scripts.py` now goes beyond string-presence assertions and actually exercises the deploy/rebuild helpers against staged minimal repos, confirming that PowerShell deploy/rebuild and bash deploy can bootstrap required production secrets from a repo-root `.env` without relying on pre-exported shell state, including the CRLF-authored `.env` case for the bash helper and URL-encoded `DATABASE_URL` password handling across authority-host and socket/query-host bundled-postgres DSN variants; it now also directly exercises real `docker compose -f docker-compose.prod.yml config --quiet` success/failure behavior so the compose required-var guard itself is covered, including fail-fast proof that a missing required secret does not dump the other provided secret values to stdout/stderr
+- `scripts/deploy-ancap-cloud.ps1` no longer relies on unsupported `??` null-coalescing syntax in Windows PowerShell error/log formatting, so deploy-script preflight failures now surface the intended guard messages instead of a parser error before any real validation runs
+- the deploy helpers now also run `docker compose -f docker-compose.prod.yml config --quiet` before any build/start step, so compose interpolation or missing-required-var failures stop the deploy/rebuild path before image work begins without dumping resolved secrets to stdout; the staged-script tests assert that config validation is actually invoked for PowerShell deploy/rebuild and bash deploy, and the deploy helpers expose opt-in `-SkipPostDeployChecks` / `--skip-post-deploy-checks` switches for controlled staged-test contexts while keeping live `/api/v1/system/health`, `/api/v1/system/ready`, and `/internal/frontend-build` verification enabled by default on the real deploy path
+- deploy-facing docs now consistently call out those required secrets before production compose startup, including `README.md`, `PRODUCTION_ROADMAP.md`, and `.github/RELEASE_PROCESS.md`, and they now explicitly note that `DATABASE_URL` must include the same real DB password as `POSTGRES_PASSWORD` when targeting the bundled compose postgres service; the prod-like compose/docs truth now also records that `POSTGRES_PASSWORD` is passed through to the API container so the same parity rule is enforced by app startup in real runtime, not just by helper-script preflight
+- real local runtime follow-through was re-verified after the quiet-validation hardening and compose pass-through fix: `docker compose -f docker-compose.prod.yml config --quiet` succeeds under the current host secret set, the rendered compose model now includes `POSTGRES_PASSWORD` in the API service environment, `docker compose -f docker-compose.prod.yml up -d postgres redis api` brings the prod-like API stack up healthy again, and once the full proxy/frontend path is running the expected health target remains `http://127.0.0.1:8080/api/v1/system/health` with the canonical hardened header set
+- `pytest tests/test_config_admin_ids.py tests/test_system.py tests/test_prod_deploy_scripts.py -q` passes with coverage for the production secret guard, explicit bundled-postgres `POSTGRES_PASSWORD` requirements, URL-encoded bundled-postgres password acceptance in both app config and deploy-script preflight (including `?host=postgres` and percent-encoded `?host=%70ostgres` socket/query-host DSNs), deploy-script preflight rejection of placeholder-like app secrets and insecure/default/invalid DB settings, repo-root `.env` bootstrap behavior, `DATABASE_URL` / `POSTGRES_PASSWORD` mismatch rejection, direct compose required-var success/failure coverage for `docker compose -f docker-compose.prod.yml config --quiet`, explicit compose proof that `POSTGRES_PASSWORD` is rendered into the API service environment for bundled-postgres prod runs, compose-config preflight invocation in deploy helpers, and cron-secret-gated jobs endpoints
 
 Fix:
 - \secret_key\ must not have a fallback default in production-configured files -- must be a required env var with no insecure fallback
@@ -362,49 +365,77 @@ Schedule: weekly (Mondays 06:00 UTC)
 
 ### 1.4 Playwright E2E in CI [HIGH]
 
-Status: [~] Workflow job exists and is now wired to boot backend services, build/start the frontend, and run Playwright against a real local UI/API pairing in CI. Still needs a live GitHub run to confirm timing/stability.
+Status: [~] Workflow job exists and is wired correctly; the full local CI-like end-to-end smoke path is green again against a real API + built frontend + Playwright run. Remaining blocker is still the first successful GitHub Actions execution of that same path.
 
-Status: Playwright browsers are installed in frontend CI but tests are never run.
+Verification (2026-05-26):
+- `.github/workflows/frontend-ci.yml` already contains an `e2e-tests` job that:
+  - boots `postgres`, `redis`, and `api`
+  - waits for `/v1/system/health`
+  - runs `alembic upgrade head`
+  - builds/starts the frontend on port `3001`
+  - installs Playwright Chromium and runs `npx playwright test`
+  - uploads Playwright artifacts and tears down services afterward
+- `frontend-app/playwright.config.ts` is aligned with the CI pattern and accepts `PLAYWRIGHT_BASE_URL` overrides
+- the repo contains real E2E specs under `frontend-app/e2e/` covering golden-path, growth, contracts, hydration, and public-surface flows
+- local CI-like backend validation succeeds in isolated compose projects, including the current honest `3001/8001` path:
+  - `docker compose -p ancap-e2e-ci up -d postgres redis api`
+  - `docker compose -p ancap-e2e-ci exec -T api alembic upgrade head`
+  - `http://127.0.0.1:58001/v1/system/ready` returned `{"status":"ready","checks":{"database":true,"redis":true}}`
+  - `scripts/run-e2e-ci-smoke.ps1 -ProjectName ancap-ci-cycle -KeepStack -SkipBrowserInstall -SkipNpmCi` passes on the GitHub-faithful `3001/8001` path with `13 passed, 1 skipped`
+  - `scripts/run-e2e-ci-smoke.ps1 -ProjectName ancap-ci-verify-20260526b -ApiPort 18002 -PostgresPort 15433 -RedisPort 16380 -FrontendPort 3312 -SkipBrowserInstall -SkipNpmCi` also passes on a fully isolated alternate-port path with `13 passed, 1 skipped`
+- `scripts/run-e2e-ci-smoke.ps1` now does a stricter real-stack check on isolated ports, cleans up stale repo-owned frontend listeners before retrying `next start`, and fails fast with an explicit reusable message when Docker port bindings are already occupied by another smoke stack instead of surfacing the raw daemon bind error later during `docker compose up`
+- live local CI-like verification on 2026-05-26 exposed and fixed real stack/runtime issues before GitHub CI could hide them:
+  - `docker-compose.yml` did not pass `CORS_ORIGINS` into the dev API container, so isolated smoke stacks on alternate frontend ports (for example `3311`) silently fell back to the app default allowlist and cross-origin browser calls failed with UI-level `Failed to fetch`
+  - this broke authenticated Playwright flows on `/contracts/{id}`, `/strategies/{id}`, and `/runs/{id}` even though direct API calls and static-page smoke tests still passed
+  - `docker-compose.yml` now forwards `CORS_ORIGINS` into the API service with the current dev-safe default allowlist, so CI/local smoke runs can override it for alternate frontend ports without patching app config
+  - `tests/test_cors_dev_stack.py` now locks that compose-level env pass-through in place
+  - the remaining last red spec in the full smoke run turned out to be a false Playwright assumption in `frontend-app/e2e/ancap.ui.spec.ts`, not an app/runtime defect: the responsive unauthenticated header intentionally renders duplicate `/login` and `/register` links across desktop/mobile layouts, so the old raw `locator('a[href="/login"]')` assertion hit strict-mode ambiguity with one hidden duplicate
+  - `frontend-app/e2e/ancap.ui.spec.ts` now scopes those assertions to the visible header and uses role-based link expectations, which matches the real responsive UI contract
 
-Current blocker: No backend service + postgres in the same job.
+Current blocker: local CI-like smoke is green again and the helper now fails cleanly on pre-existing Docker port conflicts, but this item should only be marked done after the same `e2e-tests` path completes successfully in GitHub Actions on a real PR/push.
 
-Fix: Add an \e2e-tests\ job to \rontend-ci.yml\ that:
-1. Starts services via \docker-compose up -d\ (api + postgres + redis)
-2. Waits for health: \until curl -sf http://localhost:8080/api/v1/system/health; do sleep 5; done\
-3. Runs \
-px playwright test\ against \http://localhost:8080\
-4. Reports results
+Fix: Keep the `e2e-tests` job in `frontend-ci.yml`, keep `scripts/run-e2e-ci-smoke.ps1` as the repeatable repro path, preserve the compose-level `CORS_ORIGINS` pass-through, and use the first successful GitHub Actions run as the final exit signal instead of assuming workflow-definition-only coverage.
 
-Files needed: \playwright.config.ts\ already exists, E2E specs already exist in \rontend-app/e2e/\
+Files needed: `playwright.config.ts` and the E2E specs already exist; local repro helper now lives in `scripts/run-e2e-ci-smoke.ps1`.
 
-Exit criteria: E2E tests run on every PR touching \rontend-app/\ or \pp/\.
+Exit criteria: E2E tests run successfully on PRs touching `frontend-app/` or `app/`, not just by workflow definition.
 
 ### 1.5 RESTRICT ops/diagnostics endpoints [HIGH]
 
-Status: [~] Repo-side tier split and platform-admin protection are now implemented/test-covered. Proxy exposure is already broad `/api` passthrough in `infra/nginx/default.conf`, so no extra proxy rule was required in-repo; live latency/production verification still remains.
+Status: [~] Repo-side tier split and platform-admin protection are now implemented/test-covered. Proxy exposure is already broad `/api` passthrough in `infra/nginx/default.conf`, so no extra proxy rule was required in-repo; public/readiness coverage was extended again, but live latency/production verification still remains.
 
-Files: \pp/api/routers/system.py\, nginx/proxy config
+Files: `app/api/routers/system.py`, nginx/proxy config
 
 Problem:
-- \GET /system/health/full\ does external LLM probe on every request
-- \GET /system/economy-health\ pings ACP RPC, returns operational details
-- \GET /system/diagnostics\ exposes \cp_rpc_url\, driver info
+- `GET /system/health/full` does external LLM probe on every request
+- `GET /system/economy-health` pings ACP RPC, returns operational details
+- `GET /system/diagnostics` exposes `acp_rpc_url`, driver info
 - All of the above are unauthenticated
 
 Fix: Split into three tiers:
-- **Tier 1 -- liveness**: \GET /system/health\ (DB + Redis only, no external I/O, < 50ms)
-- **Tier 2 -- readiness**: \GET /system/ready\ (local checks, no external HTTP)
+- **Tier 1 -- liveness**: `GET /system/health` (DB + Redis only, no external I/O, < 50ms)
+- **Tier 2 -- readiness**: `GET /system/ready` (local checks, no external HTTP)
 - **Tier 3 -- deep diagnostics** (internal only, platform-admin auth required):
-  - \GET /internal/ops/deep-health\
-  - \GET /internal/ops/diagnostics\
+  - `GET /internal/ops/deep-health`
+  - `GET /internal/ops/diagnostics`
   - LLM probe: run async in background, cache result 60s
   - ACP RPC probe: run async in background, cache result 30s
+
+Verification (2026-05-26):
+- `app/api/routers/system.py` exposes:
+  - `GET /v1/system/health` as lightweight liveness
+  - `GET /v1/system/ready` as DB+Redis readiness
+  - `GET /v1/system/health/full` as public local-only expanded health
+  - `GET /v1/internal/ops/diagnostics`, `/deep-health`, and `/economy-health` behind `require_platform_admin`
+- `tests/api/test_system_economy_health.py` passes for internal ops auth/shape coverage and now also locks the intended probe-refresh boundary: public `GET /v1/system/health/full` must not schedule external LLM/ACP probe refreshes, while internal `GET /v1/internal/ops/deep-health` does schedule the cached async refresh path; it also now proves internal deep-health reports the LLM check as degraded until a configured provider probe actually succeeds, instead of treating mere configuration as operational success
+- `tests/test_nginx_security_headers.py` passes, confirming proxied nginx locations hide upstream security headers and re-add the canonical in-proxy header set
+- `tests/test_system.py` now also covers the public `/v1/system/ready` and `/v1/system/health/full` response shapes, including proof that the public `health/full` payload does not expose `acp_rpc_url`
 
 Exit criteria: Public endpoints return < 200ms without external I/O.
 
 ### 1.6 Separate jobs_tick from HTTP [HIGH]
 
-Status: [~] Async enqueue endpoint now returns `202 Accepted`, uses an isolated DB session in the background task, persists queued/retry/dead-letter state in `system_job_runs`, has targeted retry/dead-letter test coverage, and a scheduled GitHub Actions workflow now calls the async route every 5 minutes. Live GitHub/deployment verification still remains.
+Status: [~] Async enqueue endpoint now returns `202 Accepted`, uses an isolated DB session in the background task, persists queued/retry/dead-letter state in `system_job_runs`, has targeted retry/dead-letter test coverage, and a scheduled GitHub Actions workflow now calls the async route every 5 minutes with an in-workflow guard that rejects a misconfigured sync/manual endpoint URL. Live GitHub/deployment verification still remains.
 
 File: \pp/api/routers/system.py\
 
@@ -415,6 +446,12 @@ Fix: Hybrid approach:
 - \POST /system/jobs/tick\ -- kept for manual emergency ops triggers only
 - Add GitHub Actions scheduled workflow (runs every 5 min) that calls \/system/jobs/tick/async\
 - Jobs run with retry and dead-letter queue
+
+Verification (2026-05-26):
+- `.github/workflows/system-jobs-tick.yml` exists and schedules every 5 minutes
+- the workflow still POSTs `X-Cron-Secret` to `ANCAP_SYSTEM_JOBS_TICK_URL`, but now also fails fast unless that secret URL ends with `/v1/system/jobs/tick/async`, so repo/GitHub secret drift cannot silently route scheduler traffic back to the sync/manual endpoint
+- `tests/test_system.py` already covers `POST /v1/system/jobs/tick/async` returning `202 Accepted` plus cron-secret/retry/dead-letter behavior
+- `tests/test_system_jobs_tick_workflow.py` now locks the async-endpoint guard into the workflow file
 
 Exit criteria: \POST /system/jobs/tick\ returns in < 1s. Heavy jobs run asynchronously.
 
@@ -512,14 +549,27 @@ Remaining follow-through:
 
 ### 3.3 Production security header alignment [LOW]
 
-Files: \infra/nginx/default.conf\, production nginx config
+Status: [~] Source-of-truth nginx config is now explicitly hardened against duplicate upstream/proxy security headers and verified live in the local prod-like stack; deployed ancap.cloud is still stale and needs a real production reload/deploy to pick up the corrected proxy config.
 
-Current (from PRODUCTION_ROADMAP.md):
-- Production: \X-Frame-Options: SAMEORIGIN\ (should be \DENY\)
-- Production: duplicated \Permissions-Policy\ / \Strict-Transport-Security\
-- Source of truth: \infra/nginx/default.conf\
+Files: `infra/nginx/default.conf`, production nginx config
 
-Fix: Compare and sync production nginx config with \infra/nginx/default.conf\.
+Verification (2026-05-26):
+- added `proxy_hide_header` for `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Strict-Transport-Security` in every proxied location of `infra/nginx/default.conf` before nginx re-adds the canonical header set
+- this fixes the real local prod-like defect where `/api` responses previously carried duplicate security headers from both FastAPI and nginx
+- `docker compose exec -T proxy nginx -t` ✅
+- `docker compose exec -T proxy nginx -s reload` ✅
+- live local checks now show a single canonical header set on both `http://127.0.0.1:8080/` and `http://127.0.0.1:8080/api/v1/system/health`:
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+- direct live fetch to `https://ancap.cloud/api/v1/system/health` still returns stale production headers (`X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: same-origin`), confirming deploy/runtime follow-through remains open
+- `tests/test_nginx_security_headers.py` now guards the in-repo nginx config so proxied locations must hide upstream security headers before re-adding the canonical set
+
+Remaining follow-through:
+- deploy/reload the updated production nginx config on ancap.cloud
+- re-run live production header inspection after deploy and only then mark this item done
 
 ---
 
@@ -868,3 +918,5 @@ Before ending every session:
 2. \pytest -q\ -> must pass or show only known/skipped
 3. Roadmap updated for any status changes
 4. CLAUDE.md updated for any new patterns learned
+
+

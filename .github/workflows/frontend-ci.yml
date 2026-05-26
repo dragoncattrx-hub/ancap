@@ -51,9 +51,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps 2>&1 | tail -5 || true
-
   test-mobile-sdk:
     runs-on: ubuntu-latest
     defaults:
@@ -163,7 +160,9 @@ jobs:
             sleep 2
           done
           echo "Frontend failed to start after 60s"
-          cat ../frontend-e2e-server.log || true
+          if [ -f ../frontend-e2e-server.log ]; then
+            cat ../frontend-e2e-server.log
+          fi
           exit 1
 
       - name: Install Playwright browsers
@@ -192,7 +191,10 @@ jobs:
         working-directory: .
         run: |
           if [ -f frontend-e2e-server.pid ]; then
-            kill $(cat frontend-e2e-server.pid) || true
+            pid=$(cat frontend-e2e-server.pid)
+            if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+              kill "$pid"
+            fi
           fi
 
       - name: Stop backend services

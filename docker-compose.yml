@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ancap
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -18,7 +18,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -28,7 +28,7 @@ services:
   api:
     build: .
     ports:
-      - "8001:8000"
+      - "${API_PORT:-8001}:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
       REDIS_URL: redis://redis:6379/0
@@ -40,6 +40,7 @@ services:
       # Keep local/GitHub E2E deterministic: do not inherit host Turnstile secrets into dev compose.
       TURNSTILE_SECRET_KEY: ""
       TURNSTILE_SITE_KEY: ""
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://ancap.cloud,https://www.ancap.cloud,http://localhost:3000,http://localhost:3001,http://localhost:3201,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3201}
       PARTICIPATION_GATES_ENABLED: ${PARTICIPATION_GATES_ENABLED:-true}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}

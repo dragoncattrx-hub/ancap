@@ -56,6 +56,26 @@ def test_health(client):
     assert r.json()["status"] == "ok"
 
 
+def test_readiness_shape(client):
+    r = client.get("/v1/system/ready")
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["status"] in {"ready", "not_ready"}
+    assert payload["checks"].keys() >= {"database", "redis"}
+    assert isinstance(payload["checks"]["database"], bool)
+    assert isinstance(payload["checks"]["redis"], bool)
+
+
+def test_health_full_public_shape(client):
+    r = client.get("/v1/system/health/full")
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["status"] in {"ok", "degraded"}
+    assert payload["checks"].keys() >= {"database", "redis", "llm", "mail", "bridge"}
+    assert "acp_rpc" not in payload["checks"]
+    assert "acp_rpc_url" not in r.text
+
+
 def test_jobs_tick(client):
     """POST /v1/system/jobs/tick runs incremental jobs (edges_daily, agent_relationships, auto_*)."""
     r = client.post("/v1/system/jobs/tick")

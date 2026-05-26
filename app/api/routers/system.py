@@ -64,12 +64,25 @@ def _is_llm_configured(settings) -> bool:
     return False
 
 
-def _build_llm_check(settings, probe: dict[str, Any] | None = None) -> dict[str, Any]:
+def _build_llm_check(
+    settings,
+    probe: dict[str, Any] | None = None,
+    *,
+    require_probe_success: bool = False,
+) -> dict[str, Any]:
     llm_configured = _is_llm_configured(settings)
+    provider = (settings.llm_provider or "").lower()
+    provider_disabled = provider.startswith("disabled")
     probe_status = str((probe or {}).get("status") or "unknown")
     probe_error = (probe or {}).get("error")
+
+    if require_probe_success and llm_configured and not provider_disabled:
+        llm_ok = probe_status == "ok"
+    else:
+        llm_ok = probe_status == "ok" or llm_configured or settings.llm_fallback_to_template or provider_disabled
+
     return {
-        "ok": probe_status == "ok" or llm_configured or settings.llm_fallback_to_template,
+        "ok": llm_ok,
         "provider": settings.llm_provider,
         "model": settings.llm_model,
         "configured": llm_configured,
@@ -295,7 +308,7 @@ async def deep_health(session: DbSession, admin_user_id: str = Depends(require_p
 
     redis_ok, redis_error = await redis_ping()
     checks["redis"] = {"ok": redis_ok, "configured": bool(settings.redis_url), "error": redis_error}
-    checks["llm"] = _build_llm_check(settings, _get_or_schedule_llm_probe())
+    checks["llm"] = _build_llm_check(settings, _get_or_schedule_llm_probe(), require_probe_success=True)
     acp_rpc_probe = _get_or_schedule_acp_rpc_probe()
     checks["acp_rpc"] = {
         "ok": bool(acp_rpc_probe.get("ok")),
