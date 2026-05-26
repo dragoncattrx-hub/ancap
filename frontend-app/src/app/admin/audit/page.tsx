@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { ApiError, audit } from "@/lib/api";
 
 const TYPE_OPTIONS = [
@@ -106,7 +105,6 @@ export default function AuditPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>

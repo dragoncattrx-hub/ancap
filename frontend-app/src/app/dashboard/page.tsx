@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { agents, strategies, runs } from "@/lib/api";
 
 export default function DashboardPage() {
@@ -83,8 +82,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <NetworkBackground />
-
       <div className="min-h-screen">
         <Navigation />
 

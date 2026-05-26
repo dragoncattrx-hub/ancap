@@ -4,7 +4,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { access } from "@/lib/api";
 
 function AccessPageInner() {
@@ -49,7 +48,6 @@ function AccessPageInner() {
 
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

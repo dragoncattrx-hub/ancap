@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { funds, pools } from "@/lib/api";
 
 interface Fund {
@@ -89,7 +88,6 @@ export default function FundsPage() {
 
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

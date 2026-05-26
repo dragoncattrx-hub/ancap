@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { funds, strategies } from "@/lib/api";
 
 export default function FundDetailPage() {
@@ -82,7 +81,6 @@ export default function FundDetailPage() {
 
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

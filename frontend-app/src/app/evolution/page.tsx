@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { evolution } from "@/lib/api";
 
 export default function EvolutionPage() {
@@ -30,7 +29,6 @@ export default function EvolutionPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

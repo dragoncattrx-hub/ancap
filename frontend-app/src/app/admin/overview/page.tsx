@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { ApiError, access, ledger, orders, runs as runsApi, system, workflowStore } from "@/lib/api";
 
@@ -110,7 +109,6 @@ export default function AdminOverviewPage() {
 
   return (
     <>
-      <NetworkBackground />
       <div className="min-h-screen">
         <Navigation />
         <div className="container" style={{ padding: "48px 24px" }}>

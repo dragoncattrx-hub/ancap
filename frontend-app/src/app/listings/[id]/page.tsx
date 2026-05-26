@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { access, agents as agentsApi, listings, orders, strategies, strategyVersions } from "@/lib/api";
 
@@ -132,7 +131,6 @@ export default function ListingDetailPage() {
 
   return (
     <>
-      <NetworkBackground />
       <div className="min-h-screen">
         <Navigation />
         <div className="container" style={{ padding: "48px 24px" }}>

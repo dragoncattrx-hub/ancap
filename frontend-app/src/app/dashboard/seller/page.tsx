@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { ApiError, agents, ledger, workflowStore } from "@/lib/api";
 
@@ -162,7 +161,6 @@ export default function SellerDashboardPage() {
 
   return (
     <>
-      <NetworkBackground />
       <div className="min-h-screen">
         <Navigation />
         <div className="container" style={{ padding: "48px 24px" }}>

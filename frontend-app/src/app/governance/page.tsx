@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { governance } from "@/lib/api";
@@ -329,7 +328,6 @@ export default function GovernancePage() {
 
   return (
     <>
-      <NetworkBackground />
       <div className="page-shell">
         <Navigation />
         <div className="container" style={{ padding: "40px 24px 56px" }}>

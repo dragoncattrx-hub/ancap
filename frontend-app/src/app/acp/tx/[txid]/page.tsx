@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { walletAcp } from "@/lib/api";
 import { sanitizeAcpTxid } from "@/lib/acpExplorer";
 
@@ -67,7 +66,6 @@ export default function AcpTransactionPage() {
 
   return (
     <div className="relative min-h-screen text-zinc-100">
-      <NetworkBackground />
       <Navigation />
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

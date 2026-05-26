@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { agents, contracts } from "@/lib/api";
 
@@ -100,7 +99,6 @@ function NewContractPageInner() {
 
   return (
     <div className="min-h-screen bg-base-200">
-      <NetworkBackground />
       <Navigation />
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <button className="btn btn-ghost mb-4" onClick={() => router.push("/contracts")}>

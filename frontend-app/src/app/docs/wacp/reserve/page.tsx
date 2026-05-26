@@ -1,5 +1,4 @@
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 
 export const metadata = {
   title: "wACP Reserve",
@@ -9,7 +8,6 @@ export const metadata = {
 export default function WacpReserveDocsPage() {
   return (
     <>
-      <NetworkBackground />
       <div className="min-h-screen">
         <Navigation />
         <main className="container" style={{ padding: "48px 24px 72px" }}>

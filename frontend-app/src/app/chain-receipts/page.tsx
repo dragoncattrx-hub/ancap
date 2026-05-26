@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { settlements } from "@/lib/api";
 
 export default function ChainReceiptsPage() {
@@ -29,7 +28,6 @@ export default function ChainReceiptsPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { growthLeaderboards } from "@/lib/api";
 
 type Entry = { rank: number; subject_id: string; score: string; components: any };
@@ -29,7 +28,6 @@ export default function LeaderboardsPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

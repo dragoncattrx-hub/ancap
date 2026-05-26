@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { growthDashboard } from "@/lib/api";
 
 export default function GrowthDashboardPage() {
@@ -27,7 +26,6 @@ export default function GrowthDashboardPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

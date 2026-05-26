@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function AcpLandingPage() {
   const { t } = useLanguage();
   return (
     <>
-      <NetworkBackground />
 
       <div className="min-h-screen">
         <Navigation />

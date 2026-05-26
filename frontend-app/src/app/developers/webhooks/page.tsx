@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { webhooks } from "@/lib/api";
 
@@ -199,7 +198,6 @@ export default function WebhooksPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Webhooks</h1>

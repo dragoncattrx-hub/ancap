@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { decisionLogs, referrals, governance } from "@/lib/api";
 
 export default function AiConsolePage() {
@@ -50,7 +49,6 @@ export default function AiConsolePage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="section-header" style={{ marginBottom: 16 }}>

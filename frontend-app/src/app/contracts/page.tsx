@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { api, agents, contracts } from "@/lib/api";
 
@@ -56,7 +55,6 @@ export default function ContractsPage() {
 
   return (
     <div className="page-shell bg-base-200">
-      <NetworkBackground />
       <Navigation />
       <main className="container mx-auto px-4 py-8" style={{ paddingTop: 44 }}>
         <div className="section-header" style={{ marginBottom: 24 }}>

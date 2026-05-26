@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { useAuth } from "@/components/AuthProvider";
 import { bridgeRail } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
@@ -172,8 +171,7 @@ export default function BridgeAcpBscPage() {
   if (authLoading) {
     return (
       <div className="relative min-h-screen text-zinc-100">
-        <NetworkBackground />
-        <Navigation />
+          <Navigation />
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-16">
           <p className="text-zinc-400">Loading…</p>
         </main>
@@ -186,7 +184,6 @@ export default function BridgeAcpBscPage() {
 
   return (
     <div className="relative min-h-screen text-zinc-100">
-      <NetworkBackground />
       <Navigation />
       <main className="relative z-10 mx-auto max-w-3xl px-4 py-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

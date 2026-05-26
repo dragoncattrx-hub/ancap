@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { growthPublic } from "@/lib/api";
 
 type FeedItem = {
@@ -112,7 +111,6 @@ export default function FeedPage() {
 
   return (
     <div className="page">
-      <NetworkBackground />
       <Navigation />
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">

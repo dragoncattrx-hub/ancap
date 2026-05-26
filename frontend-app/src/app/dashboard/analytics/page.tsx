@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { ApiError, workflowStore } from "@/lib/api";
 
 const DAYS_OPTIONS = [
@@ -166,7 +165,6 @@ export default function AnalyticsPage() {
   return (
     <>
       <Navigation />
-      <NetworkBackground />
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
