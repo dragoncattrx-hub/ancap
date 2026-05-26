@@ -7,9 +7,11 @@ test.describe("ANCAP Frontend - UI smoke", () => {
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle(/ANCAP/i);
     await expect(page.locator("body")).toContainText(/ANCAP/i);
-    await expect(page.locator('a[href="/login"]')).toBeVisible();
-    await expect(page.locator('a[href="/register"]')).toBeVisible();
-    await expect(page.locator('a[href="/whitepaper"]')).toBeVisible();
+
+    const header = page.locator("header").first();
+    await expect(header.getByRole("link", { name: /^login$/i }).first()).toBeVisible();
+    await expect(header.getByRole("link", { name: /^register$/i }).first()).toBeVisible();
+    await expect(header.getByRole("link", { name: /whitepaper/i }).first()).toBeVisible();
   });
 
   test("public routes return success", async ({ page }) => {

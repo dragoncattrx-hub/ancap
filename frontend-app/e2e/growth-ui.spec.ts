@@ -12,11 +12,16 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   // Create + login user to get JWT for UI
   const email = `e2e_growth_${uniq()}@example.com`;
   const password = `pw_${uniq()}`;
+  const turnstileToken = process.env.PLAYWRIGHT_TURNSTILE_TOKEN;
+  const regPayload: Record<string, unknown> = { email, password, display_name: "E2E Growth" };
+  if (turnstileToken) regPayload.turnstile_token = turnstileToken;
   const reg = await request.post(`${apiBase}/auth/users`, {
-    data: { email, password, display_name: "E2E Growth" },
+    data: regPayload,
   });
   if (!reg.ok() && reg.status() !== 400) throw new Error(`register failed: ${reg.status()} ${await reg.text()}`);
-  const login = await request.post(`${apiBase}/auth/login`, { data: { email, password } });
+  const loginPayload: Record<string, unknown> = { email, password };
+  if (turnstileToken) loginPayload.turnstile_token = turnstileToken;
+  const login = await request.post(`${apiBase}/auth/login`, { data: loginPayload });
   if (!login.ok()) throw new Error(`login failed: ${login.status()} ${await login.text()}`);
   const token = (await login.json()).access_token as string;
 
@@ -34,17 +39,18 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
     },
     { u: userData },
   );
-  await page.context().addCookies([
-    {
+  const authCookieTargets = Array.from(new Set([baseUrl, new URL(apiBase).origin]));
+  await page.context().addCookies(
+    authCookieTargets.map((url) => ({
       name: "ancap_token",
       value: token,
-      url: baseUrl,
+      url,
       httpOnly: true,
       secure: false,
-      sameSite: "Strict",
-    },
-  ]);
-  await page.route("**/api/v1/users/me", async (route) => {
+      sameSite: "Strict" as const,
+    })),
+  );
+  await page.route("**/users/me", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",

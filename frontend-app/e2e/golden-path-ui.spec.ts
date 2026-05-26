@@ -13,13 +13,18 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   // Create + login user to get a valid JWT for UI
   const email = `e2e_${uniq()}@example.com`;
   const password = `pw_${uniq()}`;
+  const turnstileToken = process.env.PLAYWRIGHT_TURNSTILE_TOKEN;
+  const regPayload: Record<string, unknown> = { email, password, display_name: "E2E Golden Path" };
+  if (turnstileToken) regPayload.turnstile_token = turnstileToken;
   const reg = await request.post(`${apiBase}/auth/users`, {
-    data: { email, password, display_name: "E2E Golden Path" },
+    data: regPayload,
   });
   if (!reg.ok() && reg.status() !== 400) {
     throw new Error(`register failed: ${reg.status()} ${await reg.text()}`);
   }
-  const login = await request.post(`${apiBase}/auth/login`, { data: { email, password } });
+  const loginPayload: Record<string, unknown> = { email, password };
+  if (turnstileToken) loginPayload.turnstile_token = turnstileToken;
+  const login = await request.post(`${apiBase}/auth/login`, { data: loginPayload });
   if (!login.ok()) throw new Error(`login failed: ${login.status()} ${await login.text()}`);
   const token = (await login.json()).access_token as string;
 
@@ -39,17 +44,18 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
     },
     { u: userData },
   );
-  await page.context().addCookies([
-    {
+  const authCookieTargets = Array.from(new Set([baseUrl, new URL(apiBase).origin]));
+  await page.context().addCookies(
+    authCookieTargets.map((url) => ({
       name: "ancap_token",
       value: token,
-      url: baseUrl,
+      url,
       httpOnly: true,
       secure: false,
-      sameSite: "Strict",
-    },
-  ]);
-  await page.route("**/api/v1/users/me", async (route) => {
+      sameSite: "Strict" as const,
+    })),
+  );
+  await page.route("**/users/me", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -92,6 +98,17 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   });
   if (!strategyRes.ok()) throw new Error(`strategy create failed: ${strategyRes.status()} ${await strategyRes.text()}`);
   const strategyId = (await strategyRes.json()).id as string;
+
+  const poolRes = await request.post(`${apiBase}/pools`, {
+    headers: authHeaders,
+    data: {
+      name: `Golden Path Pool ${uniq()}`,
+      risk_profile: "experimental",
+      owner_agent_id: sellerAgentId,
+      rules: { mode: "demo", vertical_id: verticalId },
+    },
+  });
+  if (!poolRes.ok()) throw new Error(`pool create failed: ${poolRes.status()} ${await poolRes.text()}`);
 
   const versionRes = await request.post(`${apiBase}/strategies/${strategyId}/versions`, {
     headers: authHeaders,
@@ -174,8 +191,10 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   await runCta.click();
   await expect(page).toHaveURL(/\/runs\/new\?/);
 
-  // Execute run
+  // Execute run after the run form fully hydrates and a pool/version are available.
+  await expect(page.getByRole("heading", { name: /run strategy/i })).toBeVisible({ timeout: 15000 });
   const executeButton = page.getByRole("button", { name: /execute run/i });
+  await expect(executeButton).toBeEnabled({ timeout: 15000 });
   await executeButton.click();
   await expect(page).toHaveURL(/\/runs\/[0-9a-f-]+/);
 
