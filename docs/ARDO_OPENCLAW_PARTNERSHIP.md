@@ -16,10 +16,10 @@
 
 ### openclaw
 - Role: AI coding partner, runs via Claude Code / OpenClaw framework
-- Stack: OpenClaw agent system with Claude Opus 4.7 via TenetaAI/Kiro proxy
+- Stack: OpenClaw agent system with Claude Opus 4.7 via TenetaAI-backed provider routing
 - Responsibilities: parallel coding tasks, code review, feature implementation, Telegram bot
 - Access: OpenClaw gateway on server (port 18789), Telegram bot (@ancap47_bot)
-- Configuration: `~/.openclaw/openclaw.json` with TenetaAI + Kiro providers
+- Configuration: `~/.openclaw/openclaw.json` with TenetaAI + fallback provider routing
 
 ---
 
@@ -47,7 +47,7 @@
 1. **Port 25** is open on server but mail delivery from external fails — likely provider-level block
 2. **Disk at 87%** — docker images 2GB+ each, need cleanup
 3. **No fail2ban** — dozens of failed SSH logins daily
-4. **API keys in docs** — Kiro API key visible in docs/openclaw-kiro-config.md
+4. **API keys in docs** — remove provider-specific key examples from tracked docs; store secrets only in env/secret managers
 5. **Postfix not running** — only exim4 binary exists but not active
 6. **Historical audit note:** old `AUDIT.md` still says idempotency was not implemented, but the current repo now includes idempotency support for mutable financial/order/run endpoints; keep the audit doc treated as dated context, not current truth
 7. **Historical audit note:** old `AUDIT.md` also says `/v1/system/jobs/tick` was unprotected, but the current repo now supports `CRON_SECRET` / `X-Cron-Secret` protection for jobs tick endpoints; treat that audit note as stale
@@ -105,7 +105,7 @@
 - [ ] Verify OpenClaw gateway running on server (port 18789)
 - [ ] Deploy `~/.openclaw/openclaw.json` with real TenetaAI key
 - [ ] Test Telegram bot @ancap47_bot
-- [ ] Verify Kiro fallback works if TenetaAI fails
+- [ ] Verify fallback provider path works if TenetaAI fails
 
 ### P2 — General improvements
 - [ ] Add `/llms.txt` and `/agent-products.json` for AI indexing
@@ -136,7 +136,7 @@
 > ⚠️ **WARNING:** API keys are stored here for coordination purposes. Never commit real keys to public repos.
 - **TenetaAI:** stored in `~/.openclaw/openclaw.json` on server
 - **Telegram Bot:** stored in `~/.openclaw/openclaw.json` on server
-- **Kiro API:** stored in `~/.openclaw/.env` on server
+- **Secondary model provider API:** stored in `~/.openclaw/.env` on server
 - **Postgres (prod):** via HestiaCP, not in git
 - **Cloudflare:** DNS/Email Routing via Cloudflare dashboard
 

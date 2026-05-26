@@ -216,8 +216,8 @@ sudo apt install postfix -y
 
 ### 4.1 API Keys in Docs
 **Status:** 🔴 HIGH
-**Finding:** Kiro API key visible in `docs/openclaw-kiro-config.md`
-**Fix:** Remove API keys from all .md files. Store in `.env` only.
+**Finding:** provider-specific API key examples were documented in tracked docs
+**Fix:** Remove provider-specific key examples from all tracked docs. Store secrets only in `.env` / secret managers.
 
 ### 4.2 CORS Wide Open
 **Status:** 🟡 MEDIUM
