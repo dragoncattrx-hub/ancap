@@ -361,6 +361,41 @@ def test_cookie_authenticated_post_requires_x_requested_with_header(client, monk
     assert "Secure" not in cleared
 
 
+def test_logout_preflight_allows_explicit_same_origin_headers(client):
+    response = client.options(
+        "/v1/auth/logout",
+        headers={
+            "Authorization": "",
+            "Origin": "https://ancap.cloud",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type,x-requested-with",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.headers.get("access-control-allow-origin") == "https://ancap.cloud"
+    assert response.headers.get("access-control-allow-credentials") == "true"
+    allowed_headers = (response.headers.get("access-control-allow-headers") or "").lower()
+    assert "content-type" in allowed_headers
+    assert "x-requested-with" in allowed_headers
+
+
+def test_logout_preflight_rejects_disallowed_origin(client):
+    response = client.options(
+        "/v1/auth/logout",
+        headers={
+            "Authorization": "",
+            "Origin": "https://evil.example",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type,x-requested-with",
+        },
+    )
+
+    assert response.status_code == 400, response.text
+    assert response.text == "Disallowed CORS origin"
+    assert "access-control-allow-origin" not in response.headers
+
+
 def test_password_change_rewraps_acp_wallet_secret(client, monkeypatch):
     email = unique_email()
     password = "password123"

@@ -242,7 +242,7 @@ Sprint 3 — Community + Audit Readiness
 - \docs/mobile/ROADMAP.md\ -- merged into Priority 5 section
 - \docs/bridge-next-steps.md\ -- merged into Priority 4 section
 - \docs/DELIVERY_BOARD.md\ -- archived
-- \docs/openclaw-kiro-snippet.json5\ -- **DELETE. Do not use as reference. Contains leaked secret.**
+- legacy plaintext-key config snippet -- **DELETE. Do not use as reference. Contains leaked secret.**
 
 ---
 
@@ -250,30 +250,28 @@ Sprint 3 — Community + Audit Readiness
 
 ### 0.1 Leaked API key remediation [CRITICAL]
 
-Status: [~] Repo-side cleanup is now tighter and no longer includes token-shaped example strings in tracked docs. Provider-side revocation/rotation and GitHub settings changes still require credentialed manual follow-through.
+Status: [~] Repo-side cleanup is tighter, but external secret rotation and access cleanup still require manual credentialed follow-through.
 
-File: `docs/openclaw-kiro-snippet.json5` previously contained a plaintext API key (redacted here; treat as compromised).
+File: a previously tracked provider/config snippet contained a plaintext API key (redacted here; treat as compromised).
 
 Verification (2026-05-25):
-- `docs/openclaw-kiro-snippet.json5` is absent from the repo
-- `docs/openclaw-kiro-config.md` now documents env-only key handling, avoids direct key embedding, and uses a neutral placeholder instead of a token-shaped example
-- repo scan found no other live leaked-token patterns; the only remaining `sk-aw-...` matches are this roadmap's own remediation notes / grep example
+- the tracked plaintext-key snippet is absent from the repo
+- repo-side token-shaped examples were removed from tracked docs
+- repo scan found no other live leaked-token patterns; the only remaining sk-aw-... matches are this roadmap's own remediation notes / grep example
 
 Action (in order):
-1. Revoke the key at the provider (kiro.cheap / Kiro API dashboard)
+1. Revoke the compromised provider key at the upstream dashboard/API
 2. Generate a new key and store only in CI secrets / env management
-3. Delete \docs/openclaw-kiro-snippet.json5\ or replace with template using env vars
-4. Review \docs/openclaw-kiro-config.md\ -- do not document direct key-in-config patterns
-5. Search entire repo for any other leaked secrets:
-   \\\ash
+3. Remove or replace any tracked docs/snippets that demonstrate direct key embedding
+4. Search entire repo for any other leaked secrets:
+   \\\bash
    grep -rn "sk-aw-\|sk-prod-\|sk_live_\|ghp_\|ghs_\|gho_" . \
      --include="*.py" --include="*.json*" --include="*.yml" \
      --include="*.yaml" --include="*.ts" --include="*.tsx" 2>/dev/null
-   \\\
-6. Enable GitHub secret scanning: Settings > Code security and analysis > Secret scanning > On + Push protection > On
+   \\
+5. Enable GitHub secret scanning: Settings > Code security and analysis > Secret scanning > On + Push protection > On
 
 Reference: GitHub Docs -- any exposed secret = assume compromised, revoke immediately.
-
 ### 0.2 Insecure dev defaults in production configs [CRITICAL]
 
 Status: [~] Repo-side hardening is in place and test-covered; production deployment still needs real secrets supplied in env/CI.
@@ -326,42 +324,38 @@ Exit criteria: CI build fails on Bandit HIGH/medium findings. CI build fails on 
 
 ### 1.2 Enable Dependabot [HIGH]
 
-Status: [~] Repo file exists and covers pip, frontend npm, mobile npm, and GitHub Actions; GitHub-side toggles still need to be enabled in repository settings.
+Status: [x] Done. Dependabot config is in repo, GitHub vulnerability alerts / security update automation are enabled, secret scanning + push protection are enabled, and dependency PRs now have an explicit review gate.
 
-File to add: \.github/dependabot.yml\
+Files: `.github/dependabot.yml`, `.github/workflows/dependency-review.yml`, `tests/test_dependency_review_workflow.py`
 
-\\\yaml
-version: 2
-updates:
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule: { interval: "weekly" }
-    open-pull-requests-limit: 10
-  - package-ecosystem: "npm"
-    directory: "/frontend-app"
-    schedule: { interval: "weekly" }
-  - package-ecosystem: "npm"
-    directory: "/ancap-mobile"
-    schedule: { interval: "weekly" }
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule: { interval: "weekly" }
-\\\
+Verification (2026-05-26):
+- `.github/dependabot.yml` covers pip, frontend npm, mobile npm, and GitHub Actions with weekly schedules
+- `GET /repos/dragoncattrx-hub/ancap/vulnerability-alerts` returns `204 No Content`, confirming GitHub vulnerability alerts are enabled
+- `gh api repos/dragoncattrx-hub/ancap --jq ".security_and_analysis"` reports:
+  - `dependabot_security_updates: enabled`
+  - `secret_scanning: enabled`
+  - `secret_scanning_push_protection: enabled`
+- new workflow `.github/workflows/dependency-review.yml` runs `actions/dependency-review-action@v4` on PRs that change Python or npm dependency manifests / lockfiles and fails on `moderate`+ findings
+- `pytest tests/test_dependency_review_workflow.py tests/test_system_jobs_tick_workflow.py -q` passes
 
-Also enable in GitHub Settings:
-- Dependency review
-- Secret scanning (push protection on)
-- Code scanning > Add workflow > CodeQL (Python + JavaScript/TypeScript + GitHub Actions)
+Exit criteria: satisfied — dependency update automation is enabled, secret scanning / push protection are on, and dependency PRs get a real review gate instead of relying on docs-only intent.
 
 ### 1.3 Add CodeQL scanning [HIGH]
 
-Status: [~] Workflow exists and now covers Python, JavaScript/TypeScript, and GitHub Actions on PR/push plus the weekly 06:00 UTC schedule; GitHub-side code-scanning enablement still needs repository settings access.
+Status: [x] Done. The repo uses an explicit advanced CodeQL workflow, recent real GitHub runs succeeded, and alerts are being published into GitHub code scanning.
 
-File to add: \.github/workflows/codeql.yml\
+File: `/.github/workflows/codeql.yml`
 
-Languages: python, javascript, typescript, github-actions
-Queries: security-and-quality
-Schedule: weekly (Mondays 06:00 UTC)
+Verification (2026-05-26):
+- `.github/workflows/codeql.yml` scans Python, JavaScript/TypeScript, and GitHub Actions on push / pull_request plus the weekly Monday 06:00 UTC schedule
+- recent successful real CodeQL runs on `master`:
+  - `26463212516` — `fix(frontend): remove duplicate page backgrounds after layout rollout`
+  - `26460632345` — `fix(ci): harden e2e smoke and system jobs guards`
+  - `26460162797` — `fix(ci): stabilize frontend e2e smoke and golden path`
+- `GET /repos/dragoncattrx-hub/ancap/code-scanning/alerts` returns live CodeQL results (currently 89 open alerts; sample rule: `js/unused-local-variable` created `2026-05-26T16:09:58Z`), proving the workflow is publishing findings into GitHub code scanning
+- `GET /repos/dragoncattrx-hub/ancap/code-scanning/default-setup` currently reports `state: not-configured`, which is expected because this repo uses the explicit workflow above instead of GitHub's default setup wizard
+
+Exit criteria: satisfied — CodeQL is running on the intended languages in real GitHub Actions and feeding the code-scanning surface.
 
 ### 1.4 Playwright E2E in CI [HIGH]
 
@@ -407,7 +401,7 @@ Exit criteria: satisfied — the same E2E path now runs successfully in GitHub A
 
 ### 1.5 RESTRICT ops/diagnostics endpoints [HIGH]
 
-Status: [~] Repo-side tier split and platform-admin protection are now implemented/test-covered. Proxy exposure is already broad `/api` passthrough in `infra/nginx/default.conf`, so no extra proxy rule was required in-repo; public/readiness coverage was extended again, but live latency/production verification still remains.
+Status: [x] Done. Repo-side tier split and platform-admin protection are implemented, test-covered, and now live-verified on the prod-like path.
 
 Files: `app/api/routers/system.py`, nginx/proxy config
 
@@ -435,12 +429,17 @@ Verification (2026-05-26):
 - `tests/api/test_system_economy_health.py` passes for internal ops auth/shape coverage and now also locks the intended probe-refresh boundary: public `GET /v1/system/health/full` must not schedule external LLM/ACP probe refreshes, while internal `GET /v1/internal/ops/deep-health` does schedule the cached async refresh path; it also now proves internal deep-health reports the LLM check as degraded until a configured provider probe actually succeeds, instead of treating mere configuration as operational success
 - `tests/test_nginx_security_headers.py` passes, confirming proxied nginx locations hide upstream security headers and re-add the canonical in-proxy header set
 - `tests/test_system.py` now also covers the public `/v1/system/ready` and `/v1/system/health/full` response shapes, including proof that the public `health/full` payload does not expose `acp_rpc_url`
+- live prod-like verification on `http://127.0.0.1:8080` now confirms the public surfaces meet the latency target without external I/O:
+  - `/api/v1/system/health` -> `200` in `0.0150s`
+  - `/api/v1/system/ready` -> `200` in `0.0111s`
+  - `/api/v1/system/health/full` -> `200` in `0.0226s`
+- unauthenticated access to `GET /api/v1/internal/ops/diagnostics` on the same prod-like path is denied with `401`, confirming deep diagnostics are no longer public
 
-Exit criteria: Public endpoints return < 200ms without external I/O.
+Exit criteria: satisfied — public endpoints return < 200ms without external I/O, and deep diagnostics remain internal/admin-protected.
 
 ### 1.6 Separate jobs_tick from HTTP [HIGH]
 
-Status: [~] Async enqueue endpoint now returns `202 Accepted`, uses an isolated DB session in the background task, persists queued/retry/dead-letter state in `system_job_runs`, has targeted retry/dead-letter test coverage, and a scheduled GitHub Actions workflow now calls the async route every 5 minutes with an in-workflow guard that rejects a misconfigured sync/manual endpoint URL. Live GitHub/deployment verification still remains.
+Status: [x] Done. The async enqueue path is implemented, test-covered, scheduled in GitHub Actions, and now live-verified on the prod-like runtime; the synchronous route remains manual emergency-only.
 
 File: \pp/api/routers/system.py\
 
@@ -455,10 +454,17 @@ Fix: Hybrid approach:
 Verification (2026-05-26):
 - `.github/workflows/system-jobs-tick.yml` exists and schedules every 5 minutes
 - the workflow still POSTs `X-Cron-Secret` to `ANCAP_SYSTEM_JOBS_TICK_URL`, but now also fails fast unless that secret URL ends with `/v1/system/jobs/tick/async`, so repo/GitHub secret drift cannot silently route scheduler traffic back to the sync/manual endpoint
+- latest real scheduled GitHub run succeeded:
+  - workflow: `System Jobs Tick`
+  - run: `26460430404`
+  - conclusion: `success`
 - `tests/test_system.py` already covers `POST /v1/system/jobs/tick/async` returning `202 Accepted` plus cron-secret/retry/dead-letter behavior
 - `tests/test_system_jobs_tick_workflow.py` now locks the async-endpoint guard into the workflow file
+- live prod-like enqueue verification now also succeeds:
+  - `POST /api/v1/system/jobs/tick/async` with the real `X-Cron-Secret` returned `202` in `0.4565s`
+  - the created `system_job_runs` row `6196cb8c-3546-4316-bb5b-2751c02db0f3` completed as `succeeded` with `attempts=1` and `trigger_source=api`
 
-Exit criteria: \POST /system/jobs/tick\ returns in < 1s. Heavy jobs run asynchronously.
+Exit criteria: satisfied — the scheduled path now uses the async enqueue route, returns in < 1s, and heavy work completes in background job records instead of the scheduler request path.
 
 ---
 
@@ -520,37 +526,39 @@ Verification (2026-05-25):
 
 ### 3.1 Auth token: localStorage to HttpOnly cookies [MEDIUM]
 
-Status: [~] Repo-side browser auth flow now prefers HttpOnly `ancap_token` cookies instead of JS-readable token storage. Frontend bootstrap now resolves auth from `/users/me`, shared API requests send `X-Requested-With`, and the previously remaining client-side direct authenticated `fetch("/api/...")` mutation/read surfaces were moved onto shared API helpers. Remaining follow-through is live browser/runtime verification against deployed/staging surfaces.
+Status: [x] Done. Browser auth now prefers HttpOnly `ancap_token` cookies instead of JS-readable auth storage, shared authenticated requests consistently send `X-Requested-With`, and the live prod-like stack confirms the cookie/CSRF path behaves as intended.
 
 Files: `frontend-app/src/components/AuthProvider.tsx`, `frontend-app/src/lib/api.ts`, `app/api/deps.py`, `app/api/routers/auth.py`, `frontend-app/e2e/*.spec.ts`
 
-Verification (2026-05-25):
+Verification (2026-05-26):
 - `AuthProvider` no longer depends on `auth.getToken()` to decide signed-in bootstrap; it restores cached user display data only and then resolves real auth from `/users/me`
 - frontend shared API client now always sends `X-Requested-With: XMLHttpRequest`
-- `frontend-app/src/lib/api.ts` now centralizes raw authenticated fetch helpers (`apiFetchRaw` / shared headers), and the admin overview, funds create, vertical propose, profile loads, agent follow/unfollow, logout, and workflow revenue CSV export flows now all use that shared path instead of bespoke client-side fetch calls
-- cookie-authenticated unsafe requests now fail closed in `app/api/deps.py` unless `X-Requested-With` is present, while explicit Bearer-token clients remain allowed
-- auth cookie set/clear paths now use `SameSite=strict`
-- Playwright UI auth seeders now stage `ancap_token` as a cookie and only keep `ancap_user` in localStorage for UI display bootstrap
+- `frontend-app/src/lib/api.ts` centralizes raw authenticated fetch helpers (`apiFetchRaw` / shared headers), and the admin overview, funds create, vertical propose, profile loads, agent follow/unfollow, logout, and workflow revenue CSV export flows use that shared path instead of bespoke client-side fetch calls
+- repo scan of `frontend-app/src` shows no remaining auth-token writes to localStorage; `ancap_user` is kept only as non-secret UI bootstrap data while Playwright auth seeders stage `ancap_token` as a cookie
+- cookie-authenticated unsafe requests fail closed in `app/api/deps.py` unless `X-Requested-With` is present, while explicit Bearer-token clients remain allowed
+- auth cookie set/clear paths use `SameSite=strict`
+- local prod-like runtime truth on `http://127.0.0.1:8080` is healthy (`/api/v1/system/health` 200, `/api/v1/system/ready` ready, `/internal/frontend-build` matches build id `32b5d58`)
 - `pytest tests/test_auth.py tests/test_system.py tests/api/test_system_economy_health.py -q` passes
 - `npm run build` in `frontend-app` passes
 
-Exit criteria: No Bearer tokens stored in localStorage for auth. CSRF protection active.
+Exit criteria: satisfied — no Bearer tokens are stored in localStorage for auth and CSRF protection is active on cookie-authenticated unsafe routes.
 
 ### 3.2 SameSite cookie + CORS hardening [MEDIUM]
 
-Status: [~] Repo-side auth cookie policy is now `SameSite=strict`, security headers already align to `DENY`/HSTS in app + nginx, CORS is explicit rather than wildcard methods/headers, and the remaining browser-side direct authenticated `fetch("/api/...")` surfaces in the frontend app were collapsed onto shared helpers that always attach the explicit same-origin header. Remaining follow-through is live preflight/runtime verification on deployed/staging surfaces.
+Status: [x] Done. Auth cookies are `SameSite=strict`, CORS is explicit, and live prod-like preflight checks confirm the intended same-origin browser path while rejecting disallowed origins.
 
 Files: `app/main.py`, `app/api/routers/auth.py`, `infra/nginx/default.conf`
 
-Verification (2026-05-25):
-- auth cookie set/clear paths now use `SameSite=strict`
-- `app.main` CORS middleware now keeps explicit `allow_origins` and explicit allowed methods/headers (`Authorization`, `Content-Type`, `Idempotency-Key`, `X-API-Key`, `X-Bridge-Operator-Secret`, `X-Cron-Secret`, `X-Requested-With`, `X-Request-Id`)
+Verification (2026-05-26):
+- auth cookie set/clear paths use `SameSite=strict`
+- `app.main` CORS middleware keeps explicit `allow_origins` and explicit allowed methods/headers (`Authorization`, `Content-Type`, `Idempotency-Key`, `X-API-Key`, `X-Bridge-Operator-Secret`, `X-Cron-Secret`, `X-Requested-With`, `X-Request-Id`)
 - `app.main` already injects `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and `Permissions-Policy`
 - `infra/nginx/default.conf` already matches `DENY` + HSTS across public locations
+- live prod-like preflight to `OPTIONS /api/v1/auth/logout` with `Origin: https://ancap.cloud` and `Access-Control-Request-Headers: content-type,x-requested-with` now returns `200 OK` with `access-control-allow-origin: https://ancap.cloud`, `access-control-allow-credentials: true`, and `x-requested-with` present in the explicit allowlist
+- the same preflight from a disallowed origin returns `400 Disallowed CORS origin`, confirming the app stayed explicit instead of drifting back to wildcard behavior
+- `tests/test_auth.py` now locks those allowed-origin and rejected-origin preflight expectations in addition to the existing cookie-authenticated logout guard
 
-Remaining follow-through:
-- run live browser preflight verification against deployed/staging auth/browser surfaces to confirm the shared-header path behaves correctly end-to-end
-- if any route needs an additional custom header in browsers, add it deliberately to the explicit CORS allowlist instead of returning to wildcards
+Exit criteria: satisfied — browser preflight/runtime verification is in place and any future route-specific header expansion must be added deliberately to the explicit CORS allowlist.
 
 ### 3.3 Production security header alignment [LOW]
 
@@ -873,7 +881,7 @@ Current active phase: Priority 0 (emergency) + Priority 1 (CI/security automatio
 **Execution sequence:**
 
 Week 1 (Priority 0 -- EMERGENCY)
-  0.1  Revoke leaked key + delete/clean docs/openclaw-kiro-snippet.json5
+  0.1  Revoke leaked key + delete/clean legacy plaintext-key snippet
   0.2  Fix insecure dev defaults in docker-compose.prod.yml + config
 
 Week 2 (Priority 1a -- CI fixes)
@@ -937,5 +945,6 @@ Before ending every session:
 2. \pytest -q\ -> must pass or show only known/skipped
 3. Roadmap updated for any status changes
 4. CLAUDE.md updated for any new patterns learned
+
 
 
