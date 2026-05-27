@@ -102,7 +102,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P5-2 | Screenshot block on seed screens | [x] | expo-screen-capture, active on seed visibility screen |
 | P5-3 | Clipboard auto-clear | [x] | 30s auto-clear after copy |
 | P5-4 | Root/jailbreak warning | [x] | dev-build warning on settings screen |
-| P5-5 | No secrets in Sentry/logs | [ ] |
+| P5-5 | No secrets in Sentry/logs | [x] | wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P5-6 | App auto-lock timer | [x] | 5-min inactivity auto-lock |
 
 ---

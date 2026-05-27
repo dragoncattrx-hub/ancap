@@ -47,6 +47,7 @@ Future hardening target:
 ## Logging & analytics
 
 - No mnemonic, PIN, private key, or full `rawTx` in logs.
+- Expo wallet UI/error surfaces must pass thrown messages through a shared sanitizer before rendering or forwarding them, so mnemonic / `keystore_json` / `rawTx` / bearer-token shaped values are redacted even when upstream/native errors are noisy.
 - Sentry: scrub breadcrumbs; disable PII.
 - Crash reports: no vault contents.
 

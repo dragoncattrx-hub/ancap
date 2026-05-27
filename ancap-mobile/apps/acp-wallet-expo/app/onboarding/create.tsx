@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { createWallet } from "@ancap/acp-wallet-sdk";
+import { createWallet, safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { saveVault } from "@/lib/vault";
 
 // P5-2: block screenshots while seed phrase is visible
@@ -43,7 +43,7 @@ export default function CreateWalletScreen() {
       setAddress(w.address);
       setKeystoreJson(w.keystoreJson);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t("createWallet.couldNotCreate");
+      const msg = safeErrorMessage(e, t("createWallet.couldNotCreate"));
       if (msg.includes("not linked") || msg.includes("Native ACP")) {
         const nativeSteps = Platform.select({
           ios: t("createWallet.nativeStepsIos"),

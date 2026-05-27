@@ -7,6 +7,7 @@ import {
   signAndPrepareTransfer,
   validateAddressWithNative,
 } from "./wallet-service.js";
+import { safeErrorMessage, sanitizeSensitiveText } from "./safe-error.js";
 import type { NativeWalletModule } from "./wallet-service.js";
 
 const FROM = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
@@ -121,5 +122,24 @@ describe("wallet-service native bridge", () => {
       })
     ).rejects.toThrow("from is invalid");
     expect(native.signTransfer).not.toHaveBeenCalled();
+  });
+
+  it("redacts sensitive payload fields from surfaced error messages", () => {
+    const sanitized = sanitizeSensitiveText(
+      'mnemonic=alpha beta gamma, keystoreJson={"ciphertext":"abc"}, rawTx=deadbeef, Authorization: Bearer super-secret-token'
+    );
+
+    expect(sanitized).toContain("mnemonic=[redacted]");
+    expect(sanitized).toContain("keystoreJson=[redacted]");
+    expect(sanitized).toContain("rawTx=[redacted]");
+    expect(sanitized).toContain("Bearer [redacted]");
+    expect(sanitized).not.toContain("alpha beta gamma");
+    expect(sanitized).not.toContain("deadbeef");
+    expect(sanitized).not.toContain("super-secret-token");
+  });
+
+  it("falls back safely for unknown thrown values", () => {
+    expect(safeErrorMessage(null, "fallback message")).toBe("fallback message");
+    expect(safeErrorMessage("token=abc123", "fallback message")).toBe("token=[redacted]");
   });
 });

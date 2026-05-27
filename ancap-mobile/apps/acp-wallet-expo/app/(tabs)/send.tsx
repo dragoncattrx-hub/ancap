@@ -10,8 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { assertAcpAddress } from "@ancap/acp-wallet-sdk";
-import { signAndPrepareTransfer } from "@ancap/acp-wallet-sdk";
+import { assertAcpAddress, safeErrorMessage, signAndPrepareTransfer } from "@ancap/acp-wallet-sdk";
 import { loadVault } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
@@ -40,7 +39,7 @@ export default function SendScreen() {
       setFee(est.feeAcp);
       setPreview(t("send.feePreview", { fee: est.feeAcp, minFee: est.minFeeAcp }));
     } catch (e) {
-      Alert.alert(t("send.estimateFailedTitle"), e instanceof Error ? e.message : t("send.genericError"));
+      Alert.alert(t("send.estimateFailedTitle"), safeErrorMessage(e, t("send.genericError")));
     }
   };
 
@@ -67,7 +66,7 @@ export default function SendScreen() {
       setAmount("");
       setFee("");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t("send.sendFailedTitle");
+      const msg = safeErrorMessage(e, t("send.sendFailedTitle"));
       if (msg.includes("native module")) {
         Alert.alert(t("send.nativeSigningRequiredTitle"), t("send.nativeSigningRequiredBody"));
       } else {

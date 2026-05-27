@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { AcpTransaction } from "@ancap/acp-api-client";
+import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { loadVaultAddress } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
@@ -31,7 +32,7 @@ export default function ActivityScreen() {
       const txs = await getApi().getTransactions(address, 50);
       setItems(txs);
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("activity.failedLoadHistory"));
+      setError(safeErrorMessage(e, t("activity.failedLoadHistory")));
     }
   }, [t]);
 

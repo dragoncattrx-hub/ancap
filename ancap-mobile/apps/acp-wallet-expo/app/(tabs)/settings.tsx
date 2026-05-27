@@ -14,6 +14,7 @@ import {
   lockSession,
   setPinLock,
 } from "@/lib/lock";
+import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { LANGUAGE_OPTIONS, loadLanguagePreference, setLanguagePreference, type AppLanguage } from "@/lib/i18n";
 import {
   disableVaultBiometricProtection,
@@ -137,7 +138,7 @@ export default function SettingsScreen() {
       await refreshState();
       Alert.alert(t("settings.biometricsEnabledTitle"), t("settings.biometricsEnabledBody"));
     } catch (e) {
-      Alert.alert(t("settings.biometricsErrorTitle"), e instanceof Error ? e.message : "Unknown error");
+      Alert.alert(t("settings.biometricsErrorTitle"), safeErrorMessage(e, "Unknown error"));
     }
   };
 

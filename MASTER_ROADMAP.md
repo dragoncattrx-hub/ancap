@@ -759,7 +759,7 @@ Endpoints:
 | P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
 | P4-15 | i18n EN/RU/UK/DE | [ ] i18next |
 | P5-1 | MASVS L1 checklist | [ ] |
-| P5-5 | No secrets in Sentry/logs | [ ] |
+| P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P6-3 | Device matrix (iOS + Android) | [ ] |
 | P6-4 | TestFlight + Play Internal | [ ] |
 | P6-5 | Store listing + legal pages | [ ] |

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchWacpBalanceWei, formatWacp } from "@ancap/acp-bsc-client";
+import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { loadVaultAddress } from "@/lib/vault";
 import { getApi } from "@/lib/api";
 
@@ -59,7 +60,7 @@ export default function WalletHomeScreen() {
         setWacp("—");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("walletHome.failedLoadBalance"));
+      setError(safeErrorMessage(e, t("walletHome.failedLoadBalance")));
     }
   }, [t]);
 

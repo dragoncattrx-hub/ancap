@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { BridgeIntent, RedeemQuote, ReserveProof, WacpStatus } from "@ancap/acp-bridge-client";
+import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { loadVaultAddress } from "@/lib/vault";
 import { getBridgeClient } from "@/lib/bridge";
 
@@ -53,7 +54,7 @@ export default function BridgeScreen() {
       });
     } catch (e) {
       setBridgeStatus("offline");
-      setError(e instanceof Error ? e.message : t("bridge.statusUnavailable"));
+      setError(safeErrorMessage(e, t("bridge.statusUnavailable")));
       setReserveProof(null);
       setWacpStatus(null);
       setSampleRedeemQuote(null);

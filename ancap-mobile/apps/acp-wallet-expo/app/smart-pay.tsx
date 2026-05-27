@@ -20,6 +20,7 @@ import type {
   SmartPayPaymentIntent,
   SmartPayQuote,
 } from "@ancap/acp-api-client";
+import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi } from "@/lib/api";
 import {
   clearSmartPaySession,
@@ -69,7 +70,7 @@ export default function SmartPayScreen() {
           setConfirmationAccepted(false);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load Smart Pay capabilities");
+        setError(safeErrorMessage(e, "Failed to load Smart Pay capabilities"));
       } finally {
         setLoadingCapabilities(false);
         setHydrated(true);
@@ -139,7 +140,7 @@ export default function SmartPayScreen() {
       setPayloadSource("photo");
       setRawPayload(first.data.trim());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gallery import failed");
+      setError(safeErrorMessage(e, "Gallery import failed"));
     } finally {
       setBusy(false);
     }
@@ -201,7 +202,7 @@ export default function SmartPayScreen() {
       setIntent(result.paymentIntent);
     } catch (e) {
       setIntent(null);
-      setError(e instanceof Error ? e.message : "Parse failed");
+      setError(safeErrorMessage(e, "Parse failed"));
     } finally {
       setBusy(false);
     }
@@ -230,7 +231,7 @@ export default function SmartPayScreen() {
       setQuote(result.quote);
     } catch (e) {
       setQuote(null);
-      setError(e instanceof Error ? e.message : "Quote failed");
+      setError(safeErrorMessage(e, "Quote failed"));
     } finally {
       setBusy(false);
     }
@@ -261,7 +262,7 @@ export default function SmartPayScreen() {
       setShowConfirmation(false);
       setConfirmationAccepted(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Execute failed");
+      setError(safeErrorMessage(e, "Execute failed"));
     } finally {
       setBusy(false);
     }
@@ -275,7 +276,7 @@ export default function SmartPayScreen() {
       const result = await getApi().getSmartPayExecution(execution.id);
       setExecution(result.execution);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Refresh failed");
+      setError(safeErrorMessage(e, "Refresh failed"));
     } finally {
       setBusy(false);
     }
@@ -289,7 +290,7 @@ export default function SmartPayScreen() {
       const result = await getApi().recoverSmartPay(execution.id, { clientKnownTxs: [] });
       setExecution(result.execution);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Recover failed");
+      setError(safeErrorMessage(e, "Recover failed"));
     } finally {
       setBusy(false);
     }

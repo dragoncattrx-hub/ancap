@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { assertAcpAddress, validateAcpAddress } from "@ancap/acp-wallet-sdk";
+import { assertAcpAddress, safeErrorMessage, validateAcpAddress } from "@ancap/acp-wallet-sdk";
 import { saveVault } from "@/lib/vault";
 
 export default function ImportWalletScreen() {
@@ -34,7 +34,7 @@ export default function ImportWalletScreen() {
       });
       router.replace("/(tabs)");
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("importWallet.importFailed"));
+      setError(safeErrorMessage(e, t("importWallet.importFailed")));
     }
   };
 
