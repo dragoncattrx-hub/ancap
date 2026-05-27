@@ -15,13 +15,14 @@ branch_labels = None
 depends_on = None
 
 
-payout_status_enum = sa.Enum(
+payout_status_enum = postgresql.ENUM(
     "pending",
     "approved",
     "rejected",
     "completed",
     "failed",
     name="payoutrequeststatusenum",
+    create_type=False,
 )
 
 
