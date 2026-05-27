@@ -68,6 +68,14 @@ class PaymentIntentStatusEnum(str, enum.Enum):
     failed = "failed"
 
 
+class PayoutRequestStatusEnum(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+    completed = "completed"
+    failed = "failed"
+
+
 class AccessScopeEnum(str, enum.Enum):
     view = "view"
     execute = "execute"
@@ -446,6 +454,31 @@ class PaymentIntent(Base):
     __table_args__ = (
         Index("ix_payment_intents_owner_created", "owner_user_id", "created_at"),
         Index("ix_payment_intents_run_status", "workflow_run_id", "status"),
+    )
+
+
+class PayoutRequest(Base):
+    __tablename__ = "payout_requests"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount_currency = Column(String(10), nullable=False, default="ACP")
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    status = Column(SQLEnum(PayoutRequestStatusEnum), nullable=False, default=PayoutRequestStatusEnum.pending, index=True)
+    method = Column(String(32), nullable=False)
+    destination = Column(String(255), nullable=False)
+    request_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    approval_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    rejection_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    admin_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("ix_payout_requests_user_status_created", "user_id", "status", "created_at"),
     )
 
 

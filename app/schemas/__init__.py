@@ -145,6 +145,14 @@ from app.schemas.payments import (
     PaymentMethodsResponse,
     StripeWebhookAck,
 )
+from app.schemas.payouts import (
+    PayoutMethod,
+    PayoutRequestStatus,
+    PayoutRequestCreateRequest,
+    PayoutRequestActionRequest,
+    PayoutRequestPublic,
+    PayoutRequestsResponse,
+)
 from app.schemas.workflow_store import (
     WorkflowTemplatePublic,
     WorkflowTemplatesResponse,
@@ -325,6 +333,12 @@ __all__ = [
     "PaymentMethodPublic",
     "PaymentMethodsResponse",
     "StripeWebhookAck",
+    "PayoutMethod",
+    "PayoutRequestStatus",
+    "PayoutRequestCreateRequest",
+    "PayoutRequestActionRequest",
+    "PayoutRequestPublic",
+    "PayoutRequestsResponse",
     "WorkflowTemplatePublic",
     "WorkflowTemplatesResponse",
     "WorkflowBundlePublic",
