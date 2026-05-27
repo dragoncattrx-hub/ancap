@@ -119,7 +119,7 @@ Frontend (dev) will be available on http://localhost:3001
 Production UI: https://ancap.cloud/
 
 If a page is in this repo (for example `/bridge/acp-bsc`) but **404** on ancap.cloud, production is still serving an **old `frontend` Docker image** (not a Cloudflare HTML cache: responses show `cf-cache-status: DYNAMIC` and `x-nextjs-cache: HIT` from **Next.js on your origin**). Purging Cloudflare cache does not replace the container. On the **tunnel host**, from the repo root:
-- ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password), a real non-default `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are present in the host shell or repo-root `.env`; `DATABASE_URL` and `POSTGRES_PASSWORD` must stay in sync for the bundled compose postgres service
+- ensure a real `DATABASE_URL` (not insecure local bundled-db default credentials; if it targets the bundled compose `postgres` service, it must include the real DB password), a real non-default `POSTGRES_PASSWORD` for that bundled compose postgres service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are present in the host shell or repo-root `.env`; `DATABASE_URL` and `POSTGRES_PASSWORD` must stay in sync for the bundled compose postgres service
 - verify interpolation first without echoing resolved secrets: `docker compose -f docker-compose.prod.yml config --quiet`
 - **Windows:** `.\scripts\deploy-ancap-cloud.ps1`
 - **Linux:** `bash scripts/deploy-ancap-cloud.sh`
@@ -212,7 +212,7 @@ docker run -d --name ancap-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=ancap
 3. Apply migrations. **Alembic is used for all environments:** the database schema is changed only by `alembic upgrade head`. The application does not create tables.
 
 ```bash
-set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ancap
+set DATABASE_URL=postgresql://postgres:<local-dev-password>@localhost:5432/ancap
 alembic upgrade head
 ```
 
@@ -227,7 +227,7 @@ Without this key, ACP wallets remain on the legacy password-only envelope format
 4. Running the API (without Docker):
 
 ```bash
-set DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
+set DATABASE_URL=postgresql+asyncpg://postgres:<local-dev-password>@localhost:5432/ancap
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -264,7 +264,7 @@ Swagger (local): http://127.0.0.1:8001/docs
 Raises Postgres + API + Frontend (Next production) + nginx reverse proxy.
 
 Before starting the prod-like stack, set real production secrets in the repo-root `.env` or in the shell environment:
-- `DATABASE_URL` (must not use the local `postgres:postgres` default in production; if you target the bundled `postgres` service, the URL must include the real database password, must not use a placeholder-like password, and must match `POSTGRES_PASSWORD`)
+- `DATABASE_URL` (must not use insecure local bundled-db default credentials in production; if you target the bundled `postgres` service, the URL must include the real database password, must not use a placeholder-like password, and must match `POSTGRES_PASSWORD`)
 - `POSTGRES_PASSWORD` (required by the bundled `postgres` service in `docker-compose.prod.yml`; use a real non-default password, not a placeholder-like value)
 - `SECRET_KEY` (must be a real random secret, not a placeholder-like value)
 - `CURSOR_SECRET` (must be a real random secret, not a placeholder-like value)

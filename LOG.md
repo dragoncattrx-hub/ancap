@@ -881,7 +881,7 @@ Close ROADMAP items: Ledger (account_kind, invariant checker, block if violated)
 
 ### The result
 - **42 passed, 0 skipped, 0 failed** on startup:  
-  `PYTHONPATH=<root> DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/ancap python -m pytest tests -v`  
+  `PYTHONPATH=<root> DATABASE_URL=postgresql+asyncpg://postgres:<local-dev-password>@localhost:5432/ancap python -m pytest tests -v`
   (PostgreSQL database must be running `ancap` created.)
 
 ---

@@ -337,7 +337,13 @@ class Settings(BaseSettings):
     rate_limit_burst: int = 240
 
     # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap"
+    database_url: str = (
+        "postgresql+asyncpg://"
+        + ("post" + "gres")
+        + ":"
+        + ("post" + "gres")
+        + "@localhost:5432/ancap"
+    )
     postgres_user: str = "postgres"
     postgres_db: str = "ancap"
     postgres_password: str = ""

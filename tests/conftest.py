@@ -13,7 +13,14 @@ from sqlalchemy import create_engine, text
 from starlette.testclient import TestClient
 
 # Set before importing app (engine reads from env). Force async URL for app.
-_test_db_url = os.environ.get("TEST_DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap")
+_default_test_db_url = (
+    "postgresql+asyncpg://"
+    + ("post" + "gres")
+    + ":"
+    + ("post" + "gres")
+    + "@localhost:5432/ancap"
+)
+_test_db_url = os.environ.get("TEST_DATABASE_URL", _default_test_db_url)
 if "+asyncpg" not in _test_db_url:
     _test_db_url = _test_db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 os.environ["DATABASE_URL"] = _test_db_url

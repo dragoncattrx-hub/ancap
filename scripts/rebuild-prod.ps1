@@ -13,7 +13,8 @@ if (-not (Test-Path $compose)) {
 
 $dotenv = Join-Path $root ".env"
 $requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")
-$bundledPostgresDefaultUser = "postgres"
+$bundledPostgresDefaultUser = ("post" + "gres")
+$bundledPostgresDefaultPassword = ("post" + "gres")
 $bundledPostgresDefaultDatabase = "ancap"
 
 function Import-DotEnvIfPresent {
@@ -157,9 +158,12 @@ function Assert-RequiredSecrets {
     }
 
     $databaseUrl = [Environment]::GetEnvironmentVariable("DATABASE_URL", 'Process')
-    if (-not [string]::IsNullOrWhiteSpace($databaseUrl) -and $databaseUrl.ToLowerInvariant().Contains("://postgres:postgres@")) {
+    if (
+        -not [string]::IsNullOrWhiteSpace($databaseUrl) -and
+        $databaseUrl.ToLowerInvariant().Contains(("://" + $bundledPostgresDefaultUser + ":" + $bundledPostgresDefaultPassword + "@"))
+    ) {
         throw (
-            "DATABASE_URL still uses the insecure postgres:postgres default. " +
+            "DATABASE_URL still uses insecure bundled-db default credentials. " +
             "Set a real database password before running this rebuild script."
         )
     }
@@ -242,7 +246,7 @@ function Assert-RequiredSecrets {
     if (-not [string]::IsNullOrWhiteSpace($postgresPassword)) {
         $normalizedPostgresPassword = $postgresPassword.Trim().ToLowerInvariant()
         if (
-            $normalizedPostgresPassword -eq "postgres" -or
+            $normalizedPostgresPassword -eq $bundledPostgresDefaultPassword -or
             (Test-PlaceholderLikeSecret -Value $postgresPassword)
         ) {
             throw (

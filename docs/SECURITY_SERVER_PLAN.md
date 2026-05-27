@@ -227,7 +227,7 @@ sudo apt install postfix -y
 ### 4.3 Production secret defaults
 **Status:** 🟡 MEDIUM
 **Finding:** production startup must not rely on dev fallbacks or partially supplied compose env
-**Fix:** Ensure a real `DATABASE_URL` (not the local `postgres:postgres` default; if it targets the bundled compose `postgres` service, it must include the real DB password, not a placeholder-like password, and that password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for that service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are supplied from host env / repo-root `.env` in production and fail fast when missing or inconsistent
+**Fix:** Ensure a real `DATABASE_URL` (not insecure local bundled-db defaults; if it targets the bundled compose `postgres` service, it must include the real DB password, not a placeholder-like password, and that password must match `POSTGRES_PASSWORD`), a real `POSTGRES_PASSWORD` for that service, plus real random `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` values (not placeholder-like strings) are supplied from host env / repo-root `.env` in production and fail fast when missing or inconsistent
 
 ### 4.4 No Rate Limiting
 **Status:** 🟡 MEDIUM

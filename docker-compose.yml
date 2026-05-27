@@ -30,7 +30,7 @@ services:
     ports:
       - "${API_PORT:-8001}:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ancap
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_DEV_PASSWORD:-postgres}@postgres:5432/ancap}
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: development
       # In dev mode a key is required but no fail-fast (no prod assets at stake).

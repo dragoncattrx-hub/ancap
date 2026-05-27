@@ -270,7 +270,7 @@ def _env_without_prod_secrets() -> dict[str, str]:
         ),
         pytest.param(
             _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
-            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
+            "DATABASE_URL still uses insecure bundled-db default credentials",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -334,7 +334,7 @@ def test_deploy_powershell_script_rejects_invalid_production_preflight(env: dict
         ),
         pytest.param(
             _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
-            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
+            "DATABASE_URL still uses insecure bundled-db default credentials",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -398,7 +398,7 @@ def test_rebuild_powershell_script_rejects_invalid_production_preflight(env: dic
         ),
         pytest.param(
             _prod_env(DATABASE_URL=_INSECURE_DEFAULT_DB_URL),
-            f"DATABASE_URL still uses the insecure {_INSECURE_DEFAULT_LABEL} default",
+            "DATABASE_URL still uses insecure bundled-db default credentials",
             id="insecure-default-database-url",
         ),
         pytest.param(
@@ -447,7 +447,7 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
         ),
         pytest.param(
             Path("docker-compose.prod.yml"),
-            f'DATABASE_URL: ${{DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use the insecure {_INSECURE_DEFAULT_LABEL} default, and must match POSTGRES_PASSWORD when using the bundled postgres service}}',
+            'DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set for docker-compose.prod.yml, must not use insecure bundled-db default credentials, and must match POSTGRES_PASSWORD when using the bundled postgres service}',
             id="compose-requires-database-url",
         ),
         pytest.param(

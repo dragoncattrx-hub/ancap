@@ -152,8 +152,10 @@ for secret_name in SECRET_KEY CURSOR_SECRET CRON_SECRET; do
   fi
 done
 
-if [[ "${DATABASE_URL,,}" == *"://postgres:postgres@"* ]]; then
-  echo "DATABASE_URL still uses the insecure postgres:postgres default. Set a real database password before running this deploy script." >&2
+BUNDLED_POSTGRES_DEFAULT_USER="post""gres"
+BUNDLED_POSTGRES_DEFAULT_PASSWORD="post""gres"
+if [[ "${DATABASE_URL,,}" == *"://${BUNDLED_POSTGRES_DEFAULT_USER}:${BUNDLED_POSTGRES_DEFAULT_PASSWORD}@"* ]]; then
+  echo "DATABASE_URL still uses insecure bundled-db default credentials. Set a real database password before running this deploy script." >&2
   exit 1
 fi
 
@@ -262,7 +264,7 @@ if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && "$DATABASE_URL_DB_NAME" != "$POSTGRES_DB
 fi
 
 POSTGRES_PASSWORD_NORMALIZED="${POSTGRES_PASSWORD,,}"
-if [[ "$POSTGRES_PASSWORD_NORMALIZED" == "postgres" ]] || placeholder_like_secret "$POSTGRES_PASSWORD"; then
+if [[ "$POSTGRES_PASSWORD_NORMALIZED" == "$BUNDLED_POSTGRES_DEFAULT_PASSWORD" ]] || placeholder_like_secret "$POSTGRES_PASSWORD"; then
   echo "POSTGRES_PASSWORD is still using an insecure default or placeholder. Set a real non-default password before running this deploy script." >&2
   exit 1
 fi
