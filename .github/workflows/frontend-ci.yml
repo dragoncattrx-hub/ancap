@@ -7,12 +7,20 @@ on:
       - "frontend-app/**"
       - "ancap-mobile/**"
       - "app/**"
+      - "alembic/**"
+      - "requirements.txt"
+      - "docker-compose.yml"
+      - "Dockerfile"
       - ".github/workflows/frontend-ci.yml"
   pull_request:
     paths:
       - "frontend-app/**"
       - "ancap-mobile/**"
       - "app/**"
+      - "alembic/**"
+      - "requirements.txt"
+      - "docker-compose.yml"
+      - "Dockerfile"
       - ".github/workflows/frontend-ci.yml"
 
 permissions:
