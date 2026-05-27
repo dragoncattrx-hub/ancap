@@ -21,6 +21,28 @@ Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). AC
 - **Parallel trust/adoption track:** ANCAP is moving toward a GitHub-first open-source model for public-safe components, docs, SDK/integration surfaces, and protocol transparency — while private keys, bridge signer logic, deploy secrets, hot-wallet operations, and sensitive infrastructure remain private.
 - **Current truth source:** use [STATUS.md](STATUS.md), [MASTER_ROADMAP.md](MASTER_ROADMAP.md), and [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md) before older roadmap/history docs.
 
+## Stripe / Fiat Credit Top-Up Adapter
+
+ANCAP remains **ACP-first**. Stripe is an optional adapter for buying ANCAP credit packages without leaving the platform.
+
+Current backend surfaces:
+- `POST /v1/payments/stripe/intent` — create a Stripe PaymentIntent for a credit package and return the ANCAP payment-intent record plus Stripe client session data
+- `GET /v1/payments/methods` — list saved Stripe card payment methods for the authenticated user
+- `DELETE /v1/payments/methods/{payment_method_id}` — detach a saved Stripe payment method from the authenticated user
+- `POST /v1/webhooks/stripe` — verify Stripe signatures, deduplicate events, and capture credit top-ups on `payment_intent.succeeded`
+
+Required env vars for the adapter:
+- `STRIPE_SECRET_KEY`
+- `STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- optional `STRIPE_API_BASE` (defaults to `https://api.stripe.com/v1`)
+
+Current first-slice Stripe currencies:
+- `USD`
+- `EUR`
+
+If those values are empty, Stripe endpoints fail closed with `503` and ACP/manual flows stay available. Unsupported Stripe currencies fail closed with `400` instead of silently creating mismatched checkout intents.
+
 ## Roadmap-Aligned Milestones (Current State)
 
 - **Public governance surface:** delivered in production (proposal lifecycle, audit trail, moderation hooks).

@@ -74,6 +74,11 @@ services:
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-45}
       LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-1800}
       LLM_DAILY_BUDGET_ACP: ${LLM_DAILY_BUDGET_ACP:-250}
+      # Stripe / fiat adapter (optional; keep blank to leave ACP/manual flows only)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_API_BASE: ${STRIPE_API_BASE:-https://api.stripe.com/v1}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level

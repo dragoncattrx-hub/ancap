@@ -136,6 +136,15 @@ from app.schemas.api_monetization import (
     PaidApiUsageEventsResponse,
     PaidApiUsagePublic,
 )
+from app.schemas.payments import (
+    StripeIntentCreateRequest,
+    StripeIntentSessionPublic,
+    StripeIntentCreateResponse,
+    PaymentMethodCardPublic,
+    PaymentMethodPublic,
+    PaymentMethodsResponse,
+    StripeWebhookAck,
+)
 from app.schemas.workflow_store import (
     WorkflowTemplatePublic,
     WorkflowTemplatesResponse,
@@ -309,6 +318,13 @@ __all__ = [
     "PaidApiSpendCapResponse",
     "PaidApiUsageEventsResponse",
     "PaidApiUsagePublic",
+    "StripeIntentCreateRequest",
+    "StripeIntentSessionPublic",
+    "StripeIntentCreateResponse",
+    "PaymentMethodCardPublic",
+    "PaymentMethodPublic",
+    "PaymentMethodsResponse",
+    "StripeWebhookAck",
     "WorkflowTemplatePublic",
     "WorkflowTemplatesResponse",
     "WorkflowBundlePublic",

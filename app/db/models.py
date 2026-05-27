@@ -125,6 +125,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     display_name = Column(String(80), nullable=True)
+    stripe_customer_id = Column(String(64), nullable=True, unique=True, index=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
@@ -431,6 +432,7 @@ class PaymentIntent(Base):
     amount_currency = Column(String(10), nullable=False, index=True)
     amount_value = Column(Numeric(36, 18), nullable=False)
     payment_reference = Column(String(128), nullable=True, index=True)
+    stripe_payment_intent_id = Column(String(128), nullable=True, unique=True, index=True)
     reserved_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
     capture_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
     refund_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
@@ -1709,6 +1711,22 @@ class OrganizationMember(Base):
 
     org = relationship("Organization", foreign_keys=[org_id])
     user = relationship("User", foreign_keys=[user_id])
+
+
+class StripeEvent(Base):
+    __tablename__ = "stripe_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    stripe_event_id = Column(String(128), nullable=False, unique=True, index=True)
+    event_type = Column(String(128), nullable=False, index=True)
+    processed = Column(Boolean, nullable=False, default=False)
+    payload_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_stripe_events_type_processed", "event_type", "processed"),
+    )
 
 
 class WebhookEndpoint(Base):

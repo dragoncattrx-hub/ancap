@@ -1152,6 +1152,53 @@ export const paidApi = {
   },
 };
 
+export const payments = {
+  async createStripeIntent(data: {
+    package_slug: string;
+    currency?: string;
+    payment_method_id?: string;
+    save_payment_method?: boolean;
+    note?: string;
+    idempotency_key?: string;
+  }) {
+    const idk = data.idempotency_key || genIdempotencyKey();
+    const { idempotency_key: _ignoredIdempotencyKey, ...body } = data;
+    return apiFetch("/payments/stripe/intent", {
+      method: "POST",
+      headers: {
+        "Idempotency-Key": idk,
+      },
+      body: JSON.stringify(body),
+    });
+  },
+  async getStripeIntent(intentId: string) {
+    return apiFetch(`/payments/stripe/intents/${encodeURIComponent(intentId)}`);
+  },
+  async listMethods() {
+    return apiFetch("/payments/methods");
+  },
+  async removeMethod(paymentMethodId: string) {
+    const res = await apiFetchRaw(`/payments/methods/${encodeURIComponent(paymentMethodId)}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const payload = await res.json();
+        if (typeof payload?.detail === "string") {
+          detail = payload.detail.trim();
+        }
+      } catch {
+        // keep stable fallback below
+      }
+      throw new ApiError(
+        detail || `API error ${res.status}${res.statusText ? ` ${res.statusText}` : ""}`,
+        res.status,
+      );
+    }
+  },
+};
+
 export const organizations = {
   async list() {
     return apiFetch("/organizations");
@@ -1426,6 +1473,7 @@ export const api = {
   growthTasks,
   growthDashboard,
   referrals,
+  payments,
   organizations,
   webhooks,
   system,

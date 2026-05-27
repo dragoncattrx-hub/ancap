@@ -13,6 +13,8 @@ if (-not (Test-Path $compose)) {
 
 $dotenv = Join-Path $root ".env"
 $requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")
+$bundledPostgresDefaultUser = "postgres"
+$bundledPostgresDefaultDatabase = "ancap"
 
 function Import-DotEnvIfPresent {
     param([string] $Path)
@@ -107,11 +109,22 @@ function Parse-DatabaseUrlLikeString {
         }
     }
 
+    $path = $match.Groups['path'].Value
+    $username = $null
+    if (-not [string]::IsNullOrWhiteSpace($authority) -and $authority.Contains('@')) {
+        $userInfo = $authority.Split('@', 2)[0]
+        if (-not [string]::IsNullOrWhiteSpace($userInfo)) {
+            $username = [System.Uri]::UnescapeDataString(($userInfo.Split(':', 2)[0]))
+        }
+    }
+
     return [pscustomobject]@{
         Scheme = $match.Groups['scheme'].Value
         Host = $dbHost
         SocketHostQuery = $socketHostQuery
+        Username = $username
         Password = $password
+        Path = $path
     }
 }
 
@@ -151,6 +164,15 @@ function Assert-RequiredSecrets {
         )
     }
 
+    $postgresUser = [Environment]::GetEnvironmentVariable("POSTGRES_USER", 'Process')
+    if ([string]::IsNullOrWhiteSpace($postgresUser)) {
+        $postgresUser = $bundledPostgresDefaultUser
+    }
+    $postgresDb = [Environment]::GetEnvironmentVariable("POSTGRES_DB", 'Process')
+    if ([string]::IsNullOrWhiteSpace($postgresDb)) {
+        $postgresDb = $bundledPostgresDefaultDatabase
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
         $parsedDatabaseUrl = Parse-DatabaseUrlLikeString -Value $databaseUrl
         $hasSocketHostQuery = $null -ne $parsedDatabaseUrl -and -not [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.SocketHostQuery)
@@ -175,6 +197,11 @@ function Assert-RequiredSecrets {
             }
         }
 
+        $databaseName = $null
+        if ($parsedDatabaseUrl.Path -and $parsedDatabaseUrl.Path.Length -gt 1) {
+            $databaseName = [System.Uri]::UnescapeDataString($parsedDatabaseUrl.Path.TrimStart('/'))
+        }
+        $databaseUsername = $parsedDatabaseUrl.Username
         $usesBundledPostgres = $parsedDatabaseUrl.Host.ToLowerInvariant() -eq "postgres" -or (
             -not [string]::IsNullOrWhiteSpace($parsedDatabaseUrl.SocketHostQuery) -and $parsedDatabaseUrl.SocketHostQuery.ToLowerInvariant() -eq "postgres"
         )
@@ -183,6 +210,30 @@ function Assert-RequiredSecrets {
             throw (
                 "DATABASE_URL targets the bundled postgres service but does not include a password. " +
                 "Set DATABASE_URL with the real POSTGRES_PASSWORD before running this rebuild script."
+            )
+        }
+        if ($usesBundledPostgres -and [string]::IsNullOrWhiteSpace($databaseUsername)) {
+            throw (
+                "DATABASE_URL targets the bundled postgres service but does not include a username. " +
+                "Set DATABASE_URL to use POSTGRES_USER before running this rebuild script."
+            )
+        }
+        if ($usesBundledPostgres -and $databaseUsername -ne $postgresUser) {
+            throw (
+                "DATABASE_URL username does not match POSTGRES_USER for the bundled postgres service. " +
+                "Keep them in sync before running this rebuild script."
+            )
+        }
+        if ($usesBundledPostgres -and [string]::IsNullOrWhiteSpace($databaseName)) {
+            throw (
+                "DATABASE_URL targets the bundled postgres service but does not include a database name. " +
+                "Set DATABASE_URL to target POSTGRES_DB before running this rebuild script."
+            )
+        }
+        if ($usesBundledPostgres -and $databaseName -ne $postgresDb) {
+            throw (
+                "DATABASE_URL database name does not match POSTGRES_DB for the bundled postgres service. " +
+                "Keep them in sync before running this rebuild script."
             )
         }
     }

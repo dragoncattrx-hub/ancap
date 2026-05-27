@@ -69,6 +69,10 @@ class Settings(BaseSettings):
                 "Set a full SQLAlchemy database URL before starting in production."
             )
 
+        database_username = parsed_database_url.username
+        if database_username is not None:
+            database_username = unquote(database_username)
+
         database_password = parsed_database_url.password
         if database_password is not None:
             database_password = unquote(database_password)
@@ -83,12 +87,35 @@ class Settings(BaseSettings):
                     "Set a real database password before starting in production."
                 )
 
+        database_name = unquote(parsed_database_url.path.lstrip("/"))
         database_host = (parsed_database_url.hostname or "").lower()
         uses_bundled_postgres = database_host == "postgres" or any(host.lower() == "postgres" for host in socket_hosts)
+        expected_postgres_user = (self.postgres_user or "postgres").strip()
+        expected_postgres_db = (self.postgres_db or "ancap").strip()
         if uses_bundled_postgres and not database_password:
             raise ValueError(
                 "[PRODUCTION] DATABASE_URL targets the bundled postgres service but does not include a password. "
                 "Set DATABASE_URL with the real POSTGRES_PASSWORD before starting in production."
+            )
+        if uses_bundled_postgres and not database_username:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL targets the bundled postgres service but does not include a username. "
+                "Set DATABASE_URL to use POSTGRES_USER before starting in production."
+            )
+        if uses_bundled_postgres and database_username != expected_postgres_user:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL username does not match POSTGRES_USER for the bundled postgres service. "
+                "Keep them in sync before starting in production."
+            )
+        if uses_bundled_postgres and not database_name:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL targets the bundled postgres service but does not include a database name. "
+                "Set DATABASE_URL to target POSTGRES_DB before starting in production."
+            )
+        if uses_bundled_postgres and database_name != expected_postgres_db:
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL database name does not match POSTGRES_DB for the bundled postgres service. "
+                "Keep them in sync before starting in production."
             )
 
         postgres_password = (self.postgres_password or "").strip()
@@ -278,6 +305,13 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 1800
     llm_daily_budget_acp: str = "250"
     llm_fallback_to_template: bool = True
+
+    # Stripe / fiat adapter
+    stripe_secret_key: str = ""
+    stripe_publishable_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_api_base: str = "https://api.stripe.com/v1"
+
     # LLM cost tracking (ACP per 1M tokens; used to compute real provider cost)
     llm_cost_per_1m_input_tokens: str = "0"
     llm_cost_per_1m_output_tokens: str = "0"
@@ -289,6 +323,8 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap"
+    postgres_user: str = "postgres"
+    postgres_db: str = "ancap"
     postgres_password: str = ""
 
 

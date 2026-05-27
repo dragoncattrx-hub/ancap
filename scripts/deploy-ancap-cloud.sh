@@ -131,6 +131,8 @@ placeholder_like_secret() {
 }
 
 REQUIRED_PROD_SECRETS=(DATABASE_URL POSTGRES_PASSWORD SECRET_KEY CURSOR_SECRET CRON_SECRET)
+BUNDLED_POSTGRES_DEFAULT_USER="postgres"
+BUNDLED_POSTGRES_DEFAULT_DB="ancap"
 MISSING=()
 for name in "${REQUIRED_PROD_SECRETS[@]}"; do
   if [[ -z "${!name:-}" ]]; then
@@ -190,6 +192,16 @@ if [[ -z "$DATABASE_URL_HOST" && "$HAS_SOCKET_HOST_QUERY" -eq 0 ]]; then
   echo "DATABASE_URL is not a valid URI. Fix it before running this deploy script." >&2
   exit 1
 fi
+DATABASE_URL_USERNAME=""
+if [[ -n "$DATABASE_URL_CREDENTIALS" ]]; then
+  if [[ "$DATABASE_URL_CREDENTIALS" == *:* ]]; then
+    DATABASE_URL_USERNAME="${DATABASE_URL_CREDENTIALS%%:*}"
+  else
+    DATABASE_URL_USERNAME="$DATABASE_URL_CREDENTIALS"
+  fi
+  printf -v DATABASE_URL_USERNAME '%b' "${DATABASE_URL_USERNAME//%/\\x}"
+fi
+
 DATABASE_URL_PASSWORD=""
 DATABASE_URL_PASSWORD_DECODED=""
 if [[ -n "$DATABASE_URL_CREDENTIALS" && "$DATABASE_URL_CREDENTIALS" == *:* ]]; then
@@ -208,6 +220,16 @@ if [[ -n "$DATABASE_URL_PASSWORD" ]]; then
   fi
 fi
 
+DATABASE_URL_PATH_WITHOUT_QUERY="${DATABASE_URL_NO_SCHEME#*/}"
+if [[ "$DATABASE_URL_NO_SCHEME" == "$DATABASE_URL_PATH_WITHOUT_QUERY" ]]; then
+  DATABASE_URL_PATH_WITHOUT_QUERY=""
+fi
+DATABASE_URL_PATH_WITHOUT_QUERY="${DATABASE_URL_PATH_WITHOUT_QUERY%%\?*}"
+DATABASE_URL_DB_NAME="${DATABASE_URL_PATH_WITHOUT_QUERY#/}"
+if [[ -n "$DATABASE_URL_DB_NAME" ]]; then
+  printf -v DATABASE_URL_DB_NAME '%b' "${DATABASE_URL_DB_NAME//%/\\x}"
+fi
+
 USES_BUNDLED_POSTGRES=0
 if [[ "${DATABASE_URL_HOST,,}" == "postgres" ]]; then
   USES_BUNDLED_POSTGRES=1
@@ -215,8 +237,27 @@ elif [[ "$HAS_SOCKET_HOST_QUERY" -eq 1 && "${SOCKET_HOST_VALUE,,}" == "postgres"
   USES_BUNDLED_POSTGRES=1
 fi
 
+POSTGRES_USER_EFFECTIVE="${POSTGRES_USER:-$BUNDLED_POSTGRES_DEFAULT_USER}"
+POSTGRES_DB_EFFECTIVE="${POSTGRES_DB:-$BUNDLED_POSTGRES_DEFAULT_DB}"
+
 if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && -z "$DATABASE_URL_PASSWORD" ]]; then
   echo "DATABASE_URL targets the bundled postgres service but does not include a password. Set DATABASE_URL with the real POSTGRES_PASSWORD before running this deploy script." >&2
+  exit 1
+fi
+if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && -z "$DATABASE_URL_USERNAME" ]]; then
+  echo "DATABASE_URL targets the bundled postgres service but does not include a username. Set DATABASE_URL to use POSTGRES_USER before running this deploy script." >&2
+  exit 1
+fi
+if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && "$DATABASE_URL_USERNAME" != "$POSTGRES_USER_EFFECTIVE" ]]; then
+  echo "DATABASE_URL username does not match POSTGRES_USER for the bundled postgres service. Keep them in sync before running this deploy script." >&2
+  exit 1
+fi
+if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && -z "$DATABASE_URL_DB_NAME" ]]; then
+  echo "DATABASE_URL targets the bundled postgres service but does not include a database name. Set DATABASE_URL to target POSTGRES_DB before running this deploy script." >&2
+  exit 1
+fi
+if [[ "$USES_BUNDLED_POSTGRES" -eq 1 && "$DATABASE_URL_DB_NAME" != "$POSTGRES_DB_EFFECTIVE" ]]; then
+  echo "DATABASE_URL database name does not match POSTGRES_DB for the bundled postgres service. Keep them in sync before running this deploy script." >&2
   exit 1
 fi
 

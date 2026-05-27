@@ -472,23 +472,25 @@ Exit criteria: satisfied — the scheduled path now uses the async enqueue route
 
 ### 2.1 Pool ownership model [HIGH]
 
-Status: [~] Core repo/model work is now in place and test-covered. `Pool.owner_agent_id` and its migration already exist; pool create/read APIs now expose the field, and `POST /v1/ledger/allocate` now follows the intended rule: owner-enforced when set, backward-compatible when unset.
+Status: [x] Done. `Pool.owner_agent_id` is present in the data model and migration history, pool create/read APIs expose it, owner-aware allocation enforcement is live in `POST /v1/ledger/allocate`, and the repo docs now describe the backward-compatible legacy-null-owner rule explicitly.
 
-Files: `app/db/models.py` (Pool class), `alembic/versions/911774c4bec4_add_owner_agent_id_to_pools.py`, `app/api/routers/pools.py`, `app/api/routers/ledger.py`, `tests/test_ledger.py`, `tests/test_pools.py`
+Files: `app/db/models.py` (Pool class), `alembic/versions/911774c4bec4_add_owner_agent_id_to_pools.py`, `app/api/routers/pools.py`, `app/api/routers/ledger.py`, `tests/test_ledger.py`, `tests/test_pools.py`, `README.md`
 
-Verification (2026-05-25):
-- `Pool.owner_agent_id` already exists in `app/db/models.py`
-- migration `911774c4bec4_add_owner_agent_id_to_pools.py` already adds the column in-repo
-- pool create/get/list responses now include `owner_agent_id`
-- creating a pool can now optionally validate and persist `owner_agent_id`
+Verification (2026-05-26):
+- `Pool.owner_agent_id` exists in `app/db/models.py`
+- migration `911774c4bec4_add_owner_agent_id_to_pools.py` adds the column in-repo
+- pool create/get/list responses include `owner_agent_id`
+- creating a pool optionally validates and persists `owner_agent_id`
 - `POST /v1/ledger/allocate` now:
   - requires caller ownership when `pool.owner_agent_id` is set
   - allows authenticated backward-compatible allocation when it is unset
-- targeted pool + ledger tests pass, including owner-enforced and unowned-backward-compat cases
+- `README.md` documents:
+  - optional `owner_agent_id` on `POST /v1/pools`
+  - `owner_agent_id` in pool read surfaces
+  - owner-enforced allocation only for owned pools, with explicit legacy-null-owner compatibility
+- `pytest tests/test_pools.py tests/test_ledger.py -q` passes (`9 passed`)
 
-Remaining follow-through:
-- if strict product policy later decides all pools must become owned, add a backfill/cleanup plan for legacy null-owner pools before tightening the backward-compat path
-- README/API docs now mention `owner_agent_id`; re-check any external/public docs later if that surface expands
+Exit criteria: satisfied — pool ownership is implemented, verified, and documented; any future product decision to forbid legacy null-owner pools is a separate tightening pass, not unfinished core ownership work.
 
 ### 2.2 Fix economy_health async/sync bug [MEDIUM]
 
@@ -604,22 +606,46 @@ Remaining follow-through:
 
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 
+Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet credits UI are now implemented and passing repo checks. Remaining blocker before this can be marked done: no verified real end-to-end Stripe payment against configured secrets/webhook delivery yet.
+
 ACP checkout is stable. New users must acquire ACP on exchange -- huge friction.
 
-New endpoints:
-- \POST /v1/payments/stripe/intent\ -- create PaymentIntent, return client_secret
-- \POST /v1/webhooks/stripe\ -- Stripe webhook handler (idempotent)
-- \GET /v1/payments/methods\ -- list saved payment methods
-- \DELETE /v1/payments/methods/{id}\ -- remove payment method
+Implemented surfaces:
+- `POST /v1/payments/stripe/intent` -- create Stripe-backed top-up PaymentIntent and return client session data
+- `GET /v1/payments/stripe/intents/{intent_id}` -- poll owned Stripe top-up intent status / credited state, including Stripe-provider sync fallback when webhook delivery is delayed
+- `POST /v1/webhooks/stripe` -- Stripe webhook handler with signature verification + idempotent event deduplication
+- `GET /v1/payments/methods` -- list saved payment methods
+- `DELETE /v1/payments/methods/{id}` -- remove payment method
+- frontend wallet credits page now supports saved cards, new-card Stripe.js entry, submit flow, and webhook-status polling
 
-Model changes:
-- \User\ -> add \stripe_customer_id\ (nullable)
-- \PaymentIntent\ -> add \stripe_payment_intent_id\ (nullable)
-- New \StripeEvent\ model for idempotent webhook deduplication
+Model changes now in repo:
+- `User.stripe_customer_id` (nullable)
+- `PaymentIntent.stripe_payment_intent_id` (nullable)
+- new `StripeEvent` model/table for webhook deduplication
+- migration `56f5c6a2d1ab_add_stripe_payment_support.py`
 
-Existing \payment_intents\ contract preserved: Stripe is an adapter, not a replacement.
+Deployment/config follow-through now in repo:
+- `.env.example` documents Stripe env vars
+- `docker-compose.prod.yml` passes Stripe runtime env through to API
+- prod/rebuild scripts and settings validation now guard bundled-postgres URL/user/db consistency so deploys fail fast instead of drifting
+- README documents Stripe adapter surfaces and fail-closed behavior when Stripe is unconfigured
 
-Exit criteria: User can buy ACP credits via Stripe without leaving the platform.
+Verification (2026-05-27):
+- `pytest tests/api/test_payments.py -q` ✅ (now includes unsupported-currency fail-closed coverage for the first-slice Stripe allowlist)
+- `pytest tests/test_prod_deploy_scripts.py -q` ✅ (`61 passed`)
+- `pytest tests/test_config_admin_ids.py -q` ✅ (`10 passed`)
+- `npm run test` in `frontend-app` ✅
+- `npm run build` in `frontend-app` ✅
+- `docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head` ✅
+- local prod stack healthy: `docker compose -f docker-compose.prod.yml ps` shows api/postgres/redis/frontend/proxy up; `http://127.0.0.1:8080/api/v1/system/health` returns `{"status":"ok"}`
+- Stripe service layer now rejects unsupported checkout currencies with an explicit `400` (`USD`, `EUR` only for the current adapter slice) so the wallet UI and backend cannot silently drift into fake fiat coverage the repo has not actually implemented or verified
+
+Existing `payment_intents` contract is preserved: Stripe is an adapter, not a replacement.
+
+Remaining follow-through:
+- run a real Stripe checkout with valid configured keys and confirm webhook delivery credits the wallet end-to-end
+- verify saved-card reuse on a live/test Stripe customer, not only mocked repo tests
+- only then mark this item done
 
 ### 4.2 Creator earnings withdrawal [HIGH]
 

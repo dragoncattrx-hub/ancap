@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { ledger, workflowStore } from "@/lib/api";
+import { ledger, payments, workflowStore } from "@/lib/api";
+import { loadStripeJs, type StripeCardElement } from "@/lib/stripe";
 import { fallbackWorkflowCreditPackages, type WorkflowCreditPackage } from "@/lib/workflowStore";
 
 type BalanceResponse = {
@@ -27,10 +28,48 @@ type CreditTopUpIntentResponse = {
     status: string;
     payment_reference?: string | null;
     amount: { amount: string; currency: string };
+    provider_payload?: Record<string, any> | null;
   };
   package: WorkflowCreditPackage;
   credited: boolean;
 };
+
+type StripePaymentMethod = {
+  id: string;
+  type: string;
+  customer_id?: string | null;
+  reusable: boolean;
+  card?: {
+    brand?: string | null;
+    last4?: string | null;
+    exp_month?: number | null;
+    exp_year?: number | null;
+  } | null;
+};
+
+type StripeIntentResponse = {
+  item: {
+    id: string;
+    status: string;
+    payment_reference?: string | null;
+    amount: { amount: string; currency: string };
+    provider_payload?: Record<string, any> | null;
+  };
+  package: WorkflowCreditPackage;
+  stripe: {
+    customer_id: string;
+    payment_intent_id: string;
+    client_secret: string;
+    publishable_key: string;
+    amount: { amount: string; currency: string };
+    currency: string;
+    payment_method_types: string[];
+    status: string;
+  };
+};
+
+const STRIPE_CURRENCIES = ["USD", "EUR"] as const;
+type StripeCurrency = typeof STRIPE_CURRENCIES[number];
 
 export default function WalletCreditsPage() {
   const router = useRouter();
@@ -42,8 +81,22 @@ export default function WalletCreditsPage() {
   const [topUpIntent, setTopUpIntent] = useState<CreditTopUpIntentResponse | null>(null);
   const [topUpReference, setTopUpReference] = useState("");
   const [topUpLoadingSlug, setTopUpLoadingSlug] = useState("");
+  const [stripeMethods, setStripeMethods] = useState<StripePaymentMethod[]>([]);
+  const [stripeMethodsLoading, setStripeMethodsLoading] = useState(false);
+  const [stripePanelOpen, setStripePanelOpen] = useState(false);
+  const [stripePackageSlug, setStripePackageSlug] = useState("");
+  const [stripeLoadingSlug, setStripeLoadingSlug] = useState("");
+  const [stripeCurrency, setStripeCurrency] = useState<StripeCurrency>("USD");
+  const [stripeIntent, setStripeIntent] = useState<StripeIntentResponse | null>(null);
+  const [stripePolling, setStripePolling] = useState(false);
+  const [stripeSelectedMethodId, setStripeSelectedMethodId] = useState("");
+  const [stripeSaveMethod, setStripeSaveMethod] = useState(true);
+  const [stripeProcessing, setStripeProcessing] = useState(false);
+  const [stripeRemovingMethodId, setStripeRemovingMethodId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const stripeCardMountRef = useRef<HTMLDivElement | null>(null);
+  const stripeCardElementRef = useRef<StripeCardElement | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -89,6 +142,81 @@ export default function WalletCreditsPage() {
     void loadPackages();
   }, [isAuthenticated, loadPackages]);
 
+  const loadStripeMethods = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setStripeMethodsLoading(true);
+      const response = (await payments.listMethods()) as { items?: StripePaymentMethod[] };
+      const items = response.items || [];
+      setStripeMethods(items);
+      setStripeSelectedMethodId((current) => {
+        if (current && items.some((item) => item.id === current)) {
+          return current;
+        }
+        return items[0]?.id || "";
+      });
+    } catch (e: any) {
+      const message = e?.message || String(e);
+      if (!message.includes("503")) {
+        setError(message);
+      }
+      setStripeMethods([]);
+    } finally {
+      setStripeMethodsLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void loadStripeMethods();
+  }, [isAuthenticated, loadStripeMethods]);
+
+  useEffect(() => {
+    if (!stripeIntent || stripeSelectedMethodId || !stripePanelOpen) {
+      stripeCardElementRef.current?.destroy();
+      stripeCardElementRef.current = null;
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const stripeFactory = await loadStripeJs();
+        if (cancelled || !stripeCardMountRef.current) return;
+        const stripe = stripeFactory(stripeIntent.stripe.publishable_key);
+        if (!stripe) {
+          throw new Error("Stripe.js failed to initialize");
+        }
+        stripeCardElementRef.current?.destroy();
+        const elements = stripe.elements();
+        const card = elements.create("card", {
+          hidePostalCode: true,
+          style: {
+            base: {
+              color: "#e5eef8",
+              fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+              fontSize: "16px",
+              "::placeholder": { color: "#94a3b8" },
+            },
+            invalid: {
+              color: "#fca5a5",
+            },
+          },
+        } as Record<string, unknown>);
+        card.mount(stripeCardMountRef.current);
+        stripeCardElementRef.current = card;
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.message || String(e));
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      stripeCardElementRef.current?.destroy();
+      stripeCardElementRef.current = null;
+    };
+  }, [stripeIntent, stripeSelectedMethodId, stripePanelOpen]);
+
   const totalCurrencies = useMemo(() => (balance?.balances || []).length, [balance]);
 
   const createTopUpIntent = async (creditPackage: WorkflowCreditPackage) => {
@@ -106,6 +234,153 @@ export default function WalletCreditsPage() {
     } finally {
       setTopUpLoadingSlug("");
     }
+  };
+
+  const openStripeCheckout = async (creditPackage: WorkflowCreditPackage) => {
+    try {
+      setError("");
+      setStripeLoadingSlug(creditPackage.slug);
+      setStripePanelOpen(true);
+      setStripePackageSlug(creditPackage.slug);
+      const requestIdempotencyKey = `${creditPackage.slug}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const response = (await payments.createStripeIntent({
+        package_slug: creditPackage.slug,
+        currency: stripeCurrency,
+        payment_method_id: stripeSelectedMethodId || undefined,
+        save_payment_method: stripeSaveMethod,
+        note: `wallet-credit-topup:${creditPackage.slug}`,
+        idempotency_key: requestIdempotencyKey,
+      })) as StripeIntentResponse;
+      setStripeIntent(response);
+    } catch (e: any) {
+      setStripePanelOpen(false);
+      setStripeIntent(null);
+      setError(e?.message || String(e));
+    } finally {
+      setStripeLoadingSlug("");
+    }
+  };
+
+  const refreshStripeIntent = useCallback(async (intentId?: string) => {
+    const targetIntentId = intentId || stripeIntent?.item.id;
+    if (!targetIntentId) return null;
+    const refreshed = (await payments.getStripeIntent(targetIntentId)) as CreditTopUpIntentResponse;
+    setStripeIntent((current) => {
+      if (!current) return current;
+      const refreshedStripeStatus = typeof refreshed.item.provider_payload?.stripe_status === "string"
+        ? refreshed.item.provider_payload.stripe_status
+        : current.stripe.status;
+      return {
+        ...current,
+        item: refreshed.item,
+        package: refreshed.package,
+        stripe: {
+          ...current.stripe,
+          status: refreshedStripeStatus,
+        },
+      };
+    });
+    if (refreshed.credited) {
+      await loadData();
+    }
+    return refreshed;
+  }, [loadData, stripeIntent?.item.id]);
+
+  const submitStripePayment = async () => {
+    if (!stripeIntent) return;
+    try {
+      setError("");
+      setStripeProcessing(true);
+      const stripeFactory = await loadStripeJs();
+      const stripe = stripeFactory(stripeIntent.stripe.publishable_key);
+      if (!stripe) {
+        throw new Error("Stripe.js failed to initialize");
+      }
+      const paymentMethod = stripeSelectedMethodId
+        ? stripeSelectedMethodId
+        : stripeCardElementRef.current
+          ? { card: stripeCardElementRef.current }
+          : undefined;
+      if (!paymentMethod) {
+        throw new Error("Choose a saved card or enter a new card");
+      }
+      const result = await stripe.confirmCardPayment(stripeIntent.stripe.client_secret, {
+        payment_method: paymentMethod,
+      });
+      if (result.error?.message) {
+        throw new Error(result.error.message);
+      }
+      const status = result.paymentIntent?.status || "processing";
+      const confirmedIntentId = stripeIntent.item.id;
+      setStripeIntent((current) => (current ? {
+        ...current,
+        item: {
+          ...current.item,
+          status,
+          payment_reference: result.paymentIntent?.id ? `stripe:${result.paymentIntent.id}` : current.item.payment_reference,
+          provider_payload: {
+            ...(current.item.provider_payload || {}),
+            stripe_status: status,
+          },
+        },
+        stripe: {
+          ...current.stripe,
+          status,
+          payment_intent_id: result.paymentIntent?.id || current.stripe.payment_intent_id,
+        },
+      } : current));
+      await loadStripeMethods();
+      if (status === "succeeded" || status === "processing") {
+        setStripePolling(true);
+        try {
+          const maxAttempts = status === "succeeded" ? 6 : 10;
+          for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+            const refreshed = await refreshStripeIntent(confirmedIntentId);
+            if (!refreshed) {
+              break;
+            }
+            if (refreshed.credited || refreshed.item.status === "captured") {
+              break;
+            }
+            if (["failed", "cancelled"].includes(refreshed.item.status)) {
+              break;
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 1500));
+          }
+        } finally {
+          setStripePolling(false);
+        }
+      }
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    } finally {
+      setStripeProcessing(false);
+    }
+  };
+
+  const removeStripeMethod = async (paymentMethodId: string) => {
+    try {
+      setError("");
+      setStripeRemovingMethodId(paymentMethodId);
+      await payments.removeMethod(paymentMethodId);
+      if (stripeSelectedMethodId === paymentMethodId) {
+        setStripeSelectedMethodId("");
+      }
+      await loadStripeMethods();
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    } finally {
+      setStripeRemovingMethodId("");
+    }
+  };
+
+  const closeStripePanel = () => {
+    stripeCardElementRef.current?.destroy();
+    stripeCardElementRef.current = null;
+    setStripePanelOpen(false);
+    setStripeIntent(null);
+    setStripePackageSlug("");
+    setStripeProcessing(false);
   };
 
   if (authLoading || !isAuthenticated) return null;
@@ -172,7 +447,26 @@ export default function WalletCreditsPage() {
                       Prepaid workflow balance with traceable payment intents and ledger events.
                     </div>
                   </div>
-                  {packagesLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Loading packages...</div>}
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                    <label style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                      <span>Stripe currency</span>
+                      <select
+                        value={stripeCurrency}
+                        onChange={(event) => setStripeCurrency(event.target.value as StripeCurrency)}
+                        style={{ minWidth: 96 }}
+                      >
+                        {STRIPE_CURRENCIES.map((currency) => (
+                          <option key={currency} value={currency}>{currency}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {stripeMethodsLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Loading saved cards...</div>}
+                    {packagesLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Loading packages...</div>}
+                  </div>
+                </div>
+
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 12 }}>
+                  Stripe is the fiat adapter layer. Current supported checkout currencies: {STRIPE_CURRENCIES.join(", ")}. ACP/manual invoices stay available separately.
                 </div>
 
                 {topUpIntent && (
@@ -200,6 +494,136 @@ export default function WalletCreditsPage() {
                   </div>
                 )}
 
+                {stripePanelOpen && (
+                  <div className="card" style={{ marginBottom: 12, borderColor: "rgba(59,130,246,0.35)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+                      <div>
+                        <div style={{ color: "var(--text)", fontWeight: 800 }}>Stripe checkout</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 4 }}>
+                          {stripeIntent
+                            ? `Package ${stripeIntent.package.title}: pay ${stripeIntent.stripe.amount.amount} ${stripeIntent.stripe.amount.currency} for ${stripeIntent.package.credit_amount.amount} ${stripeIntent.package.credit_amount.currency}.`
+                            : stripePackageSlug
+                              ? `Preparing Stripe intent for ${stripePackageSlug} in ${stripeCurrency}...`
+                              : "Preparing Stripe checkout..."}
+                        </div>
+                      </div>
+                      <button type="button" className="btn btn-ghost" onClick={closeStripePanel}>
+                        Close
+                      </button>
+                    </div>
+
+                    <div className="responsive-grid responsive-grid-2" style={{ marginBottom: 12 }}>
+                      <div className="card" style={{ marginBottom: 0 }}>
+                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>Saved cards</div>
+                        {!stripeMethods.length ? (
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>No saved cards yet. Enter a new card below.</div>
+                        ) : (
+                          <div style={{ display: "grid", gap: 10 }}>
+                            {stripeMethods.map((method) => {
+                              const selected = stripeSelectedMethodId === method.id;
+                              return (
+                                <label key={method.id} style={{ border: selected ? "1px solid rgba(16,185,129,0.45)" : "1px solid var(--border)", borderRadius: 12, padding: 12, display: "grid", gap: 8, cursor: "pointer" }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+                                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                                      <input
+                                        type="radio"
+                                        name="stripe-payment-method"
+                                        checked={selected}
+                                        onChange={() => setStripeSelectedMethodId(method.id)}
+                                      />
+                                      <div>
+                                        <div style={{ color: "var(--text)", fontWeight: 700 }}>
+                                          {(method.card?.brand || method.type || "card").toUpperCase()} •••• {method.card?.last4 || "----"}
+                                        </div>
+                                        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                                          Expires {method.card?.exp_month || "--"}/{method.card?.exp_year || "----"}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className="btn btn-ghost"
+                                      onClick={() => void removeStripeMethod(method.id)}
+                                      disabled={stripeRemovingMethodId === method.id}
+                                    >
+                                      {stripeRemovingMethodId === method.id ? "Removing..." : "Remove"}
+                                    </button>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="card" style={{ marginBottom: 0 }}>
+                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>New card</div>
+                        <label style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 12 }}>
+                          <input
+                            type="radio"
+                            name="stripe-payment-method"
+                            checked={!stripeSelectedMethodId}
+                            onChange={() => setStripeSelectedMethodId("")}
+                          />
+                          Enter a fresh card in Stripe.js
+                        </label>
+                        <div
+                          ref={stripeCardMountRef}
+                          style={{
+                            border: "1px solid var(--border)",
+                            borderRadius: 12,
+                            padding: 12,
+                            minHeight: 48,
+                            background: "rgba(15,23,42,0.45)",
+                            opacity: stripeSelectedMethodId ? 0.5 : 1,
+                          }}
+                        />
+                        <label style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 12 }}>
+                          <input
+                            type="checkbox"
+                            checked={stripeSaveMethod}
+                            onChange={(event) => setStripeSaveMethod(event.target.checked)}
+                          />
+                          Save card for the next top-up
+                        </label>
+                      </div>
+                    </div>
+
+                    {stripeIntent && (
+                      <div className="card" style={{ marginBottom: 12, borderColor: "var(--border)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                          <div>
+                            <div style={{ color: "var(--text)", fontWeight: 700 }}>Stripe PaymentIntent</div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 4 }}>
+                              {stripeIntent.stripe.payment_intent_id} • status {stripeIntent.stripe.status}
+                            </div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 6 }}>
+                              Ledger credit status: {stripeIntent.item.status}{stripePolling ? " • waiting for webhook..." : ""}
+                            </div>
+                          </div>
+                          <strong style={{ color: stripeIntent.item.status === "captured" ? "var(--accent)" : stripeIntent.stripe.status === "succeeded" ? "var(--accent)" : "var(--text)" }}>
+                            {stripeIntent.item.status === "captured" ? "captured" : stripeIntent.stripe.status}
+                          </strong>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => void submitStripePayment()}
+                        disabled={!stripeIntent || stripeProcessing || stripePolling || stripeLoadingSlug === stripePackageSlug}
+                      >
+                        {stripeProcessing ? "Processing..." : stripePolling ? "Waiting for webhook..." : stripeIntent?.item.status === "captured" ? "Credits added" : stripeIntent?.stripe.status === "succeeded" ? "Payment submitted" : "Pay with Stripe"}
+                      </button>
+                      <button type="button" className="btn btn-ghost" onClick={closeStripePanel}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="responsive-grid responsive-grid-3">
                   {creditPackages.map((creditPackage) => (
                     <div key={creditPackage.slug} className="card">
@@ -216,8 +640,12 @@ export default function WalletCreditsPage() {
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
                         <div>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Pay</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Manual / ACP price</div>
                           <strong style={{ color: "var(--text)" }}>{creditPackage.price.amount} {creditPackage.price.currency}</strong>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Stripe checkout</div>
+                          <strong style={{ color: "var(--text)" }}>{creditPackage.price.amount} {stripeCurrency}</strong>
                         </div>
                         <div style={{ textAlign: "right" }}>
                           <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Receive</div>
@@ -231,15 +659,26 @@ export default function WalletCreditsPage() {
                           </span>
                         ))}
                       </div>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        style={{ width: "100%" }}
-                        onClick={() => createTopUpIntent(creditPackage)}
-                        disabled={topUpLoadingSlug === creditPackage.slug}
-                      >
-                        {topUpLoadingSlug === creditPackage.slug ? "Creating..." : "Create invoice"}
-                      </button>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ width: "100%" }}
+                          onClick={() => createTopUpIntent(creditPackage)}
+                          disabled={topUpLoadingSlug === creditPackage.slug}
+                        >
+                          {topUpLoadingSlug === creditPackage.slug ? "Creating..." : "Create invoice"}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          style={{ width: "100%" }}
+                          onClick={() => void openStripeCheckout(creditPackage)}
+                          disabled={stripeLoadingSlug === creditPackage.slug}
+                        >
+                          {stripeLoadingSlug === creditPackage.slug ? "Preparing Stripe..." : "Pay with Stripe"}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

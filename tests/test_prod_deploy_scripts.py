@@ -17,7 +17,7 @@ _INSECURE_DEFAULT_LABEL = f"{_DB_USER}:{_DB_PASS}"
 _INSECURE_DEFAULT_DB_URL = f"postgresql+asyncpg://{_DB_USER}:{_DB_PASS}@{_BUNDLED_DB_HOST}:5432/ancap"
 
 VALID_PROD_ENV = {
-    "DATABASE_URL": "postgresql+asyncpg://ancap:real-db-password@postgres:5432/ancap",
+    "DATABASE_URL": "postgresql+asyncpg://postgres:real-db-password@postgres:5432/ancap",
     "POSTGRES_PASSWORD": "real-db-password",
     "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
@@ -279,7 +279,7 @@ def _env_without_prod_secrets() -> dict[str, str]:
             id="placeholder-database-password",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://ancap@postgres:5432/ancap"),
+            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres@postgres:5432/ancap"),
             "DATABASE_URL targets the bundled postgres service but does not include a password",
             id="bundled-postgres-without-password",
         ),
@@ -343,7 +343,7 @@ def test_deploy_powershell_script_rejects_invalid_production_preflight(env: dict
             id="placeholder-database-password",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://ancap@postgres:5432/ancap"),
+            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres@postgres:5432/ancap"),
             "DATABASE_URL targets the bundled postgres service but does not include a password",
             id="bundled-postgres-without-password",
         ),
@@ -407,7 +407,7 @@ def test_rebuild_powershell_script_rejects_invalid_production_preflight(env: dic
             id="placeholder-database-password",
         ),
         pytest.param(
-            _prod_env(DATABASE_URL="postgresql+asyncpg://ancap@postgres:5432/ancap"),
+            _prod_env(DATABASE_URL="postgresql+asyncpg://postgres@postgres:5432/ancap"),
             "DATABASE_URL targets the bundled postgres service but does not include a password",
             id="bundled-postgres-without-password",
         ),
@@ -466,6 +466,26 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
             id="compose-requires-cron-secret",
         ),
         pytest.param(
+            Path("docker-compose.prod.yml"),
+            'STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}',
+            id="compose-passes-stripe-secret-key-through-to-api-service",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
+            'STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}',
+            id="compose-passes-stripe-publishable-key-through-to-api-service",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
+            'STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}',
+            id="compose-passes-stripe-webhook-secret-through-to-api-service",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
+            'STRIPE_API_BASE: ${STRIPE_API_BASE:-https://api.stripe.com/v1}',
+            id="compose-passes-stripe-api-base-through-to-api-service",
+        ),
+        pytest.param(
             Path("scripts/deploy-ancap-cloud.ps1"),
             '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")',
             id="powershell-deploy-requires-all-critical-secrets",
@@ -495,7 +515,7 @@ def test_prod_compose_config_quiet_succeeds_with_valid_required_env(tmp_path: Pa
     env = _env_without_prod_secrets()
     env.update(
         {
-            "DATABASE_URL": "postgresql+asyncpg://ancap:compose-pass@postgres:5432/ancap",
+            "DATABASE_URL": "postgresql+asyncpg://postgres:compose-pass@postgres:5432/ancap",
             "POSTGRES_PASSWORD": "compose-pass",
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
@@ -510,18 +530,22 @@ def test_prod_compose_config_quiet_succeeds_with_valid_required_env(tmp_path: Pa
 
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")
-def test_prod_compose_config_passes_postgres_password_through_to_api_service(tmp_path: Path):
+def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path: Path):
     repo_root = _stage_minimal_prod_repo(tmp_path, script_names=(), bridge_env_text="")
     env_file = tmp_path / "empty.env"
     env_file.write_text("", encoding="utf-8")
     env = _env_without_prod_secrets()
     env.update(
         {
-            "DATABASE_URL": "postgresql+asyncpg://ancap:compose-pass@postgres:5432/ancap",
+            "DATABASE_URL": "postgresql+asyncpg://postgres:compose-pass@postgres:5432/ancap",
             "POSTGRES_PASSWORD": "compose-pass",
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
             "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            "STRIPE_SECRET_KEY": "sk_live_runtime_test",
+            "STRIPE_PUBLISHABLE_KEY": "pk_live_runtime_test",
+            "STRIPE_WEBHOOK_SECRET": "whsec_runtime_test",
+            "STRIPE_API_BASE": "https://stripe.example.test/v1",
         }
     )
 
@@ -545,6 +569,10 @@ def test_prod_compose_config_passes_postgres_password_through_to_api_service(tmp
     combined_output = f"{result.stdout}\n{result.stderr}"
     assert result.returncode == 0, combined_output
     assert "POSTGRES_PASSWORD: compose-pass" in result.stdout
+    assert "STRIPE_SECRET_KEY: sk_live_runtime_test" in result.stdout
+    assert "STRIPE_PUBLISHABLE_KEY: pk_live_runtime_test" in result.stdout
+    assert "STRIPE_WEBHOOK_SECRET: whsec_runtime_test" in result.stdout
+    assert "STRIPE_API_BASE: https://stripe.example.test/v1" in result.stdout
 
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")
@@ -555,7 +583,7 @@ def test_prod_compose_config_quiet_fails_fast_without_printing_other_secret_valu
     env = _env_without_prod_secrets()
     env.update(
         {
-            "DATABASE_URL": "postgresql+asyncpg://ancap:compose-pass@postgres:5432/ancap",
+            "DATABASE_URL": "postgresql+asyncpg://postgres:compose-pass@postgres:5432/ancap",
             "POSTGRES_PASSWORD": "compose-pass",
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
@@ -579,7 +607,7 @@ def test_deploy_powershell_loads_repo_root_dotenv_before_running_docker(tmp_path
         tmp_path,
         script_names=("deploy-ancap-cloud.ps1",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\r\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:from-dotenv@postgres:5432/ancap\r\n"
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
@@ -610,7 +638,7 @@ def test_rebuild_powershell_loads_repo_root_dotenv_before_running_docker(tmp_pat
         tmp_path,
         script_names=("rebuild-prod.ps1",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\r\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:from-dotenv@postgres:5432/ancap\r\n"
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
@@ -640,7 +668,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
         tmp_path,
         script_names=("deploy-ancap-cloud.ps1",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\r\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:from-dotenv@postgres:5432/ancap\r\n"
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
@@ -676,7 +704,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.ps1",
             _run_deploy_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@postgres:5432/ancap",
             "p@ss:word",
             id="powershell-deploy-authority-host-urlencoded-password",
         ),
@@ -684,7 +712,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "rebuild-prod.ps1",
             _run_rebuild_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@postgres:5432/ancap",
             "p@ss:word",
             id="powershell-rebuild-authority-host-urlencoded-password",
         ),
@@ -692,7 +720,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.sh",
             _run_deploy_bash,
             "\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@postgres:5432/ancap",
             "p@ss:word",
             id="bash-deploy-authority-host-urlencoded-password",
         ),
@@ -700,7 +728,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.ps1",
             _run_deploy_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=postgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=postgres",
             "p@ss:word",
             id="powershell-deploy-socket-host-urlencoded-password",
         ),
@@ -708,7 +736,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "rebuild-prod.ps1",
             _run_rebuild_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=postgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=postgres",
             "p@ss:word",
             id="powershell-rebuild-socket-host-urlencoded-password",
         ),
@@ -716,7 +744,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.sh",
             _run_deploy_bash,
             "\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=postgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=postgres",
             "p@ss:word",
             id="bash-deploy-socket-host-urlencoded-password",
         ),
@@ -724,7 +752,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.ps1",
             _run_deploy_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=%70ostgres",
             "p@ss:word",
             id="powershell-deploy-encoded-socket-host-urlencoded-password",
         ),
@@ -732,7 +760,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "rebuild-prod.ps1",
             _run_rebuild_powershell,
             "\r\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=%70ostgres",
             "p@ss:word",
             id="powershell-rebuild-encoded-socket-host-urlencoded-password",
         ),
@@ -740,7 +768,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "deploy-ancap-cloud.sh",
             _run_deploy_bash,
             "\n",
-            "postgresql+asyncpg://ancap:p%40ss%3Aword@/ancap?host=%70ostgres",
+            "postgresql+asyncpg://postgres:p%40ss%3Aword@/ancap?host=%70ostgres",
             "p@ss:word",
             id="bash-deploy-encoded-socket-host-urlencoded-password",
         ),
@@ -795,7 +823,7 @@ def test_deploy_bash_loads_crlf_repo_root_dotenv_before_running_docker(tmp_path:
         tmp_path,
         script_names=("deploy-ancap-cloud.sh",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\r\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:from-dotenv@postgres:5432/ancap\r\n"
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
@@ -826,7 +854,7 @@ def test_deploy_bash_accepts_urlencoded_bundled_postgres_password(tmp_path: Path
         tmp_path,
         script_names=("deploy-ancap-cloud.sh",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:p%40ss%3Aword@postgres:5432/ancap\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:p%40ss%3Aword@postgres:5432/ancap\n"
             "POSTGRES_PASSWORD=p@ss:word\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\n"
@@ -856,7 +884,7 @@ def test_deploy_bash_runs_live_post_deploy_verification_by_default(tmp_path: Pat
         tmp_path,
         script_names=("deploy-ancap-cloud.sh",),
         dotenv_text=(
-            "DATABASE_URL=postgresql+asyncpg://ancap:from-dotenv@postgres:5432/ancap\n"
+            "DATABASE_URL=postgresql+asyncpg://postgres:from-dotenv@postgres:5432/ancap\n"
             "POSTGRES_PASSWORD=from-dotenv\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\n"
