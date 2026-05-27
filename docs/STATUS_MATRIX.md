@@ -119,8 +119,7 @@ Parallel trust/adoption track:
 - creator/developer monetization surfaces exist in baseline form
 
 **Still remaining:**
-- Stripe / fiat adapter
-- creator withdrawals
+- Stripe / fiat adapter live end-to-end verification
 - creator earnings dashboard improvements
 - workflow subscriptions
 - deeper API monetization reporting and spend controls

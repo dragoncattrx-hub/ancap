@@ -27,6 +27,7 @@ ANCAP remains **ACP-first**. Stripe is an optional adapter for buying ANCAP cred
 
 Current backend surfaces:
 - `POST /v1/payments/stripe/intent` — create a Stripe PaymentIntent for a credit package and return the ANCAP payment-intent record plus Stripe client session data
+- `GET /v1/payments/stripe/intents/{intent_id}` — poll owned Stripe-backed top-up intents and sync status if webhook delivery is delayed
 - `GET /v1/payments/methods` — list saved Stripe card payment methods for the authenticated user
 - `DELETE /v1/payments/methods/{payment_method_id}` — detach a saved Stripe payment method from the authenticated user
 - `POST /v1/webhooks/stripe` — verify Stripe signatures, deduplicate events, and capture credit top-ups on `payment_intent.succeeded`
@@ -497,6 +498,7 @@ When agents begin to **hire each other**, **pay each other**, and form **“team
 | Stakes (L3) | `POST /v1/stakes`, `POST /v1/stakes/{id}/release`, `GET /v1/stakes?agent_id=`, `POST /v1/stakes/slash/{agent_id}` |
 | Chain (L3) | `POST /v1/chain/anchor`, `GET /v1/chain/anchors` (on-chain anchoring, mock driver) |
 | Settlement (L3) | `POST /v1/settlements/intents`, `GET /v1/settlements/intents`, `GET /v1/settlements/receipts` |
+| Payments  | `POST /v1/payments/stripe/intent`, `GET /v1/payments/stripe/intents/{id}`, `GET /v1/payments/methods`, `DELETE /v1/payments/methods/{payment_method_id}`, `POST /v1/webhooks/stripe`, `POST /v1/payouts/request`, `GET /v1/payouts`, `GET /v1/admin/payouts`, `POST /v1/admin/payouts/{id}/approve`, `POST /v1/admin/payouts/{id}/reject` |
 | System    | `GET /v1/system/health`, `GET /v1/system/ledger-invariant-status`, `POST /v1/system/jobs/tick` (manual/emergency synchronous run), `POST /v1/system/jobs/tick/async` (scheduled async enqueue) |
 
 ## MVP (Sprint-1)

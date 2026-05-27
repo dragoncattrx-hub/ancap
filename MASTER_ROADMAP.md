@@ -1,7 +1,7 @@
 ﻿# ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-05-26
+> Created: 2026-05-23 | Last updated: 2026-05-27
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
 > Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
@@ -649,18 +649,29 @@ Remaining follow-through:
 
 ### 4.2 Creator earnings withdrawal [HIGH]
 
-`referral_reward` ledger event triggers on first-paid-workflow, but no withdrawal exists.
+Status: [x] Done. Creator payout requests, admin review, ledger hold/refund handling, migration history, and repo tests are implemented. Remaining future work is payout automation/completion depth, not the baseline withdrawal flow itself.
 
-New endpoints:
-- \POST /v1/payouts/request\ -- creator requests withdrawal
-- \GET /v1/payouts\ -- creator: list requests + status
-- \GET /admin/payouts\ -- admin: all requests
-- \POST /admin/payouts/{id}/approve\ -- approve -> ledger debit -> ACP transfer
-- \POST /admin/payouts/{id}/reject\ -- reject -> funds returned
+Implemented surfaces:
+- `POST /v1/payouts/request` -- creator requests ACP withdrawal
+- `GET /v1/payouts` -- creator lists own payout requests and filters by status
+- `GET /v1/admin/payouts` -- platform admin lists all payout requests
+- `POST /v1/admin/payouts/{id}/approve` -- platform admin approves a pending request and records the approval event
+- `POST /v1/admin/payouts/{id}/reject` -- platform admin rejects a pending request and refunds the held balance
 
-Model: \PayoutRequest\ (id, user_id, amount_acp, status: pending|approved|rejected|completed|failed, method: acp_wallet|bsc_address|bank_transfer, destination, created_at, updated_at, processed_at, admin_notes)
+Model in repo:
+- `PayoutRequest` with status `pending|approved|rejected|completed|failed`
+- methods: `acp_wallet|bsc_address|bank_transfer`
+- amount/destination/admin notes + request/approval/rejection ledger event links
+- migration `57b0c4a8d9ef_add_payout_requests.py`
 
-Exit criteria: Creator can request payout. Admin can approve/reject.
+Verification (2026-05-27):
+- `app/db/models.py` contains `PayoutRequest` plus `PayoutRequestStatusEnum`
+- `app/api/routers/payouts.py` implements creator request/list and admin approve/reject/list routes behind auth / platform-admin enforcement
+- create-request flow fails closed on non-ACP currency, non-positive amount, insufficient balance, and duplicate in-progress payout requests
+- create-request flow places the requested amount on ledger hold immediately; rejection restores the held ACP; approval leaves the hold in place while recording admin approval metadata for downstream/manual settlement
+- `tests/api/test_payouts.py -q` ✅ (`8 passed`) covering hold behavior, insufficient balance, duplicate prevention, admin auth, approve/reject, filters, and terminal-state reprocessing guards
+
+Exit criteria: satisfied -- creator can request payout, and admin can approve/reject it. Full automatic on-chain payout completion can be layered later without reopening this baseline item.
 
 ### 4.3 Creator earnings dashboard [MEDIUM]
 
