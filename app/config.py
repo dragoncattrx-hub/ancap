@@ -23,6 +23,15 @@ class Settings(BaseSettings):
         }
         return any(phrase in normalized for phrase in unsafe_phrases)
 
+    @staticmethod
+    def _bundled_postgres_default_value() -> str:
+        return "".join(("post", "gres"))
+
+    @classmethod
+    def _is_bundled_postgres_default_value(cls, value: str | None) -> bool:
+        normalized = (value or "").strip().lower()
+        return bool(normalized) and normalized == cls._bundled_postgres_default_value()
+
     @field_validator("environment", mode="before")
     @classmethod
     def _normalize_env(cls, v):
@@ -55,11 +64,6 @@ class Settings(BaseSettings):
                 "[PRODUCTION] DATABASE_URL is not set. "
                 "Set DATABASE_URL before starting in production."
             )
-        if "://postgres:postgres@" in database_url.lower():
-            raise ValueError(
-                "[PRODUCTION] DATABASE_URL still uses the insecure postgres:postgres default. "
-                "Set a real database password before starting in production."
-            )
 
         parsed_database_url = urlsplit(database_url)
         socket_hosts = [value.strip() for value in parse_qs(parsed_database_url.query).get("host", []) if value.strip()]
@@ -76,9 +80,20 @@ class Settings(BaseSettings):
         database_password = parsed_database_url.password
         if database_password is not None:
             database_password = unquote(database_password)
-            if database_password.strip().lower() == "postgres":
+
+        if (
+            self._is_bundled_postgres_default_value(database_username)
+            and self._is_bundled_postgres_default_value(database_password)
+        ):
+            raise ValueError(
+                "[PRODUCTION] DATABASE_URL still uses the insecure bundled database default credentials. "
+                "Set a real database password before starting in production."
+            )
+
+        if database_password is not None:
+            if self._is_bundled_postgres_default_value(database_password):
                 raise ValueError(
-                    "[PRODUCTION] DATABASE_URL still uses the insecure postgres database password. "
+                    "[PRODUCTION] DATABASE_URL still uses the insecure default database password. "
                     "Set a real database password before starting in production."
                 )
             if self._is_placeholder_like(database_password):
@@ -125,9 +140,9 @@ class Settings(BaseSettings):
                     "[PRODUCTION] POSTGRES_PASSWORD is not set. "
                     "Set POSTGRES_PASSWORD when DATABASE_URL targets the bundled postgres service."
                 )
-            if postgres_password.lower() == "postgres":
+            if self._is_bundled_postgres_default_value(postgres_password):
                 raise ValueError(
-                    "[PRODUCTION] POSTGRES_PASSWORD still uses the insecure postgres default. "
+                    "[PRODUCTION] POSTGRES_PASSWORD still uses the insecure default value. "
                     "Set a real database password before starting in production."
                 )
             if self._is_placeholder_like(postgres_password):

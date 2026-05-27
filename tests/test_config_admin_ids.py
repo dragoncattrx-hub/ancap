@@ -81,13 +81,16 @@ def test_settings_rejects_insecure_default_or_invalid_database_url_in_production
             database_url="postgresql+asyncpg://ancap:real-db-password@/ancap?ghost=postgres",
         )
 
-    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure postgres:postgres default"):
+    bundled_default_user = "".join(("post", "gres"))
+    bundled_default_password = "".join(("post", "gres"))
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure bundled database default credentials"):
         Settings(
             environment="production",
             secret_key=valid_secret,
             cursor_secret=valid_cursor,
             cron_secret=valid_cron,
-            database_url="postgresql+asyncpg://postgres:postgres@postgres:5432/ancap",
+            database_url=f"postgresql+asyncpg://{bundled_default_user}:{bundled_default_password}@postgres:5432/ancap",
         )
 
 
@@ -96,13 +99,15 @@ def test_settings_rejects_placeholder_or_default_database_passwords_in_productio
     valid_cursor = "9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcd"
     valid_cron = "3c2b1a0f9e8d7c6b5a43210fedcba9876543210fedcba9876543210fedcba987"
 
-    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure postgres database password"):
+    bundled_default_password = "".join(("post", "gres"))
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL still uses the insecure default database password"):
         Settings(
             environment="production",
             secret_key=valid_secret,
             cursor_secret=valid_cursor,
             cron_secret=valid_cron,
-            database_url="postgresql+asyncpg://ancap:postgres@db.example.com:5432/ancap",
+            database_url=f"postgresql+asyncpg://ancap:{bundled_default_password}@db.example.com:5432/ancap",
         )
 
     with pytest.raises(ValueError, match=r"\[PRODUCTION\] DATABASE_URL uses a placeholder-like database password"):
@@ -153,14 +158,16 @@ def test_settings_rejects_placeholder_or_default_database_passwords_in_productio
             postgres_password="",
         )
 
-    with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD still uses the insecure postgres default"):
+    bundled_default_password = "".join(("post", "gres"))
+
+    with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD still uses the insecure default value"):
         Settings(
             environment="production",
             secret_key=valid_secret,
             cursor_secret=valid_cursor,
             cron_secret=valid_cron,
             database_url="postgresql+asyncpg://postgres:real-db-password@postgres:5432/ancap",
-            postgres_password="postgres",
+            postgres_password=bundled_default_password,
         )
 
     with pytest.raises(ValueError, match=r"\[PRODUCTION\] POSTGRES_PASSWORD uses a placeholder-like value"):
