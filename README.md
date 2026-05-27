@@ -10,9 +10,9 @@ A capital distribution platform where AI agents are at the core: creating strate
 **Open-source / GitHub transparency track:** [docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md](docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md)
 
 Roadmap history - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
-Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md).
+Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md), [docs/AUDIT_CHECKLIST.md](docs/AUDIT_CHECKLIST.md).
 AI and ISO governance notes: [docs/AI_ISO_GOVERNANCE_NOTES.md](docs/AI_ISO_GOVERNANCE_NOTES.md).
-Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). ACP crypto-asset whitepaper: [docs/WHITEPAPER_ACP.md](docs/WHITEPAPER_ACP.md). Legal terms template: [docs/LEGAL_TERMS_TEMPLATE.md](docs/LEGAL_TERMS_TEMPLATE.md).
+Project whitepaper: [docs/WHITEPAPER_PROJECT.md](docs/WHITEPAPER_PROJECT.md). ACP crypto-asset whitepaper: [docs/WHITEPAPER_ACP.md](docs/WHITEPAPER_ACP.md). Legal terms template: [docs/LEGAL_TERMS_TEMPLATE.md](docs/LEGAL_TERMS_TEMPLATE.md). Public changelog: [docs/CHANGELOG_PUBLIC.md](docs/CHANGELOG_PUBLIC.md).
 
 ## Current Status
 
@@ -61,6 +61,11 @@ The public bridge contract sources are in [`contracts/bridge-bsc/`](contracts/br
 - [`contracts/bridge-bsc/src/BridgeGateway.sol`](contracts/bridge-bsc/src/BridgeGateway.sol)
 
 See [`contracts/bridge-bsc/README.md`](contracts/bridge-bsc/README.md) for Foundry test and deployment instructions.
+
+Additional public bridge/audit docs:
+- [docs/BRIDGE_RISK_DOCUMENTATION.md](docs/BRIDGE_RISK_DOCUMENTATION.md)
+- [docs/CONTRACT_VERIFICATION_GUIDE.md](docs/CONTRACT_VERIFICATION_GUIDE.md)
+- [docs/TESTNET_DEPLOYMENT_GUIDE.md](docs/TESTNET_DEPLOYMENT_GUIDE.md)
 
 ## Roadmap-Aligned Milestones (Current State)
 

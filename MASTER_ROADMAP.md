@@ -228,12 +228,12 @@ Sprint 2 - Public Developer Base
 Sprint 3 - Community + Audit Readiness
 - [x] Add public security policy
 - [x] Add responsible disclosure process
-- [ ] Add bridge risk documentation
-- [ ] Add contract verification guide
-- [ ] Add public changelog
+- [x] Add bridge risk documentation
+- [x] Add contract verification guide
+- [x] Add public changelog
 - [ ] Add release tags
-- [ ] Add testnet deployment guide
-- [ ] Add audit checklist
+- [x] Add testnet deployment guide
+- [x] Add audit checklist
 
 ## Source documents this roadmap supersedes
 
