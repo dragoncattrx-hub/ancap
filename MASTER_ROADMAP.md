@@ -832,13 +832,23 @@ Truth constraints:
 
 ### 6.1 Deployment story cleanup [MEDIUM]
 
+Status: [x] Done. The abandoned Cloudflare Workers repo path was removed; Docker/containerized deploy is now the single repo-declared production path.
+
 Problem: Two conflicting deployment paths:
-1. Docker/Containerized: \rontend-app/Dockerfile\ + \docker-compose.prod.yml\ (confirmed working)
-2. Cloudflare Workers: \wrangler.jsonc\ + static framework (appears abandoned)
+1. Docker/Containerized: `frontend-app/Dockerfile` + `docker-compose.prod.yml` (confirmed working)
+2. Cloudflare Workers: `wrangler.jsonc` + static framework (appeared abandoned)
 
-PR #1 added Cloudflare Workers config but actual production uses containerized approach.
+PR #1 had added Cloudflare Workers config but actual production uses the containerized approach.
 
-Fix: Either delete \wrangler.jsonc\ and cloudflare/ dir, OR fully migrate to Cloudflare Workers. Do not keep both.
+Implemented:
+- removed stale `wrangler.jsonc` from the repo
+- kept Docker/nginx deployment as the canonical production path
+- aligned repo state with the already-working production topology instead of keeping a broken parallel build path
+
+Verification (2026-05-27):
+- repo no longer contains `wrangler.jsonc`
+- production deploy path remains `docker-compose.prod.yml` + deploy scripts
+- GitHub/Cloudflare no longer have a repo-declared abandoned Workers config to treat as a build source
 
 ### 6.2 Dependency management consolidation [MEDIUM]
 
