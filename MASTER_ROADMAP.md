@@ -675,13 +675,22 @@ Exit criteria: satisfied -- creator can request payout, and admin can approve/re
 
 ### 4.3 Creator earnings dashboard [MEDIUM]
 
-Page: \/dashboard/seller/earnings\ (new)
+Status: [x] Done. Creator earnings/conversion endpoints, seller dashboard UI, timeline chart, and CSV export are implemented and passing validation. Remaining future work is deeper funnel instrumentation for views/add-to-cart/checkout-started, not the baseline creator earnings surface.
 
-New endpoints:
-- \GET /v1/creators/me/earnings\ -- total_earnings_acp, pending_payout_acp, paid_out_acp, earnings_by_workflow[], earnings_by_period[], conversion_rate
-- \GET /v1/creators/me/conversions\ -- views, add_to_cart, checkout_started, completed by listing and period
+Implemented surfaces:
+- `GET /v1/creators/me/earnings` -- total/window revenue, pending payout, paid out, workflow breakdown, per-day earnings timeline
+- `GET /v1/creators/me/conversions` -- listing/period conversion counts with explicit funnel coverage metadata
+- `/dashboard/seller/earnings` -- seller-facing revenue cards, workflow breakdown, conversion coverage panel, daily line chart, CSV export
+- seller dashboard quick-link now points creators directly to the new earnings page
 
-UI: Line chart (revenue over time), breakdown by workflow, pending vs paid, CSV export.
+Verification (2026-05-27):
+- `app/api/routers/creators.py` aggregates creator-owned listing revenue from paid ACP orders and payout backlog/completions
+- `app/schemas/creators.py` defines the public response contracts for earnings timelines and conversion summaries
+- `tests/api/test_creators.py -q` ✅ (`3 passed`) covering earnings aggregation, conversion coverage defaults, and auth enforcement
+- `pytest tests/api/test_creators.py tests/api/test_payouts.py -q` ✅ (`11 passed`) confirming the earnings dashboard slice stays consistent with payout-hold/refund behavior
+- `npm run build` in `frontend-app` ✅, including the new `/dashboard/seller/earnings` route in the production build output
+
+Exit criteria: satisfied -- creators can inspect revenue by workflow/day, see pending vs paid payout state, export CSV, and understand current funnel coverage limits.
 
 ### 4.4 Subscriptions for workflows [MEDIUM]
 

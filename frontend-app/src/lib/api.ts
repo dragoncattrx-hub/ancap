@@ -1199,6 +1199,15 @@ export const payments = {
   },
 };
 
+export const creators = {
+  async getMyEarnings(days = 30) {
+    return apiFetch(`/creators/me/earnings?days=${encodeURIComponent(String(days))}`);
+  },
+  async getMyConversions(days = 30) {
+    return apiFetch(`/creators/me/conversions?days=${encodeURIComponent(String(days))}`);
+  },
+};
+
 export const organizations = {
   async list() {
     return apiFetch("/organizations");

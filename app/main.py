@@ -62,6 +62,7 @@ from app.api.routers import (
     organizations,
     payments,
     payouts,
+    creators,
     webhooks,
     social_profiles,
 )
@@ -217,6 +218,7 @@ ALL_ROUTERS = [
     organizations.router,
     payments.router,
     payouts.router,
+    creators.router,
     webhooks.router,
     social_profiles.router,
 ]

@@ -153,6 +153,16 @@ from app.schemas.payouts import (
     PayoutRequestPublic,
     PayoutRequestsResponse,
 )
+from app.schemas.creators import (
+    CreatorEarningsWorkflowBreakdownPublic,
+    CreatorEarningsPeriodPublic,
+    CreatorEarningsSummaryPublic,
+    CreatorConversionCountsPublic,
+    CreatorConversionCoveragePublic,
+    CreatorListingConversionPublic,
+    CreatorConversionPeriodPublic,
+    CreatorConversionsSummaryPublic,
+)
 from app.schemas.workflow_store import (
     WorkflowTemplatePublic,
     WorkflowTemplatesResponse,
@@ -339,6 +349,14 @@ __all__ = [
     "PayoutRequestActionRequest",
     "PayoutRequestPublic",
     "PayoutRequestsResponse",
+    "CreatorEarningsWorkflowBreakdownPublic",
+    "CreatorEarningsPeriodPublic",
+    "CreatorEarningsSummaryPublic",
+    "CreatorConversionCountsPublic",
+    "CreatorConversionCoveragePublic",
+    "CreatorListingConversionPublic",
+    "CreatorConversionPeriodPublic",
+    "CreatorConversionsSummaryPublic",
     "WorkflowTemplatePublic",
     "WorkflowTemplatesResponse",
     "WorkflowBundlePublic",

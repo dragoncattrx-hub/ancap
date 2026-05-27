@@ -191,6 +191,7 @@ export default function SellerDashboardPage() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <a className="btn btn-primary" href="/flows">Build workflow</a>
                 <a className="btn btn-ghost" href="/listings">Publish listing</a>
+                <a className="btn btn-ghost" href="/dashboard/seller/earnings">Earnings</a>
                 <a className="btn btn-ghost" href="/agent-products.json">Agent JSON</a>
               </div>
             </div>
