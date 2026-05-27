@@ -852,24 +852,22 @@ Fix:
 
 ### 6.3 Formal releases and tags [MEDIUM]
 
+Status: [x] Done. A real tag-triggered GitHub release workflow is now in repo and test-covered.
+
 Problem: No GitHub Releases / tags. \LOG.md\ is the changelog.
 
-Fix: Add \.github/workflows/release.yml\:
-\\\yaml
-on:
-  push:
-    tags: ["v*"]
-jobs:
-  build:
-    # tests + build
-  draft-release:
-    steps:
-      - uses: softprops/action-gh-release@v1
-        with:
-          generate_release_notes: true
-\\\
+Implemented:
+- `.github/workflows/release.yml` now runs on `push.tags: ["v*"]`
+- backend release gate runs Alembic, `pytest -q`, Bandit, and `docker build -t ancap:release-check .`
+- frontend release gate runs `npm test -- --run`, `npm run lint`, and `npm run build`
+- final `draft-release` job waits on both gates and uses `softprops/action-gh-release@v1` with `draft: true` and `generate_release_notes: true`
+- `tests/test_release_workflow.py` locks the release trigger, gate jobs, and draft-release behavior into CI coverage
 
-Policy: every merge to master touching \pp/\ or \rontend-app/\ -> bump patch. Feature branches -> minor. Breaking changes -> major. Tag format: \YYYY.MM.DD\ or \MAJOR.MINOR.PATCH\.
+Verification (2026-05-27):
+- `pytest tests/test_release_workflow.py -q` ✅
+- release workflow file present in repo at `.github/workflows/release.yml`
+
+Policy: every merge to master touching \app/\ or \frontend-app/\ -> bump patch. Feature branches -> minor. Breaking changes -> major. Tag format: \vYYYY.MM.DD\ or \vMAJOR.MINOR.PATCH\.
 
 ### 6.4 Documentation health [LOW]
 
