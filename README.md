@@ -44,6 +44,24 @@ Current first-slice Stripe currencies:
 
 If those values are empty, Stripe endpoints fail closed with `503` and ACP/manual flows stay available. Unsupported Stripe currencies fail closed with `400` instead of silently creating mismatched checkout intents.
 
+## Public integration examples
+
+Public-safe reference integrations live under [`examples/`](examples/README.md):
+
+- [`examples/payment-integration/python_credit_topup.py`](examples/payment-integration/python_credit_topup.py) — create and poll a Stripe-backed ANCAP credit top-up intent
+- [`examples/wallet-connection/python_wallet_login.py`](examples/wallet-connection/python_wallet_login.py) — request a wallet auth challenge, sign it locally, verify it, and fetch `/v1/users/me`
+
+These are intentionally minimal examples for the GitHub transparency / open-integration track and do not expose private operator infrastructure.
+
+## wACP public contract source
+
+The public bridge contract sources are in [`contracts/bridge-bsc/`](contracts/bridge-bsc/README.md):
+
+- [`contracts/bridge-bsc/src/WACP.sol`](contracts/bridge-bsc/src/WACP.sol)
+- [`contracts/bridge-bsc/src/BridgeGateway.sol`](contracts/bridge-bsc/src/BridgeGateway.sol)
+
+See [`contracts/bridge-bsc/README.md`](contracts/bridge-bsc/README.md) for Foundry test and deployment instructions.
+
 ## Roadmap-Aligned Milestones (Current State)
 
 - **Public governance surface:** delivered in production (proposal lifecycle, audit trail, moderation hooks).

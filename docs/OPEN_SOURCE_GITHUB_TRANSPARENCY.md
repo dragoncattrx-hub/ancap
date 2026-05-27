@@ -116,3 +116,18 @@ People should be able to inspect:
 - integration examples
 - security posture
 - audit readiness
+
+## Current publishable surfaces already in repo
+
+Examples:
+- `examples/payment-integration/python_credit_topup.py`
+- `examples/wallet-connection/python_wallet_login.py`
+
+Public contract sources:
+- `contracts/bridge-bsc/src/WACP.sol`
+- `contracts/bridge-bsc/src/BridgeGateway.sol`
+
+Supporting contract docs:
+- `contracts/bridge-bsc/README.md`
+- `docs/bridge-spec-v1.md`
+- `docs/bridge-pilot-mainnet.md`

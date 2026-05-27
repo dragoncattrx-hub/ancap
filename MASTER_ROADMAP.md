@@ -38,7 +38,7 @@ Important: some older roadmap documents still read as more complete than the rep
 - AI governance: tracked in \docs/AI_ISO_GOVERNANCE_NOTES.md\
 - Public trust layer: whitepapers, terms, privacy, cookie consent published before broader paid acquisition
 - CI rule: no \|| true\ soft-fails. A failing gate must fail the build.
-- Open-source positioning rule: **ANCAP will be open-source where transparency increases trust, integration and adoption — while security-critical infrastructure, private keys, bridge signer operations, wallet hot-key logic and production secrets remain protected.**
+- Open-source positioning rule: **ANCAP will be open-source where transparency increases trust, integration and adoption - while security-critical infrastructure, private keys, bridge signer operations, wallet hot-key logic and production secrets remain protected.**
 
 ## Open Source & GitHub Transparency
 
@@ -57,7 +57,7 @@ Critical boundary:
 
 Reference detail: `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`
 
-### Phase 1 — GitHub Public Foundation
+### Phase 1 - GitHub Public Foundation
 
 Execution targets:
 - create a public GitHub org (`ANCAP` or `ancap-network`) when ownership/naming is finalized;
@@ -67,7 +67,7 @@ Execution targets:
 - add GitHub issue templates and a PR template;
 - enable GitHub secret scanning, push protection, Dependabot, CodeQL, and branch protection.
 
-### Phase 2 — Open Source Scope
+### Phase 2 - Open Source Scope
 
 Safe-to-open scope:
 1. Core documentation
@@ -116,23 +116,23 @@ Explicitly private scope:
 - server credentials
 - abuse-sensitive operational thresholds that should not be public
 
-### Phase 3 — Repository Structure
+### Phase 3 - Repository Structure
 
 Target public structure after the current monorepo hardening phase:
-- `ancap-docs` — public documentation, roadmap, whitepaper, architecture, tokenomics
-- `ancap-web` — public website and landing frontend
-- `ancap-wallet` — mobile/web wallet interface and Smart QR Pay UI
-- `ancap-sdk` — TypeScript SDK for ACP / wACP integrations
-- `ancap-contracts` — wACP contract, bridge public contracts, deployment scripts
-- `ancap-examples` — merchant/payment/API/QR integration examples
-- `ancap-core` — publishable protocol components safe for public review
+- `ancap-docs` - public documentation, roadmap, whitepaper, architecture, tokenomics
+- `ancap-web` - public website and landing frontend
+- `ancap-wallet` - mobile/web wallet interface and Smart QR Pay UI
+- `ancap-sdk` - TypeScript SDK for ACP / wACP integrations
+- `ancap-contracts` - wACP contract, bridge public contracts, deployment scripts
+- `ancap-examples` - merchant/payment/API/QR integration examples
+- `ancap-core` - publishable protocol components safe for public review
 
 Private target repos:
 - `ancap-infra`
 - `ancap-bridge-operator`
 - `ancap-admin`
 
-### Phase 4 — Licensing
+### Phase 4 - Licensing
 
 Default licensing direction:
 - Apache-2.0 for core / protocol / SDK / contracts
@@ -142,7 +142,7 @@ Default licensing direction:
 Current repo decision:
 - this mixed monorepo defaults to **Apache-2.0** until the codebase is split into dedicated public repos with component-specific licensing if needed.
 
-### Phase 5 — GitHub Security Baseline
+### Phase 5 - GitHub Security Baseline
 
 Before publishing any additional repo or public split:
 - remove `.env`, private keys, mnemonics, tokens, and RPC keys;
@@ -155,7 +155,7 @@ Before publishing any additional repo or public split:
 - define revoke/rotate procedure for leaked credentials;
 - publish `SECURITY.md` and responsible disclosure instructions.
 
-### Phase 6 — Public Transparency for ACP / wACP
+### Phase 6 - Public Transparency for ACP / wACP
 
 Public docs must explain:
 - what ACP is;
@@ -171,7 +171,7 @@ Public docs must explain:
 - scam/fake contract warnings;
 - how users verify contracts and transactions.
 
-### Phase 7 — Community Contribution Model
+### Phase 7 - Community Contribution Model
 
 Community baseline:
 - GitHub Issues for bug reports and feature requests;
@@ -183,7 +183,7 @@ Community baseline:
 - changelog;
 - release notes.
 
-### Phase 8 — GitHub as Trust Layer
+### Phase 8 - GitHub as Trust Layer
 
 GitHub should function as public proof that ANCAP is a live technical project.
 
@@ -199,9 +199,9 @@ Publish and maintain:
 - public issues
 - public milestones
 
-### Immediate execution queue — Open Source Preparation
+### Immediate execution queue - Open Source Preparation
 
-Sprint 1 — Open Source Preparation
+Sprint 1 - Open Source Preparation
 - [ ] Create GitHub organization
 - [ ] Create public `ancap-docs`
 - [x] Add README.md
@@ -215,17 +215,17 @@ Sprint 1 — Open Source Preparation
 - [x] Enable GitHub secret scanning
 - [x] Enable branch protection
 
-Sprint 2 — Public Developer Base
+Sprint 2 - Public Developer Base
 - [x] Publish API overview
 - [x] Publish Smart QR Pay specification
 - [x] Publish ACP / wACP conversion rules
-- [ ] Publish wACP contract source
+- [x] Publish wACP contract source
 - [x] Publish SDK skeleton
-- [ ] Add example payment integration
-- [ ] Add example wallet connection flow
+- [x] Add example payment integration
+- [x] Add example wallet connection flow
 - [x] Add GitHub issue templates
 
-Sprint 3 — Community + Audit Readiness
+Sprint 3 - Community + Audit Readiness
 - [x] Add public security policy
 - [x] Add responsible disclosure process
 - [ ] Add bridge risk documentation
@@ -280,7 +280,7 @@ Files: \docker-compose.prod.yml\, \pp/config.py\
 
 Verification (2026-05-25):
 - `docker-compose.prod.yml` now requires `DATABASE_URL`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `CURSOR_SECRET`, and `CRON_SECRET` without production fallbacks; compose `${VAR:?message}` guards make `docker compose config/up` fail immediately when any required secret is unset, and the API service now explicitly receives `POSTGRES_PASSWORD` too so the app-level production parity guard can validate bundled-postgres `DATABASE_URL` / `POSTGRES_PASSWORD` consistency at runtime instead of only in deploy-script preflight
-- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, rejects blank or non-absolute `DATABASE_URL` values and the insecure bundled-db default credentials, rejects placeholder/default DB passwords hidden inside `DATABASE_URL`, URL-decodes bundled-postgres passwords before comparison, and when the bundled compose `postgres` service is targeted — whether via authority host `@postgres:...` or socket/query host `?host=postgres` — it now also requires a real non-default non-placeholder `POSTGRES_PASSWORD` plus exact `DATABASE_URL` / `POSTGRES_PASSWORD` parity
+- `app/config.py` fails fast in `environment=production` when `SECRET_KEY`, `CURSOR_SECRET`, or `CRON_SECRET` are missing/placeholder-like, rejects blank or non-absolute `DATABASE_URL` values and the insecure bundled-db default credentials, rejects placeholder/default DB passwords hidden inside `DATABASE_URL`, URL-decodes bundled-postgres passwords before comparison, and when the bundled compose `postgres` service is targeted - whether via authority host `@postgres:...` or socket/query host `?host=postgres` - it now also requires a real non-default non-placeholder `POSTGRES_PASSWORD` plus exact `DATABASE_URL` / `POSTGRES_PASSWORD` parity
 - `scripts/deploy-ancap-cloud.ps1`, `scripts/deploy-ancap-cloud.sh`, and `scripts/rebuild-prod.ps1` now load repo-root `.env`, assert those required production secrets are present (including `POSTGRES_PASSWORD` for the bundled compose postgres service), reject placeholder-like `SECRET_KEY` / `CURSOR_SECRET` / `CRON_SECRET` values before compose startup, reject the insecure default `DATABASE_URL`, reject placeholder/default DB passwords embedded in `DATABASE_URL`, reject `DATABASE_URL` / `POSTGRES_PASSWORD` drift for the bundled compose postgres service (including socket/query-host DSNs such as `?host=postgres`), avoid shadowing compose interpolation with the bridge-only env file, and the bash helper now parses repo-root `.env` directly so CRLF-authored env files do not break preflight on Linux/WSL
 - PowerShell deploy/rebuild and bash deploy preflight now also correctly accept URL-encoded bundled-postgres passwords inside `DATABASE_URL` (for example `p%40ss%3Aword`) while still comparing them against the raw `POSTGRES_PASSWORD` value, avoiding false mismatch failures when real secrets contain reserved URL characters, including the socket/query-host `?host=postgres` DSN form and percent-encoded socket-host query variants such as `?host=%70ostgres`
 - `tests/test_prod_deploy_scripts.py` now goes beyond string-presence assertions and actually exercises the deploy/rebuild helpers against staged minimal repos, confirming that PowerShell deploy/rebuild and bash deploy can bootstrap required production secrets from a repo-root `.env` without relying on pre-exported shell state, including the CRLF-authored `.env` case for the bash helper and URL-encoded `DATABASE_URL` password handling across authority-host and socket/query-host bundled-postgres DSN variants; it now also directly exercises real `docker compose -f docker-compose.prod.yml config --quiet` success/failure behavior so the compose required-var guard itself is covered, including fail-fast proof that a missing required secret does not dump the other provided secret values to stdout/stderr
@@ -338,7 +338,7 @@ Verification (2026-05-26):
 - new workflow `.github/workflows/dependency-review.yml` runs `actions/dependency-review-action@v4` on PRs that change Python or npm dependency manifests / lockfiles and fails on `moderate`+ findings
 - `pytest tests/test_dependency_review_workflow.py tests/test_system_jobs_tick_workflow.py -q` passes
 
-Exit criteria: satisfied — dependency update automation is enabled, secret scanning / push protection are on, and dependency PRs get a real review gate instead of relying on docs-only intent.
+Exit criteria: satisfied - dependency update automation is enabled, secret scanning / push protection are on, and dependency PRs get a real review gate instead of relying on docs-only intent.
 
 ### 1.3 Add CodeQL scanning [HIGH]
 
@@ -349,13 +349,13 @@ File: `/.github/workflows/codeql.yml`
 Verification (2026-05-26):
 - `.github/workflows/codeql.yml` scans Python, JavaScript/TypeScript, and GitHub Actions on push / pull_request plus the weekly Monday 06:00 UTC schedule
 - recent successful real CodeQL runs on `master`:
-  - `26463212516` — `fix(frontend): remove duplicate page backgrounds after layout rollout`
-  - `26460632345` — `fix(ci): harden e2e smoke and system jobs guards`
-  - `26460162797` — `fix(ci): stabilize frontend e2e smoke and golden path`
+  - `26463212516` - `fix(frontend): remove duplicate page backgrounds after layout rollout`
+  - `26460632345` - `fix(ci): harden e2e smoke and system jobs guards`
+  - `26460162797` - `fix(ci): stabilize frontend e2e smoke and golden path`
 - `GET /repos/dragoncattrx-hub/ancap/code-scanning/alerts` returns live CodeQL results (currently 89 open alerts; sample rule: `js/unused-local-variable` created `2026-05-26T16:09:58Z`), proving the workflow is publishing findings into GitHub code scanning
 - `GET /repos/dragoncattrx-hub/ancap/code-scanning/default-setup` currently reports `state: not-configured`, which is expected because this repo uses the explicit workflow above instead of GitHub's default setup wizard
 
-Exit criteria: satisfied — CodeQL is running on the intended languages in real GitHub Actions and feeding the code-scanning surface.
+Exit criteria: satisfied - CodeQL is running on the intended languages in real GitHub Actions and feeding the code-scanning surface.
 
 ### 1.4 Playwright E2E in CI [HIGH]
 
@@ -397,7 +397,7 @@ Fix: Keep the `e2e-tests` job in `frontend-ci.yml`, keep `scripts/run-e2e-ci-smo
 
 Files needed: `playwright.config.ts` and the E2E specs already exist; local repro helper now lives in `scripts/run-e2e-ci-smoke.ps1`.
 
-Exit criteria: satisfied — the same E2E path now runs successfully in GitHub Actions on a real push.
+Exit criteria: satisfied - the same E2E path now runs successfully in GitHub Actions on a real push.
 
 ### 1.5 RESTRICT ops/diagnostics endpoints [HIGH]
 
@@ -435,7 +435,7 @@ Verification (2026-05-26):
   - `/api/v1/system/health/full` -> `200` in `0.0226s`
 - unauthenticated access to `GET /api/v1/internal/ops/diagnostics` on the same prod-like path is denied with `401`, confirming deep diagnostics are no longer public
 
-Exit criteria: satisfied — public endpoints return < 200ms without external I/O, and deep diagnostics remain internal/admin-protected.
+Exit criteria: satisfied - public endpoints return < 200ms without external I/O, and deep diagnostics remain internal/admin-protected.
 
 ### 1.6 Separate jobs_tick from HTTP [HIGH]
 
@@ -464,7 +464,7 @@ Verification (2026-05-26):
   - `POST /api/v1/system/jobs/tick/async` with the real `X-Cron-Secret` returned `202` in `0.4565s`
   - the created `system_job_runs` row `6196cb8c-3546-4316-bb5b-2751c02db0f3` completed as `succeeded` with `attempts=1` and `trigger_source=api`
 
-Exit criteria: satisfied — the scheduled path now uses the async enqueue route, returns in < 1s, and heavy work completes in background job records instead of the scheduler request path.
+Exit criteria: satisfied - the scheduled path now uses the async enqueue route, returns in < 1s, and heavy work completes in background job records instead of the scheduler request path.
 
 ---
 
@@ -490,7 +490,7 @@ Verification (2026-05-26):
   - owner-enforced allocation only for owned pools, with explicit legacy-null-owner compatibility
 - `pytest tests/test_pools.py tests/test_ledger.py -q` passes (`9 passed`)
 
-Exit criteria: satisfied — pool ownership is implemented, verified, and documented; any future product decision to forbid legacy null-owner pools is a separate tightening pass, not unfinished core ownership work.
+Exit criteria: satisfied - pool ownership is implemented, verified, and documented; any future product decision to forbid legacy null-owner pools is a separate tightening pass, not unfinished core ownership work.
 
 ### 2.2 Fix economy_health async/sync bug [MEDIUM]
 
@@ -543,7 +543,7 @@ Verification (2026-05-26):
 - `pytest tests/test_auth.py tests/test_system.py tests/api/test_system_economy_health.py -q` passes
 - `npm run build` in `frontend-app` passes
 
-Exit criteria: satisfied — no Bearer tokens are stored in localStorage for auth and CSRF protection is active on cookie-authenticated unsafe routes.
+Exit criteria: satisfied - no Bearer tokens are stored in localStorage for auth and CSRF protection is active on cookie-authenticated unsafe routes.
 
 ### 3.2 SameSite cookie + CORS hardening [MEDIUM]
 
@@ -560,7 +560,7 @@ Verification (2026-05-26):
 - the same preflight from a disallowed origin returns `400 Disallowed CORS origin`, confirming the app stayed explicit instead of drifting back to wildcard behavior
 - `tests/test_auth.py` now locks those allowed-origin and rejected-origin preflight expectations in addition to the existing cookie-authenticated logout guard
 
-Exit criteria: satisfied — browser preflight/runtime verification is in place and any future route-specific header expansion must be added deliberately to the explicit CORS allowlist.
+Exit criteria: satisfied - browser preflight/runtime verification is in place and any future route-specific header expansion must be added deliberately to the explicit CORS allowlist.
 
 ### 3.3 Production security header alignment [LOW]
 
