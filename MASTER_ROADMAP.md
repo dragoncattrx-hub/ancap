@@ -1,7 +1,7 @@
 ﻿# ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-05-27
+> Created: 2026-05-23 | Last updated: 2026-05-28
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
 > Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
@@ -231,7 +231,7 @@ Sprint 3 - Community + Audit Readiness
 - [x] Add bridge risk documentation
 - [x] Add contract verification guide
 - [x] Add public changelog
-- [ ] Add release tags
+- [x] Add release tags
 - [x] Add testnet deployment guide
 - [x] Add audit checklist
 

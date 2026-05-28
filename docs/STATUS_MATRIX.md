@@ -162,7 +162,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | CI hardening | Partial | Repo changes exist; live verification/settings still open |
 | Secret remediation | Partial | Cleanup done in repo; external revoke/rotation still open |
 | Monetization expansion | Partial | First loop exists; depth features remain |
-| Release workflow / tagging / dep hygiene | Partial | Still open |
+| Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo and the `v1.0.0` release tag is already present; broader release closure still depends on the remaining top-line roadmap tails. |
 
 ---
 

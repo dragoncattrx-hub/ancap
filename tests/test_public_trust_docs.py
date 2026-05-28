@@ -47,6 +47,6 @@ def test_master_roadmap_marks_documented_sprint3_items_done():
     assert "- [x] Add bridge risk documentation" in roadmap_text
     assert "- [x] Add contract verification guide" in roadmap_text
     assert "- [x] Add public changelog" in roadmap_text
+    assert "- [x] Add release tags" in roadmap_text
     assert "- [x] Add testnet deployment guide" in roadmap_text
     assert "- [x] Add audit checklist" in roadmap_text
-    assert "- [ ] Add release tags" in roadmap_text
