@@ -23,6 +23,7 @@ Use this runbook when:
 3. If the leak was already pushed/shared, still assume compromise even if the commit is later removed.
 4. Re-run the Priority 0.1 repo scan from `MASTER_ROADMAP.md`.
 5. Run:
+   - `python scripts/check_secret_hygiene.py`
    - `pytest tests/test_secret_hygiene.py -q`
 6. Confirm docs/examples use neutral placeholders or blank env vars instead of token-shaped examples.
 

@@ -25,8 +25,9 @@ Complete **all** items before cutting a release branch:
 git checkout master && git pull
 python -m pytest tests/ -q --tb=short
 
-# 2. No secrets in the working tree
-git diff HEAD --staged -- . | grep -i "secret\|password\|key" || true
+# 2. Secret hygiene gates pass before release
+python scripts/check_secret_hygiene.py
+pytest tests/test_secret_hygiene.py -q
 git status --short
 
 # 3. Alembic migrations are at head

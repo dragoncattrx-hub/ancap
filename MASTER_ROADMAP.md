@@ -258,6 +258,8 @@ Verification (2026-05-25 / 2026-05-28):
 - the tracked plaintext-key snippet is absent from the repo
 - repo-side token-shaped examples were removed from tracked docs
 - repo scan found no other live leaked-token patterns; the only remaining sk-aw-... matches are this roadmap's own remediation notes / grep example
+- `scripts/check_secret_hygiene.py` now gives the repo a repeatable tracked-files secret-pattern scan so this verification is executable instead of living only as a one-off grep note
+- `.github/workflows/secret-hygiene.yml` now runs that scan on pushes / pull requests, and `.github/workflows/release.yml` also gates tagged releases with the same scan plus `pytest tests/test_secret_hygiene.py -q`
 - `docs/SECRET_ROTATION_RUNBOOK.md` now captures the operator-side containment / revoke / replace / evidence checklist so the remaining manual work is explicit instead of living only in status notes
 
 Action (in order):

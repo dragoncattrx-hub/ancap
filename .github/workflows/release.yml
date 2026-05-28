@@ -48,6 +48,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[dev]
 
+      - name: Secret hygiene scan
+        run: python scripts/check_secret_hygiene.py
+
+      - name: Secret hygiene regression
+        run: pytest tests/test_secret_hygiene.py -q
+
       - name: Run Alembic migrations
         run: alembic upgrade head
 
