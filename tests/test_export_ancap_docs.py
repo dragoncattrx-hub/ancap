@@ -13,6 +13,10 @@ EXPECTED_EXPORTS = {
     Path("CONTRIBUTING.md"),
     Path("SECURITY.md"),
     Path("CODE_OF_CONDUCT.md"),
+    Path(".github/pull_request_template.md"),
+    Path(".github/ISSUE_TEMPLATE/bug_report.md"),
+    Path(".github/ISSUE_TEMPLATE/feature_request.md"),
+    Path(".github/ISSUE_TEMPLATE/config.yml"),
     Path("MASTER_ROADMAP.md"),
     Path("docs/STATUS_MATRIX.md"),
     Path("docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md"),
@@ -40,7 +44,12 @@ def test_export_script_contains_split_plan_and_manifest_guardrails():
 
     assert 'Path("docs/ANCAP_DOCS_SPLIT.md")' in script_text
     assert 'Path("docs/ANCAP_DOCS_REPO_README.md")' in script_text
+    assert 'Path(".github/pull_request_template.md")' in script_text
+    assert 'Path(".github/ISSUE_TEMPLATE/bug_report.md")' in script_text
+    assert 'Path(".github/ISSUE_TEMPLATE/feature_request.md")' in script_text
+    assert 'Path(".github/ISSUE_TEMPLATE/config.yml")' in script_text
     assert 'EXPORT_MANIFEST.md' in script_text
+    assert 'issue/PR templates' in script_text
     assert 'hot-wallet / bridge-signer internals' in script_text
     assert 'rewrite_markdown_links' in script_text
     assert 'find_unresolved_bundle_links' in script_text
@@ -70,6 +79,7 @@ def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
     assert manifest_path.exists()
     manifest_text = manifest_path.read_text(encoding="utf-8")
     assert "future public `ancap-docs` repository" in manifest_text
+    assert "issue/PR templates" in manifest_text
     assert "runtime secrets" in manifest_text
     assert "infra/" in manifest_text
     assert "rewritten to the source monorepo on GitHub" in manifest_text
@@ -123,6 +133,30 @@ def test_export_bundle_has_no_broken_relative_markdown_links(tmp_path: Path):
         assert find_unresolved_bundle_links(target_dir) == []
     finally:
         sys.path.pop(0)
+
+
+def test_export_bundle_includes_public_safe_github_templates(tmp_path: Path):
+    target_dir = tmp_path / "ancap-docs-export"
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--target", str(target_dir), "--clean"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    pr_template = (target_dir / ".github" / "pull_request_template.md").read_text(encoding="utf-8")
+    bug_template = (target_dir / ".github" / "ISSUE_TEMPLATE" / "bug_report.md").read_text(encoding="utf-8")
+    feature_template = (target_dir / ".github" / "ISSUE_TEMPLATE" / "feature_request.md").read_text(encoding="utf-8")
+    config_template = (target_dir / ".github" / "ISSUE_TEMPLATE" / "config.yml").read_text(encoding="utf-8")
+
+    assert "No secrets or sensitive infra details added" in pr_template
+    assert "Do **not** include secrets" in bug_template
+    assert "Which area is affected?" in feature_template
+    assert "Security issue" in config_template
 
 
 def test_export_bundle_root_readme_comes_from_docs_repo_template(tmp_path: Path):

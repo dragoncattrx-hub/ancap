@@ -18,6 +18,10 @@ The initial export should include:
   - `CONTRIBUTING.md`
   - `SECURITY.md`
   - `CODE_OF_CONDUCT.md`
+  - `.github/pull_request_template.md`
+  - `.github/ISSUE_TEMPLATE/bug_report.md`
+  - `.github/ISSUE_TEMPLATE/feature_request.md`
+  - `.github/ISSUE_TEMPLATE/config.yml`
   - `MASTER_ROADMAP.md`
 - public-facing status and open-source docs:
   - `docs/STATUS_MATRIX.md`
@@ -54,7 +58,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -75,5 +79,6 @@ This prep slice is complete when:
 2. the export command is scripted and repeatable,
 3. tests lock the bundle contents, link-rewrite behavior, and safety boundaries,
 4. the future repo can be created from the generated bundle without manual scavenging through the monorepo,
-5. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
-6. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README.
+5. contributor-facing issue/PR templates are already present in the exported seed instead of needing a second manual copy step,
+6. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
+7. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README.

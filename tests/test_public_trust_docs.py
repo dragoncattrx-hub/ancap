@@ -68,8 +68,12 @@ def test_docs_split_plan_and_export_script_are_linked_and_reflected_in_roadmap()
     assert "docs/ANCAP_DOCS_SPLIT.md" in readme_text
     assert "docs/ANCAP_DOCS_SPLIT.md" in open_source_doc_text
     assert "scripts/export_ancap_docs.py" in open_source_doc_text
+    assert ".github/pull_request_template.md" in docs_split_text
+    assert ".github/ISSUE_TEMPLATE/bug_report.md" in docs_split_text
     assert "docs/ANCAP_DOCS_REPO_README.md" in docs_split_text
     assert "docs-focused root `README.md`" in open_source_doc_text
+    assert "issue/PR templates" in open_source_doc_text
     assert "docs-focused root README" in roadmap_text
+    assert "issue/PR templates" in roadmap_text
     assert "public-safe documentation landing page" in docs_repo_readme_text
     assert "- [~] Create public `ancap-docs`" in roadmap_text
