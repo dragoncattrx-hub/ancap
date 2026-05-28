@@ -4,6 +4,37 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-05-28 — `ancap-docs` export hardening for standalone public repo seeding
+
+### What landed
+
+- **`scripts/export_ancap_docs.py`**
+  - upgraded the public-docs export from raw file copying to a safer standalone bundle build.
+  - Markdown files in the export are now rewritten so links that point **outside** the `ancap-docs` bundle resolve to the source monorepo on GitHub instead of breaking inside the future docs-only repo.
+  - added post-export validation that fails the build if any relative Markdown links inside the bundle still point to missing targets.
+  - expanded `EXPORT_MANIFEST.md` text so the bundle explicitly documents the GitHub fallback behavior for rewritten links.
+- **`tests/test_export_ancap_docs.py`**
+  - extended coverage beyond file presence/manifest checks.
+  - now asserts the export script contains link-rewrite + unresolved-link guardrails, verifies representative rewritten links in exported files, and checks that the final bundle has no broken relative Markdown links.
+- **`docs/ANCAP_DOCS_SPLIT.md`**, **`docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`**, **`docs/STATUS_MATRIX.md`**, **`MASTER_ROADMAP.md`**
+  - synced docs/roadmap truth so the `ancap-docs` prep item now explicitly includes standalone-link hardening, not just raw bundle export.
+
+### Why it mattered
+
+The repo already had an `ancap-docs` seed bundle, but the exported docs still contained many relative links to files that are intentionally **not** part of the public docs split. That would have created a future public docs repo full of dead links and manual cleanup work.
+
+This pass makes the bundle closer to a real repo seed: internal exported-doc links stay local, while references to broader monorepo material now degrade cleanly to GitHub source links.
+
+### Verification
+
+- `python -m pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py` ✅
+
+### Remaining honest blocker
+
+- the actual GitHub org / `ancap-docs` repo creation step is still externally blocked by ownership/naming/admin scope, but the in-repo seed bundle is now materially cleaner and safer to publish once access exists.
+
+---
+
 ## 2026-05-24 — Mobile SDK native helper exports + Phase 6 roadmap sync
 
 ### What landed

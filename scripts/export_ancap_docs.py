@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_NAME = "EXPORT_MANIFEST.md"
+SOURCE_REPO_WEB_BASE = "https://github.com/dragoncattrx-hub/ancap"
+SOURCE_REPO_REF = "master"
+MARKDOWN_LINK_RE = re.compile(r"(?P<prefix>!?\[[^\]]*\]\()(?P<target>[^)]+)(?P<suffix>\))")
+EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:", "tel:", "data:")
 
 EXPORT_PATHS = [
     Path("README.md"),
@@ -31,6 +37,7 @@ EXPORT_PATHS = [
     Path("docs/AUDIT_CHECKLIST.md"),
     Path("docs/CHANGELOG_PUBLIC.md"),
 ]
+EXPORT_PATH_SET = {path.as_posix() for path in EXPORT_PATHS}
 
 
 def _validate_export_paths() -> None:
@@ -48,6 +55,7 @@ def _manifest_text(exported_paths: list[Path]) -> str:
         "",
         "This bundle is the repo-staged source for the future public `ancap-docs` repository.",
         "It intentionally includes only public-safe documentation and governance files.",
+        "Relative links to files outside this bundle are rewritten to the source monorepo on GitHub so the export stays navigable as a standalone repo seed.",
         "",
         "## Exported files",
     ]
@@ -59,9 +67,114 @@ def _manifest_text(exported_paths: list[Path]) -> str:
             "- runtime secrets (`.env`, deploy secrets, API keys, mnemonics, private keys)`",
             "- operational infrastructure (`infra/`, `deploy/`, `Sicret/`, server credentials)`",
             "- hot-wallet / bridge-signer internals and other abuse-sensitive implementation details",
+            "",
+            "## Source-monorepo fallback for rewritten links",
+            f"- `{SOURCE_REPO_WEB_BASE}/blob/{SOURCE_REPO_REF}/...` for files",
+            f"- `{SOURCE_REPO_WEB_BASE}/tree/{SOURCE_REPO_REF}/...` for directories",
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _split_markdown_target(target: str) -> tuple[str, str, str]:
+    clean = target.strip()
+    if clean.startswith("<") and clean.endswith(">"):
+        clean = clean[1:-1].strip()
+
+    fragment = ""
+    if "#" in clean:
+        clean, fragment_part = clean.split("#", 1)
+        fragment = f"#{fragment_part}"
+
+    query = ""
+    if "?" in clean:
+        clean, query_part = clean.split("?", 1)
+        query = f"?{query_part}"
+
+    return clean, query, fragment
+
+
+def _is_external_target(target_path: str) -> bool:
+    lowered = target_path.lower()
+    return lowered.startswith(EXTERNAL_LINK_PREFIXES)
+
+
+def _resolve_repo_target(source_rel_path: Path, target_path: str) -> Path | None:
+    resolved = (REPO_ROOT / source_rel_path.parent / target_path).resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT)
+    except ValueError:
+        return None
+
+
+def _relative_bundle_path(source_rel_path: Path, target_rel_path: Path) -> str:
+    relative = os.path.relpath(REPO_ROOT / target_rel_path, start=(REPO_ROOT / source_rel_path).parent)
+    return Path(relative).as_posix()
+
+
+def _source_repo_url(target_rel_path: Path) -> str:
+    target_abs_path = REPO_ROOT / target_rel_path
+    kind = "tree" if target_abs_path.is_dir() else "blob"
+    return f"{SOURCE_REPO_WEB_BASE}/{kind}/{SOURCE_REPO_REF}/{target_rel_path.as_posix()}"
+
+
+def rewrite_markdown_links(source_rel_path: Path, text: str) -> str:
+    unresolved: list[str] = []
+
+    def replace(match: re.Match[str]) -> str:
+        raw_target = match.group("target")
+        target_path, query, fragment = _split_markdown_target(raw_target)
+
+        if not target_path or target_path.startswith("#") or _is_external_target(target_path):
+            return match.group(0)
+
+        resolved = _resolve_repo_target(source_rel_path, target_path)
+        if resolved is None:
+            unresolved.append(f"{source_rel_path.as_posix()} -> {target_path}")
+            return match.group(0)
+
+        target_abs_path = REPO_ROOT / resolved
+        if not target_abs_path.exists():
+            unresolved.append(f"{source_rel_path.as_posix()} -> {resolved.as_posix()}")
+            return match.group(0)
+
+        if resolved.as_posix() in EXPORT_PATH_SET:
+            rewritten_target = _relative_bundle_path(source_rel_path, resolved)
+        else:
+            rewritten_target = _source_repo_url(resolved)
+
+        return f"{match.group('prefix')}{rewritten_target}{query}{fragment}{match.group('suffix')}"
+
+    rewritten = MARKDOWN_LINK_RE.sub(replace, text)
+    if unresolved:
+        joined = "; ".join(unresolved)
+        raise ValueError(f"unresolved markdown links in export source: {joined}")
+    return rewritten
+
+
+
+def find_unresolved_bundle_links(target_dir: Path) -> list[str]:
+    unresolved: list[str] = []
+
+    for markdown_path in sorted(target_dir.rglob("*.md")):
+        relative_markdown_path = markdown_path.relative_to(target_dir)
+        text = markdown_path.read_text(encoding="utf-8")
+        for match in MARKDOWN_LINK_RE.finditer(text):
+            target_path, _, _ = _split_markdown_target(match.group("target"))
+            if not target_path or target_path.startswith("#") or _is_external_target(target_path):
+                continue
+
+            resolved = (markdown_path.parent / target_path).resolve()
+            try:
+                resolved.relative_to(target_dir.resolve())
+            except ValueError:
+                unresolved.append(f"{relative_markdown_path.as_posix()} -> {target_path}")
+                continue
+
+            if not resolved.exists():
+                unresolved.append(f"{relative_markdown_path.as_posix()} -> {target_path}")
+
+    return unresolved
 
 
 def copy_export_bundle(target_dir: Path, *, clean: bool = False) -> list[Path]:
@@ -76,11 +189,23 @@ def copy_export_bundle(target_dir: Path, *, clean: bool = False) -> list[Path]:
         source = REPO_ROOT / rel_path
         destination = target_dir / rel_path
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
+        if rel_path.suffix.lower() == ".md":
+            destination.write_text(
+                rewrite_markdown_links(rel_path, source.read_text(encoding="utf-8")),
+                encoding="utf-8",
+            )
+        else:
+            shutil.copy2(source, destination)
         exported.append(rel_path)
 
     manifest_path = target_dir / MANIFEST_NAME
     manifest_path.write_text(_manifest_text(exported), encoding="utf-8")
+
+    unresolved = find_unresolved_bundle_links(target_dir)
+    if unresolved:
+        joined = "; ".join(unresolved)
+        raise ValueError(f"export bundle still has unresolved relative links: {joined}")
+
     return exported
 
 

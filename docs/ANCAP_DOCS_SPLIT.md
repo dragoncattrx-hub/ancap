@@ -54,7 +54,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -73,5 +73,6 @@ This prep slice is complete when:
 
 1. the export set is documented,
 2. the export command is scripted and repeatable,
-3. tests lock the bundle contents and safety boundaries,
-4. the future repo can be created from the generated bundle without manual scavenging through the monorepo.
+3. tests lock the bundle contents, link-rewrite behavior, and safety boundaries,
+4. the future repo can be created from the generated bundle without manual scavenging through the monorepo,
+5. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links.

@@ -39,6 +39,9 @@ def test_export_script_contains_split_plan_and_manifest_guardrails():
     assert 'Path("docs/ANCAP_DOCS_SPLIT.md")' in script_text
     assert 'EXPORT_MANIFEST.md' in script_text
     assert 'hot-wallet / bridge-signer internals' in script_text
+    assert 'rewrite_markdown_links' in script_text
+    assert 'find_unresolved_bundle_links' in script_text
+    assert 'https://github.com/dragoncattrx-hub/ancap' in script_text
 
 
 def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
@@ -58,7 +61,6 @@ def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
     for rel_path in EXPECTED_EXPORTS:
         exported_path = target_dir / rel_path
         assert exported_path.exists(), f"missing export: {rel_path}"
-        assert exported_path.read_text(encoding="utf-8") == (REPO_ROOT / rel_path).read_text(encoding="utf-8")
 
     manifest_path = target_dir / "EXPORT_MANIFEST.md"
     assert manifest_path.exists()
@@ -66,5 +68,53 @@ def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
     assert "future public `ancap-docs` repository" in manifest_text
     assert "runtime secrets" in manifest_text
     assert "infra/" in manifest_text
+    assert "rewritten to the source monorepo on GitHub" in manifest_text
+    assert "blob/master" in manifest_text
     for rel_path in EXPECTED_EXPORTS:
         assert rel_path.as_posix() in manifest_text
+
+
+def test_export_bundle_rewrites_out_of_bundle_links_to_source_monorepo(tmp_path: Path):
+    target_dir = tmp_path / "ancap-docs-export"
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--target", str(target_dir), "--clean"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    readme_text = (target_dir / "README.md").read_text(encoding="utf-8")
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/STATUS.md" in readme_text
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/FRONTEND.md" in readme_text
+    assert "https://github.com/dragoncattrx-hub/ancap/tree/master/ancap-mobile" in readme_text
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/contracts/bridge-bsc/README.md" in readme_text
+
+    architecture_text = (target_dir / "docs" / "ARCHITECTURE_LAYERS.md").read_text(encoding="utf-8")
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/ROADMAP.md" in architecture_text
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/docs/rfc/service-catalog.md" in architecture_text
+
+
+def test_export_bundle_has_no_broken_relative_markdown_links(tmp_path: Path):
+    target_dir = tmp_path / "ancap-docs-export"
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--target", str(target_dir), "--clean"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    sys.path.insert(0, str(REPO_ROOT))
+    try:
+        from scripts.export_ancap_docs import find_unresolved_bundle_links
+
+        assert find_unresolved_bundle_links(target_dir) == []
+    finally:
+        sys.path.pop(0)
