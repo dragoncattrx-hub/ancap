@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -29,6 +30,11 @@ import {
   saveSmartPayHistoryEntry,
   type SmartPayHistoryEntry,
 } from "@/lib/smart-pay-history";
+import {
+  buildSmartPayHistorySections,
+  formatSmartPayTimestamp,
+  getSmartPayHistoryAmountLabel,
+} from "@/lib/smart-pay-history-view";
 import {
   clearSmartPaySession,
   loadSmartPaySession,
@@ -59,6 +65,8 @@ export default function SmartPayScreen() {
     const uniq = Array.from(new Set(fromApi));
     return uniq.length > 0 ? uniq : ["ACP", "wACP", "USDT"];
   }, [capabilities]);
+
+  const historySections = useMemo(() => buildSmartPayHistorySections(history), [history]);
 
   useEffect(() => {
     void (async () => {
@@ -215,6 +223,15 @@ export default function SmartPayScreen() {
     setConfirmationAccepted(false);
     setExecution(null);
     setReceipt(null);
+  };
+
+  const onOpenExplorerUrl = async (url: string | null | undefined) => {
+    if (!url) return;
+    try {
+      await Linking.openURL(url);
+    } catch (e) {
+      setError(safeErrorMessage(e, "Failed to open explorer link"));
+    }
   };
 
   const onParse = async () => {
@@ -395,20 +412,36 @@ export default function SmartPayScreen() {
             </Pressable>
           </View>
           <Text style={styles.meta}>Local device-only snapshots of recent execute/refresh/recover sessions.</Text>
-          {history.map((entry) => (
-            <Pressable
-              key={entry.id}
-              style={styles.historyItem}
-              onPress={() => onResumeHistoryEntry(entry)}
-            >
-              <Text style={styles.historyTitle}>
-                {entry.execution.status} · {entry.quote?.targetAmount ?? entry.intent.amount?.value ?? "—"} {entry.quote?.targetAsset.symbol ?? entry.intent.asset.symbol ?? "asset"}
-              </Text>
-              <Text style={styles.meta}>Recipient: {entry.intent.recipient.address}</Text>
-              <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
-              <Text style={styles.meta}>Saved: {entry.savedAt}</Text>
-              <Text style={styles.inlineHint}>Tap to restore this payment context.</Text>
-            </Pressable>
+          {historySections.map((section) => (
+            <View key={section.key} style={styles.historySection}>
+              <Text style={styles.historySectionTitle}>{section.title}</Text>
+              {section.entries.map((entry) => (
+                <Pressable
+                  key={entry.id}
+                  style={styles.historyItem}
+                  onPress={() => onResumeHistoryEntry(entry)}
+                >
+                  <View style={styles.historyRow}>
+                    <Text style={styles.historyTitle}>
+                      {getSmartPayHistoryAmountLabel(entry)}
+                    </Text>
+                    <View style={[styles.statusBadge, section.key === "completed" ? styles.statusBadgeCompleted : section.key === "needs_attention" ? styles.statusBadgeAttention : styles.statusBadgeInFlight]}>
+                      <Text style={styles.statusBadgeText}>{entry.execution.status}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.meta}>Recipient: {entry.receipt?.recipientAddress ?? entry.intent.recipient.address}</Text>
+                  <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
+                  <Text style={styles.meta}>Saved: {formatSmartPayTimestamp(entry.savedAt)}</Text>
+                  {entry.receipt?.completedAt ? (
+                    <Text style={styles.meta}>Completed: {formatSmartPayTimestamp(entry.receipt.completedAt)}</Text>
+                  ) : null}
+                  {entry.execution.error ? (
+                    <Text style={styles.warning}>Error: {entry.execution.error}</Text>
+                  ) : null}
+                  <Text style={styles.inlineHint}>Tap to restore this payment context.</Text>
+                </Pressable>
+              ))}
+            </View>
           ))}
         </View>
       ) : null}
@@ -614,9 +647,14 @@ export default function SmartPayScreen() {
             </Text>
           )) : null}
           {(receipt?.txRefs?.length ? receipt.txRefs : execution.txRefs).length ? (receipt?.txRefs ?? execution.txRefs).map((tx) => (
-            <Text key={`receipt-${tx.role}-${tx.txid}`} style={styles.meta}>
-              {tx.role} tx: {tx.txid}
-            </Text>
+            <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
+              <Text style={styles.meta}>{tx.role} tx: {tx.txid}</Text>
+              {tx.explorerUrl ? (
+                <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                  <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                </Pressable>
+              ) : null}
+            </View>
           )) : <Text style={styles.meta}>No tx references reported yet.</Text>}
         </View>
       ) : null}
@@ -691,6 +729,8 @@ const styles = StyleSheet.create({
   },
   chipText: { color: "#cbd5e1", fontWeight: "600" },
   chipTextActive: { color: "#042f1a" },
+  historySection: { marginTop: 14 },
+  historySectionTitle: { color: "#e2e8f0", fontWeight: "700", marginBottom: 4 },
   historyItem: {
     marginTop: 12,
     borderColor: "#334155",
@@ -699,9 +739,20 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: "#0b1220",
   },
-  historyTitle: { color: "#f8fafc", fontWeight: "700", marginBottom: 6 },
+  historyRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 },
+  historyTitle: { color: "#f8fafc", fontWeight: "700", marginBottom: 6, flex: 1 },
+  statusBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  statusBadgeInFlight: { backgroundColor: "#1d4ed8" },
+  statusBadgeAttention: { backgroundColor: "#b91c1c" },
+  statusBadgeCompleted: { backgroundColor: "#047857" },
+  statusBadgeText: { color: "#f8fafc", fontSize: 11, fontWeight: "700" },
   inlineAction: { color: "#93c5fd", fontWeight: "600" },
   inlineHint: { color: "#94a3b8", marginTop: 6, fontSize: 12 },
+  txRow: { marginTop: 6 },
   confirmToggle: {
     marginTop: 14,
     borderWidth: 1,
