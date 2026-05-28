@@ -1,6 +1,6 @@
 # ANCAP Status Matrix
 
-> Status: active summary | Updated: 2026-05-25
+> Status: active summary | Updated: 2026-05-28
 > Primary source of truth: `MASTER_ROADMAP.md`
 > Purpose: remove confusion between roadmap/status documents and provide one compact view of what is done, what is partial, and what is next.
 
@@ -62,7 +62,7 @@ Parallel trust/adoption track:
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
 | Release hygiene / architecture cleanup | **Baseline done** | Medium | `MASTER_ROADMAP.md` | Deployment story cleanup, dependency consolidation, release workflow, and documentation-health cleanup are now baseline done; broader release closure still depends on the higher-priority top-line tails. |
-| Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists, but skipped tests, E2E CI verification, and mobile device validation still remain. |
+| Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists and real GitHub CI/E2E verification is green; the main remaining validation gaps are mobile real-device/native runs plus external/manual checks like live Stripe end-to-end and Cloudflare-edge follow-through. |
 
 ---
 
@@ -73,18 +73,17 @@ Parallel trust/adoption track:
 **Status:** active top priority
 
 **Already true:**
-- repo-side leaked-key cleanup was started
-- production secret guardrails were hardened in repo/config
-- backend CI soft-fail fixes were made
-- CodeQL and Playwright CI wiring were advanced
+- repo-side leaked-key cleanup is done in tracked files, and repo grep now finds no live token-shaped matches outside roadmap remediation notes
+- production secret guardrails are hardened in repo/config, and the current prod-like host runtime passes them with real local env values (`docker compose -f docker-compose.prod.yml config --quiet` succeeds and `/api/v1/system/health` returns `200`)
+- backend CI soft-fail fixes are in place
+- GitHub secret scanning, push protection, Dependabot security updates, and dependency review are enabled
+- real GitHub runs are green for CodeQL, Backend CI, Frontend CI, and the scheduled `System Jobs Tick` workflow on `master`
+- public diagnostics/ops endpoints are restricted, and the scheduled jobs path is already split onto `/v1/system/jobs/tick/async`
+- auth cookie/storage/CORS hardening is live; the remaining header tail is only the public Cloudflare-edge rewrite mismatch
 
 **Still remaining:**
-- revoke/rotate exposed provider key externally
-- enable GitHub secret scanning / push protection / dependency review / code scanning settings
-- confirm CodeQL and Playwright via real GitHub runs
-- restrict public diagnostics/ops endpoints
-- split heavy `jobs_tick` work away from the HTTP request path
-- complete auth/storage/cookie/CORS/header hardening
+- revoke/rotate the exposed provider key externally and complete any upstream access cleanup
+- remove the remaining Cloudflare-edge response-header rewrite on public `ancap.cloud` / `api.ancap.cloud`
 
 **Truth source:** `MASTER_ROADMAP.md`
 
@@ -99,6 +98,10 @@ Parallel trust/adoption track:
 - Expo app shell and most wallet UX are implemented
 - PIN/biometrics and SecureVault are wired in app code
 - i18n is done
+- release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md` and `docs/mobile/RELEASE_CHECKLIST.md`
+- public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
+- Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
+- Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover
 
 **Still remaining:**
 - Android NDK install and real `.so` emission
@@ -106,7 +109,7 @@ Parallel trust/adoption track:
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault
 - remaining MASVS/device-release verification (repo baseline is closed; real-device/native validation still remains)
-- device matrix, TestFlight, Play Internal, listing/legal/release work
+- actual device runs, TestFlight/Play Internal uploads, final listing assets/operator/legal completion, and the final v1.0.0 cut
 
 **Truth source:** `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md`
 
@@ -159,8 +162,8 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Search / analytics | Done baseline | Exists, but marketplace depth remains |
 | Mobile native signing flow | Partial | Native closure and verification remain |
 | Mobile release readiness | Not done | Device/stores/security/release still open |
-| CI hardening | Partial | Repo changes exist; live verification/settings still open |
-| Secret remediation | Partial | Cleanup done in repo; external revoke/rotation still open |
+| CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; broader project closure still depends on the separate remaining security/mobile/monetization tails. |
+| Secret remediation | Partial | Cleanup is done in tracked repo files and no live token-shaped matches remain outside roadmap notes, but upstream revoke/rotation and access cleanup still remain external/manual. |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |
 | Public `ancap-docs` split | In progress / repo prep done | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; external org/repo creation is still pending. |

@@ -114,9 +114,9 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|
 | P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` across the mobile packages; latest consolidated snapshot: 56 tests across 5 packages |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
-| P6-3 | Device matrix (iOS + Android) | [ ] |
-| P6-4 | TestFlight + Play Internal | [ ] |
-| P6-5 | App Store / Play listing + legal pages | [ ] |
+| P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`; real device runs still pending |
+| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |
+| P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
 | P6-6 | Production v1.0.0 | [ ] |
 
 ---
@@ -129,10 +129,10 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|-------|
 | SQ-1 | Capability discovery | [x] | `GET /v1/mobile/smart-pay/capabilities` |
 | SQ-2 | Deterministic parse | [x] | `POST /v1/mobile/smart-pay/parse` for ACP, raw EVM, EIP-681 first scope |
-| SQ-3 | Quote engine groundwork | [~] | first backend `POST /v1/mobile/smart-pay/quote` slice in progress |
-| SQ-4 | Execution session groundwork | [~] | execute/status/recover endpoints in progress |
-| SQ-5 | Mobile SDK/client wiring | [~] | `@ancap/acp-api-client` now has typed Smart Pay capabilities/parse/quote/execute/status/recover methods; Expo app integration started |
-| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, and persisted draft/session restore in-device; polished UX/history still pending |
+| SQ-3 | Quote engine groundwork | [x] | backend `POST /v1/mobile/smart-pay/quote` slice exists with first-scope direct-send and ACP→wACP→USDT route quoting, fee/slippage checks, and API tests |
+| SQ-4 | Execution session groundwork | [x] | backend execute/status/recover endpoints exist with first execution-state lifecycle and API tests |
+| SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |
+| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |
 | SQ-7 | Real route execution integration | [ ] | bridge/swap/transfer orchestration beyond placeholder routes |
 | SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
 | SQ-9 | Receipt/history/recovery UX | [ ] | payment session resume + receipt screens |
@@ -184,6 +184,8 @@ The original 8–12 week estimate is no longer the right way to read this docume
 
 Treat this roadmap as a task tracker, not as a reliable remaining-weeks estimate.
 
+Release-closure execution docs now live in `docs/mobile/DEVICE_MATRIX.md` and `docs/mobile/RELEASE_CHECKLIST.md` so the remaining P6 work is explicit instead of hand-wavy.
+
 ---
 
 ## Repository map
@@ -222,6 +224,6 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 4. Verify the remaining MASVS/device-release gates on real hardware (PIN/biometric/vault migration + native signing path)
 5. Run TestFlight + Play Internal validation
 6. Prepare listing/legal/release artifacts and cut v1.0.0
-7. In parallel for post-v1.0 Smart Pay: finish backend quote + execution session groundwork, then wire mobile SDK/client
+7. In parallel for post-v1.0 Smart Pay: finish real route execution integration, then harden receipt/history/recovery UX
 
 _Update this file when closing tasks (change `[ ]` → `[x]`)._

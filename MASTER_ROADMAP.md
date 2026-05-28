@@ -807,9 +807,9 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
-| P6-3 | Device matrix (iOS + Android) | [ ] |
-| P6-4 | TestFlight + Play Internal | [ ] |
-| P6-5 | Store listing + legal pages | [ ] |
+| P6-3 | Device matrix (iOS + Android) | [~] matrix/checklist doc added in `docs/mobile/DEVICE_MATRIX.md`; real device runs still pending |
+| P6-4 | TestFlight + Play Internal | [~] release-readiness checklist added in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |
+| P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
 | P6-6 | Production v1.0.0 | [ ] |
 
 ### 5.2 Blocked items (needs native build)
@@ -823,7 +823,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)
 
-Status: [~] Execution started. Docs/specs are written, backend `capabilities` + deterministic `parse` are implemented and tested, `quote` + execution-session groundwork is in repo code, and the Expo beta flow already supports paste, QR import, camera scan, review, and session restore. The broader **AI Payment Scanner** (photo / OCR / invoice decode) and **ANCAP Claim Codes** layers are now formal roadmap targets, but they are **not shipped** and must not be marketed as live.
+Status: [~] First-scope Smart Pay groundwork is implemented beyond docs-only intent: backend `capabilities` + deterministic `parse` + `quote` + execute/status/recover endpoints exist in repo code with API tests, typed mobile client methods exist with client tests, and the Expo beta flow already supports paste, QR import, camera scan, review, execute, refresh/recover, and session restore. The broader **AI Payment Scanner** (photo / OCR / invoice decode), real route execution beyond placeholder orchestration, and **ANCAP Claim Codes** layers are still **not shipped** and must not be marketed as live.
 
 Product formula inside this track:
 - `Photo / QR -> AI Decode -> Payment Intent -> Smart Swap -> Pay`
@@ -833,13 +833,13 @@ Execution order inside this track:
 1. [x] docs/spec split: plan + schema + API + security
 2. [x] backend `GET /v1/mobile/smart-pay/capabilities`
 3. [x] backend `POST /v1/mobile/smart-pay/parse` (deterministic ACP + raw EVM + EIP-681 first scope)
-4. [~] backend `POST /v1/mobile/smart-pay/quote` for first supported routes
-5. [~] backend execution-session groundwork:
+4. [x] backend `POST /v1/mobile/smart-pay/quote` for first supported routes
+5. [x] backend execution-session groundwork:
    - `POST /v1/mobile/smart-pay/execute`
    - `GET /v1/mobile/smart-pay/payments/{executionId}`
    - `POST /v1/mobile/smart-pay/payments/{executionId}/recover`
-6. [~] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods added; app integration started)
-7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, status flow, and persisted draft/session restore; polish/history still pending)
+6. [x] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods plus client tests cover capabilities/parse/quote/execute/status/recover)
+7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending)
 8. [ ] real route engine / bridge-swap execution integration
 9. [ ] AI fallback classifier for ambiguous payloads (only after deterministic/heuristic path is solid)
 10. [ ] receipt/history/recovery UX hardening
