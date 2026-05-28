@@ -52,3 +52,5 @@ Out of scope unless there is a concrete exploitable path:
 ## Hard rule
 
 Never commit real secrets to the repository. If you discover one, stop and rotate/revoke it first.
+
+Operator follow-through checklist: [docs/SECRET_ROTATION_RUNBOOK.md](docs/SECRET_ROTATION_RUNBOOK.md)

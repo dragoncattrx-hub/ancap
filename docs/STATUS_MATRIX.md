@@ -82,7 +82,7 @@ Parallel trust/adoption track:
 - auth cookie/storage/CORS hardening is live; the remaining header tail is only the public Cloudflare-edge rewrite mismatch
 
 **Still remaining:**
-- revoke/rotate the exposed provider key externally and complete any upstream access cleanup
+- revoke/rotate the exposed provider key externally and complete any upstream access cleanup (operator checklist now lives in `docs/SECRET_ROTATION_RUNBOOK.md`)
 - remove the remaining Cloudflare-edge response-header rewrite on public `ancap.cloud` / `api.ancap.cloud`
 
 **Truth source:** `MASTER_ROADMAP.md`
@@ -163,7 +163,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Mobile native signing flow | Partial | Native closure and verification remain |
 | Mobile release readiness | Not done | Device/stores/security/release still open |
 | CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; broader project closure still depends on the separate remaining security/mobile/monetization tails. |
-| Secret remediation | Partial | Cleanup is done in tracked repo files and no live token-shaped matches remain outside roadmap notes, but upstream revoke/rotation and access cleanup still remain external/manual. |
+| Secret remediation | Partial | Cleanup is done in tracked repo files and no live token-shaped matches remain outside roadmap notes, and `docs/SECRET_ROTATION_RUNBOOK.md` now captures the operator rotation checklist, but upstream revoke/rotation and access cleanup still remain external/manual. |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |
 | Public `ancap-docs` split | In progress / repo prep done | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; external org/repo creation is still pending. |

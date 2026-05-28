@@ -250,14 +250,15 @@ Sprint 3 - Community + Audit Readiness
 
 ### 0.1 Leaked API key remediation [CRITICAL]
 
-Status: [~] Repo-side cleanup is tighter, but external secret rotation and access cleanup still require manual credentialed follow-through.
+Status: [~] Repo-side cleanup is tighter, `docs/SECRET_ROTATION_RUNBOOK.md` now captures the operator follow-through checklist, but external secret rotation and access cleanup still require manual credentialed follow-through.
 
 File: a previously tracked provider/config snippet contained a plaintext API key (redacted here; treat as compromised).
 
-Verification (2026-05-25):
+Verification (2026-05-25 / 2026-05-28):
 - the tracked plaintext-key snippet is absent from the repo
 - repo-side token-shaped examples were removed from tracked docs
 - repo scan found no other live leaked-token patterns; the only remaining sk-aw-... matches are this roadmap's own remediation notes / grep example
+- `docs/SECRET_ROTATION_RUNBOOK.md` now captures the operator-side containment / revoke / replace / evidence checklist so the remaining manual work is explicit instead of living only in status notes
 
 Action (in order):
 1. Revoke the compromised provider key at the upstream dashboard/API
