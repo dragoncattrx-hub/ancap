@@ -117,7 +117,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`; real device runs still pending |
 | P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |
 | P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
-| P6-6 | Production v1.0.0 | [ ] |
+| P6-6 | Production v1.0.0 | [~] | final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
 
 ---
 
@@ -184,7 +184,7 @@ The original 8–12 week estimate is no longer the right way to read this docume
 
 Treat this roadmap as a task tracker, not as a reliable remaining-weeks estimate.
 
-Release-closure execution docs now live in `docs/mobile/DEVICE_MATRIX.md` and `docs/mobile/RELEASE_CHECKLIST.md` so the remaining P6 work is explicit instead of hand-wavy.
+Release-closure execution docs now live in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md` so the remaining P6 work is explicit instead of hand-wavy.
 
 ---
 

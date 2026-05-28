@@ -810,7 +810,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P6-3 | Device matrix (iOS + Android) | [~] matrix/checklist doc added in `docs/mobile/DEVICE_MATRIX.md`; real device runs still pending |
 | P6-4 | TestFlight + Play Internal | [~] release-readiness checklist added in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |
 | P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
-| P6-6 | Production v1.0.0 | [ ] |
+| P6-6 | Production v1.0.0 | [~] final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
 
 ### 5.2 Blocked items (needs native build)
 

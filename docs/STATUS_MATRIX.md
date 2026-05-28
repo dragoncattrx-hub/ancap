@@ -98,7 +98,7 @@ Parallel trust/adoption track:
 - Expo app shell and most wallet UX are implemented
 - PIN/biometrics and SecureVault are wired in app code
 - i18n is done
-- release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md` and `docs/mobile/RELEASE_CHECKLIST.md`
+- release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`
 - public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
 - Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover
@@ -109,7 +109,7 @@ Parallel trust/adoption track:
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault
 - remaining MASVS/device-release verification (repo baseline is closed; real-device/native validation still remains)
-- actual device runs, TestFlight/Play Internal uploads, final listing assets/operator/legal completion, and the final v1.0.0 cut
+- actual device runs, TestFlight/Play Internal uploads, final listing assets/operator/legal completion, and the final v1.0.0 cut (the final runbook is now scaffolded, but the external execution work still remains)
 
 **Truth source:** `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md`
 

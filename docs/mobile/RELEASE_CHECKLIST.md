@@ -67,6 +67,8 @@ P6-4 can be treated as `[~]` once the checklist and build path are prepared in-r
 
 ## P6-6 — Production v1.0.0 release gate
 
+The repo-side runbook for this final gate now lives in `docs/mobile/RELEASE_RUNBOOK.md`.
+
 Do **not** mark P6-6 done until all of the following are true:
 
 - [ ] Android native build path verified on a host with Android NDK
@@ -76,7 +78,7 @@ Do **not** mark P6-6 done until all of the following are true:
 - [ ] Native create/send/sign/broadcast path verified end-to-end
 - [ ] TestFlight and Play Internal runs completed and blocking issues resolved
 - [ ] Listing/legal pack finalized with real operator/support details
-- [ ] Release notes / versioning / rollback plan prepared
+- [ ] Release notes / versioning / rollback plan prepared per `docs/mobile/RELEASE_RUNBOOK.md`
 
 ## Current blockers snapshot
 

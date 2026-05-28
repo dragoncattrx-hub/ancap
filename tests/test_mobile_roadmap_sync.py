@@ -7,6 +7,7 @@ MOBILE_ROADMAP = REPO_ROOT / "docs" / "mobile" / "ROADMAP.md"
 STATUS_MATRIX = REPO_ROOT / "docs" / "STATUS_MATRIX.md"
 DEVICE_MATRIX = REPO_ROOT / "docs" / "mobile" / "DEVICE_MATRIX.md"
 RELEASE_CHECKLIST = REPO_ROOT / "docs" / "mobile" / "RELEASE_CHECKLIST.md"
+RELEASE_RUNBOOK = REPO_ROOT / "docs" / "mobile" / "RELEASE_RUNBOOK.md"
 LEGAL_PRIVACY_PAGE = REPO_ROOT / "frontend-app" / "src" / "app" / "legal" / "privacy" / "page.tsx"
 LEGAL_TERMS_PAGE = REPO_ROOT / "frontend-app" / "src" / "app" / "legal" / "terms" / "page.tsx"
 LEGAL_COOKIES_PAGE = REPO_ROOT / "frontend-app" / "src" / "app" / "legal" / "cookies" / "page.tsx"
@@ -48,9 +49,11 @@ def test_master_and_mobile_roadmaps_mark_masvs_as_in_progress_with_repo_baseline
 def test_mobile_release_closure_docs_exist_and_cover_current_truth() -> None:
     device_matrix = DEVICE_MATRIX.read_text(encoding="utf-8")
     release_checklist = RELEASE_CHECKLIST.read_text(encoding="utf-8")
+    release_runbook = RELEASE_RUNBOOK.read_text(encoding="utf-8")
 
     assert DEVICE_MATRIX.exists()
     assert RELEASE_CHECKLIST.exists()
+    assert RELEASE_RUNBOOK.exists()
     assert "These runs have **not** been executed yet from this repo state." in device_matrix
     assert "Android NDK" in device_matrix
     assert "macOS + Xcode" in device_matrix
@@ -59,6 +62,9 @@ def test_mobile_release_closure_docs_exist_and_cover_current_truth() -> None:
     assert "/legal/terms" in release_checklist
     assert "/legal/privacy" in release_checklist
     assert "/legal/cookies" in release_checklist
+    assert "v1.0.0 Release Runbook" in release_runbook
+    assert "Release notes convention" in release_runbook
+    assert "Rollback plan" in release_runbook
 
 
 def test_release_closure_status_is_in_sync_across_master_mobile_and_status_matrix() -> None:
@@ -72,7 +78,9 @@ def test_release_closure_status_is_in_sync_across_master_mobile_and_status_matri
     assert "| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |" in mobile
     assert "| P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in master
     assert "| P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in mobile
-    assert "release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md` and `docs/mobile/RELEASE_CHECKLIST.md`" in status_matrix
+    assert "| P6-6 | Production v1.0.0 | [~] final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |" in master
+    assert "| P6-6 | Production v1.0.0 | [~] | final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |" in mobile
+    assert "release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`" in status_matrix
     assert "public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`" in status_matrix
 
 
@@ -87,6 +95,7 @@ def test_mobile_readme_links_release_closure_docs() -> None:
 
     assert "../docs/mobile/DEVICE_MATRIX.md" in readme
     assert "../docs/mobile/RELEASE_CHECKLIST.md" in readme
+    assert "../docs/mobile/RELEASE_RUNBOOK.md" in readme
 
 
 def test_smart_pay_groundwork_truth_is_in_sync_with_mobile_repo_state() -> None:

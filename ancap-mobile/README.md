@@ -5,6 +5,7 @@ Official **non-custodial** mobile wallet for ACP and wACP.
 - **Roadmap & specs:** [`../docs/mobile/ROADMAP.md`](../docs/mobile/ROADMAP.md)
 - **Device verification matrix:** [`../docs/mobile/DEVICE_MATRIX.md`](../docs/mobile/DEVICE_MATRIX.md)
 - **Release readiness checklist:** [`../docs/mobile/RELEASE_CHECKLIST.md`](../docs/mobile/RELEASE_CHECKLIST.md)
+- **v1.0.0 release runbook:** [`../docs/mobile/RELEASE_RUNBOOK.md`](../docs/mobile/RELEASE_RUNBOOK.md)
 - **Backend API:** `GET /v1/mobile/config`, `/v1/acp/*` in ANCAP Core (`app/api/routers/mobile_acp.py`)
 
 ## Structure
