@@ -74,7 +74,7 @@ Parallel trust/adoption track:
 
 **Already true:**
 - repo-side leaked-key cleanup is done in tracked files, and repo grep now finds no live token-shaped matches outside roadmap remediation notes
-- production secret guardrails are hardened in repo/config, and the current prod-like host runtime passes them with real local env values (`docker compose -f docker-compose.prod.yml config --quiet` succeeds and `/api/v1/system/health` returns `200`)
+- production secret guardrails are hardened in repo/config, `docs/PRODUCTION_SECRET_BASELINE.md` now captures the operator provisioning/evidence checklist, and the current prod-like host runtime passes them with real local env values (`docker compose -f docker-compose.prod.yml config --quiet` succeeds and `/api/v1/system/health` returns `200`)
 - backend CI soft-fail fixes are in place
 - GitHub secret scanning, push protection, Dependabot security updates, and dependency review are enabled
 - real GitHub runs are green for CodeQL, Backend CI, Frontend CI, and the scheduled `System Jobs Tick` workflow on `master`
