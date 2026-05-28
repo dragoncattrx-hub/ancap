@@ -23,6 +23,7 @@ EXPECTED_EXPORTS = {
     Path("docs/ANCAP_DOCS_SPLIT.md"),
     Path("docs/ANCAP_DOCS_REPO_BOOTSTRAP.md"),
     Path("docs/ANCAP_DOCS_LABEL_SEED.md"),
+    Path("docs/ANCAP_DOCS_DISCUSSIONS_SEED.md"),
     Path("docs/VISION.md"),
     Path("docs/ARCHITECTURE_LAYERS.md"),
     Path("docs/PLAN_L0_TO_L3.md"),
@@ -47,6 +48,7 @@ def test_export_script_contains_split_plan_and_manifest_guardrails():
     assert 'Path("docs/ANCAP_DOCS_SPLIT.md")' in script_text
     assert 'Path("docs/ANCAP_DOCS_REPO_BOOTSTRAP.md")' in script_text
     assert 'Path("docs/ANCAP_DOCS_LABEL_SEED.md")' in script_text
+    assert 'Path("docs/ANCAP_DOCS_DISCUSSIONS_SEED.md")' in script_text
     assert 'Path("docs/ANCAP_DOCS_REPO_README.md")' in script_text
     assert 'Path(".github/pull_request_template.md")' in script_text
     assert 'Path(".github/ISSUE_TEMPLATE/bug_report.md")' in script_text
@@ -56,6 +58,7 @@ def test_export_script_contains_split_plan_and_manifest_guardrails():
     assert 'issue/PR templates' in script_text
     assert 'labels / Discussions' in script_text
     assert 'label seed for the future docs repo' in script_text
+    assert 'initial Discussions category seed' in script_text
     assert 'hot-wallet / bridge-signer internals' in script_text
     assert 'rewrite_markdown_links' in script_text
     assert 'find_unresolved_bundle_links' in script_text
@@ -88,6 +91,7 @@ def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
     assert "issue/PR templates" in manifest_text
     assert "labels / Discussions" in manifest_text
     assert "label seed for the future docs repo" in manifest_text
+    assert "initial Discussions category seed" in manifest_text
     assert "runtime secrets" in manifest_text
     assert "infra/" in manifest_text
     assert "rewritten to the source monorepo on GitHub" in manifest_text
@@ -187,6 +191,7 @@ def test_export_bundle_includes_repo_bootstrap_guide(tmp_path: Path):
     assert "branch protection" in bootstrap_text
     assert "secret scanning and push protection" in bootstrap_text
     assert "ANCAP_DOCS_LABEL_SEED.md" in bootstrap_text
+    assert "ANCAP_DOCS_DISCUSSIONS_SEED.md" in bootstrap_text
 
 
 def test_export_bundle_includes_label_seed(tmp_path: Path):
@@ -208,6 +213,27 @@ def test_export_bundle_includes_label_seed(tmp_path: Path):
     assert "docs" in label_seed_text
     assert "security" in label_seed_text
     assert "If GitHub Discussions is enabled" in label_seed_text
+
+
+def test_export_bundle_includes_discussions_seed(tmp_path: Path):
+    target_dir = tmp_path / "ancap-docs-export"
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--target", str(target_dir), "--clean"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    discussions_seed_text = (target_dir / "docs" / "ANCAP_DOCS_DISCUSSIONS_SEED.md").read_text(encoding="utf-8")
+    assert "Ideas" in discussions_seed_text
+    assert "Q&A" in discussions_seed_text
+    assert "Show and tell" in discussions_seed_text
+    assert "Announcements" in discussions_seed_text
+    assert "Redirect security disclosures to `SECURITY.md`" in discussions_seed_text
 
 
 def test_export_bundle_root_readme_comes_from_docs_repo_template(tmp_path: Path):

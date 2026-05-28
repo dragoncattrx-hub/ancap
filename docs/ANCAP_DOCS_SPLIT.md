@@ -28,6 +28,7 @@ The initial export should include:
   - `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`
   - `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md`
   - `docs/ANCAP_DOCS_LABEL_SEED.md`
+  - `docs/ANCAP_DOCS_DISCUSSIONS_SEED.md`
   - `docs/VISION.md`
   - `docs/ARCHITECTURE_LAYERS.md`
   - `docs/PLAN_L0_TO_L3.md`
@@ -60,7 +61,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, ships `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md` so the first public repo push has a documented creation/settings/labels/Discussions checklist, ships `docs/ANCAP_DOCS_LABEL_SEED.md` so the initial public label taxonomy is explicit and reusable, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, ships `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md` so the first public repo push has a documented creation/settings/labels/Discussions checklist, ships `docs/ANCAP_DOCS_LABEL_SEED.md` so the initial public label taxonomy is explicit and reusable, ships `docs/ANCAP_DOCS_DISCUSSIONS_SEED.md` so the initial Discussions categories/moderation lanes are explicit and reusable too, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -85,4 +86,5 @@ This prep slice is complete when:
 6. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
 7. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README,
 8. the future repo bootstrap steps (initial push, baseline settings, labels, Discussions enablement) are documented inside the exported bundle instead of living only in cron notes,
-9. the initial public label taxonomy is exported as a reusable seed instead of being recreated ad hoc during repo setup.
+9. the initial public label taxonomy is exported as a reusable seed instead of being recreated ad hoc during repo setup,
+10. the initial GitHub Discussions category model is exported as a reusable seed instead of being improvised at repo launch.

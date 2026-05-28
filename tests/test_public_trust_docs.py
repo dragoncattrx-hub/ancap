@@ -7,6 +7,7 @@ ROADMAP_PATH = Path("MASTER_ROADMAP.md")
 DOCS_SPLIT_PLAN_PATH = Path("docs/ANCAP_DOCS_SPLIT.md")
 DOCS_REPO_BOOTSTRAP_PATH = Path("docs/ANCAP_DOCS_REPO_BOOTSTRAP.md")
 DOCS_LABEL_SEED_PATH = Path("docs/ANCAP_DOCS_LABEL_SEED.md")
+DOCS_DISCUSSIONS_SEED_PATH = Path("docs/ANCAP_DOCS_DISCUSSIONS_SEED.md")
 EXPORT_SCRIPT_PATH = Path("scripts/export_ancap_docs.py")
 DOCS_REPO_README_SOURCE_PATH = Path("docs/ANCAP_DOCS_REPO_README.md")
 
@@ -66,34 +67,41 @@ def test_docs_split_plan_and_export_script_are_linked_and_reflected_in_roadmap()
 
     docs_bootstrap_text = DOCS_REPO_BOOTSTRAP_PATH.read_text(encoding="utf-8")
     docs_label_seed_text = DOCS_LABEL_SEED_PATH.read_text(encoding="utf-8")
+    docs_discussions_seed_text = DOCS_DISCUSSIONS_SEED_PATH.read_text(encoding="utf-8")
 
     assert DOCS_SPLIT_PLAN_PATH.exists()
     assert DOCS_REPO_BOOTSTRAP_PATH.exists()
     assert DOCS_LABEL_SEED_PATH.exists()
+    assert DOCS_DISCUSSIONS_SEED_PATH.exists()
     assert EXPORT_SCRIPT_PATH.exists()
     assert DOCS_REPO_README_SOURCE_PATH.exists()
     assert "docs/ANCAP_DOCS_SPLIT.md" in readme_text
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in readme_text
     assert "docs/ANCAP_DOCS_LABEL_SEED.md" in readme_text
+    assert "docs/ANCAP_DOCS_DISCUSSIONS_SEED.md" in readme_text
     assert "docs/ANCAP_DOCS_SPLIT.md" in open_source_doc_text
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in open_source_doc_text
     assert "docs/ANCAP_DOCS_LABEL_SEED.md" in open_source_doc_text
+    assert "docs/ANCAP_DOCS_DISCUSSIONS_SEED.md" in open_source_doc_text
     assert "scripts/export_ancap_docs.py" in open_source_doc_text
     assert ".github/pull_request_template.md" in docs_split_text
     assert ".github/ISSUE_TEMPLATE/bug_report.md" in docs_split_text
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in docs_split_text
     assert "docs/ANCAP_DOCS_LABEL_SEED.md" in docs_split_text
+    assert "docs/ANCAP_DOCS_DISCUSSIONS_SEED.md" in docs_split_text
     assert "docs/ANCAP_DOCS_REPO_README.md" in docs_split_text
     assert "docs-focused root `README.md`" in open_source_doc_text
     assert "issue/PR templates" in open_source_doc_text
     assert "bootstrap checklist" in open_source_doc_text
     assert "label seed" in open_source_doc_text
+    assert "Discussions seed" in open_source_doc_text
     assert "docs-focused root README" in roadmap_text
     assert "issue/PR templates" in roadmap_text
     assert "repo-bootstrap checklist" in roadmap_text
-    assert "reusable label seed" in roadmap_text
+    assert "reusable label/Discussions seeds" in roadmap_text
     assert "GitHub Discussions" in docs_bootstrap_text
     assert "good first issue" in docs_bootstrap_text
     assert "help wanted" in docs_label_seed_text
+    assert "Announcements" in docs_discussions_seed_text
     assert "public-safe documentation landing page" in docs_repo_readme_text
     assert "- [~] Create public `ancap-docs`" in roadmap_text
