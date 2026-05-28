@@ -123,7 +123,7 @@ Parallel trust/adoption track:
 - creator earnings dashboard improvements
 - deeper API monetization reporting and spend controls
 - referral commission auto-payout ✅ baseline done (ledger reward issuance + optional on-chain payout jobs + jobs-tick execution)
-- marketplace search/filter/discovery depth
+- marketplace search/filter/discovery depth ✅ baseline done
 - refund / dispute / chargeback flows
 
 **Truth source:** `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md`

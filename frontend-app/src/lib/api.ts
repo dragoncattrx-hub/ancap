@@ -608,6 +608,27 @@ export const listings = {
     return apiFetch(`/listings?${params}`);
   },
 
+  async marketplace(params: {
+    search?: string;
+    category?: string;
+    price_min?: string | number;
+    price_max?: string | number;
+    sort?: "popular" | "recent" | "price_asc" | "price_desc" | "rating";
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append("search", params.search);
+    if (params.category) qs.append("category", params.category);
+    if (params.price_min !== undefined) qs.append("price_min", String(params.price_min));
+    if (params.price_max !== undefined) qs.append("price_max", String(params.price_max));
+    if (params.sort) qs.append("sort", params.sort);
+    if (params.limit !== undefined) qs.append("limit", String(params.limit));
+    if (params.offset !== undefined) qs.append("offset", String(params.offset));
+    const suffix = qs.toString();
+    return apiFetch(`/listings/marketplace/listings${suffix ? `?${suffix}` : ""}`);
+  },
+
   async get(id: string) {
     return apiFetch(`/listings/${id}`);
   },

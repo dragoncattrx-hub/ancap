@@ -3,6 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.common import Money
 from app.schemas.strategies import FeeModel
 
 
@@ -10,6 +11,14 @@ class ListingStatus(str, Enum):
     active = "active"
     inactive = "inactive"
     suspended = "suspended"
+
+
+class MarketplaceSort(str, Enum):
+    popular = "popular"
+    recent = "recent"
+    price_asc = "price_asc"
+    price_desc = "price_desc"
+    rating = "rating"
 
 
 class ListingCreateRequest(BaseModel):
@@ -23,10 +32,41 @@ class ListingCreateRequest(BaseModel):
 
 class ListingPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: str
     strategy_id: str
     strategy_version_id: str | None = None
     fee_model: dict
     status: ListingStatus
+    terms_url: str | None = None
+    notes: str | None = None
     created_at: datetime
+
+
+class MarketplaceListingPublic(BaseModel):
+    id: str
+    strategy_id: str
+    strategy_version_id: str | None = None
+    strategy_name: str
+    strategy_description: str | None = None
+    category: str | None = None
+    fee_model: dict
+    price: Money
+    status: ListingStatus
+    terms_url: str | None = None
+    notes: str | None = None
+    listing_views: int
+    listing_purchases: int
+    rating: float
+    rating_count: int
+    is_featured: bool
+    is_trending: bool
+    created_at: datetime
+
+
+class MarketplaceListingsResponse(BaseModel):
+    items: list[MarketplaceListingPublic]
+    total: int
+    limit: int
+    offset: int
+    available_categories: list[str]

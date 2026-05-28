@@ -757,14 +757,21 @@ Remaining future work: richer payout operations/monitoring may still be layered 
 
 ### 4.7 Marketplace search + filters [MEDIUM]
 
-PostgreSQL FTS exists (Phase 5 DONE) but not connected to marketplace.
+Status: [x] Done. Marketplace discovery now exposes server-side search/filter/sort, returns listing popularity/rating metadata, and records listing-open view activity for discovery ranking.
 
-New:
-- \GET /marketplace/listings\ with filters: search, category, price_min/max, sort (popular|recent|price_asc|price_desc|rating), pagination
-- \listing_views\ counter on each view
-- \listing_purchases\ counter on each purchase
-- Connect FTS: \	o_tsvector(name || ' ' || description)\
-- Add \is_featured\ / \is_trending\ computed columns
+Implemented / verified (2026-05-28):
+- `GET /v1/listings/marketplace/listings` now supports `search`, `category`, `price_min`, `price_max`, `sort` (`popular|recent|price_asc|price_desc|rating`), `limit`, and `offset`
+- PostgreSQL FTS is connected to marketplace discovery via `to_tsvector(...)` / `plainto_tsquery(...)` over strategy + vertical fields, with `ILIKE` fallback matching on names/descriptions/notes/ids
+- marketplace responses now include computed `price`, `listing_purchases`, `listing_views`, `rating`, `rating_count`, `is_featured`, `is_trending`, and `available_categories`
+- `GET /v1/listings/{id}` now records a lightweight public `listing_opened` activity event so discovery view counts are backed by real runtime events instead of docs-only intent
+- frontend marketplace page now consumes the server-side marketplace API directly and exposes live search, category filter, min/max price, popular/newest/price/rating sort, plus featured/trending merchandising badges
+- verification:
+  - `pytest tests/test_listings_orders.py -q` ✅
+  - `pytest tests/test_listings_orders.py tests/api/test_ai_console_wave1.py -q` ✅
+  - `npm run build` in `frontend-app` ✅
+  - `docker compose -f docker-compose.prod.yml config --quiet` ✅
+
+Remaining future work: richer dedicated view-tracking instrumentation and deeper recommendation logic can still be layered later, but the roadmap baseline marketplace search/filter/discovery slice itself is no longer missing.
 
 ### 4.8 Chargebacks and dispute UI [MEDIUM]
 
