@@ -40,7 +40,7 @@ After the first push:
 The exported seed already includes contributor-safe issue/PR templates. After repo creation, also:
 
 - enable GitHub Discussions for ideas and technical questions;
-- seed the baseline labels used by the roadmap/community model:
+- seed the baseline labels from `docs/ANCAP_DOCS_LABEL_SEED.md` so the first public issue taxonomy matches the roadmap/community model:
   - `good first issue`
   - `help wanted`
   - `security`

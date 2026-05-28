@@ -35,11 +35,14 @@ def test_roadmap_and_status_docs_record_ci_guard_for_docs_split_prep():
     assert 'docs-focused root README' in roadmap_text
     assert 'issue/PR templates' in roadmap_text
     assert 'repo-bootstrap checklist' in roadmap_text
+    assert 'reusable label seed' in roadmap_text
     assert 'Backend CI reruns the export/public-trust regression slice' in status_text
     assert 'docs-focused root README' in status_text
     assert 'issue/PR templates' in status_text
     assert 'labels/Discussions checklist' in status_text
+    assert 'reusable label seed' in status_text
     assert 'Backend CI now reruns the export/public-trust regression slice' in open_source_text
     assert 'docs-focused root `README.md`' in open_source_text
     assert 'issue/PR templates' in open_source_text
     assert 'labels / Discussions setup' in open_source_text
+    assert 'label seed' in open_source_text

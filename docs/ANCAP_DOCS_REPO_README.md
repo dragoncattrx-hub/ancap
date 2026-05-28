@@ -28,6 +28,7 @@ Core truth:
 - [Status matrix](STATUS_MATRIX.md)
 - [Open-source / GitHub transparency](OPEN_SOURCE_GITHUB_TRANSPARENCY.md)
 - [Docs repo bootstrap checklist](ANCAP_DOCS_REPO_BOOTSTRAP.md)
+- [Docs repo label seed](ANCAP_DOCS_LABEL_SEED.md)
 
 Project/context docs:
 - [Vision](VISION.md)
