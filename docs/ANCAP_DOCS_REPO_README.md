@@ -27,6 +27,7 @@ Core truth:
 - [Master roadmap](../MASTER_ROADMAP.md)
 - [Status matrix](STATUS_MATRIX.md)
 - [Open-source / GitHub transparency](OPEN_SOURCE_GITHUB_TRANSPARENCY.md)
+- [Docs repo bootstrap checklist](ANCAP_DOCS_REPO_BOOTSTRAP.md)
 
 Project/context docs:
 - [Vision](VISION.md)

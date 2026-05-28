@@ -26,6 +26,7 @@ The initial export should include:
 - public-facing status and open-source docs:
   - `docs/STATUS_MATRIX.md`
   - `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`
+  - `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md`
   - `docs/VISION.md`
   - `docs/ARCHITECTURE_LAYERS.md`
   - `docs/PLAN_L0_TO_L3.md`
@@ -58,7 +59,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, ships `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md` so the first public repo push has a documented creation/settings/labels/discussions checklist, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -81,4 +82,5 @@ This prep slice is complete when:
 4. the future repo can be created from the generated bundle without manual scavenging through the monorepo,
 5. contributor-facing issue/PR templates are already present in the exported seed instead of needing a second manual copy step,
 6. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
-7. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README.
+7. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README,
+8. the future repo bootstrap steps (initial push, baseline settings, labels, Discussions enablement) are documented inside the exported bundle instead of living only in cron notes.

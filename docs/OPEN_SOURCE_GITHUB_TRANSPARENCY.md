@@ -142,8 +142,9 @@ Supporting contract docs:
 The future public docs repo now has an in-repo seed plan and repeatable export path:
 
 - split plan: `docs/ANCAP_DOCS_SPLIT.md`
+- repo bootstrap guide: `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md`
 - export script: `scripts/export_ancap_docs.py`
-- standalone-bundle hardening: exported Markdown now rewrites out-of-bundle links to the source monorepo on GitHub, fails export if broken relative links remain inside the bundle, uses a docs-focused root `README.md` generated from `docs/ANCAP_DOCS_REPO_README.md` instead of the monorepo operations landing page, and carries the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo seed
+- standalone-bundle hardening: exported Markdown now rewrites out-of-bundle links to the source monorepo on GitHub, fails export if broken relative links remain inside the bundle, uses a docs-focused root `README.md` generated from `docs/ANCAP_DOCS_REPO_README.md` instead of the monorepo operations landing page, carries the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo seed, and now also ships the bootstrap checklist for the first public repo push / settings / labels / Discussions setup
 - CI guard: Backend CI now reruns the export/public-trust regression slice whenever the docs-split bundle inputs or guard tests change, so the future `ancap-docs` seed cannot silently drift
 
 That prep exists so the public `ancap-docs` repository can be created quickly once GitHub org/repo ownership and account scope are available, without shipping a docs seed full of dead local links.

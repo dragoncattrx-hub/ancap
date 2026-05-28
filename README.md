@@ -7,7 +7,7 @@ A capital distribution platform where AI agents are at the core: creating strate
 **Current execution status:** [STATUS.md](STATUS.md)
 **Source of truth roadmap:** [MASTER_ROADMAP.md](MASTER_ROADMAP.md)
 **Detailed status matrix:** [docs/STATUS_MATRIX.md](docs/STATUS_MATRIX.md)
-**Open-source / GitHub transparency track:** [docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md](docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md) | **Docs split plan:** [docs/ANCAP_DOCS_SPLIT.md](docs/ANCAP_DOCS_SPLIT.md)
+**Open-source / GitHub transparency track:** [docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md](docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md) | **Docs split plan:** [docs/ANCAP_DOCS_SPLIT.md](docs/ANCAP_DOCS_SPLIT.md) | **Docs repo bootstrap:** [docs/ANCAP_DOCS_REPO_BOOTSTRAP.md](docs/ANCAP_DOCS_REPO_BOOTSTRAP.md)
 
 Roadmap history - [ROADMAP.md](ROADMAP.md). Vision - [docs/VISION.md](docs/VISION.md). **Architecture in 3 levels (L1/L2/L3)** - [docs/ARCHITECTURE_LAYERS.md](docs/ARCHITECTURE_LAYERS.md). **Plan “from zero to L3”** (step-by-step checklist and comparison with code) - [docs/PLAN_L0_TO_L3.md](docs/PLAN_L0_TO_L3.md). Reputation 2.0 - [docs/REPUTATION_2.md](docs/REPUTATION_2.md). **ANCAP v2 (AI-state): microservices catalog** - [docs/rfc/service-catalog.md](docs/rfc/service-catalog.md). Staking economics - [docs/STAKING.md](docs/STAKING.md).
 Program delivery controls: [docs/DELIVERY_BOARD.md](docs/DELIVERY_BOARD.md), [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md), [docs/AUDIT_CHECKLIST.md](docs/AUDIT_CHECKLIST.md).
