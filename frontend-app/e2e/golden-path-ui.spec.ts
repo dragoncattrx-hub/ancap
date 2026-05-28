@@ -141,18 +141,21 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   await page.getByRole("button", { name: /publish listing/i }).click();
   await expect(page.getByRole("heading", { name: /publish/i })).toBeVisible({ timeout: 15000 });
   const publishModal = page.locator("div.card", { has: page.getByRole("heading", { name: /publish/i }) });
-  // Amount + currency inputs
-  const pubInputs = publishModal.locator("input");
-  await pubInputs.nth(0).fill("10");
-  await pubInputs.nth(1).fill("USD");
+  // Fill labeled fields so the flow stays stable as the modal evolves.
+  await publishModal.getByLabel(/price/i).fill("10");
+  await publishModal.getByLabel(/^currency$/i).fill("USD");
   const publishBtn = publishModal.getByRole("button", { name: /^publish$/i });
   await expect(publishBtn).toBeEnabled({ timeout: 15000 });
-  await publishBtn.click();
+  await Promise.all([
+    page.waitForURL(/\/listings/, { timeout: 15000 }),
+    publishBtn.click(),
+  ]);
 
-  // We should land on listings page.
-  await expect(page).toHaveURL(/\/listings/);
-  const listingRow = page.getByText(strategyName).first();
-  await listingRow.click();
+  const listingCard = page.locator('a.card[href^="/listings/"]', {
+    has: page.getByRole("heading", { name: new RegExp(strategyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") }),
+  }).first();
+  await expect(listingCard).toBeVisible({ timeout: 15000 });
+  await listingCard.click();
 
   // Create a dedicated buyer agent + fund it so the purchase is deterministic.
   const buyerRes = await request.post(`${apiBase}/agents`, {

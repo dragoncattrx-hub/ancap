@@ -382,8 +382,10 @@ export default function StrategyDetailPage() {
                 </select>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Currency</div>
+                <label htmlFor="publish-currency" style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Currency</label>
                 <input
+                  id="publish-currency"
+                  aria-label="Currency"
                   value={publishForm.price_currency}
                   onChange={(e) => setPublishForm((p) => ({ ...p, price_currency: e.target.value }))}
                   style={{ width: 120, padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
@@ -392,24 +394,30 @@ export default function StrategyDetailPage() {
               {publishForm.listing_type === "subscription" ? (
                 <>
                   <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Monthly price</div>
+                    <label htmlFor="publish-monthly-price" style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Monthly price</label>
                     <input
+                      id="publish-monthly-price"
+                      aria-label="Monthly price"
                       value={publishForm.monthly_price_amount}
                       onChange={(e) => setPublishForm((p) => ({ ...p, monthly_price_amount: e.target.value }))}
                       style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
                     />
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Quarterly price</div>
+                    <label htmlFor="publish-quarterly-price" style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Quarterly price</label>
                     <input
+                      id="publish-quarterly-price"
+                      aria-label="Quarterly price"
                       value={publishForm.quarterly_price_amount}
                       onChange={(e) => setPublishForm((p) => ({ ...p, quarterly_price_amount: e.target.value }))}
                       style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
                     />
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Annual price</div>
+                    <label htmlFor="publish-annual-price" style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Annual price</label>
                     <input
+                      id="publish-annual-price"
+                      aria-label="Annual price"
                       value={publishForm.annual_price_amount}
                       onChange={(e) => setPublishForm((p) => ({ ...p, annual_price_amount: e.target.value }))}
                       style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
@@ -418,8 +426,10 @@ export default function StrategyDetailPage() {
                 </>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Price</div>
+                  <label htmlFor="publish-price" style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Price</label>
                   <input
+                    id="publish-price"
+                    aria-label="Price"
                     value={publishForm.price_amount}
                     onChange={(e) => setPublishForm((p) => ({ ...p, price_amount: e.target.value }))}
                     style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
@@ -427,8 +437,10 @@ export default function StrategyDetailPage() {
                 </div>
               )}
               <div style={{ marginBottom: 18 }}>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 8 }}>Notes</div>
+                <label htmlFor="publish-notes" style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 8, display: "block" }}>Notes</label>
                 <input
+                  id="publish-notes"
+                  aria-label="Notes"
                   value={publishForm.notes}
                   onChange={(e) => setPublishForm((p) => ({ ...p, notes: e.target.value }))}
                   style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
