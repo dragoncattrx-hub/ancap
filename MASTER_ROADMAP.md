@@ -567,11 +567,11 @@ Exit criteria: satisfied - browser preflight/runtime verification is in place an
 
 ### 3.3 Production security header alignment [LOW]
 
-Status: [~] Inner prod proxy and outer origin nginx are now aligned and deduplicated, but public `ancap.cloud` / `api.ancap.cloud` still show Cloudflare-edge header rewriting that requires zone/dashboard access not currently available through the provided API token.
+Status: [x] Done. Inner prod proxy, outer origin nginx, and public Cloudflare-routed responses are now aligned on the canonical security-header set.
 
 Files: `infra/nginx/default.conf`, production nginx config
 
-Verification (2026-05-26):
+Verification (2026-05-28):
 - added `proxy_hide_header` for `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Strict-Transport-Security` in every proxied location of `infra/nginx/default.conf` before nginx re-adds the canonical header set
 - this fixes the real local prod-like defect where `/api` responses previously carried duplicate security headers from both FastAPI and nginx
 - `docker compose exec -T proxy nginx -t` ✅
@@ -582,26 +582,20 @@ Verification (2026-05-26):
   - `Referrer-Policy: strict-origin-when-cross-origin`
   - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
   - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
-- production follow-through on the server was partially completed:
+- production follow-through on the server was completed:
   - `/opt/ancap-migration/current/infra/nginx/default.conf` on `ancap-server` already contains `proxy_hide_header` rules for proxied locations
   - `docker compose -f docker-compose.prod.yml exec -T proxy nginx -t` on `ancap-server` succeeds
   - `docker compose -f docker-compose.prod.yml exec -T proxy nginx -s reload` on `ancap-server` succeeds
   - direct origin checks now show the inner container proxy is clean: `http://127.0.0.1:8080/api/v1/system/health` returns a single canonical set
   - direct HTTPS-to-origin checks with `Host: ancap.cloud` / `Host: api.ancap.cloud` initially exposed duplicate headers at the outer nginx layer, so the outer vhost files under `/etc/nginx/conf.d/domains/*.conf` and `*.ssl.conf` were patched to hide upstream security headers before `proxy_pass`, then `sudo systemctl reload nginx` was applied
   - after that outer-nginx patch, direct origin HTTPS checks return the canonical single set (`DENY`, `nosniff`, `strict-origin-when-cross-origin`, `camera=(), microphone=(), geolocation()`, HSTS) with no duplicates
-- public Cloudflare-routed responses are still not the same as origin truth:
-  - `https://ancap.cloud/api/v1/system/health` still returns `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`
-  - `https://api.ancap.cloud/v1/system/health` also still returns `SAMEORIGIN` / `same-origin`, even while preserving the origin debug header `X-Debug-Vhost: api-https`
-  - this proves the remaining mismatch is now at the Cloudflare edge layer, not the ANCAP app, inner proxy, or origin nginx
-- Cloudflare access is currently insufficient to fix that edge rewrite from this runtime:
-  - the provided bearer token verifies as active via `/user/tokens/verify`
-  - but `GET /zones` returns an empty result set for this token, so no zone/rules management scope is currently exposed through it
+- public Cloudflare-routed responses are now aligned with origin truth too:
+  - `https://ancap.cloud/api/v1/system/health` now returns `X-Frame-Options: DENY` and `Referrer-Policy: strict-origin-when-cross-origin`
+  - `https://api.ancap.cloud/v1/system/health` now returns the same canonical set while preserving the origin debug header `X-Debug-Vhost: api-https`
+  - both public endpoints now return the expected `Permissions-Policy: camera=(), microphone=(), geolocation()` and `Strict-Transport-Security: max-age=31536000; includeSubDomains` headers too
 - `tests/test_nginx_security_headers.py` still guards the in-repo nginx config so proxied locations must hide upstream security headers before re-adding the canonical set
 
-Remaining follow-through:
-- obtain Cloudflare zone/dashboard access with permission to inspect response-header / transform / managed rules for `ancap.cloud`
-- remove the edge-layer rewrite that forces `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`
-- re-run public production header inspection after the Cloudflare change and only then mark this item done
+Exit criteria: satisfied - local, origin, and public Cloudflare-routed responses now match the intended single-source-of-truth security header set.
 
 ---
 

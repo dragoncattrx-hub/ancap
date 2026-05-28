@@ -37,6 +37,9 @@ def test_status_and_roadmap_keep_manual_secret_rotation_tail_explicit():
     assert "upstream revoke/rotation" in status_text
     assert "docs/SECRET_ROTATION_RUNBOOK.md" in status_text
     assert "scripts/check_secret_hygiene.py" in status_text
+    assert "Cloudflare-routed `ancap.cloud` / `api.ancap.cloud` header checks now match the canonical" in status_text
+    assert "Status: [x] Done. Inner prod proxy, outer origin nginx, and public Cloudflare-routed responses are now aligned" in roadmap_text
+    assert "https://ancap.cloud/api/v1/system/health` now returns `X-Frame-Options: DENY`" in roadmap_text
     assert "Revoke the compromised provider key at the upstream dashboard/API" in roadmap_text
     assert "scripts/check_secret_hygiene.py" in roadmap_text
 

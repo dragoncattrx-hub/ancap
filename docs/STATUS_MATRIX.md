@@ -57,12 +57,12 @@ Parallel trust/adoption track:
 | Production UI/admin surfaces | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Billing, organizations, webhooks, analytics, proof center, strategy builder baseline are present. |
 | Proof / receipts / realtime status | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Receipts/proof and run status infrastructure exist. |
 | ACP checkout / first revenue loop | **Baseline done** | Medium-High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | First ACP-first monetization loop exists, but still needs deeper conversion and payout mechanics. |
-| Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This remains one of the three biggest remaining tails overall, but the production-secret baseline sub-slice is now closed on the current host/runtime; the remaining work is exposed-key rotation and Cloudflare-edge header cleanup. |
+| Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This remains one of the three biggest remaining tails overall, but the production-secret baseline sub-slice is now closed on the current host/runtime and the Cloudflare-edge header mismatch is now closed too; the remaining work is exposed-key rotation / upstream access cleanup. |
 | Mobile wallet | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md` | Wallet is far along but not release-ready; native build closure, device verification, and release work remain. |
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
 | Release hygiene / architecture cleanup | **Baseline done** | Medium | `MASTER_ROADMAP.md` | Deployment story cleanup, dependency consolidation, release workflow, and documentation-health cleanup are now baseline done; broader release closure still depends on the higher-priority top-line tails. |
-| Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists and real GitHub CI/E2E verification is green; the main remaining validation gaps are mobile real-device/native runs plus external/manual checks like live Stripe end-to-end and Cloudflare-edge follow-through. |
+| Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists and real GitHub CI/E2E verification is green; the main remaining validation gaps are mobile real-device/native runs plus external/manual checks like live Stripe end-to-end. |
 
 ---
 
@@ -79,11 +79,11 @@ Parallel trust/adoption track:
 - GitHub secret scanning, push protection, Dependabot security updates, and dependency review are enabled
 - real GitHub runs are green for CodeQL, Backend CI, Frontend CI, and the scheduled `System Jobs Tick` workflow on `master`
 - public diagnostics/ops endpoints are restricted, and the scheduled jobs path is already split onto `/v1/system/jobs/tick/async`
-- auth cookie/storage/CORS hardening is live; the remaining header tail is only the public Cloudflare-edge rewrite mismatch
+- auth cookie/storage/CORS hardening is live
+- public Cloudflare-routed `ancap.cloud` / `api.ancap.cloud` header checks now match the canonical `DENY` + `nosniff` + `strict-origin-when-cross-origin` + explicit `Permissions-Policy` + HSTS set
 
 **Still remaining:**
 - revoke/rotate the exposed provider key externally and complete any upstream access cleanup (operator checklist now lives in `docs/SECRET_ROTATION_RUNBOOK.md`)
-- remove the remaining Cloudflare-edge response-header rewrite on public `ancap.cloud` / `api.ancap.cloud`
 
 **Truth source:** `MASTER_ROADMAP.md`
 
@@ -139,10 +139,10 @@ Parallel trust/adoption track:
 
 This is the practical reading of the current queue from `MASTER_ROADMAP.md`:
 
-1. **Priority 0:** emergency exposed-key remediation / Cloudflare-edge hardening tails
+1. **Priority 0:** emergency exposed-key remediation tail
 2. **Priority 1:** CI/CD honesty and security automation
 3. **Priority 2:** domain model gaps and skipped tests
-4. **Priority 3:** auth/cookie/CORS/security-header hardening
+4. **Priority 3:** auth/cookie/CORS/security-header hardening follow-through (now baseline closed in repo/runtime/public headers)
 5. **Priority 4:** monetization depth
 6. **Priority 5:** mobile wallet completion
 7. **Priority 6:** architecture/release hygiene
@@ -164,8 +164,8 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Search / analytics | Done baseline | Exists, but marketplace depth remains |
 | Mobile native signing flow | Partial | Native closure and verification remain |
 | Mobile release readiness | Not done | Device/stores/security/release still open |
-| CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; the remaining adjacent security tails are external key rotation and Cloudflare-edge header cleanup, not CI gate honesty. |
-| Secret remediation | Partial | Cleanup is done in tracked repo files, `scripts/check_secret_hygiene.py` now provides a repeatable tracked-files secret-pattern scan, the dedicated `Secret Hygiene` workflow plus tagged-release preflight enforce it, and no live token-shaped matches remain outside roadmap notes; `docs/SECRET_ROTATION_RUNBOOK.md` captures the operator rotation checklist, but upstream revoke/rotation and access cleanup still remain external/manual. |
+| CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; the remaining adjacent security tail is external key rotation/access cleanup, not CI gate honesty. |
+| Secret remediation | Partial | Cleanup is done in tracked repo files, `scripts/check_secret_hygiene.py` now provides a repeatable tracked-files secret-pattern scan, the dedicated `Secret Hygiene` workflow plus tagged-release preflight enforce it, public security headers are now aligned end-to-end, and no live token-shaped matches remain outside roadmap notes; `docs/SECRET_ROTATION_RUNBOOK.md` captures the operator rotation checklist, but upstream revoke/rotation and access cleanup still remain external/manual. |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |
 | Public `ancap-docs` split | In progress / repo prep done | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; external org/repo creation is still pending. |
