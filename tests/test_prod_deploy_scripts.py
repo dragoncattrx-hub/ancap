@@ -542,9 +542,9 @@ def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path:
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
             "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
-            "STRIPE_SECRET_KEY": "sk_live_runtime_test",
-            "STRIPE_PUBLISHABLE_KEY": "pk_live_runtime_test",
-            "STRIPE_WEBHOOK_SECRET": "whsec_runtime_test",
+            "STRIPE_SECRET_KEY": "stripe_secret_runtime_test",
+            "STRIPE_PUBLISHABLE_KEY": "stripe_publishable_runtime_test",
+            "STRIPE_WEBHOOK_SECRET": "stripe_webhook_runtime_test",
             "STRIPE_API_BASE": "https://stripe.example.test/v1",
         }
     )
@@ -569,9 +569,9 @@ def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path:
     combined_output = f"{result.stdout}\n{result.stderr}"
     assert result.returncode == 0, combined_output
     assert "POSTGRES_PASSWORD: compose-pass" in result.stdout
-    assert "STRIPE_SECRET_KEY: sk_live_runtime_test" in result.stdout
-    assert "STRIPE_PUBLISHABLE_KEY: pk_live_runtime_test" in result.stdout
-    assert "STRIPE_WEBHOOK_SECRET: whsec_runtime_test" in result.stdout
+    assert "STRIPE_SECRET_KEY: stripe_secret_runtime_test" in result.stdout
+    assert "STRIPE_PUBLISHABLE_KEY: stripe_publishable_runtime_test" in result.stdout
+    assert "STRIPE_WEBHOOK_SECRET: stripe_webhook_runtime_test" in result.stdout
     assert "STRIPE_API_BASE: https://stripe.example.test/v1" in result.stdout
 
 

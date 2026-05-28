@@ -1,8 +1,9 @@
 """API key schemas."""
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ApiKeyCreateRequest(BaseModel):
@@ -43,11 +44,45 @@ class OrgApiKeyCreateRequest(BaseModel):
     expires_at: Optional[datetime] = None
 
 
+class OrgApiKeySpendCapRequest(BaseModel):
+    endpoint: str = Field(..., min_length=1, max_length=160)
+    currency: str = Field(..., min_length=1, max_length=10)
+    monthly_cap: str = Field(..., min_length=1, max_length=64)
+
+    @field_validator("endpoint")
+    @classmethod
+    def normalize_endpoint(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized.startswith("/"):
+            raise ValueError("endpoint must start with '/'")
+        return normalized
+
+    @field_validator("currency")
+    @classmethod
+    def normalize_currency(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError("currency is required")
+        return normalized
+
+    @field_validator("monthly_cap")
+    @classmethod
+    def validate_monthly_cap(cls, value: str) -> str:
+        normalized = value.strip()
+        try:
+            if Decimal(normalized) <= 0:
+                raise ValueError("monthly_cap must be positive")
+        except (InvalidOperation, ValueError) as exc:
+            raise ValueError("monthly_cap must be a positive decimal string") from exc
+        return normalized
+
+
 class OrgApiKeyPublic(BaseModel):
     id: str
     org_id: str
     name: str
     key_prefix: str
     scope: Optional[str] = None
+    spend_caps: dict[str, dict[str, str]] = Field(default_factory=dict)
     expires_at: Optional[datetime] = None
     created_at: datetime

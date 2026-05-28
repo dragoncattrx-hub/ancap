@@ -254,8 +254,8 @@ def test_org_api_keys_member_can_list_not_create(client):
     assert member_create.status_code == 403, member_create.text
 
 
-def test_org_api_keys_delete(client):
-    """Admin can delete org API key."""
+def test_org_api_keys_spend_cap_patch_and_delete(client):
+    """Admin can set org API key endpoint spend caps and later delete the key."""
     _, owner_headers, _ = _register_and_login(client, "Key Del Owner")
     org = _create_org(client, owner_headers, "key_del_org")
 
@@ -266,6 +266,20 @@ def test_org_api_keys_delete(client):
     )
     assert create.status_code == 201, create.text
     key_id = create.json()["id"]
+
+    patch = client.patch(
+        f"/v1/organizations/{org['id']}/api-keys/{key_id}",
+        headers=owner_headers,
+        json={"endpoint": "/paid-api/token-risk", "currency": "acp", "monthly_cap": "3.00"},
+    )
+    assert patch.status_code == 200, patch.text
+    payload = patch.json()
+    assert payload["spend_caps"]["/paid-api/token-risk"]["ACP"] == "3.00"
+
+    listing = client.get(f"/v1/organizations/{org['id']}/api-keys", headers=owner_headers)
+    assert listing.status_code == 200, listing.text
+    keys = {item["id"]: item for item in listing.json()}
+    assert keys[key_id]["spend_caps"]["/paid-api/token-risk"]["ACP"] == "3.00"
 
     delete = client.delete(
         f"/v1/organizations/{org['id']}/api-keys/{key_id}",
@@ -279,12 +293,18 @@ def test_org_api_keys_delete(client):
     assert not any(k["id"] == key_id for k in keys)
 
 
-def test_org_api_keys_delete_not_found(client):
-    """Delete returns 404 for unknown key."""
+def test_org_api_keys_patch_delete_not_found(client):
+    """Patch/delete return 404 for unknown key."""
     _, owner_headers, _ = _register_and_login(client, "Key Not Found Owner")
     org = _create_org(client, owner_headers, "key_notfound_org")
     import uuid
     fake_key = str(uuid.uuid4())
+    patch = client.patch(
+        f"/v1/organizations/{org['id']}/api-keys/{fake_key}",
+        headers=owner_headers,
+        json={"endpoint": "/paid-api/token-risk", "currency": "ACP", "monthly_cap": "2.00"},
+    )
+    assert patch.status_code == 404, patch.text
     r = client.delete(
         f"/v1/organizations/{org['id']}/api-keys/{fake_key}",
         headers=owner_headers,

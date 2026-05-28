@@ -724,12 +724,18 @@ Exit criteria: satisfied -- creators can offer subscription plans, users can sub
 
 ### 4.5 API monetization depth [MEDIUM]
 
-Remaining from MONETIZATION_EXECUTION_PLAN.md:
-- Monthly usage exports (CSV): \GET /v1/paid-api/usage/export\
-- Per-endpoint spend caps: \PATCH /v1/organizations/{id}/api-keys/{key_id}\ with \spend_cap\
-- Per-agent spend caps: new field on Agent model
-- Cost-plus margin reporting: add \provider_cost\ to \pi_usage_events\
-- New: \GET /v1/paid-api/revenue-summary\ -- gross, cost, margin by endpoint/period/org
+Status: [x] Done. Usage export, per-agent spend caps, per-endpoint / per-org-key spend caps, cost-plus margin snapshots, and admin revenue reporting now exist in repo and are test-covered.
+
+Implemented / verified (2026-05-28):
+- `GET /v1/paid-api/me/usage/export` -- monthly usage export CSV for callers
+- `POST /v1/paid-api/agents/{agent_id}/spend-cap` -- per-agent monthly spend caps stored on agent metadata
+- `PATCH /v1/organizations/{org_id}/api-keys/{key_id}` -- per-endpoint / per-currency monthly spend caps stored on org or org-attached agent API keys
+- paid API usage events now persist `provider_cost`, `estimated_margin`, `api_key_id`, and org attribution metadata for captured charges
+- `GET /v1/paid-api/revenue-summary` -- platform-admin-only gross / provider-cost / margin summary grouped by endpoint, period, and organization
+- org attribution now survives agent-owned API keys after agent -> organization transfer by falling back to `Agent.metadata_.org_id` when the key itself is not org-owned
+- verification:
+  - `pytest tests/api/test_paid_api.py tests/api/test_organizations.py -q` ✅
+  - `pytest tests/api/test_paid_api.py tests/api/test_organizations.py tests/test_release_workflow.py tests/test_open_source_examples.py tests/test_public_trust_docs.py -q` ✅
 
 ### 4.6 Referral commission auto-payout [MEDIUM]
 

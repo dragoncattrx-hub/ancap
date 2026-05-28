@@ -66,3 +66,43 @@ class PaidApiUsageEventsResponse(BaseModel):
     items: list[PaidApiUsagePublic] = Field(default_factory=list)
     exported_at: Optional[datetime] = None
     totals_by_currency: dict[str, str] = Field(default_factory=dict)
+
+
+class PaidApiRevenueMoneyPublic(BaseModel):
+    currency: str
+    amount: str
+
+
+class PaidApiRevenueEndpointSummaryPublic(BaseModel):
+    endpoint: str
+    product_slug: str
+    currency: str
+    org_id: Optional[str] = None
+    usage_count: int = 0
+    captured_count: int = 0
+    gross_amount: str = "0"
+    estimated_provider_cost_amount: str = "0"
+    estimated_margin_amount: str = "0"
+
+
+class PaidApiRevenueOrganizationSummaryPublic(BaseModel):
+    org_id: str
+    org_name: Optional[str] = None
+    usage_count: int = 0
+    captured_count: int = 0
+    gross_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_provider_cost_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_margin_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+
+
+class PaidApiRevenueSummaryPublic(BaseModel):
+    generated_at: datetime
+    since: datetime
+    window_days: int
+    usage_count: int = 0
+    status_counts: dict[str, int] = Field(default_factory=dict)
+    gross_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_provider_cost_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+    estimated_margin_totals: list[PaidApiRevenueMoneyPublic] = Field(default_factory=list)
+    endpoints: list[PaidApiRevenueEndpointSummaryPublic] = Field(default_factory=list)
+    organizations: list[PaidApiRevenueOrganizationSummaryPublic] = Field(default_factory=list)

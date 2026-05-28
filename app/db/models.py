@@ -250,6 +250,7 @@ class ApiKey(Base):
     key_prefix = Column(String(24), nullable=False, unique=True, index=True)
     key_hash = Column(String(64), nullable=False)
     scope = Column(String(64), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
     expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 

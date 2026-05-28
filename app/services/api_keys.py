@@ -1,6 +1,7 @@
 """API key generation, hashing and lookup."""
 import hashlib
 import secrets
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -13,6 +14,15 @@ PREFIX = "ancap_"
 PREFIX_LEN = 6  # len("ancap_")
 RANDOM_BYTES = 24  # 32 chars base64
 KEY_PREFIX_DISPLAY_LEN = PREFIX_LEN + 12  # ancap_ + 12 chars for lookup
+
+
+@dataclass(slots=True)
+class ResolvedApiKey:
+    row_id: UUID
+    agent_id: UUID | None
+    org_id: UUID | None
+    scope: str | None
+    key_prefix: str
 
 
 def generate_key() -> tuple[str, str, str]:
@@ -49,9 +59,9 @@ async def create_key(
     return row, full_key
 
 
-async def resolve_key(session: AsyncSession, raw_key: str) -> UUID | None:
+async def resolve_key_record(session: AsyncSession, raw_key: str) -> ResolvedApiKey | None:
     """
-    Resolve raw API key to agent_id. Returns None if invalid or expired.
+    Resolve raw API key to its persisted record context. Returns None if invalid or expired.
     Key must start with PREFIX; we look up by prefix then verify hash.
     """
     if not raw_key or not raw_key.startswith(PREFIX) or len(raw_key) < KEY_PREFIX_DISPLAY_LEN:
@@ -69,4 +79,18 @@ async def resolve_key(session: AsyncSession, raw_key: str) -> UUID | None:
             exp = exp.replace(tzinfo=timezone.utc)
         if exp < datetime.now(timezone.utc):
             return None
-    return row.agent_id
+    return ResolvedApiKey(
+        row_id=UUID(str(row.id)),
+        agent_id=UUID(str(row.agent_id)) if row.agent_id else None,
+        org_id=UUID(str(row.org_id)) if row.org_id else None,
+        scope=row.scope,
+        key_prefix=row.key_prefix,
+    )
+
+
+async def resolve_key(session: AsyncSession, raw_key: str) -> UUID | None:
+    """
+    Resolve raw API key to agent_id. Returns None if invalid, expired, or org-owned.
+    """
+    resolved = await resolve_key_record(session, raw_key)
+    return resolved.agent_id if resolved else None

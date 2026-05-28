@@ -12,9 +12,9 @@ from app.services import stripe_payments
 
 @pytest.fixture(autouse=True)
 def _stripe_env(monkeypatch):
-    monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_ancap")
-    monkeypatch.setenv("STRIPE_PUBLISHABLE_KEY", "pk_test_ancap")
-    monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test_ancap")
+    monkeypatch.setenv("STRIPE_SECRET_KEY", "stripe_secret_test_ancap")
+    monkeypatch.setenv("STRIPE_PUBLISHABLE_KEY", "stripe_publishable_test_ancap")
+    monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "stripe_webhook_test_ancap")
     get_settings.cache_clear()
     try:
         yield
@@ -72,7 +72,7 @@ async def _fake_create_intent(session, user, body):
         "customer_id": "cus_test_123",
         "payment_intent_id": stripe_payment_intent_id,
         "client_secret": f"{stripe_payment_intent_id}_secret_456",
-        "publishable_key": "pk_test_ancap",
+        "publishable_key": "stripe_publishable_test_ancap",
         "amount": {"amount": "19.99", "currency": "USD"},
         "currency": "USD",
         "payment_method_types": ["card"],
@@ -136,7 +136,7 @@ def test_create_and_get_stripe_payment_intent_route(client, monkeypatch):
     assert payload["item"]["payment_reference"].startswith("stripe:pi_test_")
     assert payload["package"]["slug"] == "launch-credits"
     assert payload["stripe"]["payment_intent_id"].startswith("pi_test_")
-    assert payload["stripe"]["publishable_key"] == "pk_test_ancap"
+    assert payload["stripe"]["publishable_key"] == "stripe_publishable_test_ancap"
 
     fetched = client.get(f"/v1/payments/stripe/intents/{payload['item']['id']}", headers=headers)
     assert fetched.status_code == 200, fetched.text
@@ -223,7 +223,7 @@ def test_stripe_webhook_captures_credit_topup_once(client, monkeypatch):
         },
     }
     raw = json.dumps(event, separators=(",", ":")).encode("utf-8")
-    signature = stripe_payments.build_stripe_webhook_signature(raw, "whsec_test_ancap")
+    signature = stripe_payments.build_stripe_webhook_signature(raw, "stripe_webhook_test_ancap")
 
     webhook = client.post(
         "/v1/webhooks/stripe",
@@ -407,7 +407,7 @@ def test_stripe_webhook_marks_terminal_failure_states(client, monkeypatch):
             },
         }
         raw = json.dumps(event, separators=(",", ":")).encode("utf-8")
-        signature = stripe_payments.build_stripe_webhook_signature(raw, "whsec_test_ancap")
+        signature = stripe_payments.build_stripe_webhook_signature(raw, "stripe_webhook_test_ancap")
         return client.post(
             "/v1/webhooks/stripe",
             data=raw,
@@ -506,7 +506,7 @@ def test_stripe_webhook_rejects_invalid_signature(client):
         "data": {"object": {"id": "pi_bad_sig", "status": "succeeded"}},
     }
     raw = json.dumps(event).encode("utf-8")
-    valid_signature = stripe_payments.build_stripe_webhook_signature(raw, "whsec_test_ancap")
+    valid_signature = stripe_payments.build_stripe_webhook_signature(raw, "stripe_webhook_test_ancap")
     invalid_signature = valid_signature.replace("v1=", "v1=deadbeef") if "v1=" in valid_signature else valid_signature + ",v1=deadbeef"
 
     response = client.post(

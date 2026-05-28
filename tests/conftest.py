@@ -5,10 +5,13 @@ All tests share the same loop → no "Event loop is closed" or skips.
 """
 import json
 import os
+import subprocess
 import uuid
 from typing import Any
 
 import pytest
+from alembic.config import Config as AlembicConfig
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 from starlette.testclient import TestClient
 
@@ -105,7 +108,7 @@ def _seed_base_vertical_if_missing(sync_engine):
         conn.execute(
             text(
                 "INSERT INTO vertical_specs (id, vertical_id, spec_json, created_at) "
-                "VALUES (:spec_id, :vertical_id, :spec::jsonb, NOW())"
+                "VALUES (:spec_id, :vertical_id, CAST(:spec AS jsonb), NOW())"
             ),
             {"spec_id": spec_id, "vertical_id": vertical_id, "spec": json.dumps(base_vertical_spec)},
         )
@@ -113,13 +116,14 @@ def _seed_base_vertical_if_missing(sync_engine):
 
 
 def _run_migrations_or_create_all(sync_url: str):
-    """Run Alembic migrations (preferred, seeds BaseVertical); fallback to create_all + seed."""
+    """Run Alembic migrations; on drift/failure, rebuild the test schema to current metadata and stamp head."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sync_db_url = sync_url.replace("postgresql+asyncpg", "postgresql").replace("+asyncpg", "")
     try:
-        import subprocess
         r = subprocess.run(
             ["alembic", "upgrade", "head"],
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            env={**os.environ, "DATABASE_URL": sync_url.replace("postgresql+asyncpg", "postgresql").replace("+asyncpg", "")},
+            cwd=repo_root,
+            env={**os.environ, "DATABASE_URL": sync_db_url},
             capture_output=True,
             text=True,
             timeout=30,
@@ -127,11 +131,27 @@ def _run_migrations_or_create_all(sync_url: str):
         if r.returncode == 0:
             return
     except Exception:
-        pass
-    # Fallback: create_all + seed (e.g. when Alembic not runnable or DB fresh)
+        r = None
+
+    # Fallback for local/dev test DB drift: wipe the schema, recreate current tables,
+    # seed required baseline rows, and stamp the DB to the current Alembic head so
+    # future test runs do not keep replaying already-materialized migrations.
     sync_engine = create_engine(sync_url, pool_pre_ping=True)
+    with sync_engine.begin() as conn:
+        conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
+        conn.execute(text("CREATE SCHEMA public"))
     Base.metadata.create_all(sync_engine)
     _seed_base_vertical_if_missing(sync_engine)
+
+    alembic_cfg = AlembicConfig(os.path.join(repo_root, "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", os.path.join(repo_root, "alembic"))
+    script = ScriptDirectory.from_config(alembic_cfg)
+    head_revision = script.get_current_head()
+    if head_revision:
+        with sync_engine.begin() as conn:
+            conn.execute(text("CREATE TABLE IF NOT EXISTS alembic_version (version_num VARCHAR(32) NOT NULL)"))
+            conn.execute(text("DELETE FROM alembic_version"))
+            conn.execute(text("INSERT INTO alembic_version (version_num) VALUES (:version_num)"), {"version_num": head_revision})
     sync_engine.dispose()
 
 

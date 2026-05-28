@@ -13,26 +13,32 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm.attributes import flag_modified
 
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
-from app.db.models import Agent, ApiUsageEvent, LedgerEventTypeEnum
+from app.db.models import Agent, ApiKey, ApiUsageEvent, LedgerEventTypeEnum, Organization
 from app.schemas import (
     Money,
     PaidApiAnalyzeRequest,
     PaidApiAnalyzeResponse,
     PaidApiProductPublic,
     PaidApiProductsResponse,
+    PaidApiRevenueEndpointSummaryPublic,
+    PaidApiRevenueMoneyPublic,
+    PaidApiRevenueOrganizationSummaryPublic,
+    PaidApiRevenueSummaryPublic,
     PaidApiSpendCapRequest,
     PaidApiSpendCapResponse,
     PaidApiUsageEventsResponse,
     PaidApiUsagePublic,
 )
-from app.services.api_keys import KEY_PREFIX_DISPLAY_LEN, resolve_key
+from app.services.api_keys import resolve_key_record
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
 
 
 router = APIRouter(prefix="/paid-api", tags=["Paid API"])
+
+PAID_API_PROVIDER_COST_RATE = Decimal("0.18")
 
 
 def _x402_terms(product_slug: str, amount: str, currency: str = "ACP") -> dict[str, object]:
@@ -133,6 +139,70 @@ def _agent_spend_caps(agent: Agent) -> dict[str, str]:
     return {str(currency).upper(): str(amount) for currency, amount in caps.items() if str(amount).strip()}
 
 
+def _api_key_endpoint_spend_caps(row: ApiKey | None) -> dict[str, dict[str, str]]:
+    if row is None or not isinstance(row.metadata_json, dict):
+        return {}
+    raw_caps = row.metadata_json.get("paid_api_spend_caps")
+    if not isinstance(raw_caps, dict):
+        return {}
+
+    normalized: dict[str, dict[str, str]] = {}
+    for endpoint, currency_map in raw_caps.items():
+        endpoint_key = str(endpoint or "").strip()
+        if not endpoint_key or not isinstance(currency_map, dict):
+            continue
+        normalized_currency_map: dict[str, str] = {}
+        for currency, amount in currency_map.items():
+            currency_key = str(currency or "").strip().upper()
+            amount_value = str(amount or "").strip()
+            if not currency_key or not amount_value:
+                continue
+            normalized_currency_map[currency_key] = amount_value
+        if normalized_currency_map:
+            normalized[endpoint_key] = normalized_currency_map
+    return normalized
+
+
+async def _api_key_30d_spend(session: DbSession, api_key_id: UUID, endpoint: str, currency: str) -> Decimal:
+    since = datetime.now(UTC) - timedelta(days=30)
+    total = (
+        await session.execute(
+            select(func.coalesce(func.sum(ApiUsageEvent.amount_value), 0)).where(
+                ApiUsageEvent.amount_currency == currency,
+                ApiUsageEvent.status == "captured",
+                ApiUsageEvent.created_at >= since,
+                ApiUsageEvent.metadata_json["api_key_id"].astext == str(api_key_id),
+                ApiUsageEvent.endpoint == endpoint,
+            )
+        )
+    ).scalar_one()
+    return Decimal(str(total or "0"))
+
+
+def _usage_cost_snapshot(row: ApiUsageEvent) -> tuple[Decimal, Decimal]:
+    gross = Decimal(str(row.amount_value or "0"))
+    metadata = row.metadata_json if isinstance(row.metadata_json, dict) else {}
+    provider_cost = metadata.get("provider_cost") if isinstance(metadata.get("provider_cost"), dict) else None
+    margin = metadata.get("estimated_margin") if isinstance(metadata.get("estimated_margin"), dict) else None
+
+    try:
+        if provider_cost and str(provider_cost.get("amount", "")).strip():
+            provider_cost_amount = Decimal(str(provider_cost.get("amount", "0")))
+        else:
+            provider_cost_amount = (gross * PAID_API_PROVIDER_COST_RATE).quantize(Decimal("0.01"))
+    except Exception:
+        provider_cost_amount = Decimal("0")
+
+    try:
+        if margin and str(margin.get("amount", "")).strip():
+            margin_amount = Decimal(str(margin.get("amount", "0")))
+        else:
+            margin_amount = (gross - provider_cost_amount).quantize(Decimal("0.01"))
+    except Exception:
+        margin_amount = Decimal("0")
+    return provider_cost_amount, margin_amount
+
+
 async def _agent_30d_spend(session: DbSession, agent_id: UUID, currency: str) -> Decimal:
     since = datetime.now(UTC) - timedelta(days=30)
     total = (
@@ -231,9 +301,10 @@ async def _charge_usage(
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
     if not raw_api_key:
         raise HTTPException(status_code=401, detail="Agent identity required (X-API-Key)")
-    agent_id = await resolve_key(session, raw_api_key)
-    if agent_id is None:
+    resolved_key = await resolve_key_record(session, raw_api_key)
+    if resolved_key is None or resolved_key.agent_id is None:
         raise HTTPException(status_code=401, detail="Invalid API key")
+    agent_id = resolved_key.agent_id
     agent = await session.get(Agent, agent_id)
     if agent is None:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -243,6 +314,12 @@ async def _charge_usage(
     payer_id = owner_user_id or UUID(str(agent.id))
     payer_acc = await get_or_create_account(session, payer_type, payer_id)
     platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+
+    resolved_org_id = str(resolved_key.org_id) if resolved_key.org_id else None
+    if not resolved_org_id and isinstance(agent.metadata_, dict):
+        raw_org_id = agent.metadata_.get("org_id")
+        if isinstance(raw_org_id, str) and raw_org_id.strip():
+            resolved_org_id = raw_org_id.strip()
 
     currency = product.price.currency
     amount = Decimal(product.price.amount)
@@ -260,6 +337,26 @@ async def _charge_usage(
                     "currency": currency,
                     "monthly_cap": str(monthly_cap),
                     "current_30d_spend": str(current_spend),
+                    "required": str(amount),
+                    "x402": product.x402,
+                },
+            )
+
+    endpoint_caps = _api_key_endpoint_spend_caps(await session.get(ApiKey, resolved_key.row_id))
+    endpoint_cap_value = endpoint_caps.get(product.endpoint, {}).get(currency)
+    if endpoint_cap_value is not None:
+        endpoint_current_spend = await _api_key_30d_spend(session, resolved_key.row_id, product.endpoint, currency)
+        endpoint_monthly_cap = Decimal(str(endpoint_cap_value))
+        if endpoint_current_spend + amount > endpoint_monthly_cap:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "message": "Paid API endpoint spend cap exceeded",
+                    "code": "endpoint_spend_cap_exceeded",
+                    "endpoint": product.endpoint,
+                    "currency": currency,
+                    "monthly_cap": str(endpoint_monthly_cap),
+                    "current_30d_spend": str(endpoint_current_spend),
                     "required": str(amount),
                     "x402": product.x402,
                 },
@@ -293,12 +390,16 @@ async def _charge_usage(
             "product_slug": product.slug,
             "endpoint": product.endpoint,
             "request_hash": request_hash,
+            "org_id": resolved_org_id,
+            "api_key_id": str(resolved_key.row_id),
         },
     )
+    provider_cost_amount = (amount * PAID_API_PROVIDER_COST_RATE).quantize(Decimal("0.01"))
+    estimated_margin_amount = (amount - provider_cost_amount).quantize(Decimal("0.01"))
     row = ApiUsageEvent(
         agent_id=UUID(str(agent.id)),
         owner_user_id=owner_user_id,
-        api_key_prefix=raw_api_key[:KEY_PREFIX_DISPLAY_LEN],
+        api_key_prefix=resolved_key.key_prefix,
         product_slug=product.slug,
         endpoint=product.endpoint,
         status="captured",
@@ -306,7 +407,14 @@ async def _charge_usage(
         amount_value=amount,
         ledger_event_id=ev.id,
         request_hash=request_hash,
-        metadata_json={"payer_type": payer_type, "payer_id": str(payer_id)},
+        metadata_json={
+            "payer_type": payer_type,
+            "payer_id": str(payer_id),
+            "org_id": resolved_org_id,
+            "api_key_id": str(resolved_key.row_id),
+            "provider_cost": {"amount": str(provider_cost_amount), "currency": currency},
+            "estimated_margin": {"amount": str(estimated_margin_amount), "currency": currency},
+        },
     )
     session.add(row)
     await session.flush()
@@ -394,6 +502,156 @@ async def export_my_paid_api_usage_csv(
     return Response(content=buffer.getvalue(), media_type="text/csv; charset=utf-8", headers=headers)
 
 
+@router.get("/revenue-summary", response_model=PaidApiRevenueSummaryPublic)
+async def paid_api_revenue_summary(
+    session: DbSession,
+    admin_user_id: str = Depends(require_platform_admin),
+    days: int = Query(30, ge=1, le=365),
+):
+    _ = admin_user_id
+    generated_at = datetime.now(UTC)
+    since = generated_at - timedelta(days=days)
+
+    rows = (
+        await session.execute(
+            select(ApiUsageEvent)
+            .where(ApiUsageEvent.created_at >= since)
+            .order_by(desc(ApiUsageEvent.created_at))
+        )
+    ).scalars().all()
+
+    org_name_map: dict[str, str] = {}
+    org_ids = {
+        str(meta.get("org_id"))
+        for row in rows
+        for meta in [row.metadata_json if isinstance(row.metadata_json, dict) else {}]
+        if meta.get("org_id")
+    }
+    parsed_org_ids: list[UUID] = []
+    for org_id in org_ids:
+        try:
+            parsed_org_ids.append(UUID(org_id))
+        except (TypeError, ValueError):
+            continue
+    if parsed_org_ids:
+        organizations = (
+            await session.execute(select(Organization).where(Organization.id.in_(parsed_org_ids)))
+        ).scalars().all()
+        org_name_map = {str(org.id): org.name for org in organizations}
+
+    status_counts: dict[str, int] = {}
+    gross_totals: dict[str, Decimal] = {}
+    provider_cost_totals: dict[str, Decimal] = {}
+    margin_totals: dict[str, Decimal] = {}
+    endpoint_map: dict[tuple[str, str, str, str | None], dict[str, object]] = {}
+    org_map: dict[str, dict[str, object]] = {}
+
+    for row in rows:
+        status = str(row.status)
+        currency = (row.amount_currency or "ACP").upper()
+        gross = Decimal(str(row.amount_value or "0"))
+        provider_cost_amount, margin_amount = _usage_cost_snapshot(row)
+        metadata = row.metadata_json if isinstance(row.metadata_json, dict) else {}
+        org_id = str(metadata.get("org_id")) if metadata.get("org_id") else None
+
+        status_counts[status] = status_counts.get(status, 0) + 1
+        gross_totals[currency] = gross_totals.get(currency, Decimal("0")) + gross
+        provider_cost_totals[currency] = provider_cost_totals.get(currency, Decimal("0")) + provider_cost_amount
+        margin_totals[currency] = margin_totals.get(currency, Decimal("0")) + margin_amount
+
+        endpoint_key = (row.endpoint, row.product_slug, currency, org_id)
+        if endpoint_key not in endpoint_map:
+            endpoint_map[endpoint_key] = {
+                "endpoint": row.endpoint,
+                "product_slug": row.product_slug,
+                "currency": currency,
+                "org_id": org_id,
+                "usage_count": 0,
+                "captured_count": 0,
+                "gross_amount": Decimal("0"),
+                "estimated_provider_cost_amount": Decimal("0"),
+                "estimated_margin_amount": Decimal("0"),
+            }
+        endpoint_item = endpoint_map[endpoint_key]
+        endpoint_item["usage_count"] = int(endpoint_item["usage_count"]) + 1
+        if status == "captured":
+            endpoint_item["captured_count"] = int(endpoint_item["captured_count"]) + 1
+        endpoint_item["gross_amount"] = Decimal(endpoint_item["gross_amount"]) + gross
+        endpoint_item["estimated_provider_cost_amount"] = Decimal(endpoint_item["estimated_provider_cost_amount"]) + provider_cost_amount
+        endpoint_item["estimated_margin_amount"] = Decimal(endpoint_item["estimated_margin_amount"]) + margin_amount
+
+        if org_id:
+            if org_id not in org_map:
+                org_map[org_id] = {
+                    "org_id": org_id,
+                    "org_name": org_name_map.get(org_id),
+                    "usage_count": 0,
+                    "captured_count": 0,
+                    "gross_totals": {},
+                    "estimated_provider_cost_totals": {},
+                    "estimated_margin_totals": {},
+                }
+            org_item = org_map[org_id]
+            org_item["usage_count"] = int(org_item["usage_count"]) + 1
+            if status == "captured":
+                org_item["captured_count"] = int(org_item["captured_count"]) + 1
+            gross_bucket = org_item["gross_totals"]
+            provider_bucket = org_item["estimated_provider_cost_totals"]
+            margin_bucket = org_item["estimated_margin_totals"]
+            gross_bucket[currency] = gross_bucket.get(currency, Decimal("0")) + gross
+            provider_bucket[currency] = provider_bucket.get(currency, Decimal("0")) + provider_cost_amount
+            margin_bucket[currency] = margin_bucket.get(currency, Decimal("0")) + margin_amount
+
+    endpoints = [
+        PaidApiRevenueEndpointSummaryPublic(
+            endpoint=str(item["endpoint"]),
+            product_slug=str(item["product_slug"]),
+            currency=str(item["currency"]),
+            org_id=str(item["org_id"]) if item["org_id"] else None,
+            usage_count=int(item["usage_count"]),
+            captured_count=int(item["captured_count"]),
+            gross_amount=str(item["gross_amount"]),
+            estimated_provider_cost_amount=str(item["estimated_provider_cost_amount"]),
+            estimated_margin_amount=str(item["estimated_margin_amount"]),
+        )
+        for item in sorted(
+            endpoint_map.values(),
+            key=lambda x: (Decimal(x["gross_amount"]), int(x["usage_count"])),
+            reverse=True,
+        )
+    ]
+
+    organizations = [
+        PaidApiRevenueOrganizationSummaryPublic(
+            org_id=str(item["org_id"]),
+            org_name=str(item["org_name"]) if item["org_name"] else None,
+            usage_count=int(item["usage_count"]),
+            captured_count=int(item["captured_count"]),
+            gross_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in item["gross_totals"].items()],
+            estimated_provider_cost_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in item["estimated_provider_cost_totals"].items()],
+            estimated_margin_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in item["estimated_margin_totals"].items()],
+        )
+        for item in sorted(
+            org_map.values(),
+            key=lambda x: (sum(Decimal(v) for v in x["gross_totals"].values()), int(x["usage_count"])),
+            reverse=True,
+        )
+    ]
+
+    return PaidApiRevenueSummaryPublic(
+        generated_at=generated_at,
+        since=since,
+        window_days=days,
+        usage_count=len(rows),
+        status_counts=status_counts,
+        gross_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in gross_totals.items()],
+        estimated_provider_cost_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in provider_cost_totals.items()],
+        estimated_margin_totals=[PaidApiRevenueMoneyPublic(currency=currency, amount=str(amount)) for currency, amount in margin_totals.items()],
+        endpoints=endpoints,
+        organizations=organizations,
+    )
+
+
 @router.post("/agents/{agent_id}/spend-cap", response_model=PaidApiSpendCapResponse)
 async def set_paid_api_spend_cap(
     agent_id: str,
@@ -425,10 +683,11 @@ async def set_paid_api_spend_cap(
     agent.metadata_ = metadata
     flag_modified(agent, "metadata_")
     await session.flush()
+    normalized_caps = {str(k).upper(): str(v) for k, v in caps.items()}
     return PaidApiSpendCapResponse(
         agent_id=str(agent.id),
-        caps={str(k).upper(): str(v) for k, v in caps.items()},
-        current_30d_spend=await _current_spend_map(session, parsed_agent_id, {str(k).upper(): str(v) for k, v in caps.items()}),
+        caps=normalized_caps,
+        current_30d_spend=await _current_spend_map(session, parsed_agent_id, normalized_caps),
     )
 
 

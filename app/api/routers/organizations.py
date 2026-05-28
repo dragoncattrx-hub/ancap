@@ -26,7 +26,7 @@ from app.db.models import (
     WebhookEndpoint,
 )
 from app.services.api_keys import generate_key
-from app.schemas.keys import OrgApiKeyCreateRequest, OrgApiKeyPublic
+from app.schemas.keys import OrgApiKeyCreateRequest, OrgApiKeyPublic, OrgApiKeySpendCapRequest
 
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
@@ -73,6 +73,35 @@ class OrgRoleUpdateRequest(BaseModel):
 
 
 ASSIGNABLE_ORG_ROLES = {OrgRoleEnum.viewer, OrgRoleEnum.member, OrgRoleEnum.admin}
+
+
+API_KEY_SPEND_CAPS_FIELD = "paid_api_spend_caps"
+
+
+def _normalize_api_key_spend_caps(metadata: object) -> dict[str, dict[str, str]]:
+    if not isinstance(metadata, dict):
+        return {}
+    raw_caps = metadata.get(API_KEY_SPEND_CAPS_FIELD)
+    if not isinstance(raw_caps, dict):
+        return {}
+
+    normalized: dict[str, dict[str, str]] = {}
+    for endpoint, currency_map in raw_caps.items():
+        endpoint_key = str(endpoint or "").strip()
+        if not endpoint_key:
+            continue
+        if not isinstance(currency_map, dict):
+            continue
+        normalized_currency_map: dict[str, str] = {}
+        for currency, amount in currency_map.items():
+            currency_key = str(currency or "").strip().upper()
+            amount_value = str(amount or "").strip()
+            if not currency_key or not amount_value:
+                continue
+            normalized_currency_map[currency_key] = amount_value
+        if normalized_currency_map:
+            normalized[endpoint_key] = normalized_currency_map
+    return normalized
 
 
 # --- Helpers ---
@@ -721,14 +750,19 @@ async def list_org_api_keys(
     session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
-    """List API keys owned by the organization (any org member)."""
+    """List org-owned keys plus agent-owned keys attached to this organization (any org member)."""
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     uid = uuid.UUID(user_id)
     oid = uuid.UUID(org_id)
     await _require_role(session, oid, uid, OrgRoleEnum.member)
 
-    q = select(ApiKey).where(ApiKey.org_id == oid).order_by(desc(ApiKey.created_at))
+    org_agent_ids_subq = select(Agent.id).where(Agent.metadata_["org_id"].astext == str(oid))
+    q = (
+        select(ApiKey)
+        .where(sql_or(ApiKey.org_id == oid, ApiKey.agent_id.in_(org_agent_ids_subq)))
+        .order_by(desc(ApiKey.created_at))
+    )
     r = await session.execute(q)
     rows = r.scalars().all()
     return [
@@ -738,11 +772,59 @@ async def list_org_api_keys(
             name=k.name or "",
             key_prefix=k.key_prefix,
             scope=k.scope,
+            spend_caps=_normalize_api_key_spend_caps(k.metadata_json),
             expires_at=k.expires_at,
             created_at=k.created_at,
         )
         for k in rows
     ]
+
+
+@router.patch("/{org_id}/api-keys/{key_id}", response_model=OrgApiKeyPublic)
+async def set_org_api_key_spend_cap(
+    org_id: str,
+    key_id: str,
+    body: OrgApiKeySpendCapRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Set or update a per-endpoint paid API monthly spend cap for an org-owned API key (admin+ only)."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    uid = uuid.UUID(user_id)
+    oid = uuid.UUID(org_id)
+    kid = uuid.UUID(key_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+
+    org_agent_ids_subq = select(Agent.id).where(Agent.metadata_["org_id"].astext == str(oid))
+    row = (
+        await session.execute(
+            select(ApiKey).where(ApiKey.id == kid).where(sql_or(ApiKey.org_id == oid, ApiKey.agent_id.in_(org_agent_ids_subq)))
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="API key not found")
+
+    metadata = dict(row.metadata_json or {})
+    spend_caps = _normalize_api_key_spend_caps(metadata)
+    endpoint_caps = dict(spend_caps.get(body.endpoint) or {})
+    endpoint_caps[body.currency] = body.monthly_cap.strip()
+    spend_caps[body.endpoint] = endpoint_caps
+    metadata[API_KEY_SPEND_CAPS_FIELD] = spend_caps
+    row.metadata_json = metadata
+    await session.commit()
+    await session.refresh(row)
+
+    return OrgApiKeyPublic(
+        id=str(row.id),
+        org_id=str(oid),
+        name=row.name or "",
+        key_prefix=row.key_prefix,
+        scope=row.scope,
+        spend_caps=_normalize_api_key_spend_caps(row.metadata_json),
+        expires_at=row.expires_at,
+        created_at=row.created_at,
+    )
 
 
 @router.delete("/{org_id}/api-keys/{key_id}", status_code=204)
