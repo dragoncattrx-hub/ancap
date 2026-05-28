@@ -32,16 +32,20 @@ EXPECTED_EXPORTS = {
     Path("docs/CHANGELOG_PUBLIC.md"),
 }
 
+DOCS_REPO_README_SOURCE = Path("docs/ANCAP_DOCS_REPO_README.md")
+
 
 def test_export_script_contains_split_plan_and_manifest_guardrails():
     script_text = SCRIPT_PATH.read_text(encoding="utf-8")
 
     assert 'Path("docs/ANCAP_DOCS_SPLIT.md")' in script_text
+    assert 'Path("docs/ANCAP_DOCS_REPO_README.md")' in script_text
     assert 'EXPORT_MANIFEST.md' in script_text
     assert 'hot-wallet / bridge-signer internals' in script_text
     assert 'rewrite_markdown_links' in script_text
     assert 'find_unresolved_bundle_links' in script_text
     assert 'https://github.com/dragoncattrx-hub/ancap' in script_text
+    assert 'EXPORT_SOURCE_TO_OUTPUT' in script_text
 
 
 def test_export_script_creates_expected_public_docs_bundle(tmp_path: Path):
@@ -88,10 +92,11 @@ def test_export_bundle_rewrites_out_of_bundle_links_to_source_monorepo(tmp_path:
     assert result.returncode == 0, result.stderr or result.stdout
 
     readme_text = (target_dir / "README.md").read_text(encoding="utf-8")
-    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/STATUS.md" in readme_text
-    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/FRONTEND.md" in readme_text
-    assert "https://github.com/dragoncattrx-hub/ancap/tree/master/ancap-mobile" in readme_text
+    assert "future `ancap-docs` repository" in readme_text
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/examples/README.md" in readme_text
+    assert "https://github.com/dragoncattrx-hub/ancap/blob/master/examples/payment-integration/python_credit_topup.py" in readme_text
     assert "https://github.com/dragoncattrx-hub/ancap/blob/master/contracts/bridge-bsc/README.md" in readme_text
+    assert "[Status matrix](docs/STATUS_MATRIX.md)" in readme_text
 
     architecture_text = (target_dir / "docs" / "ARCHITECTURE_LAYERS.md").read_text(encoding="utf-8")
     assert "https://github.com/dragoncattrx-hub/ancap/blob/master/ROADMAP.md" in architecture_text
@@ -118,3 +123,26 @@ def test_export_bundle_has_no_broken_relative_markdown_links(tmp_path: Path):
         assert find_unresolved_bundle_links(target_dir) == []
     finally:
         sys.path.pop(0)
+
+
+def test_export_bundle_root_readme_comes_from_docs_repo_template(tmp_path: Path):
+    target_dir = tmp_path / "ancap-docs-export"
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--target", str(target_dir), "--clean"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    exported_readme = (target_dir / "README.md").read_text(encoding="utf-8")
+    source_template = DOCS_REPO_README_SOURCE.read_text(encoding="utf-8")
+
+    assert "This is the public-safe documentation landing page for the future `ancap-docs` repository." in source_template
+    assert "This landing page is generated into the export bundle by `scripts/export_ancap_docs.py`" in source_template
+    assert "This is the public-safe documentation landing page for the future `ancap-docs` repository." in exported_readme
+    assert "The source monorepo still lives at:" in exported_readme
+    assert "AI-Native Capital Allocation Platform" not in exported_readme

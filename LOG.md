@@ -4,6 +4,37 @@ All changes are for memory and reproducibility.
 
 ---
 
+## 2026-05-28 — `ancap-docs` export root landing hardening
+
+### What landed
+
+- **`docs/ANCAP_DOCS_REPO_README.md`**
+  - added a docs-focused landing page intended for the future public `ancap-docs` repository root.
+  - keeps the trust/integration narrative focused on roadmap/status/architecture/public docs instead of the operational monorepo README.
+  - links public-safe examples and contract sources back to the source monorepo where code still lives.
+- **`scripts/export_ancap_docs.py`**
+  - export now maps `docs/ANCAP_DOCS_REPO_README.md` to root `README.md` inside the generated bundle.
+  - link rewriting now supports source-path → output-path remapping, not just same-path copies, so the standalone bundle can have a different root landing page without breaking local links.
+- **`docs/ANCAP_DOCS_SPLIT.md`**, **`docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`**, **`docs/STATUS_MATRIX.md`**, **`MASTER_ROADMAP.md`**
+  - synced roadmap/status truth so the `ancap-docs` prep item now explicitly includes the docs-focused root landing page as part of repo-seed readiness.
+
+### Why it mattered
+
+The previous export used the monorepo `README.md` as the root page of the future docs repo. That worked mechanically after link rewriting, but it was still the wrong front door: too operational, too broad, and not shaped like a docs-only public trust surface.
+
+This pass makes the exported root closer to the actual intended `ancap-docs` repo: someone opening the future repo lands on documentation-first context instead of monorepo deployment/operator guidance.
+
+### Verification
+
+- `python scripts/export_ancap_docs.py --target .tmp/ancap-docs-export-check --clean` ✅
+- exported root `README.md` now comes from `docs/ANCAP_DOCS_REPO_README.md` and keeps links navigable inside the bundle / back to the source monorepo where needed
+
+### Remaining honest blocker
+
+- the actual GitHub org / `ancap-docs` repo creation step is still externally blocked by ownership/naming/admin scope
+
+---
+
 ## 2026-05-28 — `ancap-docs` export hardening for standalone public repo seeding
 
 ### What landed

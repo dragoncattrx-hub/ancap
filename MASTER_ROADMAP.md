@@ -203,7 +203,7 @@ Publish and maintain:
 
 Sprint 1 - Open Source Preparation
 - [~] Create GitHub organization (blocked pending final ownership/name decision plus GitHub org-admin access; `ANCAP` is already taken by an unrelated user profile and current auth cannot inspect/create org state without `admin:org` scope)
-- [~] Create public `ancap-docs` (repo-split seed bundle + export script prepared in-repo; export now rewrites out-of-bundle links to source-monorepo GitHub URLs and validates the standalone docs bundle for broken relative links; backend CI now runs the docs export/public-trust regression slice when those inputs change; actual GitHub repo creation still blocked on org/ownership/access)
+- [~] Create public `ancap-docs` (repo-split seed bundle + export script prepared in-repo; export now uses a docs-focused root README, rewrites out-of-bundle links to source-monorepo GitHub URLs, and validates the standalone docs bundle for broken relative links; backend CI now runs the docs export/public-trust regression slice when those inputs change; actual GitHub repo creation still blocked on org/ownership/access)
 - [x] Add README.md
 - [x] Add LICENSE
 - [x] Add SECURITY.md

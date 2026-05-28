@@ -32,5 +32,8 @@ def test_roadmap_and_status_docs_record_ci_guard_for_docs_split_prep():
     open_source_text = OPEN_SOURCE_DOC_PATH.read_text(encoding="utf-8")
 
     assert 'backend CI now runs the docs export/public-trust regression slice' in roadmap_text
-    assert 'Backend CI now reruns the export/public-trust regression slice' in status_text
+    assert 'docs-focused root README' in roadmap_text
+    assert 'Backend CI reruns the export/public-trust regression slice' in status_text
+    assert 'docs-focused root README' in status_text
     assert 'Backend CI now reruns the export/public-trust regression slice' in open_source_text
+    assert 'docs-focused root `README.md`' in open_source_text

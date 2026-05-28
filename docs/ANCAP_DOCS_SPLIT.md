@@ -13,7 +13,7 @@ Create a clean, repeatable docs-only bundle that can seed a public `ancap-docs` 
 The initial export should include:
 
 - root governance/project files:
-  - `README.md`
+  - `README.md` (docs-repo landing page exported from `docs/ANCAP_DOCS_REPO_README.md`, not the monorepo operations README)
   - `LICENSE`
   - `CONTRIBUTING.md`
   - `SECURITY.md`
@@ -54,7 +54,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -75,4 +75,5 @@ This prep slice is complete when:
 2. the export command is scripted and repeatable,
 3. tests lock the bundle contents, link-rewrite behavior, and safety boundaries,
 4. the future repo can be created from the generated bundle without manual scavenging through the monorepo,
-5. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links.
+5. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
+6. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README.

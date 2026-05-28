@@ -13,35 +13,36 @@ SOURCE_REPO_REF = "master"
 MARKDOWN_LINK_RE = re.compile(r"(?P<prefix>!?\[[^\]]*\]\()(?P<target>[^)]+)(?P<suffix>\))")
 EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:", "tel:", "data:")
 
-EXPORT_PATHS = [
-    Path("README.md"),
-    Path("LICENSE"),
-    Path("CONTRIBUTING.md"),
-    Path("SECURITY.md"),
-    Path("CODE_OF_CONDUCT.md"),
-    Path("MASTER_ROADMAP.md"),
-    Path("docs/STATUS_MATRIX.md"),
-    Path("docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md"),
-    Path("docs/ANCAP_DOCS_SPLIT.md"),
-    Path("docs/VISION.md"),
-    Path("docs/ARCHITECTURE_LAYERS.md"),
-    Path("docs/PLAN_L0_TO_L3.md"),
-    Path("docs/REPUTATION_2.md"),
-    Path("docs/STAKING.md"),
-    Path("docs/WHITEPAPER_PROJECT.md"),
-    Path("docs/WHITEPAPER_ACP.md"),
-    Path("docs/LEGAL_TERMS_TEMPLATE.md"),
-    Path("docs/BRIDGE_RISK_DOCUMENTATION.md"),
-    Path("docs/CONTRACT_VERIFICATION_GUIDE.md"),
-    Path("docs/TESTNET_DEPLOYMENT_GUIDE.md"),
-    Path("docs/AUDIT_CHECKLIST.md"),
-    Path("docs/CHANGELOG_PUBLIC.md"),
+EXPORT_ENTRIES = [
+    (Path("docs/ANCAP_DOCS_REPO_README.md"), Path("README.md")),
+    (Path("LICENSE"), Path("LICENSE")),
+    (Path("CONTRIBUTING.md"), Path("CONTRIBUTING.md")),
+    (Path("SECURITY.md"), Path("SECURITY.md")),
+    (Path("CODE_OF_CONDUCT.md"), Path("CODE_OF_CONDUCT.md")),
+    (Path("MASTER_ROADMAP.md"), Path("MASTER_ROADMAP.md")),
+    (Path("docs/STATUS_MATRIX.md"), Path("docs/STATUS_MATRIX.md")),
+    (Path("docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md"), Path("docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md")),
+    (Path("docs/ANCAP_DOCS_SPLIT.md"), Path("docs/ANCAP_DOCS_SPLIT.md")),
+    (Path("docs/VISION.md"), Path("docs/VISION.md")),
+    (Path("docs/ARCHITECTURE_LAYERS.md"), Path("docs/ARCHITECTURE_LAYERS.md")),
+    (Path("docs/PLAN_L0_TO_L3.md"), Path("docs/PLAN_L0_TO_L3.md")),
+    (Path("docs/REPUTATION_2.md"), Path("docs/REPUTATION_2.md")),
+    (Path("docs/STAKING.md"), Path("docs/STAKING.md")),
+    (Path("docs/WHITEPAPER_PROJECT.md"), Path("docs/WHITEPAPER_PROJECT.md")),
+    (Path("docs/WHITEPAPER_ACP.md"), Path("docs/WHITEPAPER_ACP.md")),
+    (Path("docs/LEGAL_TERMS_TEMPLATE.md"), Path("docs/LEGAL_TERMS_TEMPLATE.md")),
+    (Path("docs/BRIDGE_RISK_DOCUMENTATION.md"), Path("docs/BRIDGE_RISK_DOCUMENTATION.md")),
+    (Path("docs/CONTRACT_VERIFICATION_GUIDE.md"), Path("docs/CONTRACT_VERIFICATION_GUIDE.md")),
+    (Path("docs/TESTNET_DEPLOYMENT_GUIDE.md"), Path("docs/TESTNET_DEPLOYMENT_GUIDE.md")),
+    (Path("docs/AUDIT_CHECKLIST.md"), Path("docs/AUDIT_CHECKLIST.md")),
+    (Path("docs/CHANGELOG_PUBLIC.md"), Path("docs/CHANGELOG_PUBLIC.md")),
 ]
-EXPORT_PATH_SET = {path.as_posix() for path in EXPORT_PATHS}
+EXPORT_SOURCE_TO_OUTPUT = {source.as_posix(): output for source, output in EXPORT_ENTRIES}
+EXPORT_OUTPUT_SET = {output.as_posix() for _, output in EXPORT_ENTRIES}
 
 
 def _validate_export_paths() -> None:
-    missing = [str(path) for path in EXPORT_PATHS if not (REPO_ROOT / path).exists()]
+    missing = [str(source) for source, _ in EXPORT_ENTRIES if not (REPO_ROOT / source).exists()]
     if missing:
         joined = ", ".join(sorted(missing))
         raise FileNotFoundError(f"missing export source files: {joined}")
@@ -107,8 +108,8 @@ def _resolve_repo_target(source_rel_path: Path, target_path: str) -> Path | None
         return None
 
 
-def _relative_bundle_path(source_rel_path: Path, target_rel_path: Path) -> str:
-    relative = os.path.relpath(REPO_ROOT / target_rel_path, start=(REPO_ROOT / source_rel_path).parent)
+def _relative_bundle_path(output_rel_path: Path, target_output_rel_path: Path) -> str:
+    relative = os.path.relpath(REPO_ROOT / target_output_rel_path, start=(REPO_ROOT / output_rel_path).parent)
     return Path(relative).as_posix()
 
 
@@ -118,7 +119,7 @@ def _source_repo_url(target_rel_path: Path) -> str:
     return f"{SOURCE_REPO_WEB_BASE}/{kind}/{SOURCE_REPO_REF}/{target_rel_path.as_posix()}"
 
 
-def rewrite_markdown_links(source_rel_path: Path, text: str) -> str:
+def rewrite_markdown_links(source_rel_path: Path, output_rel_path: Path, text: str) -> str:
     unresolved: list[str] = []
 
     def replace(match: re.Match[str]) -> str:
@@ -138,8 +139,9 @@ def rewrite_markdown_links(source_rel_path: Path, text: str) -> str:
             unresolved.append(f"{source_rel_path.as_posix()} -> {resolved.as_posix()}")
             return match.group(0)
 
-        if resolved.as_posix() in EXPORT_PATH_SET:
-            rewritten_target = _relative_bundle_path(source_rel_path, resolved)
+        target_output_rel_path = EXPORT_SOURCE_TO_OUTPUT.get(resolved.as_posix())
+        if target_output_rel_path is not None:
+            rewritten_target = _relative_bundle_path(output_rel_path, target_output_rel_path)
         else:
             rewritten_target = _source_repo_url(resolved)
 
@@ -185,18 +187,18 @@ def copy_export_bundle(target_dir: Path, *, clean: bool = False) -> list[Path]:
     target_dir.mkdir(parents=True, exist_ok=True)
 
     exported: list[Path] = []
-    for rel_path in EXPORT_PATHS:
-        source = REPO_ROOT / rel_path
-        destination = target_dir / rel_path
+    for source_rel_path, output_rel_path in EXPORT_ENTRIES:
+        source = REPO_ROOT / source_rel_path
+        destination = target_dir / output_rel_path
         destination.parent.mkdir(parents=True, exist_ok=True)
-        if rel_path.suffix.lower() == ".md":
+        if source_rel_path.suffix.lower() == ".md":
             destination.write_text(
-                rewrite_markdown_links(rel_path, source.read_text(encoding="utf-8")),
+                rewrite_markdown_links(source_rel_path, output_rel_path, source.read_text(encoding="utf-8")),
                 encoding="utf-8",
             )
         else:
             shutil.copy2(source, destination)
-        exported.append(rel_path)
+        exported.append(output_rel_path)
 
     manifest_path = target_dir / MANIFEST_NAME
     manifest_path.write_text(_manifest_text(exported), encoding="utf-8")
