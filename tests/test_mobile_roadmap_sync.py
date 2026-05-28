@@ -25,5 +25,15 @@ def test_master_execution_order_no_longer_lists_mobile_i18n_as_open() -> None:
 def test_status_matrix_mobile_remaining_work_matches_mobile_roadmap_truth() -> None:
     status_matrix = STATUS_MATRIX.read_text(encoding="utf-8")
 
-    assert "- MASVS L1 checklist closure" in status_matrix
+    assert "- remaining MASVS/device-release verification (repo baseline is closed; real-device/native validation still remains)" in status_matrix
+    assert "- MASVS L1 checklist closure" not in status_matrix
     assert "- MASVS L1 and logging-secret hygiene" not in status_matrix
+
+
+def test_master_and_mobile_roadmaps_mark_masvs_as_in_progress_with_repo_baseline_closed() -> None:
+    master = MASTER.read_text(encoding="utf-8")
+    mobile = MOBILE_ROADMAP.read_text(encoding="utf-8")
+
+    expected = "| P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md`"
+    assert expected in master
+    assert "| P5-1 | OWASP MASVS L1 checklist | [~] | repo-baseline closed in `docs/mobile/SECURITY_MODEL.md`" in mobile

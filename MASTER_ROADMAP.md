@@ -805,7 +805,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P4-8 | PIN + biometrics | [~] wired, real device verification pending |
 | P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
-| P5-1 | MASVS L1 checklist | [ ] |
+| P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P6-3 | Device matrix (iOS + Android) | [ ] |
 | P6-4 | TestFlight + Play Internal | [ ] |

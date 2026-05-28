@@ -105,7 +105,7 @@ Parallel trust/adoption track:
 - iOS native packaging on macOS/Xcode
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault
-- MASVS L1 checklist closure
+- remaining MASVS/device-release verification (repo baseline is closed; real-device/native validation still remains)
 - device matrix, TestFlight, Play Internal, listing/legal/release work
 
 **Truth source:** `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md`

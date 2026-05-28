@@ -98,7 +98,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 | ID | Task | Status |
 |----|------|--------|
-| P5-1 | OWASP MASVS L1 checklist | [ ] |
+| P5-1 | OWASP MASVS L1 checklist | [~] | repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, secure-store device-only persistence, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-2 | Screenshot block on seed screens | [x] | expo-screen-capture, active on seed visibility screen |
 | P5-3 | Clipboard auto-clear | [x] | 30s auto-clear after copy |
 | P5-4 | Root/jailbreak warning | [x] | dev-build warning on settings screen |
@@ -218,7 +218,7 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 1. Install Android NDK and rerun `ancap-mobile/scripts/build-android-native.ps1`
 2. Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode
 3. Verify create/send/sign, PIN, biometrics, and SecureVault flows on real devices
-4. Close MASVS L1 and "no secrets in Sentry/logs"
+4. Verify the remaining MASVS/device-release gates on real hardware (PIN/biometric/vault migration + native signing path)
 5. Run TestFlight + Play Internal validation
 6. Prepare listing/legal/release artifacts and cut v1.0.0
 7. In parallel for post-v1.0 Smart Pay: finish backend quote + execution session groundwork, then wire mobile SDK/client

@@ -36,13 +36,31 @@ Future hardening target:
 
 | Control | MVP |
 |---------|-----|
-| PIN (6 digit) | Required |
+| PIN (4-8 digits) | Stored as salted SHA-256 verifier in device-only secure storage; raw PIN is no longer persisted |
 | Biometric unlock | Optional after PIN |
-| Auto-lock | 1 / 5 / 15 min |
-| Screenshot block | Seed + confirm tx screens |
-| Clipboard clear | Address 60s; block seed copy |
-| Jailbreak/root warning | On launch |
+| Auto-lock | 5 min inactivity timer currently wired in Expo app |
+| Screenshot block | Seed phrase screen is protected; confirm-tx hardening still depends on native signing flow closure |
+| Clipboard clear | Receive address auto-clears after 30s; seed copy remains blocked by UX |
+| Jailbreak/root warning | Dev-build warning in settings; stronger native/root attestation still later |
 | Transaction preview | Required before sign |
+
+## MASVS L1 baseline closure (current repo truth)
+
+The repo now covers the main MASVS-L1-applicable controls that are unblockable without final native/device release work:
+
+- **Credential storage:** wallet address, mnemonic, keystore, PIN verifier, language preference, and Smart Pay session state use platform secure storage (`expo-secure-store`) with device-only accessibility for persisted secrets.
+- **PIN handling:** the local app lock now stores only a salted SHA-256 verifier (`acp-wallet-pin:v1:<pin>` digest) instead of persisting raw digits, and successful unlock transparently migrates older plaintext PIN entries.
+- **Biometric gating:** enabling biometrics still requires platform auth and moves wallet secrets into `requireAuthentication: true` secure-storage entries; invalidated biometric-protected entries force wallet re-import from backup.
+- **Secret exposure reduction:** wallet UI/native error strings are sanitized before display/log forwarding so mnemonic / keystore / rawTx / bearer token shaped values are redacted.
+- **Sensitive-screen handling:** screenshot blocking is active on the seed phrase generation view, receive-address clipboard copies auto-clear after 30 seconds, and the app auto-locks after 5 minutes of inactivity.
+- **Trust boundary disclosure:** the bridge rail remains explicitly described as operator-backed/custodial-risk in user-facing docs.
+
+What still remains before claiming full release closure:
+
+- real device verification for PIN / biometric unlock / secure vault migration paths
+- native create/send/sign path verification once Android/iOS FFI artifacts are built
+- stronger production-grade root/jailbreak/device-integrity checks beyond the current dev-warning baseline
+- store/release validation work (device matrix, TestFlight, Play Internal)
 
 ## Logging & analytics
 
