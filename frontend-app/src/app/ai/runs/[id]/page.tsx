@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { workflowStore } from "@/lib/api";
+import { payments, workflowStore } from "@/lib/api";
 import { useRunEvents } from "@/lib/useRunEvents";
 
 type WorkflowRunStatus = "quoted" | "paid" | "queued" | "running" | "completed" | "failed" | "cancelled";
@@ -101,6 +101,20 @@ type WorkflowRunProofBundle = {
   };
 };
 
+type RefundRequest = {
+  id: string;
+  payment_intent_id: string;
+  user_id: string;
+  amount: { amount: string; currency: string };
+  reason: string;
+  status: string;
+  admin_notes?: string | null;
+  refund_ledger_event_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  processed_at?: string | null;
+};
+
 const NEXT_ACTIONS: Record<WorkflowRunStatus, WorkflowRunStatus[]> = {
   quoted: ["cancelled"],
   paid: ["queued", "cancelled"],
@@ -130,6 +144,9 @@ export default function WorkflowRunDetailPage() {
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("manual");
   const [paymentNote, setPaymentNote] = useState("");
+  const [refundReason, setRefundReason] = useState("");
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundRequest, setRefundRequest] = useState<RefundRequest | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -150,6 +167,19 @@ export default function WorkflowRunDetailPage() {
       setRun(data);
       setReceiptTrail(trail);
       setProofBundle(bundle);
+
+      const paymentIntentId = typeof data?.receipt?.proof?.payment_intent_id === "string" ? data.receipt.proof.payment_intent_id : "";
+      if (paymentIntentId) {
+        try {
+          const refundResponse = await payments.listMyRefundRequests(undefined, paymentIntentId) as { items?: RefundRequest[] };
+          const items = Array.isArray(refundResponse.items) ? refundResponse.items : [];
+          setRefundRequest(items[0] || null);
+        } catch {
+          setRefundRequest(null);
+        }
+      } else {
+        setRefundRequest(null);
+      }
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -161,6 +191,10 @@ export default function WorkflowRunDetailPage() {
     if (!isAuthenticated || !params?.id) return;
     void loadRun();
   }, [isAuthenticated, params?.id, loadRun]);
+
+  useEffect(() => {
+    setRefundReason("");
+  }, [run?.id]);
 
   async function refreshProofArtifacts(runId: string) {
     const [trail, bundle] = await Promise.all([
@@ -279,6 +313,33 @@ export default function WorkflowRunDetailPage() {
     }
   }
 
+  async function submitRefundRequest() {
+    if (!run) return;
+    const paymentIntentId = typeof run.receipt?.proof?.payment_intent_id === "string" ? run.receipt.proof.payment_intent_id : "";
+    if (!paymentIntentId) {
+      setError("Refund request is unavailable for this run.");
+      return;
+    }
+    if (refundReason.trim().length < 3) {
+      setError("Refund reason must be at least 3 characters.");
+      return;
+    }
+    try {
+      setRefundLoading(true);
+      setError("");
+      const created = await payments.createRefundRequest({
+        payment_intent_id: paymentIntentId,
+        reason: refundReason.trim(),
+      }) as RefundRequest;
+      setRefundRequest(created);
+      setRefundReason("");
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    } finally {
+      setRefundLoading(false);
+    }
+  }
+
   function editAndRepeatRun() {
     if (!run) return;
     const params = new URLSearchParams({
@@ -301,7 +362,10 @@ export default function WorkflowRunDetailPage() {
   const paymentConfirmation = run?.receipt?.proof?.payment_confirmation;
   const settlementError = run?.receipt?.proof?.settlement_error;
   const settlementStatus = String(run?.receipt?.proof?.settlement_status || "");
+  const paymentIntentId = typeof run?.receipt?.proof?.payment_intent_id === "string" ? run.receipt.proof.payment_intent_id : "";
+  const paymentIntentStatus = typeof run?.receipt?.proof?.payment_intent_status === "string" ? String(run.receipt.proof.payment_intent_status) : "";
   const canRetrySettlement = run?.status === "quoted" && settlementStatus === "failed";
+  const canRequestRefund = Boolean(run && run.status === "completed" && paymentIntentId && paymentIntentStatus === "captured" && !refundRequest);
   const settlementAttempts = useMemo(() => {
     const receipts = Array.isArray(receiptTrail?.chain_receipts) ? [...receiptTrail.chain_receipts] : [];
     return receipts
@@ -741,6 +805,68 @@ export default function WorkflowRunDetailPage() {
                   </div>
                 ) : (
                   <div className="mt-3 text-sm text-white/55">No payment confirmation recorded yet.</div>
+                )}
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-black/15 p-4">
+                <div className="text-sm font-semibold text-white/90">Refund / dispute</div>
+                <div className="mt-2 text-sm text-white/60">
+                  Captured workflow payments can be sent to manual refund review. Use this only when the delivered result needs reversal.
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Payment intent</div>
+                    <div className="mt-2 break-all text-sm font-medium text-white/88">{paymentIntentId || "—"}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Refund eligibility</div>
+                    <div className="mt-2 text-sm font-medium text-white/88">
+                      {paymentIntentStatus === "refunded" ? "already refunded" : canRequestRefund ? "captured / can request review" : paymentIntentStatus || "not available"}
+                    </div>
+                  </div>
+                </div>
+                {refundRequest ? (
+                  <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">
+                    <div className="font-semibold text-amber-50">Refund request submitted</div>
+                    <div className="mt-2">Status: {refundRequest.status}</div>
+                    <div className="mt-1">Created: {new Date(refundRequest.created_at).toLocaleString()}</div>
+                    <div className="mt-1">Reason: {refundRequest.reason}</div>
+                    {refundRequest.admin_notes && <div className="mt-1">Admin notes: {refundRequest.admin_notes}</div>}
+                  </div>
+                ) : paymentIntentStatus === "refunded" ? (
+                  <div className="mt-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-4 text-sm text-emerald-100">
+                    This payment intent is already refunded.
+                  </div>
+                ) : canRequestRefund ? (
+                  <div className="mt-4 grid gap-3">
+                    <div>
+                      <div className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">Why do you need a refund?</div>
+                      <textarea
+                        value={refundReason}
+                        onChange={(e) => setRefundReason(e.target.value)}
+                        rows={4}
+                        placeholder="Describe what was wrong, incomplete, or mismatched."
+                        className="w-full rounded-2xl border border-white/10 bg-[var(--bg)] p-3 text-sm text-white outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={submitRefundRequest}
+                        disabled={refundLoading || !refundReason.trim()}
+                        className="rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:border-amber-200 hover:text-amber-50 disabled:opacity-50"
+                      >
+                        {refundLoading ? "Submitting…" : "Request refund review"}
+                      </button>
+                      <div className="text-sm text-white/50">
+                        Admin review is required before credits are returned.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 text-sm text-white/55">
+                    Refund requests become available after a workflow payment is captured and the run reaches a completed state.
+                  </div>
                 )}
               </div>
 

@@ -68,6 +68,12 @@ class PaymentIntentStatusEnum(str, enum.Enum):
     failed = "failed"
 
 
+class RefundRequestStatusEnum(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
+
 class SubscriptionStatusEnum(str, enum.Enum):
     active = "active"
     paused = "paused"
@@ -468,6 +474,31 @@ class PaymentIntent(Base):
     __table_args__ = (
         Index("ix_payment_intents_owner_created", "owner_user_id", "created_at"),
         Index("ix_payment_intents_run_status", "workflow_run_id", "status"),
+    )
+
+
+class RefundRequest(Base):
+    __tablename__ = "refund_requests"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    payment_intent_id = Column(UUID(as_uuid=False), ForeignKey("payment_intents.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount_currency = Column(String(10), nullable=False, default="ACP")
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    reason = Column(Text, nullable=False)
+    status = Column(String(32), nullable=False, default=RefundRequestStatusEnum.pending.value, index=True)
+    admin_notes = Column(Text, nullable=True)
+    refund_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    payment_intent = relationship("PaymentIntent", foreign_keys=[payment_intent_id])
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("ix_refund_requests_payment_status_created", "payment_intent_id", "status", "created_at"),
+        Index("ix_refund_requests_user_status_created", "user_id", "status", "created_at"),
     )
 
 

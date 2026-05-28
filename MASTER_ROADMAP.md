@@ -775,13 +775,24 @@ Remaining future work: richer dedicated view-tracking instrumentation and deeper
 
 ### 4.8 Chargebacks and dispute UI [MEDIUM]
 
-Model: \RefundRequest\ (id, payment_intent_id, user_id, amount_acp, reason, status: pending|approved|rejected, admin_notes, created_at, processed_at)
+Status: [x] Done baseline. Refund requests now have a persistent backend model, user initiation path, user-visible status, and admin approve/reject review surface wired into the workflow payment ledger trail.
 
-Endpoints:
-- \POST /v1/payments/refund-request\ -- user initiates
-- \GET /v1/payments/refund-requests\ -- admin lists all
-- \POST /admin/refund-requests/{id}/approve\ -- ledger credit
-- \POST /admin/refund-requests/{id}/reject\ -- with reason
+Implemented / verified (2026-05-28):
+- `RefundRequest` persistence model + migration with pending/approved/rejected states, user/admin indexes, notes, timestamps, and refund-ledger linkage
+- `POST /v1/payments/refund-request` lets users open a refund request against a captured workflow payment intent
+- `GET /v1/payments/my-refund-requests` exposes user-visible refund status/history, optionally filtered by payment intent
+- `GET /v1/payments/refund-requests` remains platform-admin-only for review queue listing
+- `POST /v1/admin/refund-requests/{id}/approve` credits the user ledger back, marks the payment intent refunded, updates proof trail metadata, and emits refund webhook events best-effort
+- `POST /v1/admin/refund-requests/{id}/reject` closes the request with admin notes without crediting balance
+- workflow run detail UI now exposes refund/dispute submission for completed captured runs and shows current request status inline
+- admin overview now shows pending refund requests with approve/reject actions next to existing top-up approvals
+- verification:
+  - `pytest tests/api/test_refund_requests.py -q` ✅
+  - `npm run test -- --run src/lib/__tests__/api.test.ts` in `frontend-app` ✅
+  - `npm run build` in `frontend-app` ✅
+  - `docker compose -f docker-compose.prod.yml config --quiet` ✅
+
+Remaining future work: deeper dispute evidence capture, external fiat-provider chargeback sync, and richer customer-facing refund history UX can still be layered later, but the roadmap baseline refund / dispute / chargeback slice itself is no longer missing.
 
 ---
 

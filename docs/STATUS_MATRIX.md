@@ -124,7 +124,7 @@ Parallel trust/adoption track:
 - deeper API monetization reporting and spend controls
 - referral commission auto-payout ✅ baseline done (ledger reward issuance + optional on-chain payout jobs + jobs-tick execution)
 - marketplace search/filter/discovery depth ✅ baseline done
-- refund / dispute / chargeback flows
+- refund / dispute / chargeback flows ✅ baseline done (refund request model/API, user run-detail submission/status, admin approve/reject review queue)
 
 **Truth source:** `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md`
 

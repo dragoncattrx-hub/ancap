@@ -1218,6 +1218,40 @@ export const payments = {
       );
     }
   },
+  async createRefundRequest(data: {
+    payment_intent_id: string;
+    reason: string;
+  }) {
+    return apiFetch("/payments/refund-request", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listMyRefundRequests(status?: "pending" | "approved" | "rejected", paymentIntentId?: string) {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (paymentIntentId) params.set("payment_intent_id", paymentIntentId);
+    const suffix = params.toString();
+    return apiFetch(`/payments/my-refund-requests${suffix ? `?${suffix}` : ""}`);
+  },
+  async listRefundRequests(status?: "pending" | "approved" | "rejected") {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    const suffix = params.toString();
+    return apiFetch(`/payments/refund-requests${suffix ? `?${suffix}` : ""}`);
+  },
+  async approveRefundRequest(id: string, data: { admin_notes?: string }) {
+    return apiFetch(`/admin/refund-requests/${encodeURIComponent(id)}/approve`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async rejectRefundRequest(id: string, data: { admin_notes?: string }) {
+    return apiFetch(`/admin/refund-requests/${encodeURIComponent(id)}/reject`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 export const subscriptions = {

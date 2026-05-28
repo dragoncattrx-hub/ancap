@@ -1,28 +1,250 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.api.routers.workflow_store import _capture_credit_top_up_intent, _package_for_top_up_intent, _serialize_payment_intent
 from app.config import get_settings
-from app.db.models import PaymentIntent, PaymentIntentStatusEnum, StripeEvent
+from app.constants import PLATFORM_ACCOUNT_OWNER_ID
+from app.db.models import PaymentIntent, PaymentIntentStatusEnum, RefundRequest, RefundRequestStatusEnum, StripeEvent
 from app.schemas import (
     PaymentMethodsResponse,
+    RefundRequestActionRequest,
+    RefundRequestCreateRequest,
+    RefundRequestPublic,
+    RefundRequestsResponse,
     StripeIntentCreateRequest,
     StripeIntentCreateResponse,
     StripeWebhookAck,
     WorkflowCreditTopUpIntentConfirmRequest,
     WorkflowCreditTopUpIntentResponse,
 )
+from app.schemas.common import Money
 from app.services import stripe_payments
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
+from app.services.ledger import append_event, get_or_create_account
+from app.services.webhook_dispatcher import emit_payment_refunded
+from app.db.models import LedgerEventTypeEnum
 
 router = APIRouter(tags=["Payments"])
+
+
+def _serialize_refund_request(row: RefundRequest) -> RefundRequestPublic:
+    return RefundRequestPublic(
+        id=str(row.id),
+        payment_intent_id=str(row.payment_intent_id),
+        user_id=str(row.user_id),
+        amount=Money(amount=str(row.amount_value), currency=row.amount_currency),
+        reason=row.reason,
+        status=row.status,
+        admin_notes=row.admin_notes,
+        refund_ledger_event_id=str(row.refund_ledger_event_id) if row.refund_ledger_event_id else None,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+        processed_at=row.processed_at,
+    )
+
+
+async def _get_owned_captured_payment_intent(session: DbSession, user_id: str, intent_id: str) -> PaymentIntent:
+    intent = await _get_owned_payment_intent(session, user_id, intent_id)
+    if intent.intent_type != "workflow_run" or not intent.workflow_run_id:
+        raise HTTPException(status_code=409, detail="Refund requests currently support captured workflow payments only")
+    if intent.status != PaymentIntentStatusEnum.captured.value:
+        raise HTTPException(status_code=409, detail="Refund requests require a captured payment intent")
+    if not intent.capture_ledger_event_id:
+        raise HTTPException(status_code=409, detail="Captured payment intent is missing settlement evidence")
+    return intent
+
+
+@router.post("/payments/refund-request", response_model=RefundRequestPublic, status_code=201)
+async def create_refund_request(
+    body: RefundRequestCreateRequest,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    intent = await _get_owned_captured_payment_intent(session, user_id, body.payment_intent_id)
+
+    duplicate = (
+        await session.execute(
+            select(RefundRequest)
+            .where(
+                RefundRequest.payment_intent_id == intent.id,
+                RefundRequest.user_id == UUID(user_id),
+                RefundRequest.status == RefundRequestStatusEnum.pending.value,
+            )
+            .order_by(RefundRequest.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    if duplicate is not None:
+        raise HTTPException(status_code=409, detail="Refund request is already pending for this payment intent")
+
+    row = RefundRequest(
+        payment_intent_id=intent.id,
+        user_id=UUID(user_id),
+        amount_currency=intent.amount_currency,
+        amount_value=Decimal(intent.amount_value),
+        reason=body.reason.strip(),
+        status=RefundRequestStatusEnum.pending.value,
+    )
+    session.add(row)
+    await session.flush()
+    await session.refresh(row)
+    return _serialize_refund_request(row)
+
+
+@router.get("/payments/my-refund-requests", response_model=RefundRequestsResponse)
+async def list_my_refund_requests(
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+    status_filter: str | None = Query(default=None, alias="status"),
+    payment_intent_id: str | None = Query(default=None),
+):
+    query = select(RefundRequest).where(RefundRequest.user_id == UUID(user_id)).order_by(RefundRequest.created_at.desc())
+    if status_filter:
+        normalized = status_filter.strip().lower()
+        allowed = {item.value for item in RefundRequestStatusEnum}
+        if normalized not in allowed:
+            raise HTTPException(status_code=400, detail="Unsupported refund request status filter")
+        query = query.where(RefundRequest.status == normalized)
+    if payment_intent_id:
+        intent = await _get_owned_payment_intent(session, user_id, payment_intent_id)
+        query = query.where(RefundRequest.payment_intent_id == intent.id)
+    rows = (await session.execute(query)).scalars().all()
+    return RefundRequestsResponse(items=[_serialize_refund_request(row) for row in rows])
+
+
+@router.get("/payments/refund-requests", response_model=RefundRequestsResponse)
+async def list_refund_requests(
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+    status_filter: str | None = Query(default=None, alias="status"),
+):
+    query = select(RefundRequest).order_by(RefundRequest.created_at.desc())
+    if status_filter:
+        normalized = status_filter.strip().lower()
+        allowed = {item.value for item in RefundRequestStatusEnum}
+        if normalized not in allowed:
+            raise HTTPException(status_code=400, detail="Unsupported refund request status filter")
+        query = query.where(RefundRequest.status == normalized)
+    rows = (await session.execute(query)).scalars().all()
+    return RefundRequestsResponse(items=[_serialize_refund_request(row) for row in rows])
+
+
+@router.post("/admin/refund-requests/{refund_request_id}/approve", response_model=RefundRequestPublic)
+async def approve_refund_request(
+    refund_request_id: str,
+    body: RefundRequestActionRequest,
+    session: DbSession,
+    admin_user_id: str = Depends(require_platform_admin),
+):
+    try:
+        refund_uuid = UUID(refund_request_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Refund request not found") from exc
+
+    row = await session.get(RefundRequest, refund_uuid)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Refund request not found")
+    if row.status != RefundRequestStatusEnum.pending.value:
+        raise HTTPException(status_code=409, detail=f"Refund request is already {row.status}")
+
+    intent = await session.get(PaymentIntent, row.payment_intent_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="Payment intent not found")
+    if intent.status != PaymentIntentStatusEnum.captured.value:
+        raise HTTPException(status_code=409, detail="Payment intent is not refundable")
+    if intent.refund_ledger_event_id:
+        raise HTTPException(status_code=409, detail="Payment intent is already refunded")
+
+    user_acc = await get_or_create_account(session, "user", UUID(str(row.user_id)))
+    platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+    refund_event = await append_event(
+        session,
+        LedgerEventTypeEnum.refund,
+        row.amount_currency,
+        Decimal(row.amount_value),
+        src_account_id=platform_acc.id,
+        dst_account_id=user_acc.id,
+        metadata={
+            "type": "payment_refund_request_approved",
+            "refund_request_id": str(row.id),
+            "payment_intent_id": str(row.payment_intent_id),
+            "user_id": str(row.user_id),
+            "approved_by": admin_user_id,
+            "admin_notes": body.admin_notes,
+        },
+    )
+    intent.status = PaymentIntentStatusEnum.refunded.value
+    intent.refund_ledger_event_id = refund_event.id
+    intent.updated_at = datetime.now(UTC)
+    intent.provider_payload_json = {
+        **(intent.provider_payload_json or {}),
+        "refund_request_id": str(row.id),
+        "refund_request_reason": row.reason,
+        "refund_approved_by": admin_user_id,
+        "refund_admin_notes": body.admin_notes,
+        "refund_approved_at": datetime.now(UTC).isoformat(),
+    }
+    if intent.workflow_run_id:
+        from app.api.routers.workflow_store import _set_receipt_payment_intent_proof
+        from app.db.models import WorkflowRunRecord
+
+        workflow_run = await session.get(WorkflowRunRecord, intent.workflow_run_id)
+        if workflow_run is not None:
+            _set_receipt_payment_intent_proof(
+                workflow_run,
+                intent,
+                proof_status="refunded",
+                ledger_event_id=str(refund_event.id),
+                note=f"Refund request approved: {row.reason}",
+            )
+
+    row.status = RefundRequestStatusEnum.approved.value
+    row.admin_notes = body.admin_notes
+    row.refund_ledger_event_id = refund_event.id
+    row.processed_at = datetime.now(UTC)
+    row.updated_at = datetime.now(UTC)
+    try:
+        await emit_payment_refunded(session, str(intent.id), str(intent.amount_value), intent.amount_currency, "refund_request_approved")
+    except Exception:
+        pass
+    await session.flush()
+    await session.refresh(row)
+    return _serialize_refund_request(row)
+
+
+@router.post("/admin/refund-requests/{refund_request_id}/reject", response_model=RefundRequestPublic)
+async def reject_refund_request(
+    refund_request_id: str,
+    body: RefundRequestActionRequest,
+    session: DbSession,
+    _admin_user_id: str = Depends(require_platform_admin),
+):
+    try:
+        refund_uuid = UUID(refund_request_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Refund request not found") from exc
+
+    row = await session.get(RefundRequest, refund_uuid)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Refund request not found")
+    if row.status != RefundRequestStatusEnum.pending.value:
+        raise HTTPException(status_code=409, detail=f"Refund request is already {row.status}")
+
+    row.status = RefundRequestStatusEnum.rejected.value
+    row.admin_notes = body.admin_notes
+    row.processed_at = datetime.now(UTC)
+    row.updated_at = datetime.now(UTC)
+    await session.flush()
+    await session.refresh(row)
+    return _serialize_refund_request(row)
 
 
 @router.post("/payments/stripe/intent", response_model=StripeIntentCreateResponse, status_code=201)

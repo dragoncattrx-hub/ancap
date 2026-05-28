@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -52,6 +53,33 @@ class PaymentMethodPublic(BaseModel):
 
 class PaymentMethodsResponse(BaseModel):
     items: list[PaymentMethodPublic] = Field(default_factory=list)
+
+
+class RefundRequestCreateRequest(BaseModel):
+    payment_intent_id: str = Field(..., min_length=3, max_length=64)
+    reason: str = Field(..., min_length=3, max_length=2000)
+
+
+class RefundRequestActionRequest(BaseModel):
+    admin_notes: Optional[str] = Field(default=None, max_length=1000)
+
+
+class RefundRequestPublic(BaseModel):
+    id: str
+    payment_intent_id: str
+    user_id: str
+    amount: Money
+    reason: str
+    status: str
+    admin_notes: Optional[str] = None
+    refund_ledger_event_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    processed_at: Optional[datetime] = None
+
+
+class RefundRequestsResponse(BaseModel):
+    items: list[RefundRequestPublic] = Field(default_factory=list)
 
 
 class StripeWebhookAck(BaseModel):

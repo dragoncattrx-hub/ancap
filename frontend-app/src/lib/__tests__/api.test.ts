@@ -57,6 +57,11 @@ describe('API Client', () => {
     expect(payments.getStripeIntent).toBeDefined();
     expect(payments.listMethods).toBeDefined();
     expect(payments.removeMethod).toBeDefined();
+    expect(payments.createRefundRequest).toBeDefined();
+    expect(payments.listMyRefundRequests).toBeDefined();
+    expect(payments.listRefundRequests).toBeDefined();
+    expect(payments.approveRefundRequest).toBeDefined();
+    expect(payments.rejectRefundRequest).toBeDefined();
   });
 
   it('should expose subscriptions client helpers', () => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { ApiError, access, ledger, orders, runs as runsApi, system, workflowStore } from "@/lib/api";
+import { ApiError, access, ledger, orders, payments, runs as runsApi, system, workflowStore } from "@/lib/api";
 
 export default function AdminOverviewPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,6 +19,8 @@ export default function AdminOverviewPage() {
   const [settlementEvents, setSettlementEvents] = useState<any[]>([]);
   const [workflowRevenue, setWorkflowRevenue] = useState<any | null>(null);
   const [pendingTopUps, setPendingTopUps] = useState<any[]>([]);
+  const [refundRequests, setRefundRequests] = useState<any[]>([]);
+  const [refundActionId, setRefundActionId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -28,51 +30,55 @@ export default function AdminOverviewPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  const loadAdminOverview = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes, workflowRevenueRes, topUpsRes, refundRequestsRes] =
+        await Promise.all([
+          system.health(),
+          system.ledgerInvariantStatus(),
+          orders.list(20),
+          access.listGrants(20),
+          runsApi.list(20),
+          runsApi.list(20, undefined),
+          ledger.getEvents(undefined, 50),
+          workflowStore.revenueSummary(30),
+          workflowStore.listAdminTopUpIntents("requires_payment", 20),
+          payments.listRefundRequests("pending"),
+        ]);
+
+      setHealth(healthRes);
+      setLedgerStatus(ledgerStatusRes);
+      setRecentOrders(ordersRes.items || []);
+      setRecentGrants(grantsRes.items || []);
+      setRecentRuns(runsRes.items || []);
+      setFailedRuns(
+        (failedRunsRes.items || []).filter((r: any) => r.state === "failed")
+      );
+      const allEvents = ledgerEventsRes.items || [];
+      setSettlementEvents(
+        allEvents.filter((e: any) => e.metadata && e.metadata.order_settlement)
+      );
+      setWorkflowRevenue(workflowRevenueRes);
+      setPendingTopUps(topUpsRes.items || []);
+      setRefundRequests(refundRequestsRes.items || []);
+    } catch (e: any) {
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for this page.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Admin access is not configured yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) return;
-    (async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const [healthRes, ledgerStatusRes, ordersRes, grantsRes, runsRes, failedRunsRes, ledgerEventsRes, workflowRevenueRes, topUpsRes] =
-          await Promise.all([
-            system.health(),
-            system.ledgerInvariantStatus(),
-            orders.list(20),
-            access.listGrants(20),
-            runsApi.list(20),
-            runsApi.list(20, undefined),
-            ledger.getEvents(undefined, 50),
-            workflowStore.revenueSummary(30),
-            workflowStore.listAdminTopUpIntents("requires_payment", 20),
-          ]);
-
-        setHealth(healthRes);
-        setLedgerStatus(ledgerStatusRes);
-        setRecentOrders(ordersRes.items || []);
-        setRecentGrants(grantsRes.items || []);
-        setRecentRuns(runsRes.items || []);
-        setFailedRuns(
-          (failedRunsRes.items || []).filter((r: any) => r.state === "failed")
-        );
-        const allEvents = ledgerEventsRes.items || [];
-        setSettlementEvents(
-          allEvents.filter((e: any) => e.metadata && e.metadata.order_settlement)
-        );
-        setWorkflowRevenue(workflowRevenueRes);
-        setPendingTopUps(topUpsRes.items || []);
-      } catch (e: any) {
-        if (e instanceof ApiError && e.status === 403) {
-          setError("Admin access required for this page.");
-        } else if (e instanceof ApiError && e.status === 503) {
-          setError("Admin access is not configured yet.");
-        } else {
-          setError(e?.message || String(e));
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
+    void loadAdminOverview();
   }, [isAuthenticated]);
 
   if (isLoading || !isAuthenticated) return null;
@@ -104,6 +110,48 @@ export default function AdminOverviewPage() {
       } else {
         setError(e?.message || String(e));
       }
+    }
+  };
+
+  const approveRefundRequest = async (refundRequest: any) => {
+    try {
+      setError("");
+      setRefundActionId(`${refundRequest.id}:approve`);
+      await payments.approveRefundRequest(refundRequest.id, {
+        admin_notes: "Approved from admin overview",
+      });
+      await loadAdminOverview();
+    } catch (e: any) {
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for refund approval.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Admin access is not configured yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
+    } finally {
+      setRefundActionId("");
+    }
+  };
+
+  const rejectRefundRequest = async (refundRequest: any) => {
+    try {
+      setError("");
+      setRefundActionId(`${refundRequest.id}:reject`);
+      await payments.rejectRefundRequest(refundRequest.id, {
+        admin_notes: "Rejected from admin overview",
+      });
+      await loadAdminOverview();
+    } catch (e: any) {
+      if (e instanceof ApiError && e.status === 403) {
+        setError("Admin access required for refund rejection.");
+      } else if (e instanceof ApiError && e.status === 503) {
+        setError("Admin access is not configured yet.");
+      } else {
+        setError(e?.message || String(e));
+      }
+    } finally {
+      setRefundActionId("");
     }
   };
 
@@ -221,45 +269,108 @@ export default function AdminOverviewPage() {
                 )}
               </div>
 
-              <div className="card" style={{ marginBottom: 18 }}>
-                <div className="card-header" style={{ alignItems: "flex-start" }}>
-                  <div>
-                    <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-                      Credit top-ups
-                    </div>
-                    <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 0" }}>
-                      Pending approvals
-                    </h2>
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
-                      Manual invoices wait here before credits are posted to the user ledger.
+              <div className="responsive-grid responsive-grid-2" style={{ marginBottom: 18 }}>
+                <div className="card" style={{ marginBottom: 0 }}>
+                  <div className="card-header" style={{ alignItems: "flex-start" }}>
+                    <div>
+                      <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                        Credit top-ups
+                      </div>
+                      <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 0" }}>
+                        Pending approvals
+                      </h2>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
+                        Manual invoices wait here before credits are posted to the user ledger.
+                      </div>
                     </div>
                   </div>
+
+                  {pendingTopUps.length === 0 ? (
+                    <div style={{ color: "var(--text-muted)" }}>No pending credit top-ups.</div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {pendingTopUps.map((topUp: any) => (
+                        <div key={topUp.item.id} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                            <div>
+                              <div style={{ color: "var(--text)", fontWeight: 800 }}>{topUp.package.title}</div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                                User {String(topUp.item.owner_user_id).slice(0, 8)} · pays {topUp.item.amount.amount} {topUp.item.amount.currency} · receives {topUp.package.credit_amount.amount} {topUp.package.credit_amount.currency}
+                              </div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 3, wordBreak: "break-all" }}>
+                                {topUp.item.payment_reference}
+                              </div>
+                            </div>
+                            <button type="button" className="btn btn-primary" onClick={() => approveTopUp(topUp)}>
+                              Approve
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {pendingTopUps.length === 0 ? (
-                  <div style={{ color: "var(--text-muted)" }}>No pending credit top-ups.</div>
-                ) : (
-                  <div style={{ display: "grid", gap: 8 }}>
-                    {pendingTopUps.map((topUp: any) => (
-                      <div key={topUp.item.id} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                          <div>
-                            <div style={{ color: "var(--text)", fontWeight: 800 }}>{topUp.package.title}</div>
-                            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
-                              User {String(topUp.item.owner_user_id).slice(0, 8)} · pays {topUp.item.amount.amount} {topUp.item.amount.currency} · receives {topUp.package.credit_amount.amount} {topUp.package.credit_amount.currency}
+                <div className="card" style={{ marginBottom: 0 }}>
+                  <div className="card-header" style={{ alignItems: "flex-start" }}>
+                    <div>
+                      <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                        Refund requests
+                      </div>
+                      <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 0" }}>
+                        Pending refund review
+                      </h2>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
+                        Captured workflow payments can be approved back to the user ledger or rejected with admin review.
+                      </div>
+                    </div>
+                  </div>
+
+                  {refundRequests.length === 0 ? (
+                    <div style={{ color: "var(--text-muted)" }}>No pending refund requests.</div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {refundRequests.map((refundRequest: any) => (
+                        <div key={refundRequest.id} style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                            <div>
+                              <div style={{ color: "var(--text)", fontWeight: 800 }}>
+                                {refundRequest.amount.amount} {refundRequest.amount.currency} · {refundRequest.status}
+                              </div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
+                                User {String(refundRequest.user_id).slice(0, 8)} · payment {String(refundRequest.payment_intent_id).slice(0, 8)}
+                              </div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                {refundRequest.reason}
+                              </div>
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginTop: 6 }}>
+                                Created {new Date(refundRequest.created_at).toLocaleString()}
+                              </div>
                             </div>
-                            <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 3, wordBreak: "break-all" }}>
-                              {topUp.item.payment_reference}
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => approveRefundRequest(refundRequest)}
+                                disabled={refundActionId === `${refundRequest.id}:approve` || refundActionId === `${refundRequest.id}:reject`}
+                              >
+                                {refundActionId === `${refundRequest.id}:approve` ? "Approving..." : "Approve"}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() => rejectRefundRequest(refundRequest)}
+                                disabled={refundActionId === `${refundRequest.id}:approve` || refundActionId === `${refundRequest.id}:reject`}
+                              >
+                                {refundActionId === `${refundRequest.id}:reject` ? "Rejecting..." : "Reject"}
+                              </button>
                             </div>
                           </div>
-                          <button type="button" className="btn btn-primary" onClick={() => approveTopUp(topUp)}>
-                            Approve
-                          </button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>

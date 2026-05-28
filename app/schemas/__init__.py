@@ -155,6 +155,10 @@ from app.schemas.payments import (
     PaymentMethodCardPublic,
     PaymentMethodPublic,
     PaymentMethodsResponse,
+    RefundRequestCreateRequest,
+    RefundRequestActionRequest,
+    RefundRequestPublic,
+    RefundRequestsResponse,
     StripeWebhookAck,
 )
 from app.schemas.payouts import (
@@ -371,6 +375,10 @@ __all__ = [
     "PaymentMethodCardPublic",
     "PaymentMethodPublic",
     "PaymentMethodsResponse",
+    "RefundRequestCreateRequest",
+    "RefundRequestActionRequest",
+    "RefundRequestPublic",
+    "RefundRequestsResponse",
     "StripeWebhookAck",
     "PayoutMethod",
     "PayoutRequestStatus",
