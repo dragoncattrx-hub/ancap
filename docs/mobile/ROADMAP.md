@@ -133,9 +133,9 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | SQ-4 | Execution session groundwork | [x] | backend execute/status/recover endpoints exist with first execution-state lifecycle and API tests |
 | SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |
 | SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |
-| SQ-7 | Real route execution integration | [ ] | bridge/swap/transfer orchestration beyond placeholder routes |
+| SQ-7 | Real route execution integration | [ ] | blocked on local non-custodial EVM spend/sign closure plus bridge/swap/transfer orchestration beyond placeholder routes |
 | SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
-| SQ-9 | Receipt/history/recovery UX | [ ] | payment session resume + receipt screens |
+| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data; backend-backed payment history and richer receipt polish still pending |
 | SQ-10 | AI Payment Scanner MVP | [ ] | camera/photo upload, QR recognition, OCR for invoices/receipts/payment screens, and payment-intent preview with manual correction |
 | SQ-11 | Smart Payment Flow expansion | [ ] | auto asset matching, smart swap before payment, multi-chain routing, duplicate payment detection, merchant mode |
 | SQ-12 | ANCAP Claim Codes / Crypto Voucher MVP | [ ] | lock balance, generate redeemable claim code, redeem from wallet/site, expiry/cancel/refund, ACP fees |
@@ -224,6 +224,6 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 4. Verify the remaining MASVS/device-release gates on real hardware (PIN/biometric/vault migration + native signing path)
 5. Run TestFlight + Play Internal validation
 6. Prepare listing/legal/release artifacts and cut v1.0.0
-7. In parallel for post-v1.0 Smart Pay: finish real route execution integration, then harden receipt/history/recovery UX
+7. In parallel for post-v1.0 Smart Pay: unblock local non-custodial EVM spend/sign + real route execution integration, then harden receipt/history/recovery UX
 
 _Update this file when closing tasks (change `[ ]` → `[x]`)._

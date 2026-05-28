@@ -23,6 +23,12 @@ import type {
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi } from "@/lib/api";
 import {
+  clearSmartPayHistory,
+  loadSmartPayHistory,
+  saveSmartPayHistoryEntry,
+  type SmartPayHistoryEntry,
+} from "@/lib/smart-pay-history";
+import {
   clearSmartPaySession,
   loadSmartPaySession,
   saveSmartPaySession,
@@ -44,6 +50,7 @@ export default function SmartPayScreen() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [history, setHistory] = useState<SmartPayHistoryEntry[]>([]);
 
   const supportedSymbols = useMemo(() => {
     const fromApi = capabilities?.supportedAssets?.map((item) => item.symbol).filter(Boolean) ?? [];
@@ -54,11 +61,13 @@ export default function SmartPayScreen() {
   useEffect(() => {
     void (async () => {
       try {
-        const [result, persisted] = await Promise.all([
+        const [result, persisted, persistedHistory] = await Promise.all([
           getApi().getSmartPayCapabilities(),
           loadSmartPaySession(),
+          loadSmartPayHistory(),
         ]);
         setCapabilities(result);
+        setHistory(persistedHistory);
         if (persisted) {
           setRawPayload(persisted.rawPayload || "");
           setPayloadSource(persisted.payloadSource || "paste");
@@ -173,6 +182,23 @@ export default function SmartPayScreen() {
     await clearSmartPaySession();
   };
 
+  const onClearHistory = async () => {
+    setHistory([]);
+    await clearSmartPayHistory();
+  };
+
+  const onResumeHistoryEntry = (entry: SmartPayHistoryEntry) => {
+    setRawPayload(entry.intent.rawPayload || "");
+    setPayloadSource(entry.intent.source);
+    setSelectedAsset(entry.quote?.sourceAsset.symbol || entry.intent.asset.symbol || "ACP");
+    setIntent(entry.intent);
+    setQuote(entry.quote ?? null);
+    setExecution(entry.execution);
+    setShowConfirmation(false);
+    setConfirmationAccepted(false);
+    setError("");
+  };
+
   const onOpenConfirmation = () => {
     if (!intent || !quote) {
       Alert.alert("Smart Pay", "Get a quote first.");
@@ -259,6 +285,15 @@ export default function SmartPayScreen() {
         },
       });
       setExecution(result.execution);
+      setHistory(
+        await saveSmartPayHistoryEntry({
+          id: result.execution.id,
+          savedAt: new Date().toISOString(),
+          intent,
+          quote,
+          execution: result.execution,
+        })
+      );
       setShowConfirmation(false);
       setConfirmationAccepted(false);
     } catch (e) {
@@ -275,6 +310,17 @@ export default function SmartPayScreen() {
     try {
       const result = await getApi().getSmartPayExecution(execution.id);
       setExecution(result.execution);
+      if (intent) {
+        setHistory(
+          await saveSmartPayHistoryEntry({
+            id: result.execution.id,
+            savedAt: new Date().toISOString(),
+            intent,
+            quote,
+            execution: result.execution,
+          })
+        );
+      }
     } catch (e) {
       setError(safeErrorMessage(e, "Refresh failed"));
     } finally {
@@ -289,6 +335,17 @@ export default function SmartPayScreen() {
     try {
       const result = await getApi().recoverSmartPay(execution.id, { clientKnownTxs: [] });
       setExecution(result.execution);
+      if (intent) {
+        setHistory(
+          await saveSmartPayHistoryEntry({
+            id: result.execution.id,
+            savedAt: new Date().toISOString(),
+            intent,
+            quote,
+            execution: result.execution,
+          })
+        );
+      }
     } catch (e) {
       setError(safeErrorMessage(e, "Recover failed"));
     } finally {
@@ -307,6 +364,33 @@ export default function SmartPayScreen() {
           <Text style={styles.secondaryText}>Reset session</Text>
         </Pressable>
       </View>
+
+      {history.length ? (
+        <View style={styles.card}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.label}>Recent Smart Pay sessions</Text>
+            <Pressable onPress={onClearHistory} disabled={busy}>
+              <Text style={styles.inlineAction}>Clear history</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.meta}>Local device-only snapshots of recent execute/refresh/recover sessions.</Text>
+          {history.map((entry) => (
+            <Pressable
+              key={entry.id}
+              style={styles.historyItem}
+              onPress={() => onResumeHistoryEntry(entry)}
+            >
+              <Text style={styles.historyTitle}>
+                {entry.execution.status} · {entry.quote?.targetAmount ?? entry.intent.amount?.value ?? "—"} {entry.quote?.targetAsset.symbol ?? entry.intent.asset.symbol ?? "asset"}
+              </Text>
+              <Text style={styles.meta}>Recipient: {entry.intent.recipient.address}</Text>
+              <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
+              <Text style={styles.meta}>Saved: {entry.savedAt}</Text>
+              <Text style={styles.inlineHint}>Tap to restore this payment context.</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <Text style={styles.label}>Capabilities</Text>
@@ -482,6 +566,30 @@ export default function SmartPayScreen() {
         </View>
       ) : null}
 
+      {execution && intent ? (
+        <View style={styles.card}>
+          <Text style={styles.label}>Receipt snapshot</Text>
+          <Text style={styles.value}>{quote?.targetAmount ?? intent.amount?.value ?? "—"} {quote?.targetAsset.symbol ?? intent.asset.symbol ?? "asset"}</Text>
+          <Text style={styles.meta}>Recipient: {intent.recipient.address}</Text>
+          <Text style={styles.meta}>Source asset: {quote?.sourceAsset.symbol ?? selectedAsset}</Text>
+          <Text style={styles.meta}>Source spend: {quote?.requiredSourceAmount ?? "—"}</Text>
+          <Text style={styles.meta}>Service fee: {quote?.serviceFeeAcp ?? "—"} ACP</Text>
+          <Text style={styles.meta}>Route mode: {quote?.mode ?? "direct_send"}</Text>
+          <Text style={styles.meta}>Receipt status: {execution.status}</Text>
+          {execution.error ? <Text style={styles.warning}>Execution error: {execution.error}</Text> : null}
+          {quote?.route?.length ? quote.route.map((step, index) => (
+            <Text key={`receipt-route-${step.kind}-${index}`} style={styles.meta}>
+              Step {index + 1}: {step.kind} {step.fromAsset} → {step.toAsset} via {step.network}
+            </Text>
+          )) : null}
+          {execution.txRefs.length ? execution.txRefs.map((tx) => (
+            <Text key={`receipt-${tx.role}-${tx.txid}`} style={styles.meta}>
+              {tx.role} tx: {tx.txid}
+            </Text>
+          )) : <Text style={styles.meta}>No tx references reported yet.</Text>}
+        </View>
+      ) : null}
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {busy ? <ActivityIndicator color="#6ee7b7" style={{ marginTop: 12 }} /> : null}
 
@@ -535,6 +643,7 @@ const styles = StyleSheet.create({
   },
   payloadInput: { minHeight: 120, textAlignVertical: "top" },
   topActions: { marginBottom: 16 },
+  sectionHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   row: { flexDirection: "row", gap: 12, marginTop: 12 },
   rowWrap: { flexDirection: "row", gap: 12, marginTop: 12, flexWrap: "wrap" },
   chips: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginBottom: 12 },
@@ -551,6 +660,17 @@ const styles = StyleSheet.create({
   },
   chipText: { color: "#cbd5e1", fontWeight: "600" },
   chipTextActive: { color: "#042f1a" },
+  historyItem: {
+    marginTop: 12,
+    borderColor: "#334155",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#0b1220",
+  },
+  historyTitle: { color: "#f8fafc", fontWeight: "700", marginBottom: 6 },
+  inlineAction: { color: "#93c5fd", fontWeight: "600" },
+  inlineHint: { color: "#94a3b8", marginTop: 6, fontSize: 12 },
   confirmToggle: {
     marginTop: 14,
     borderWidth: 1,

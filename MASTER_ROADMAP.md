@@ -843,7 +843,7 @@ Execution order inside this track:
    - `POST /v1/mobile/smart-pay/payments/{executionId}/recover`
 6. [x] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods plus client tests cover capabilities/parse/quote/execute/status/recover)
 7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending)
-8. [ ] real route engine / bridge-swap execution integration
+8. [ ] real route engine / bridge-swap execution integration (still blocked on local non-custodial EVM spend/sign closure plus backend route orchestration beyond placeholder sessions)
 9. [ ] AI fallback classifier for ambiguous payloads (only after deterministic/heuristic path is solid)
 10. [~] receipt/history/recovery UX hardening
    - Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data

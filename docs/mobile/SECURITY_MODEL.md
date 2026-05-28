@@ -48,7 +48,7 @@ Future hardening target:
 
 The repo now covers the main MASVS-L1-applicable controls that are unblockable without final native/device release work:
 
-- **Credential storage:** wallet address, mnemonic, keystore, PIN verifier, language preference, and Smart Pay session state use platform secure storage (`expo-secure-store`) with device-only accessibility for persisted secrets.
+- **Credential storage:** wallet address, mnemonic, keystore, PIN verifier, language preference, and Smart Pay session/history state use platform secure storage (`expo-secure-store`) with device-only accessibility for persisted secrets.
 - **PIN handling:** the local app lock now stores only a salted SHA-256 verifier (`acp-wallet-pin:v1:<pin>` digest) instead of persisting raw digits, and successful unlock transparently migrates older plaintext PIN entries.
 - **Biometric gating:** enabling biometrics still requires platform auth and moves wallet secrets into `requireAuthentication: true` secure-storage entries; invalidated biometric-protected entries force wallet re-import from backup.
 - **Secret exposure reduction:** wallet UI/native error strings are sanitized before display/log forwarding so mnemonic / keystore / rawTx / bearer token shaped values are redacted.
