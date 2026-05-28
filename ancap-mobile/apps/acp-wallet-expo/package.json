@@ -23,7 +23,7 @@
     "expo-crypto": "~14.0.1",
     "expo-dev-client": "~5.0.12",
     "expo-image-picker": "~16.0.6",
-    "expo-local-authentication": "~15.0.2",
+    "expo-local-authentication": "~56.0.4",
     "expo-modules-core": "~2.2.0",
     "expo-router": "~4.0.17",
     "expo-secure-store": "~14.0.1",
