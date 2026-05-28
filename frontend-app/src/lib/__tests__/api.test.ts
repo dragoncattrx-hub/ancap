@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { api, bridgeRail, organizations, payments, walletAcp, webhooks } from '../api';
+import { api, bridgeRail, organizations, payments, subscriptions, walletAcp, webhooks } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
@@ -59,14 +59,21 @@ describe('API Client', () => {
     expect(payments.removeMethod).toBeDefined();
   });
 
+  it('should expose subscriptions client helpers', () => {
+    expect(subscriptions).toBeDefined();
+    expect(subscriptions.list).toBeDefined();
+    expect(subscriptions.create).toBeDefined();
+  });
+
   it('should expose public ACP transaction lookup client', () => {
     expect(walletAcp).toBeDefined();
     expect(walletAcp.getTransaction).toBeDefined();
   });
 
-  it('should aggregate organization, payment, and webhook APIs', () => {
+  it('should aggregate organization, payment, subscription, and webhook APIs', () => {
     expect(api.organizations).toBe(organizations);
     expect(api.payments).toBe(payments);
+    expect(api.subscriptions).toBe(subscriptions);
     expect(api.webhooks).toBe(webhooks);
   });
 });

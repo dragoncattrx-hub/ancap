@@ -24,6 +24,8 @@ class FeeModel(BaseModel):
     type: FeeModelType
     one_time_price: Optional[Money] = None
     subscription_price_monthly: Optional[Money] = None
+    subscription_price_quarterly: Optional[Money] = None
+    subscription_price_annual: Optional[Money] = None
     performance_fee_bps: Optional[int] = Field(None, ge=0, le=5000)
 
 

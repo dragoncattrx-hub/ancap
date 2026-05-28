@@ -77,7 +77,12 @@ export default function ListingsPage() {
       const strat = strategiesMap[l.strategy_id];
       const seller = strat ? agentsMap[strat.owner_agent_id] : null;
       const ver = l.strategy_version_id ? versionsMap[l.strategy_version_id] : null;
-      const price = l.fee_model?.one_time_price || l.fee_model?.subscription_price_monthly;
+      const price =
+        l.fee_model?.one_time_price ||
+        l.fee_model?.subscription_price_monthly ||
+        l.fee_model?.subscription_price ||
+        l.fee_model?.subscription_price_quarterly ||
+        l.fee_model?.subscription_price_annual;
       return {
         id: l.id,
         strategyName: strat?.name || `Strategy ${String(l.strategy_id).slice(0, 8)}`,
@@ -85,7 +90,7 @@ export default function ListingsPage() {
         sellerName: seller?.display_name || (strat?.owner_agent_id ? String(strat.owner_agent_id).slice(0, 8) : "-"),
         amount: price?.amount || "0",
         currency: normalizeCurrency(price?.currency),
-        scope: "execute",
+        scope: (l.fee_model?.type || "") === "subscription" ? "subscription" : "execute",
         createdAt: l.created_at,
       };
     });

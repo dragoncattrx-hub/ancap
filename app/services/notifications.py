@@ -35,7 +35,10 @@ async def create_notification(
                 dedupe_key=dedupe_key,
                 is_read=False,
             )
-            .on_conflict_do_nothing(index_elements=["dedupe_key"])
+            .on_conflict_do_nothing(
+                index_elements=["dedupe_key"],
+                index_where=NotificationEvent.dedupe_key.is_not(None),
+            )
             .returning(NotificationEvent.id)
         )
         r = await session.execute(stmt)

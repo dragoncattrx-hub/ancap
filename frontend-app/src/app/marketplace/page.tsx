@@ -4,19 +4,25 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
-import { listings, strategies, orders } from "@/lib/api";
+import { listings, strategies, orders, subscriptions } from "@/lib/api";
 
 type Listing = {
   id: string;
   strategy_id: string;
   status: string;
   fee_model?: {
+    type?: string;
     one_time_price?: { amount?: string; currency?: string };
     subscription_price?: { amount?: string; currency?: string };
+    subscription_price_monthly?: { amount?: string; currency?: string };
+    subscription_price_quarterly?: { amount?: string; currency?: string };
+    subscription_price_annual?: { amount?: string; currency?: string };
   };
   terms_url?: string | null;
   created_at?: string;
 };
+
+type SubscriptionPeriod = "monthly" | "quarterly" | "annual";
 
 type Strategy = {
   id: string;
@@ -42,7 +48,12 @@ function normalizeCurrency(currency?: string): string {
 }
 
 function listingPrice(l: Listing): { amount: string; currency: string; numeric: number } {
-  const price = l.fee_model?.one_time_price || l.fee_model?.subscription_price;
+  const price =
+    l.fee_model?.one_time_price ||
+    l.fee_model?.subscription_price_monthly ||
+    l.fee_model?.subscription_price ||
+    l.fee_model?.subscription_price_quarterly ||
+    l.fee_model?.subscription_price_annual;
   const amount = price?.amount || "0";
   const currency = normalizeCurrency(price?.currency);
   const numeric = Number(amount);
@@ -52,6 +63,26 @@ function listingPrice(l: Listing): { amount: string; currency: string; numeric: 
 function strategyDisplayName(s: Strategy | null, listing: Listing): string {
   if (s?.name) return s.name;
   return "Strategy " + listing.strategy_id.slice(0, 8);
+}
+
+function subscriptionPriceForPeriod(l: Listing, period: SubscriptionPeriod) {
+  if (period === "quarterly") return l.fee_model?.subscription_price_quarterly;
+  if (period === "annual") return l.fee_model?.subscription_price_annual;
+  return l.fee_model?.subscription_price_monthly || l.fee_model?.subscription_price;
+}
+
+function availableSubscriptionPeriods(l: Listing): SubscriptionPeriod[] {
+  const periods: SubscriptionPeriod[] = [];
+  if (subscriptionPriceForPeriod(l, "monthly")) periods.push("monthly");
+  if (subscriptionPriceForPeriod(l, "quarterly")) periods.push("quarterly");
+  if (subscriptionPriceForPeriod(l, "annual")) periods.push("annual");
+  return periods;
+}
+
+function subscriptionPeriodLabel(period: SubscriptionPeriod): string {
+  if (period === "quarterly") return "Quarterly";
+  if (period === "annual") return "Annual";
+  return "Monthly";
 }
 
 export default function MarketplacePage() {
@@ -65,6 +96,7 @@ export default function MarketplacePage() {
 
   const [placingId, setPlacingId] = useState<string | null>(null);
   const [orderListingId, setOrderListingId] = useState<string | null>(null);
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState<SubscriptionPeriod>("monthly");
   const [note, setNote] = useState("");
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
@@ -157,15 +189,27 @@ export default function MarketplacePage() {
     setPlacingId(orderListingId);
     setError("");
     try {
-      await orders.place({
-        listing_id: orderListingId,
-        buyer_type: "user",
-        buyer_id: user.id,
-        payment_method: "internal",
-        note: note.trim() || undefined,
-      });
-      setConfirmation("Order placed.");
+      const targetListing = marketListings.find((l) => l.id === orderListingId);
+      const isSubscription = (targetListing?.fee_model?.type || "") === "subscription";
+      if (isSubscription) {
+        await subscriptions.create({
+          listing_id: orderListingId,
+          billing_period: subscriptionPeriod,
+          auto_renew: true,
+        });
+        setConfirmation(`Subscription started (${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()}).`);
+      } else {
+        await orders.place({
+          listing_id: orderListingId,
+          buyer_type: "user",
+          buyer_id: user.id,
+          payment_method: "internal",
+          note: note.trim() || undefined,
+        });
+        setConfirmation("Order placed.");
+      }
       setOrderListingId(null);
+      setSubscriptionPeriod("monthly");
       setNote("");
       await loadData();
     } catch (err: any) {
@@ -179,7 +223,21 @@ export default function MarketplacePage() {
 
   const orderingListing = orderListingId ? marketListings.find((l) => l.id === orderListingId) : null;
   const orderingStrategy = orderingListing ? strategiesMap[orderingListing.strategy_id] ?? null : null;
-  const orderingPrice = orderingListing ? listingPrice(orderingListing) : null;
+  const orderingSubscriptionPeriods = orderingListing ? availableSubscriptionPeriods(orderingListing) : [];
+  const orderingPrice = orderingListing
+    ? (orderingListing.fee_model?.type || "") === "subscription"
+      ? (() => {
+          const price = subscriptionPriceForPeriod(orderingListing, subscriptionPeriod) || subscriptionPriceForPeriod(orderingListing, orderingSubscriptionPeriods[0] || "monthly");
+          return price
+            ? {
+                amount: price.amount || "0",
+                currency: normalizeCurrency(price.currency),
+                numeric: Number(price.amount || "0"),
+              }
+            : listingPrice(orderingListing);
+        })()
+      : listingPrice(orderingListing)
+    : null;
 
   return (
     <>
@@ -357,6 +415,8 @@ export default function MarketplacePage() {
                         <ul style={{ marginTop: 8, padding: 0, listStyle: "none", display: "grid", gap: 6 }}>
                           {g.listings.map((l) => {
                             const p = listingPrice(l);
+                            const isSubscription = (l.fee_model?.type || "") === "subscription";
+                            const defaultPeriod = availableSubscriptionPeriods(l)[0] || "monthly";
                             return (
                               <li
                                 key={l.id}
@@ -371,6 +431,7 @@ export default function MarketplacePage() {
                               >
                                 <span style={{ color: "var(--text-muted)" }}>
                                   {p.amount} {p.currency}
+                                  {isSubscription ? ` · ${subscriptionPeriodLabel(defaultPeriod)}` : ""}
                                 </span>
                                 <button
                                   className="btn btn-ghost"
@@ -378,10 +439,11 @@ export default function MarketplacePage() {
                                   disabled={placingId === l.id}
                                   onClick={() => {
                                     setOrderListingId(l.id);
+                                    setSubscriptionPeriod(defaultPeriod);
                                     setConfirmation(null);
                                   }}
                                 >
-                                  Buy
+                                  {isSubscription ? "Subscribe" : "Buy"}
                                 </button>
                               </li>
                             );
@@ -412,11 +474,14 @@ export default function MarketplacePage() {
                       disabled={placingId === g.primary.id}
                       onClick={() => {
                         setOrderListingId(g.primary.id);
+                        setSubscriptionPeriod(availableSubscriptionPeriods(g.primary)[0] || "monthly");
                         setConfirmation(null);
                       }}
                       style={{ width: "100%" }}
                     >
-                      {placingId === g.primary.id ? "Placing order..." : "Place Order"}
+                      {placingId === g.primary.id
+                        ? ((g.primary.fee_model?.type || "") === "subscription" ? "Starting subscription..." : "Placing order...")
+                        : ((g.primary.fee_model?.type || "") === "subscription" ? "Subscribe" : "Place Order")}
                     </button>
                   </div>
                 );
@@ -447,14 +512,44 @@ export default function MarketplacePage() {
         >
           <div className="card" style={{ maxWidth: 500, width: "100%" }}>
             <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>
-              Confirm order
+              {(orderingListing.fee_model?.type || "") === "subscription" ? "Confirm subscription" : "Confirm order"}
             </h2>
             <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 16 }}>
               {strategyDisplayName(orderingStrategy, orderingListing)} ·{" "}
               <strong style={{ color: "var(--accent)" }}>
                 {orderingPrice.amount} {orderingPrice.currency}
               </strong>
+              {(orderingListing.fee_model?.type || "") === "subscription" ? ` / ${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()}` : ""}
             </div>
+            {(orderingListing.fee_model?.type || "") === "subscription" && orderingSubscriptionPeriods.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>
+                  Billing period
+                </label>
+                <select
+                  value={subscriptionPeriod}
+                  onChange={(e) => setSubscriptionPeriod(e.target.value as SubscriptionPeriod)}
+                  style={{
+                    width: "100%",
+                    padding: 10,
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--bg)",
+                    color: "var(--text)",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {orderingSubscriptionPeriods.map((period) => {
+                    const price = subscriptionPriceForPeriod(orderingListing, period);
+                    return (
+                      <option key={period} value={period}>
+                        {subscriptionPeriodLabel(period)}{price ? ` · ${price.amount || "0"} ${normalizeCurrency(price.currency)}` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
             <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>
               Note for the seller (optional)
             </label>
@@ -481,13 +576,16 @@ export default function MarketplacePage() {
                 disabled={placingId !== null}
                 style={{ flex: 1 }}
               >
-                {placingId ? "Placing..." : "Confirm and pay"}
+                {placingId
+                  ? ((orderingListing.fee_model?.type || "") === "subscription" ? "Starting..." : "Placing...")
+                  : ((orderingListing.fee_model?.type || "") === "subscription" ? "Confirm and subscribe" : "Confirm and pay")}
               </button>
               <button
                 className="btn btn-ghost"
                 onClick={() => {
                   if (!placingId) {
                     setOrderListingId(null);
+                    setSubscriptionPeriod("monthly");
                     setNote("");
                   }
                 }}

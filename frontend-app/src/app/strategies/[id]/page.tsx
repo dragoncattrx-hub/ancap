@@ -59,8 +59,12 @@ export default function StrategyDetailPage() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishForm, setPublishForm] = useState({
     version_id: "",
+    listing_type: "one_time",
     price_amount: "10",
     price_currency: "ACP",
+    monthly_price_amount: "10",
+    quarterly_price_amount: "27",
+    annual_price_amount: "100",
     notes: "",
   });
 
@@ -126,10 +130,13 @@ export default function StrategyDetailPage() {
   }
 
   const latestVersion = useMemo(() => versions[0] || null, [versions]);
-  const listingPrice = Number(publishForm.price_amount || "0");
+  const feePreviewBaseAmount =
+    publishForm.listing_type === "subscription"
+      ? Number(publishForm.monthly_price_amount || "0")
+      : Number(publishForm.price_amount || "0");
   const listingFeePreview =
-    Number.isFinite(listingPrice) && listingPrice > 0
-      ? ((listingPrice * listingFeePercent) / 100).toFixed(8).replace(/\.?0+$/, "")
+    Number.isFinite(feePreviewBaseAmount) && feePreviewBaseAmount > 0
+      ? ((feePreviewBaseAmount * listingFeePercent) / 100).toFixed(8).replace(/\.?0+$/, "")
       : "0";
 
   async function createVersion(e: React.FormEvent) {
@@ -164,10 +171,22 @@ export default function StrategyDetailPage() {
       await listings.create({
         strategy_id: strategy.id,
         strategy_version_id: publishForm.version_id,
-        fee_model: {
-          type: "one_time",
-          one_time_price: { amount: publishForm.price_amount, currency: publishForm.price_currency },
-        },
+        fee_model:
+          publishForm.listing_type === "subscription"
+            ? {
+                type: "subscription",
+                subscription_price_monthly: { amount: publishForm.monthly_price_amount, currency: publishForm.price_currency },
+                ...(publishForm.quarterly_price_amount
+                  ? { subscription_price_quarterly: { amount: publishForm.quarterly_price_amount, currency: publishForm.price_currency } }
+                  : {}),
+                ...(publishForm.annual_price_amount
+                  ? { subscription_price_annual: { amount: publishForm.annual_price_amount, currency: publishForm.price_currency } }
+                  : {}),
+              }
+            : {
+                type: "one_time",
+                one_time_price: { amount: publishForm.price_amount, currency: publishForm.price_currency },
+              },
         status: "active",
         notes: publishForm.notes || undefined,
       });
@@ -352,20 +371,61 @@ export default function StrategyDetailPage() {
             </h2>
             <form onSubmit={publishListing}>
               <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Price</div>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Listing type</div>
+                <select
+                  value={publishForm.listing_type}
+                  onChange={(e) => setPublishForm((p) => ({ ...p, listing_type: e.target.value }))}
+                  style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                >
+                  <option value="one_time">One-time purchase</option>
+                  <option value="subscription">Subscription</option>
+                </select>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Currency</div>
+                <input
+                  value={publishForm.price_currency}
+                  onChange={(e) => setPublishForm((p) => ({ ...p, price_currency: e.target.value }))}
+                  style={{ width: 120, padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                />
+              </div>
+              {publishForm.listing_type === "subscription" ? (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Monthly price</div>
+                    <input
+                      value={publishForm.monthly_price_amount}
+                      onChange={(e) => setPublishForm((p) => ({ ...p, monthly_price_amount: e.target.value }))}
+                      style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Quarterly price</div>
+                    <input
+                      value={publishForm.quarterly_price_amount}
+                      onChange={(e) => setPublishForm((p) => ({ ...p, quarterly_price_amount: e.target.value }))}
+                      style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Annual price</div>
+                    <input
+                      value={publishForm.annual_price_amount}
+                      onChange={(e) => setPublishForm((p) => ({ ...p, annual_price_amount: e.target.value }))}
+                      style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12, marginBottom: 14 }}>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Price</div>
                   <input
                     value={publishForm.price_amount}
                     onChange={(e) => setPublishForm((p) => ({ ...p, price_amount: e.target.value }))}
-                    style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
-                  />
-                  <input
-                    value={publishForm.price_currency}
-                    onChange={(e) => setPublishForm((p) => ({ ...p, price_currency: e.target.value }))}
-                    style={{ width: 120, padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    style={{ padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
                   />
                 </div>
-              </div>
+              )}
               <div style={{ marginBottom: 18 }}>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 8 }}>Notes</div>
                 <input
@@ -385,7 +445,7 @@ export default function StrategyDetailPage() {
                   fontSize: "0.9rem",
                 }}
               >
-                Platform listing fee: {listingFeePercent}% of listing price.
+                Platform listing fee: {listingFeePercent}% of {publishForm.listing_type === "subscription" ? "monthly subscription price" : "listing price"}.
                 <br />
                 Preview: {listingFeePreview} {publishForm.price_currency || "ACP"}.
               </div>

@@ -121,7 +121,6 @@ Parallel trust/adoption track:
 **Still remaining:**
 - Stripe / fiat adapter live end-to-end verification
 - creator earnings dashboard improvements
-- workflow subscriptions
 - deeper API monetization reporting and spend controls
 - referral commission auto-payout
 - marketplace search/filter/discovery depth

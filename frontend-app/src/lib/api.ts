@@ -1199,6 +1199,21 @@ export const payments = {
   },
 };
 
+export const subscriptions = {
+  async list(limit = 50, cursor?: string, status?: string) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.append("cursor", cursor);
+    if (status) params.append("status", status);
+    return apiFetch(`/subscriptions?${params.toString()}`);
+  },
+  async create(data: { listing_id: string; billing_period?: "monthly" | "quarterly" | "annual"; auto_renew?: boolean }) {
+    return apiFetch("/subscriptions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const creators = {
   async getMyEarnings(days = 30) {
     return apiFetch(`/creators/me/earnings?days=${encodeURIComponent(String(days))}`);
@@ -1483,6 +1498,7 @@ export const api = {
   growthDashboard,
   referrals,
   payments,
+  subscriptions,
   organizations,
   webhooks,
   system,

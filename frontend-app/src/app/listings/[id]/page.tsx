@@ -4,7 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { access, agents as agentsApi, listings, orders, strategies, strategyVersions } from "@/lib/api";
+import { access, agents as agentsApi, listings, orders, strategies, strategyVersions, subscriptions } from "@/lib/api";
+
+type SubscriptionPeriod = "monthly" | "quarterly" | "annual";
+
+function subscriptionPeriodLabel(period: SubscriptionPeriod): string {
+  if (period === "quarterly") return "Quarterly";
+  if (period === "annual") return "Annual";
+  return "Monthly";
+}
 
 export default function ListingDetailPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,6 +25,7 @@ export default function ListingDetailPage() {
   const [version, setVersion] = useState<any>(null);
   const [myAgents, setMyAgents] = useState<any[]>([]);
   const [buyerAgentId, setBuyerAgentId] = useState<string>("");
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState<SubscriptionPeriod>("monthly");
   const [note, setNote] = useState<string>("");
 
   const [loadingData, setLoadingData] = useState(true);
@@ -82,24 +91,72 @@ export default function ListingDetailPage() {
     })();
   }, [isAuthenticated, listingId]);
 
+  const availableSubscriptionPeriods = useMemo<SubscriptionPeriod[]>(() => {
+    if (!listing || (listing?.fee_model?.type || "") !== "subscription") return [];
+    const periods: SubscriptionPeriod[] = [];
+    if (listing?.fee_model?.subscription_price_monthly || listing?.fee_model?.subscription_price) periods.push("monthly");
+    if (listing?.fee_model?.subscription_price_quarterly) periods.push("quarterly");
+    if (listing?.fee_model?.subscription_price_annual) periods.push("annual");
+    return periods;
+  }, [listing]);
+
   const price = useMemo(() => {
-    const p = listing?.fee_model?.one_time_price || listing?.fee_model?.subscription_price_monthly;
+    const subscriptionPrice =
+      subscriptionPeriod === "quarterly"
+        ? listing?.fee_model?.subscription_price_quarterly
+        : subscriptionPeriod === "annual"
+          ? listing?.fee_model?.subscription_price_annual
+          : listing?.fee_model?.subscription_price_monthly || listing?.fee_model?.subscription_price;
+    const p =
+      listing?.fee_model?.type === "subscription"
+        ? subscriptionPrice || listing?.fee_model?.subscription_price_monthly || listing?.fee_model?.subscription_price || listing?.fee_model?.subscription_price_quarterly || listing?.fee_model?.subscription_price_annual
+        : listing?.fee_model?.one_time_price;
     return {
       amount: formatAmount(p?.amount || "0"),
       currency: normalizeCurrency(p?.currency),
       type: listing?.fee_model?.type || "one_time",
     };
-  }, [listing]);
+  }, [listing, subscriptionPeriod]);
 
-  async function buy() {
-    if (!buyerAgentId) {
-      setError("Create a buyer agent first (Agents → My).");
+  useEffect(() => {
+    if ((listing?.fee_model?.type || "") !== "subscription") {
+      setSubscriptionPeriod("monthly");
       return;
     }
+    if (!availableSubscriptionPeriods.includes(subscriptionPeriod)) {
+      setSubscriptionPeriod(availableSubscriptionPeriods[0] || "monthly");
+    }
+  }, [listing, availableSubscriptionPeriods, subscriptionPeriod]);
+
+  async function buy() {
     setPlacing(true);
     setError("");
     setSuccess(null);
     try {
+      if (price.type === "subscription") {
+        const sub = await subscriptions.create({
+          listing_id: String(listingId),
+          billing_period: subscriptionPeriod,
+          auto_renew: true,
+        });
+
+        let grantId: string | undefined;
+        try {
+          const grants = await access.listGrants(50, undefined, "user", String(sub.user_id || ""));
+          const found = (grants.items || []).find((g: any) => g.strategy_id === strategy?.id);
+          grantId = found?.id;
+        } catch {
+          // ignore
+        }
+
+        setSuccess({ orderId: sub.last_order_id || sub.id, grantId });
+        return;
+      }
+
+      if (!buyerAgentId) {
+        setError("Create a buyer agent first (Agents → My).");
+        return;
+      }
       const order = await orders.place({
         listing_id: String(listingId),
         buyer_type: "agent",
@@ -156,12 +213,16 @@ export default function ListingDetailPage() {
                 Purchase successful
               </div>
               <div style={{ color: "var(--text-muted)", marginBottom: 16 }}>
-                Order created and access grant issued.
+                {price.type === "subscription"
+                  ? `Subscription started (${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()}) and access grant issued.`
+                  : "Order created and access grant issued."}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <a
                   className="btn btn-primary"
-                  href={`/access?grantee_type=agent&grantee_id=${encodeURIComponent(buyerAgentId)}`}
+                  href={price.type === "subscription"
+                    ? `/access?grantee_type=user`
+                    : `/access?grantee_type=agent&grantee_id=${encodeURIComponent(buyerAgentId)}`}
                 >
                   View access grants
                 </a>
@@ -213,6 +274,11 @@ export default function ListingDetailPage() {
                   <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent)" }}>
                     {price.amount} {price.currency}
                   </div>
+                  {price.type === "subscription" && (
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: 6 }}>
+                      {subscriptionPeriodLabel(subscriptionPeriod)} billing
+                    </div>
+                  )}
                 </div>
                 <div className="card" style={{ padding: 12, minWidth: 220 }}>
                   <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Scope</div>
@@ -221,31 +287,60 @@ export default function ListingDetailPage() {
               </div>
 
               <div style={{ display: "grid", gap: 14, marginBottom: 18 }}>
-                <div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
-                    Buyer agent
-                  </div>
-                  <select
-                    value={buyerAgentId}
-                    onChange={(e) => setBuyerAgentId(e.target.value)}
-                    style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
-                  >
-                    {myAgents.length === 0 ? (
-                      <option value="">No agents yet (create one)</option>
-                    ) : (
-                      myAgents.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.display_name} ({(a.roles || []).join(", ")})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  {myAgents.length === 0 && (
-                    <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      Create a buyer agent on <a href="/agents" style={{ color: "var(--accent)", textDecoration: "none" }}>/agents</a>.
+                {price.type !== "subscription" && (
+                  <div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
+                      Buyer agent
                     </div>
-                  )}
-                </div>
+                    <select
+                      value={buyerAgentId}
+                      onChange={(e) => setBuyerAgentId(e.target.value)}
+                      style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    >
+                      {myAgents.length === 0 ? (
+                        <option value="">No agents yet (create one)</option>
+                      ) : (
+                        myAgents.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.display_name} ({(a.roles || []).join(", ")})
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    {myAgents.length === 0 && (
+                      <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                        Create a buyer agent on <a href="/agents" style={{ color: "var(--accent)", textDecoration: "none" }}>/agents</a>.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {price.type === "subscription" && availableSubscriptionPeriods.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
+                      Billing period
+                    </div>
+                    <select
+                      value={subscriptionPeriod}
+                      onChange={(e) => setSubscriptionPeriod(e.target.value as SubscriptionPeriod)}
+                      style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    >
+                      {availableSubscriptionPeriods.map((period) => {
+                        const p =
+                          period === "quarterly"
+                            ? listing?.fee_model?.subscription_price_quarterly
+                            : period === "annual"
+                              ? listing?.fee_model?.subscription_price_annual
+                              : listing?.fee_model?.subscription_price_monthly || listing?.fee_model?.subscription_price;
+                        return (
+                          <option key={period} value={period}>
+                            {subscriptionPeriodLabel(period)} · {formatAmount(p?.amount || "0")} {normalizeCurrency(p?.currency)}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
@@ -261,7 +356,9 @@ export default function ListingDetailPage() {
               </div>
 
               <button className="btn btn-primary" disabled={placing} onClick={buy} style={{ width: "100%" }}>
-                {placing ? "Buying…" : "Buy access"}
+                {placing
+                  ? (price.type === "subscription" ? "Starting subscription…" : "Buying…")
+                  : (price.type === "subscription" ? `Start ${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()} subscription` : "Buy access")}
               </button>
             </div>
           )}

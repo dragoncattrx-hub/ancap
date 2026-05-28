@@ -694,16 +694,33 @@ Exit criteria: satisfied -- creators can inspect revenue by workflow/day, see pe
 
 ### 4.4 Subscriptions for workflows [MEDIUM]
 
-Schema supports \subscription_price\ in listings but subscriptions not implemented.
+Status: [x] Done. Workflow subscription pricing, buyer subscribe flow, renewal scheduler, retry/pause notifications, and marketplace/listing UI support are implemented and validated. Remaining future work belongs to broader monetization depth, not this baseline subscription item.
 
-Model: \Subscription\ (id, user_id, listing_id, plan_id, status: active|paused|cancelled|past_due, billing_period: monthly|quarterly|annual, price_acp, next_billing_at, auto_renew, retry_count)
+Implemented surfaces:
+- `POST /v1/subscriptions` -- start a subscription for an active listing with monthly/quarterly/annual ACP billing
+- `GET /v1/subscriptions` -- list the caller's subscriptions with status filtering and cursor pagination
+- scheduler integration via `POST /v1/system/jobs/tick` / `subscriptions_tick(...)` for due renewals
+- creator listing publish flow now supports subscription price tiers on strategy/listing surfaces
+- marketplace + listing detail UI now supports choosing billing period and starting subscriptions
 
-Scheduler (via jobs_tick):
-- On \
-ext_billing_at\: check ledger -> debit -> create workflow run -> mark renewed
+Model in repo:
+- `Subscription` (id, user_id, listing_id, plan_id, status: active|paused|cancelled|past_due, billing_period: monthly|quarterly|annual, price_acp, next_billing_at, auto_renew, retry_count, last_order_id)
+- migration `9f1c7a4b2d10_add_subscriptions.py`
+
+Scheduler behavior (implemented):
+- On `next_billing_at`: check ledger -> debit buyer -> credit seller -> create renewal order -> extend access grant -> mark renewed
 - If insufficient balance: retry up to 3 times with 3-day intervals, then pause + notify
+- If listing becomes unavailable: pause + notify
 
-Exit criteria: Creator can offer subscription plans. User can subscribe. Billing auto-renews.
+Verification (2026-05-28):
+- `app/api/routers/subscriptions.py` implements create/list subscription routes with ACP-only pricing validation and insufficient-balance / duplicate guards
+- `app/jobs/subscriptions_tick.py` renews due subscriptions, records renewal orders/transfers, emits low-balance + paused + renewed notifications, and pauses inactive-listing subscriptions
+- `frontend-app/src/app/strategies/[id]/page.tsx`, `frontend-app/src/app/listings/[id]/page.tsx`, `frontend-app/src/app/listings/page.tsx`, and `frontend-app/src/app/marketplace/page.tsx` expose subscription pricing and purchase flows in the UI
+- `pytest tests/api/test_subscriptions.py -q` ✅ (`4 passed`)
+- `docker compose exec -T api alembic upgrade head` ✅
+- clean `npm run build` in `frontend-app` ✅ after clearing stale `.next` cache artifacts from a previous build attempt
+
+Exit criteria: satisfied -- creators can offer subscription plans, users can subscribe, and billing auto-renews with retry/pause handling.
 
 ### 4.5 API monetization depth [MEDIUM]
 

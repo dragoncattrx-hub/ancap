@@ -32,6 +32,7 @@ from app.jobs.leaderboard_recompute_tick import leaderboard_recompute_tick
 from app.jobs.mobile_acp_indexer_tick import mobile_acp_indexer_tick
 from app.jobs.notifications_fanout_tick import notifications_fanout_tick
 from app.jobs.referral_rewards_tick import referral_rewards_tick
+from app.jobs.subscriptions_tick import subscriptions_tick
 from app.jobs.reputation_tick import reputation_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.schemas import DecisionLogPublic
@@ -452,6 +453,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
     rep_result = await reputation_tick(session, max_subjects=50, since_days=7, commit=False)
     growth_referrals = await referral_rewards_tick(session, max_items=500)
     growth_notifications = await notifications_fanout_tick(session, max_events=500)
+    subscriptions_summary = await subscriptions_tick(session, max_items=500)
     growth_leaderboards = await leaderboard_recompute_tick(session)
     growth_feed = await activity_feed_materialize_tick(session, limit=200)
     growth_metrics = await growth_metrics_rollup_tick(session)
@@ -474,6 +476,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "reputation_recomputed": rep_result["recomputed"],
         "growth_referrals": growth_referrals,
         "growth_notifications": growth_notifications,
+        "subscriptions": subscriptions_summary,
         "growth_leaderboards": growth_leaderboards,
         "growth_feed": growth_feed,
         "growth_metrics": growth_metrics,

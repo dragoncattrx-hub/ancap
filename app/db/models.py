@@ -68,6 +68,19 @@ class PaymentIntentStatusEnum(str, enum.Enum):
     failed = "failed"
 
 
+class SubscriptionStatusEnum(str, enum.Enum):
+    active = "active"
+    paused = "paused"
+    cancelled = "cancelled"
+    past_due = "past_due"
+
+
+class SubscriptionBillingPeriodEnum(str, enum.Enum):
+    monthly = "monthly"
+    quarterly = "quarterly"
+    annual = "annual"
+
+
 class PayoutRequestStatusEnum(str, enum.Enum):
     pending = "pending"
     approved = "approved"
@@ -479,6 +492,42 @@ class PayoutRequest(Base):
 
     __table_args__ = (
         Index("ix_payout_requests_user_status_created", "user_id", "status", "created_at"),
+    )
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    listing_id = Column(UUID(as_uuid=False), ForeignKey("listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    plan_id = Column(String(64), nullable=True)
+    status = Column(
+        SQLEnum(SubscriptionStatusEnum),
+        nullable=False,
+        default=SubscriptionStatusEnum.active,
+        index=True,
+    )
+    billing_period = Column(
+        SQLEnum(SubscriptionBillingPeriodEnum),
+        nullable=False,
+        default=SubscriptionBillingPeriodEnum.monthly,
+    )
+    price_acp = Column(Numeric(36, 18), nullable=False)
+    next_billing_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    auto_renew = Column(Boolean, nullable=False, default=True)
+    retry_count = Column(Integer, nullable=False, default=0)
+    last_order_id = Column(UUID(as_uuid=False), ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+    listing = relationship("Listing", foreign_keys=[listing_id])
+    last_order = relationship("Order", foreign_keys=[last_order_id])
+
+    __table_args__ = (
+        Index("ix_subscriptions_user_status_created", "user_id", "status", "created_at"),
+        Index("ux_subscriptions_user_listing_period_active", "user_id", "listing_id", "billing_period", unique=True),
     )
 
 
