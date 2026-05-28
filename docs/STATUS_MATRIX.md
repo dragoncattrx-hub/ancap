@@ -57,7 +57,7 @@ Parallel trust/adoption track:
 | Production UI/admin surfaces | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Billing, organizations, webhooks, analytics, proof center, strategy builder baseline are present. |
 | Proof / receipts / realtime status | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Receipts/proof and run status infrastructure exist. |
 | ACP checkout / first revenue loop | **Baseline done** | Medium-High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | First ACP-first monetization loop exists, but still needs deeper conversion and payout mechanics. |
-| Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This is one of the three biggest remaining tails and should be read as active priority work, not done. |
+| Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This remains one of the three biggest remaining tails overall, but the production-secret baseline sub-slice is now closed on the current host/runtime; the remaining work is exposed-key rotation and Cloudflare-edge header cleanup. |
 | Mobile wallet | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md` | Wallet is far along but not release-ready; native build closure, device verification, and release work remain. |
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
@@ -74,7 +74,7 @@ Parallel trust/adoption track:
 
 **Already true:**
 - repo-side leaked-key cleanup is done in tracked files, `scripts/check_secret_hygiene.py` now provides a repeatable tracked-files secret-pattern scan, the dedicated `Secret Hygiene` GitHub workflow plus tagged-release preflight both enforce it, and current repo checks find no live token-shaped matches outside roadmap remediation notes
-- production secret guardrails are hardened in repo/config, `docs/PRODUCTION_SECRET_BASELINE.md` now captures the operator provisioning/evidence checklist, and the current prod-like host runtime passes them with real local env values (`docker compose -f docker-compose.prod.yml config --quiet` succeeds and `/api/v1/system/health` returns `200`)
+- production secret guardrails are hardened in repo/config, `docs/PRODUCTION_SECRET_BASELINE.md` captures the operator provisioning/evidence checklist, and the current prod-like host runtime now passes them with real provisioned secrets outside the repo: `docker compose -f docker-compose.prod.yml config --quiet` succeeds, the required secret set is present without placeholder-like values, bundled-postgres parity holds, and `/api/v1/system/health` plus `/api/v1/system/ready` both return `200`
 - backend CI soft-fail fixes are in place
 - GitHub secret scanning, push protection, Dependabot security updates, and dependency review are enabled
 - real GitHub runs are green for CodeQL, Backend CI, Frontend CI, and the scheduled `System Jobs Tick` workflow on `master`
@@ -102,6 +102,7 @@ Parallel trust/adoption track:
 - public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
 - Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover
+- Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX
 
 **Still remaining:**
 - Android NDK install and real `.so` emission
@@ -137,7 +138,7 @@ Parallel trust/adoption track:
 
 This is the practical reading of the current queue from `MASTER_ROADMAP.md`:
 
-1. **Priority 0:** emergency secret remediation and production-secret hardening follow-through
+1. **Priority 0:** emergency exposed-key remediation / Cloudflare-edge hardening tails
 2. **Priority 1:** CI/CD honesty and security automation
 3. **Priority 2:** domain model gaps and skipped tests
 4. **Priority 3:** auth/cookie/CORS/security-header hardening
@@ -162,7 +163,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Search / analytics | Done baseline | Exists, but marketplace depth remains |
 | Mobile native signing flow | Partial | Native closure and verification remain |
 | Mobile release readiness | Not done | Device/stores/security/release still open |
-| CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; broader project closure still depends on the separate remaining security/mobile/monetization tails. |
+| CI hardening | Baseline done | Secret scanning/push protection, dependency review, CodeQL, Backend/Frontend CI, and scheduled async `System Jobs Tick` verification are confirmed on GitHub; the remaining adjacent security tails are external key rotation and Cloudflare-edge header cleanup, not CI gate honesty. |
 | Secret remediation | Partial | Cleanup is done in tracked repo files, `scripts/check_secret_hygiene.py` now provides a repeatable tracked-files secret-pattern scan, the dedicated `Secret Hygiene` workflow plus tagged-release preflight enforce it, and no live token-shaped matches remain outside roadmap notes; `docs/SECRET_ROTATION_RUNBOOK.md` captures the operator rotation checklist, but upstream revoke/rotation and access cleanup still remain external/manual. |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |

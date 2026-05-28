@@ -1,11 +1,12 @@
 # Production Secret Baseline
 
-Purpose: operator checklist for the remaining manual follow-through on Priority 0.2 production-secret hardening.
+Purpose: operator checklist and evidence format for Priority 0.2 production-secret hardening. The current host/runtime baseline is already verified; this file exists to preserve that proof standard for future staging/production deploys.
 
 Use this when:
 - preparing a staging or production deploy with `docker-compose.prod.yml`
 - moving secrets from local testing into CI / host env management
-- verifying that prod-like secret guardrails are backed by real operator provisioning, not only repo-side checks
+- re-verifying that prod-like secret guardrails are backed by real operator provisioning, not only repo-side checks
+- recording refreshed evidence after any secret rotation, host migration, or deploy-environment change
 
 ## Required secret set
 
@@ -58,12 +59,15 @@ Record the following without storing the secret values:
 
 ## Done definition
 
-Only treat Priority 0.2 as fully closed when all of the following are true:
+Treat Priority 0.2 as closed for a given host/runtime only when all of the following are true:
 - required production secrets are provisioned outside the repo
 - `docker compose -f docker-compose.prod.yml config --quiet` succeeds in the real target environment
 - prod-like or real deploy health checks succeed
 - no placeholder/default production secrets remain in active env/CI locations
-- roadmap/status docs no longer need to say that env/CI follow-through is still pending
+- roadmap/status docs no longer need to say that env/CI follow-through is still pending for that verified environment
+
+Current verified note:
+- as of 2026-05-28 on the current host/runtime, this baseline is satisfied: required secrets are present from repo-root `.env`, bundled-postgres parity holds, `docker compose -f docker-compose.prod.yml config --quiet` succeeds, and `http://127.0.0.1:8080/api/v1/system/health` plus `/api/v1/system/ready` return healthy responses
 
 ## Notes
 

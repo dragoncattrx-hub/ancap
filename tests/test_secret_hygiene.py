@@ -41,7 +41,7 @@ def test_status_and_roadmap_keep_manual_secret_rotation_tail_explicit():
     assert "scripts/check_secret_hygiene.py" in roadmap_text
 
 
-def test_production_secret_baseline_doc_is_linked_and_keeps_manual_follow_through_explicit():
+def test_production_secret_baseline_doc_is_linked_and_tracks_verified_runtime_state():
     baseline_text = PRODUCTION_SECRET_BASELINE.read_text(encoding="utf-8")
     readme_text = README.read_text(encoding="utf-8")
     roadmap_text = MASTER_ROADMAP.read_text(encoding="utf-8")
@@ -51,11 +51,15 @@ def test_production_secret_baseline_doc_is_linked_and_keeps_manual_follow_throug
 
     assert "docker compose -f docker-compose.prod.yml config --quiet" in baseline_text
     assert "required production secrets are provisioned outside the repo" in baseline_text
+    assert "Current verified note:" in baseline_text
+    assert "http://127.0.0.1:8080/api/v1/system/health" in baseline_text
     assert "docs/PRODUCTION_SECRET_BASELINE.md" in readme_text
     assert "docs/PRODUCTION_SECRET_BASELINE.md" in roadmap_text
     assert "docs/PRODUCTION_SECRET_BASELINE.md" in production_text
     assert "docs/PRODUCTION_SECRET_BASELINE.md" in release_text
     assert "docs/PRODUCTION_SECRET_BASELINE.md" in status_text
+    assert "Status: [x] Done for the current host/runtime." in roadmap_text
+    assert "production-secret baseline sub-slice is now closed on the current host/runtime" in status_text
 
 
 def test_env_example_keeps_real_secret_values_blank():
