@@ -75,7 +75,7 @@ def _public_docs() -> MobileDocsLinks:
         risks=f"{base}/docs/wacp/risks",
         reserve=f"{base}/docs/wacp/reserve",
         contracts=f"{base}/docs/wacp/contracts",
-        wallet_security=f"{base}/wallet-security",
+        wallet_security=f"{base}/docs/mobile/security",
     )
 
 

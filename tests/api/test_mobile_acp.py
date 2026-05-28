@@ -220,7 +220,11 @@ def test_mobile_config_ok(client):
     assert data["acpDecimals"] == 8
     assert data["wacpDecimals"] == 18
     assert "docs" in data
-    assert data["docs"]["bridge"].startswith("https://")
+    assert data["docs"]["bridge"] == "https://ancap.cloud/docs/wacp/bridge"
+    assert data["docs"]["risks"] == "https://ancap.cloud/docs/wacp/risks"
+    assert data["docs"]["reserve"] == "https://ancap.cloud/docs/wacp/reserve"
+    assert data["docs"]["contracts"] == "https://ancap.cloud/docs/wacp/contracts"
+    assert data["docs"]["walletSecurity"] == "https://ancap.cloud/docs/mobile/security"
 
 
 def test_mobile_health(client):

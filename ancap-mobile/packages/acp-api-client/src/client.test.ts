@@ -344,11 +344,11 @@ describe("AcpApiClient", () => {
       bscExplorerBase: "https://bscscan.com",
       supportUrl: "https://ancap.cloud/support",
       docs: {
-        bridge: "https://ancap.cloud/docs/bridge",
-        risks: "https://ancap.cloud/docs/risks",
-        reserve: "https://ancap.cloud/docs/reserve",
-        contracts: "https://ancap.cloud/docs/contracts",
-        walletSecurity: "https://ancap.cloud/security",
+        bridge: "https://ancap.cloud/docs/wacp/bridge",
+        risks: "https://ancap.cloud/docs/wacp/risks",
+        reserve: "https://ancap.cloud/docs/wacp/reserve",
+        contracts: "https://ancap.cloud/docs/wacp/contracts",
+        walletSecurity: "https://ancap.cloud/docs/mobile/security",
       },
     };
     expect(client.explorerTxUrl(config, "abc123")).toBe("https://ancap.cloud/acp/tx/abc123");

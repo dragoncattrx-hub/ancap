@@ -31,7 +31,8 @@ App bootstrap: versions, maintenance, chain parameters, docs URLs.
     "bridge": "https://ancap.cloud/docs/wacp/bridge",
     "risks": "https://ancap.cloud/docs/wacp/risks",
     "reserve": "https://ancap.cloud/docs/wacp/reserve",
-    "walletSecurity": "https://ancap.cloud/wallet-security"
+    "contracts": "https://ancap.cloud/docs/wacp/contracts",
+    "walletSecurity": "https://ancap.cloud/docs/mobile/security"
   }
 }
 ```

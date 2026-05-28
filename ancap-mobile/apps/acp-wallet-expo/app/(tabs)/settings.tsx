@@ -48,7 +48,7 @@ export default function SettingsScreen() {
     { label: t("settings.terms"), url: `${BASE}/legal/terms` },
     { label: t("settings.privacy"), url: `${BASE}/legal/privacy` },
     { label: t("settings.bridgeRiskDisclosure"), url: `${BASE}/docs/wacp/risks` },
-    { label: t("settings.bridgeDocumentation"), url: `${BASE}/docs/bridge` },
+    { label: t("settings.bridgeDocumentation"), url: `${BASE}/docs/wacp/bridge` },
     { label: t("settings.reserveProof"), url: `${BASE}/docs/wacp/reserve` },
     { label: t("settings.support"), url: `${BASE}/support` },
   ];
