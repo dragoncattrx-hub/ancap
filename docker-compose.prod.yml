@@ -79,6 +79,9 @@ services:
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_API_BASE: ${STRIPE_API_BASE:-https://api.stripe.com/v1}
+      REFERRAL_ONCHAIN_PAYOUT_ENABLED: ${REFERRAL_ONCHAIN_PAYOUT_ENABLED:-false}
+      REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE: ${REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE:-}
+      REFERRAL_ONCHAIN_PAYOUT_FEE_ACP: ${REFERRAL_ONCHAIN_PAYOUT_FEE_ACP:-}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level

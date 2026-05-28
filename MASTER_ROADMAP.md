@@ -739,15 +739,21 @@ Implemented / verified (2026-05-28):
 
 ### 4.6 Referral commission auto-payout [MEDIUM]
 
-`referral_reward` trigger exists but commission is never paid out.
+Status: [x] Done. Referral reward issuance, optional on-chain payout job enqueueing, jobs-tick execution, and runtime/deploy env wiring are implemented and now covered by repo tests.
 
-Model: \ReferralCommission\ (id, referrer_id, referred_user_id, trigger_type: first_paid_workflow|subscription_created, commission_amount_acp, status: pending|payable|paid|cancelled, paid_at)
+Implemented behavior:
+- first paid ACP workflow capture issues both `referral_signup_bonus` and `referral_commission_share` reward events idempotently
+- reward issuance credits the beneficiary ledger immediately while preserving ledger invariants
+- when `REFERRAL_ONCHAIN_PAYOUT_ENABLED=true` and the ACP wallet runtime is configured, ACP beneficiary wallets also receive queued `referral_onchain_payout_jobs`
+- `POST /v1/system/jobs/tick` processes pending referral payout jobs through the ACP wallet helper and records `sent` / retryable `pending` / terminal `failed` outcomes
+- admin economy-health diagnostics expose `pending_referral_payout_jobs` and `failed_referral_payout_jobs`
+- production compose/env/docs now pass through `REFERRAL_ONCHAIN_PAYOUT_ENABLED`, `REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE`, and `REFERRAL_ONCHAIN_PAYOUT_FEE_ACP`
 
-Scheduler:
-- Daily: mark pending commissions where trigger condition met -> payable
-- Weekly: for payable commissions -> debit treasury -> credit referrer ledger -> mark paid
+Verification:
+- `pytest tests/api/test_ai_console_wave1.py -q` ✅
+- `pytest tests/api/test_ai_console_wave1.py tests/test_prod_deploy_scripts.py tests/api/test_workflow_store.py tests/api/test_system_economy_health.py -q` ✅
 
-Exit criteria: Referrers receive ACP commissions automatically.
+Remaining future work: richer payout operations/monitoring may still be layered later, but the baseline referral commission auto-payout path itself is no longer missing.
 
 ### 4.7 Marketplace search + filters [MEDIUM]
 

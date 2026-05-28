@@ -486,6 +486,21 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
             id="compose-passes-stripe-api-base-through-to-api-service",
         ),
         pytest.param(
+            Path("docker-compose.prod.yml"),
+            'REFERRAL_ONCHAIN_PAYOUT_ENABLED: ${REFERRAL_ONCHAIN_PAYOUT_ENABLED:-false}',
+            id="compose-passes-referral-onchain-payout-enabled-through-to-api-service",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
+            'REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE: ${REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE:-}',
+            id="compose-passes-referral-onchain-payout-keystore-through-to-api-service",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
+            'REFERRAL_ONCHAIN_PAYOUT_FEE_ACP: ${REFERRAL_ONCHAIN_PAYOUT_FEE_ACP:-}',
+            id="compose-passes-referral-onchain-payout-fee-through-to-api-service",
+        ),
+        pytest.param(
             Path("scripts/deploy-ancap-cloud.ps1"),
             '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")',
             id="powershell-deploy-requires-all-critical-secrets",
@@ -546,6 +561,9 @@ def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path:
             "STRIPE_PUBLISHABLE_KEY": "stripe_publishable_runtime_test",
             "STRIPE_WEBHOOK_SECRET": "stripe_webhook_runtime_test",
             "STRIPE_API_BASE": "https://stripe.example.test/v1",
+            "REFERRAL_ONCHAIN_PAYOUT_ENABLED": "true",
+            "REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE": "/run/secrets/referrals/operator.json",
+            "REFERRAL_ONCHAIN_PAYOUT_FEE_ACP": "0.25",
         }
     )
 
@@ -573,6 +591,9 @@ def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path:
     assert "STRIPE_PUBLISHABLE_KEY: stripe_publishable_runtime_test" in result.stdout
     assert "STRIPE_WEBHOOK_SECRET: stripe_webhook_runtime_test" in result.stdout
     assert "STRIPE_API_BASE: https://stripe.example.test/v1" in result.stdout
+    assert 'REFERRAL_ONCHAIN_PAYOUT_ENABLED: "true"' in result.stdout
+    assert "REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE: /run/secrets/referrals/operator.json" in result.stdout
+    assert 'REFERRAL_ONCHAIN_PAYOUT_FEE_ACP: "0.25"' in result.stdout
 
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker not available")

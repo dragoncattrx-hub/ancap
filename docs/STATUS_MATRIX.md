@@ -122,7 +122,7 @@ Parallel trust/adoption track:
 - Stripe / fiat adapter live end-to-end verification
 - creator earnings dashboard improvements
 - deeper API monetization reporting and spend controls
-- referral commission auto-payout
+- referral commission auto-payout ✅ baseline done (ledger reward issuance + optional on-chain payout jobs + jobs-tick execution)
 - marketplace search/filter/discovery depth
 - refund / dispute / chargeback flows
 

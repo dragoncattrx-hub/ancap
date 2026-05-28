@@ -44,6 +44,18 @@ Current first-slice Stripe currencies:
 
 If those values are empty, Stripe endpoints fail closed with `503` and ACP/manual flows stay available. Unsupported Stripe currencies fail closed with `400` instead of silently creating mismatched checkout intents.
 
+## Referral auto-payouts
+
+Referral reward issuance is already live in the ledger. Optional ACP auto-payout execution is also wired for operators who want referral rewards pushed on-chain from a configured site wallet.
+
+Runtime env vars for that path:
+- `REFERRAL_ONCHAIN_PAYOUT_ENABLED` — set `true` to allow the jobs tick to process queued referral payout jobs
+- `REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE` — path to the ACP wallet keystore used for on-chain referral payouts
+- optional `REFERRAL_ONCHAIN_PAYOUT_FEE_ACP` — explicit ACP fee override passed to the wallet helper
+- `ACP_WALLETD_PATH` / `walletd` in `PATH` and a valid `ACP_RPC_URL` are also required when auto-payouts are enabled
+
+If those values are unset, referral rewards still accrue in the internal ledger and the payout queue stays fail-closed / idle.
+
 ## Public integration examples
 
 Public-safe reference integrations live under [`examples/`](examples/README.md):
