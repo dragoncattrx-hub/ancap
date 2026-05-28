@@ -125,13 +125,15 @@ def test_smart_pay_groundwork_truth_is_in_sync_with_mobile_repo_state() -> None:
     assert "| SQ-4 | Execution session groundwork | [x] | backend execute/status/recover endpoints exist with first execution-state lifecycle and API tests |" in mobile
     assert "| SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |" in mobile
     assert "| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |" in mobile
-    assert "| SQ-7 | Real route execution integration | [ ] | blocked on local non-custodial EVM spend/sign closure plus bridge/swap/transfer orchestration beyond placeholder routes |" in mobile
+    assert "| SQ-7 | Real route execution integration | [~] | placeholder execution lifecycle is now hardened in repo code: recover maps known txs onto bridge/swap/payment route steps, emits explorer links, and marks placeholder sessions completed once all quoted route txs are known; real non-custodial EVM spend/sign plus actual bridge/swap/transfer orchestration still remain |" in mobile
     assert "| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data; backend payment-history listing and final polish still pending |" in mobile
     assert "backend `capabilities` + deterministic `parse` + `quote` + execute/status/recover endpoints exist in repo code with API tests" in master
     assert "typed mobile client methods exist with client tests" in master
     assert "Expo beta flow already supports paste, QR import, camera scan, review, execute, refresh/recover, and session restore" in master
     assert "Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data" in master
-    assert "real route engine / bridge-swap execution integration (still blocked on local non-custodial EVM spend/sign closure plus backend route orchestration beyond placeholder sessions)" in master
+    assert "placeholder execution lifecycle is now hardened in repo code: recover maps known txs onto bridge/swap/payment route steps, emits explorer links, and marks placeholder sessions completed once all quoted route txs are known" in master
+    assert "real non-custodial EVM spend/sign closure plus actual bridge/swap/transfer orchestration still remain" in master
     assert "Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover" in status_matrix
+    assert "Smart Pay placeholder execution lifecycle now maps recovered txs onto quoted route steps, emits explorer links, and can close placeholder sessions once all quoted txs are known" in status_matrix
     assert "Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover" in status_matrix
     assert "Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX and can fetch backend receipt snapshots for the active payment" in status_matrix

@@ -174,6 +174,7 @@ def test_smart_pay_execute_receipt_and_recover(client):
     assert exec_res.status_code == 200, exec_res.text
     execution = exec_res.json()["execution"]
     assert execution["status"] == "awaiting_local_signature"
+    assert execution["nextAction"] == "sign_direct_send_tx"
     execution_id = execution["id"]
 
     status_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}")
@@ -198,13 +199,91 @@ def test_smart_pay_execute_receipt_and_recover(client):
     )
     assert recover_res.status_code == 200, recover_res.text
     recovered = recover_res.json()["execution"]
-    assert recovered["status"] == "pending_reconciliation"
+    assert recovered["status"] == "completed"
+    assert recovered["recoverable"] is False
+    assert recovered["nextAction"] is None
+    assert recovered["txRefs"][0]["role"] == "payment"
+    assert recovered["txRefs"][0]["network"] == "acp"
     assert recovered["txRefs"][0]["txid"] == "0xabc123"
+    assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/0xabc123"
 
     recovered_receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
     assert recovered_receipt_res.status_code == 200
     recovered_receipt = recovered_receipt_res.json()
     assert recovered_receipt["txRefs"][0]["txid"] == "0xabc123"
+    assert recovered_receipt["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/0xabc123"
+
+
+def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_are_known(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    execution_id = exec_res.json()["execution"]["id"]
+
+    partial_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={"clientKnownTxs": ["0xbridge", "0xswap"]},
+    )
+    assert partial_recover.status_code == 200, partial_recover.text
+    partial = partial_recover.json()["execution"]
+    assert partial["status"] == "pending_reconciliation"
+    assert partial["recoverable"] is True
+    assert partial["nextAction"] is None
+    assert partial["txRefs"][0] == {
+        "role": "bridge",
+        "network": "acp",
+        "txid": "0xbridge",
+        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge",
+    }
+    assert partial["txRefs"][1] == {
+        "role": "swap",
+        "network": "bsc",
+        "txid": "0xswap",
+        "explorerUrl": "https://bscscan.com/tx/0xswap",
+    }
+
+    final_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={"clientKnownTxs": ["0xbridge", "0xswap", "0xpay"]},
+    )
+    assert final_recover.status_code == 200, final_recover.text
+    final = final_recover.json()["execution"]
+    assert final["status"] == "completed"
+    assert final["recoverable"] is False
+    assert final["nextAction"] is None
+    assert final["txRefs"][2] == {
+        "role": "merchant_payout",
+        "network": "bsc",
+        "txid": "0xpay",
+        "explorerUrl": "https://bscscan.com/tx/0xpay",
+    }
 
 
 def test_smart_pay_receipt_404_for_unknown_execution(client):

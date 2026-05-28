@@ -483,6 +483,67 @@ def _route_summary(quote: SmartPayQuoteItem) -> list[str]:
     return summary
 
 
+def _tx_role_for_route_step(step: SmartPayRouteStep, index: int, total_steps: int) -> str:
+    if step.kind == "bridge":
+        return "bridge"
+    if step.kind == "swap":
+        return "swap"
+    if step.kind == "transfer" and total_steps > 1 and index == total_steps:
+        return "merchant_payout"
+    if step.kind == "transfer":
+        return "payment"
+    return step.kind
+
+
+def _explorer_url_for_network(network: str, txid: str) -> str | None:
+    s = get_settings()
+    if network == "acp":
+        base = (s.acp_explorer_tx_base or "").strip().rstrip("/")
+        return f"{base}/{txid}" if base else None
+    if network == "bsc":
+        base = (s.bsc_explorer_base or "").strip().rstrip("/")
+        return f"{base}/tx/{txid}" if base else None
+    return None
+
+
+def _normalize_execution_tx_refs(quote: SmartPayQuoteItem, txids: list[str]) -> list[SmartPayTxRef]:
+    clean_txids: list[str] = []
+    for txid in txids:
+        clean = (txid or "").strip()
+        if not clean or clean in clean_txids:
+            continue
+        clean_txids.append(clean)
+
+    tx_refs: list[SmartPayTxRef] = []
+    total_steps = len(quote.route)
+    for index, txid in enumerate(clean_txids, start=1):
+        if index <= total_steps:
+            step = quote.route[index - 1]
+            tx_refs.append(
+                SmartPayTxRef(
+                    role=_tx_role_for_route_step(step, index, total_steps),
+                    network=step.network,
+                    txid=txid,
+                    explorer_url=_explorer_url_for_network(step.network, txid),
+                )
+            )
+        else:
+            tx_refs.append(SmartPayTxRef(role="client_known", network="unknown", txid=txid, explorer_url=None))
+    return tx_refs
+
+
+def _execution_lifecycle_state(
+    quote: SmartPayQuoteItem, tx_refs: list[SmartPayTxRef]
+) -> tuple[str, bool, str | None]:
+    expected_steps = len(quote.route) or 1
+    if not tx_refs:
+        next_action = "sign_direct_send_tx" if quote.mode == "direct_send" else "sign_swap_tx"
+        return "awaiting_local_signature", True, next_action
+    if len(tx_refs) < expected_steps:
+        return "pending_reconciliation", True, None
+    return "completed", False, None
+
+
 def _build_receipt(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem, execution: SmartPayExecutionItem) -> SmartPayReceiptItem:
     completed_at = execution.updated_at or execution.created_at or _utc_now_iso()
     merchant_label = intent.merchant.label if intent.merchant and intent.merchant.label else None
@@ -511,15 +572,15 @@ def _store_execution_and_receipt(intent: PaymentIntentResponseItem, quote: Smart
 
 
 def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem) -> SmartPayExecutionItem:
-    next_action = "sign_direct_send_tx" if quote.mode == "direct_send" else "sign_swap_tx"
+    status, recoverable, next_action = _execution_lifecycle_state(quote, [])
     execution = SmartPayExecutionItem(
         id=f"pe_{uuid4().hex}",
         payment_intent_id=intent.id,
         quote_id=quote.quote_id,
-        status="awaiting_local_signature",
+        status=status,
         created_at=_utc_now_iso(),
         updated_at=_utc_now_iso(),
-        recoverable=True,
+        recoverable=recoverable,
         next_action=next_action,
         tx_refs=[],
         error=None,
@@ -756,13 +817,19 @@ async def smart_pay_recover(execution_id: str, body: SmartPayRecoverRequest):
         raise HTTPException(status_code=404, detail="execution not found")
     quote = _get_quote_or_404(execution.quote_id)
     intent = _get_payment_intent_or_404(execution.payment_intent_id)
-    tx_refs = list(execution.tx_refs)
-    for txid in body.client_known_txs:
-        clean = (txid or "").strip()
-        if not clean or any(existing.txid == clean for existing in tx_refs):
-            continue
-        tx_refs.append(SmartPayTxRef(role="client_known", network="unknown", txid=clean, explorer_url=None))
-    execution = execution.model_copy(update={"status": "pending_reconciliation", "updated_at": _utc_now_iso(), "tx_refs": tx_refs})
+    known_txids = [ref.txid for ref in execution.tx_refs]
+    known_txids.extend(body.client_known_txs)
+    tx_refs = _normalize_execution_tx_refs(quote, known_txids)
+    status, recoverable, next_action = _execution_lifecycle_state(quote, tx_refs)
+    execution = execution.model_copy(
+        update={
+            "status": status,
+            "updated_at": _utc_now_iso(),
+            "recoverable": recoverable,
+            "next_action": next_action,
+            "tx_refs": tx_refs,
+        }
+    )
     _store_execution_and_receipt(intent, quote, execution)
     return SmartPayExecutionResponse(execution=execution)
 
