@@ -1,6 +1,7 @@
 # ANCAP ACP Wallet — Roadmap
 
 > Status: supporting mobile roadmap | Updated: 2026-05-25
+> Last verified: 2026-05-28
 > Source of truth for cross-project execution priority: `MASTER_ROADMAP.md`
 > Current reality: the mobile wallet is far along, but it is **not** release-ready yet. The main remaining work is native build closure (Android NDK / iOS macOS-Xcode packaging), real device verification, security checklist completion, and store/release work.
 > Fast status index: `docs/STATUS_MATRIX.md`

@@ -1,6 +1,7 @@
 # ANCAP Monetization-First Roadmap
 
 > Status: supporting strategy note | Updated: 2026-05-25
+> Last verified: 2026-05-28
 > Source of truth for execution priority: `MASTER_ROADMAP.md`
 > This file now serves as monetization strategy context. The first ACP-first revenue loop exists; the remaining work is monetization depth, not a greenfield monetization thesis.
 > Fast status index: `docs/STATUS_MATRIX.md`

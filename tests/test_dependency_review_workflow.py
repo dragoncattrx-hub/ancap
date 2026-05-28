@@ -14,6 +14,7 @@ def test_dependency_review_workflow_guards_dependency_prs():
     assert 'fail-on-severity: moderate' in workflow_text
 
     for expected_path in [
+        '      - "requirements.in"',
         '      - "requirements.txt"',
         '      - "pyproject.toml"',
         '      - "frontend-app/package.json"',

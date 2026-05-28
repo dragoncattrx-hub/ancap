@@ -34,6 +34,7 @@ Examples:
 - Frontend: targeted Playwright / build / typecheck when UI changes.
 - Mobile: typecheck/build/test slice relevant to the touched area.
 - Deploy changes: include exact verification evidence, not assumptions.
+- Runtime dependency changes: update `requirements.in`, regenerate `requirements.txt` from a Linux-compatible Python 3.11 environment (for example the repo Docker/Python base image) with `python -m piptools compile --generate-hashes --output-file requirements.txt requirements.in`, and keep packaging metadata aligned via `pyproject.toml`.
 
 ## Pull request checklist
 

@@ -908,13 +908,26 @@ Verification (2026-05-27):
 
 ### 6.2 Dependency management consolidation [MEDIUM]
 
+Status: [x] Done. Runtime dependency inputs are now centralized in `requirements.in`, `requirements.txt` is the generated runtime lock, packaging metadata imports runtime deps from that same source, and CI/release workflows install a single `.[dev]` package definition instead of drifting between separate lists.
+
 Problem: `requirements.txt` (exact pins) and `pyproject.toml` (range pins) coexist.
 
-Fix:
-- `requirements.txt` -> source of truth for runtime deps
-- `pyproject.toml` -> source of truth for dev deps + build config
-- Add pip-compile workflow: when `requirements.in` changes -> regenerate `requirements.txt` with locked hashes
-- Align Python version: 3.11 (CI) vs prod (check)
+Implemented:
+- added `requirements.in` as the runtime dependency input file for backend image / Python CI installs
+- `requirements.txt` is now explicitly the generated runtime lock target for `python -m piptools compile --generate-hashes --output-file requirements.txt requirements.in` and is regenerated in-repo with hashes from that source
+- `pyproject.toml` now uses setuptools dynamic metadata to import runtime dependencies from `requirements.in`
+- `pyproject.toml` now defines a `dev` extra for Python test/security tooling (`pytest`, `pytest-asyncio`, `bandit`)
+- backend CI and release workflows now install `pip install .[dev]` instead of maintaining a second manual test-tool list
+- dependency-review workflow now also triggers on `requirements.in`
+- contributor/release docs now describe the regenerate-lock flow explicitly
+- `tests/test_dependency_management_consolidation.py` locks the new source-of-truth wiring into repo coverage
+
+Verification (2026-05-28):
+- `requirements.in` exists and contains the backend runtime dependency set
+- `requirements.txt` documents the `piptools compile` regeneration path and no longer pretends to be a hand-maintained mixed runtime+dev list
+- `pyproject.toml` imports runtime deps from `requirements.in` and exposes the `dev` extra
+- `.github/workflows/backend-ci.yml` and `.github/workflows/release.yml` install `.[dev]`
+- `pytest tests/test_dependency_management_consolidation.py tests/test_dependency_review_workflow.py tests/test_release_workflow.py tests/test_prod_deploy_scripts.py -q` ✅
 
 ### 6.3 Formal releases and tags [MEDIUM]
 
@@ -937,10 +950,17 @@ Policy: every merge to master touching \app/\ or \frontend-app/\ -> bump patch. 
 
 ### 6.4 Documentation health [LOW]
 
+Status: [x] Done. The old frontend audit is now explicitly marked superseded, roadmap/audit support docs now carry `Last verified` headers, and `docs/STATUS_MATRIX.md` remains the compact status authority beneath `MASTER_ROADMAP.md`.
+
 Tasks:
 - Mark \docs/AUDIT-2026-04-29.md\ as superseded
 - Add \> Last verified: YYYY-MM-DD\ header to all roadmap and audit docs
 - Create \docs/STATUS_MATRIX.md\ -- single source of truth mapping every component to status
+
+Verification (2026-05-28):
+- `docs/AUDIT-2026-04-29.md` now declares itself superseded and records `Last verified: 2026-05-28`
+- `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` now carry `Last verified: 2026-05-28`
+- `docs/STATUS_MATRIX.md` remains aligned with the current roadmap truth, including the now-baseline-done dependency-consolidation slice
 
 ---
 

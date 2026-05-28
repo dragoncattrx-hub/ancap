@@ -1,5 +1,7 @@
 # Release Process
 
+> Last verified: 2026-05-28
+
 This document describes the release workflow for the ANCAP backend and frontend.
 
 ---
@@ -42,9 +44,12 @@ docker build -t ancap:release-check .
 bandit -r app/ -f txt 2>&1 | tee bandit-report.txt
 # Review bandit-report.txt before proceeding
 
-# 7. Pin dependency versions (if not using lock files)
+# 7. Refresh dependency locks when runtime deps changed
 # npm: npm install --package-lock-only && npm audit
-# pip:  pip-compile requirements.in --generate-hashes
+# pip: regenerate requirements.txt from a Linux-compatible Python 3.11 environment
+#      (matching the runtime image) so Windows-only wheels are not locked in:
+#      docker run --rm -v "$PWD:/work" -w /work python:3.11-slim \
+#        bash -lc "python -m pip install --no-cache-dir pip-tools && python -m piptools compile --generate-hashes --output-file requirements.txt requirements.in"
 ```
 
 ---

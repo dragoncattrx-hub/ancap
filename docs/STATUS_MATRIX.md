@@ -61,7 +61,7 @@ Parallel trust/adoption track:
 | Mobile wallet | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md` | Wallet is far along but not release-ready; native build closure, device verification, and release work remain. |
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
-| Release hygiene / architecture cleanup | **Partial** | Medium | `MASTER_ROADMAP.md` | Deployment story cleanup, dependency consolidation, release workflow, and docs cleanup remain. |
+| Release hygiene / architecture cleanup | **Baseline done** | Medium | `MASTER_ROADMAP.md` | Deployment story cleanup, dependency consolidation, release workflow, and documentation-health cleanup are now baseline done; broader release closure still depends on the higher-priority top-line tails. |
 | Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists, but skipped tests, E2E CI verification, and mobile device validation still remain. |
 
 ---
@@ -162,7 +162,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | CI hardening | Partial | Repo changes exist; live verification/settings still open |
 | Secret remediation | Partial | Cleanup done in repo; external revoke/rotation still open |
 | Monetization expansion | Partial | First loop exists; depth features remain |
-| Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo and the `v1.0.0` release tag is already present; broader release closure still depends on the remaining top-line roadmap tails. |
+| Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |
 | Public `ancap-docs` split | In progress / repo prep done | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; external org/repo creation is still pending. |
 
 ---

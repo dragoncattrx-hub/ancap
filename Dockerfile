@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ACP-crypto ./ACP-crypto
 RUN cargo build --manifest-path ACP-crypto/Cargo.toml --bin walletd --release --locked
 
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

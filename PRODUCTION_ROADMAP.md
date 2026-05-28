@@ -1,6 +1,7 @@
 # ANCAP Production Roadmap
 
 > Status: supporting snapshot | Updated: 2026-05-25
+> Last verified: 2026-05-28
 > Source of truth: `MASTER_ROADMAP.md`
 > Purpose: product/deploy status snapshot. This file is useful for historical and operational context, but execution priority and final truth now live in `MASTER_ROADMAP.md`.
 > Fast status index: `docs/STATUS_MATRIX.md`

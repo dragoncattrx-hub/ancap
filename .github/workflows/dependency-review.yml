@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: ["master"]
     paths:
+      - "requirements.in"
       - "requirements.txt"
       - "pyproject.toml"
       - "frontend-app/package.json"

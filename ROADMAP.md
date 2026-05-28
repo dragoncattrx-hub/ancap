@@ -1,6 +1,7 @@
 # Roadmap & Architecture Notes
 
 > Status: historical architecture roadmap | Updated: 2026-05-25
+> Last verified: 2026-05-28
 > Source of truth for current execution priority: `MASTER_ROADMAP.md`
 > This file is retained as architecture/history context. It must not be read as the final delivery truth or release-readiness verdict.
 > Fast status index: `docs/STATUS_MATRIX.md`
