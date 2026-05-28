@@ -122,6 +122,29 @@ function makeEntry(id: string, status: SmartPayHistoryEntry["execution"]["status
       ],
       error: status === "failed" ? "execution_failed" : null,
     },
+    receipt: {
+      id: `receipt-${id}`,
+      paymentExecutionId: `exec-${id}`,
+      paymentIntentId: `intent-${id}`,
+      completedAt: "2026-05-28T16:42:00.000Z",
+      sourceAssetSpent: "ACP",
+      sourceAmountSpent: "12.7",
+      targetAssetPaid: "ACP",
+      targetAmountPaid: "12.5",
+      serviceFeeAcp: "0.2",
+      networkFees: [],
+      recipientAddress: `acp_test_${id}`,
+      merchantLabel: null,
+      routeSummary: ["1. transfer ACP -> ACP on acp"],
+      txRefs: [
+        {
+          role: "payment",
+          network: "acp",
+          txid: `tx-${id}`,
+          explorerUrl: null,
+        },
+      ],
+    },
   };
 }
 
@@ -142,6 +165,7 @@ describe("smart pay history helpers", () => {
     expect(afterUpdate).toHaveLength(2);
     expect(afterUpdate[0]?.id).toBe("exec-1");
     expect(afterUpdate[0]?.execution.status).toBe("completed");
+    expect(afterUpdate[0]?.receipt?.paymentExecutionId).toBe("exec-1");
     expect(afterUpdate[1]?.id).toBe("exec-2");
   });
 

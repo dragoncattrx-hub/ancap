@@ -19,6 +19,7 @@ import type {
   SmartPayExecution,
   SmartPayPaymentIntent,
   SmartPayQuote,
+  SmartPayReceipt,
 } from "@ancap/acp-api-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi } from "@/lib/api";
@@ -45,6 +46,7 @@ export default function SmartPayScreen() {
   const [intent, setIntent] = useState<SmartPayPaymentIntent | null>(null);
   const [quote, setQuote] = useState<SmartPayQuote | null>(null);
   const [execution, setExecution] = useState<SmartPayExecution | null>(null);
+  const [receipt, setReceipt] = useState<SmartPayReceipt | null>(null);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -75,6 +77,7 @@ export default function SmartPayScreen() {
           setIntent(persisted.intent ?? null);
           setQuote(persisted.quote ?? null);
           setExecution(persisted.execution ?? null);
+          setReceipt(persisted.receipt ?? null);
           setShowConfirmation(false);
           setConfirmationAccepted(false);
         }
@@ -102,8 +105,9 @@ export default function SmartPayScreen() {
       intent,
       quote,
       execution,
+      receipt,
     });
-  }, [hydrated, rawPayload, payloadSource, selectedAsset, intent, quote, execution]);
+  }, [hydrated, rawPayload, payloadSource, selectedAsset, intent, quote, execution, receipt]);
 
   const onPaste = async () => {
     const text = await Clipboard.getStringAsync();
@@ -167,6 +171,7 @@ export default function SmartPayScreen() {
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     setExecution(null);
+    setReceipt(null);
   };
 
   const onClearSession = async () => {
@@ -176,6 +181,7 @@ export default function SmartPayScreen() {
     setIntent(null);
     setQuote(null);
     setExecution(null);
+    setReceipt(null);
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     setError("");
@@ -194,6 +200,7 @@ export default function SmartPayScreen() {
     setIntent(entry.intent);
     setQuote(entry.quote ?? null);
     setExecution(entry.execution);
+    setReceipt(entry.receipt ?? null);
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     setError("");
@@ -207,6 +214,7 @@ export default function SmartPayScreen() {
     setShowConfirmation(true);
     setConfirmationAccepted(false);
     setExecution(null);
+    setReceipt(null);
   };
 
   const onParse = async () => {
@@ -218,6 +226,7 @@ export default function SmartPayScreen() {
     setError("");
     setQuote(null);
     setExecution(null);
+    setReceipt(null);
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     try {
@@ -242,6 +251,7 @@ export default function SmartPayScreen() {
     setBusy(true);
     setError("");
     setExecution(null);
+    setReceipt(null);
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     try {
@@ -284,7 +294,9 @@ export default function SmartPayScreen() {
           appVersion: null,
         },
       });
+      const receiptResult = await getApi().getSmartPayReceipt(result.execution.id);
       setExecution(result.execution);
+      setReceipt(receiptResult);
       setHistory(
         await saveSmartPayHistoryEntry({
           id: result.execution.id,
@@ -292,6 +304,7 @@ export default function SmartPayScreen() {
           intent,
           quote,
           execution: result.execution,
+          receipt: receiptResult,
         })
       );
       setShowConfirmation(false);
@@ -308,8 +321,12 @@ export default function SmartPayScreen() {
     setBusy(true);
     setError("");
     try {
-      const result = await getApi().getSmartPayExecution(execution.id);
+      const [result, receiptResult] = await Promise.all([
+        getApi().getSmartPayExecution(execution.id),
+        getApi().getSmartPayReceipt(execution.id),
+      ]);
       setExecution(result.execution);
+      setReceipt(receiptResult);
       if (intent) {
         setHistory(
           await saveSmartPayHistoryEntry({
@@ -318,6 +335,7 @@ export default function SmartPayScreen() {
             intent,
             quote,
             execution: result.execution,
+            receipt: receiptResult,
           })
         );
       }
@@ -334,7 +352,9 @@ export default function SmartPayScreen() {
     setError("");
     try {
       const result = await getApi().recoverSmartPay(execution.id, { clientKnownTxs: [] });
+      const receiptResult = await getApi().getSmartPayReceipt(execution.id);
       setExecution(result.execution);
+      setReceipt(receiptResult);
       if (intent) {
         setHistory(
           await saveSmartPayHistoryEntry({
@@ -343,6 +363,7 @@ export default function SmartPayScreen() {
             intent,
             quote,
             execution: result.execution,
+            receipt: receiptResult,
           })
         );
       }
@@ -569,20 +590,30 @@ export default function SmartPayScreen() {
       {execution && intent ? (
         <View style={styles.card}>
           <Text style={styles.label}>Receipt snapshot</Text>
-          <Text style={styles.value}>{quote?.targetAmount ?? intent.amount?.value ?? "—"} {quote?.targetAsset.symbol ?? intent.asset.symbol ?? "asset"}</Text>
-          <Text style={styles.meta}>Recipient: {intent.recipient.address}</Text>
-          <Text style={styles.meta}>Source asset: {quote?.sourceAsset.symbol ?? selectedAsset}</Text>
-          <Text style={styles.meta}>Source spend: {quote?.requiredSourceAmount ?? "—"}</Text>
-          <Text style={styles.meta}>Service fee: {quote?.serviceFeeAcp ?? "—"} ACP</Text>
-          <Text style={styles.meta}>Route mode: {quote?.mode ?? "direct_send"}</Text>
+          <Text style={styles.value}>{receipt?.targetAmountPaid ?? quote?.targetAmount ?? intent.amount?.value ?? "—"} {receipt?.targetAssetPaid ?? quote?.targetAsset.symbol ?? intent.asset.symbol ?? "asset"}</Text>
+          <Text style={styles.meta}>Recipient: {receipt?.recipientAddress ?? intent.recipient.address}</Text>
+          <Text style={styles.meta}>Source asset: {receipt?.sourceAssetSpent ?? quote?.sourceAsset.symbol ?? selectedAsset}</Text>
+          <Text style={styles.meta}>Source spend: {receipt?.sourceAmountSpent ?? quote?.requiredSourceAmount ?? "—"}</Text>
+          <Text style={styles.meta}>Service fee: {receipt?.serviceFeeAcp ?? quote?.serviceFeeAcp ?? "—"} ACP</Text>
           <Text style={styles.meta}>Receipt status: {execution.status}</Text>
+          {receipt?.completedAt ? <Text style={styles.meta}>Completed at: {receipt.completedAt}</Text> : null}
+          {receipt?.merchantLabel ? <Text style={styles.meta}>Merchant: {receipt.merchantLabel}</Text> : null}
           {execution.error ? <Text style={styles.warning}>Execution error: {execution.error}</Text> : null}
-          {quote?.route?.length ? quote.route.map((step, index) => (
-            <Text key={`receipt-route-${step.kind}-${index}`} style={styles.meta}>
+          {receipt?.routeSummary?.length ? receipt.routeSummary.map((line, index) => (
+            <Text key={`receipt-route-${index}`} style={styles.meta}>
+              {line}
+            </Text>
+          )) : quote?.route?.length ? quote.route.map((step, index) => (
+            <Text key={`receipt-route-fallback-${step.kind}-${index}`} style={styles.meta}>
               Step {index + 1}: {step.kind} {step.fromAsset} → {step.toAsset} via {step.network}
             </Text>
           )) : null}
-          {execution.txRefs.length ? execution.txRefs.map((tx) => (
+          {receipt?.networkFees?.length ? receipt.networkFees.map((fee, index) => (
+            <Text key={`receipt-fee-${fee.network}-${fee.assetSymbol}-${index}`} style={styles.meta}>
+              Network fee: {fee.amount} {fee.assetSymbol} on {fee.network}
+            </Text>
+          )) : null}
+          {(receipt?.txRefs?.length ? receipt.txRefs : execution.txRefs).length ? (receipt?.txRefs ?? execution.txRefs).map((tx) => (
             <Text key={`receipt-${tx.role}-${tx.txid}`} style={styles.meta}>
               {tx.role} tx: {tx.txid}
             </Text>

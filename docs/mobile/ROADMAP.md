@@ -3,7 +3,7 @@
 > Status: supporting mobile roadmap | Updated: 2026-05-25
 > Last verified: 2026-05-28
 > Source of truth for cross-project execution priority: `MASTER_ROADMAP.md`
-> Current reality: the mobile wallet is far along, but it is **not** release-ready yet. The main remaining work is native build closure (Android NDK / iOS macOS-Xcode packaging), real device verification, security checklist completion, and store/release work.
+> Current reality: the mobile wallet is far along, but it is **not** release-ready yet. Android `.so` artifact emission is now verified on the current Windows host; the main remaining work is Android/iOS runtime verification, iOS macOS-Xcode packaging, real device verification, security checklist completion, and store/release work.
 > Fast status index: `docs/STATUS_MATRIX.md`
 
 Official **non-custodial** mobile wallet for ACP (native) and wACP (BSC).
@@ -37,7 +37,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P1-3 | `acp_sign_transfer` (local sign, no broadcast) | [x] | uses keystore_json |
 | P1-4 | walletd `sign-transfer` + `submit` | [x] | CLI for dev / bridge testing |
 | P1-5 | Kotlin/Swift bindgen (`scripts/uniffi-generate.ps1`) | [x] | `acp-mobile-ffi/bindings/` |
-| P1-6 | Link bindings in `expo-acp-core` Android | [~] | Kotlin + JNI wired; `build-android-native.ps1` now auto-detects SDK/NDK, but this host still needs an installed Android NDK to emit `.so` libs |
+| P1-6 | Link bindings in `expo-acp-core` Android | [x] | Kotlin + JNI wired; `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host, auto-detects SDK/NDK, and emits `arm64-v8a`, `armeabi-v7a`, and `x86_64` `libacp_mobile_ffi.so` artifacts into `modules/expo-acp-core/android/src/main/jniLibs` |
 | P1-7 | iOS Swift UniFFI link | [~] | Expo iOS podspec now stages generated Swift/modulemap artifacts and can vend `acp_mobile_ffiFFI.xcframework`; `ancap-mobile/scripts/build-ios-native.ps1` added for macOS packaging, but runtime build verification still needs a macOS/iOS run |
 | P1-7 | Golden-vector tests | [x] | `wallet_smoke.rs` |
 
@@ -135,7 +135,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |
 | SQ-7 | Real route execution integration | [ ] | blocked on local non-custodial EVM spend/sign closure plus bridge/swap/transfer orchestration beyond placeholder routes |
 | SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
-| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data; backend-backed payment history and richer receipt polish still pending |
+| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data; backend payment-history listing and final polish still pending |
 | SQ-10 | AI Payment Scanner MVP | [ ] | camera/photo upload, QR recognition, OCR for invoices/receipts/payment screens, and payment-intent preview with manual correction |
 | SQ-11 | Smart Payment Flow expansion | [ ] | auto asset matching, smart swap before payment, multi-chain routing, duplicate payment detection, merchant mode |
 | SQ-12 | ANCAP Claim Codes / Crypto Voucher MVP | [ ] | lock balance, generate redeemable claim code, redeem from wallet/site, expiry/cancel/refund, ACP fees |
@@ -176,7 +176,7 @@ Scope truth:
 
 The original 8–12 week estimate is no longer the right way to read this document. The project is now in the late-stage completion zone, where the remaining duration depends mostly on host/tooling blockers and release verification:
 
-- Android NDK installation and `.so` emission
+- Android Expo dev-build/runtime verification with the emitted `.so` artifacts
 - macOS/Xcode packaging for iOS native artifacts
 - real device verification of create/send/lock/unlock/biometric flows
 - MASVS/security checklist closure
@@ -218,7 +218,7 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 
 ## Current next gates
 
-1. Install Android NDK and rerun `ancap-mobile/scripts/build-android-native.ps1`
+1. Run an Android Expo dev build against the emitted `.so` artifacts and verify create/send/sign on emulator + physical device
 2. Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode
 3. Verify create/send/sign, PIN, biometrics, and SecureVault flows on real devices
 4. Verify the remaining MASVS/device-release gates on real hardware (PIN/biometric/vault migration + native signing path)

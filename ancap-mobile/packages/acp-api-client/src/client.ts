@@ -14,6 +14,7 @@ import type {
   SmartPayExecutionResponse,
   SmartPayQuoteInput,
   SmartPayQuoteResponse,
+  SmartPayReceipt,
   SmartPayRecoverInput,
   SmartQrParseInput,
   SmartQrParseResponse,
@@ -150,6 +151,11 @@ export class AcpApiClient {
   getSmartPayExecution(executionId: string): Promise<SmartPayExecutionResponse> {
     const enc = encodeURIComponent(executionId);
     return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}`);
+  }
+
+  getSmartPayReceipt(executionId: string): Promise<SmartPayReceipt> {
+    const enc = encodeURIComponent(executionId);
+    return this.request<SmartPayReceipt>(`/mobile/smart-pay/payments/${enc}/receipt`);
   }
 
   recoverSmartPay(executionId: string, body: SmartPayRecoverInput): Promise<SmartPayExecutionResponse> {

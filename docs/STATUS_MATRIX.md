@@ -102,10 +102,11 @@ Parallel trust/adoption track:
 - public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
 - Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover
-- Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX
+- Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX and can fetch backend receipt snapshots for the active payment
+- Android native `.so` emission via `ancap-mobile/scripts/build-android-native.ps1` is now verified on the current Windows host, with `libacp_mobile_ffi.so` emitted for `arm64-v8a`, `armeabi-v7a`, and `x86_64` under `modules/expo-acp-core/android/src/main/jniLibs`
 
 **Still remaining:**
-- Android NDK install and real `.so` emission
+- Android Expo dev-build/runtime verification using the emitted `.so` artifacts
 - iOS native packaging on macOS/Xcode
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault

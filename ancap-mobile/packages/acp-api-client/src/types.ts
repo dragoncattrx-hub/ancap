@@ -303,6 +303,23 @@ export type SmartPayExecutionResponse = {
   execution: SmartPayExecution;
 };
 
+export type SmartPayReceipt = {
+  id: string;
+  paymentExecutionId: string;
+  paymentIntentId: string;
+  completedAt: string;
+  sourceAssetSpent: string;
+  sourceAmountSpent: string;
+  targetAssetPaid: string;
+  targetAmountPaid: string;
+  serviceFeeAcp: string;
+  networkFees: SmartPayNetworkFeeItem[];
+  recipientAddress: string;
+  merchantLabel?: string | null;
+  routeSummary: string[];
+  txRefs: SmartPayTxRef[];
+};
+
 export type SmartPayRecoverInput = {
   clientKnownTxs: string[];
 };

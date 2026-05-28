@@ -815,14 +815,14 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
 | P6-6 | Production v1.0.0 | [~] final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
 
-### 5.2 Blocked items (needs native build)
+### 5.2 Native-build-dependent items
 
-| ID | Task | Blocker |
-|----|------|---------|
-| P1-6 | Android FFI .so build | Run \uild-android-native.ps1\ (needs Android NDK) |
-| P4-3 | Create wallet via FFI | Needs P1-6 |
-| P4-11 | Send + preview + sign | Needs P1 FFI |
-| P1-7 | iOS Swift UniFFI link | Run \uild-ios-native.ps1\ (needs macOS) |
+| ID | Task | Status / blocker |
+|----|------|------------------|
+| P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host with Android SDK/NDK installed, emitting `arm64-v8a`, `armeabi-v7a`, and `x86_64` `libacp_mobile_ffi.so` artifacts into `ancap-mobile/modules/expo-acp-core/android/src/main/jniLibs` |
+| P4-3 | Create wallet via FFI | [~] Android native artifacts now exist, but Expo Android dev-build/runtime verification is still pending and iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] Android native artifacts now exist, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
+| P1-7 | iOS Swift UniFFI link | [~] Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode and verify packaged artifacts |
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)
 
@@ -846,8 +846,8 @@ Execution order inside this track:
 8. [ ] real route engine / bridge-swap execution integration (still blocked on local non-custodial EVM spend/sign closure plus backend route orchestration beyond placeholder sessions)
 9. [ ] AI fallback classifier for ambiguous payloads (only after deterministic/heuristic path is solid)
 10. [~] receipt/history/recovery UX hardening
-   - Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data
-   - backend-backed payment history, richer receipt polish, and route-execution-linked proof surfaces still remain
+   - Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data
+   - backend payment-history listing, final receipt polish, and route-execution-linked proof surfaces still remain
 11. [ ] AI Payment Scanner MVP:
    - camera/photo upload in wallet and website
    - QR recognition + OCR for receipts, invoices, payment screens, and payment documents

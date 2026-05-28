@@ -3,6 +3,7 @@ import type {
   SmartPayExecution,
   SmartPayPaymentIntent,
   SmartPayQuote,
+  SmartPayReceipt,
 } from "@ancap/acp-api-client";
 
 const KEY_SMART_PAY_SESSION = "acp_wallet_smart_pay_session";
@@ -21,6 +22,7 @@ export type PersistedSmartPaySession = {
   intent: SmartPayPaymentIntent | null;
   quote: SmartPayQuote | null;
   execution: SmartPayExecution | null;
+  receipt: SmartPayReceipt | null;
   savedAt: string;
 };
 

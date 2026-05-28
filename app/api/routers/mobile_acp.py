@@ -42,6 +42,7 @@ from app.schemas.mobile_acp import (
     SmartPayQuoteItem,
     SmartPayQuoteRequest,
     SmartPayQuoteResponse,
+    SmartPayReceiptItem,
     SmartPayRecoverRequest,
     SmartPayRouteStep,
     SmartPaySupportedAsset,
@@ -113,6 +114,7 @@ def _payload_hash(raw_payload: str) -> str:
 _PAYMENT_INTENTS: dict[str, PaymentIntentResponseItem] = {}
 _SMART_PAY_QUOTES: dict[str, SmartPayQuoteItem] = {}
 _SMART_PAY_EXECUTIONS: dict[str, SmartPayExecutionItem] = {}
+_SMART_PAY_RECEIPTS: dict[str, SmartPayReceiptItem] = {}
 
 
 def _supported_assets() -> list[SmartPaySupportedAsset]:
@@ -473,6 +475,41 @@ def _build_quote(intent: PaymentIntentResponseItem, body: SmartPayQuoteRequest) 
     return quote
 
 
+def _route_summary(quote: SmartPayQuoteItem) -> list[str]:
+    summary: list[str] = []
+    for index, step in enumerate(quote.route, start=1):
+        via = f" via {step.dex_or_rail}" if step.dex_or_rail else ""
+        summary.append(f"{index}. {step.kind} {step.from_asset} -> {step.to_asset} on {step.network}{via}")
+    return summary
+
+
+def _build_receipt(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem, execution: SmartPayExecutionItem) -> SmartPayReceiptItem:
+    completed_at = execution.updated_at or execution.created_at or _utc_now_iso()
+    merchant_label = intent.merchant.label if intent.merchant and intent.merchant.label else None
+    return SmartPayReceiptItem(
+        id=f"spr_{execution.id}",
+        payment_execution_id=execution.id,
+        payment_intent_id=intent.id,
+        completed_at=completed_at,
+        source_asset_spent=quote.source_asset.symbol,
+        source_amount_spent=quote.required_source_amount,
+        target_asset_paid=quote.target_asset.symbol,
+        target_amount_paid=quote.target_amount,
+        service_fee_acp=quote.service_fee_acp,
+        network_fees=list(quote.network_fee),
+        recipient_address=intent.recipient.address,
+        merchant_label=merchant_label,
+        route_summary=_route_summary(quote),
+        tx_refs=list(execution.tx_refs),
+    )
+
+
+def _store_execution_and_receipt(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem, execution: SmartPayExecutionItem) -> SmartPayExecutionItem:
+    _SMART_PAY_EXECUTIONS[execution.id] = execution
+    _SMART_PAY_RECEIPTS[execution.id] = _build_receipt(intent, quote, execution)
+    return execution
+
+
 def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem) -> SmartPayExecutionItem:
     next_action = "sign_direct_send_tx" if quote.mode == "direct_send" else "sign_swap_tx"
     execution = SmartPayExecutionItem(
@@ -487,8 +524,7 @@ def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem
         tx_refs=[],
         error=None,
     )
-    _SMART_PAY_EXECUTIONS[execution.id] = execution
-    return execution
+    return _store_execution_and_receipt(intent, quote, execution)
 
 
 @router.get("/mobile/config", response_model=MobileConfigResponse)
@@ -705,11 +741,21 @@ async def smart_pay_payment_status(execution_id: str):
     return SmartPayExecutionResponse(execution=execution)
 
 
+@router.get("/mobile/smart-pay/payments/{execution_id}/receipt", response_model=SmartPayReceiptItem)
+async def smart_pay_receipt(execution_id: str):
+    receipt = _SMART_PAY_RECEIPTS.get((execution_id or "").strip())
+    if receipt is None:
+        raise HTTPException(status_code=404, detail="receipt not found")
+    return receipt
+
+
 @router.post("/mobile/smart-pay/payments/{execution_id}/recover", response_model=SmartPayExecutionResponse)
 async def smart_pay_recover(execution_id: str, body: SmartPayRecoverRequest):
     execution = _SMART_PAY_EXECUTIONS.get((execution_id or "").strip())
     if execution is None:
         raise HTTPException(status_code=404, detail="execution not found")
+    quote = _get_quote_or_404(execution.quote_id)
+    intent = _get_payment_intent_or_404(execution.payment_intent_id)
     tx_refs = list(execution.tx_refs)
     for txid in body.client_known_txs:
         clean = (txid or "").strip()
@@ -717,7 +763,7 @@ async def smart_pay_recover(execution_id: str, body: SmartPayRecoverRequest):
             continue
         tx_refs.append(SmartPayTxRef(role="client_known", network="unknown", txid=clean, explorer_url=None))
     execution = execution.model_copy(update={"status": "pending_reconciliation", "updated_at": _utc_now_iso(), "tx_refs": tx_refs})
-    _SMART_PAY_EXECUTIONS[execution.id] = execution
+    _store_execution_and_receipt(intent, quote, execution)
     return SmartPayExecutionResponse(execution=execution)
 
 

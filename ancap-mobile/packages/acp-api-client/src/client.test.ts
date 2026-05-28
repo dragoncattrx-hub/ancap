@@ -285,10 +285,16 @@ describe("AcpApiClient", () => {
     expect(result.quote.quoteId).toBe("q_1");
   });
 
-  it("execute/get/recover Smart Pay calls correct endpoints", async () => {
+  it("execute/get receipt/get status/recover Smart Pay calls correct endpoints", async () => {
     const mock = vi.fn()
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "spr_pe_1", paymentExecutionId: "pe_1", paymentIntentId: "pi_1", completedAt: "2026-05-25T10:00:00Z", sourceAssetSpent: "ACP", sourceAmountSpent: "1.75", targetAssetPaid: "ACP", targetAmountPaid: "1", serviceFeeAcp: "0.75", networkFees: [], recipientAddress: "acp1...", merchantLabel: null, routeSummary: ["1. transfer ACP -> ACP on acp"], txRefs: [] }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         })
@@ -313,12 +319,15 @@ describe("AcpApiClient", () => {
       confirmationAccepted: true,
       deviceContext: { platform: "android", appVersion: "1.1.0" },
     });
+    const receipt = await client.getSmartPayReceipt("pe_1");
     await client.getSmartPayExecution("pe_1");
     const recovered = await client.recoverSmartPay("pe_1", { clientKnownTxs: ["0xabc"] });
 
     expect(mock.mock.calls[0]?.[0]).toBe("https://api.test/mobile/smart-pay/execute");
-    expect(mock.mock.calls[1]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1");
-    expect(mock.mock.calls[2]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/recover");
+    expect(mock.mock.calls[1]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/receipt");
+    expect(mock.mock.calls[2]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1");
+    expect(mock.mock.calls[3]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/recover");
+    expect(receipt.paymentExecutionId).toBe("pe_1");
     expect(recovered.execution.status).toBe("pending_reconciliation");
   });
 

@@ -30,6 +30,7 @@ export type {
   SmartPayQuoteAsset,
   SmartPayQuoteInput,
   SmartPayQuoteResponse,
+  SmartPayReceipt,
   SmartPayRecoverInput,
   SmartPayRouteStep,
   SmartPaySourcePreference,

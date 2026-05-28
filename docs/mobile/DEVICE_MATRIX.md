@@ -12,9 +12,9 @@ Current truth:
 
 ## Current blockers before full matrix execution
 
-1. **Android native build artifact** — `ancap-mobile/scripts/build-android-native.ps1` still requires an installed Android NDK on the build host.
+1. **Android runtime verification** — `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host and emits `libacp_mobile_ffi.so` artifacts for `arm64-v8a`, `armeabi-v7a`, and `x86_64`, but Expo dev-client verification on emulator + physical Android devices is still pending.
 2. **iOS native packaging** — `ancap-mobile/scripts/build-ios-native.ps1` still requires macOS + Xcode for real packaging/verification.
-3. **Native signing path** — create/send/sign closure depends on the Android/iOS native artifacts above being built and wired in a dev client.
+3. **Native signing path** — create/send/sign closure still depends on dev-client/runtime verification of the emitted Android artifacts plus the iOS native artifacts above.
 
 ## Required test surfaces
 
@@ -34,9 +34,9 @@ Current truth:
 
 | Platform | Device / class | OS target | Build type | Native core status | Required scenarios | Status | Notes |
 |---|---|---|---|---|---|---|---|
-| Android | Emulator (API 34+) | Android 14+ | Expo dev client | Pending `.so` build | import, receive, activity, Smart Pay beta, lock timer | [ ] | Run after NDK-backed native build succeeds |
-| Android | Physical phone (Pixel-class) | Android 14+ | Expo dev client | Pending `.so` build | create, import, PIN, biometrics, send/sign/broadcast, background/resume | [ ] | Required for biometrics + secure storage truth |
-| Android | Secondary OEM phone | Android 13+ | Expo dev client | Pending `.so` build | same as primary phone + manufacturer-specific storage behavior | [ ] | Catch OEM keystore quirks |
+| Android | Emulator (API 34+) | Android 14+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | import, receive, activity, Smart Pay beta, lock timer | [ ] | Use current `jniLibs` output and verify the dev client boots cleanly |
+| Android | Physical phone (Pixel-class) | Android 14+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | create, import, PIN, biometrics, send/sign/broadcast, background/resume | [ ] | Required for biometrics + secure storage truth |
+| Android | Secondary OEM phone | Android 13+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | same as primary phone + manufacturer-specific storage behavior | [ ] | Catch OEM keystore quirks |
 | iOS | Simulator | iOS 17+ | Expo dev client | Pending macOS/Xcode packaging | import, receive, activity, layout sanity | [ ] | Useful for UI/regression, not enough for biometrics truth |
 | iOS | Physical iPhone | iOS 17+ | Expo dev client / release candidate | Pending macOS/Xcode packaging | create, import, Face ID / Touch ID, secure vault migration, send/sign/broadcast, background/resume | [ ] | Required for final P4-8 / P4-9 / P5-1 closure |
 | iOS | Physical iPad (optional) | iPadOS 17+ | Expo dev client | Pending macOS/Xcode packaging | onboarding, tabs, receive, settings/legal layout | [ ] | Nice-to-have tablet sanity, not a v1 blocker unless tablet support is claimed |

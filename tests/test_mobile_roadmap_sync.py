@@ -55,7 +55,8 @@ def test_mobile_release_closure_docs_exist_and_cover_current_truth() -> None:
     assert RELEASE_CHECKLIST.exists()
     assert RELEASE_RUNBOOK.exists()
     assert "These runs have **not** been executed yet from this repo state." in device_matrix
-    assert "Android NDK" in device_matrix
+    assert "Android runtime verification" in device_matrix
+    assert "build-android-native.ps1" in device_matrix
     assert "macOS + Xcode" in device_matrix
     assert "TestFlight" in release_checklist
     assert "Play Console Internal testing" in release_checklist
@@ -98,6 +99,23 @@ def test_mobile_readme_links_release_closure_docs() -> None:
     assert "../docs/mobile/RELEASE_RUNBOOK.md" in readme
 
 
+def test_android_native_build_truth_is_in_sync_across_docs() -> None:
+    master = MASTER.read_text(encoding="utf-8")
+    mobile = MOBILE_ROADMAP.read_text(encoding="utf-8")
+    device_matrix = DEVICE_MATRIX.read_text(encoding="utf-8")
+    release_checklist = RELEASE_CHECKLIST.read_text(encoding="utf-8")
+    status_matrix = STATUS_MATRIX.read_text(encoding="utf-8")
+
+    assert "| P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in master
+    assert "| P1-6 | Link bindings in `expo-acp-core` Android | [x] | Kotlin + JNI wired; `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in mobile
+    assert "Android runtime verification" in device_matrix
+    assert "`libacp_mobile_ffi.so` artifacts for `arm64-v8a`, `armeabi-v7a`, and `x86_64`" in device_matrix
+    assert "- [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host" in release_checklist
+    assert "- [x] Android native build path verified on a host with Android NDK" in release_checklist
+    assert "Android native `.so` emission via `ancap-mobile/scripts/build-android-native.ps1` is now verified on the current Windows host" in status_matrix
+    assert "- Android Expo dev-build/runtime verification using the emitted `.so` artifacts" in status_matrix
+
+
 def test_smart_pay_groundwork_truth_is_in_sync_with_mobile_repo_state() -> None:
     master = MASTER.read_text(encoding="utf-8")
     mobile = MOBILE_ROADMAP.read_text(encoding="utf-8")
@@ -108,12 +126,12 @@ def test_smart_pay_groundwork_truth_is_in_sync_with_mobile_repo_state() -> None:
     assert "| SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |" in mobile
     assert "| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |" in mobile
     assert "| SQ-7 | Real route execution integration | [ ] | blocked on local non-custodial EVM spend/sign closure plus bridge/swap/transfer orchestration beyond placeholder routes |" in mobile
-    assert "| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data; backend-backed payment history and richer receipt polish still pending |" in mobile
+    assert "| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data; backend payment-history listing and final polish still pending |" in mobile
     assert "backend `capabilities` + deterministic `parse` + `quote` + execute/status/recover endpoints exist in repo code with API tests" in master
     assert "typed mobile client methods exist with client tests" in master
     assert "Expo beta flow already supports paste, QR import, camera scan, review, execute, refresh/recover, and session restore" in master
-    assert "Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, and renders a local receipt summary from intent/quote/execution data" in master
+    assert "Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data" in master
     assert "real route engine / bridge-swap execution integration (still blocked on local non-custodial EVM spend/sign closure plus backend route orchestration beyond placeholder sessions)" in master
     assert "Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover" in status_matrix
     assert "Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover" in status_matrix
-    assert "Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX" in status_matrix
+    assert "Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX and can fetch backend receipt snapshots for the active payment" in status_matrix

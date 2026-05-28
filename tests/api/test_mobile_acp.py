@@ -142,7 +142,7 @@ def test_smart_pay_quote_bsc_usdt_from_acp(client):
     assert quote["route"][0]["kind"] == "bridge"
 
 
-def test_smart_pay_execute_and_recover(client):
+def test_smart_pay_execute_receipt_and_recover(client):
     addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
     parsed = client.post(
         "/v1/mobile/smart-pay/parse",
@@ -180,6 +180,18 @@ def test_smart_pay_execute_and_recover(client):
     assert status_res.status_code == 200
     assert status_res.json()["execution"]["id"] == execution_id
 
+    receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    assert receipt_res.status_code == 200, receipt_res.text
+    receipt = receipt_res.json()
+    assert receipt["paymentExecutionId"] == execution_id
+    assert receipt["paymentIntentId"] == payment_intent_id
+    assert receipt["sourceAssetSpent"] == "ACP"
+    assert receipt["targetAssetPaid"] == "ACP"
+    assert receipt["targetAmountPaid"] == "1"
+    assert receipt["recipientAddress"] == addr
+    assert receipt["routeSummary"] == ["1. transfer ACP -> ACP on acp"]
+    assert receipt["txRefs"] == []
+
     recover_res = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
         json={"clientKnownTxs": ["0xabc123"]},
@@ -188,6 +200,16 @@ def test_smart_pay_execute_and_recover(client):
     recovered = recover_res.json()["execution"]
     assert recovered["status"] == "pending_reconciliation"
     assert recovered["txRefs"][0]["txid"] == "0xabc123"
+
+    recovered_receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    assert recovered_receipt_res.status_code == 200
+    recovered_receipt = recovered_receipt_res.json()
+    assert recovered_receipt["txRefs"][0]["txid"] == "0xabc123"
+
+
+def test_smart_pay_receipt_404_for_unknown_execution(client):
+    r = client.get("/v1/mobile/smart-pay/payments/pe_missing/receipt")
+    assert r.status_code == 404
 
 
 def test_smart_pay_quote_rejects_low_acp_fee_reserve(client):

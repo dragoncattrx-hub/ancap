@@ -249,6 +249,25 @@ class SmartPayRecoverRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
 
+class SmartPayReceiptItem(BaseModel):
+    id: str
+    payment_execution_id: str = Field(serialization_alias="paymentExecutionId")
+    payment_intent_id: str = Field(serialization_alias="paymentIntentId")
+    completed_at: str = Field(serialization_alias="completedAt")
+    source_asset_spent: str = Field(serialization_alias="sourceAssetSpent")
+    source_amount_spent: str = Field(serialization_alias="sourceAmountSpent")
+    target_asset_paid: str = Field(serialization_alias="targetAssetPaid")
+    target_amount_paid: str = Field(serialization_alias="targetAmountPaid")
+    service_fee_acp: str = Field(serialization_alias="serviceFeeAcp")
+    network_fees: list[SmartPayNetworkFeeItem] = Field(default_factory=list, serialization_alias="networkFees")
+    recipient_address: str = Field(serialization_alias="recipientAddress")
+    merchant_label: str | None = Field(default=None, serialization_alias="merchantLabel")
+    route_summary: list[str] = Field(default_factory=list, serialization_alias="routeSummary")
+    tx_refs: list[SmartPayTxRef] = Field(default_factory=list, serialization_alias="txRefs")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
 class MobileDocsLinks(BaseModel):
     bridge: str
     risks: str

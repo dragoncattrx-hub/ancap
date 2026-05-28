@@ -23,7 +23,7 @@ This file is intentionally practical: it records what the repo already has, what
 
 ### Entry conditions
 
-- [ ] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1`
+- [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host
 - [ ] iOS native artifacts packaged via `ancap-mobile/scripts/build-ios-native.ps1`
 - [ ] Device matrix execution started from `docs/mobile/DEVICE_MATRIX.md`
 - [ ] Native create/send/sign path verified in dev builds
@@ -71,7 +71,7 @@ The repo-side runbook for this final gate now lives in `docs/mobile/RELEASE_RUNB
 
 Do **not** mark P6-6 done until all of the following are true:
 
-- [ ] Android native build path verified on a host with Android NDK
+- [x] Android native build path verified on a host with Android NDK
 - [ ] iOS native packaging verified on macOS/Xcode
 - [ ] Device matrix complete on required physical devices
 - [ ] PIN / biometrics / SecureVault migration verified on real devices
@@ -84,7 +84,7 @@ Do **not** mark P6-6 done until all of the following are true:
 
 As of 2026-05-28, the main blockers are still external-execution gates, not missing repo planning:
 
-1. Android NDK-backed native build host
+1. Android Expo dev-client/runtime verification on emulator + physical devices
 2. macOS/Xcode iOS packaging host
 3. physical device verification time
 4. final store-submission assets and operator/legal completion

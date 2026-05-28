@@ -3,6 +3,7 @@ import type {
   SmartPayExecution,
   SmartPayPaymentIntent,
   SmartPayQuote,
+  SmartPayReceipt,
 } from "@ancap/acp-api-client";
 
 const KEY_SMART_PAY_HISTORY = "acp_wallet_smart_pay_history";
@@ -18,6 +19,7 @@ export type SmartPayHistoryEntry = {
   intent: SmartPayPaymentIntent;
   quote: SmartPayQuote | null;
   execution: SmartPayExecution;
+  receipt?: SmartPayReceipt | null;
 };
 
 export type PersistedSmartPayHistory = {
