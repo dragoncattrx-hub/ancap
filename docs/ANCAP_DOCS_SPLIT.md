@@ -18,6 +18,7 @@ The initial export should include:
   - `CONTRIBUTING.md`
   - `SECURITY.md`
   - `CODE_OF_CONDUCT.md`
+  - `.github/CODEOWNERS`
   - `.github/pull_request_template.md`
   - `.github/ISSUE_TEMPLATE/bug_report.md`
   - `.github/ISSUE_TEMPLATE/feature_request.md`
@@ -61,7 +62,7 @@ Use:
 python scripts/export_ancap_docs.py --target <path-to-export-dir> --clean
 ```
 
-The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, ships `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md` so the first public repo push has a documented creation/settings/labels/Discussions checklist, ships `docs/ANCAP_DOCS_LABEL_SEED.md` so the initial public label taxonomy is explicit and reusable, ships `docs/ANCAP_DOCS_DISCUSSIONS_SEED.md` so the initial Discussions categories/moderation lanes are explicit and reusable too, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
+The script copies the approved public-safe files, exports a docs-focused root `README.md` from `docs/ANCAP_DOCS_REPO_README.md`, includes the public-safe GitHub issue/PR templates needed for a contributor-ready docs repo, ships a baseline `.github/CODEOWNERS` seed so review routing does not need to be improvised on first push, ships `docs/ANCAP_DOCS_REPO_BOOTSTRAP.md` so the first public repo push has a documented creation/settings/labels/Discussions checklist, ships `docs/ANCAP_DOCS_LABEL_SEED.md` so the initial public label taxonomy is explicit and reusable, ships `docs/ANCAP_DOCS_DISCUSSIONS_SEED.md` so the initial Discussions categories/moderation lanes are explicit and reusable too, rewrites links that point outside the export bundle to the source monorepo on GitHub, validates that the standalone bundle has no broken relative Markdown links, and writes `EXPORT_MANIFEST.md` into the target bundle.
 
 ## Current blocker
 
@@ -83,8 +84,9 @@ This prep slice is complete when:
 3. tests lock the bundle contents, link-rewrite behavior, and safety boundaries,
 4. the future repo can be created from the generated bundle without manual scavenging through the monorepo,
 5. contributor-facing issue/PR templates are already present in the exported seed instead of needing a second manual copy step,
-6. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
-7. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README,
-8. the future repo bootstrap steps (initial push, baseline settings, labels, Discussions enablement) are documented inside the exported bundle instead of living only in cron notes,
-9. the initial public label taxonomy is exported as a reusable seed instead of being recreated ad hoc during repo setup,
-10. the initial GitHub Discussions category model is exported as a reusable seed instead of being improvised at repo launch.
+6. a baseline public-safe `.github/CODEOWNERS` file is exported so review routing starts from an explicit default instead of memory,
+7. exported Markdown stays navigable as a standalone docs repo seed instead of shipping broken in-bundle relative links,
+8. the bundle root opens with a docs-focused landing page instead of the full monorepo/operator README,
+9. the future repo bootstrap steps (initial push, baseline settings, labels, Discussions enablement) are documented inside the exported bundle instead of living only in cron notes,
+10. the initial public label taxonomy is exported as a reusable seed instead of being recreated ad hoc during repo setup,
+11. the initial GitHub Discussions category model is exported as a reusable seed instead of being improvised at repo launch.

@@ -79,11 +79,13 @@ def test_docs_split_plan_and_export_script_are_linked_and_reflected_in_roadmap()
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in readme_text
     assert "docs/ANCAP_DOCS_LABEL_SEED.md" in readme_text
     assert "docs/ANCAP_DOCS_DISCUSSIONS_SEED.md" in readme_text
+    assert ".github/CODEOWNERS" in readme_text
     assert "docs/ANCAP_DOCS_SPLIT.md" in open_source_doc_text
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in open_source_doc_text
     assert "docs/ANCAP_DOCS_LABEL_SEED.md" in open_source_doc_text
     assert "docs/ANCAP_DOCS_DISCUSSIONS_SEED.md" in open_source_doc_text
     assert "scripts/export_ancap_docs.py" in open_source_doc_text
+    assert ".github/CODEOWNERS" in docs_split_text
     assert ".github/pull_request_template.md" in docs_split_text
     assert ".github/ISSUE_TEMPLATE/bug_report.md" in docs_split_text
     assert "docs/ANCAP_DOCS_REPO_BOOTSTRAP.md" in docs_split_text
@@ -92,14 +94,17 @@ def test_docs_split_plan_and_export_script_are_linked_and_reflected_in_roadmap()
     assert "docs/ANCAP_DOCS_REPO_README.md" in docs_split_text
     assert "docs-focused root `README.md`" in open_source_doc_text
     assert "issue/PR templates" in open_source_doc_text
+    assert "baseline `.github/CODEOWNERS` file" in open_source_doc_text
     assert "bootstrap checklist" in open_source_doc_text
     assert "label seed" in open_source_doc_text
     assert "Discussions seed" in open_source_doc_text
     assert "docs-focused root README" in roadmap_text
     assert "issue/PR templates" in roadmap_text
+    assert "baseline CODEOWNERS review-routing seed" in roadmap_text
     assert "repo-bootstrap checklist" in roadmap_text
     assert "reusable label/Discussions seeds" in roadmap_text
     assert "GitHub Discussions" in docs_bootstrap_text
+    assert ".github/CODEOWNERS" in docs_bootstrap_text
     assert "good first issue" in docs_bootstrap_text
     assert "help wanted" in docs_label_seed_text
     assert "Announcements" in docs_discussions_seed_text

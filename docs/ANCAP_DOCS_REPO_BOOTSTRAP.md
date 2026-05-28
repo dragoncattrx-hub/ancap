@@ -37,8 +37,9 @@ After the first push:
 
 ## Community baseline
 
-The exported seed already includes contributor-safe issue/PR templates. After repo creation, also:
+The exported seed already includes contributor-safe issue/PR templates and a baseline `.github/CODEOWNERS` file. After repo creation, also:
 
+- review `.github/CODEOWNERS` and replace the single-maintainer fallback with org teams or additional maintainers once the final GitHub owner/team structure exists;
 - enable GitHub Discussions for ideas and technical questions using `docs/ANCAP_DOCS_DISCUSSIONS_SEED.md` as the initial category/pinning/moderation baseline;
 - seed the baseline labels from `docs/ANCAP_DOCS_LABEL_SEED.md` so the first public issue taxonomy matches the roadmap/community model:
   - `good first issue`
@@ -60,7 +61,7 @@ Before calling the repo bootstrap complete, verify:
 - the exported docs bundle has no broken relative links;
 - source-monorepo fallback links open correctly for files intentionally kept outside `ancap-docs`;
 - `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, and `CODE_OF_CONDUCT.md` are visible at repo root;
-- issue templates, PR template, and Discussions are live;
+- issue templates, PR template, baseline CODEOWNERS routing, and Discussions are live;
 - the repo still contains only public-safe material.
 
 ## Definition of done for the bootstrap guide
