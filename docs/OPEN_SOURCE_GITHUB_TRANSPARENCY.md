@@ -136,3 +136,12 @@ Supporting contract docs:
 - `docs/TESTNET_DEPLOYMENT_GUIDE.md`
 - `docs/AUDIT_CHECKLIST.md`
 - `docs/CHANGELOG_PUBLIC.md`
+
+## `ancap-docs` split prep
+
+The future public docs repo now has an in-repo seed plan and repeatable export path:
+
+- split plan: `docs/ANCAP_DOCS_SPLIT.md`
+- export script: `scripts/export_ancap_docs.py`
+
+That prep exists so the public `ancap-docs` repository can be created quickly once GitHub org/repo ownership and account scope are available.

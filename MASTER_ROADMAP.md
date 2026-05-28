@@ -202,8 +202,8 @@ Publish and maintain:
 ### Immediate execution queue - Open Source Preparation
 
 Sprint 1 - Open Source Preparation
-- [ ] Create GitHub organization
-- [ ] Create public `ancap-docs`
+- [~] Create GitHub organization (blocked pending final ownership/name decision plus GitHub org-admin access; `ANCAP` is already taken by an unrelated user profile and current auth cannot inspect/create org state without `admin:org` scope)
+- [~] Create public `ancap-docs` (repo-split seed bundle + export script prepared in-repo; actual GitHub repo creation still blocked on org/ownership/access)
 - [x] Add README.md
 - [x] Add LICENSE
 - [x] Add SECURITY.md
@@ -804,7 +804,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 |----|------|--------|
 | P4-8 | PIN + biometrics | [~] wired, real device verification pending |
 | P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
-| P4-15 | i18n EN/RU/UK/DE | [ ] i18next |
+| P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
 | P5-1 | MASVS L1 checklist | [ ] |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P6-3 | Device matrix (iOS + Android) | [ ] |
@@ -1023,7 +1023,6 @@ Week 8 (Priority 4c -- Monetization: platform)
 Week 9 (Priority 5 -- Mobile)
   5.1  PIN + biometrics (real device verification)
   5.1  SecureVault (real device verification)
-  5.1  i18n EN/RU/UK/DE (i18next)
   5.1  MASVS L1 checklist
 
 Week 10 (Priority 6 -- Architecture hygiene)

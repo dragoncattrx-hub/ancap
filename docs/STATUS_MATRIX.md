@@ -105,7 +105,7 @@ Parallel trust/adoption track:
 - iOS native packaging on macOS/Xcode
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault
-- MASVS L1 and logging-secret hygiene
+- MASVS L1 checklist closure
 - device matrix, TestFlight, Play Internal, listing/legal/release work
 
 **Truth source:** `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md`
@@ -163,6 +163,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Secret remediation | Partial | Cleanup done in repo; external revoke/rotation still open |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo and the `v1.0.0` release tag is already present; broader release closure still depends on the remaining top-line roadmap tails. |
+| Public `ancap-docs` split | In progress / repo prep done | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; external org/repo creation is still pending. |
 
 ---
 

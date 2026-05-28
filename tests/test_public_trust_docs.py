@@ -4,6 +4,8 @@ from pathlib import Path
 README_PATH = Path("README.md")
 OPEN_SOURCE_DOC_PATH = Path("docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md")
 ROADMAP_PATH = Path("MASTER_ROADMAP.md")
+DOCS_SPLIT_PLAN_PATH = Path("docs/ANCAP_DOCS_SPLIT.md")
+EXPORT_SCRIPT_PATH = Path("scripts/export_ancap_docs.py")
 
 BRIDGE_RISK_DOC = Path("docs/BRIDGE_RISK_DOCUMENTATION.md")
 CONTRACT_VERIFICATION_DOC = Path("docs/CONTRACT_VERIFICATION_GUIDE.md")
@@ -50,3 +52,16 @@ def test_master_roadmap_marks_documented_sprint3_items_done():
     assert "- [x] Add release tags" in roadmap_text
     assert "- [x] Add testnet deployment guide" in roadmap_text
     assert "- [x] Add audit checklist" in roadmap_text
+
+
+def test_docs_split_plan_and_export_script_are_linked_and_reflected_in_roadmap():
+    readme_text = README_PATH.read_text(encoding="utf-8")
+    open_source_doc_text = OPEN_SOURCE_DOC_PATH.read_text(encoding="utf-8")
+    roadmap_text = ROADMAP_PATH.read_text(encoding="utf-8")
+
+    assert DOCS_SPLIT_PLAN_PATH.exists()
+    assert EXPORT_SCRIPT_PATH.exists()
+    assert "docs/ANCAP_DOCS_SPLIT.md" in readme_text
+    assert "docs/ANCAP_DOCS_SPLIT.md" in open_source_doc_text
+    assert "scripts/export_ancap_docs.py" in open_source_doc_text
+    assert "- [~] Create public `ancap-docs`" in roadmap_text
