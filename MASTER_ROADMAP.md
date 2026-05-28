@@ -203,7 +203,7 @@ Publish and maintain:
 
 Sprint 1 - Open Source Preparation
 - [~] Create GitHub organization (blocked pending final ownership/name decision plus GitHub org-admin access; `ANCAP` is already taken by an unrelated user profile and current auth cannot inspect/create org state without `admin:org` scope)
-- [~] Create public `ancap-docs` (repo-split seed bundle + export script prepared in-repo; export now rewrites out-of-bundle links to source-monorepo GitHub URLs and validates the standalone docs bundle for broken relative links; actual GitHub repo creation still blocked on org/ownership/access)
+- [~] Create public `ancap-docs` (repo-split seed bundle + export script prepared in-repo; export now rewrites out-of-bundle links to source-monorepo GitHub URLs and validates the standalone docs bundle for broken relative links; backend CI now runs the docs export/public-trust regression slice when those inputs change; actual GitHub repo creation still blocked on org/ownership/access)
 - [x] Add README.md
 - [x] Add LICENSE
 - [x] Add SECURITY.md
@@ -820,7 +820,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)
 
-Status: [~] First-scope Smart Pay groundwork is implemented beyond docs-only intent: backend `capabilities` + deterministic `parse` + `quote` + execute/status/recover endpoints exist in repo code with API tests, typed mobile client methods exist with client tests, and the Expo beta flow already supports paste, QR import, camera scan, review, execute, refresh/recover, and session restore. The broader **AI Payment Scanner** (photo / OCR / invoice decode), real route execution beyond placeholder orchestration, and **ANCAP Claim Codes** layers are still **not shipped** and must not be marketed as live.
+Status: [~] First-scope Smart Pay groundwork is implemented beyond docs-only intent: backend `capabilities` + deterministic `parse` + `quote` + execute/status/recover endpoints exist in repo code with API tests, typed mobile client methods exist with client tests, the Expo beta flow already supports paste, QR import, camera scan, review, execute, refresh/recover, and session restore, and placeholder execution lifecycle semantics are now hardened enough to map recovered txs onto quoted route steps with explorer links and placeholder completion. The broader **AI Payment Scanner** (photo / OCR / invoice decode), real non-custodial route execution, and **ANCAP Claim Codes** layers are still **not shipped** and must not be marketed as live.
 
 Product formula inside this track:
 - `Photo / QR -> AI Decode -> Payment Intent -> Smart Swap -> Pay`
@@ -837,7 +837,9 @@ Execution order inside this track:
    - `POST /v1/mobile/smart-pay/payments/{executionId}/recover`
 6. [x] mobile SDK/client wiring for Smart Pay endpoints (`@ancap/acp-api-client` typed methods plus client tests cover capabilities/parse/quote/execute/status/recover)
 7. [~] Expo app scan/import/pay UX (beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending)
-8. [ ] real route engine / bridge-swap execution integration (still blocked on local non-custodial EVM spend/sign closure plus backend route orchestration beyond placeholder sessions)
+8. [~] real route engine / bridge-swap execution integration
+   - placeholder execution lifecycle is now hardened in repo code: recover maps known txs onto bridge/swap/payment route steps, emits explorer links, and marks placeholder sessions completed once all quoted route txs are known
+   - real non-custodial EVM spend/sign closure plus actual bridge/swap/transfer orchestration still remain
 9. [ ] AI fallback classifier for ambiguous payloads (only after deterministic/heuristic path is solid)
 10. [~] receipt/history/recovery UX hardening
    - Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data

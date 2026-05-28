@@ -7,6 +7,14 @@ on:
       - "app/**"
       - "tests/**"
       - "alembic/**"
+      - "README.md"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "CODE_OF_CONDUCT.md"
+      - "MASTER_ROADMAP.md"
+      - "docs/**"
+      - "scripts/export_ancap_docs.py"
       - "requirements.in"
       - "requirements.txt"
       - "pyproject.toml"
@@ -17,6 +25,14 @@ on:
       - "app/**"
       - "tests/**"
       - "alembic/**"
+      - "README.md"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "CODE_OF_CONDUCT.md"
+      - "MASTER_ROADMAP.md"
+      - "docs/**"
+      - "scripts/export_ancap_docs.py"
       - "requirements.in"
       - "requirements.txt"
       - "pyproject.toml"
@@ -70,6 +86,9 @@ jobs:
 
       - name: Run backend tests
         run: pytest -q
+
+      - name: Docs export / public-trust regression
+        run: pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py tests/test_ancap_docs_split_ci_guard.py -q
 
       - name: Security SAST — Bandit
         run: python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt

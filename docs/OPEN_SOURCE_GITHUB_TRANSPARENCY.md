@@ -144,5 +144,6 @@ The future public docs repo now has an in-repo seed plan and repeatable export p
 - split plan: `docs/ANCAP_DOCS_SPLIT.md`
 - export script: `scripts/export_ancap_docs.py`
 - standalone-bundle hardening: exported Markdown now rewrites out-of-bundle links to the source monorepo on GitHub and fails export if broken relative links remain inside the bundle
+- CI guard: Backend CI now reruns the export/public-trust regression slice whenever the docs-split bundle inputs or guard tests change, so the future `ancap-docs` seed cannot silently drift
 
 That prep exists so the public `ancap-docs` repository can be created quickly once GitHub org/repo ownership and account scope are available, without shipping a docs seed full of dead local links.

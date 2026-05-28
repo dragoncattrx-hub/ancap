@@ -101,6 +101,7 @@ Parallel trust/adoption track:
 - release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`
 - public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
+- Smart Pay placeholder execution lifecycle now maps recovered txs onto quoted route steps, emits explorer links, and can close placeholder sessions once all quoted txs are known
 - Smart Pay typed client wiring and Expo beta flow already exist for parse → quote → execute → refresh/recover
 - Smart Pay Expo beta now also keeps recent device-local session/receipt snapshots for resume/history/recovery baseline UX and can fetch backend receipt snapshots for the active payment
 - Android native `.so` emission via `ancap-mobile/scripts/build-android-native.ps1` is now verified on the current Windows host, with `libacp_mobile_ffi.so` emitted for `arm64-v8a`, `armeabi-v7a`, and `x86_64` under `modules/expo-acp-core/android/src/main/jniLibs`
@@ -168,7 +169,7 @@ Note: although mobile and monetization are major tails, the immediate execution 
 | Secret remediation | Partial | Cleanup is done in tracked repo files, `scripts/check_secret_hygiene.py` now provides a repeatable tracked-files secret-pattern scan, the dedicated `Secret Hygiene` workflow plus tagged-release preflight enforce it, public security headers are now aligned end-to-end, and no live token-shaped matches remain outside roadmap notes; `docs/SECRET_ROTATION_RUNBOOK.md` captures the operator rotation checklist, but upstream revoke/rotation and access cleanup still remain external/manual. |
 | Monetization expansion | Partial | First loop exists; depth features remain |
 | Release workflow / tagging / dep hygiene | Baseline done | Tag-driven release workflow is in repo, `v1.0.0` is present, and Python dependency management now has a single runtime input (`requirements.in`) plus generated lock / shared `.[dev]` CI install path; broader release closure still depends on the remaining top-line roadmap tails. |
-| Public `ancap-docs` split | In progress / repo prep hardened | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; exported Markdown now rewrites out-of-bundle links to the source monorepo and validates the bundle for broken relative links before export, while external org/repo creation is still pending. |
+| Public `ancap-docs` split | In progress / repo prep hardened | The public docs repo does not exist yet, but the seed bundle and repeatable export path are now prepared in-repo via `docs/ANCAP_DOCS_SPLIT.md` and `scripts/export_ancap_docs.py`; exported Markdown now rewrites out-of-bundle links to the source monorepo and validates the bundle for broken relative links before export, and Backend CI now reruns the export/public-trust regression slice when those bundle inputs change, while external org/repo creation is still pending. |
 
 ---
 
