@@ -51,14 +51,14 @@ describe("smart pay session persistence", () => {
         previousOrigin: "backend",
         regainedSessionTokenFromBackend: true,
       }),
-      recoveryDraftTxs: "demo_tx_abc123\ndemo_tx_def456",
+      recoveryDraftTxs: "fixture-tx-alpha\nfixture-tx-beta",
     });
 
     const restored = await loadSmartPaySession();
     expect(restored?.sessionToken).toBe("session-token-123");
     expect(restored?.payloadSource).toBe("paste");
     expect(restored?.snapshotOrigin).toBe("local+backend");
-    expect(restored?.recoveryDraftTxs).toBe("demo_tx_abc123\ndemo_tx_def456");
+    expect(restored?.recoveryDraftTxs).toBe("fixture-tx-alpha\nfixture-tx-beta");
   });
 
   it("defaults missing snapshot provenance and recovery drafts for older stored payloads", async () => {
@@ -130,7 +130,7 @@ describe("smart pay session persistence", () => {
         receipt: null,
         sessionToken: "session-share",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "demo_share_123",
+        recoveryDraftTxs: "fixture-share-entry",
         savedAt: "2026-05-30T00:00:00.000Z",
       })
     );
@@ -140,7 +140,7 @@ describe("smart pay session persistence", () => {
     expect(restored?.selectedAsset).toBe("USDT");
     expect(restored?.sessionToken).toBe("session-share");
     expect(restored?.snapshotOrigin).toBe("local+backend");
-    expect(restored?.recoveryDraftTxs).toBe("demo_share_123");
+    expect(restored?.recoveryDraftTxs).toBe("fixture-share-entry");
   });
 
   it("canonicalizes known selected-asset symbols on restore and save", async () => {
@@ -232,13 +232,13 @@ describe("smart pay session persistence", () => {
       sessionToken: "saved-session",
       savedAt: "2026-05-29T12:34:56.000Z",
       snapshotOrigin: "local",
-      recoveryDraftTxs: "demo_persisted",
+      recoveryDraftTxs: "fixture-persisted-entry",
     });
 
     const restored = await loadSmartPaySession();
     expect(restored?.savedAt).toBe("2026-05-29T12:34:56.000Z");
     expect(restored?.sessionToken).toBe("saved-session");
-    expect(restored?.recoveryDraftTxs).toBe("demo_persisted");
+    expect(restored?.recoveryDraftTxs).toBe("fixture-persisted-entry");
   });
 
   it("derives a stable savedAt from execution or receipt timestamps when the stored value is missing or invalid", async () => {
@@ -284,7 +284,7 @@ describe("smart pay session persistence", () => {
         },
         sessionToken: "derived-session",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "demo_derived",
+        recoveryDraftTxs: "fixture-derived-entry",
         savedAt: "not-a-date",
       })
     );
@@ -445,8 +445,8 @@ describe("smart pay session persistence", () => {
             {
               role: "swap",
               network: "base",
-              txid: " demo_tx_abc123 ",
-              explorerUrl: " https://basescan.org/tx/demo_tx_abc123 ",
+              txid: " fixture-tx-alpha ",
+              explorerUrl: " https://basescan.org/tx/fixture-tx-alpha ",
               routeStepIndex: "1",
             },
             {
@@ -491,7 +491,7 @@ describe("smart pay session persistence", () => {
         },
         sessionToken: "nested-session",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "demo_tx_abc123",
+        recoveryDraftTxs: "fixture-tx-alpha",
         savedAt: "2026-05-30T00:00:00.000Z",
       })
     );
@@ -607,8 +607,8 @@ describe("smart pay session persistence", () => {
         {
           role: "swap",
           network: "base",
-          txid: "demo_tx_abc123",
-          explorerUrl: "https://basescan.org/tx/demo_tx_abc123",
+          txid: "fixture-tx-alpha",
+          explorerUrl: "https://basescan.org/tx/fixture-tx-alpha",
           routeStepIndex: 1,
         },
       ],
@@ -663,14 +663,14 @@ describe("smart pay session persistence", () => {
             {
               role: "swap",
               network: "   ",
-              txid: "demo_baseproof",
-              explorerUrl: "https://basescan.org/tx/demo_baseproof",
+              txid: "fixture-base-proof",
+              explorerUrl: "https://basescan.org/tx/fixture-base-proof",
             },
             {
               role: "payment",
               network: "",
-              txid: "demo_ethproof",
-              explorerUrl: "https://etherscan.io/tx/demo_ethproof",
+              txid: "fixture-eth-proof",
+              explorerUrl: "https://etherscan.io/tx/fixture-eth-proof",
             },
           ],
           error: null,
@@ -693,8 +693,8 @@ describe("smart pay session persistence", () => {
             {
               role: "bridge",
               network: "  ",
-              txid: "demo_acpproof",
-              explorerUrl: "https://ancap.cloud/acp/tx/demo_acpproof",
+              txid: "fixture-acp-proof",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-acp-proof",
             },
           ],
         },
@@ -710,22 +710,22 @@ describe("smart pay session persistence", () => {
       {
         role: "swap",
         network: "base",
-        txid: "demo_baseproof",
-        explorerUrl: "https://basescan.org/tx/demo_baseproof",
+        txid: "fixture-base-proof",
+        explorerUrl: "https://basescan.org/tx/fixture-base-proof",
       },
       {
         role: "payment",
         network: "ethereum",
-        txid: "demo_ethproof",
-        explorerUrl: "https://etherscan.io/tx/demo_ethproof",
+        txid: "fixture-eth-proof",
+        explorerUrl: "https://etherscan.io/tx/fixture-eth-proof",
       },
     ]);
     expect(restored?.receipt?.txRefs).toEqual([
       {
         role: "bridge",
         network: "acp",
-        txid: "demo_acpproof",
-        explorerUrl: "https://ancap.cloud/acp/tx/demo_acpproof",
+        txid: "fixture-acp-proof",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-acp-proof",
       },
     ]);
   });

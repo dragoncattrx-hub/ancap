@@ -12,11 +12,11 @@ import {
 describe("smart pay recovery helpers", () => {
   it("parses explorer links into structured recovery refs with inferred network", () => {
     expect(
-      normalizeSmartPayRecoveryRef("https://bscscan.com/tx/demo_tx_abc123")
+      normalizeSmartPayRecoveryRef("https://bscscan.com/tx/fixture-tx-alpha")
     ).toEqual({
-      txid: "demo_tx_abc123",
+      txid: "fixture-tx-alpha",
       network: "bsc",
-      explorerUrl: "https://bscscan.com/tx/demo_tx_abc123",
+      explorerUrl: "https://bscscan.com/tx/fixture-tx-alpha",
     });
 
     expect(
@@ -29,12 +29,12 @@ describe("smart pay recovery helpers", () => {
   });
 
   it("preserves raw tx hashes when no explorer metadata is available", () => {
-    expect(normalizeSmartPayRecoveryRef("  demo_feedbeef  ")).toEqual({
-      txid: "demo_feedbeef",
+    expect(normalizeSmartPayRecoveryRef("  fixture-feed-proof  ")).toEqual({
+      txid: "fixture-feed-proof",
       network: null,
       explorerUrl: null,
     });
-    expect(normalizeSmartPayRecoveryToken("  demo_feedbeef  ")).toBe("demo_feedbeef");
+    expect(normalizeSmartPayRecoveryToken("  fixture-feed-proof  ")).toBe("fixture-feed-proof");
   });
 
   it("rejects structured locator noise that does not expose a tx id", () => {
@@ -45,29 +45,29 @@ describe("smart pay recovery helpers", () => {
   it("deduplicates recovery refs case-insensitively while keeping richer explorer metadata", () => {
     const parsed = parseSmartPayRecoveryInput(
       [
-        "DEMO_TX_ABC123",
-        "https://basescan.org/tx/demo_tx_abc123",
-        "https://etherscan.io/tx/demo_tx_def456",
-        "DEMO_TX_DEF456",
+        "FIXTURE-TX-ALPHA",
+        "https://basescan.org/tx/fixture-tx-alpha",
+        "https://etherscan.io/tx/fixture-tx-beta",
+        "FIXTURE-TX-BETA",
       ].join("\n")
     );
 
-    expect(parsed.txids).toEqual(["demo_tx_abc123", "demo_tx_def456"]);
+    expect(parsed.txids).toEqual(["fixture-tx-alpha", "fixture-tx-beta"]);
     expect(parsed.duplicateTokens).toEqual([
-      "https://basescan.org/tx/demo_tx_abc123",
-      "DEMO_TX_DEF456",
+      "https://basescan.org/tx/fixture-tx-alpha",
+      "FIXTURE-TX-BETA",
     ]);
     expect(parsed.invalidTokens).toEqual([]);
     expect(parsed.refs).toEqual([
       {
-        txid: "demo_tx_abc123",
+        txid: "fixture-tx-alpha",
         network: "base",
-        explorerUrl: "https://basescan.org/tx/demo_tx_abc123",
+        explorerUrl: "https://basescan.org/tx/fixture-tx-alpha",
       },
       {
-        txid: "demo_tx_def456",
+        txid: "fixture-tx-beta",
         network: "ethereum",
-        explorerUrl: "https://etherscan.io/tx/demo_tx_def456",
+        explorerUrl: "https://etherscan.io/tx/fixture-tx-beta",
       },
     ]);
   });
@@ -86,10 +86,10 @@ describe("smart pay recovery helpers", () => {
     expect(getSmartPayRecoveryInputBlockReason("   ")).toBeNull();
     expect(
       formatSmartPayRecoveryRefPreview({
-        txid: "demo_tx_abc123",
+        txid: "fixture-tx-alpha",
         network: "base",
-        explorerUrl: "https://basescan.org/tx/demo_tx_abc123",
+        explorerUrl: "https://basescan.org/tx/fixture-tx-alpha",
       })
-    ).toBe("BASE · demo_tx_abc123 · explorer link preserved");
+    ).toBe("BASE · fixture-tx-alpha · explorer link preserved");
   });
 });
