@@ -27,6 +27,7 @@ TESTNET_DEPLOYMENT_DOC = Path("docs/TESTNET_DEPLOYMENT_GUIDE.md")
 AUDIT_CHECKLIST_DOC = Path("docs/AUDIT_CHECKLIST.md")
 PUBLIC_CHANGELOG_DOC = Path("docs/CHANGELOG_PUBLIC.md")
 PUBLIC_INTEGRATION_EXAMPLES_DOC = Path("docs/PUBLIC_INTEGRATION_EXAMPLES.md")
+WHITEPAPER_PAGE_PATH = Path("frontend-app/src/app/whitepaper/page.tsx")
 
 
 def test_public_trust_docs_exist_and_are_linked_from_readme():
@@ -73,6 +74,15 @@ def test_public_changelog_records_latest_ancap_docs_followup_contract():
     assert "--fail-on-not-ok" in changelog_text
     assert "exit code `2`" in changelog_text
     assert "artifact metadata" in changelog_text
+
+
+def test_whitepaper_marks_unshipped_payment_scanner_and_claim_codes_as_planned_only():
+    whitepaper_text = WHITEPAPER_PAGE_PATH.read_text(encoding="utf-8")
+
+    assert "planned AI Payment Scanner flows" in whitepaper_text
+    assert "that scanner layer is not shipped today" in whitepaper_text
+    assert "AI Payment Scanner (planned, not shipped yet)" in whitepaper_text
+    assert "ANCAP Claim Codes (planned, not shipped yet)" in whitepaper_text
 
 
 def test_master_roadmap_marks_documented_sprint3_items_done():

@@ -21,7 +21,7 @@ const sections = [
   {
     title: "3. Solution",
     body:
-      "ANCAP packages repeatable AI work as paid workflow SKUs and extends that logic into smart payments. A buyer can choose a workflow, receive a quoted ACP price, pay through the platform wallet or checkout intent, track run status, and receive a result with receipt metadata and proof links. The roadmap also includes AI Payment Scanner flows where a photo, QR code, invoice, receipt, or payment screen can be decoded into a safe payment intent before user confirmation.",
+      "ANCAP packages repeatable AI work as paid workflow SKUs and extends that logic into smart payments. A buyer can choose a workflow, receive a quoted ACP price, pay through the platform wallet or checkout intent, track run status, and receive a result with receipt metadata and proof links. The roadmap also includes planned AI Payment Scanner flows where a photo, QR code, invoice, receipt, or payment screen can be decoded into a safe payment intent before user confirmation, but that scanner layer is not shipped today.",
   },
   {
     title: "4. Core Architecture",
@@ -55,8 +55,8 @@ const roadmap = [
   "ACP checkout with invoice state, payment reference, polling, proof receipt, revenue metrics, and creator earnings.",
   "Public trust layer: proof center, sample reports, project whitepaper, ACP crypto-asset paper, terms, privacy, and cookies.",
   "Growth funnels for buyers, creators, and developers: sample reports, free token snapshot, paid upsell, API keys, spend caps.",
-  "AI Payment Scanner: photo upload, QR decode, OCR for receipts and invoices, payment preview, smart swap, and ACP fee rails.",
-  "ANCAP Claim Codes: lock crypto, generate redeemable codes, redeem in wallet or web, and use proof-backed voucher flows for growth and distribution.",
+  "AI Payment Scanner (planned, not shipped yet): photo upload, QR decode, OCR for receipts and invoices, payment preview, smart swap, and ACP fee rails.",
+  "ANCAP Claim Codes (planned, not shipped yet): lock crypto, generate redeemable codes, redeem in wallet or web, and use proof-backed voucher flows for growth and distribution.",
   "B2B layer: organizations, webhooks, audit log, role-based access, exportable evidence, and partner dashboards.",
 ];
 
