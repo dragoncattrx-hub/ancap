@@ -1,0 +1,24 @@
+{
+  "workflowName": "Docs CI",
+  "workflowSourcePath": ".github/bootstrap/ancap-docs-ci-workflow.yml",
+  "targetWorkflowPath": ".github/workflows/docs-ci.yml",
+  "jobs": [
+    {
+      "id": "docs-bundle",
+      "name": "docs-bundle",
+      "expectedStatusCheckContext": "Docs CI / docs-bundle"
+    }
+  ],
+  "checks": [
+    "required root governance/docs files exist",
+    "public trust/bootstrap docs and seed docs still exist",
+    "contributor surfaces still exist",
+    "machine-readable bootstrap seeds parse cleanly",
+    "the exported workflow template stays byte-for-byte aligned with the shipped docs CI workflow",
+    "relative Markdown links resolve inside the exported repo"
+  ],
+  "notes": [
+    "Keep the workflow lightweight and public-safe; do not add private deploy secrets or operator-only automation.",
+    "If the workflow or job names change, update this seed, the exported workflow template, and the repo-settings seed together so branch protection stays aligned."
+  ]
+}

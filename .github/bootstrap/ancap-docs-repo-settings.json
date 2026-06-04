@@ -1,0 +1,45 @@
+{
+  "visibility": "public",
+  "description": "Public-safe documentation, roadmap, trust, and integration surface for ANCAP.",
+  "homepage": "https://ancap.cloud/",
+  "defaultBranch": "main",
+  "features": {
+    "issues": true,
+    "discussions": true,
+    "projects": true,
+    "wiki": false,
+    "releases": true
+  },
+  "mergePolicy": {
+    "mergeCommits": false,
+    "squashMerge": true,
+    "rebaseMerge": false,
+    "autoDeleteHeadBranches": true
+  },
+  "branchProtection": {
+    "requirePullRequest": true,
+    "requiredApprovals": 1,
+    "dismissStaleApprovals": true,
+    "requireConversationResolution": true,
+    "allowForcePushes": false,
+    "allowDeletion": false,
+    "requireCodeOwnerReview": true,
+    "requireStatusChecks": true,
+    "defaultStatusCheckContexts": [
+      "Docs CI / docs-bundle"
+    ],
+    "statusChecksNote": "Enable once the public docs repo has its own CI workflow."
+  },
+  "security": {
+    "secretScanning": true,
+    "pushProtection": true,
+    "dependabotAlerts": true,
+    "codeScanning": "optional_if_repo_gains_code",
+    "securityPolicy": "SECURITY.md"
+  },
+  "notes": [
+    "Keep the repo docs-first and public-safe.",
+    "Do not add private deploy secrets or operator-only automations.",
+    "If GitHub Projects is unavailable for the target owner/account plan, keep the board documented and defer the live project without blocking repo creation."
+  ]
+}

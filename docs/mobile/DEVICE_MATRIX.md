@@ -2,6 +2,7 @@
 
 > Status: release-closure scaffold added on 2026-05-28
 > Roadmap link: `docs/mobile/ROADMAP.md` → P6-3
+> Companion template: `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`
 > Purpose: turn the remaining mobile/device work into an executable matrix instead of a vague TODO list.
 
 Current truth:
@@ -52,6 +53,15 @@ P6-3 should move to `[x]` only when all required non-optional rows above have:
 - evidence captured for each platform (screenshots, build identifiers, notes, and any known deviations)
 
 ## Evidence to capture per run
+
+Use `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` as the copy-ready format for each verification round so results do not end up scattered across chat logs or ad-hoc notes.
+
+To bootstrap a dated working copy without hand-editing the template header each time, run:
+- `python scripts/generate_mobile_device_verification_packet.py`
+- optional Windows launcher-only equivalent: `py -3 scripts/generate_mobile_device_verification_packet.py`
+- optional custom output example: `python scripts/generate_mobile_device_verification_packet.py --date-label 2026-06-02 --operator ARDO --backend-api-target "http://127.0.0.1:8001/v1"`
+
+The generator writes a dated markdown packet (default: `docs/mobile/device-evidence-YYYY-MM-DD.md`) from the checked-in template, pre-fills round metadata fields you provide on the command line, appends bootstrap metadata with app/repo provenance, and refreshes the stable alias `docs/mobile/device-evidence-latest.md` by default so the newest verification packet has a fixed handoff path. Pass `--no-write-latest-alias` if you intentionally want a dated packet without touching that stable alias.
 
 - device model + OS version
 - app build identifier / commit reference

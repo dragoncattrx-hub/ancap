@@ -3,6 +3,7 @@
 Public-safe process for verifying the published `wACP` and `BridgeGateway` contract sources against ANCAP bridge deployments.
 
 Related files:
+- [OFFICIAL_CONTRACT_ADDRESSES.md](./OFFICIAL_CONTRACT_ADDRESSES.md)
 - [contracts/bridge-bsc/src/WACP.sol](../contracts/bridge-bsc/src/WACP.sol)
 - [contracts/bridge-bsc/src/BridgeGateway.sol](../contracts/bridge-bsc/src/BridgeGateway.sol)
 - [contracts/bridge-bsc/README.md](../contracts/bridge-bsc/README.md)
@@ -64,6 +65,7 @@ At minimum compare:
 - token metadata and gateway wiring for `WACP`
 - pause/admin/mint-cap/release surfaces for `BridgeGateway`
 - `ReleaseRequested` event semantics
+- the addresses in [OFFICIAL_CONTRACT_ADDRESSES.md](./OFFICIAL_CONTRACT_ADDRESSES.md) against both the explorer pages and the documented pilot deployment story
 
 ## Release evidence to preserve
 

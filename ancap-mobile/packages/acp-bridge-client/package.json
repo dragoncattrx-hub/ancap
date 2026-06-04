@@ -16,9 +16,5 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo \"lint: TODO\""
-  },
-  "devDependencies": {
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
   }
 }

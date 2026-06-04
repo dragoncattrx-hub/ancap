@@ -26,8 +26,70 @@ git checkout master && git pull
 python -m pytest tests/ -q --tb=short
 
 # 2. Secret hygiene gates pass before release
-python scripts/check_secret_hygiene.py
-pytest tests/test_secret_hygiene.py -q
+# The scanner covers tracked/staged/untracked/history scopes and now catches
+# OpenAI project/service-account prefixes plus Anthropic/GitHub/Stripe/provider patterns.
+python scripts/check_secret_hygiene.py --staged
+python scripts/check_secret_hygiene.py --history-range HEAD~20..HEAD
+# Optional clone-safe local variant when HEAD~20 may not exist:
+python scripts/check_secret_hygiene.py --recent-history 20
+# Optional exact local pre-push variant for the commits about to leave this workstation
+# (uses the tracked upstream while that ref is still resolvable, otherwise falls back to
+# origin/HEAD..HEAD or a recent-history window when no push base can be resolved):
+python scripts/check_secret_hygiene.py --pending-push
+# Windows launcher-only equivalents for the direct scanner commands above:
+py -3 scripts/check_secret_hygiene.py --staged
+py -3 scripts/check_secret_hygiene.py --history-range HEAD~20..HEAD
+py -3 scripts/check_secret_hygiene.py --recent-history 20
+py -3 scripts/check_secret_hygiene.py --pending-push
+python scripts/check_secret_hygiene.py --format json --output tmp/secret-hygiene-report.json
+# Optional when you want the same evidence shape as the scheduled/manual/tagged-release GitHub recent-history sweep:
+python scripts/check_secret_hygiene.py --recent-history 20 --format json --output tmp/secret-hygiene-history-report.json
+# Windows launcher-only JSON artifact equivalents:
+py -3 scripts/check_secret_hygiene.py --format json --output tmp/secret-hygiene-report.json
+py -3 scripts/check_secret_hygiene.py --history-range HEAD~20..HEAD --format json --output tmp/secret-hygiene-history-report.json
+py -3 scripts/check_secret_hygiene.py --recent-history 20 --format json --output tmp/secret-hygiene-history-report.json
+# Optional markdown handoff artifact for operator-side revoke/cleanup notes:
+python scripts/render_secret_rotation_evidence.py --tracked-report tmp/secret-hygiene-report.json --history-report tmp/secret-hygiene-history-report.json --output tmp/secret-rotation-evidence.md
+# Windows launcher-only equivalent:
+py -3 scripts/render_secret_rotation_evidence.py --tracked-report tmp/secret-hygiene-report.json --history-report tmp/secret-hygiene-history-report.json --output tmp/secret-rotation-evidence.md
+# Tagged-release CI now uploads the tracked/history JSON artifacts plus this markdown worksheet
+# before the final explicit secret-hygiene gate step, so a failing release-time scan still keeps
+# the evidence bundle for operator follow-through. The tagged-release workflow now drives that
+# tracked/history/markdown bundle through `python scripts/generate_secret_hygiene_evidence.py --recent-history 20`
+# so GitHub release artifacts stay on the same contract as the local one-shot handoff path.
+# If the second artifact comes from a local --pending-push JSON instead of a history sweep,
+# you can pass it via the equivalent alias below:
+python scripts/render_secret_rotation_evidence.py --tracked-report tmp/secret-hygiene-report.json --secondary-report tmp/secret-hygiene-pending-push-report.json --output tmp/secret-rotation-evidence.md
+# Windows launcher-only equivalent:
+py -3 scripts/render_secret_rotation_evidence.py --tracked-report tmp/secret-hygiene-report.json --secondary-report tmp/secret-hygiene-pending-push-report.json --output tmp/secret-rotation-evidence.md
+# Optional one-shot local bundle when you want the primary + secondary JSON artifacts plus the markdown worksheet together:
+python scripts/generate_secret_hygiene_evidence.py
+# Windows launcher-only equivalent:
+py -3 scripts/generate_secret_hygiene_evidence.py
+# Use the same recent-history bundle contract as tagged-release CI when you want an exact local mirror of the release artifact set:
+python scripts/generate_secret_hygiene_evidence.py --recent-history 20
+# Windows launcher-only equivalent:
+py -3 scripts/generate_secret_hygiene_evidence.py --recent-history 20
+# Add --include-untracked when local temp/export artifact coverage matters too:
+python scripts/generate_secret_hygiene_evidence.py --include-untracked
+# Windows launcher-only equivalent:
+py -3 scripts/generate_secret_hygiene_evidence.py --include-untracked
+# Add --staged-primary when the main evidence artifact should reflect the staged index
+# instead of the working tree (for example release/pre-commit follow-through after a local cleanup):
+python scripts/generate_secret_hygiene_evidence.py --staged-primary
+# Windows launcher-only equivalent:
+py -3 scripts/generate_secret_hygiene_evidence.py --staged-primary
+# The one-shot generator now also refuses reused primary/secondary/output paths up front,
+# so a local evidence bundle cannot accidentally overwrite one artifact with another.
+# Optional local bootstrap so git reruns the staged scan before commit and the exact pending-push sweep before push:
+python scripts/install_git_hooks.py --dry-run
+# Windows launcher-only equivalent:
+py -3 scripts/install_git_hooks.py --dry-run
+# Optional non-mutating verification that the local repo is already wired to the tracked hooks:
+python scripts/install_git_hooks.py --check
+# Windows launcher-only equivalent:
+py -3 scripts/install_git_hooks.py --check
+pytest tests/test_secret_hygiene.py tests/test_release_security_workflows.py -q
 git status --short
 
 # 3. Alembic migrations are at head

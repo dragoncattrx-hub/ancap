@@ -218,6 +218,16 @@ class SmartPayTxRef(BaseModel):
     network: str
     txid: str
     explorer_url: str | None = Field(default=None, serialization_alias="explorerUrl")
+    route_step_index: int | None = Field(default=None, serialization_alias="routeStepIndex")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayExecutionProgress(BaseModel):
+    total_route_steps: int = Field(serialization_alias="totalRouteSteps")
+    observed_tx_count: int = Field(serialization_alias="observedTxCount")
+    remaining_route_steps: int = Field(serialization_alias="remainingRouteSteps")
+    pending_roles: list[str] = Field(default_factory=list, serialization_alias="pendingRoles")
 
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
@@ -231,6 +241,7 @@ class SmartPayExecutionItem(BaseModel):
     updated_at: str = Field(serialization_alias="updatedAt")
     recoverable: bool
     next_action: str | None = Field(default=None, serialization_alias="nextAction")
+    progress: SmartPayExecutionProgress | None = None
     tx_refs: list[SmartPayTxRef] = Field(default_factory=list, serialization_alias="txRefs")
     error: str | None = None
 
@@ -239,12 +250,24 @@ class SmartPayExecutionItem(BaseModel):
 
 class SmartPayExecutionResponse(BaseModel):
     execution: SmartPayExecutionItem
+    session_token: str | None = Field(default=None, serialization_alias="sessionToken")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayClientKnownRef(BaseModel):
+    txid: str = Field(min_length=1)
+    network: str | None = None
+    role: str | None = None
+    explorer_url: str | None = Field(default=None, alias="explorerUrl", serialization_alias="explorerUrl")
+    route_step_index: int | None = Field(default=None, alias="routeStepIndex", serialization_alias="routeStepIndex")
 
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
 
 class SmartPayRecoverRequest(BaseModel):
     client_known_txs: list[str] = Field(default_factory=list, alias="clientKnownTxs", serialization_alias="clientKnownTxs")
+    client_known_refs: list[SmartPayClientKnownRef] = Field(default_factory=list, alias="clientKnownRefs", serialization_alias="clientKnownRefs")
 
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
@@ -264,6 +287,21 @@ class SmartPayReceiptItem(BaseModel):
     merchant_label: str | None = Field(default=None, serialization_alias="merchantLabel")
     route_summary: list[str] = Field(default_factory=list, serialization_alias="routeSummary")
     tx_refs: list[SmartPayTxRef] = Field(default_factory=list, serialization_alias="txRefs")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayPaymentHistoryEntry(BaseModel):
+    execution: SmartPayExecutionItem
+    receipt: SmartPayReceiptItem
+    payment_intent: PaymentIntentResponseItem = Field(serialization_alias="paymentIntent")
+    quote: SmartPayQuoteItem
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
+class SmartPayPaymentHistoryResponse(BaseModel):
+    payments: list[SmartPayPaymentHistoryEntry] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 

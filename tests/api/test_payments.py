@@ -110,6 +110,7 @@ async def _fake_detach(_session, _user, payment_method_id):
 def test_create_and_get_stripe_payment_intent_route(client, monkeypatch):
     _user, headers = _register_user(client)
     monkeypatch.setattr(stripe_payments, "create_stripe_credit_topup_intent", _fake_create_intent)
+
     async def _fake_fetch(stripe_payment_intent_id: str):
         return {
             "id": stripe_payment_intent_id,
@@ -247,6 +248,16 @@ def test_stripe_webhook_captures_credit_topup_once(client, monkeypatch):
     assert captured["item"]["status"] == "captured"
     assert captured["item"]["capture_ledger_event_id"] is not None
 
+    fetched = client.get(f"/v1/payments/stripe/intents/{payment_intent_id}", headers=headers)
+    assert fetched.status_code == 200, fetched.text
+    fetched_payload = fetched.json()
+    assert fetched_payload["credited"] is True
+    assert fetched_payload["item"]["provider_payload"]["stripe_status"] == "succeeded"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_id"] == event_id
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_type"] == "payment_intent.succeeded"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_at"]
+    assert fetched_payload["item"]["provider_payload"]["confirm_note"] == "Stripe webhook payment confirmation"
+
     balance = client.get(f"/v1/ledger/balance?owner_type=user&owner_id={user['id']}", headers=headers)
     assert balance.status_code == 200, balance.text
     acp_balance = next(item for item in balance.json()["balances"] if item["currency"] == "ACP")
@@ -346,6 +357,112 @@ def test_stripe_intent_rejects_saved_payment_method_from_another_customer(client
 
 
 
+def test_create_stripe_payment_intent_records_saved_method_selection_metadata(client, monkeypatch):
+    user_payload, _headers = _register_user(client)
+    stripe_calls: list[tuple[str, str, dict | None]] = []
+
+    async def _fake_stripe_request(method: str, path: str, *, data=None, params=None):
+        payload = dict(data) if isinstance(data, dict) else None
+        stripe_calls.append((method, path, payload))
+        if method == "POST" and path == "/customers":
+            return {"id": "cus_owner_123"}
+        if method == "GET" and path == "/payment_methods/pm_saved_123":
+            return {
+                "id": "pm_saved_123",
+                "type": "card",
+                "customer": "cus_owner_123",
+            }
+        if method == "POST" and path == "/payment_intents":
+            assert payload is not None
+            assert payload["payment_method"] == "pm_saved_123"
+            assert payload["setup_future_usage"] == "off_session"
+            assert payload["metadata[ancap_payment_method_selection]"] == "saved_method"
+            assert payload["metadata[ancap_save_payment_method_requested]"] == "true"
+            return {
+                "id": "pi_saved_method_123",
+                "client_secret": "pi_saved_method_123_secret_456",
+                "status": "requires_payment_method",
+                "payment_method_types": ["card"],
+            }
+        raise AssertionError(f"Unexpected Stripe request: {method} {path}")
+
+    monkeypatch.setattr(stripe_payments, "_stripe_request", _fake_stripe_request)
+
+    import asyncio
+    from app.db.session import SessionLocal
+
+    async def _run():
+        async with SessionLocal() as session:
+            user = await stripe_payments.get_user_or_404(session, user_payload["id"])
+            body = stripe_payments.StripeIntentCreateRequest(
+                package_slug="launch-credits",
+                currency="USD",
+                payment_method_id="pm_saved_123",
+                save_payment_method=True,
+                note="saved-card-test",
+            )
+            intent, _package, stripe = await stripe_payments.create_stripe_credit_topup_intent(session, user, body)
+            assert stripe.payment_intent_id == "pi_saved_method_123"
+            assert intent.provider_payload_json["payment_method_selection"] == "saved_method"
+            assert intent.provider_payload_json["save_payment_method_requested"] is True
+            assert intent.provider_payload_json["requested_payment_method_id"] == "pm_saved_123"
+            assert intent.provider_payload_json["payment_method_id"] == "pm_saved_123"
+
+    asyncio.run(_run())
+    assert ("GET", "/payment_methods/pm_saved_123") in [(method, path) for method, path, _ in stripe_calls]
+    assert ("POST", "/payment_intents") in [(method, path) for method, path, _ in stripe_calls]
+
+
+
+def test_create_stripe_payment_intent_records_new_card_selection_metadata(client, monkeypatch):
+    user_payload, _headers = _register_user(client)
+    stripe_calls: list[tuple[str, str, dict | None]] = []
+
+    async def _fake_stripe_request(method: str, path: str, *, data=None, params=None):
+        payload = dict(data) if isinstance(data, dict) else None
+        stripe_calls.append((method, path, payload))
+        if method == "POST" and path == "/customers":
+            return {"id": "cus_owner_456"}
+        if method == "POST" and path == "/payment_intents":
+            assert payload is not None
+            assert "payment_method" not in payload
+            assert payload["setup_future_usage"] == "off_session"
+            assert payload["metadata[ancap_payment_method_selection]"] == "new_card"
+            assert payload["metadata[ancap_save_payment_method_requested]"] == "true"
+            return {
+                "id": "pi_new_card_123",
+                "client_secret": "pi_new_card_123_secret_456",
+                "status": "requires_payment_method",
+                "payment_method_types": ["card"],
+            }
+        raise AssertionError(f"Unexpected Stripe request: {method} {path}")
+
+    monkeypatch.setattr(stripe_payments, "_stripe_request", _fake_stripe_request)
+
+    import asyncio
+    from app.db.session import SessionLocal
+
+    async def _run():
+        async with SessionLocal() as session:
+            user = await stripe_payments.get_user_or_404(session, user_payload["id"])
+            body = stripe_payments.StripeIntentCreateRequest(
+                package_slug="launch-credits",
+                currency="USD",
+                save_payment_method=True,
+                note="new-card-test",
+            )
+            intent, _package, stripe = await stripe_payments.create_stripe_credit_topup_intent(session, user, body)
+            assert stripe.payment_intent_id == "pi_new_card_123"
+            assert intent.provider_payload_json["payment_method_selection"] == "new_card"
+            assert intent.provider_payload_json["save_payment_method_requested"] is True
+            assert intent.provider_payload_json["requested_payment_method_id"] is None
+            assert intent.provider_payload_json["payment_method_id"] is None
+
+    asyncio.run(_run())
+    assert ("POST", "/payment_intents") in [(method, path) for method, path, _ in stripe_calls]
+
+
+
 def test_stripe_intent_rejects_unsupported_currency(client):
     _user, headers = _register_user(client)
 
@@ -420,8 +537,12 @@ def test_stripe_webhook_marks_terminal_failure_states(client, monkeypatch):
 
     fetched_failed = client.get(f"/v1/payments/stripe/intents/{local_intent_id}", headers=headers)
     assert fetched_failed.status_code == 200, fetched_failed.text
-    assert fetched_failed.json()["item"]["status"] == "failed"
-    assert fetched_failed.json()["credited"] is False
+    failed_payload = fetched_failed.json()
+    assert failed_payload["item"]["status"] == "failed"
+    assert failed_payload["credited"] is False
+    assert failed_payload["item"]["provider_payload"]["stripe_last_event_type"] == "payment_intent.payment_failed"
+    assert failed_payload["item"]["provider_payload"]["stripe_last_event_id"].startswith("evt_payment_intent_payment_failed_")
+    assert failed_payload["item"]["provider_payload"]["stripe_last_event_at"]
 
     cancelled = send_event("payment_intent.canceled", "canceled")
     assert cancelled.status_code == 200, cancelled.text
@@ -462,6 +583,11 @@ def test_stripe_poll_sync_captures_success_without_webhook(client, monkeypatch):
     assert fetched_payload["item"]["status"] == "captured"
     assert fetched_payload["item"]["provider_payload"]["stripe_status"] == "succeeded"
     assert fetched_payload["item"]["provider_payload"]["payment_method_id"] == "pm_card_visa"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_id"] == "stripe:poll"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_type"] == "payment_intent.succeeded"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_at"]
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_polled_at"]
+    assert fetched_payload["item"]["provider_payload"]["confirm_note"] == "Stripe poll payment confirmation"
 
     balance = client.get(f"/v1/ledger/balance?owner_type=user&owner_id={user['id']}", headers=headers)
     assert balance.status_code == 200, balance.text
@@ -496,6 +622,10 @@ def test_stripe_poll_sync_marks_cancelled_without_webhook(client, monkeypatch):
     assert fetched_payload["credited"] is False
     assert fetched_payload["item"]["status"] == "cancelled"
     assert fetched_payload["item"]["provider_payload"]["stripe_status"] == "canceled"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_id"] == "stripe:poll"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_type"] == "payment_intent.canceled"
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_event_at"]
+    assert fetched_payload["item"]["provider_payload"]["stripe_last_polled_at"]
 
 
 

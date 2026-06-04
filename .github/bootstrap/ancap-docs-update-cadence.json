@@ -1,0 +1,54 @@
+{
+  "cadences": [
+    {
+      "name": "Monthly development update",
+      "frequency": "monthly",
+      "channel": "GitHub Discussions / Announcements",
+      "fallbackChannel": "release notes or pinned status post",
+      "includes": [
+        "what shipped since the last update",
+        "current in-progress work",
+        "honest blockers or external dependencies",
+        "next roadmap focus",
+        "links to MASTER_ROADMAP.md, docs/STATUS_MATRIX.md, and docs/CHANGELOG_PUBLIC.md"
+      ],
+      "starterTemplate": "# Monthly development update — <month year>\n\n## Headline\n<one sentence about what moved>\n\n## Shipped\n- <2-5 bullets>\n\n## In progress\n- <1-3 bullets>\n\n## Blockers / external dependencies\n- <only real blockers>\n\n## Next up\n- <next roadmap focus>\n\n## Links\n- Roadmap: `MASTER_ROADMAP.md`\n- Status matrix: `docs/STATUS_MATRIX.md`\n- Public changelog: `docs/CHANGELOG_PUBLIC.md`\n- Relevant docs: <link only what changed>"
+    },
+    {
+      "name": "Release notes",
+      "frequency": "per public tag or milestone-level update",
+      "channel": "GitHub Releases or Discussions / Announcements",
+      "includes": [
+        "scope of the release",
+        "user-visible docs or trust changes",
+        "compatibility or verification notes if relevant",
+        "links to deeper docs and changelog entries"
+      ],
+      "starterTemplate": "# Release notes — <tag or milestone>\n\n## Headline\n<one sentence about the shipped slice>\n\n## Scope\n- <what this release covers>\n\n## User-visible docs / trust changes\n- <2-5 bullets>\n\n## Compatibility / verification notes\n- <only if relevant>\n\n## Links\n- Public changelog: `docs/CHANGELOG_PUBLIC.md`\n- Roadmap: `MASTER_ROADMAP.md`\n- Status matrix: `docs/STATUS_MATRIX.md`\n- Deep links: <specific docs>"
+    },
+    {
+      "name": "Trust-surface change notice",
+      "frequency": "when public trust boundaries materially change",
+      "channel": "GitHub Discussions / Announcements",
+      "includes": [
+        "what changed",
+        "why it matters",
+        "links to updated source docs"
+      ],
+      "starterTemplate": "# Trust-surface update — <date or short label>\n\n## What changed\n- <brief change summary>\n\n## Why it matters\n- <why contributors/users should care>\n\n## Updated docs\n- <direct links to changed docs>"
+    }
+  ],
+  "postTemplate": [
+    "Headline",
+    "Shipped",
+    "In progress",
+    "Blockers / external dependencies",
+    "Next up",
+    "Links"
+  ],
+  "rules": [
+    "Keep public updates aligned with MASTER_ROADMAP.md and docs/STATUS_MATRIX.md",
+    "Do not include secrets, private infra details, signer operations, or operator-only incident handling",
+    "Keep milestone names consistent across release notes, changelog entries, and roadmap/status updates"
+  ]
+}

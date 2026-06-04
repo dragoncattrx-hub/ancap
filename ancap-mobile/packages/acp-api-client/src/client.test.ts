@@ -285,10 +285,16 @@ describe("AcpApiClient", () => {
     expect(result.quote.quoteId).toBe("q_1");
   });
 
-  it("execute/get receipt/get status/recover Smart Pay calls correct endpoints", async () => {
+  it("list/execute/get receipt/get status/recover Smart Pay calls correct endpoints", async () => {
     const mock = vi.fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null } }), {
+        new Response(JSON.stringify({ payments: [{ execution: { id: "pe_2", paymentIntentId: "pi_2", quoteId: "q_2", status: "completed", createdAt: "2026-05-25T10:02:00Z", updatedAt: "2026-05-25T10:03:00Z", recoverable: false, nextAction: null, progress: { totalRouteSteps: 1, observedTxCount: 1, remainingRouteSteps: 0, pendingRoles: [] }, txRefs: [{ role: "payment", network: "acp", txid: "0xdone", explorerUrl: "https://ancap.cloud/acp/tx/0xdone", routeStepIndex: 1 }], error: null }, receipt: { id: "spr_pe_2", paymentExecutionId: "pe_2", paymentIntentId: "pi_2", completedAt: "2026-05-25T10:03:00Z", sourceAssetSpent: "ACP", sourceAmountSpent: "1.75000100", targetAssetPaid: "ACP", targetAmountPaid: "1", serviceFeeAcp: "0.75", networkFees: [], recipientAddress: "acp1done", merchantLabel: null, routeSummary: ["1. transfer ACP -> ACP on acp"], txRefs: [{ role: "payment", network: "acp", txid: "0xdone", explorerUrl: "https://ancap.cloud/acp/tx/0xdone", routeStepIndex: 1 }] }, paymentIntent: { id: "pi_2", createdAt: "2026-05-25T10:00:00Z", source: "paste", rawPayload: "acp1done?amount=1", payloadHash: "hash2", parseMethod: "deterministic", confidence: 1, status: "parsed", network: "acp", asset: { kind: "native", symbol: "ACP", isSupported: true, isAllowlisted: true }, recipient: { address: "acp1done", addressType: "acp" }, amount: { value: "1", currencySymbol: "ACP", isExact: true, isMax: false }, memo: null, merchant: null, riskFlags: [], warnings: [], unsupportedReasons: [], requiresUserConfirmation: true, metadata: { aiUsed: false, parserVersion: "1" } }, quote: { quoteId: "q_2", paymentIntentId: "pi_2", mode: "direct_send", expiresAt: "2026-05-25T10:05:00Z", sourceAsset: { network: "acp", symbol: "ACP" }, targetAsset: { network: "acp", symbol: "ACP" }, targetAmount: "1", requiredSourceAmount: "1.75000100", serviceFeeAcp: "0.75", networkFee: [], slippageBps: 100, route: [{ kind: "transfer", network: "acp", dexOrRail: null, fromAsset: "ACP", toAsset: "ACP", estimatedOut: "1" }], warnings: [], riskFlags: [] } }] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null }, sessionToken: "session-token-1" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         })
@@ -300,35 +306,68 @@ describe("AcpApiClient", () => {
         })
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", txRefs: [], error: null } }), {
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "awaiting_local_signature", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:00:00Z", recoverable: true, nextAction: "sign_swap_tx", progress: { totalRouteSteps: 3, observedTxCount: 0, remainingRouteSteps: 3, pendingRoles: ["bridge", "swap", "merchant_payout"] }, txRefs: [], error: null }, sessionToken: "session-token-1" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         })
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "pending_reconciliation", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:01:00Z", recoverable: true, nextAction: null, txRefs: [{ role: "client_known", network: "unknown", txid: "0xabc" }], error: null } }), {
+        new Response(JSON.stringify({ execution: { id: "pe_1", paymentIntentId: "pi_1", quoteId: "q_1", status: "pending_reconciliation", createdAt: "2026-05-25T10:00:00Z", updatedAt: "2026-05-25T10:01:00Z", recoverable: true, nextAction: null, progress: { totalRouteSteps: 3, observedTxCount: 1, remainingRouteSteps: 2, pendingRoles: ["swap", "merchant_payout"] }, txRefs: [{ role: "bridge", network: "acp", txid: "0xabc", explorerUrl: "https://ancap.cloud/acp/tx/0xabc", routeStepIndex: 1 }], error: null }, sessionToken: "session-token-2" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         })
       );
     const client = new AcpApiClient({ baseUrl: "https://api.test", fetchImpl: mock });
 
-    await client.executeSmartPay({
+    const payments = await client.listSmartPayPayments(5);
+    const executed = await client.executeSmartPay({
       paymentIntentId: "pi_1",
       quoteId: "q_1",
       confirmationAccepted: true,
       deviceContext: { platform: "android", appVersion: "1.1.0" },
     });
-    const receipt = await client.getSmartPayReceipt("pe_1");
-    await client.getSmartPayExecution("pe_1");
-    const recovered = await client.recoverSmartPay("pe_1", { clientKnownTxs: ["0xabc"] });
+    const receipt = await client.getSmartPayReceipt("pe_1", executed.sessionToken);
+    const status = await client.getSmartPayExecution("pe_1", executed.sessionToken);
+    const recovered = await client.recoverSmartPay(
+      "pe_1",
+      {
+        clientKnownTxs: ["0xabc"],
+        clientKnownRefs: [
+          {
+            txid: "0xabc",
+            network: "acp",
+            explorerUrl: "https://ancap.cloud/acp/tx/0xabc",
+          },
+        ],
+      },
+      executed.sessionToken
+    );
 
-    expect(mock.mock.calls[0]?.[0]).toBe("https://api.test/mobile/smart-pay/execute");
-    expect(mock.mock.calls[1]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/receipt");
-    expect(mock.mock.calls[2]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1");
-    expect(mock.mock.calls[3]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/recover");
+    expect(mock.mock.calls[0]?.[0]).toBe("https://api.test/mobile/smart-pay/payments?limit=5");
+    expect(mock.mock.calls[1]?.[0]).toBe("https://api.test/mobile/smart-pay/execute");
+    expect(mock.mock.calls[2]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/receipt?sessionToken=session-token-1");
+    expect(mock.mock.calls[3]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1?sessionToken=session-token-1");
+    expect(mock.mock.calls[4]?.[0]).toBe("https://api.test/mobile/smart-pay/payments/pe_1/recover?sessionToken=session-token-1");
+    expect(JSON.parse(String(mock.mock.calls[4]?.[1]?.body))).toEqual({
+      clientKnownTxs: ["0xabc"],
+      clientKnownRefs: [
+        {
+          txid: "0xabc",
+          network: "acp",
+          explorerUrl: "https://ancap.cloud/acp/tx/0xabc",
+        },
+      ],
+    });
+    expect(payments.payments).toHaveLength(1);
+    expect(payments.payments[0]?.execution.id).toBe("pe_2");
+    expect(executed.sessionToken).toBe("session-token-1");
     expect(receipt.paymentExecutionId).toBe("pe_1");
+    expect(status.sessionToken).toBe("session-token-1");
     expect(recovered.execution.status).toBe("pending_reconciliation");
+    expect(recovered.sessionToken).toBe("session-token-2");
+    expect(recovered.execution.progress?.remainingRouteSteps).toBe(2);
+    expect(recovered.execution.txRefs[0]?.role).toBe("bridge");
+    expect(recovered.execution.txRefs[0]?.routeStepIndex).toBe(1);
   });
 
   it("explorerTxUrl builds correct URL from config", () => {

@@ -15,8 +15,5 @@
     "@ancap/acp-bridge-client": "*",
     "@ancap/acp-bsc-client": "*",
     "@ancap/acp-wallet-sdk": "*"
-  },
-  "devDependencies": {
-    "typescript": "^5.7.2"
   }
 }

@@ -4,7 +4,11 @@ Official **non-custodial** mobile wallet for ACP and wACP.
 
 - **Roadmap & specs:** [`../docs/mobile/ROADMAP.md`](../docs/mobile/ROADMAP.md)
 - **Device verification matrix:** [`../docs/mobile/DEVICE_MATRIX.md`](../docs/mobile/DEVICE_MATRIX.md)
+- **Device verification evidence template:** [`../docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`](../docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md)
+- **Device evidence packet generator:** `python ../scripts/generate_mobile_device_verification_packet.py`
 - **Release readiness checklist:** [`../docs/mobile/RELEASE_CHECKLIST.md`](../docs/mobile/RELEASE_CHECKLIST.md)
+- **Release evidence packet template:** [`../docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`](../docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md)
+- **Release evidence packet generator:** `python ../scripts/generate_mobile_release_evidence_packet.py`
 - **v1.0.0 release runbook:** [`../docs/mobile/RELEASE_RUNBOOK.md`](../docs/mobile/RELEASE_RUNBOOK.md)
 - **Backend API:** `GET /v1/mobile/config`, `/v1/acp/*` in ANCAP Core (`app/api/routers/mobile_acp.py`)
 
@@ -12,8 +16,8 @@ Official **non-custodial** mobile wallet for ACP and wACP.
 
 ```
 ancap-mobile/
-├── apps/acp-wallet/          # React Native app (UI)
-├── packages/acp-wallet-sdk/ # Wallet crypto orchestration (→ Rust FFI)
+├── apps/acp-wallet-expo/     # Expo app (UI)
+├── packages/acp-wallet-sdk/  # Wallet crypto orchestration (→ Rust FFI)
 ├── packages/acp-api-client/  # ANCAP mobile gateway HTTP client
 ├── packages/acp-bridge-client/
 └── packages/acp-bsc-client/
@@ -48,7 +52,12 @@ Then press `a` (Android) or `i` (iOS simulator). Set API URL:
 ```bash
 # apps/acp-wallet-expo/.env
 EXPO_PUBLIC_ANCAP_API_BASE=http://127.0.0.1:8000/v1
+# Optional dev/test-only bearer header for authenticated mobile history / resume flows.
+# Do NOT ship production secrets through EXPO_PUBLIC_* env vars.
+EXPO_PUBLIC_ANCAP_API_AUTH_HEADER=Bearer your-dev-token
 ```
+
+Without `EXPO_PUBLIC_ANCAP_API_AUTH_HEADER`, the Expo Smart Pay screen still supports anonymous parse/quote/execute plus device-local `sessionToken` resume, but authenticated backend payment-history/resume stays unavailable in that build.
 
 **Import wallet (dev):** run `walletd new` from `ACP-crypto`, paste address + mnemonic + `keystore_json` into Import screen.
 
@@ -87,16 +96,19 @@ Native code: `ACP-crypto/acp-mobile-ffi` + `modules/expo-acp-core`.
 
 ## Environment
 
-Create `apps/acp-wallet/.env`:
+Create `apps/acp-wallet-expo/.env`:
 
-```
-ANCAP_API_BASE_URL=https://api.ancap.cloud/v1
+```dotenv
+EXPO_PUBLIC_ANCAP_API_BASE=https://api.ancap.cloud/v1
+# Optional dev/test-only bearer header for authenticated mobile history / resume flows.
+# Do NOT ship production secrets through EXPO_PUBLIC_* env vars.
+# EXPO_PUBLIC_ANCAP_API_AUTH_HEADER=Bearer your-dev-token
 ```
 
 For local API:
 
-```
-ANCAP_API_BASE_URL=http://127.0.0.1:8000/v1
+```dotenv
+EXPO_PUBLIC_ANCAP_API_BASE=http://127.0.0.1:8000/v1
 ```
 
 ## Development order

@@ -34,6 +34,7 @@ Should require ANCAP auth or signed device session:
 - execute payment session
 - recover session
 - fetch private payment session history
+- fetch per-execution status / receipt unless the caller presents either the per-execution `sessionToken` or the authenticated execution-owner session
 
 ---
 
@@ -340,6 +341,12 @@ Response:
     "updatedAt": "2026-05-25T10:50:00Z",
     "recoverable": true,
     "nextAction": "sign_swap_tx",
+    "progress": {
+      "totalRouteSteps": 3,
+      "observedTxCount": 0,
+      "remainingRouteSteps": 3,
+      "pendingRoles": ["bridge", "swap", "merchant_payout"]
+    },
     "txRefs": [],
     "error": null
   }
@@ -349,6 +356,83 @@ Response:
 Notes:
 - in pure non-custodial mode, mobile may need one or more local sign steps
 - `execute` creates orchestration state, not blind backend fund movement
+- execution payloads now include `progress` metadata so clients can show total route steps, observed tx count, remaining steps, and pending route roles without guessing from raw tx lists alone
+
+---
+
+## 8. Execution status endpoint
+
+### `GET /v1/mobile/smart-pay/payments`
+
+Purpose:
+- fetch authenticated payment history for receipt/history screens
+- resume recent Smart Pay sessions across devices or app reinstalls
+
+Auth:
+- requires authenticated ANCAP user/device session
+
+Query params:
+- `limit` (default `20`, max `100`)
+
+Response:
+
+```json
+{
+  "payments": [
+    {
+      "execution": {
+        "id": "pe_123",
+        "status": "completed",
+        "recoverable": false,
+        "nextAction": null,
+        "progress": {
+          "totalRouteSteps": 3,
+          "observedTxCount": 3,
+          "remainingRouteSteps": 0,
+          "pendingRoles": []
+        },
+        "txRefs": [
+          {
+            "role": "bridge",
+            "network": "acp",
+            "txid": "0xbridge...",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge..."
+          }
+        ],
+        "error": null
+      },
+      "receipt": {
+        "id": "spr_pe_123",
+        "paymentExecutionId": "pe_123",
+        "paymentIntentId": "pi_123",
+        "completedAt": "2026-05-25T10:54:00Z",
+        "sourceAssetSpent": "ACP",
+        "sourceAmountSpent": "103.42",
+        "targetAssetPaid": "USDT",
+        "targetAmountPaid": "25.50",
+        "serviceFeeAcp": "0.75",
+        "networkFees": [],
+        "recipientAddress": "0xdef...",
+        "merchantLabel": null,
+        "routeSummary": ["1. bridge ACP -> wACP on acp via ancap_bridge_v1"],
+        "txRefs": []
+      },
+      "paymentIntent": {
+        "id": "pi_123"
+      },
+      "quote": {
+        "quoteId": "q_123"
+      }
+    }
+  ]
+}
+```
+
+Notes:
+- first repo slice returns the authenticated caller's recent executions only
+- each history entry includes `execution` + `receipt` + original `paymentIntent` + `quote` so clients can rebuild receipt/history UIs without extra round trips
+- anonymous/session-token resume still depends on the device-local per-execution `sessionToken`
+- however, when the current device is signed into the same ANCAP account, clients may use authenticated payment-history entries to reopen the receipt/progress view and call status / receipt / recover endpoints through account ownership access even without the original session token
 
 ---
 
@@ -360,27 +444,37 @@ Purpose:
 - resume progress screen
 - recover after app restart
 
+Access:
+- anonymous/device-local resume may pass `?sessionToken=...`
+- authenticated execution owners may reopen the same execution without the original device-local token
+
 Response:
 
 ```json
 {
   "execution": {
     "id": "pe_123",
-    "status": "payout_submitted",
+    "status": "pending_reconciliation",
     "recoverable": true,
     "nextAction": null,
+    "progress": {
+      "totalRouteSteps": 3,
+      "observedTxCount": 2,
+      "remainingRouteSteps": 1,
+      "pendingRoles": ["merchant_payout"]
+    },
     "txRefs": [
+      {
+        "role": "bridge",
+        "network": "acp",
+        "txid": "0xbridge...",
+        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge..."
+      },
       {
         "role": "swap",
         "network": "bsc",
         "txid": "0xswap...",
         "explorerUrl": "https://bscscan.com/tx/0xswap..."
-      },
-      {
-        "role": "merchant_payout",
-        "network": "bsc",
-        "txid": "0xpay...",
-        "explorerUrl": "https://bscscan.com/tx/0xpay..."
       }
     ],
     "error": null
@@ -397,11 +491,31 @@ Response:
 Purpose:
 - continue or reconcile a payment session stuck after crash/network loss
 
+Access:
+- anonymous/device-local resume may pass `?sessionToken=...`
+- authenticated execution owners may recover the same execution without the original device-local token
+
 Request:
 
 ```json
 {
-  "clientKnownTxs": ["0xswap...", "0xpay..."]
+  "clientKnownTxs": ["0xswap...", "0xpay..."],
+  "clientKnownRefs": [
+    {
+      "txid": "0xbridge...",
+      "network": "acp",
+      "role": "bridge",
+      "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge...",
+      "routeStepIndex": 1
+    },
+    {
+      "txid": "0xpay...",
+      "network": "bsc",
+      "role": "merchant_payout",
+      "explorerUrl": "https://bscscan.com/tx/0xpay...",
+      "routeStepIndex": 3
+    }
+  ]
 }
 ```
 
@@ -414,24 +528,45 @@ Response:
     "status": "completed",
     "recoverable": false,
     "nextAction": null,
+    "progress": {
+      "totalRouteSteps": 3,
+      "observedTxCount": 3,
+      "remainingRouteSteps": 0,
+      "pendingRoles": []
+    },
     "txRefs": [
+      {
+        "role": "bridge",
+        "network": "acp",
+        "txid": "0xbridge...",
+        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge...",
+        "routeStepIndex": 1
+      },
       {
         "role": "swap",
         "network": "bsc",
         "txid": "0xswap...",
-        "explorerUrl": "https://bscscan.com/tx/0xswap..."
+        "explorerUrl": "https://bscscan.com/tx/0xswap...",
+        "routeStepIndex": 2
       },
       {
         "role": "merchant_payout",
         "network": "bsc",
         "txid": "0xpay...",
-        "explorerUrl": "https://bscscan.com/tx/0xpay..."
+        "explorerUrl": "https://bscscan.com/tx/0xpay...",
+        "routeStepIndex": 3
       }
     ],
     "error": null
   }
 }
 ```
+
+Notes:
+- `clientKnownTxs` remains the compatibility fallback for raw tx hashes
+- `clientKnownRefs` lets clients preserve `network`, `role`, `explorerUrl`, and optional quoted-route `routeStepIndex` linkage from pasted explorer links or richer local observations
+- when both forms describe the same tx, backend reconciliation should prefer the richer structured ref instead of collapsing back to a bare hash
+- explicit `routeStepIndex` linkage should only attach when the role/network matches the quoted route step; conflicting refs should stay visible as additional proof rather than being silently remapped
 
 ---
 
@@ -441,6 +576,7 @@ Response:
 
 Purpose:
 - return final receipt for history and receipt screen
+- used together with payment-history listing for direct receipt refresh on the active session
 
 Response:
 - `SmartPayReceipt` from schema spec
@@ -496,7 +632,7 @@ Add:
 ## 14. Release-scope recommendation
 
 For first release:
-- expose only `capabilities`, `parse`, `quote`, `execute`, `status`, `receipt`
+- expose only `capabilities`, `parse`, `quote`, `execute`, authenticated `payments` history, `status`, `recover`, and `receipt`
 - keep AI classify endpoint behind feature flag
 - keep supported networks limited to `acp` and `bsc`
 

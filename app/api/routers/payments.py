@@ -418,6 +418,10 @@ def _merge_provider_payload(intent: PaymentIntent, **values: object) -> None:
     intent.updated_at = datetime.now(UTC)
 
 
+def _stripe_capture_confirmation_note(event_id: str) -> str:
+    return "Stripe poll payment confirmation" if event_id == "stripe:poll" else "Stripe webhook payment confirmation"
+
+
 async def _handle_payment_intent_succeeded(
     session: DbSession,
     intent: PaymentIntent,
@@ -446,7 +450,7 @@ async def _handle_payment_intent_succeeded(
         package,
         WorkflowCreditTopUpIntentConfirmRequest(
             payment_reference=f"stripe:{stripe_payment_intent_id}",
-            note="Stripe webhook payment confirmation",
+            note=_stripe_capture_confirmation_note(event_id),
         ),
         approved_by_user_id=None,
     )

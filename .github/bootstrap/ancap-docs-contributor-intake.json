@@ -1,0 +1,57 @@
+{
+  "issueTemplates": {
+    "bugReport": {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "defaultLabel": "bug",
+      "sections": [
+        "Summary",
+        "Steps to reproduce",
+        "Expected behavior",
+        "Actual behavior",
+        "Environment",
+        "Evidence",
+        "Security note"
+      ],
+      "securityWarning": "Do not include secrets, private keys, mnemonics, tokens, or production credentials."
+    },
+    "featureRequest": {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "defaultLabel": "enhancement",
+      "sections": [
+        "Summary",
+        "Problem",
+        "Proposed solution",
+        "Scope",
+        "Notes"
+      ],
+      "scopeOptions": [
+        "docs",
+        "frontend",
+        "backend",
+        "mobile",
+        "sdk",
+        "contracts",
+        "security"
+      ]
+    },
+    "config": {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "blankIssuesEnabled": true,
+      "securityContactName": "Security issue"
+    }
+  },
+  "pullRequestTemplate": {
+    "path": ".github/pull_request_template.md",
+    "verificationChecklist": [
+      "Tests/typecheck/build run locally when relevant",
+      "Docs updated if needed",
+      "No secrets or sensitive infra details added",
+      "Roadmap/status docs updated if execution truth changed"
+    ]
+  },
+  "notes": [
+    "Keep contributor intake aligned with the public label/domain taxonomy.",
+    "Route security disclosures away from public Issues.",
+    "Update this JSON together with docs/ANCAP_DOCS_CONTRIBUTOR_INTAKE_SEED.md and the template files when contributor workflow changes."
+  ]
+}

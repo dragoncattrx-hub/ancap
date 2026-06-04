@@ -4,6 +4,26 @@ Curated public-facing changelog for major ANCAP repository milestones.
 
 For exhaustive implementation detail, see [LOG.md](../LOG.md).
 
+## 2026-06-01 — ancap-docs live follow-up truth surfaced
+
+- refreshed the checked-in status surfaces so they now explicitly reflect the live `dragoncattrx-hub/ancap-docs` repo state instead of stopping at launch-day notes
+- captured that the public docs repo is already live with the exported bundle pushed, Docs CI green on `main`, checked-in settings / labels / milestones applied, and default-branch protection enforced with the seeded `Docs CI / docs-bundle` check
+- recorded the first paired live follow-up artifact result from `scripts/generate_ancap_docs_live_followup.py`, including that the current run reported `8` concrete drifts and `0` unknowns rather than generic "still needs follow-up" wording
+- documented that the same wrapper now refreshes stable latest-alias handoff files (`tmp/ancap-docs-live-follow-up-latest.md` and `tmp/ancap-docs-live-follow-up-latest.json`) with embedded artifact metadata, now including generator repo HEAD provenance, so cron/reporting follow-through can read the latest verified public-repo state without reconstructing a date suffix
+- documented that `python scripts/generate_ancap_docs_live_followup.py --repo <owner>/ancap-docs --fail-on-not-ok` now doubles as a drift alarm by returning exit code `2` while still writing the paired markdown + JSON follow-up artifacts
+- tightened the wrapper's terminal summary too: successful runs now print per-scope drift counts plus grouped manual follow-up totals from `driftSummary` / `manualFollowUpSummary`, so cron/CI logs can tell at a glance whether remaining work is discussion pinning/category cleanup or project-board auth/seeding without reopening the saved JSON artifact
+- hardened that wrapper against path-collision footguns too: if a caller tries `--date-label latest` while latest aliases are still enabled, it now fails fast and tells them to pick a different date label or pass `--no-write-latest-alias` instead of silently collapsing the dated artifact pair onto the stable alias paths
+- tightened the wrapper's filename guard rails as well: `--basename` and `--date-label` now have to stay plain filename components instead of path fragments like `nested/path` or `..`, which keeps artifact writes anchored under the intended `--output-dir`
+- narrowed those remaining drifts to manual GitHub Discussions cleanup plus project-board auth/seeding: extra default `General` / `Polls` categories, default category descriptions that still need the checked-in ANCAP wording, unpinned seeded bootstrap topics, and the still-missing `read:project` scope for live board verification
+
+## 2026-05-30 — contract trust index + public examples index
+
+- added `docs/OFFICIAL_CONTRACT_ADDRESSES.md` as the public-safe canonical index for ACP / `wACP` / `BridgeGateway` identities
+- linked the official address index from trust, verification, pilot, deployment, and contract-doc surfaces so reviewers have one canonical public lookup path
+- kept fake-contract / scam-warning guidance next to the official address list for the future `ancap-docs` trust surface
+- added `docs/PUBLIC_INTEGRATION_EXAMPLES.md` as a contributor-friendly index for publishable payment, wallet, and bridge-facing example surfaces
+- linked that new examples index from repo/docs landing surfaces so the seeded public integration backlog no longer depends on browsing the monorepo tree manually
+
 ## 2026-05-27 — release + transparency + deployment-story cleanup
 
 - added a tag-driven GitHub release workflow with draft release generation and release-gate checks

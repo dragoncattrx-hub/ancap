@@ -2,6 +2,7 @@
 
 > Status: release-closure scaffold added on 2026-05-28
 > Roadmap link: `docs/mobile/ROADMAP.md` → P6-4, P6-5, P6-6
+> Companion templates: `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`, `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`
 > Scope: internal-distribution prep, listing/legal pack, and honest v1.0.0 release gates.
 
 This file is intentionally practical: it records what the repo already has, what can be prepared inside the repo, and what still requires external execution.
@@ -40,6 +41,15 @@ This file is intentionally practical: it records what the repo already has, what
 ### Honest status rule
 
 P6-4 can be treated as `[~]` once the checklist and build path are prepared in-repo, but it must stay `[~]` until at least one real TestFlight upload and one real Play Internal upload have been completed.
+
+When those uploads happen, record the artifact/build ids and tester notes in a filled copy of `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md` instead of leaving them only in operator memory.
+
+To bootstrap a dated working copy without hand-editing the template header each time, run:
+- `python scripts/generate_mobile_release_evidence_packet.py`
+- optional Windows launcher-only equivalent: `py -3 scripts/generate_mobile_release_evidence_packet.py`
+- optional custom output example: `python scripts/generate_mobile_release_evidence_packet.py --date-label 2026-06-02 --operator ARDO --tag-or-release-branch release/mobile-v1.0.0`
+
+The generator writes a dated markdown packet (default: `docs/mobile/release-evidence-v1.0.0-YYYY-MM-DD.md`) from the checked-in template, pre-fills release metadata fields you provide on the command line, appends bootstrap metadata with app/repo provenance, and refreshes the stable alias `docs/mobile/release-evidence-v1.0.0-latest.md` by default so the newest release packet has a fixed handoff path. Pass `--no-write-latest-alias` if you intentionally want a dated packet without touching that stable alias.
 
 ## P6-5 — Store listing + legal pages
 
@@ -81,6 +91,11 @@ Do **not** mark P6-6 done until all of the following are true:
 - [ ] Release notes / versioning / rollback plan prepared per `docs/mobile/RELEASE_RUNBOOK.md`
 
 ## Current blockers snapshot
+
+As of 2026-05-28, the main blockers are still external-execution gates, not missing repo planning. The remaining work should now land in two explicit artifacts rather than freeform notes:
+
+- per-device/runtime results in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`
+- final release/build/upload evidence in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`
 
 As of 2026-05-28, the main blockers are still external-execution gates, not missing repo planning:
 

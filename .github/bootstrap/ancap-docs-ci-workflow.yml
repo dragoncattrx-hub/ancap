@@ -1,0 +1,178 @@
+name: "Docs CI"
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "README.md"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "CODE_OF_CONDUCT.md"
+      - "MASTER_ROADMAP.md"
+      - "docs/**"
+      - ".github/CODEOWNERS"
+      - ".github/bootstrap/**"
+      - ".github/pull_request_template.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/docs-ci.yml"
+  pull_request:
+    paths:
+      - "README.md"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "CODE_OF_CONDUCT.md"
+      - "MASTER_ROADMAP.md"
+      - "docs/**"
+      - ".github/CODEOWNERS"
+      - ".github/bootstrap/**"
+      - ".github/pull_request_template.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/docs-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate docs bundle structure and links
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import re
+          from pathlib import Path
+
+          repo = Path('.').resolve()
+          required_files = [
+              'README.md',
+              'LICENSE',
+              'CONTRIBUTING.md',
+              'SECURITY.md',
+              'CODE_OF_CONDUCT.md',
+              'MASTER_ROADMAP.md',
+              'docs/STATUS_MATRIX.md',
+              'docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md',
+              'docs/ANCAP_DOCS_SPLIT.md',
+              'docs/ANCAP_DOCS_REPO_BOOTSTRAP.md',
+              'docs/ANCAP_DOCS_LABEL_SEED.md',
+              'docs/ANCAP_DOCS_DISCUSSIONS_SEED.md',
+              'docs/ANCAP_DOCS_MILESTONE_SEED.md',
+              'docs/ANCAP_DOCS_PROJECT_BOARD_SEED.md',
+              'docs/ANCAP_DOCS_REPO_SETTINGS_SEED.md',
+              'docs/ANCAP_DOCS_UPDATE_CADENCE_SEED.md',
+              'docs/ANCAP_DOCS_CI_SEED.md',
+              'docs/ANCAP_DOCS_DEPENDABOT_SEED.md',
+              '.github/CODEOWNERS',
+              '.github/pull_request_template.md',
+              '.github/ISSUE_TEMPLATE/bug_report.md',
+              '.github/ISSUE_TEMPLATE/feature_request.md',
+              '.github/ISSUE_TEMPLATE/config.yml',
+              '.github/bootstrap/README.md',
+              '.github/bootstrap/ancap-docs-labels.json',
+              '.github/bootstrap/ancap-docs-milestones.json',
+              '.github/bootstrap/ancap-docs-discussions.json',
+              '.github/bootstrap/ancap-docs-project-board.json',
+              '.github/bootstrap/ancap-docs-repo-settings.json',
+              '.github/bootstrap/ancap-docs-update-cadence.json',
+              '.github/bootstrap/ancap-docs-ci.json',
+              '.github/bootstrap/ancap-docs-ci-workflow.yml',
+              '.github/bootstrap/ancap-docs-dependabot.yml',
+              '.github/dependabot.yml',
+          ]
+          missing = [path for path in required_files if not (repo / path).exists()]
+          if missing:
+              raise SystemExit(f'Missing required docs repo files: {", ".join(missing)}')
+
+          for json_path in [
+              '.github/bootstrap/ancap-docs-labels.json',
+              '.github/bootstrap/ancap-docs-milestones.json',
+              '.github/bootstrap/ancap-docs-discussions.json',
+              '.github/bootstrap/ancap-docs-project-board.json',
+              '.github/bootstrap/ancap-docs-repo-settings.json',
+              '.github/bootstrap/ancap-docs-update-cadence.json',
+              '.github/bootstrap/ancap-docs-ci.json',
+          ]:
+              with (repo / json_path).open('r', encoding='utf-8') as handle:
+                  json.load(handle)
+
+          def normalize_workflow_text(text: str) -> str:
+              return re.sub(
+                  r'(?m)^(\s*uses:\s+)([^@\s#]+)@([^\s#]+)(?:\s+#.*)?\s*$',
+                  lambda match: f"{match.group(1)}{match.group(2)}@<version>",
+                  text,
+              )
+
+          workflow_path = repo / '.github/workflows/docs-ci.yml'
+          workflow_template_path = repo / '.github/bootstrap/ancap-docs-ci-workflow.yml'
+          workflow_text = workflow_path.read_text(encoding='utf-8')
+          workflow_template_text = workflow_template_path.read_text(encoding='utf-8')
+          if normalize_workflow_text(workflow_text) != normalize_workflow_text(workflow_template_text):
+              raise SystemExit(
+                  'Docs CI workflow drift detected: .github/bootstrap/ancap-docs-ci-workflow.yml must stay structurally aligned with .github/workflows/docs-ci.yml; GitHub Actions version-only bumps may differ, but workflow logic and action identities must stay in sync'
+              )
+
+          dependabot_path = repo / '.github/dependabot.yml'
+          dependabot_template_path = repo / '.github/bootstrap/ancap-docs-dependabot.yml'
+          dependabot_text = dependabot_path.read_text(encoding='utf-8')
+          dependabot_template_text = dependabot_template_path.read_text(encoding='utf-8')
+          is_docs_repo_dependabot = (
+              'package-ecosystem: "github-actions"' in dependabot_text
+              and '- "docs"' in dependabot_text
+              and '/frontend-app' not in dependabot_text
+              and '/ancap-mobile' not in dependabot_text
+              and 'package-ecosystem: "pip"' not in dependabot_text
+          )
+          if is_docs_repo_dependabot and dependabot_text != dependabot_template_text:
+              raise SystemExit(
+                  'Docs repo Dependabot drift detected: .github/bootstrap/ancap-docs-dependabot.yml must stay byte-for-byte aligned with the exported public .github/dependabot.yml'
+              )
+
+          markdown_link_re = re.compile(r'!?\[[^\]]*\]\(([^)]+)\)')
+          external_prefixes = ('http://', 'https://', 'mailto:', 'tel:', 'data:')
+          unresolved: list[str] = []
+
+          for markdown_path in sorted(repo.rglob('*.md')):
+              text = markdown_path.read_text(encoding='utf-8')
+              for match in markdown_link_re.finditer(text):
+                  target = match.group(1).strip()
+                  if target.startswith('<') and target.endswith('>'):
+                      target = target[1:-1].strip()
+                  if not target or target.startswith('#') or target.lower().startswith(external_prefixes):
+                      continue
+                  if '#' in target:
+                      target = target.split('#', 1)[0]
+                  if '?' in target:
+                      target = target.split('?', 1)[0]
+                  if not target:
+                      continue
+                  resolved = (markdown_path.parent / target).resolve()
+                  try:
+                      resolved.relative_to(repo)
+                  except ValueError:
+                      unresolved.append(f'{markdown_path.relative_to(repo).as_posix()} -> {target}')
+                      continue
+                  if not resolved.exists():
+                      unresolved.append(f'{markdown_path.relative_to(repo).as_posix()} -> {target}')
+
+          if unresolved:
+              raise SystemExit('Broken relative markdown links: ' + '; '.join(unresolved))
+
+          print('Docs bundle validation passed.')
+          PY

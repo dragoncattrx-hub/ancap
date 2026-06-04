@@ -31,3 +31,4 @@ python examples/payment-integration/python_credit_topup.py
 - The example only creates and polls the ANCAP-side payment intent. Actual card confirmation happens in the frontend / Stripe.js flow.
 - Current supported Stripe currencies in ANCAP are `USD` and `EUR`.
 - If Stripe is unconfigured, the API fails closed with `503` and ACP/manual flows remain available.
+- For the honest remaining manual closure work, use [docs/STRIPE_VERIFICATION_RUNBOOK.md](../../docs/STRIPE_VERIFICATION_RUNBOOK.md). Poll fallback is useful resilience proof, but it does not by itself close roadmap item 4.1 unless webhook delivery and saved-card reuse were also verified.

@@ -2,8 +2,13 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@ancap/acp-api-client": ["../../packages/acp-api-client/src/index.ts"],
+      "@ancap/acp-wallet-sdk": ["../../packages/acp-wallet-sdk/src/index.ts"],
+      "@ancap/acp-bridge-client": ["../../packages/acp-bridge-client/src/index.ts"],
+      "@ancap/acp-bsc-client": ["../../packages/acp-bsc-client/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

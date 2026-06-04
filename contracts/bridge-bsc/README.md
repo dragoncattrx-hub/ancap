@@ -38,7 +38,7 @@ forge script script/Deploy.s.sol:DeployScript \
   --broadcast -vvv
 ```
 
-Mainnet pilot checklist: [docs/bridge-pilot-mainnet.md](../../docs/bridge-pilot-mainnet.md). Invariants: [docs/bridge-spec-v1.md](../../docs/bridge-spec-v1.md).
+Mainnet pilot checklist: [docs/bridge-pilot-mainnet.md](../../docs/bridge-pilot-mainnet.md). Official address index: [docs/OFFICIAL_CONTRACT_ADDRESSES.md](../../docs/OFFICIAL_CONTRACT_ADDRESSES.md). Invariants: [docs/bridge-spec-v1.md](../../docs/bridge-spec-v1.md).
 
 ## Release tags (repo convention)
 

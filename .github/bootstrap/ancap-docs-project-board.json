@@ -1,0 +1,53 @@
+{
+  "name": "ANCAP Docs Roadmap",
+  "scope": "Public-safe docs work only; no private infra, signer, secret-handling, or operator-only tasks.",
+  "fields": [
+    {
+      "name": "Status",
+      "kind": "single_select",
+      "options": ["Inbox", "Ready", "In progress", "Review", "Done"]
+    },
+    {
+      "name": "Area",
+      "kind": "single_select",
+      "options": ["docs", "security", "bridge", "wallet", "sdk", "contracts", "frontend"]
+    },
+    {
+      "name": "Milestone",
+      "kind": "linked_seed",
+      "source": "docs/ANCAP_DOCS_MILESTONE_SEED.md"
+    },
+    {
+      "name": "Priority",
+      "kind": "single_select",
+      "options": ["P1", "P2", "P3"]
+    }
+  ],
+  "views": [
+    {
+      "name": "Board",
+      "layout": "board",
+      "groupBy": "Status"
+    },
+    {
+      "name": "By milestone",
+      "layout": "table",
+      "groupBy": "Milestone"
+    },
+    {
+      "name": "Good first issues",
+      "layout": "board",
+      "filters": ["label:good first issue", "status!=Done"]
+    },
+    {
+      "name": "Trust / audit docs",
+      "layout": "board",
+      "filters": ["area:security|bridge", "status!=Done"]
+    }
+  ],
+  "notes": [
+    "Create the board after labels, milestones, and Discussions are enabled.",
+    "Keep the board public-facing and contributor-readable.",
+    "Do not mirror private operator execution work into this board."
+  ]
+}

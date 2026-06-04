@@ -1,0 +1,54 @@
+[
+  {
+    "title": "Align Discussions categories and pin seeded bootstrap topics",
+    "bodySummary": "Remove or repurpose extra default Discussion categories if they still exist, update category descriptions to match the checked-in ANCAP seed, and pin the seeded bootstrap topics so the Discussions landing surface matches the documented baseline.",
+    "milestone": "Docs repo bootstrap",
+    "labels": ["docs"],
+    "boardFields": {
+      "Status": "Inbox",
+      "Area": "docs",
+      "Priority": "P1"
+    },
+    "expectedState": "OPEN",
+    "statusNote": "This cleanup issue should stay open until the remaining live Discussions category-description drift, extra default categories, and unpinned seeded bootstrap topics are actually fixed in the public repo UI."
+  },
+  {
+    "title": "Publish official contract-address and verification index",
+    "bodySummary": "Create one public-safe page that lists official ACP / wACP / bridge contract addresses and explorer links, cross-links contract-verification guidance and bridge-risk docs, and places explicit fake-contract warnings next to the official address list.",
+    "milestone": "Trust and audit docs baseline",
+    "labels": ["docs", "contracts", "security", "bridge"],
+    "boardFields": {
+      "Status": "Inbox",
+      "Area": "contracts",
+      "Priority": "P1"
+    },
+    "expectedState": "CLOSED",
+    "statusNote": "This seeded issue can stay closed because the public-safe contract-address and verification index is already live in the exported docs bundle and the matching live repo issue was completed."
+  },
+  {
+    "title": "Add public integration examples index and cross-links",
+    "bodySummary": "Add a contributor-friendly index page for payment, wallet, and bridge-facing public examples, then link those examples from docs-repo landing pages and integration docs so the first public integration backlog is easy to browse.",
+    "milestone": "Integration docs and examples",
+    "labels": ["docs", "sdk", "good first issue"],
+    "boardFields": {
+      "Status": "Inbox",
+      "Area": "sdk",
+      "Priority": "P2"
+    },
+    "expectedState": "CLOSED",
+    "statusNote": "This seeded issue can stay closed because the public integration examples index and the intended cross-links are already live in the exported docs bundle and the matching live repo issue was completed."
+  },
+  {
+    "title": "Reconcile roadmap / status / changelog wording for the first monthly update",
+    "bodySummary": "Check that MASTER_ROADMAP.md, docs/STATUS_MATRIX.md, and docs/CHANGELOG_PUBLIC.md describe the same shipped truth, turn wording drift into explicit follow-up edits, and leave the first public monthly update with honest source documents.",
+    "milestone": "Roadmap and status sync",
+    "labels": ["docs", "help wanted"],
+    "boardFields": {
+      "Status": "Inbox",
+      "Area": "docs",
+      "Priority": "P2"
+    },
+    "expectedState": "CLOSED",
+    "statusNote": "This seeded issue can stay closed because the roadmap / status / changelog wording slice is already aligned in the exported docs bundle and the matching live repo issue was completed."
+  }
+]

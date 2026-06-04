@@ -211,6 +211,7 @@ async def create_stripe_credit_topup_intent(
     currency = normalize_stripe_currency(body.currency or "USD")
     quoted_amount = quote_stripe_credit_package_amount(package, currency)
     customer_id = await get_or_create_stripe_customer(session, user)
+    payment_method_selection = "saved_method" if body.payment_method_id else "new_card"
 
     if body.payment_method_id:
         await get_stripe_payment_method_for_customer(body.payment_method_id, customer_id)
@@ -226,6 +227,8 @@ async def create_stripe_credit_topup_intent(
         "metadata[ancap_credit_amount]": package.credit_amount.amount,
         "metadata[ancap_credit_currency]": package.credit_amount.currency,
         "metadata[ancap_source]": "ancap_credit_topup",
+        "metadata[ancap_payment_method_selection]": payment_method_selection,
+        "metadata[ancap_save_payment_method_requested]": "true" if body.save_payment_method else "false",
     }
     if body.payment_method_id:
         request_data["payment_method"] = body.payment_method_id
@@ -263,8 +266,11 @@ async def create_stripe_credit_topup_intent(
             "stripe_customer_id": customer_id,
             "stripe_status": status_value,
             "payment_method_types": payment_method_types,
+            "payment_method_selection": payment_method_selection,
             "save_payment_method": body.save_payment_method,
+            "save_payment_method_requested": body.save_payment_method,
             "payment_method_id": body.payment_method_id,
+            "requested_payment_method_id": body.payment_method_id,
             "note": body.note,
         },
     )

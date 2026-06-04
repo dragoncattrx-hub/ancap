@@ -1,0 +1,47 @@
+[
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Small, approachable tasks for new contributors"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Useful open work where external help is welcome"
+  },
+  {
+    "name": "docs",
+    "color": "0e8a16",
+    "description": "Documentation fixes, additions, and wording work"
+  },
+  {
+    "name": "security",
+    "color": "b60205",
+    "description": "Security-policy, disclosure, and trust-surface work"
+  },
+  {
+    "name": "bridge",
+    "color": "d93f0b",
+    "description": "Bridge docs, risk notes, and verification guidance"
+  },
+  {
+    "name": "wallet",
+    "color": "1d76db",
+    "description": "Wallet-facing public docs and UX guidance"
+  },
+  {
+    "name": "sdk",
+    "color": "5319e7",
+    "description": "SDK/integration-facing documentation work"
+  },
+  {
+    "name": "contracts",
+    "color": "fbca04",
+    "description": "Public contract docs, verification, and ABI/source guidance"
+  },
+  {
+    "name": "frontend",
+    "color": "c5def5",
+    "description": "Public website/docs UI surfaces and content structure"
+  }
+]

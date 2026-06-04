@@ -11,8 +11,13 @@
   "scripts": {
     "build": "npm run build -w @ancap/acp-wallet-sdk && npm run build -w @ancap/acp-api-client && npm run build -w @ancap/acp-bridge-client && npm run build -w @ancap/acp-bsc-client",
     "postinstall": "npm run build",
-    "test": "npm run test -ws --if-present",
-    "typecheck": "npm run typecheck -ws --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:expo": "npm run test -w @ancap/acp-wallet-expo --",
+    "test:expo:smart-pay": "npm run test -w @ancap/acp-wallet-expo -- smart-pay",
+    "test:api-client": "npm run test -w @ancap/acp-api-client --",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck:expo": "npm run typecheck -w @ancap/acp-wallet-expo",
+    "typecheck:api-client": "npm run typecheck -w @ancap/acp-api-client",
     "app:start": "npm run start -w @ancap/acp-wallet-expo",
     "app:expo": "npm run start -w @ancap/acp-wallet-expo"
   },
@@ -21,5 +26,9 @@
   },
   "dependencies": {
     "expo-screen-capture": "~7.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

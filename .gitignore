@@ -87,9 +87,16 @@ ACP-crypto/.acp-node-data*/
 # Local scratch / agent notes
 update.md
 .tmp/
+.vite/
 tmp_ndk_bits_full/
 tmp_ndk_probe/
 tmp_npx_node20_cache/
+tmp_ancap_docs_export_verify/
+tmp_bootstrap_*.txt
+tmp_bootstrap_*.json
+tmp_bootstrap_*.md
+tmp_discussion_graphql_introspect*
+tmp_graphql_introspect.py
 
 # Project planning docs (not source of truth)
 IMPROVEMENT_PLAN.md

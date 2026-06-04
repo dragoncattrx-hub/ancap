@@ -13,13 +13,28 @@ on:
       - "SECURITY.md"
       - "CODE_OF_CONDUCT.md"
       - "MASTER_ROADMAP.md"
+      - "STATUS.md"
       - "docs/**"
+      - ".github/CODEOWNERS"
+      - ".github/bootstrap/**"
+      - ".github/pull_request_template.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/backend-ci.yml"
+      - ".github/workflows/docs-ci.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/secret-hygiene.yml"
+      - ".githooks/**"
+      - "scripts/bootstrap_ancap_docs_repo.py"
+      - "scripts/check_secret_hygiene.py"
       - "scripts/export_ancap_docs.py"
+      - "scripts/generate_ancap_docs_live_followup.py"
+      - "scripts/generate_secret_hygiene_evidence.py"
+      - "scripts/install_git_hooks.py"
+      - "scripts/render_secret_rotation_evidence.py"
       - "requirements.in"
       - "requirements.txt"
       - "pyproject.toml"
       - "pytest.ini"
-      - ".github/workflows/backend-ci.yml"
   pull_request:
     paths:
       - "app/**"
@@ -31,13 +46,28 @@ on:
       - "SECURITY.md"
       - "CODE_OF_CONDUCT.md"
       - "MASTER_ROADMAP.md"
+      - "STATUS.md"
       - "docs/**"
+      - ".github/CODEOWNERS"
+      - ".github/bootstrap/**"
+      - ".github/pull_request_template.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/backend-ci.yml"
+      - ".github/workflows/docs-ci.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/secret-hygiene.yml"
+      - ".githooks/**"
+      - "scripts/bootstrap_ancap_docs_repo.py"
+      - "scripts/check_secret_hygiene.py"
       - "scripts/export_ancap_docs.py"
+      - "scripts/generate_ancap_docs_live_followup.py"
+      - "scripts/generate_secret_hygiene_evidence.py"
+      - "scripts/install_git_hooks.py"
+      - "scripts/render_secret_rotation_evidence.py"
       - "requirements.in"
       - "requirements.txt"
       - "pyproject.toml"
       - "pytest.ini"
-      - ".github/workflows/backend-ci.yml"
 
 permissions:
   contents: read
@@ -88,7 +118,7 @@ jobs:
         run: pytest -q
 
       - name: Docs export / public-trust regression
-        run: pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py tests/test_ancap_docs_split_ci_guard.py -q
+        run: pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py tests/test_status_summary.py tests/test_ancap_docs_split_ci_guard.py tests/test_bootstrap_ancap_docs_repo.py tests/test_generate_ancap_docs_live_followup.py -q
 
       - name: Security SAST — Bandit
         run: python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt

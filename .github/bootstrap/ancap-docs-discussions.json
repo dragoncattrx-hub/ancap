@@ -1,0 +1,50 @@
+{
+  "categories": [
+    {
+      "name": "Ideas",
+      "emoji": "💡",
+      "description": "Docs improvements, public transparency ideas, and future public-safe split ideas."
+    },
+    {
+      "name": "Q&A",
+      "emoji": "❓",
+      "description": "Integration questions, docs clarification requests, contract verification questions, and bridge-risk trust-surface questions without private operator details."
+    },
+    {
+      "name": "Show and tell",
+      "emoji": "🛠️",
+      "description": "Public integrations, example tooling, tutorials, walkthroughs, and public merchant/wallet/dev experiments."
+    },
+    {
+      "name": "Announcements",
+      "emoji": "📣",
+      "description": "Docs repo milestone updates, release-note pointers, public roadmap/status updates, and transparency updates."
+    }
+  ],
+  "moderationNotes": [
+    "Keep Discussions public-safe: no secrets, private infra details, wallet keys, deploy tokens, or signer/operator runbooks.",
+    "Move actionable bug reports and feature requests into Issues when they need tracking.",
+    "Redirect security disclosures to SECURITY.md instead of handling them in public threads.",
+    "Prefer Discussions for exploratory conversation and Issues for concrete work items."
+  ],
+  "pinnedTopics": [
+    {
+      "title": "Welcome / how to use this repo",
+      "categoryName": "Announcements",
+      "purpose": "Explain what ancap-docs is for, point to roadmap/status entry points, and remind contributors not to post secrets or operator-only details.",
+      "starterBody": "# Welcome to ANCAP docs\n\nThis repo is the public-safe docs and trust surface for ANCAP.\nUse it to inspect roadmap/status truth, architecture and whitepapers, bridge-risk and verification guidance, and public integration examples.\n\nStart here:\n- `MASTER_ROADMAP.md`\n- `docs/STATUS_MATRIX.md`\n- `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`\n- `README.md`\n\nPlease do **not** post secrets, wallet keys, deploy tokens, private infrastructure details, or operator-only runbooks here."
+    },
+    {
+      "title": "Where to ask what",
+      "categoryName": "Announcements",
+      "purpose": "Route concrete bugs/features/docs tasks to Issues, general questions and ideas to Discussions, and security reports to SECURITY.md.",
+      "starterBody": "# Where to ask what\n\nUse the right lane so work stays searchable and public-safe:\n\n- **Issues** → concrete bugs, feature requests, docs fixes, and tracked tasks\n- **Discussions / Q&A** → integration questions, docs clarification, and exploratory ideas\n- **Discussions / Show and tell** → public experiments, examples, and walkthroughs\n- **Security reports** → follow `SECURITY.md`; do not post disclosures in public threads\n\nIf a Discussion turns into concrete work, move it into an Issue."
+    },
+    {
+      "title": "Public scope boundaries",
+      "categoryName": "Announcements",
+      "purpose": "Clarify what ANCAP publishes here and what remains private by design.",
+      "starterBody": "# Public scope boundaries\n\nThis repo is for public-safe ANCAP material such as:\n- roadmap and status truth\n- architecture, whitepapers, and public-facing trust docs\n- public contract verification guidance\n- public integration examples and contributor workflow metadata\n\nThis repo is **not** for:\n- private keys, mnemonics, API tokens, or production `.env` values\n- signer internals, hot-wallet operating procedures, or abuse-sensitive controls\n- private infrastructure/admin runbooks\n\nIf you are unsure whether something is safe to post publicly, do not post it here."
+    }
+  ]
+}

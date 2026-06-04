@@ -2,7 +2,7 @@
 
 > Status: release-gate scaffold added on 2026-05-28
 > Roadmap link: `docs/mobile/ROADMAP.md` → P6-6
-> Companion docs: `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, `docs/mobile/SECURITY_MODEL.md`, `.github/RELEASE_PROCESS.md`
+> Companion docs: `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`, `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`, `docs/mobile/SECURITY_MODEL.md`, `.github/RELEASE_PROCESS.md`
 > Purpose: define the operator steps, evidence, release notes, versioning, and rollback artifacts required before marking mobile `P6-6` done.
 
 Current truth:
@@ -34,6 +34,15 @@ Do **not** start the final cut until all upstream release-closure inputs are alr
 5. Final operator/support/legal details are ready for store metadata and legal pages.
 
 ## Release evidence packet
+
+Start from `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md` so the final gate is recorded in one repeatable format instead of being reconstructed from scattered checklist edits.
+
+To bootstrap a dated working copy without hand-editing the template header each time, run:
+- `python scripts/generate_mobile_release_evidence_packet.py`
+- optional Windows launcher-only equivalent: `py -3 scripts/generate_mobile_release_evidence_packet.py`
+- optional custom output example: `python scripts/generate_mobile_release_evidence_packet.py --date-label 2026-06-02 --operator ARDO --tag-or-release-branch release/mobile-v1.0.0`
+
+By default the generator writes `docs/mobile/release-evidence-v1.0.0-YYYY-MM-DD.md`, appends bootstrap metadata with app/repo provenance, and refreshes the stable alias `docs/mobile/release-evidence-v1.0.0-latest.md` so release handoff can reference a fixed latest path without replacing the dated evidence-of-record. Pass `--no-write-latest-alias` if you intentionally want only the dated packet.
 
 Prepare a release packet for the final mobile cut. At minimum it should include:
 
@@ -86,11 +95,12 @@ The rollback plan must reference both the mobile artifact identifiers and the re
 ## Final operator sequence
 
 1. Confirm `DEVICE_MATRIX.md` and `RELEASE_CHECKLIST.md` are filled with real evidence.
-2. Prepare/update `docs/RELEASE_<VERSION>.md` with the mobile wallet section.
-3. Record Android and iOS build identifiers in the release packet.
-4. Verify store metadata/legal/support details match the shipped build.
-5. Cut/push the final release tag only after the mobile evidence packet is complete.
-6. Mark `P6-6` done in roadmap docs only after the real cut is complete.
+2. Fill or update `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` for the current verification round (optionally bootstrap the dated copy first via `python scripts/generate_mobile_device_verification_packet.py`, or `py -3 ...` on launcher-only Windows hosts).
+3. Prepare/update `docs/RELEASE_<VERSION>.md` with the mobile wallet section.
+4. Record Android and iOS build identifiers in the release packet created from `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`.
+5. Verify store metadata/legal/support details match the shipped build.
+6. Cut/push the final release tag only after the mobile evidence packet is complete.
+7. Mark `P6-6` done in roadmap docs only after the real cut is complete.
 
 ## Honest status rule
 

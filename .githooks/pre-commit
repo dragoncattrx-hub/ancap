@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if command -v python >/dev/null 2>&1; then
+  python_cmd() { python "$@"; }
+elif command -v python3 >/dev/null 2>&1; then
+  python_cmd() { python3 "$@"; }
+elif command -v py >/dev/null 2>&1; then
+  python_cmd() { py -3 "$@"; }
+else
+  echo "ANCAP secret-hygiene pre-commit hook requires python, python3, or py -3 on PATH." >&2
+  exit 1
+fi
+
+python_cmd scripts/check_secret_hygiene.py --staged

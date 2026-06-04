@@ -5,6 +5,7 @@ Public-safe deployment guide for validating the ANCAP BSC bridge path on testnet
 Related files:
 - [contracts/bridge-bsc/README.md](../contracts/bridge-bsc/README.md)
 - [docs/bridge-github-workflow.md](./bridge-github-workflow.md)
+- [docs/OFFICIAL_CONTRACT_ADDRESSES.md](./OFFICIAL_CONTRACT_ADDRESSES.md)
 - [docs/CONTRACT_VERIFICATION_GUIDE.md](./CONTRACT_VERIFICATION_GUIDE.md)
 
 ## Goal

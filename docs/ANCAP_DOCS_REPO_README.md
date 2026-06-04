@@ -28,8 +28,16 @@ Core truth:
 - [Status matrix](STATUS_MATRIX.md)
 - [Open-source / GitHub transparency](OPEN_SOURCE_GITHUB_TRANSPARENCY.md)
 - [Docs repo bootstrap checklist](ANCAP_DOCS_REPO_BOOTSTRAP.md)
+- [Docs repo contributor intake seed](ANCAP_DOCS_CONTRIBUTOR_INTAKE_SEED.md)
 - [Docs repo label seed](ANCAP_DOCS_LABEL_SEED.md)
 - [Docs repo Discussions seed](ANCAP_DOCS_DISCUSSIONS_SEED.md)
+- [Docs repo milestone seed](ANCAP_DOCS_MILESTONE_SEED.md)
+- [Docs repo project board seed](ANCAP_DOCS_PROJECT_BOARD_SEED.md)
+- [Docs repo initial issues seed](ANCAP_DOCS_INITIAL_ISSUES_SEED.md)
+- [Docs repo settings seed](ANCAP_DOCS_REPO_SETTINGS_SEED.md)
+- [Docs repo update cadence seed](ANCAP_DOCS_UPDATE_CADENCE_SEED.md)
+- [Docs repo Dependabot seed](ANCAP_DOCS_DEPENDABOT_SEED.md)
+- Machine-readable bootstrap seeds: `../.github/bootstrap/` (see `../.github/bootstrap/README.md`)
 
 Project/context docs:
 - [Vision](VISION.md)
@@ -43,6 +51,7 @@ Project/context docs:
 
 Public trust docs:
 - [Bridge risk documentation](BRIDGE_RISK_DOCUMENTATION.md)
+- [Official contract-address index](OFFICIAL_CONTRACT_ADDRESSES.md)
 - [Contract verification guide](CONTRACT_VERIFICATION_GUIDE.md)
 - [Testnet deployment guide](TESTNET_DEPLOYMENT_GUIDE.md)
 - [Audit checklist](AUDIT_CHECKLIST.md)
@@ -51,6 +60,7 @@ Public trust docs:
 ## Public code and example surfaces
 
 Those code surfaces currently live in the source monorepo and are linked directly from this docs bundle:
+- [Public integration examples index](PUBLIC_INTEGRATION_EXAMPLES.md)
 - [Examples index](../examples/README.md)
 - [Stripe credit top-up example](../examples/payment-integration/python_credit_topup.py)
 - [Wallet connection example](../examples/wallet-connection/python_wallet_login.py)

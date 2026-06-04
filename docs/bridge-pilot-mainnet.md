@@ -8,6 +8,7 @@ It has already completed a real end-to-end ACP -> BSC run successfully, and the 
 ### Current deployed contracts
 - `WACP`: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
 - `BridgeGateway`: `0x57c24FF77B23a82328cb88914D4FD4EEBd93321b`
+- canonical public index: [OFFICIAL_CONTRACT_ADDRESSES.md](./OFFICIAL_CONTRACT_ADDRESSES.md)
 
 ### Current runtime state
 - `BRIDGE_RAIL_ENABLED=true`

@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Docs repo bootstrap",
+    "description": "First public repo push, governance file verification, issue/PR template verification, CODEOWNERS review-routing verification, and Discussions / labels / project-board setup."
+  },
+  {
+    "title": "Trust and audit docs baseline",
+    "description": "Bridge risk documentation updates, contract verification guidance, testnet deployment instructions, audit checklist maintenance, and security/disclosure wording work."
+  },
+  {
+    "title": "Roadmap and status sync",
+    "description": "Public-safe MASTER_ROADMAP / STATUS_MATRIX sync work, changelog alignment, release-note alignment, and transparency wording cleanup."
+  },
+  {
+    "title": "Integration docs and examples",
+    "description": "Public SDK/API documentation, example links and walkthroughs, wallet integration examples, and payment / Smart QR public documentation."
+  }
+]

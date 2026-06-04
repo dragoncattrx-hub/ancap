@@ -152,8 +152,8 @@ export default function MarketplacePage() {
     }
   };
 
-  const marketListings = response?.items || [];
-  const categories = response?.available_categories || [];
+  const marketListings = useMemo(() => response?.items ?? [], [response?.items]);
+  const categories = useMemo(() => response?.available_categories ?? [], [response?.available_categories]);
 
   const featuredListings = useMemo(() => marketListings.filter((item) => item.is_featured), [marketListings]);
   const trendingListings = useMemo(() => marketListings.filter((item) => item.is_trending), [marketListings]);

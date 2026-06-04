@@ -7,6 +7,7 @@ This document is intentionally transparent about system risk without exposing pr
 Related documents:
 - [Bridge spec v1](./bridge-spec-v1.md)
 - [Bridge pilot mainnet status](./bridge-pilot-mainnet.md)
+- [Official contract-address index](./OFFICIAL_CONTRACT_ADDRESSES.md)
 - [Bridge launch checklist](./bridge-launch-checklist.md)
 - [contracts/bridge-bsc/README.md](../contracts/bridge-bsc/README.md)
 

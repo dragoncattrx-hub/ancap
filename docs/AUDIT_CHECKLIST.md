@@ -49,6 +49,7 @@ Check:
 - `contracts/bridge-bsc/src/WACP.sol`
 - `contracts/bridge-bsc/src/BridgeGateway.sol`
 - `contracts/bridge-bsc/README.md`
+- `docs/OFFICIAL_CONTRACT_ADDRESSES.md`
 - `docs/CONTRACT_VERIFICATION_GUIDE.md`
 
 Reviewer question: can a third party rebuild and reason about the published contract surfaces?
@@ -58,6 +59,7 @@ Reviewer question: can a third party rebuild and reason about the published cont
 Check:
 - `docs/bridge-spec-v1.md`
 - `docs/bridge-pilot-mainnet.md`
+- `docs/OFFICIAL_CONTRACT_ADDRESSES.md`
 - `docs/BRIDGE_RISK_DOCUMENTATION.md`
 - `docs/bridge-launch-checklist.md`
 

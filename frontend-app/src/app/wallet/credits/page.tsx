@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { ledger, payments, workflowStore } from "@/lib/api";
 import { loadStripeJs, type StripeCardElement } from "@/lib/stripe";
 import { fallbackWorkflowCreditPackages, type WorkflowCreditPackage } from "@/lib/workflowStore";
+import { getStripePaymentMethodEvidence, getStripeSettlementSignal } from "./stripe-settlement";
 
 type BalanceResponse = {
   account_id: string;
@@ -383,6 +384,13 @@ export default function WalletCreditsPage() {
     setStripeProcessing(false);
   };
 
+  const stripeSettlement = getStripeSettlementSignal(stripeIntent?.item.provider_payload);
+  const stripePaymentMethodEvidence = getStripePaymentMethodEvidence(stripeIntent?.item.provider_payload);
+  const stripeLastEventType = stripeSettlement.lastEventType;
+  const stripeLastEventId = stripeSettlement.lastEventId;
+  const stripeLastEventAt = stripeSettlement.lastEventAt;
+  const stripeLastPolledAt = stripeSettlement.lastPolledAt;
+
   if (authLoading || !isAuthenticated) return null;
 
   return (
@@ -600,6 +608,44 @@ export default function WalletCreditsPage() {
                             <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 6 }}>
                               Ledger credit status: {stripeIntent.item.status}{stripePolling ? " • waiting for webhook..." : ""}
                             </div>
+                            {(stripeSettlement.label || stripeLastEventType || stripeLastEventAt || stripeLastPolledAt) && (
+                              <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: 6, wordBreak: "break-word" }}>
+                                <div>
+                                  Settlement signal: {stripeSettlement.label}
+                                  {stripeLastEventType ? ` • ${stripeLastEventType}` : ""}
+                                  {stripeLastEventId ? ` • ${stripeLastEventId}` : ""}
+                                  {stripeLastEventAt ? ` • event ${new Date(stripeLastEventAt).toLocaleString()}` : ""}
+                                  {stripeLastPolledAt ? ` • last poll ${new Date(stripeLastPolledAt).toLocaleString()}` : ""}
+                                </div>
+                                <div style={{ marginTop: 4 }}>
+                                  Verification status: {stripeSettlement.verificationLabel}
+                                </div>
+                                <div style={{ marginTop: 4 }}>
+                                  Payment method evidence: {stripePaymentMethodEvidence.selectionLabel}
+                                  {stripePaymentMethodEvidence.requestedPaymentMethodId
+                                    ? ` • ${stripePaymentMethodEvidence.requestedPaymentMethodId}`
+                                    : ""}
+                                  {stripePaymentMethodEvidence.saveRequested !== null
+                                    ? ` • save for reuse ${stripePaymentMethodEvidence.saveRequestedLabel}`
+                                    : ""}
+                                </div>
+                                {stripeSettlement.hint && (
+                                  <div style={{ marginTop: 4 }}>
+                                    {stripeSettlement.hint}
+                                  </div>
+                                )}
+                                {stripeSettlement.verificationHint && (
+                                  <div style={{ marginTop: 4 }}>
+                                    {stripeSettlement.verificationHint}
+                                  </div>
+                                )}
+                                {stripePaymentMethodEvidence.selectionHint && (
+                                  <div style={{ marginTop: 4 }}>
+                                    {stripePaymentMethodEvidence.selectionHint}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <strong style={{ color: stripeIntent.item.status === "captured" ? "var(--accent)" : stripeIntent.stripe.status === "succeeded" ? "var(--accent)" : "var(--text)" }}>
                             {stripeIntent.item.status === "captured" ? "captured" : stripeIntent.stripe.status}
