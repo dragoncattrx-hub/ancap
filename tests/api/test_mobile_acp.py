@@ -218,7 +218,7 @@ def test_smart_pay_execute_receipt_and_recover(client):
 
     recover_res = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
-        json={"clientKnownTxs": ["0xabc123"]},
+        json={"clientKnownTxs": ["demo_tx_abc123"]},
         headers={"Authorization": ""},
     )
     assert recover_res.status_code == 200, recover_res.text
@@ -236,8 +236,8 @@ def test_smart_pay_execute_receipt_and_recover(client):
     }
     assert recovered["txRefs"][0]["role"] == "payment"
     assert recovered["txRefs"][0]["network"] == "acp"
-    assert recovered["txRefs"][0]["txid"] == "0xabc123"
-    assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/0xabc123"
+    assert recovered["txRefs"][0]["txid"] == "demo_tx_abc123"
+    assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/demo_tx_abc123"
 
     recovered_receipt_res = client.get(
         f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
@@ -245,8 +245,8 @@ def test_smart_pay_execute_receipt_and_recover(client):
     )
     assert recovered_receipt_res.status_code == 200
     recovered_receipt = recovered_receipt_res.json()
-    assert recovered_receipt["txRefs"][0]["txid"] == "0xabc123"
-    assert recovered_receipt["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/0xabc123"
+    assert recovered_receipt["txRefs"][0]["txid"] == "demo_tx_abc123"
+    assert recovered_receipt["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/demo_tx_abc123"
 
 
 def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_are_known(client):
@@ -284,7 +284,7 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
 
     partial_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
-        json={"clientKnownTxs": ["0xbridge", "0xswap"]},
+        json={"clientKnownTxs": ["demo_bridge", "demo_swap"]},
     )
     assert partial_recover.status_code == 200, partial_recover.text
     partial = partial_recover.json()["execution"]
@@ -300,21 +300,21 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
     assert partial["txRefs"][0] == {
         "role": "bridge",
         "network": "acp",
-        "txid": "0xbridge",
-        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge",
+        "txid": "demo_bridge",
+        "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridge",
         "routeStepIndex": 1,
     }
     assert partial["txRefs"][1] == {
         "role": "swap",
         "network": "bsc",
-        "txid": "0xswap",
-        "explorerUrl": "https://bscscan.com/tx/0xswap",
+        "txid": "demo_swap",
+        "explorerUrl": "https://bscscan.com/tx/demo_swap",
         "routeStepIndex": 2,
     }
 
     final_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
-        json={"clientKnownTxs": ["0xbridge", "0xswap", "0xpay"]},
+        json={"clientKnownTxs": ["demo_bridge", "demo_swap", "demo_pay"]},
     )
     assert final_recover.status_code == 200, final_recover.text
     final = final_recover.json()["execution"]
@@ -330,8 +330,8 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
     assert final["txRefs"][2] == {
         "role": "merchant_payout",
         "network": "bsc",
-        "txid": "0xpay",
-        "explorerUrl": "https://bscscan.com/tx/0xpay",
+        "txid": "demo_pay",
+        "explorerUrl": "https://bscscan.com/tx/demo_pay",
         "routeStepIndex": 3,
     }
 
@@ -372,19 +372,19 @@ def test_smart_pay_recover_preserves_explorer_link_metadata_from_structured_clie
     recover_res = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
         json={
-            "clientKnownTxs": ["0xswapproof"],
+            "clientKnownTxs": ["demo_swapproof"],
             "clientKnownRefs": [
                 {
-                    "txid": "0xbridgeproof",
+                    "txid": "demo_bridgeproof",
                     "network": "acp",
                     "role": "bridge",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                 },
                 {
-                    "txid": "0xmerchantproof",
+                    "txid": "demo_merchantproof",
                     "network": "bsc",
                     "role": "merchant_payout",
-                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                    "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
                 },
             ],
         },
@@ -402,22 +402,22 @@ def test_smart_pay_recover_preserves_explorer_link_metadata_from_structured_clie
         {
             "role": "bridge",
             "network": "acp",
-            "txid": "0xbridgeproof",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "txid": "demo_bridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
             "routeStepIndex": 1,
         },
         {
             "role": "swap",
             "network": "bsc",
-            "txid": "0xswapproof",
-            "explorerUrl": "https://bscscan.com/tx/0xswapproof",
+            "txid": "demo_swapproof",
+            "explorerUrl": "https://bscscan.com/tx/demo_swapproof",
             "routeStepIndex": 2,
         },
         {
             "role": "merchant_payout",
             "network": "bsc",
-            "txid": "0xmerchantproof",
-            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "txid": "demo_merchantproof",
+            "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
             "routeStepIndex": 3,
         },
     ]
@@ -461,22 +461,22 @@ def test_smart_pay_recover_progress_counts_only_route_matched_refs_when_extra_re
         json={
             "clientKnownRefs": [
                 {
-                    "txid": "0xbridgeproof",
+                    "txid": "demo_bridgeproof",
                     "network": "acp",
                     "role": "bridge",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                 },
                 {
-                    "txid": "0xmerchantproof",
+                    "txid": "demo_merchantproof",
                     "network": "bsc",
                     "role": "merchant_payout",
-                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                    "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
                 },
                 {
-                    "txid": "0xrefundproof",
+                    "txid": "demo_refundproof",
                     "network": "acp",
                     "role": "refund",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xrefundproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_refundproof",
                 },
             ],
         },
@@ -495,22 +495,22 @@ def test_smart_pay_recover_progress_counts_only_route_matched_refs_when_extra_re
         {
             "role": "bridge",
             "network": "acp",
-            "txid": "0xbridgeproof",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "txid": "demo_bridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
             "routeStepIndex": 1,
         },
         {
             "role": "merchant_payout",
             "network": "bsc",
-            "txid": "0xmerchantproof",
-            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "txid": "demo_merchantproof",
+            "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
             "routeStepIndex": 3,
         },
         {
             "role": "refund",
             "network": "acp",
-            "txid": "0xrefundproof",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xrefundproof",
+            "txid": "demo_refundproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_refundproof",
             "routeStepIndex": None,
         },
     ]
@@ -558,10 +558,10 @@ def test_smart_pay_recover_does_not_remap_mismatched_explicit_route_step_refs(cl
         json={
             "clientKnownRefs": [
                 {
-                    "txid": "0xwrong-step",
+                    "txid": "demo_wrong_step",
                     "network": "bsc",
                     "role": "merchant_payout",
-                    "explorerUrl": "https://bscscan.com/tx/0xwrong-step",
+                    "explorerUrl": "https://bscscan.com/tx/demo_wrong_step",
                     "routeStepIndex": 1,
                 }
             ],
@@ -581,8 +581,8 @@ def test_smart_pay_recover_does_not_remap_mismatched_explicit_route_step_refs(cl
         {
             "role": "merchant_payout",
             "network": "bsc",
-            "txid": "0xwrong-step",
-            "explorerUrl": "https://bscscan.com/tx/0xwrong-step",
+            "txid": "demo_wrong_step",
+            "explorerUrl": "https://bscscan.com/tx/demo_wrong_step",
             "routeStepIndex": 1,
         }
     ]
@@ -627,7 +627,7 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
 
     first_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
-        json={"clientKnownTxs": ["0xabc123"]},
+        json={"clientKnownTxs": ["demo_tx_abc123"]},
         headers={"Authorization": ""},
     )
     assert first_recover.status_code == 200, first_recover.text
@@ -636,15 +636,15 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
         {
             "role": "payment",
             "network": "acp",
-            "txid": "0xabc123",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "txid": "demo_tx_abc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_tx_abc123",
             "routeStepIndex": 1,
         }
     ]
 
     duplicate_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
-        json={"clientKnownTxs": ["0xABC123", "0xabc123", " 0xAbC123 "]},
+        json={"clientKnownTxs": ["DEMO_TX_ABC123", "demo_tx_abc123", " DeMo_Tx_AbC123 "]},
         headers={"Authorization": ""},
     )
     assert duplicate_recover.status_code == 200, duplicate_recover.text
@@ -660,8 +660,8 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
         {
             "role": "payment",
             "network": "acp",
-            "txid": "0xabc123",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "txid": "demo_tx_abc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_tx_abc123",
             "routeStepIndex": 1,
         }
     ]
@@ -675,8 +675,8 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
         {
             "role": "payment",
             "network": "acp",
-            "txid": "0xabc123",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "txid": "demo_tx_abc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_tx_abc123",
             "routeStepIndex": 1,
         }
     ]
@@ -720,19 +720,19 @@ def test_smart_pay_recover_prefers_structured_refs_over_duplicate_plain_txids(cl
     recover_res = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
         json={
-            "clientKnownTxs": ["0xbridgeproof", "0xmerchantproof"],
+            "clientKnownTxs": ["demo_bridgeproof", "demo_merchantproof"],
             "clientKnownRefs": [
                 {
-                    "txid": "0xbridgeproof",
+                    "txid": "demo_bridgeproof",
                     "network": "acp",
                     "role": "bridge",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                 },
                 {
-                    "txid": "0xmerchantproof",
+                    "txid": "demo_merchantproof",
                     "network": "bsc",
                     "role": "merchant_payout",
-                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                    "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
                 },
             ],
         },
@@ -751,15 +751,15 @@ def test_smart_pay_recover_prefers_structured_refs_over_duplicate_plain_txids(cl
         {
             "role": "bridge",
             "network": "acp",
-            "txid": "0xbridgeproof",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "txid": "demo_bridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
             "routeStepIndex": 1,
         },
         {
             "role": "merchant_payout",
             "network": "bsc",
-            "txid": "0xmerchantproof",
-            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "txid": "demo_merchantproof",
+            "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
             "routeStepIndex": 3,
         },
     ]
@@ -802,7 +802,7 @@ def test_smart_pay_recover_accepts_explorer_links_inside_client_known_txs(client
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
         json={
             "clientKnownTxs": [
-                "https://ancap.cloud/acp/transactions/0xabc123?source=wallet"
+                "https://ancap.cloud/acp/transactions/demo_tx_abc123?source=wallet"
             ]
         },
         headers={"Authorization": ""},
@@ -814,8 +814,8 @@ def test_smart_pay_recover_accepts_explorer_links_inside_client_known_txs(client
         {
             "role": "payment",
             "network": "acp",
-            "txid": "0xabc123",
-            "explorerUrl": "https://ancap.cloud/acp/transactions/0xabc123?source=wallet",
+            "txid": "demo_tx_abc123",
+            "explorerUrl": "https://ancap.cloud/acp/transactions/demo_tx_abc123?source=wallet",
             "routeStepIndex": 1,
         }
     ]
@@ -861,11 +861,11 @@ def test_smart_pay_recover_accepts_structured_locator_in_client_known_ref_txid(c
         json={
             "clientKnownRefs": [
                 {
-                    "txid": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "txid": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                     "role": "bridge",
                 },
                 {
-                    "txid": "https://bscscan.com/tx/0xmerchantproof",
+                    "txid": "https://bscscan.com/tx/demo_merchantproof",
                     "role": "merchant_payout",
                 },
             ]
@@ -885,15 +885,15 @@ def test_smart_pay_recover_accepts_structured_locator_in_client_known_ref_txid(c
         {
             "role": "bridge",
             "network": "acp",
-            "txid": "0xbridgeproof",
-            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "txid": "demo_bridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
             "routeStepIndex": 1,
         },
         {
             "role": "merchant_payout",
             "network": "bsc",
-            "txid": "0xmerchantproof",
-            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "txid": "demo_merchantproof",
+            "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
             "routeStepIndex": 3,
         },
     ]
@@ -939,10 +939,10 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
         json={
             "clientKnownRefs": [
                 {
-                    "txid": "0xbridgeproof",
+                    "txid": "demo_bridgeproof",
                     "network": "acp",
                     "role": "bridge",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                 }
             ]
         },
@@ -952,7 +952,7 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
 
     duplicate_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
-        json={"clientKnownTxs": [" 0xBRIDGEPROOF ", "0xbridgeproof"]},
+        json={"clientKnownTxs": [" DEMO_BRIDGEPROOF ", "demo_bridgeproof"]},
         headers={"Authorization": ""},
     )
     assert duplicate_recover.status_code == 200, duplicate_recover.text
@@ -960,8 +960,8 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
     assert duplicate_execution["txRefs"][0] == {
         "role": "bridge",
         "network": "acp",
-        "txid": "0xbridgeproof",
-        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+        "txid": "demo_bridgeproof",
+        "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
         "routeStepIndex": 1,
     }
     assert duplicate_execution["progress"] == {
@@ -979,8 +979,8 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
     assert receipt_res.json()["txRefs"][0] == {
         "role": "bridge",
         "network": "acp",
-        "txid": "0xbridgeproof",
-        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+        "txid": "demo_bridgeproof",
+        "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
         "routeStepIndex": 1,
     }
 
@@ -1019,7 +1019,7 @@ def test_smart_pay_payment_history_lists_latest_executions_with_receipts(client)
     first_execution_id = first_exec_res.json()["execution"]["id"]
     first_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{first_execution_id}/recover",
-        json={"clientKnownTxs": ["0xfirst"]},
+        json={"clientKnownTxs": ["demo_first"]},
     )
     assert first_recover.status_code == 200, first_recover.text
 
@@ -1072,7 +1072,7 @@ def test_smart_pay_payment_history_lists_latest_executions_with_receipts(client)
     completed_entry = next(item for item in payments if item["execution"]["id"] == first_execution_id)
     assert completed_entry["execution"]["status"] == "completed"
     assert completed_entry["execution"]["recoverable"] is False
-    assert completed_entry["receipt"]["txRefs"][0]["txid"] == "0xfirst"
+    assert completed_entry["receipt"]["txRefs"][0]["txid"] == "demo_first"
     assert completed_entry["receipt"]["recipientAddress"] == first_addr
 
     pending_entry = next(item for item in payments if item["execution"]["id"] == second_execution_id)
@@ -1227,19 +1227,19 @@ def test_smart_pay_owner_auth_can_refresh_receipt_and_recover_without_original_s
         json={
             "clientKnownRefs": [
                 {
-                    "txid": "0xbridgeproof",
+                    "txid": "demo_bridgeproof",
                     "network": "acp",
                     "role": "bridge",
-                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/demo_bridgeproof",
                 },
                 {
-                    "txid": "0xmerchantproof",
+                    "txid": "demo_merchantproof",
                     "network": "bsc",
                     "role": "merchant_payout",
-                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                    "explorerUrl": "https://bscscan.com/tx/demo_merchantproof",
                 },
             ],
-            "clientKnownTxs": ["0xswapproof"],
+            "clientKnownTxs": ["demo_swapproof"],
         },
         headers=owner_headers,
     )
@@ -1277,7 +1277,7 @@ def test_smart_pay_owner_auth_can_refresh_receipt_and_recover_without_original_s
 
     other_recover = client.post(
         f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
-        json={"clientKnownTxs": ["0xintruder"]},
+        json={"clientKnownTxs": ["demo_intruder"]},
         headers=other_headers,
     )
     assert other_recover.status_code == 401, other_recover.text

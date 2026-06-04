@@ -230,8 +230,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge-proof",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge-proof",
+            txid: "demo_bridge_proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge_proof",
             routeStepIndex: 1,
           },
         ],
@@ -710,13 +710,13 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
           {
             role: "swap",
             network: "bsc",
-            txid: "0xswap",
+            txid: "demo_swap",
             explorerUrl: null,
           },
         ],
@@ -733,8 +733,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xpay",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xpay",
+            txid: "demo_pay",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_pay",
           },
         ],
         routeSummary: ["bridge", "swap", "merchant payout"],
@@ -757,14 +757,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xpay",
+            txid: "demo_pay",
             explorerUrl: null,
           },
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
         ],
       },
@@ -774,8 +774,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xpay",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xpay",
+            txid: "demo_pay",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_pay",
           },
         ],
       },
@@ -785,14 +785,14 @@ describe("smart pay history view helpers", () => {
       {
         role: "payment",
         network: "acp",
-        txid: "0xpay",
-        explorerUrl: "https://ancap.cloud/acp/tx/0xpay",
+        txid: "demo_pay",
+        explorerUrl: "https://ancap.cloud/acp/tx/demo_pay",
       },
       {
         role: "bridge",
         network: "acp",
-        txid: "0xbridge",
-        explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+        txid: "demo_bridge",
+        explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
       },
     ]);
   });
@@ -805,7 +805,7 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xabc123",
+            txid: "demo_tx_abc123",
             explorerUrl: null,
           },
         ],
@@ -816,8 +816,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xABC123",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xABC123",
+            txid: "DEMO_TX_ABC123",
+            explorerUrl: "https://ancap.cloud/acp/tx/DEMO_TX_ABC123",
           },
         ],
       },
@@ -827,8 +827,8 @@ describe("smart pay history view helpers", () => {
       {
         role: "payment",
         network: "acp",
-        txid: "0xABC123",
-        explorerUrl: "https://ancap.cloud/acp/tx/0xABC123",
+        txid: "DEMO_TX_ABC123",
+        explorerUrl: "https://ancap.cloud/acp/tx/DEMO_TX_ABC123",
       },
     ]);
   });
@@ -854,13 +854,13 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund",
+            txid: "demo_refund",
             explorerUrl: null,
           },
         ],
@@ -875,7 +875,7 @@ describe("smart pay history view helpers", () => {
       {
         role: "refund",
         network: "acp",
-        txid: "0xrefund",
+        txid: "demo_refund",
         explorerUrl: null,
       },
     ]);
@@ -912,14 +912,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xrefund",
+            txid: "demo_refund",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_refund",
           },
         ],
       },
@@ -972,8 +972,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
         ],
       },
@@ -983,8 +983,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
         ],
         routeSummary: ["1. bridge ACP -> wACP on acp", "2. swap wACP -> USDT on bsc", "3. transfer USDT -> USDT on bsc"],
@@ -1005,8 +1005,8 @@ describe("smart pay history view helpers", () => {
         txRef: {
           role: "bridge",
           network: "acp",
-          txid: "0xbridge",
-          explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+          txid: "demo_bridge",
+          explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
         },
       },
       {
@@ -1068,8 +1068,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "swap",
             network: "bsc",
-            txid: "0xfirst",
-            explorerUrl: "https://bscscan.com/tx/0xfirst",
+            txid: "demo_first",
+            explorerUrl: "https://bscscan.com/tx/demo_first",
           },
         ],
       },
@@ -1079,8 +1079,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "swap",
             network: "bsc",
-            txid: "0xfirst",
-            explorerUrl: "https://bscscan.com/tx/0xfirst",
+            txid: "demo_first",
+            explorerUrl: "https://bscscan.com/tx/demo_first",
           },
         ],
         routeSummary: [
@@ -1104,8 +1104,8 @@ describe("smart pay history view helpers", () => {
         txRef: {
           role: "swap",
           network: "bsc",
-          txid: "0xfirst",
-          explorerUrl: "https://bscscan.com/tx/0xfirst",
+          txid: "demo_first",
+          explorerUrl: "https://bscscan.com/tx/demo_first",
         },
       },
       {
@@ -1152,8 +1152,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "swap",
             network: "bsc",
-            txid: "0xsecond",
-            explorerUrl: "https://bscscan.com/tx/0xsecond",
+            txid: "demo_second",
+            explorerUrl: "https://bscscan.com/tx/demo_second",
             routeStepIndex: 2,
           },
         ],
@@ -1164,8 +1164,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "swap",
             network: "bsc",
-            txid: "0xsecond",
-            explorerUrl: "https://bscscan.com/tx/0xsecond",
+            txid: "demo_second",
+            explorerUrl: "https://bscscan.com/tx/demo_second",
             routeStepIndex: 2,
           },
         ],
@@ -1202,8 +1202,8 @@ describe("smart pay history view helpers", () => {
         txRef: {
           role: "swap",
           network: "bsc",
-          txid: "0xsecond",
-          explorerUrl: "https://bscscan.com/tx/0xsecond",
+          txid: "demo_second",
+          explorerUrl: "https://bscscan.com/tx/demo_second",
           routeStepIndex: 2,
         },
       },
@@ -1239,8 +1239,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "merchant_payout",
             network: "bsc",
-            txid: "0xwrong-step",
-            explorerUrl: "https://bscscan.com/tx/0xwrong-step",
+            txid: "demo_wrong_step",
+            explorerUrl: "https://bscscan.com/tx/demo_wrong_step",
             routeStepIndex: 1,
           },
         ],
@@ -1251,8 +1251,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "merchant_payout",
             network: "bsc",
-            txid: "0xwrong-step",
-            explorerUrl: "https://bscscan.com/tx/0xwrong-step",
+            txid: "demo_wrong_step",
+            explorerUrl: "https://bscscan.com/tx/demo_wrong_step",
             routeStepIndex: 1,
           },
         ],
@@ -1294,8 +1294,8 @@ describe("smart pay history view helpers", () => {
       {
         role: "merchant_payout",
         network: "bsc",
-        txid: "0xwrong-step",
-        explorerUrl: "https://bscscan.com/tx/0xwrong-step",
+        txid: "demo_wrong_step",
+        explorerUrl: "https://bscscan.com/tx/demo_wrong_step",
         routeStepIndex: 1,
       },
     ]);
@@ -1315,8 +1315,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xpay",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xpay",
+            txid: "demo_pay",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_pay",
           },
         ],
       },
@@ -1326,8 +1326,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xpay",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xpay",
+            txid: "demo_pay",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_pay",
           },
         ],
       },
@@ -1353,8 +1353,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
         ],
       },
@@ -1364,8 +1364,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "bridge",
             network: "acp",
-            txid: "0xbridge",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xbridge",
+            txid: "demo_bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_bridge",
           },
         ],
       },
@@ -1469,8 +1469,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof18",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof18",
+            txid: "demo_proof18",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof18",
           },
         ],
       },
@@ -1481,8 +1481,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof18",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof18",
+            txid: "demo_proof18",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof18",
           },
         ],
       },
@@ -1514,13 +1514,13 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof19",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof19",
+            txid: "demo_proof19",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof19",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund19",
+            txid: "demo_refund19",
             explorerUrl: null,
           },
         ],
@@ -1532,13 +1532,13 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof19",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof19",
+            txid: "demo_proof19",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof19",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund19",
+            txid: "demo_refund19",
             explorerUrl: null,
           },
         ],
@@ -1571,14 +1571,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20",
+            txid: "demo_proof20",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund20",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xrefund20",
+            txid: "demo_refund20",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_refund20",
           },
         ],
       },
@@ -1589,14 +1589,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20",
+            txid: "demo_proof20",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund20",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xrefund20",
+            txid: "demo_refund20",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_refund20",
           },
         ],
       },
@@ -1628,8 +1628,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20b",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20b",
+            txid: "demo_proof20b",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20b",
           },
         ],
       },
@@ -1643,8 +1643,8 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20b",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20b",
+            txid: "demo_proof20b",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20b",
           },
         ],
       },
@@ -1676,14 +1676,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20c",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20c",
+            txid: "demo_proof20c",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20c",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund20c",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xrefund20c",
+            txid: "demo_refund20c",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_refund20c",
           },
         ],
       },
@@ -1694,14 +1694,14 @@ describe("smart pay history view helpers", () => {
           {
             role: "payment",
             network: "acp",
-            txid: "0xproof20c",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xproof20c",
+            txid: "demo_proof20c",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_proof20c",
           },
           {
             role: "refund",
             network: "acp",
-            txid: "0xrefund20c",
-            explorerUrl: "https://ancap.cloud/acp/tx/0xrefund20c",
+            txid: "demo_refund20c",
+            explorerUrl: "https://ancap.cloud/acp/tx/demo_refund20c",
           },
         ],
       },
@@ -1730,70 +1730,70 @@ describe("smart pay history view helpers", () => {
   });
 
   it("normalizes recovery tx inputs from explorer links and de-duplicates them", () => {
-    expect(normalizeSmartPayRecoveryToken(" https://bscscan.com/tx/0xabc123 ")).toBe("0xabc123");
-    expect(normalizeSmartPayRecoveryToken("https://ancap.cloud/acp/tx/0xdef456?foo=bar")).toBe("0xdef456");
-    expect(normalizeSmartPayRecoveryToken("https://ancap.cloud/acp/transactions/0xrouteproof?source=wallet")).toBe("0xrouteproof");
-    expect(normalizeSmartPayRecoveryToken("https://example.com/?txHash=0xfeedbeef")).toBe("0xfeedbeef");
-    expect(normalizeSmartPayRecoveryToken("0xrawtx")).toBe("0xrawtx");
+    expect(normalizeSmartPayRecoveryToken(" https://bscscan.com/tx/demo_tx_abc123 ")).toBe("demo_tx_abc123");
+    expect(normalizeSmartPayRecoveryToken("https://ancap.cloud/acp/tx/demo_tx_def456?foo=bar")).toBe("demo_tx_def456");
+    expect(normalizeSmartPayRecoveryToken("https://ancap.cloud/acp/transactions/demo_route_proof?source=wallet")).toBe("demo_route_proof");
+    expect(normalizeSmartPayRecoveryToken("https://example.com/?txHash=demo_feedbeef")).toBe("demo_feedbeef");
+    expect(normalizeSmartPayRecoveryToken("demo_raw_tx")).toBe("demo_raw_tx");
 
     expect(
       extractSmartPayRecoveryTxs(
-        "0xrawtx\nhttps://bscscan.com/tx/0xabc123, https://example.com/?txHash=0xfeedbeef 0xrawtx"
+        "demo_raw_tx\nhttps://bscscan.com/tx/demo_tx_abc123, https://example.com/?txHash=demo_feedbeef demo_raw_tx"
       )
-    ).toEqual(["0xrawtx", "0xabc123", "0xfeedbeef"]);
+    ).toEqual(["demo_raw_tx", "demo_tx_abc123", "demo_feedbeef"]);
 
     expect(
       parseSmartPayRecoveryInput(
-        "0xrawtx\nhttps://bscscan.com/tx/0xabc123, https://ancap.cloud/acp/transactions/0xrouteproof?source=wallet https://example.com/?txHash=0xfeedbeef 0xrawtx"
+        "demo_raw_tx\nhttps://bscscan.com/tx/demo_tx_abc123, https://ancap.cloud/acp/transactions/demo_route_proof?source=wallet https://example.com/?txHash=demo_feedbeef demo_raw_tx"
       ).refs
     ).toEqual([
       {
-        txid: "0xrawtx",
+        txid: "demo_raw_tx",
         network: null,
         explorerUrl: null,
       },
       {
-        txid: "0xabc123",
+        txid: "demo_tx_abc123",
         network: "bsc",
-        explorerUrl: "https://bscscan.com/tx/0xabc123",
+        explorerUrl: "https://bscscan.com/tx/demo_tx_abc123",
       },
       {
-        txid: "0xrouteproof",
+        txid: "demo_route_proof",
         network: "acp",
-        explorerUrl: "https://ancap.cloud/acp/transactions/0xrouteproof?source=wallet",
+        explorerUrl: "https://ancap.cloud/acp/transactions/demo_route_proof?source=wallet",
       },
       {
-        txid: "0xfeedbeef",
+        txid: "demo_feedbeef",
         network: null,
-        explorerUrl: "https://example.com/?txHash=0xfeedbeef",
+        explorerUrl: "https://example.com/?txHash=demo_feedbeef",
       },
     ]);
   });
 
   it("ignores unparseable recovery locator noise while surfacing duplicates and invalid tokens", () => {
-    expect(normalizeSmartPayRecoveryToken("bscscan.com/tx/0xabc123")).toBe("0xabc123");
+    expect(normalizeSmartPayRecoveryToken("bscscan.com/tx/demo_tx_abc123")).toBe("demo_tx_abc123");
     expect(normalizeSmartPayRecoveryToken("example.com/not-a-tx")).toBeNull();
     expect(normalizeSmartPayRecoveryToken("https://example.com/not-a-tx")).toBeNull();
 
     expect(
       parseSmartPayRecoveryInput(
-        "0xrawtx bscscan.com/tx/0xabc123 https://example.com/not-a-tx 0xRAWTX"
+        "demo_raw_tx bscscan.com/tx/demo_tx_abc123 https://example.com/not-a-tx DEMO_RAW_TX"
       )
     ).toEqual({
       refs: [
         {
-          txid: "0xrawtx",
+          txid: "demo_raw_tx",
           network: null,
           explorerUrl: null,
         },
         {
-          txid: "0xabc123",
+          txid: "demo_tx_abc123",
           network: "bsc",
-          explorerUrl: "https://bscscan.com/tx/0xabc123",
+          explorerUrl: "https://bscscan.com/tx/demo_tx_abc123",
         },
       ],
-      txids: ["0xrawtx", "0xabc123"],
-      duplicateTokens: ["0xRAWTX"],
+      txids: ["demo_raw_tx", "demo_tx_abc123"],
+      duplicateTokens: ["DEMO_RAW_TX"],
       invalidTokens: ["https://example.com/not-a-tx"],
     });
   });
@@ -1801,19 +1801,19 @@ describe("smart pay history view helpers", () => {
   it("formats parsed recovery refs for UI preview so users can see preserved network/link metadata", () => {
     expect(
       formatSmartPayRecoveryRefPreview({
-        txid: "0xabc123",
+        txid: "demo_tx_abc123",
         network: "bsc",
-        explorerUrl: "https://bscscan.com/tx/0xabc123",
+        explorerUrl: "https://bscscan.com/tx/demo_tx_abc123",
       })
-    ).toBe("BSC · 0xabc123 · explorer link preserved");
+    ).toBe("BSC · demo_tx_abc123 · explorer link preserved");
 
     expect(
       formatSmartPayRecoveryRefPreview({
-        txid: "0xrawtx",
+        txid: "demo_raw_tx",
         network: null,
         explorerUrl: null,
       })
-    ).toBe("Unspecified network · 0xrawtx · raw tx hash only");
+    ).toBe("Unspecified network · demo_raw_tx · raw tx hash only");
   });
 
   it("allows status-only recover with empty input but blocks recover submissions when only invalid locator noise is pasted", () => {
@@ -1821,8 +1821,8 @@ describe("smart pay history view helpers", () => {
     expect(canSubmitSmartPayRecoveryInput("   ")).toBe(true);
     expect(getSmartPayRecoveryInputBlockReason("")).toBeNull();
 
-    expect(canSubmitSmartPayRecoveryInput("0xrawtx https://example.com/not-a-tx")).toBe(true);
-    expect(getSmartPayRecoveryInputBlockReason("0xrawtx https://example.com/not-a-tx")).toBeNull();
+    expect(canSubmitSmartPayRecoveryInput("demo_raw_tx https://example.com/not-a-tx")).toBe(true);
+    expect(getSmartPayRecoveryInputBlockReason("demo_raw_tx https://example.com/not-a-tx")).toBeNull();
 
     expect(canSubmitSmartPayRecoveryInput("https://example.com/not-a-tx badorigin/tx/not-real")).toBe(false);
     expect(

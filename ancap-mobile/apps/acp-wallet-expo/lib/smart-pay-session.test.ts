@@ -51,14 +51,14 @@ describe("smart pay session persistence", () => {
         previousOrigin: "backend",
         regainedSessionTokenFromBackend: true,
       }),
-      recoveryDraftTxs: "0xabc123\n0xdef456",
+      recoveryDraftTxs: "demo_tx_abc123\ndemo_tx_def456",
     });
 
     const restored = await loadSmartPaySession();
     expect(restored?.sessionToken).toBe("session-token-123");
     expect(restored?.payloadSource).toBe("paste");
     expect(restored?.snapshotOrigin).toBe("local+backend");
-    expect(restored?.recoveryDraftTxs).toBe("0xabc123\n0xdef456");
+    expect(restored?.recoveryDraftTxs).toBe("demo_tx_abc123\ndemo_tx_def456");
   });
 
   it("defaults missing snapshot provenance and recovery drafts for older stored payloads", async () => {
@@ -130,7 +130,7 @@ describe("smart pay session persistence", () => {
         receipt: null,
         sessionToken: "session-share",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "0xshare123",
+        recoveryDraftTxs: "demo_share_123",
         savedAt: "2026-05-30T00:00:00.000Z",
       })
     );
@@ -140,7 +140,7 @@ describe("smart pay session persistence", () => {
     expect(restored?.selectedAsset).toBe("USDT");
     expect(restored?.sessionToken).toBe("session-share");
     expect(restored?.snapshotOrigin).toBe("local+backend");
-    expect(restored?.recoveryDraftTxs).toBe("0xshare123");
+    expect(restored?.recoveryDraftTxs).toBe("demo_share_123");
   });
 
   it("canonicalizes known selected-asset symbols on restore and save", async () => {
@@ -232,13 +232,13 @@ describe("smart pay session persistence", () => {
       sessionToken: "saved-session",
       savedAt: "2026-05-29T12:34:56.000Z",
       snapshotOrigin: "local",
-      recoveryDraftTxs: "0xpersisted",
+      recoveryDraftTxs: "demo_persisted",
     });
 
     const restored = await loadSmartPaySession();
     expect(restored?.savedAt).toBe("2026-05-29T12:34:56.000Z");
     expect(restored?.sessionToken).toBe("saved-session");
-    expect(restored?.recoveryDraftTxs).toBe("0xpersisted");
+    expect(restored?.recoveryDraftTxs).toBe("demo_persisted");
   });
 
   it("derives a stable savedAt from execution or receipt timestamps when the stored value is missing or invalid", async () => {
@@ -284,7 +284,7 @@ describe("smart pay session persistence", () => {
         },
         sessionToken: "derived-session",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "0xderived",
+        recoveryDraftTxs: "demo_derived",
         savedAt: "not-a-date",
       })
     );
@@ -445,8 +445,8 @@ describe("smart pay session persistence", () => {
             {
               role: "swap",
               network: "base",
-              txid: " 0xabc123 ",
-              explorerUrl: " https://basescan.org/tx/0xabc123 ",
+              txid: " demo_tx_abc123 ",
+              explorerUrl: " https://basescan.org/tx/demo_tx_abc123 ",
               routeStepIndex: "1",
             },
             {
@@ -491,7 +491,7 @@ describe("smart pay session persistence", () => {
         },
         sessionToken: "nested-session",
         snapshotOrigin: "local+backend",
-        recoveryDraftTxs: "0xabc123",
+        recoveryDraftTxs: "demo_tx_abc123",
         savedAt: "2026-05-30T00:00:00.000Z",
       })
     );
@@ -607,8 +607,8 @@ describe("smart pay session persistence", () => {
         {
           role: "swap",
           network: "base",
-          txid: "0xabc123",
-          explorerUrl: "https://basescan.org/tx/0xabc123",
+          txid: "demo_tx_abc123",
+          explorerUrl: "https://basescan.org/tx/demo_tx_abc123",
           routeStepIndex: 1,
         },
       ],
@@ -663,14 +663,14 @@ describe("smart pay session persistence", () => {
             {
               role: "swap",
               network: "   ",
-              txid: "0xbaseproof",
-              explorerUrl: "https://basescan.org/tx/0xbaseproof",
+              txid: "demo_baseproof",
+              explorerUrl: "https://basescan.org/tx/demo_baseproof",
             },
             {
               role: "payment",
               network: "",
-              txid: "0xethproof",
-              explorerUrl: "https://etherscan.io/tx/0xethproof",
+              txid: "demo_ethproof",
+              explorerUrl: "https://etherscan.io/tx/demo_ethproof",
             },
           ],
           error: null,
@@ -693,8 +693,8 @@ describe("smart pay session persistence", () => {
             {
               role: "bridge",
               network: "  ",
-              txid: "0xacpproof",
-              explorerUrl: "https://ancap.cloud/acp/tx/0xacpproof",
+              txid: "demo_acpproof",
+              explorerUrl: "https://ancap.cloud/acp/tx/demo_acpproof",
             },
           ],
         },
@@ -710,22 +710,22 @@ describe("smart pay session persistence", () => {
       {
         role: "swap",
         network: "base",
-        txid: "0xbaseproof",
-        explorerUrl: "https://basescan.org/tx/0xbaseproof",
+        txid: "demo_baseproof",
+        explorerUrl: "https://basescan.org/tx/demo_baseproof",
       },
       {
         role: "payment",
         network: "ethereum",
-        txid: "0xethproof",
-        explorerUrl: "https://etherscan.io/tx/0xethproof",
+        txid: "demo_ethproof",
+        explorerUrl: "https://etherscan.io/tx/demo_ethproof",
       },
     ]);
     expect(restored?.receipt?.txRefs).toEqual([
       {
         role: "bridge",
         network: "acp",
-        txid: "0xacpproof",
-        explorerUrl: "https://ancap.cloud/acp/tx/0xacpproof",
+        txid: "demo_acpproof",
+        explorerUrl: "https://ancap.cloud/acp/tx/demo_acpproof",
       },
     ]);
   });
