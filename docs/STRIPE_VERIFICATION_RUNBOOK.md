@@ -158,6 +158,8 @@ To bootstrap a dated working copy without hand-editing the template header each 
 
 The generator writes a dated markdown packet (default: `docs/stripe-verification-YYYY-MM-DD.md`) from the checked-in template, pre-fills round metadata fields you provide on the command line, appends bootstrap metadata so the packet itself records which template/repo state produced it, and refreshes the stable alias `docs/stripe-verification-latest.md` by default so the newest packet has a fixed handoff path. Pass `--no-write-latest-alias` if you intentionally want to create a dated packet without touching that stable alias.
 
+After the packet is filled, run `python scripts/check_stripe_verification_packet.py docs/stripe-verification-YYYY-MM-DD.md` (or omit the path to check `docs/stripe-verification-latest.md`) so the final closure claim is validated against the packet contract instead of depending only on narrative notes.
+
 Record:
 - environment used (local prod-like / staging / production)
 - verification date/time
@@ -209,6 +211,7 @@ If either one is missing, keep status `[~]` and describe the remaining blocker e
 
 Once this runbook is completed successfully:
 1. save the filled packet as a dated copy of `docs/STRIPE_VERIFICATION_EVIDENCE_TEMPLATE.md` (the generator's default stable alias `docs/stripe-verification-latest.md` can point at the newest filled packet, but keep the dated copy as the evidence-of-record);
-2. update `MASTER_ROADMAP.md` item 4.1 with the real verification date and evidence summary;
-3. update `docs/STATUS_MATRIX.md` so the monetization section no longer lists live Stripe verification as open;
-4. keep raw secrets and full client secrets out of docs, memory, tickets, and chat.
+2. run `python scripts/check_stripe_verification_packet.py docs/stripe-verification-YYYY-MM-DD.md` and require an exit code `0` / `Closure ready: yes` before claiming roadmap closure;
+3. update `MASTER_ROADMAP.md` item 4.1 with the real verification date and evidence summary;
+4. update `docs/STATUS_MATRIX.md` so the monetization section no longer lists live Stripe verification as open;
+5. keep raw secrets and full client secrets out of docs, memory, tickets, and chat.

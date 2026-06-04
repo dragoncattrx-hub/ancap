@@ -56,6 +56,8 @@ def test_stripe_verification_runbook_keeps_webhook_vs_poll_truth_explicit() -> N
     assert "Payment method evidence" in runbook_text
     assert "docs/STRIPE_VERIFICATION_EVIDENCE_TEMPLATE.md" in runbook_text
     assert "python scripts/generate_stripe_verification_packet.py" in runbook_text
+    assert "python scripts/check_stripe_verification_packet.py" in runbook_text
+    assert "Closure ready: yes" in runbook_text
     assert "stripe_last_event_id == \"stripe:poll\"" in runbook_text
     assert "do not close roadmap item 4.1" in runbook_text
     assert "saved card is listed through ANCAP" in runbook_text
@@ -64,6 +66,7 @@ def test_stripe_verification_runbook_keeps_webhook_vs_poll_truth_explicit() -> N
     assert "new-card checkout was verified end-to-end with confirmed webhook delivery" in runbook_text
     assert "saved-card reuse was verified end-to-end on the same adapter slice" in runbook_text
     assert "save the filled packet as a dated copy of `docs/STRIPE_VERIFICATION_EVIDENCE_TEMPLATE.md`" in runbook_text
+    assert "require an exit code `0` / `Closure ready: yes` before claiming roadmap closure" in runbook_text
 
 
 def test_stripe_verification_evidence_template_tracks_manual_closure_requirements() -> None:
