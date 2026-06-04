@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -17,6 +18,7 @@ STATUS_MATRIX_PATH = REPO_ROOT / "docs" / "STATUS_MATRIX.md"
 OPEN_SOURCE_DOC_PATH = REPO_ROOT / "docs" / "OPEN_SOURCE_GITHUB_TRANSPARENCY.md"
 DOCS_SPLIT_PLAN_PATH = REPO_ROOT / "docs" / "ANCAP_DOCS_SPLIT.md"
 DOCS_BOOTSTRAP_PATH = REPO_ROOT / "docs" / "ANCAP_DOCS_REPO_BOOTSTRAP.md"
+LIVE_ANCAP_DOCS_VERIFY = os.environ.get("RUN_ANCAP_DOCS_LIVE_VERIFY") == "1"
 
 
 def load_bootstrap_script_module():
@@ -221,6 +223,10 @@ def test_bootstrap_script_create_repo_apply_path_is_explicit_in_source():
     assert 'milestone_commands = ensure_milestones(args.repo, plan["milestones"], dry_run=True)' in script_text
 
 
+@pytest.mark.skipif(
+    not LIVE_ANCAP_DOCS_VERIFY,
+    reason="live ancap-docs verification requires explicit opt-in auth and mutable external GitHub state",
+)
 def test_bootstrap_script_verifies_live_repo_state():
     result = subprocess.run(
         [
@@ -260,6 +266,10 @@ def test_bootstrap_script_verifies_live_repo_state():
     assert checks[('branchProtection', 'requireCodeOwnerReview')]['actual'] is True
 
 
+@pytest.mark.skipif(
+    not LIVE_ANCAP_DOCS_VERIFY,
+    reason="live ancap-docs verification requires explicit opt-in auth and mutable external GitHub state",
+)
 def test_bootstrap_script_verifies_live_repo_community_state():
     result = subprocess.run(
         [
@@ -958,6 +968,10 @@ def test_bootstrap_script_verifies_live_repo_community_state():
     assert any('live GitHub Projects board verification for dragoncattrx-hub is currently blocked because the active token lacks read:project scope' in note for note in payload['notes'])
 
 
+@pytest.mark.skipif(
+    not LIVE_ANCAP_DOCS_VERIFY,
+    reason="live ancap-docs verification requires explicit opt-in auth and mutable external GitHub state",
+)
 def test_bootstrap_script_markdown_output_renders_operator_checklist_for_live_repo_state():
     result = subprocess.run(
         [

@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "generate_ancap_docs_live_followup.py"
 BOOTSTRAP_SCRIPT_PATH = REPO_ROOT / "scripts" / "bootstrap_ancap_docs_repo.py"
+LIVE_ANCAP_DOCS_VERIFY = os.environ.get("RUN_ANCAP_DOCS_LIVE_VERIFY") == "1"
 
 
 def load_module():
@@ -89,6 +93,10 @@ def test_generate_followup_script_mentions_default_artifact_pair_and_bootstrap_h
     assert "scripts/bootstrap_ancap_docs_repo.py" in script_text
 
 
+@pytest.mark.skipif(
+    not LIVE_ANCAP_DOCS_VERIFY,
+    reason="live ancap-docs verification requires explicit opt-in auth and mutable external GitHub state",
+)
 def test_generate_followup_script_writes_default_artifact_pair(tmp_path: Path):
     result = subprocess.run(
         [
@@ -187,6 +195,10 @@ def test_generate_followup_script_writes_default_artifact_pair(tmp_path: Path):
     assert '"driftCount": 8' not in result.stdout
 
 
+@pytest.mark.skipif(
+    not LIVE_ANCAP_DOCS_VERIFY,
+    reason="live ancap-docs verification requires explicit opt-in auth and mutable external GitHub state",
+)
 def test_generate_followup_script_verbose_mode_echoes_child_output(tmp_path: Path):
     result = subprocess.run(
         [

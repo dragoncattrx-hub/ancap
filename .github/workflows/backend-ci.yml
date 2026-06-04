@@ -120,6 +120,8 @@ jobs:
 
       - name: Docs export / public-trust regression
         run: pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py tests/test_status_summary.py tests/test_ancap_docs_split_ci_guard.py tests/test_bootstrap_ancap_docs_repo.py tests/test_generate_ancap_docs_live_followup.py -q
+        env:
+          RUN_ANCAP_DOCS_LIVE_VERIFY: "0"
 
       - name: Security SAST — Bandit
         run: python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt
