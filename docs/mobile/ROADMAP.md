@@ -1,7 +1,7 @@
 # ANCAP ACP Wallet — Roadmap
 
-> Status: supporting mobile roadmap | Updated: 2026-05-25
-> Last verified: 2026-05-28
+> Status: supporting mobile roadmap | Updated: 2026-06-01
+> Last verified: 2026-06-01
 > Source of truth for cross-project execution priority: `MASTER_ROADMAP.md`
 > Current reality: the mobile wallet is far along, but it is **not** release-ready yet. Android `.so` artifact emission is now verified on the current Windows host; the main remaining work is Android/iOS runtime verification, iOS macOS-Xcode packaging, real device verification, security checklist completion, and store/release work.
 > Fast status index: `docs/STATUS_MATRIX.md`
@@ -79,7 +79,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|--------|
 | P4-1 | Expo app (`apps/acp-wallet-expo`) | [x] | expo-router |
 | P4-2 | Navigation (onboarding + home) | [x] | |
-| P4-3 | Welcome / Create / Import | [~] | Import OK; Create needs native FFI link |
+| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist, but Expo Android dev-build/runtime verification is still pending and iOS still depends on P1-7 |
 | P4-4 | Tabs: Wallet / Activity / Send / Settings | [x] | |
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
@@ -87,7 +87,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-8 | PIN + biometrics | [~] | PIN lock + biometric unlock preference wired in Expo app; still needs real device verification |
 | P4-9 | SecureVault (Keychain / Keystore) | [~] | device-only SecureStore wired; enabling biometrics now migrates mnemonic + keystore into biometric-gated secure storage and adds iOS Face ID permission config; real device verification still pending |
 | P4-10 | Dashboard (ACP + wACP) | [x] | wACP via BSC RPC (fetchWacpBalanceWei); ACP via ACP API |
-| P4-11 | Send + preview + sign | [ ] | needs P1 FFI |
+| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
 | P4-12 | Transaction history | [x] | |
 | P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
@@ -114,8 +114,8 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|
 | P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` across the mobile packages; latest consolidated snapshot: 56 tests across 5 packages |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
-| P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`; real device runs still pending |
-| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`; real uploads still pending |
+| P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready run-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |
+| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |
 | P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
 | P6-6 | Production v1.0.0 | [~] | final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
 
@@ -132,10 +132,10 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | SQ-3 | Quote engine groundwork | [x] | backend `POST /v1/mobile/smart-pay/quote` slice exists with first-scope direct-send and ACP→wACP→USDT route quoting, fee/slippage checks, and API tests |
 | SQ-4 | Execution session groundwork | [x] | backend execute/status/recover endpoints exist with first execution-state lifecycle and API tests |
 | SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |
-| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |
+| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta screen now supports paste, gallery QR import, camera QR scan, explicit confirmation before execute, quote-expiry freshness hints plus expired-quote execute guards, refresh/recover, and persisted draft/session restore in-device; polished UX/history and real route execution still pending |
 | SQ-7 | Real route execution integration | [~] | placeholder execution lifecycle is now hardened in repo code: recover maps known txs onto bridge/swap/payment route steps, emits explorer links, and marks placeholder sessions completed once all quoted route txs are known; real non-custodial EVM spend/sign plus actual bridge/swap/transfer orchestration still remain |
 | SQ-8 | AI fallback classifier | [ ] | only after deterministic path is stable |
-| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, supports tap-to-resume, fetches backend receipt snapshots, and renders a richer receipt summary from receipt/intent/quote/execution data; backend payment-history listing and final polish still pending |
+| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots, keeps per-execution `sessionToken` resume access when locally available, supports tap-to-resume, merges authenticated backend payment-history listing with local history, fetches backend receipt snapshots, explicitly explains the authenticated-vs-device-token resume boundary in UI/docs, renders a richer receipt summary from receipt/intent/quote/execution data, now surfaces route-progress/history-state hints inside the session history list, now also summarizes per-history-entry action state (`Refresh status + recover available`, `Refresh status only`, or `Snapshot only`) so signed-in/backend-restored snapshots are less ambiguous, maps quoted route steps to linked-vs-pending proof coverage in the receipt view, keeps unmatched additional tx refs visible instead of collapsing everything into one flat tx list, avoids reusing one observed tx ref across multiple quoted steps with the same role/network pair, makes local-history clearing preserve signed-in backend history instead of wiping the whole visible timeline, now also surfaces pending-proof summaries for quoted route steps that still lack linked tx refs in restored history cards and receipt snapshots, now keeps quoted-route proof coverage explicit even for receipt snapshots that still have 0 linked tx refs, now labels snapshot freshness from the freshest saved execution/receipt evidence in both restored history cards and receipt snapshots so stale local/backend restores are easier to distinguish from recent proof updates, now normalizes pasted recovery input from raw tx hashes or explorer links before recover requests, now rejects unparseable structured recovery-locator noise instead of forwarding it as fake tx ids while surfacing duplicate/invalid recovery tokens directly in the Expo UI, now blocks recover submission when the pasted field contains only invalid locator noise while still allowing an empty status-only recovery pass, now previews each parsed recovery ref in the Expo UI with preserved network/explorer-link context before submit, now deduplicates recovered/history proof tx refs case-insensitively across backend receipts and local execution snapshots while preserving the richer explorer-linked copy, now forwards structured recovery refs (network/explorer metadata from pasted explorer links) through the backend recover API so proof receipts can keep richer route-linked explorer coverage instead of collapsing every recovered tx back to a bare hash, now allows the authenticated execution owner to refresh status/receipt and submit recovery without the original device-local session token while still blocking non-owners, now keeps explicit conflicting `routeStepIndex` refs in the additional-proof bucket instead of silently remapping them onto a different quoted step or inflating route progress, and now preserves richer local proof refs plus receipt context/session continuity when authenticated backend history later overlaps the same execution instead of flattening to the last final snapshot only, while the active receipt snapshot now also renders from that merged history context so route summaries, fees, merchant labels, and completion metadata stay aligned with the richer overlap state instead of falling back to a thinner in-memory receipt copy; final route-execution-linked proof polish still pending |
 | SQ-10 | AI Payment Scanner MVP | [ ] | camera/photo upload, QR recognition, OCR for invoices/receipts/payment screens, and payment-intent preview with manual correction |
 | SQ-11 | Smart Payment Flow expansion | [ ] | auto asset matching, smart swap before payment, multi-chain routing, duplicate payment detection, merchant mode |
 | SQ-12 | ANCAP Claim Codes / Crypto Voucher MVP | [ ] | lock balance, generate redeemable claim code, redeem from wallet/site, expiry/cancel/refund, ACP fees |
@@ -184,7 +184,7 @@ The original 8–12 week estimate is no longer the right way to read this docume
 
 Treat this roadmap as a task tracker, not as a reliable remaining-weeks estimate.
 
-Release-closure execution docs now live in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md` so the remaining P6 work is explicit instead of hand-wavy.
+Release-closure execution docs now live in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`, with copy-ready evidence artifacts in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` and `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`, so the remaining P6 work is explicit instead of hand-wavy.
 
 ---
 
@@ -197,7 +197,7 @@ ANCAP/                          # this repo
   ACP-crypto/                   # Rust chain + wallet (source of truth)
 
 ancap-mobile/                   # mobile monorepo (sibling or submodule)
-  apps/acp-wallet/              # React Native app
+  apps/acp-wallet-expo/         # Expo app
   packages/acp-wallet-sdk/
   packages/acp-api-client/
   packages/acp-bridge-client/

@@ -1,5 +1,7 @@
 """Mobile ACP Wallet public API tests."""
 
+import uuid
+
 import app.api.routers.mobile_acp as mobile_acp
 from app.services import rate_limit as rl_module
 
@@ -170,18 +172,39 @@ def test_smart_pay_execute_receipt_and_recover(client):
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
+        headers={"Authorization": ""},
     )
     assert exec_res.status_code == 200, exec_res.text
-    execution = exec_res.json()["execution"]
+    exec_payload = exec_res.json()
+    execution = exec_payload["execution"]
+    session_token = exec_payload["sessionToken"]
+    assert session_token
     assert execution["status"] == "awaiting_local_signature"
     assert execution["nextAction"] == "sign_direct_send_tx"
+    assert execution["progress"] == {
+        "totalRouteSteps": 1,
+        "observedTxCount": 0,
+        "remainingRouteSteps": 1,
+        "pendingRoles": ["payment"],
+    }
     execution_id = execution["id"]
 
-    status_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}")
+    unauth_status_res = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}",
+        headers={"Authorization": ""},
+    )
+    assert unauth_status_res.status_code == 401
+    assert unauth_status_res.json()["detail"] == "Smart Pay execution access required"
+
+    status_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}?sessionToken={session_token}", headers={"Authorization": ""})
     assert status_res.status_code == 200
     assert status_res.json()["execution"]["id"] == execution_id
+    assert status_res.json()["sessionToken"] == session_token
 
-    receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    receipt_res = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
+        headers={"Authorization": ""},
+    )
     assert receipt_res.status_code == 200, receipt_res.text
     receipt = receipt_res.json()
     assert receipt["paymentExecutionId"] == execution_id
@@ -194,20 +217,32 @@ def test_smart_pay_execute_receipt_and_recover(client):
     assert receipt["txRefs"] == []
 
     recover_res = client.post(
-        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
         json={"clientKnownTxs": ["0xabc123"]},
+        headers={"Authorization": ""},
     )
     assert recover_res.status_code == 200, recover_res.text
-    recovered = recover_res.json()["execution"]
+    recover_payload = recover_res.json()
+    recovered = recover_payload["execution"]
+    assert recover_payload["sessionToken"] == session_token
     assert recovered["status"] == "completed"
     assert recovered["recoverable"] is False
     assert recovered["nextAction"] is None
+    assert recovered["progress"] == {
+        "totalRouteSteps": 1,
+        "observedTxCount": 1,
+        "remainingRouteSteps": 0,
+        "pendingRoles": [],
+    }
     assert recovered["txRefs"][0]["role"] == "payment"
     assert recovered["txRefs"][0]["network"] == "acp"
     assert recovered["txRefs"][0]["txid"] == "0xabc123"
     assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/0xabc123"
 
-    recovered_receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    recovered_receipt_res = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
+        headers={"Authorization": ""},
+    )
     assert recovered_receipt_res.status_code == 200
     recovered_receipt = recovered_receipt_res.json()
     assert recovered_receipt["txRefs"][0]["txid"] == "0xabc123"
@@ -256,17 +291,25 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
     assert partial["status"] == "pending_reconciliation"
     assert partial["recoverable"] is True
     assert partial["nextAction"] is None
+    assert partial["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 2,
+        "remainingRouteSteps": 1,
+        "pendingRoles": ["merchant_payout"],
+    }
     assert partial["txRefs"][0] == {
         "role": "bridge",
         "network": "acp",
         "txid": "0xbridge",
         "explorerUrl": "https://ancap.cloud/acp/tx/0xbridge",
+        "routeStepIndex": 1,
     }
     assert partial["txRefs"][1] == {
         "role": "swap",
         "network": "bsc",
         "txid": "0xswap",
         "explorerUrl": "https://bscscan.com/tx/0xswap",
+        "routeStepIndex": 2,
     }
 
     final_recover = client.post(
@@ -278,12 +321,967 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
     assert final["status"] == "completed"
     assert final["recoverable"] is False
     assert final["nextAction"] is None
+    assert final["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 3,
+        "remainingRouteSteps": 0,
+        "pendingRoles": [],
+    }
     assert final["txRefs"][2] == {
         "role": "merchant_payout",
         "network": "bsc",
         "txid": "0xpay",
         "explorerUrl": "https://bscscan.com/tx/0xpay",
+        "routeStepIndex": 3,
     }
+
+
+def test_smart_pay_recover_preserves_explorer_link_metadata_from_structured_client_refs(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={
+            "clientKnownTxs": ["0xswapproof"],
+            "clientKnownRefs": [
+                {
+                    "txid": "0xbridgeproof",
+                    "network": "acp",
+                    "role": "bridge",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                },
+                {
+                    "txid": "0xmerchantproof",
+                    "network": "bsc",
+                    "role": "merchant_payout",
+                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                },
+            ],
+        },
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "completed"
+    assert recovered["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 3,
+        "remainingRouteSteps": 0,
+        "pendingRoles": [],
+    }
+    assert recovered["txRefs"] == [
+        {
+            "role": "bridge",
+            "network": "acp",
+            "txid": "0xbridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "routeStepIndex": 1,
+        },
+        {
+            "role": "swap",
+            "network": "bsc",
+            "txid": "0xswapproof",
+            "explorerUrl": "https://bscscan.com/tx/0xswapproof",
+            "routeStepIndex": 2,
+        },
+        {
+            "role": "merchant_payout",
+            "network": "bsc",
+            "txid": "0xmerchantproof",
+            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "routeStepIndex": 3,
+        },
+    ]
+
+
+def test_smart_pay_recover_progress_counts_only_route_matched_refs_when_extra_refs_are_present(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={
+            "clientKnownRefs": [
+                {
+                    "txid": "0xbridgeproof",
+                    "network": "acp",
+                    "role": "bridge",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                },
+                {
+                    "txid": "0xmerchantproof",
+                    "network": "bsc",
+                    "role": "merchant_payout",
+                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                },
+                {
+                    "txid": "0xrefundproof",
+                    "network": "acp",
+                    "role": "refund",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xrefundproof",
+                },
+            ],
+        },
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "pending_reconciliation"
+    assert recovered["recoverable"] is True
+    assert recovered["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 2,
+        "remainingRouteSteps": 1,
+        "pendingRoles": ["swap"],
+    }
+    assert recovered["txRefs"] == [
+        {
+            "role": "bridge",
+            "network": "acp",
+            "txid": "0xbridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "routeStepIndex": 1,
+        },
+        {
+            "role": "merchant_payout",
+            "network": "bsc",
+            "txid": "0xmerchantproof",
+            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "routeStepIndex": 3,
+        },
+        {
+            "role": "refund",
+            "network": "acp",
+            "txid": "0xrefundproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xrefundproof",
+            "routeStepIndex": None,
+        },
+    ]
+
+    receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    assert receipt_res.status_code == 200, receipt_res.text
+    assert receipt_res.json()["txRefs"] == recovered["txRefs"]
+
+
+def test_smart_pay_recover_does_not_remap_mismatched_explicit_route_step_refs(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={
+            "clientKnownRefs": [
+                {
+                    "txid": "0xwrong-step",
+                    "network": "bsc",
+                    "role": "merchant_payout",
+                    "explorerUrl": "https://bscscan.com/tx/0xwrong-step",
+                    "routeStepIndex": 1,
+                }
+            ],
+        },
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "pending_reconciliation"
+    assert recovered["recoverable"] is True
+    assert recovered["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 0,
+        "remainingRouteSteps": 3,
+        "pendingRoles": ["bridge", "swap", "merchant_payout"],
+    }
+    assert recovered["txRefs"] == [
+        {
+            "role": "merchant_payout",
+            "network": "bsc",
+            "txid": "0xwrong-step",
+            "explorerUrl": "https://bscscan.com/tx/0xwrong-step",
+            "routeStepIndex": 1,
+        }
+    ]
+
+    receipt_res = client.get(f"/v1/mobile/smart-pay/payments/{execution_id}/receipt")
+    assert receipt_res.status_code == 200, receipt_res.text
+    assert receipt_res.json()["txRefs"] == recovered["txRefs"]
+
+
+def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "camera", "rawPayload": f"{addr}?amount=1"},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP"],
+                "maxSlippageBps": 100,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers={"Authorization": ""},
+    )
+    session_token = exec_res.json()["sessionToken"]
+    execution_id = exec_res.json()["execution"]["id"]
+
+    first_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={"clientKnownTxs": ["0xabc123"]},
+        headers={"Authorization": ""},
+    )
+    assert first_recover.status_code == 200, first_recover.text
+    first_execution = first_recover.json()["execution"]
+    assert first_execution["txRefs"] == [
+        {
+            "role": "payment",
+            "network": "acp",
+            "txid": "0xabc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "routeStepIndex": 1,
+        }
+    ]
+
+    duplicate_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={"clientKnownTxs": ["0xABC123", "0xabc123", " 0xAbC123 "]},
+        headers={"Authorization": ""},
+    )
+    assert duplicate_recover.status_code == 200, duplicate_recover.text
+    duplicate_execution = duplicate_recover.json()["execution"]
+    assert duplicate_execution["status"] == "completed"
+    assert duplicate_execution["progress"] == {
+        "totalRouteSteps": 1,
+        "observedTxCount": 1,
+        "remainingRouteSteps": 0,
+        "pendingRoles": [],
+    }
+    assert duplicate_execution["txRefs"] == [
+        {
+            "role": "payment",
+            "network": "acp",
+            "txid": "0xabc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "routeStepIndex": 1,
+        }
+    ]
+
+    receipt_res = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
+        headers={"Authorization": ""},
+    )
+    assert receipt_res.status_code == 200, receipt_res.text
+    assert receipt_res.json()["txRefs"] == [
+        {
+            "role": "payment",
+            "network": "acp",
+            "txid": "0xabc123",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xabc123",
+            "routeStepIndex": 1,
+        }
+    ]
+
+
+def test_smart_pay_recover_prefers_structured_refs_over_duplicate_plain_txids(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers={"Authorization": ""},
+    )
+    session_token = exec_res.json()["sessionToken"]
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={
+            "clientKnownTxs": ["0xbridgeproof", "0xmerchantproof"],
+            "clientKnownRefs": [
+                {
+                    "txid": "0xbridgeproof",
+                    "network": "acp",
+                    "role": "bridge",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                },
+                {
+                    "txid": "0xmerchantproof",
+                    "network": "bsc",
+                    "role": "merchant_payout",
+                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                },
+            ],
+        },
+        headers={"Authorization": ""},
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "pending_reconciliation"
+    assert recovered["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 2,
+        "remainingRouteSteps": 1,
+        "pendingRoles": ["swap"],
+    }
+    assert recovered["txRefs"] == [
+        {
+            "role": "bridge",
+            "network": "acp",
+            "txid": "0xbridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "routeStepIndex": 1,
+        },
+        {
+            "role": "merchant_payout",
+            "network": "bsc",
+            "txid": "0xmerchantproof",
+            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "routeStepIndex": 3,
+        },
+    ]
+
+
+def test_smart_pay_recover_accepts_explorer_links_inside_client_known_txs(client):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "camera", "rawPayload": f"{addr}?amount=1"},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP"],
+                "maxSlippageBps": 100,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers={"Authorization": ""},
+    )
+    session_token = exec_res.json()["sessionToken"]
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={
+            "clientKnownTxs": [
+                "https://ancap.cloud/acp/transactions/0xabc123?source=wallet"
+            ]
+        },
+        headers={"Authorization": ""},
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "completed"
+    assert recovered["txRefs"] == [
+        {
+            "role": "payment",
+            "network": "acp",
+            "txid": "0xabc123",
+            "explorerUrl": "https://ancap.cloud/acp/transactions/0xabc123?source=wallet",
+            "routeStepIndex": 1,
+        }
+    ]
+
+
+def test_smart_pay_recover_accepts_structured_locator_in_client_known_ref_txid(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers={"Authorization": ""},
+    )
+    session_token = exec_res.json()["sessionToken"]
+    execution_id = exec_res.json()["execution"]["id"]
+
+    recover_res = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={
+            "clientKnownRefs": [
+                {
+                    "txid": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                    "role": "bridge",
+                },
+                {
+                    "txid": "https://bscscan.com/tx/0xmerchantproof",
+                    "role": "merchant_payout",
+                },
+            ]
+        },
+        headers={"Authorization": ""},
+    )
+    assert recover_res.status_code == 200, recover_res.text
+    recovered = recover_res.json()["execution"]
+    assert recovered["status"] == "pending_reconciliation"
+    assert recovered["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 2,
+        "remainingRouteSteps": 1,
+        "pendingRoles": ["swap"],
+    }
+    assert recovered["txRefs"] == [
+        {
+            "role": "bridge",
+            "network": "acp",
+            "txid": "0xbridgeproof",
+            "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+            "routeStepIndex": 1,
+        },
+        {
+            "role": "merchant_payout",
+            "network": "bsc",
+            "txid": "0xmerchantproof",
+            "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+            "routeStepIndex": 3,
+        },
+    ]
+
+
+def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_duplicates_repeat_later(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers={"Authorization": ""},
+    )
+    session_token = exec_res.json()["sessionToken"]
+    execution_id = exec_res.json()["execution"]["id"]
+
+    first_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={
+            "clientKnownRefs": [
+                {
+                    "txid": "0xbridgeproof",
+                    "network": "acp",
+                    "role": "bridge",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                }
+            ]
+        },
+        headers={"Authorization": ""},
+    )
+    assert first_recover.status_code == 200, first_recover.text
+
+    duplicate_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover?sessionToken={session_token}",
+        json={"clientKnownTxs": [" 0xBRIDGEPROOF ", "0xbridgeproof"]},
+        headers={"Authorization": ""},
+    )
+    assert duplicate_recover.status_code == 200, duplicate_recover.text
+    duplicate_execution = duplicate_recover.json()["execution"]
+    assert duplicate_execution["txRefs"][0] == {
+        "role": "bridge",
+        "network": "acp",
+        "txid": "0xbridgeproof",
+        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+        "routeStepIndex": 1,
+    }
+    assert duplicate_execution["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 1,
+        "remainingRouteSteps": 2,
+        "pendingRoles": ["swap", "merchant_payout"],
+    }
+
+    receipt_res = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
+        headers={"Authorization": ""},
+    )
+    assert receipt_res.status_code == 200, receipt_res.text
+    assert receipt_res.json()["txRefs"][0] == {
+        "role": "bridge",
+        "network": "acp",
+        "txid": "0xbridgeproof",
+        "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+        "routeStepIndex": 1,
+    }
+
+
+def test_smart_pay_payment_history_lists_latest_executions_with_receipts(client):
+    first_addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    second_addr = "acp1qg7l6f5d9s4lm7v3x0j6l3r0f8c0q5t7t2k7d3m4"
+
+    first_parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "camera", "rawPayload": f"{first_addr}?amount=1"},
+    )
+    first_payment_intent_id = first_parsed.json()["paymentIntent"]["id"]
+    first_quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": first_payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP"],
+                "maxSlippageBps": 100,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    first_quote_id = first_quote_res.json()["quote"]["quoteId"]
+    first_exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": first_payment_intent_id,
+            "quoteId": first_quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    first_execution_id = first_exec_res.json()["execution"]["id"]
+    first_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{first_execution_id}/recover",
+        json={"clientKnownTxs": ["0xfirst"]},
+    )
+    assert first_recover.status_code == 200, first_recover.text
+
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    second_payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    second_parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": second_payload},
+    )
+    second_payment_intent_id = second_parsed.json()["paymentIntent"]["id"]
+    second_quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": second_payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    second_quote_id = second_quote_res.json()["quote"]["quoteId"]
+    second_exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": second_payment_intent_id,
+            "quoteId": second_quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    second_execution_id = second_exec_res.json()["execution"]["id"]
+
+    history_res = client.get("/v1/mobile/smart-pay/payments?limit=1")
+    assert history_res.status_code == 200, history_res.text
+    limited = history_res.json()["payments"]
+    assert len(limited) == 1
+    assert limited[0]["execution"]["id"] == second_execution_id
+    assert limited[0]["receipt"]["paymentExecutionId"] == second_execution_id
+    assert limited[0]["paymentIntent"]["id"] == second_payment_intent_id
+    assert limited[0]["quote"]["quoteId"] == second_quote_id
+
+    full_history_res = client.get("/v1/mobile/smart-pay/payments?limit=5")
+    assert full_history_res.status_code == 200, full_history_res.text
+    payments = full_history_res.json()["payments"]
+    assert [item["execution"]["id"] for item in payments[:2]] == [second_execution_id, first_execution_id]
+
+    completed_entry = next(item for item in payments if item["execution"]["id"] == first_execution_id)
+    assert completed_entry["execution"]["status"] == "completed"
+    assert completed_entry["execution"]["recoverable"] is False
+    assert completed_entry["receipt"]["txRefs"][0]["txid"] == "0xfirst"
+    assert completed_entry["receipt"]["recipientAddress"] == first_addr
+
+    pending_entry = next(item for item in payments if item["execution"]["id"] == second_execution_id)
+    assert pending_entry["execution"]["status"] == "awaiting_local_signature"
+    assert pending_entry["receipt"]["paymentExecutionId"] == second_execution_id
+    assert pending_entry["paymentIntent"]["recipient"]["address"] == recipient
+    assert pending_entry["quote"]["route"][0]["kind"] == "bridge"
+
+
+def test_smart_pay_payment_history_requires_auth_when_default_client_token_is_removed(client):
+    email = f"smart_pay_history_{uuid.uuid4().hex[:12]}@test.com"
+    register = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": "password123", "display_name": "smart-pay-history-user"},
+        headers={"Authorization": ""},
+    )
+    assert register.status_code in (200, 201), register.text
+    login = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": "password123"},
+        headers={"Authorization": ""},
+    )
+    assert login.status_code == 200, login.text
+    token = login.json()["access_token"]
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "camera", "rawPayload": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9?amount=1"},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP"],
+                "maxSlippageBps": 100,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers=auth_headers,
+    )
+    execution_id = exec_res.json()["execution"]["id"]
+
+    mine = client.get("/v1/mobile/smart-pay/payments?limit=5", headers=auth_headers)
+    assert mine.status_code == 200, mine.text
+    payments = mine.json()["payments"]
+    assert any(item["execution"]["id"] == execution_id for item in payments)
+
+    unauth = client.get("/v1/mobile/smart-pay/payments", headers={"Authorization": ""})
+    assert unauth.status_code == 401, unauth.text
+    assert unauth.json()["detail"] == "Not authenticated"
+
+
+def test_smart_pay_owner_auth_can_refresh_receipt_and_recover_without_original_session_token(client):
+    owner_email = f"smart_pay_owner_{uuid.uuid4().hex[:12]}@test.com"
+    owner_register = client.post(
+        "/v1/auth/users",
+        json={"email": owner_email, "password": "password123", "display_name": "smart-pay-owner"},
+        headers={"Authorization": ""},
+    )
+    assert owner_register.status_code in (200, 201), owner_register.text
+    owner_login = client.post(
+        "/v1/auth/login",
+        json={"email": owner_email, "password": "password123"},
+        headers={"Authorization": ""},
+    )
+    assert owner_login.status_code == 200, owner_login.text
+    owner_headers = {"Authorization": f"Bearer {owner_login.json()['access_token']}"}
+
+    other_email = f"smart_pay_other_{uuid.uuid4().hex[:12]}@test.com"
+    other_register = client.post(
+        "/v1/auth/users",
+        json={"email": other_email, "password": "password123", "display_name": "smart-pay-other"},
+        headers={"Authorization": ""},
+    )
+    assert other_register.status_code in (200, 201), other_register.text
+    other_login = client.post(
+        "/v1/auth/login",
+        json={"email": other_email, "password": "password123"},
+        headers={"Authorization": ""},
+    )
+    assert other_login.status_code == 200, other_login.text
+    other_headers = {"Authorization": f"Bearer {other_login.json()['access_token']}"}
+
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+        headers=owner_headers,
+    )
+    assert exec_res.status_code == 200, exec_res.text
+    execution_id = exec_res.json()["execution"]["id"]
+    session_token = exec_res.json()["sessionToken"]
+    assert session_token
+
+    owner_status = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}",
+        headers=owner_headers,
+    )
+    assert owner_status.status_code == 200, owner_status.text
+    owner_status_payload = owner_status.json()
+    assert owner_status_payload["execution"]["id"] == execution_id
+    assert owner_status_payload["sessionToken"] == session_token
+
+    owner_receipt = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt",
+        headers=owner_headers,
+    )
+    assert owner_receipt.status_code == 200, owner_receipt.text
+    assert owner_receipt.json()["paymentExecutionId"] == execution_id
+
+    owner_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={
+            "clientKnownRefs": [
+                {
+                    "txid": "0xbridgeproof",
+                    "network": "acp",
+                    "role": "bridge",
+                    "explorerUrl": "https://ancap.cloud/acp/tx/0xbridgeproof",
+                },
+                {
+                    "txid": "0xmerchantproof",
+                    "network": "bsc",
+                    "role": "merchant_payout",
+                    "explorerUrl": "https://bscscan.com/tx/0xmerchantproof",
+                },
+            ],
+            "clientKnownTxs": ["0xswapproof"],
+        },
+        headers=owner_headers,
+    )
+    assert owner_recover.status_code == 200, owner_recover.text
+    owner_recover_payload = owner_recover.json()
+    assert owner_recover_payload["sessionToken"] == session_token
+    assert owner_recover_payload["execution"]["status"] == "completed"
+    assert owner_recover_payload["execution"]["progress"] == {
+        "totalRouteSteps": 3,
+        "observedTxCount": 3,
+        "remainingRouteSteps": 0,
+        "pendingRoles": [],
+    }
+
+    owner_receipt_after_recover = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt",
+        headers=owner_headers,
+    )
+    assert owner_receipt_after_recover.status_code == 200, owner_receipt_after_recover.text
+    assert owner_receipt_after_recover.json()["txRefs"] == owner_recover_payload["execution"]["txRefs"]
+
+    other_status = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}",
+        headers=other_headers,
+    )
+    assert other_status.status_code == 401, other_status.text
+    assert other_status.json()["detail"] == "Smart Pay execution access required"
+
+    other_receipt = client.get(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/receipt",
+        headers=other_headers,
+    )
+    assert other_receipt.status_code == 401, other_receipt.text
+    assert other_receipt.json()["detail"] == "Smart Pay execution access required"
+
+    other_recover = client.post(
+        f"/v1/mobile/smart-pay/payments/{execution_id}/recover",
+        json={"clientKnownTxs": ["0xintruder"]},
+        headers=other_headers,
+    )
+    assert other_recover.status_code == 401, other_recover.text
+    assert other_recover.json()["detail"] == "Smart Pay execution access required"
 
 
 def test_smart_pay_receipt_404_for_unknown_execution(client):

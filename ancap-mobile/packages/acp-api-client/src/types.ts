@@ -284,6 +284,14 @@ export type SmartPayTxRef = {
   network: string;
   txid: string;
   explorerUrl?: string | null;
+  routeStepIndex?: number | null;
+};
+
+export type SmartPayExecutionProgress = {
+  totalRouteSteps: number;
+  observedTxCount: number;
+  remainingRouteSteps: number;
+  pendingRoles: string[];
 };
 
 export type SmartPayExecution = {
@@ -295,12 +303,14 @@ export type SmartPayExecution = {
   updatedAt: string;
   recoverable: boolean;
   nextAction?: string | null;
+  progress?: SmartPayExecutionProgress | null;
   txRefs: SmartPayTxRef[];
   error?: string | null;
 };
 
 export type SmartPayExecutionResponse = {
   execution: SmartPayExecution;
+  sessionToken?: string | null;
 };
 
 export type SmartPayReceipt = {
@@ -320,6 +330,26 @@ export type SmartPayReceipt = {
   txRefs: SmartPayTxRef[];
 };
 
+export type SmartPayHistoryEntry = {
+  execution: SmartPayExecution;
+  receipt: SmartPayReceipt;
+  paymentIntent: SmartPayPaymentIntent;
+  quote: SmartPayQuote;
+};
+
+export type SmartPayHistoryResponse = {
+  payments: SmartPayHistoryEntry[];
+};
+
+export type SmartPayClientKnownRef = {
+  txid: string;
+  network?: string | null;
+  role?: string | null;
+  explorerUrl?: string | null;
+  routeStepIndex?: number | null;
+};
+
 export type SmartPayRecoverInput = {
   clientKnownTxs: string[];
+  clientKnownRefs?: SmartPayClientKnownRef[];
 };

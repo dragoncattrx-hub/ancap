@@ -1,13 +1,46 @@
-import type { SmartPayExecution } from "@ancap/acp-api-client";
-import type { SmartPayHistoryEntry } from "./smart-pay-history";
+import type {
+  SmartPayExecution,
+  SmartPayPaymentIntent,
+  SmartPayQuote,
+  SmartPayReceipt,
+} from "@ancap/acp-api-client";
+import type { SmartPayHistoryEntry, SmartPayHistorySnapshotOrigin } from "./smart-pay-history";
 
 export type SmartPayHistoryBucket = "in_flight" | "needs_attention" | "completed";
+
+export type SmartPayActiveHistoryEntryInput = {
+  snapshotSavedAt?: string | null;
+  intent: SmartPayPaymentIntent | null;
+  quote: SmartPayQuote | null;
+  execution: SmartPayExecution | null;
+  receipt: SmartPayReceipt | null;
+  sessionToken?: string | null;
+  snapshotOrigin?: SmartPayHistorySnapshotOrigin;
+};
 
 export type SmartPayHistorySection = {
   key: SmartPayHistoryBucket;
   title: string;
   entries: SmartPayHistoryEntry[];
 };
+
+function pickLatestSmartPayTimestamp(...values: Array<string | null | undefined>): string {
+  const best = values.reduce<{ value: string | null; timestamp: number | null }>(
+    (current, value) => {
+      const parsed = parseSmartPayTimestamp(value);
+      if (parsed === null || !value) {
+        return current;
+      }
+      if (current.timestamp === null || parsed > current.timestamp) {
+        return { value, timestamp: parsed };
+      }
+      return current;
+    },
+    { value: null, timestamp: null }
+  );
+
+  return best.value ?? new Date(0).toISOString();
+}
 
 function bucketForStatus(status: SmartPayExecution["status"]): SmartPayHistoryBucket {
   switch (status) {
@@ -53,10 +86,879 @@ export function formatSmartPayTimestamp(value: string): string {
   return `${date.toISOString().slice(0, 16).replace("T", " ")} UTC`;
 }
 
+export function getSmartPayExecutionStatusLabel(status: SmartPayExecution["status"]): string {
+  switch (status) {
+    case "awaiting_local_signature":
+      return "Awaiting local signature";
+    case "pending_reconciliation":
+      return "Pending reconciliation";
+    case "failed":
+      return "Needs attention";
+    case "completed":
+    default:
+      return "Completed";
+  }
+}
+
+function parseSmartPayTimestamp(value: string | null | undefined): number | null {
+  if (!value) {
+    return null;
+  }
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function formatSmartPayRelativeAge(diffMs: number): string {
+  const totalSeconds = Math.max(Math.floor(diffMs / 1000), 0);
+  if (totalSeconds < 60) {
+    return `${totalSeconds}s`;
+  }
+
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (totalMinutes < 60) {
+    return seconds === 0 ? `${totalMinutes}m` : `${totalMinutes}m ${seconds}s`;
+  }
+
+  const totalHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (totalHours < 48) {
+    return minutes === 0 ? `${totalHours}h` : `${totalHours}h ${minutes}m`;
+  }
+
+  const totalDays = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  return hours === 0 ? `${totalDays}d` : `${totalDays}d ${hours}h`;
+}
+
+export function buildSmartPayActiveHistoryEntry(
+  input: SmartPayActiveHistoryEntryInput
+): SmartPayHistoryEntry | null {
+  if (!input.execution || !input.intent) {
+    return null;
+  }
+
+  return {
+    id: input.execution.id,
+    savedAt: pickLatestSmartPayTimestamp(
+      input.snapshotSavedAt,
+      input.execution.updatedAt,
+      input.receipt?.completedAt,
+      input.execution.createdAt,
+      input.intent.createdAt
+    ),
+    intent: input.intent,
+    quote: input.quote,
+    execution: input.execution,
+    receipt: input.receipt,
+    sessionToken: input.sessionToken ?? null,
+    snapshotOrigin: input.snapshotOrigin ?? (input.sessionToken ? "local" : "local"),
+  };
+}
+
+export function getSmartPayActiveExecutionView(
+  activeHistoryEntry: SmartPayHistoryEntry | null | undefined,
+  execution: SmartPayExecution | null | undefined
+): SmartPayExecution | null {
+  return activeHistoryEntry?.execution ?? execution ?? null;
+}
+
+function getSmartPayHistoryFreshnessTimestamp(entry: SmartPayHistoryEntry): number | null {
+  const snapshotTimestamp = [entry.execution.updatedAt, entry.savedAt].reduce<number | null>((best, value) => {
+    const parsed = parseSmartPayTimestamp(value);
+    if (parsed === null) {
+      return best;
+    }
+    if (best === null || parsed > best) {
+      return parsed;
+    }
+    return best;
+  }, null);
+
+  const receiptTimestamp = parseSmartPayTimestamp(entry.receipt?.completedAt);
+
+  if (receiptTimestamp !== null && (snapshotTimestamp === null || receiptTimestamp > snapshotTimestamp)) {
+    return receiptTimestamp;
+  }
+
+  if (snapshotTimestamp !== null) {
+    return snapshotTimestamp;
+  }
+
+  return [entry.receipt?.completedAt, entry.execution.createdAt, entry.intent.createdAt].reduce<number | null>((best, value) => {
+    const parsed = parseSmartPayTimestamp(value);
+    if (parsed === null) {
+      return best;
+    }
+    if (best === null || parsed > best) {
+      return parsed;
+    }
+    return best;
+  }, null);
+}
+
 export function getSmartPayHistoryAmountLabel(entry: SmartPayHistoryEntry): string {
   const amount =
     entry.receipt?.targetAmountPaid ?? entry.quote?.targetAmount ?? entry.intent.amount?.value ?? "—";
   const symbol =
     entry.receipt?.targetAssetPaid ?? entry.quote?.targetAsset.symbol ?? entry.intent.asset.symbol ?? "asset";
   return `${amount} ${symbol}`;
+}
+
+export function getSmartPayHistorySnapshotTitle(entry: SmartPayHistoryEntry): string {
+  return entry.receipt ? "Receipt snapshot" : "Execution snapshot";
+}
+
+export function getSmartPayHistorySnapshotStatusLabel(entry: SmartPayHistoryEntry): string {
+  return entry.receipt ? "Receipt status" : "Execution status";
+}
+
+export type SmartPayHistoryNetworkFeesSource = "receipt" | "quote" | "quote_fallback" | "none";
+
+export type SmartPayHistoryReceiptDisplay = {
+  recipientAddress: string;
+  sourceAsset: string;
+  sourceAmount: string;
+  targetAsset: string;
+  targetAmount: string;
+  serviceFeeAcp: string;
+  completedAt: string | null;
+  merchantLabel: string | null;
+  routeSummary: string[];
+  networkFees: SmartPayReceipt["networkFees"];
+  networkFeesSource: SmartPayHistoryNetworkFeesSource;
+};
+
+function formatSmartPayRouteStepRail(step: { dexOrRail?: string | null }): string {
+  const value = step.dexOrRail?.trim();
+  return value ? ` via ${value}` : "";
+}
+
+function formatSmartPayRouteStepLabel(
+  step: NonNullable<SmartPayHistoryEntry["quote"]>["route"][number],
+  stepIndex: number
+): string {
+  return `Step ${stepIndex}: ${step.kind} ${step.fromAsset} → ${step.toAsset} via ${step.network}${formatSmartPayRouteStepRail(step)}`;
+}
+
+export function getSmartPayHistoryReceiptDisplay(entry: SmartPayHistoryEntry): SmartPayHistoryReceiptDisplay {
+  const receiptNetworkFees = entry.receipt?.networkFees ?? [];
+  const quoteNetworkFees = entry.quote?.networkFee ?? [];
+  const hasReceiptSnapshot = Boolean(entry.receipt);
+  const networkFees = receiptNetworkFees.length ? receiptNetworkFees : quoteNetworkFees;
+  const networkFeesSource: SmartPayHistoryNetworkFeesSource = receiptNetworkFees.length
+    ? "receipt"
+    : quoteNetworkFees.length
+      ? hasReceiptSnapshot
+        ? "quote_fallback"
+        : "quote"
+      : "none";
+
+  return {
+    recipientAddress: entry.receipt?.recipientAddress ?? entry.intent.recipient.address,
+    sourceAsset: entry.receipt?.sourceAssetSpent ?? entry.quote?.sourceAsset.symbol ?? entry.intent.asset.symbol ?? "asset",
+    sourceAmount: entry.receipt?.sourceAmountSpent ?? entry.quote?.requiredSourceAmount ?? "—",
+    targetAsset: entry.receipt?.targetAssetPaid ?? entry.quote?.targetAsset.symbol ?? entry.intent.asset.symbol ?? "asset",
+    targetAmount: entry.receipt?.targetAmountPaid ?? entry.quote?.targetAmount ?? entry.intent.amount?.value ?? "—",
+    serviceFeeAcp: entry.receipt?.serviceFeeAcp ?? entry.quote?.serviceFeeAcp ?? "—",
+    completedAt: entry.receipt?.completedAt ?? null,
+    merchantLabel: entry.receipt?.merchantLabel ?? null,
+    routeSummary: entry.receipt?.routeSummary?.length
+      ? entry.receipt.routeSummary
+      : (entry.quote?.route ?? []).map((step, index) => formatSmartPayRouteStepLabel(step, index + 1)),
+    networkFees,
+    networkFeesSource,
+  };
+}
+
+export function getSmartPayHistoryNetworkFeesLabel(display: SmartPayHistoryReceiptDisplay): string {
+  switch (display.networkFeesSource) {
+    case "receipt":
+      return "Network fees";
+    case "quote":
+    case "quote_fallback":
+      return "Estimated network fees";
+    case "none":
+    default:
+      return "Network fees";
+  }
+}
+
+export function getSmartPayHistoryNetworkFeesHint(display: SmartPayHistoryReceiptDisplay): string | null {
+  switch (display.networkFeesSource) {
+    case "receipt":
+      return "Final network fee amounts come from the stored receipt snapshot.";
+    case "quote":
+      return "Quoted fee estimates are shown until execution stores final receipt-side network fee values.";
+    case "quote_fallback":
+      return "This receipt snapshot does not yet include final network fee values, so quoted estimates are shown for context only.";
+    case "none":
+    default:
+      return null;
+  }
+}
+
+function pluralize(value: number, singular: string, plural: string): string {
+  return `${value} ${value === 1 ? singular : plural}`;
+}
+
+export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): string | null {
+  const progress = entry.execution.progress;
+  if (progress) {
+    const remaining = pluralize(progress.remainingRouteSteps, "route step", "route steps");
+    return `Route progress: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed · ${remaining} remaining`;
+  }
+  if (entry.receipt?.routeSummary?.length) {
+    return `Receipt route summary: ${pluralize(entry.receipt.routeSummary.length, "step", "steps")} recorded`;
+  }
+  if (entry.execution.txRefs.length) {
+    return `Execution references: ${pluralize(entry.execution.txRefs.length, "tx", "txs")} recorded`;
+  }
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return "Route progress: waiting for local signature";
+    case "pending_reconciliation":
+      return "Route progress: reconciliation pending";
+    case "failed":
+      return "Route progress: execution needs attention";
+    case "completed":
+      return "Route progress: completed snapshot";
+    default:
+      return null;
+  }
+}
+
+export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): string | null {
+  const progress = entry.execution.progress;
+  switch (entry.execution.status) {
+    case "awaiting_local_signature": {
+      const nextAction = entry.execution.nextAction?.replace(/_/g, " ") ?? "local signature";
+      if (progress?.pendingRoles.length) {
+        return `Waiting for ${nextAction}; pending route roles: ${progress.pendingRoles.join(" → ")}.`;
+      }
+      return `Waiting for ${nextAction} before route progress can continue.`;
+    }
+    case "pending_reconciliation":
+      if (progress?.pendingRoles.length) {
+        return `Route submitted; pending roles: ${progress.pendingRoles.join(" → ")}.`;
+      }
+      return "Route submitted; waiting for reconciliation updates.";
+    case "failed":
+      return entry.execution.error
+        ? `Execution needs attention: ${entry.execution.error}.`
+        : "Execution needs attention before route completion.";
+    case "completed":
+      if (entry.receipt?.completedAt) {
+        return `Receipt snapshot completed at ${formatSmartPayTimestamp(entry.receipt.completedAt)}.`;
+      }
+      return "Execution completed; receipt snapshot is available.";
+    default:
+      return null;
+  }
+}
+
+function pickRicherTxRef(
+  current: SmartPayExecution["txRefs"][number],
+  incoming: SmartPayExecution["txRefs"][number]
+): SmartPayExecution["txRefs"][number] {
+  const currentExplorer = current.explorerUrl?.trim() ?? "";
+  const incomingExplorer = incoming.explorerUrl?.trim() ?? "";
+  const currentRouteStepIndex = current.routeStepIndex ?? null;
+  const incomingRouteStepIndex = incoming.routeStepIndex ?? null;
+
+  if (currentRouteStepIndex === null && incomingRouteStepIndex !== null) {
+    return incoming;
+  }
+  if (!currentExplorer && incomingExplorer) {
+    return incoming;
+  }
+  return current;
+}
+
+function getSmartPayTxRefIdentityKey(ref: SmartPayExecution["txRefs"][number]): string {
+  return `${ref.role}|${ref.network}|${ref.txid.trim().toLowerCase()}`;
+}
+
+function isSmartPayProofTxRefCompatibleWithRouteStep(
+  candidate: SmartPayExecution["txRefs"][number],
+  role: string,
+  network: string
+): boolean {
+  const candidateRole = candidate.role?.trim();
+  const candidateNetwork = candidate.network?.trim();
+
+  if (candidateRole && candidateRole !== role) {
+    return false;
+  }
+  if (candidateNetwork && candidateNetwork !== network) {
+    return false;
+  }
+
+  return true;
+}
+
+function getSmartPayHistoryRouteProofRole(
+  step: NonNullable<SmartPayHistoryEntry["quote"]>["route"][number],
+  index: number,
+  totalSteps: number
+): string {
+  if (step.kind === "bridge") {
+    return "bridge";
+  }
+  if (step.kind === "swap") {
+    return "swap";
+  }
+  if (step.kind === "transfer" && totalSteps > 1 && index === totalSteps) {
+    return "merchant_payout";
+  }
+  if (step.kind === "transfer") {
+    return "payment";
+  }
+  return step.kind;
+}
+
+function isLikelyReceiptRouteProofTxRef(ref: SmartPayExecution["txRefs"][number]): boolean {
+  if (ref.routeStepIndex != null) {
+    return true;
+  }
+
+  const normalizedRole = ref.role.trim().toLowerCase();
+  if (!normalizedRole) {
+    return true;
+  }
+
+  return normalizedRole === "bridge"
+    || normalizedRole === "swap"
+    || normalizedRole === "payment"
+    || normalizedRole === "merchant_payout"
+    || normalizedRole === "transfer";
+}
+
+export function getSmartPayHistoryProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
+  const refs = [...(entry.receipt?.txRefs ?? []), ...entry.execution.txRefs];
+  const merged = new Map<string, SmartPayExecution["txRefs"][number]>();
+
+  for (const ref of refs) {
+    const key = getSmartPayTxRefIdentityKey(ref);
+    const existing = merged.get(key);
+    merged.set(key, existing ? pickRicherTxRef(existing, ref) : ref);
+  }
+
+  return [...merged.values()];
+}
+
+export type SmartPayHistoryProofRouteStep = {
+  key: string;
+  stepIndex: number;
+  role: string;
+  network: string;
+  kind: string;
+  fromAsset: string;
+  toAsset: string;
+  label: string;
+  status: "linked" | "pending";
+  txRef: SmartPayExecution["txRefs"][number] | null;
+};
+
+export function getSmartPayHistoryProofRouteSteps(
+  entry: SmartPayHistoryEntry
+): SmartPayHistoryProofRouteStep[] {
+  const refs = getSmartPayHistoryProofTxRefs(entry);
+  const route = entry.quote?.route ?? [];
+
+  if (route.length === 0) {
+    return refs.map((txRef, index) => ({
+      key: `${txRef.role}|${txRef.network}|${txRef.txid}|${index + 1}`,
+      stepIndex: txRef.routeStepIndex ?? index + 1,
+      role: txRef.role,
+      network: txRef.network,
+      kind: txRef.role,
+      fromAsset: "—",
+      toAsset: "—",
+      label: `Observed tx ${index + 1}: ${txRef.role} on ${txRef.network}`,
+      status: "linked",
+      txRef,
+    }));
+  }
+
+  const unmatchedRefs = [...refs];
+
+  return route.map((step, index) => {
+    const stepIndex = index + 1;
+    const role = getSmartPayHistoryRouteProofRole(step, stepIndex, route.length);
+    const directIndexMatch = unmatchedRefs.findIndex(
+      (candidate) =>
+        candidate.routeStepIndex === stepIndex
+        && isSmartPayProofTxRefCompatibleWithRouteStep(candidate, role, step.network)
+    );
+    const roleNetworkMatch = unmatchedRefs.findIndex(
+      (candidate) => candidate.routeStepIndex == null && candidate.role === role && candidate.network === step.network
+    );
+    const matchIndex = directIndexMatch >= 0 ? directIndexMatch : roleNetworkMatch;
+    const txRef = matchIndex >= 0 ? unmatchedRefs.splice(matchIndex, 1)[0] ?? null : null;
+
+    return {
+      key: `${role}|${step.network}|${stepIndex}`,
+      stepIndex,
+      role,
+      network: step.network,
+      kind: step.kind,
+      fromAsset: step.fromAsset,
+      toAsset: step.toAsset,
+      label: formatSmartPayRouteStepLabel(step, stepIndex),
+      status: txRef ? "linked" : "pending",
+      txRef,
+    };
+  });
+}
+
+export function getSmartPayHistoryAdditionalProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
+  const route = entry.quote?.route ?? [];
+  const refs = getSmartPayHistoryProofTxRefs(entry);
+
+  if (route.length === 0) {
+    return [];
+  }
+
+  const matched = new Set(
+    getSmartPayHistoryProofRouteSteps(entry)
+      .filter((step) => Boolean(step.txRef))
+      .map((step) => getSmartPayTxRefIdentityKey(step.txRef!))
+  );
+
+  return refs.filter((ref) => !matched.has(getSmartPayTxRefIdentityKey(ref)));
+}
+
+export function getSmartPayHistoryProofCounts(entry: SmartPayHistoryEntry): {
+  linkedTxCount: number;
+  explorerLinkedTxCount: number;
+  expectedRouteSteps: number;
+  additionalTxCount: number;
+} {
+  const refs = getSmartPayHistoryProofTxRefs(entry);
+  const routeSteps = getSmartPayHistoryProofRouteSteps(entry);
+  const additionalRefs = getSmartPayHistoryAdditionalProofTxRefs(entry);
+  const hasQuotedRoute = (entry.quote?.route.length ?? 0) > 0;
+  const hasReceiptRouteSummary = (entry.receipt?.routeSummary.length ?? 0) > 0;
+  const linkedRouteSteps = hasQuotedRoute
+    ? routeSteps.filter((step) => Boolean(step.txRef))
+    : [];
+  const receiptRouteProofRefs = hasQuotedRoute
+    ? refs
+    : refs.filter((ref) => isLikelyReceiptRouteProofTxRef(ref));
+  const expectedRouteSteps = hasQuotedRoute
+    ? routeSteps.length
+    : hasReceiptRouteSummary
+      ? Math.max(
+          entry.execution.progress?.totalRouteSteps ?? 0,
+          entry.receipt?.routeSummary.length ?? 0
+        )
+      : 0;
+  const linkedTxCount = hasQuotedRoute
+    ? linkedRouteSteps.length
+    : hasReceiptRouteSummary && expectedRouteSteps > 0
+      ? Math.min(receiptRouteProofRefs.length, expectedRouteSteps)
+      : refs.length;
+  const explorerLinkedTxCount = hasQuotedRoute
+    ? linkedRouteSteps.filter((step) => Boolean(step.txRef?.explorerUrl?.trim())).length
+    : hasReceiptRouteSummary && expectedRouteSteps > 0
+      ? Math.min(
+          receiptRouteProofRefs.filter((ref) => Boolean(ref.explorerUrl?.trim())).length,
+          linkedTxCount
+        )
+      : refs.filter((ref) => Boolean(ref.explorerUrl?.trim())).length;
+
+  return {
+    linkedTxCount,
+    explorerLinkedTxCount,
+    expectedRouteSteps,
+    additionalTxCount: hasQuotedRoute ? additionalRefs.length : 0,
+  };
+}
+
+function getSmartPayHistoryProofRouteContext(entry: SmartPayHistoryEntry): {
+  hasQuotedRoute: boolean;
+  hasRouteProofContext: boolean;
+  linkedStepsLabel: string;
+  fullCoverageLabel: string;
+  zeroCoverageLabel: string;
+} {
+  const hasQuotedRoute = (entry.quote?.route.length ?? 0) > 0;
+  const hasRouteProofContext = hasQuotedRoute
+    || (entry.receipt?.routeSummary.length ?? 0) > 0;
+
+  if (hasQuotedRoute) {
+    return {
+      hasQuotedRoute,
+      hasRouteProofContext,
+      linkedStepsLabel: "route steps",
+      fullCoverageLabel: "quoted route steps",
+      zeroCoverageLabel: "route steps",
+    };
+  }
+
+  return {
+    hasQuotedRoute,
+    hasRouteProofContext,
+    linkedStepsLabel: "receipt route steps",
+    fullCoverageLabel: "stored receipt route steps",
+    zeroCoverageLabel: "receipt route steps",
+  };
+}
+
+export function getSmartPayHistoryProofLabel(entry: SmartPayHistoryEntry): string {
+  const { linkedTxCount, expectedRouteSteps } = getSmartPayHistoryProofCounts(entry);
+  const { hasRouteProofContext, linkedStepsLabel } = getSmartPayHistoryProofRouteContext(entry);
+
+  if (hasRouteProofContext && expectedRouteSteps > 0) {
+    return `On-chain proof: ${linkedTxCount}/${expectedRouteSteps} ${linkedStepsLabel} linked`;
+  }
+  if (linkedTxCount > 0) {
+    return `On-chain proof: ${pluralize(linkedTxCount, "tx reference", "tx references")} linked`;
+  }
+  if (entry.receipt) {
+    return "On-chain proof: receipt snapshot saved; tx links pending";
+  }
+  return "On-chain proof: no tx references linked yet";
+}
+
+export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string {
+  const { linkedTxCount, explorerLinkedTxCount, expectedRouteSteps, additionalTxCount } = getSmartPayHistoryProofCounts(entry);
+  const { hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);
+
+  if (hasRouteProofContext && expectedRouteSteps > 0) {
+    const explorerPart = explorerLinkedTxCount > 0
+      ? `${pluralize(explorerLinkedTxCount, "explorer link", "explorer links")} available`
+      : "explorer links pending";
+    const extraPart = additionalTxCount > 0
+      ? ` ${pluralize(additionalTxCount, "additional tx ref", "additional tx refs")} ${additionalTxCount === 1 ? "is" : "are"} stored separately because ${additionalTxCount === 1 ? "it does" : "they do"} not map to a quoted route step yet.`
+      : "";
+    if (linkedTxCount >= expectedRouteSteps && linkedTxCount > 0) {
+      return `Linked proof covers all ${fullCoverageLabel}; ${explorerPart}.${extraPart}`;
+    }
+    if (linkedTxCount > 0) {
+      return `Linked proof currently covers ${linkedTxCount}/${expectedRouteSteps} ${fullCoverageLabel}; ${explorerPart}.${extraPart}`;
+    }
+    if (entry.receipt) {
+      return `Receipt data is stored, but 0/${expectedRouteSteps} ${zeroCoverageLabel} are linked to tx proof refs so far.${extraPart}`;
+    }
+  }
+
+  if (linkedTxCount > 0) {
+    return explorerLinkedTxCount > 0
+      ? `Linked proof refs are available for ${pluralize(explorerLinkedTxCount, "explorer link", "explorer links")} and can be opened from the receipt view.`
+      : "Linked proof refs are stored, but explorer URLs are not attached yet.";
+  }
+
+  if (entry.receipt) {
+    return "Receipt data is stored, but no route-linked tx proof refs are attached yet.";
+  }
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return "Proof links appear after route execution starts and tx refs are observed.";
+    case "pending_reconciliation":
+      return "Refresh this session or recover with observed tx hashes/explorer links after route activity to attach tx proof refs.";
+    case "failed":
+      return "Proof refs may remain partial until the route is retried or reconciled.";
+    case "completed":
+      return "Execution completed, but route-linked proof refs were not attached to this snapshot.";
+    default:
+      return "Route-linked proof refs are not attached to this snapshot yet.";
+  }
+}
+
+function formatSmartPayHistoryProofStepSummary(step: SmartPayHistoryProofRouteStep): string {
+  const normalizedRole = step.role.replace(/_/g, " ");
+  const roleDetail = normalizedRole !== step.kind ? ` (${normalizedRole})` : "";
+  const route = step.label.replace(/^Step \d+: /, "");
+  return `step ${step.stepIndex} ${route}${roleDetail}`;
+}
+
+function formatSmartPayAdditionalProofRefSubject(ref: SmartPayExecution["txRefs"][number]): string {
+  return `${ref.role} on ${ref.network}`;
+}
+
+function formatSmartPayExpectedRouteStepTarget(
+  entry: SmartPayHistoryEntry,
+  stepIndex: number
+): string | null {
+  const route = entry.quote?.route ?? [];
+  const step = route[stepIndex - 1];
+  if (!step) {
+    return null;
+  }
+
+  const expectedRole = getSmartPayHistoryRouteProofRole(step, stepIndex, route.length).replace(/_/g, " ");
+  return `${expectedRole} on ${step.network}${formatSmartPayRouteStepRail(step)}`;
+}
+
+export function getSmartPayHistoryAdditionalProofTxRefHint(
+  entry: SmartPayHistoryEntry,
+  ref: SmartPayExecution["txRefs"][number]
+): string | null {
+  const route = entry.quote?.route ?? [];
+  if (route.length === 0) {
+    return null;
+  }
+
+  if (ref.routeStepIndex != null) {
+    const expectedTarget = formatSmartPayExpectedRouteStepTarget(entry, ref.routeStepIndex);
+    if (!expectedTarget) {
+      return `Claims quoted route step ${ref.routeStepIndex}, but this quote only has ${pluralize(route.length, "step", "steps")}.`;
+    }
+    return `Claims quoted route step ${ref.routeStepIndex}, but that step expects ${expectedTarget}.`;
+  }
+
+  return `${formatSmartPayAdditionalProofRefSubject(ref)} is stored separately because it does not map to any quoted route step yet.`;
+}
+
+export function getSmartPayHistoryAdditionalProofHint(entry: SmartPayHistoryEntry): string | null {
+  const additionalRefs = getSmartPayHistoryAdditionalProofTxRefs(entry);
+  if (additionalRefs.length === 0) {
+    return null;
+  }
+
+  return `Additional observed tx refs: ${additionalRefs
+    .map((ref) => `${formatSmartPayAdditionalProofRefSubject(ref)} — ${getSmartPayHistoryAdditionalProofTxRefHint(entry, ref) ?? "stored separately."}`)
+    .join(" ")}`;
+}
+
+export function getSmartPayHistoryPendingProofHint(entry: SmartPayHistoryEntry): string | null {
+  const hasQuotedRoute = (entry.quote?.route.length ?? 0) > 0;
+  if (!hasQuotedRoute) {
+    return null;
+  }
+
+  const routeSteps = getSmartPayHistoryProofRouteSteps(entry);
+  if (routeSteps.length === 0) {
+    return null;
+  }
+
+  const pendingSteps = routeSteps.filter((step) => !step.txRef);
+  if (pendingSteps.length === 0) {
+    return null;
+  }
+
+  return `Pending quoted route proof (${pluralize(pendingSteps.length, "step", "steps")}): ${pendingSteps
+    .map((step) => formatSmartPayHistoryProofStepSummary(step))
+    .join(" → ")}.`;
+}
+
+export type SmartPayHistoryAccessOptions = {
+  hasAccountAuth?: boolean;
+};
+
+export type SmartPayHistoryFreshnessOptions = SmartPayHistoryAccessOptions;
+export type SmartPayHistoryActionOptions = SmartPayHistoryAccessOptions;
+
+export type SmartPayExecutionAccessOptions = {
+  sessionToken?: string | null;
+  hasAccountAuth?: boolean;
+};
+
+export type SmartPayRecoveryAccessOptions = SmartPayExecutionAccessOptions & {
+  recoverable?: boolean | null;
+};
+
+export function getSmartPayHistorySourceLabel(entry: SmartPayHistoryEntry): string {
+  switch (entry.snapshotOrigin) {
+    case "backend":
+      return "Authenticated backend history";
+    case "local+backend":
+      return "Merged local + backend snapshot";
+    case "local":
+    default:
+      return "Device-local secure snapshot";
+  }
+}
+
+export function getSmartPayHistorySourceHint(entry: SmartPayHistoryEntry): string {
+  switch (entry.snapshotOrigin) {
+    case "backend":
+      return "This entry came from authenticated ANCAP backend payment history and receipt data. It does not include the original device-local session token unless that token was also saved on this device.";
+    case "local+backend":
+      return "This entry merges the device-local secure snapshot with authenticated backend payment history so newer receipt/progress data and locally saved resume access can survive together.";
+    case "local":
+    default:
+      return "This entry is stored only in secure device-local history on this phone right now.";
+  }
+}
+
+export function getSmartPayHistoryFreshnessLabel(
+  entry: SmartPayHistoryEntry,
+  now = Date.now()
+): string {
+  const timestamp = getSmartPayHistoryFreshnessTimestamp(entry);
+  if (timestamp === null) {
+    return "Snapshot freshness: timestamp unavailable";
+  }
+
+  const ageMs = Math.max(now - timestamp, 0);
+  if (ageMs < 5_000) {
+    return "Snapshot freshness: updated just now";
+  }
+
+  return `Snapshot freshness: updated ${formatSmartPayRelativeAge(ageMs)} ago`;
+}
+
+export function getSmartPayHistoryFreshnessHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryFreshnessOptions = {},
+  now = Date.now()
+): string {
+  const timestamp = getSmartPayHistoryFreshnessTimestamp(entry);
+  if (timestamp === null) {
+    return "Snapshot age is unavailable for this entry. Refresh it when possible before relying on saved route/proof state.";
+  }
+
+  const ageMs = Math.max(now - timestamp, 0);
+  const refreshAvailable = canSmartPayRefreshOrRecover({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  });
+  const finalized = !entry.execution.recoverable || entry.execution.status === "completed";
+
+  if (ageMs < 5 * 60_000) {
+    return finalized
+      ? "This saved receipt/proof snapshot is recent."
+      : "This saved execution snapshot is recent; refresh only if route activity continued elsewhere.";
+  }
+
+  if (ageMs < 30 * 60_000) {
+    if (refreshAvailable) {
+      return finalized
+        ? "This saved receipt/proof snapshot may be slightly behind newer backend/device updates. Refresh status to confirm final proof coverage."
+        : "This saved execution snapshot may be slightly stale; refresh status if route activity continued after this device saved it.";
+    }
+
+    return "This restored snapshot may already be behind live route activity. Sign in or restore the original device session to refresh it; otherwise treat it as saved context only.";
+  }
+
+  if (refreshAvailable) {
+    return finalized
+      ? "This saved receipt/proof snapshot is getting stale. Refresh status/receipt before relying on final proof coverage or fee details."
+      : "This saved execution snapshot is getting stale. Refresh status or recover before relying on remaining route steps or proof coverage.";
+  }
+
+  return finalized
+    ? "This restored final snapshot may be stale and cannot be refreshed anonymously from this device. Sign in or restore the original device session for newer receipt/proof data, or treat it as historical context only."
+    : "This restored in-flight snapshot may be stale and cannot be refreshed anonymously from this device. Sign in or restore the original device session before relying on current route progress.";
+}
+
+export function hasSmartPayLiveSessionAccess(entry: SmartPayHistoryEntry): boolean {
+  return Boolean(entry.sessionToken?.trim());
+}
+
+export function canSmartPayRefreshOrRecover(
+  options: SmartPayExecutionAccessOptions = {}
+): boolean {
+  return Boolean(options.sessionToken?.trim() || options.hasAccountAuth);
+}
+
+export function getSmartPayRefreshOrRecoverHint(
+  options: SmartPayExecutionAccessOptions = {}
+): string {
+  if (options.sessionToken?.trim()) {
+    return "Refresh and recovery can continue from the original device-local session token.";
+  }
+  if (options.hasAccountAuth) {
+    return "This snapshot does not include the original device-local session token, but the signed-in ANCAP account can still refresh status/receipt and attempt recovery through backend history ownership.";
+  }
+  return "This device only has a restored receipt/history snapshot for this execution. Anonymous refresh/recover requires the original device-local session token; authenticated backend history can still be used after sign-in when the execution belongs to the same account.";
+}
+
+export function canSmartPayRecoverExecution(
+  options: SmartPayRecoveryAccessOptions = {}
+): boolean {
+  return Boolean(options.recoverable && canSmartPayRefreshOrRecover(options));
+}
+
+export function getSmartPayRecoverHint(
+  options: SmartPayRecoveryAccessOptions = {}
+): string {
+  if (!options.recoverable) {
+    if (options.sessionToken?.trim() || options.hasAccountAuth) {
+      return "This execution is already in a final state, so recovery is no longer available. You can still refresh status and receipt data from the latest saved session or backend snapshot.";
+    }
+    return "This execution is already in a final state, and this device also lacks the live session or backend access needed to refresh it.";
+  }
+  return getSmartPayRefreshOrRecoverHint(options);
+}
+
+export function getSmartPayHistoryAccessLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryAccessOptions = {}
+): string {
+  if (hasSmartPayLiveSessionAccess(entry)) {
+    return "Live resume available on this device";
+  }
+  if (options.hasAccountAuth) {
+    return "Backend resume available for signed-in ANCAP account";
+  }
+  return "Snapshot restored — auth or original device session required for live resume";
+}
+
+export function getSmartPayHistoryAccessHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryAccessOptions = {}
+): string {
+  if (hasSmartPayLiveSessionAccess(entry)) {
+    return "Refresh and recovery can continue from this device-local session token.";
+  }
+  if (options.hasAccountAuth) {
+    return "This snapshot does not include the original device-local session token, but authenticated backend history on this signed-in device can still refresh status/receipt and attempt recovery for executions owned by the same ANCAP account.";
+  }
+  return "This snapshot does not include the original device-local session token. If this device is signed into the same ANCAP account, backend history can still refresh status/receipt and attempt recovery; otherwise only the saved snapshot is available.";
+}
+
+export function getSmartPayHistoryActionLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {}
+): string {
+  const refreshAvailable = canSmartPayRefreshOrRecover({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  });
+  const recoverAvailable = canSmartPayRecoverExecution({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+    recoverable: entry.execution.recoverable,
+  });
+
+  if (refreshAvailable && recoverAvailable) {
+    return "Refresh status + recover available";
+  }
+  if (refreshAvailable) {
+    return "Refresh status only";
+  }
+  return "Snapshot only";
+}
+
+export function getSmartPayHistoryActionHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {}
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+
+  if (!canSmartPayRefreshOrRecover(refreshOptions)) {
+    return getSmartPayHistoryAccessHint(entry, options);
+  }
+
+  if (
+    canSmartPayRecoverExecution({
+      ...refreshOptions,
+      recoverable: entry.execution.recoverable,
+    })
+  ) {
+    return getSmartPayRefreshOrRecoverHint(refreshOptions);
+  }
+
+  return getSmartPayRecoverHint({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
 }

@@ -12,6 +12,7 @@ import type {
   SmartPayCapabilities,
   SmartPayExecuteInput,
   SmartPayExecutionResponse,
+  SmartPayHistoryResponse,
   SmartPayQuoteInput,
   SmartPayQuoteResponse,
   SmartPayReceipt,
@@ -148,19 +149,26 @@ export class AcpApiClient {
     });
   }
 
-  getSmartPayExecution(executionId: string): Promise<SmartPayExecutionResponse> {
-    const enc = encodeURIComponent(executionId);
-    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}`);
+  listSmartPayPayments(limit = 20): Promise<SmartPayHistoryResponse> {
+    return this.request<SmartPayHistoryResponse>(`/mobile/smart-pay/payments?limit=${limit}`);
   }
 
-  getSmartPayReceipt(executionId: string): Promise<SmartPayReceipt> {
+  getSmartPayExecution(executionId: string, sessionToken?: string | null): Promise<SmartPayExecutionResponse> {
     const enc = encodeURIComponent(executionId);
-    return this.request<SmartPayReceipt>(`/mobile/smart-pay/payments/${enc}/receipt`);
+    const query = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
+    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}${query}`);
   }
 
-  recoverSmartPay(executionId: string, body: SmartPayRecoverInput): Promise<SmartPayExecutionResponse> {
+  getSmartPayReceipt(executionId: string, sessionToken?: string | null): Promise<SmartPayReceipt> {
     const enc = encodeURIComponent(executionId);
-    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}/recover`, {
+    const query = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
+    return this.request<SmartPayReceipt>(`/mobile/smart-pay/payments/${enc}/receipt${query}`);
+  }
+
+  recoverSmartPay(executionId: string, body: SmartPayRecoverInput, sessionToken?: string | null): Promise<SmartPayExecutionResponse> {
+    const enc = encodeURIComponent(executionId);
+    const query = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
+    return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}/recover${query}`, {
       method: "POST",
       body: JSON.stringify(body),
     });

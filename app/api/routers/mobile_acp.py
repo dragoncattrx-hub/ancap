@@ -12,9 +12,10 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, unquote, urlparse
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
+from app.api.deps import get_current_user_id, require_auth
 from app.api.routers import wallet_acp
 from app.config import get_settings
 from app.schemas.mobile_acp import (
@@ -36,8 +37,11 @@ from app.schemas.mobile_acp import (
     SmartPayCapabilitiesResponse,
     SmartPayExecuteRequest,
     SmartPayExecutionItem,
+    SmartPayExecutionProgress,
     SmartPayExecutionResponse,
     SmartPayNetworkFeeItem,
+    SmartPayPaymentHistoryEntry,
+    SmartPayPaymentHistoryResponse,
     SmartPayQuoteAsset,
     SmartPayQuoteItem,
     SmartPayQuoteRequest,
@@ -67,6 +71,10 @@ _ACP_TO_USDT_RATE = Decimal("0.25")
 _SERVICE_FEE_ACP = Decimal("0.75")
 _BSC_NETWORK_FEE_BNB = Decimal("0.00021")
 _QUOTE_TTL_MINUTES = 5
+_RECOVERY_URL_QUERY_KEYS = ("txid", "txId", "hash", "txHash", "transactionHash")
+_RECOVERY_URL_PATH_MARKERS = {"tx", "txs", "transaction", "transactions"}
+_RECOVERY_URL_SCHEME_RE = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
+_RECOVERY_URL_HOST_RE = re.compile(r"^[a-z0-9.-]+\.[a-z]{2,}(?:[/:?#]|$)", re.IGNORECASE)
 
 
 def _public_docs() -> MobileDocsLinks:
@@ -111,10 +119,16 @@ def _payload_hash(raw_payload: str) -> str:
     return hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
 
 
+def _new_session_token() -> str:
+    return hashlib.sha256(uuid4().hex.encode("utf-8")).hexdigest()
+
+
 _PAYMENT_INTENTS: dict[str, PaymentIntentResponseItem] = {}
 _SMART_PAY_QUOTES: dict[str, SmartPayQuoteItem] = {}
 _SMART_PAY_EXECUTIONS: dict[str, SmartPayExecutionItem] = {}
 _SMART_PAY_RECEIPTS: dict[str, SmartPayReceiptItem] = {}
+_SMART_PAY_EXECUTION_OWNERS: dict[str, str | None] = {}
+_SMART_PAY_EXECUTION_SESSION_TOKENS: dict[str, str] = {}
 
 
 def _supported_assets() -> list[SmartPaySupportedAsset]:
@@ -363,6 +377,28 @@ def _get_quote_or_404(quote_id: str) -> SmartPayQuoteItem:
     return quote
 
 
+def _get_session_token(execution_id: str) -> str | None:
+    return _SMART_PAY_EXECUTION_SESSION_TOKENS.get((execution_id or "").strip())
+
+
+def _session_token_matches(execution_id: str, supplied: str | None) -> bool:
+    expected = _get_session_token(execution_id)
+    if not expected or not supplied:
+        return False
+    return supplied.strip() == expected
+
+
+def _can_access_execution(execution_id: str, user_id: str | None, session_token: str | None) -> bool:
+    owner_id = _SMART_PAY_EXECUTION_OWNERS.get((execution_id or "").strip())
+    return (user_id is not None and owner_id == user_id) or _session_token_matches(execution_id, session_token)
+
+
+def _require_execution_access(execution_id: str, user_id: str | None, session_token: str | None) -> None:
+    if _can_access_execution(execution_id, user_id, session_token):
+        return
+    raise HTTPException(status_code=401, detail="Smart Pay execution access required")
+
+
 def _intent_target_amount(intent: PaymentIntentResponseItem) -> Decimal:
     if intent.amount is None or not intent.amount.value:
         raise HTTPException(status_code=422, detail="Payment intent is missing amount")
@@ -506,42 +542,427 @@ def _explorer_url_for_network(network: str, txid: str) -> str | None:
     return None
 
 
-def _normalize_execution_tx_refs(quote: SmartPayQuoteItem, txids: list[str]) -> list[SmartPayTxRef]:
-    clean_txids: list[str] = []
-    for txid in txids:
-        clean = (txid or "").strip()
-        if not clean or clean in clean_txids:
-            continue
-        clean_txids.append(clean)
+def _trim_recovery_locator_token(value: str) -> str:
+    trimmed = value.strip()
+    trimmed = re.sub(r'^["\'`<([{]+', "", trimmed)
+    trimmed = re.sub(r'["\'`>)}\],;:.]+$', "", trimmed)
+    return trimmed
 
-    tx_refs: list[SmartPayTxRef] = []
+
+def _looks_like_recovery_locator(value: str) -> bool:
+    return bool(
+        _RECOVERY_URL_SCHEME_RE.match(value)
+        or value.lower().startswith("www.")
+        or _RECOVERY_URL_HOST_RE.match(value)
+        or any(marker in value for marker in ("/", "?", "#"))
+    )
+
+
+def _parse_recovery_locator_url(value: str):
+    candidate = _trim_recovery_locator_token(value)
+    if not candidate:
+        return None
+
+    if _RECOVERY_URL_SCHEME_RE.match(candidate):
+        normalized_candidate = candidate
+    elif candidate.lower().startswith("www.") or _RECOVERY_URL_HOST_RE.match(candidate):
+        normalized_candidate = f"https://{candidate}"
+    else:
+        return None
+
+    parsed = urlparse(normalized_candidate)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    return parsed
+
+
+def _infer_recovery_locator_network(parsed_url) -> str | None:
+    hostname = parsed_url.netloc.lower()
+    pathname = parsed_url.path.lower()
+
+    if "bscscan.com" in hostname:
+        return "bsc"
+
+    if "ancap.cloud" in hostname and (
+        "/acp/tx" in pathname or "/acp/transactions" in pathname
+    ):
+        return "acp"
+
+    return None
+
+
+def _extract_recovery_locator_ref(value: str) -> tuple[str, str | None, str | None] | None:
+    parsed_url = _parse_recovery_locator_url(value)
+    if parsed_url is None:
+        return None
+
+    params = parse_qs(parsed_url.query, keep_blank_values=False)
+    for key in _RECOVERY_URL_QUERY_KEYS:
+        raw_txid = params.get(key, [None])[0]
+        if not isinstance(raw_txid, str):
+            continue
+        txid = _trim_recovery_locator_token(unquote(raw_txid))
+        if txid:
+            return txid, _infer_recovery_locator_network(parsed_url), parsed_url.geturl()
+
+    path_segments = [
+        segment
+        for segment in (
+            _trim_recovery_locator_token(unquote(item))
+            for item in parsed_url.path.split("/")
+        )
+        if segment
+    ]
+    for index, segment in enumerate(path_segments):
+        if segment.lower() not in _RECOVERY_URL_PATH_MARKERS:
+            continue
+        if index + 1 >= len(path_segments):
+            continue
+        txid = path_segments[index + 1]
+        if txid:
+            return txid, _infer_recovery_locator_network(parsed_url), parsed_url.geturl()
+
+    return None
+
+
+def _normalize_client_known_txid_or_locator(
+    value: object,
+) -> tuple[str, str | None, str | None] | None:
+    if not isinstance(value, str):
+        return None
+
+    trimmed = _trim_recovery_locator_token(value)
+    if not trimmed:
+        return None
+
+    locator_ref = _extract_recovery_locator_ref(trimmed)
+    if locator_ref is not None:
+        return locator_ref
+
+    if _looks_like_recovery_locator(trimmed):
+        return None
+
+    return trimmed, None, None
+
+
+def _normalize_route_step_index(value: object, total_steps: int) -> int | None:
+    if total_steps <= 0:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        step_index = value
+    elif isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        if not stripped.isdigit():
+            return None
+        step_index = int(stripped)
+    else:
+        return None
+    if step_index < 1 or step_index > total_steps:
+        return None
+    return step_index
+
+
+def _normalize_client_known_ref_payload(
+    ref: object, total_steps: int
+) -> tuple[str, str | None, str | None, str | None, int | None] | None:
+    if isinstance(ref, str):
+        normalized = _normalize_client_known_txid_or_locator(ref)
+        if normalized is None:
+            return None
+        txid, network, explorer_url = normalized
+        return txid, network, None, explorer_url, None
+
+    if ref is None:
+        return None
+
+    normalized_txid = _normalize_client_known_txid_or_locator(getattr(ref, "txid", None))
+    if normalized_txid is None:
+        return None
+
+    txid, inferred_network, inferred_explorer_url = normalized_txid
+    network = getattr(ref, "network", None)
+    role = getattr(ref, "role", None)
+    explorer_url_value = getattr(ref, "explorer_url", None)
+    explorer_url = inferred_explorer_url
+
+    if isinstance(explorer_url_value, str) and explorer_url_value.strip():
+        normalized_explorer_ref = _extract_recovery_locator_ref(explorer_url_value)
+        if normalized_explorer_ref is not None:
+            explorer_txid, explorer_network, normalized_explorer_url = normalized_explorer_ref
+            if explorer_txid.lower() == txid.lower():
+                explorer_url = normalized_explorer_url
+                if inferred_network is None:
+                    inferred_network = explorer_network
+
+    return (
+        txid,
+        network.strip() if isinstance(network, str) and network.strip() else inferred_network,
+        role.strip() if isinstance(role, str) and role.strip() else None,
+        explorer_url,
+        _normalize_route_step_index(getattr(ref, "route_step_index", None), total_steps),
+    )
+
+
+def _normalized_ref_metadata_score(
+    normalized_ref: tuple[str, str | None, str | None, str | None, int | None]
+) -> int:
+    _, network, role, explorer_url, route_step_index = normalized_ref
+    score = 0
+    if network:
+        score += 1
+    if role:
+        score += 1
+    if explorer_url:
+        score += 1
+    if route_step_index is not None:
+        score += 1
+    return score
+
+
+def _merge_duplicate_normalized_ref(
+    existing: tuple[str, str | None, str | None, str | None, int | None],
+    incoming: tuple[str, str | None, str | None, str | None, int | None],
+    *,
+    existing_priority: int,
+    incoming_priority: int,
+) -> tuple[tuple[str, str | None, str | None, str | None, int | None], int]:
+    existing_score = _normalized_ref_metadata_score(existing)
+    incoming_score = _normalized_ref_metadata_score(incoming)
+
+    if incoming_priority > existing_priority:
+        return incoming, incoming_priority
+    if incoming_priority < existing_priority:
+        return existing, existing_priority
+    if incoming_score > existing_score:
+        return incoming, incoming_priority
+    return existing, existing_priority
+
+
+def _build_client_known_fallback_tx_ref(
+    txid: str,
+    network: str | None,
+    role: str | None,
+    explorer_url: str | None,
+    route_step_index: int | None,
+) -> SmartPayTxRef:
+    normalized_network = network or "unknown"
+    normalized_role = role or "client_known"
+    return SmartPayTxRef(
+        role=normalized_role,
+        network=normalized_network,
+        txid=txid,
+        explorer_url=explorer_url or _explorer_url_for_network(normalized_network, txid),
+        route_step_index=route_step_index,
+    )
+
+
+def _normalize_execution_tx_refs(
+    quote: SmartPayQuoteItem,
+    refs: list[object],
+    *,
+    existing_tx_ref_count: int = 0,
+) -> list[SmartPayTxRef]:
+    normalized_refs_by_txid: dict[str, tuple[tuple[str, str | None, str | None, str | None, int | None], int]] = {}
     total_steps = len(quote.route)
-    for index, txid in enumerate(clean_txids, start=1):
-        if index <= total_steps:
-            step = quote.route[index - 1]
-            tx_refs.append(
-                SmartPayTxRef(
-                    role=_tx_role_for_route_step(step, index, total_steps),
-                    network=step.network,
-                    txid=txid,
-                    explorer_url=_explorer_url_for_network(step.network, txid),
-                )
+
+    for index, ref in enumerate(refs):
+        normalized = _normalize_client_known_ref_payload(ref, total_steps)
+        if not normalized:
+            continue
+        txid, _, _, _, _ = normalized
+        key = txid.lower()
+        priority = 1 if index < existing_tx_ref_count else 0
+        if index >= existing_tx_ref_count and not isinstance(ref, str):
+            priority = 2
+        existing = normalized_refs_by_txid.get(key)
+        if existing is None:
+            normalized_refs_by_txid[key] = (normalized, priority)
+            continue
+        merged, merged_priority = _merge_duplicate_normalized_ref(
+            existing[0],
+            normalized,
+            existing_priority=existing[1],
+            incoming_priority=priority,
+        )
+        normalized_refs_by_txid[key] = (merged, merged_priority)
+
+    normalized_refs = [item[0] for item in normalized_refs_by_txid.values()]
+
+    route_roles = [
+        _tx_role_for_route_step(step, index, total_steps)
+        for index, step in enumerate(quote.route, start=1)
+    ]
+    route_refs: list[SmartPayTxRef | None] = [None] * total_steps
+    sequential_refs: list[tuple[str, str | None, str | None, str | None, int | None]] = []
+    extra_refs: list[SmartPayTxRef] = []
+
+    for txid, network, role, explorer_url, route_step_index in normalized_refs:
+        preferred_indices: list[int] = []
+        if route_step_index is not None:
+            preferred_indices.append(route_step_index - 1)
+        elif role and network:
+            preferred_indices.extend(
+                step_index
+                for step_index, step in enumerate(quote.route)
+                if step_index not in preferred_indices
+                and route_roles[step_index] == role
+                and step.network == network
             )
-        else:
-            tx_refs.append(SmartPayTxRef(role="client_known", network="unknown", txid=txid, explorer_url=None))
-    return tx_refs
+        elif network:
+            preferred_indices.extend(
+                step_index
+                for step_index, step in enumerate(quote.route)
+                if step_index not in preferred_indices and step.network == network
+            )
+        elif role:
+            preferred_indices.extend(
+                step_index
+                for step_index, step in enumerate(quote.route)
+                if step_index not in preferred_indices and route_roles[step_index] == role
+            )
+
+        matched = False
+        for step_index in preferred_indices:
+            if route_refs[step_index] is not None:
+                continue
+            step = quote.route[step_index]
+            step_role = route_roles[step_index]
+            if role and step_role != role:
+                continue
+            if network and step.network != network:
+                continue
+            route_refs[step_index] = SmartPayTxRef(
+                role=step_role,
+                network=step.network,
+                txid=txid,
+                explorer_url=explorer_url or _explorer_url_for_network(step.network, txid),
+                route_step_index=step_index + 1,
+            )
+            matched = True
+            break
+
+        if matched:
+            continue
+
+        if role or network or route_step_index is not None:
+            extra_refs.append(
+                _build_client_known_fallback_tx_ref(txid, network, role, explorer_url, route_step_index)
+            )
+            continue
+
+        sequential_refs.append((txid, network, role, explorer_url, route_step_index))
+
+    sequential_index = 0
+    for step_index, step in enumerate(quote.route):
+        if route_refs[step_index] is not None:
+            continue
+        if sequential_index >= len(sequential_refs):
+            break
+        txid, network, role, explorer_url, route_step_index = sequential_refs[sequential_index]
+        sequential_index += 1
+        step_role = route_roles[step_index]
+        step_network = step.network
+        route_refs[step_index] = SmartPayTxRef(
+            role=step_role,
+            network=step_network,
+            txid=txid,
+            explorer_url=explorer_url or _explorer_url_for_network(step_network, txid),
+            route_step_index=route_step_index if route_step_index is not None else step_index + 1,
+        )
+
+    while sequential_index < len(sequential_refs):
+        txid, network, role, explorer_url, route_step_index = sequential_refs[sequential_index]
+        sequential_index += 1
+        extra_refs.append(_build_client_known_fallback_tx_ref(txid, network, role, explorer_url, route_step_index))
+
+    return [ref for ref in route_refs if ref is not None] + extra_refs
+
+
+def _match_tx_refs_to_route_steps(
+    quote: SmartPayQuoteItem, tx_refs: list[SmartPayTxRef]
+) -> tuple[list[SmartPayTxRef | None], list[SmartPayTxRef]]:
+    total_steps = len(quote.route)
+    if total_steps == 0:
+        return [], list(tx_refs)
+
+    route_roles = [
+        _tx_role_for_route_step(step, index, total_steps)
+        for index, step in enumerate(quote.route, start=1)
+    ]
+    route_refs: list[SmartPayTxRef | None] = [None] * total_steps
+    unmatched_refs = list(tx_refs)
+
+    for step_index, step in enumerate(quote.route):
+        role = route_roles[step_index]
+        explicit_match_index = next(
+            (
+                index
+                for index, candidate in enumerate(unmatched_refs)
+                if candidate.route_step_index == step_index + 1
+                and candidate.role == role
+                and candidate.network == step.network
+            ),
+            None,
+        )
+        fallback_match_index = next(
+            (
+                index
+                for index, candidate in enumerate(unmatched_refs)
+                if candidate.route_step_index is None
+                and candidate.role == role
+                and candidate.network == step.network
+            ),
+            None,
+        )
+        match_index = explicit_match_index if explicit_match_index is not None else fallback_match_index
+        if match_index is None:
+            continue
+        route_refs[step_index] = unmatched_refs.pop(match_index)
+
+    return route_refs, unmatched_refs
+
+
+def _build_execution_progress(quote: SmartPayQuoteItem, tx_refs: list[SmartPayTxRef]) -> SmartPayExecutionProgress:
+    total_steps = len(quote.route)
+    if total_steps == 0:
+        observed_tx_count = len(tx_refs)
+        normalized_total_steps = max(observed_tx_count, 1)
+        return SmartPayExecutionProgress(
+            total_route_steps=normalized_total_steps,
+            observed_tx_count=observed_tx_count,
+            remaining_route_steps=max(normalized_total_steps - observed_tx_count, 0),
+            pending_roles=[],
+        )
+
+    route_refs, _ = _match_tx_refs_to_route_steps(quote, tx_refs)
+    observed_tx_count = sum(1 for ref in route_refs if ref is not None)
+    pending_roles = [
+        _tx_role_for_route_step(step, index, total_steps)
+        for index, step in enumerate(quote.route, start=1)
+        if route_refs[index - 1] is None
+    ]
+    return SmartPayExecutionProgress(
+        total_route_steps=total_steps,
+        observed_tx_count=observed_tx_count,
+        remaining_route_steps=max(total_steps - observed_tx_count, 0),
+        pending_roles=pending_roles,
+    )
 
 
 def _execution_lifecycle_state(
     quote: SmartPayQuoteItem, tx_refs: list[SmartPayTxRef]
-) -> tuple[str, bool, str | None]:
-    expected_steps = len(quote.route) or 1
+) -> tuple[str, bool, str | None, SmartPayExecutionProgress]:
+    progress = _build_execution_progress(quote, tx_refs)
     if not tx_refs:
         next_action = "sign_direct_send_tx" if quote.mode == "direct_send" else "sign_swap_tx"
-        return "awaiting_local_signature", True, next_action
-    if len(tx_refs) < expected_steps:
-        return "pending_reconciliation", True, None
-    return "completed", False, None
+        return "awaiting_local_signature", True, next_action, progress
+    if progress.remaining_route_steps > 0:
+        return "pending_reconciliation", True, None, progress
+    return "completed", False, None, progress
 
 
 def _build_receipt(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem, execution: SmartPayExecutionItem) -> SmartPayReceiptItem:
@@ -571,8 +992,23 @@ def _store_execution_and_receipt(intent: PaymentIntentResponseItem, quote: Smart
     return execution
 
 
+def _build_payment_history_entry(execution: SmartPayExecutionItem) -> SmartPayPaymentHistoryEntry:
+    intent = _get_payment_intent_or_404(execution.payment_intent_id)
+    quote = _get_quote_or_404(execution.quote_id)
+    receipt = _SMART_PAY_RECEIPTS.get(execution.id)
+    if receipt is None:
+        receipt = _build_receipt(intent, quote, execution)
+        _SMART_PAY_RECEIPTS[execution.id] = receipt
+    return SmartPayPaymentHistoryEntry(
+        execution=execution,
+        receipt=receipt,
+        payment_intent=intent,
+        quote=quote,
+    )
+
+
 def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem) -> SmartPayExecutionItem:
-    status, recoverable, next_action = _execution_lifecycle_state(quote, [])
+    status, recoverable, next_action, progress = _execution_lifecycle_state(quote, [])
     execution = SmartPayExecutionItem(
         id=f"pe_{uuid4().hex}",
         payment_intent_id=intent.id,
@@ -582,6 +1018,7 @@ def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem
         updated_at=_utc_now_iso(),
         recoverable=recoverable,
         next_action=next_action,
+        progress=progress,
         tx_refs=[],
         error=None,
     )
@@ -783,7 +1220,10 @@ async def smart_pay_quote(body: SmartPayQuoteRequest):
 
 
 @router.post("/mobile/smart-pay/execute", response_model=SmartPayExecutionResponse)
-async def smart_pay_execute(body: SmartPayExecuteRequest):
+async def smart_pay_execute(
+    body: SmartPayExecuteRequest,
+    user_id: str | None = Depends(get_current_user_id),
+):
     if not body.confirmation_accepted:
         raise HTTPException(status_code=400, detail="confirmationAccepted must be true")
     intent = _get_payment_intent_or_404(body.payment_intent_id)
@@ -791,47 +1231,94 @@ async def smart_pay_execute(body: SmartPayExecuteRequest):
     if quote.payment_intent_id != intent.id:
         raise HTTPException(status_code=409, detail="quote does not belong to payment intent")
     execution = _build_execution(intent, quote)
-    return SmartPayExecutionResponse(execution=execution)
+    session_token = _new_session_token()
+    _SMART_PAY_EXECUTION_OWNERS[execution.id] = user_id
+    _SMART_PAY_EXECUTION_SESSION_TOKENS[execution.id] = session_token
+    return SmartPayExecutionResponse(execution=execution, session_token=session_token)
+
+
+@router.get("/mobile/smart-pay/payments", response_model=SmartPayPaymentHistoryResponse)
+async def smart_pay_payment_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    user_id: str = Depends(require_auth),
+):
+    owned_executions = [
+        execution
+        for execution in _SMART_PAY_EXECUTIONS.values()
+        if _SMART_PAY_EXECUTION_OWNERS.get(execution.id) == user_id
+    ]
+    payments = [
+        _build_payment_history_entry(execution)
+        for execution in sorted(
+            owned_executions,
+            key=lambda item: (item.updated_at, item.created_at, item.id),
+            reverse=True,
+        )[:limit]
+    ]
+    return SmartPayPaymentHistoryResponse(payments=payments)
 
 
 @router.get("/mobile/smart-pay/payments/{execution_id}", response_model=SmartPayExecutionResponse)
-async def smart_pay_payment_status(execution_id: str):
+async def smart_pay_payment_status(
+    execution_id: str,
+    session_token: str | None = Query(default=None, alias="sessionToken"),
+    user_id: str | None = Depends(get_current_user_id),
+):
     execution = _SMART_PAY_EXECUTIONS.get((execution_id or "").strip())
     if execution is None:
         raise HTTPException(status_code=404, detail="execution not found")
-    return SmartPayExecutionResponse(execution=execution)
+    _require_execution_access(execution.id, user_id, session_token)
+    return SmartPayExecutionResponse(execution=execution, session_token=_get_session_token(execution.id))
 
 
 @router.get("/mobile/smart-pay/payments/{execution_id}/receipt", response_model=SmartPayReceiptItem)
-async def smart_pay_receipt(execution_id: str):
+async def smart_pay_receipt(
+    execution_id: str,
+    session_token: str | None = Query(default=None, alias="sessionToken"),
+    user_id: str | None = Depends(get_current_user_id),
+):
     receipt = _SMART_PAY_RECEIPTS.get((execution_id or "").strip())
     if receipt is None:
         raise HTTPException(status_code=404, detail="receipt not found")
+    _require_execution_access(execution_id, user_id, session_token)
     return receipt
 
 
 @router.post("/mobile/smart-pay/payments/{execution_id}/recover", response_model=SmartPayExecutionResponse)
-async def smart_pay_recover(execution_id: str, body: SmartPayRecoverRequest):
+async def smart_pay_recover(
+    execution_id: str,
+    body: SmartPayRecoverRequest,
+    session_token: str | None = Query(default=None, alias="sessionToken"),
+    user_id: str | None = Depends(get_current_user_id),
+):
     execution = _SMART_PAY_EXECUTIONS.get((execution_id or "").strip())
     if execution is None:
         raise HTTPException(status_code=404, detail="execution not found")
+    _require_execution_access(execution.id, user_id, session_token)
     quote = _get_quote_or_404(execution.quote_id)
     intent = _get_payment_intent_or_404(execution.payment_intent_id)
-    known_txids = [ref.txid for ref in execution.tx_refs]
-    known_txids.extend(body.client_known_txs)
-    tx_refs = _normalize_execution_tx_refs(quote, known_txids)
-    status, recoverable, next_action = _execution_lifecycle_state(quote, tx_refs)
+    known_refs: list[object] = list(execution.tx_refs)
+    existing_tx_ref_count = len(known_refs)
+    known_refs.extend(body.client_known_refs)
+    known_refs.extend(body.client_known_txs)
+    tx_refs = _normalize_execution_tx_refs(
+        quote,
+        known_refs,
+        existing_tx_ref_count=existing_tx_ref_count,
+    )
+    status, recoverable, next_action, progress = _execution_lifecycle_state(quote, tx_refs)
     execution = execution.model_copy(
         update={
             "status": status,
             "updated_at": _utc_now_iso(),
             "recoverable": recoverable,
             "next_action": next_action,
+            "progress": progress,
             "tx_refs": tx_refs,
         }
     )
     _store_execution_and_receipt(intent, quote, execution)
-    return SmartPayExecutionResponse(execution=execution)
+    return SmartPayExecutionResponse(execution=execution, session_token=_get_session_token(execution.id))
 
 
 @router.get("/mobile/health")

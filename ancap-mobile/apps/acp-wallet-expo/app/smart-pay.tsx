@@ -1,7 +1,7 @@
 import * as Clipboard from "expo-clipboard";
 import * as ImagePicker from "expo-image-picker";
 import { CameraView, scanFromURLAsync, useCameraPermissions } from "expo-camera";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,31 +17,95 @@ import {
 } from "react-native";
 import type {
   SmartPayCapabilities,
+  SmartPayClientKnownRef,
   SmartPayExecution,
   SmartPayPaymentIntent,
   SmartPayQuote,
   SmartPayReceipt,
 } from "@ancap/acp-api-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
-import { getApi } from "@/lib/api";
+import { useLocalSearchParams } from "expo-router";
+import { getApi, hasApiAuthHeader } from "@/lib/api";
 import {
-  clearSmartPayHistory,
-  loadSmartPayHistory,
+  clearSmartPayHistorySnapshots,
+  loadSmartPayHistoryTimeline,
+  mergeSmartPayActiveHistoryEntry,
   saveSmartPayHistoryEntry,
   type SmartPayHistoryEntry,
 } from "@/lib/smart-pay-history";
 import {
+  buildSmartPayActiveHistoryEntry,
   buildSmartPayHistorySections,
+  getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
+  canSmartPayRefreshOrRecover,
+  getSmartPayExecutionStatusLabel,
+  getSmartPayHistoryAccessHint,
+  getSmartPayHistoryAccessLabel,
+  getSmartPayHistoryActionHint,
+  getSmartPayHistoryActionLabel,
+  getSmartPayHistoryAdditionalProofHint,
+  getSmartPayHistoryAdditionalProofTxRefHint,
+  getSmartPayHistoryAdditionalProofTxRefs,
   getSmartPayHistoryAmountLabel,
+  getSmartPayHistoryFreshnessHint,
+  getSmartPayHistoryFreshnessLabel,
+  getSmartPayHistoryReceiptDisplay,
+  getSmartPayHistoryNetworkFeesHint,
+  getSmartPayHistoryNetworkFeesLabel,
+  getSmartPayHistoryPendingProofHint,
+  getSmartPayHistoryProofHint,
+  getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofRouteSteps,
+  getSmartPayHistoryProofTxRefs,
+  getSmartPayHistoryProgressHint,
+  getSmartPayHistoryProgressLabel,
+  getSmartPayHistorySnapshotStatusLabel,
+  getSmartPayHistorySnapshotTitle,
+  getSmartPayHistorySourceHint,
+  getSmartPayHistorySourceLabel,
+  getSmartPayRecoverHint,
+  getSmartPayRefreshOrRecoverHint,
+  hasSmartPayLiveSessionAccess,
+  canSmartPayRecoverExecution,
 } from "@/lib/smart-pay-history-view";
+import {
+  getSmartPayQuoteExpiryHint,
+  getSmartPayQuoteExpiryLabel,
+  isSmartPayQuoteExpired,
+} from "@/lib/smart-pay-quote";
+import {
+  canSmartPayRequestQuote,
+  canSmartPayReviewQuote,
+  getSmartPayIntentFreshnessWarning,
+  getSmartPayQuoteFreshnessWarning,
+} from "@/lib/smart-pay-freshness";
 import {
   clearSmartPaySession,
   loadSmartPaySession,
   saveSmartPaySession,
+  type PersistedSmartPaySession,
 } from "@/lib/smart-pay-session";
+import {
+  canSubmitSmartPayRecoveryInput,
+  formatSmartPayRecoveryRefPreview,
+  getSmartPayRecoveryInputBlockReason,
+  parseSmartPayRecoveryInput,
+} from "@/lib/smart-pay-recovery";
+import { deriveSmartPaySnapshotOrigin } from "@/lib/smart-pay-snapshot-origin";
+import {
+  getSmartPaySharedDraft,
+  shouldApplySmartPaySharedDraft,
+} from "@/lib/smart-pay-share";
 
 export default function SmartPayScreen() {
+  const sharedParams = useLocalSearchParams<{
+    rawPayload?: string | string[];
+    payload?: string | string[];
+    selectedAsset?: string | string[];
+    asset?: string | string[];
+  }>();
+  const lastAppliedSharedDraftRef = useRef<string | null>(null);
   const [capabilities, setCapabilities] = useState<SmartPayCapabilities | null>(null);
   const [rawPayload, setRawPayload] = useState("");
   const [payloadSource, setPayloadSource] = useState<"camera" | "photo" | "paste" | "share">("paste");
@@ -53,12 +117,42 @@ export default function SmartPayScreen() {
   const [quote, setQuote] = useState<SmartPayQuote | null>(null);
   const [execution, setExecution] = useState<SmartPayExecution | null>(null);
   const [receipt, setReceipt] = useState<SmartPayReceipt | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [snapshotOrigin, setSnapshotOrigin] = useState<SmartPayHistoryEntry["snapshotOrigin"]>("local");
+  const [recoveryDraftTxs, setRecoveryDraftTxs] = useState("");
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationAccepted, setConfirmationAccepted] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [history, setHistory] = useState<SmartPayHistoryEntry[]>([]);
+
+  const loadHistoryTimeline = async (limit = 8): Promise<SmartPayHistoryEntry[]> => {
+    return loadSmartPayHistoryTimeline({
+      hasAccountAuth,
+      limit,
+      listRemoteHistory: async (remoteLimit) => {
+        const remote = await getApi().listSmartPayPayments(remoteLimit);
+        return remote.payments;
+      },
+    });
+  };
+
+  const buildCurrentPersistedSession = (
+    overrides: Partial<PersistedSmartPaySession> = {}
+  ): Omit<PersistedSmartPaySession, "version" | "savedAt"> => ({
+    rawPayload,
+    payloadSource,
+    selectedAsset,
+    intent,
+    quote,
+    execution,
+    receipt,
+    sessionToken,
+    snapshotOrigin: snapshotOrigin ?? "local",
+    recoveryDraftTxs,
+    ...overrides,
+  });
 
   const supportedSymbols = useMemo(() => {
     const fromApi = capabilities?.supportedAssets?.map((item) => item.symbol).filter(Boolean) ?? [];
@@ -67,6 +161,40 @@ export default function SmartPayScreen() {
   }, [capabilities]);
 
   const historySections = useMemo(() => buildSmartPayHistorySections(history), [history]);
+  const quoteExpired = useMemo(() => (quote ? isSmartPayQuoteExpired(quote) : false), [quote]);
+  const hasAccountAuth = useMemo(() => hasApiAuthHeader(), []);
+  const sharedDraft = useMemo(
+    () => getSmartPaySharedDraft(sharedParams),
+    [sharedParams.asset, sharedParams.payload, sharedParams.rawPayload, sharedParams.selectedAsset]
+  );
+  const intentFreshnessWarning = useMemo(
+    () => getSmartPayIntentFreshnessWarning(intent, rawPayload),
+    [intent, rawPayload]
+  );
+  const quoteFreshnessWarning = useMemo(
+    () =>
+      getSmartPayQuoteFreshnessWarning({
+        intent,
+        quote,
+        rawPayload,
+        selectedAsset,
+      }),
+    [intent, quote, rawPayload, selectedAsset]
+  );
+  const canRequestQuote = useMemo(
+    () => canSmartPayRequestQuote(intent, rawPayload),
+    [intent, rawPayload]
+  );
+  const canReviewQuote = useMemo(
+    () =>
+      canSmartPayReviewQuote({
+        intent,
+        quote,
+        rawPayload,
+        selectedAsset,
+      }),
+    [intent, quote, rawPayload, selectedAsset]
+  );
 
   useEffect(() => {
     void (async () => {
@@ -74,7 +202,7 @@ export default function SmartPayScreen() {
         const [result, persisted, persistedHistory] = await Promise.all([
           getApi().getSmartPayCapabilities(),
           loadSmartPaySession(),
-          loadSmartPayHistory(),
+          loadHistoryTimeline(),
         ]);
         setCapabilities(result);
         setHistory(persistedHistory);
@@ -86,6 +214,9 @@ export default function SmartPayScreen() {
           setQuote(persisted.quote ?? null);
           setExecution(persisted.execution ?? null);
           setReceipt(persisted.receipt ?? null);
+          setSessionToken(persisted.sessionToken ?? null);
+          setSnapshotOrigin(persisted.snapshotOrigin ?? "local");
+          setRecoveryDraftTxs(persisted.recoveryDraftTxs ?? "");
           setShowConfirmation(false);
           setConfirmationAccepted(false);
         }
@@ -105,17 +236,45 @@ export default function SmartPayScreen() {
   }, [selectedAsset, supportedSymbols]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    void saveSmartPaySession({
+    if (!hydrated || !sharedDraft) {
+      return;
+    }
+
+    const alreadyApplied = lastAppliedSharedDraftRef.current === sharedDraft.dedupeKey;
+    const shouldApply = shouldApplySmartPaySharedDraft(sharedDraft, {
       rawPayload,
       payloadSource,
       selectedAsset,
-      intent,
-      quote,
-      execution,
-      receipt,
     });
-  }, [hydrated, rawPayload, payloadSource, selectedAsset, intent, quote, execution, receipt]);
+    if (alreadyApplied && !shouldApply) {
+      return;
+    }
+    if (!shouldApply) {
+      return;
+    }
+
+    lastAppliedSharedDraftRef.current = sharedDraft.dedupeKey;
+    setRawPayload(sharedDraft.rawPayload);
+    setPayloadSource("share");
+    if (sharedDraft.selectedAsset) {
+      setSelectedAsset(sharedDraft.selectedAsset);
+    }
+    setIntent(null);
+    setQuote(null);
+    setExecution(null);
+    setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
+    setShowConfirmation(false);
+    setConfirmationAccepted(false);
+    setError("");
+  }, [hydrated, sharedDraft, sharedParams]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    void saveSmartPaySession(buildCurrentPersistedSession());
+  }, [hydrated, rawPayload, payloadSource, selectedAsset, intent, quote, execution, receipt, sessionToken, snapshotOrigin, recoveryDraftTxs]);
 
   const onPaste = async () => {
     const text = await Clipboard.getStringAsync();
@@ -180,6 +339,9 @@ export default function SmartPayScreen() {
     setConfirmationAccepted(false);
     setExecution(null);
     setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
   };
 
   const onClearSession = async () => {
@@ -190,6 +352,9 @@ export default function SmartPayScreen() {
     setQuote(null);
     setExecution(null);
     setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     setError("");
@@ -197,8 +362,22 @@ export default function SmartPayScreen() {
   };
 
   const onClearHistory = async () => {
-    setHistory([]);
-    await clearSmartPayHistory();
+    setBusy(true);
+    setError("");
+    try {
+      const nextHistory = await clearSmartPayHistorySnapshots({
+        hasAccountAuth,
+        listRemoteHistory: async (limit) => {
+          const remote = await getApi().listSmartPayPayments(limit);
+          return remote.payments;
+        },
+      });
+      setHistory(nextHistory);
+    } catch (e) {
+      setError(safeErrorMessage(e, "Failed to clear local Smart Pay history"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onResumeHistoryEntry = (entry: SmartPayHistoryEntry) => {
@@ -209,20 +388,117 @@ export default function SmartPayScreen() {
     setQuote(entry.quote ?? null);
     setExecution(entry.execution);
     setReceipt(entry.receipt ?? null);
+    setSessionToken(entry.sessionToken ?? null);
+    setSnapshotOrigin(
+      deriveSmartPaySnapshotOrigin({
+        hasAccountAuth,
+        sessionToken: entry.sessionToken,
+        previousOrigin: entry.snapshotOrigin ?? null,
+      })
+    );
+    setRecoveryDraftTxs("");
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     setError("");
   };
+
+  const parsedRecoveryInput = useMemo(() => parseSmartPayRecoveryInput(recoveryDraftTxs), [recoveryDraftTxs]);
+  const parsedRecoveryTxs = parsedRecoveryInput.txids;
+  const recoveryInputBlockReason = useMemo(
+    () => getSmartPayRecoveryInputBlockReason(recoveryDraftTxs),
+    [recoveryDraftTxs]
+  );
+  const canSubmitRecoveryInput = useMemo(
+    () => canSubmitSmartPayRecoveryInput(recoveryDraftTxs),
+    [recoveryDraftTxs]
+  );
+  const activeHistoryEntry = useMemo<SmartPayHistoryEntry | null>(() => {
+    const current = buildSmartPayActiveHistoryEntry({
+      snapshotSavedAt: execution?.updatedAt ?? null,
+      intent,
+      quote,
+      execution,
+      receipt,
+      sessionToken,
+      snapshotOrigin,
+    });
+
+    if (!current) {
+      return null;
+    }
+
+    const matchingHistoryEntry = history.find((entry) => entry.id === current.id) ?? null;
+    return mergeSmartPayActiveHistoryEntry(matchingHistoryEntry, current);
+  }, [execution, history, intent, quote, receipt, sessionToken, snapshotOrigin]);
+  const activeExecutionView = getSmartPayActiveExecutionView(activeHistoryEntry, execution);
+  const canRefreshExecution = Boolean(
+    activeExecutionView &&
+      canSmartPayRefreshOrRecover({
+        sessionToken,
+        hasAccountAuth,
+      })
+  );
+  const canRecoverExecution = Boolean(
+    activeExecutionView &&
+      canSmartPayRecoverExecution({
+        sessionToken,
+        hasAccountAuth,
+        recoverable: activeExecutionView.recoverable,
+      })
+  );
+  const activeProgressLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProgressLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeProgressHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProgressHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activePendingProofHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryPendingProofHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeLinkedProofTxRefs = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofTxRefs(activeHistoryEntry) : []),
+    [activeHistoryEntry]
+  );
+  const activeProofRouteSteps = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofRouteSteps(activeHistoryEntry) : []),
+    [activeHistoryEntry]
+  );
+  const activeAdditionalProofTxRefs = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryAdditionalProofTxRefs(activeHistoryEntry) : []),
+    [activeHistoryEntry]
+  );
+  const activeAdditionalProofHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryAdditionalProofHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeReceiptDisplay = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryReceiptDisplay(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
 
   const onOpenConfirmation = () => {
     if (!intent || !quote) {
       Alert.alert("Smart Pay", "Get a quote first.");
       return;
     }
+    if (quoteFreshnessWarning) {
+      Alert.alert("Smart Pay", quoteFreshnessWarning);
+      return;
+    }
+    if (isSmartPayQuoteExpired(quote)) {
+      Alert.alert("Smart Pay", "This quote expired. Get a fresh quote before reviewing or executing payment.");
+      return;
+    }
     setShowConfirmation(true);
     setConfirmationAccepted(false);
     setExecution(null);
     setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
   };
 
   const onOpenExplorerUrl = async (url: string | null | undefined) => {
@@ -244,6 +520,9 @@ export default function SmartPayScreen() {
     setQuote(null);
     setExecution(null);
     setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     try {
@@ -265,10 +544,17 @@ export default function SmartPayScreen() {
       Alert.alert("Smart Pay", "Parse a payment intent first.");
       return;
     }
+    if (intentFreshnessWarning) {
+      Alert.alert("Smart Pay", intentFreshnessWarning);
+      return;
+    }
     setBusy(true);
     setError("");
     setExecution(null);
     setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
     setShowConfirmation(false);
     setConfirmationAccepted(false);
     try {
@@ -299,6 +585,14 @@ export default function SmartPayScreen() {
       Alert.alert("Smart Pay", "Review and explicitly accept payment details before execute.");
       return;
     }
+    if (quoteFreshnessWarning) {
+      Alert.alert("Smart Pay", quoteFreshnessWarning);
+      return;
+    }
+    if (isSmartPayQuoteExpired(quote)) {
+      Alert.alert("Smart Pay", "This quote expired. Get a fresh quote before executing payment.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -311,19 +605,27 @@ export default function SmartPayScreen() {
           appVersion: null,
         },
       });
-      const receiptResult = await getApi().getSmartPayReceipt(result.execution.id);
+      const nextSessionToken = result.sessionToken ?? null;
+      const receiptResult = await getApi().getSmartPayReceipt(result.execution.id, nextSessionToken);
+      const nextSnapshotOrigin = deriveSmartPaySnapshotOrigin({
+        hasAccountAuth,
+        sessionToken: nextSessionToken,
+      });
       setExecution(result.execution);
       setReceipt(receiptResult);
-      setHistory(
-        await saveSmartPayHistoryEntry({
-          id: result.execution.id,
-          savedAt: new Date().toISOString(),
-          intent,
-          quote,
-          execution: result.execution,
-          receipt: receiptResult,
-        })
-      );
+      setSessionToken(nextSessionToken);
+      setSnapshotOrigin(nextSnapshotOrigin);
+      await saveSmartPayHistoryEntry({
+        id: result.execution.id,
+        savedAt: new Date().toISOString(),
+        intent,
+        quote,
+        execution: result.execution,
+        receipt: receiptResult,
+        sessionToken: nextSessionToken,
+        snapshotOrigin: nextSnapshotOrigin,
+      });
+      setHistory(await loadHistoryTimeline());
       setShowConfirmation(false);
       setConfirmationAccepted(false);
     } catch (e) {
@@ -339,22 +641,32 @@ export default function SmartPayScreen() {
     setError("");
     try {
       const [result, receiptResult] = await Promise.all([
-        getApi().getSmartPayExecution(execution.id),
-        getApi().getSmartPayReceipt(execution.id),
+        getApi().getSmartPayExecution(execution.id, sessionToken),
+        getApi().getSmartPayReceipt(execution.id, sessionToken),
       ]);
       setExecution(result.execution);
       setReceipt(receiptResult);
+      const nextSessionToken = result.sessionToken ?? sessionToken ?? null;
+      const nextSnapshotOrigin = deriveSmartPaySnapshotOrigin({
+        hasAccountAuth,
+        sessionToken: nextSessionToken,
+        previousOrigin: snapshotOrigin ?? null,
+        regainedSessionTokenFromBackend: Boolean(nextSessionToken && !sessionToken),
+      });
+      setSessionToken(nextSessionToken);
+      setSnapshotOrigin(nextSnapshotOrigin);
       if (intent) {
-        setHistory(
-          await saveSmartPayHistoryEntry({
-            id: result.execution.id,
-            savedAt: new Date().toISOString(),
-            intent,
-            quote,
-            execution: result.execution,
-            receipt: receiptResult,
-          })
-        );
+        await saveSmartPayHistoryEntry({
+          id: result.execution.id,
+          savedAt: new Date().toISOString(),
+          intent,
+          quote,
+          execution: result.execution,
+          receipt: receiptResult,
+          sessionToken: nextSessionToken,
+          snapshotOrigin: nextSnapshotOrigin,
+        });
+        setHistory(await loadHistoryTimeline());
       }
     } catch (e) {
       setError(safeErrorMessage(e, "Refresh failed"));
@@ -365,24 +677,55 @@ export default function SmartPayScreen() {
 
   const onRecover = async () => {
     if (!execution) return;
+
+    const clientKnownTxs = parsedRecoveryTxs;
+    const clientKnownRefs: SmartPayClientKnownRef[] = parsedRecoveryInput.refs.map((ref) => ({
+      txid: ref.txid,
+      network: ref.network,
+      explorerUrl: ref.explorerUrl,
+    }));
+    if (!canSubmitRecoveryInput) {
+      Alert.alert(
+        "Smart Pay",
+        recoveryInputBlockReason ??
+          "No valid tx hash or explorer link was parsed from this recovery input. Fix the pasted values or clear the field to run a status-only recovery pass."
+      );
+      return;
+    }
+
     setBusy(true);
     setError("");
     try {
-      const result = await getApi().recoverSmartPay(execution.id, { clientKnownTxs: [] });
-      const receiptResult = await getApi().getSmartPayReceipt(execution.id);
+      const result = await getApi().recoverSmartPay(
+        execution.id,
+        { clientKnownTxs, clientKnownRefs },
+        sessionToken
+      );
+      const nextSessionToken = result.sessionToken ?? sessionToken ?? null;
+      const receiptResult = await getApi().getSmartPayReceipt(execution.id, nextSessionToken);
+      const nextSnapshotOrigin = deriveSmartPaySnapshotOrigin({
+        hasAccountAuth,
+        sessionToken: nextSessionToken,
+        previousOrigin: snapshotOrigin ?? null,
+        regainedSessionTokenFromBackend: Boolean(nextSessionToken && !sessionToken),
+      });
       setExecution(result.execution);
       setReceipt(receiptResult);
+      setSessionToken(nextSessionToken);
+      setSnapshotOrigin(nextSnapshotOrigin);
+      setRecoveryDraftTxs("");
       if (intent) {
-        setHistory(
-          await saveSmartPayHistoryEntry({
-            id: result.execution.id,
-            savedAt: new Date().toISOString(),
-            intent,
-            quote,
-            execution: result.execution,
-            receipt: receiptResult,
-          })
-        );
+        await saveSmartPayHistoryEntry({
+          id: result.execution.id,
+          savedAt: new Date().toISOString(),
+          intent,
+          quote,
+          execution: result.execution,
+          receipt: receiptResult,
+          sessionToken: nextSessionToken,
+          snapshotOrigin: nextSnapshotOrigin,
+        });
+        setHistory(await loadHistoryTimeline());
       }
     } catch (e) {
       setError(safeErrorMessage(e, "Recover failed"));
@@ -395,7 +738,7 @@ export default function SmartPayScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Smart Pay beta</Text>
       <Text style={styles.subtitle}>
-        Minimal app wiring for the new Smart QR flow: paste payload → parse → quote → execute → refresh.
+        Smart QR flow beta: paste/share payload → parse → quote → execute → refresh/recover, with stored session history and receipt snapshots.
       </Text>
       <View style={styles.topActions}>
         <Pressable style={styles.secondary} onPress={onClearSession} disabled={busy}>
@@ -411,36 +754,73 @@ export default function SmartPayScreen() {
               <Text style={styles.inlineAction}>Clear history</Text>
             </Pressable>
           </View>
-          <Text style={styles.meta}>Local device-only snapshots of recent execute/refresh/recover sessions.</Text>
+          <Text style={styles.meta}>Secure device-local snapshots merged with authenticated backend payment history when available. Clearing history removes only the local secure-store snapshots on this device; signed-in backend payment history remains server-side and will still reappear here when account-authenticated history is enabled.</Text>
+          <Text style={styles.meta}>Entries without the original session token may still refresh/recover after account sign-in, but anonymous live resume remains unavailable on this device.</Text>
+          {!hasAccountAuth ? (
+            <Text style={styles.inlineHint}>Account-authenticated backend history is currently disabled in this Expo build. Set EXPO_PUBLIC_ANCAP_API_AUTH_HEADER to enable authenticated payment history/resume for the same ANCAP account.</Text>
+          ) : null}
           {historySections.map((section) => (
             <View key={section.key} style={styles.historySection}>
               <Text style={styles.historySectionTitle}>{section.title}</Text>
-              {section.entries.map((entry) => (
-                <Pressable
-                  key={entry.id}
-                  style={styles.historyItem}
-                  onPress={() => onResumeHistoryEntry(entry)}
-                >
-                  <View style={styles.historyRow}>
-                    <Text style={styles.historyTitle}>
-                      {getSmartPayHistoryAmountLabel(entry)}
-                    </Text>
-                    <View style={[styles.statusBadge, section.key === "completed" ? styles.statusBadgeCompleted : section.key === "needs_attention" ? styles.statusBadgeAttention : styles.statusBadgeInFlight]}>
-                      <Text style={styles.statusBadgeText}>{entry.execution.status}</Text>
+              {section.entries.map((entry) => {
+                const pendingProofHint = getSmartPayHistoryPendingProofHint(entry);
+                const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
+
+                return (
+                  <Pressable
+                    key={entry.id}
+                    style={styles.historyItem}
+                    onPress={() => onResumeHistoryEntry(entry)}
+                  >
+                    <View style={styles.historyRow}>
+                      <Text style={styles.historyTitle}>
+                        {getSmartPayHistoryAmountLabel(entry)}
+                      </Text>
+                      <View style={[styles.statusBadge, section.key === "completed" ? styles.statusBadgeCompleted : section.key === "needs_attention" ? styles.statusBadgeAttention : styles.statusBadgeInFlight]}>
+                        <Text style={styles.statusBadgeText}>{getSmartPayExecutionStatusLabel(entry.execution.status)}</Text>
+                      </View>
                     </View>
-                  </View>
-                  <Text style={styles.meta}>Recipient: {entry.receipt?.recipientAddress ?? entry.intent.recipient.address}</Text>
-                  <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
-                  <Text style={styles.meta}>Saved: {formatSmartPayTimestamp(entry.savedAt)}</Text>
-                  {entry.receipt?.completedAt ? (
-                    <Text style={styles.meta}>Completed: {formatSmartPayTimestamp(entry.receipt.completedAt)}</Text>
-                  ) : null}
-                  {entry.execution.error ? (
-                    <Text style={styles.warning}>Error: {entry.execution.error}</Text>
-                  ) : null}
-                  <Text style={styles.inlineHint}>Tap to restore this payment context.</Text>
-                </Pressable>
-              ))}
+                    <Text style={styles.meta}>Recipient: {entry.receipt?.recipientAddress ?? entry.intent.recipient.address}</Text>
+                    <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
+                    <Text style={styles.meta}>History source: {getSmartPayHistorySourceLabel(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistorySourceHint(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryFreshnessLabel(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryFreshnessHint(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(entry, { hasAccountAuth })}</Text>
+                    {getSmartPayHistoryProgressLabel(entry) ? (
+                      <Text style={styles.meta}>{getSmartPayHistoryProgressLabel(entry)}</Text>
+                    ) : null}
+                    {getSmartPayHistoryProgressHint(entry) ? (
+                      <Text style={styles.meta}>{getSmartPayHistoryProgressHint(entry)}</Text>
+                    ) : null}
+                    <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryProofHint(entry)}</Text>
+                    {pendingProofHint ? (
+                      <Text style={styles.inlineHint}>{pendingProofHint}</Text>
+                    ) : null}
+                    {additionalProofHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    <Text style={styles.meta}>{getSmartPayHistoryAccessHint(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryActionHint(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>Saved: {formatSmartPayTimestamp(entry.savedAt)}</Text>
+                    {entry.receipt?.completedAt ? (
+                      <Text style={styles.meta}>Completed: {formatSmartPayTimestamp(entry.receipt.completedAt)}</Text>
+                    ) : null}
+                    {entry.execution.error ? (
+                      <Text style={styles.warning}>Error: {entry.execution.error}</Text>
+                    ) : null}
+                    <Text style={styles.inlineHint}>
+                      {hasSmartPayLiveSessionAccess(entry)
+                        ? "Tap to restore this live payment session."
+                        : hasAccountAuth
+                          ? "Tap to restore this snapshot, then refresh or recover through your signed-in ANCAP account."
+                          : "Tap to restore this receipt snapshot and quoted payment context."}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           ))}
         </View>
@@ -475,9 +855,12 @@ export default function SmartPayScreen() {
             setRawPayload(value);
           }}
           autoCapitalize="none"
-          placeholder="Paste ACP URI, address, or EIP-681 payload"
+          placeholder="Paste or share ACP URI, address, or EIP-681 payload"
           placeholderTextColor="#64748b"
         />
+        {payloadSource === "share" && rawPayload.trim() ? (
+          <Text style={styles.persistedNote}>Shared payload draft restored into Smart Pay. Review it before parsing or executing.</Text>
+        ) : null}
         <View style={styles.rowWrap}>
           <Pressable style={styles.secondary} onPress={onPaste} disabled={busy}>
             <Text style={styles.secondaryText}>Paste from clipboard</Text>
@@ -492,6 +875,7 @@ export default function SmartPayScreen() {
             <Text style={styles.primaryText}>Parse</Text>
           </Pressable>
         </View>
+        {intentFreshnessWarning ? <Text style={styles.warning}>{intentFreshnessWarning}</Text> : null}
       </View>
 
       <View style={styles.card}>
@@ -510,7 +894,8 @@ export default function SmartPayScreen() {
             );
           })}
         </View>
-        <Pressable style={styles.primary} onPress={onQuote} disabled={busy || !intent}>
+        {quoteFreshnessWarning && quote ? <Text style={styles.warning}>{quoteFreshnessWarning}</Text> : null}
+        <Pressable style={styles.primary} onPress={onQuote} disabled={busy || !canRequestQuote}>
           <Text style={styles.primaryText}>Get quote</Text>
         </Pressable>
       </View>
@@ -524,6 +909,7 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Amount: {intent.amount?.value ?? "—"}</Text>
           <Text style={styles.meta}>Parse method: {intent.parseMethod}</Text>
           {intent.memo?.value ? <Text style={styles.meta}>Memo: {intent.memo.value}</Text> : null}
+          {intentFreshnessWarning ? <Text style={styles.warning}>{intentFreshnessWarning}</Text> : null}
           {intent.warnings.length ? <Text style={styles.warning}>Warnings: {intent.warnings.join(" · ")}</Text> : null}
           {intent.riskFlags.length ? <Text style={styles.warning}>Risk flags: {intent.riskFlags.join(" · ")}</Text> : null}
         </View>
@@ -536,7 +922,9 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Source: {quote.requiredSourceAmount} {quote.sourceAsset.symbol}</Text>
           <Text style={styles.meta}>Target: {quote.targetAmount} {quote.targetAsset.symbol}</Text>
           <Text style={styles.meta}>Service fee: {quote.serviceFeeAcp} ACP</Text>
-          <Text style={styles.meta}>Expires: {quote.expiresAt}</Text>
+          <Text style={styles.meta}>{getSmartPayQuoteExpiryLabel(quote)}</Text>
+          <Text style={quoteExpired ? styles.warning : styles.meta}>{getSmartPayQuoteExpiryHint(quote)}</Text>
+          {quoteFreshnessWarning ? <Text style={styles.warning}>{quoteFreshnessWarning}</Text> : null}
           {quote.networkFee.map((item, index) => (
             <Text key={`${item.network}-${item.assetSymbol}-${index}`} style={styles.meta}>
               Network fee: {item.amount} {item.assetSymbol} on {item.network}
@@ -547,8 +935,8 @@ export default function SmartPayScreen() {
               Route {index + 1}: {step.kind} {step.fromAsset} → {step.toAsset} ({step.network})
             </Text>
           ))}
-          <Pressable style={styles.primary} onPress={onOpenConfirmation} disabled={busy}>
-            <Text style={styles.primaryText}>Review confirmation</Text>
+          <Pressable style={styles.primary} onPress={onOpenConfirmation} disabled={busy || !canReviewQuote}>
+            <Text style={styles.primaryText}>{quoteExpired ? "Quote expired — re-quote" : quoteFreshnessWarning ? "Quote stale — re-quote" : "Review confirmation"}</Text>
           </Pressable>
         </View>
       ) : null}
@@ -562,6 +950,9 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Target amount: {quote.targetAmount}</Text>
           <Text style={styles.meta}>Source spend: {quote.requiredSourceAmount} {quote.sourceAsset.symbol}</Text>
           <Text style={styles.meta}>Service fee: {quote.serviceFeeAcp} ACP</Text>
+          <Text style={styles.meta}>{getSmartPayQuoteExpiryLabel(quote)}</Text>
+          <Text style={quoteExpired ? styles.warning : styles.meta}>{getSmartPayQuoteExpiryHint(quote)}</Text>
+          {quoteFreshnessWarning ? <Text style={styles.warning}>{quoteFreshnessWarning}</Text> : null}
           <Text style={styles.meta}>Max slippage: {quote.slippageBps} bps</Text>
           {intent.memo?.value ? <Text style={styles.meta}>Memo: {intent.memo.value}</Text> : null}
           {quote.networkFee.map((item, index) => (
@@ -589,73 +980,207 @@ export default function SmartPayScreen() {
             <Pressable style={styles.secondary} onPress={onResetConfirmation} disabled={busy}>
               <Text style={styles.secondaryText}>Back</Text>
             </Pressable>
-            <Pressable style={styles.primary} onPress={onExecute} disabled={busy || !confirmationAccepted}>
-              <Text style={styles.primaryText}>Execute</Text>
+            <Pressable style={styles.primary} onPress={onExecute} disabled={busy || !confirmationAccepted || quoteExpired || Boolean(quoteFreshnessWarning)}>
+              <Text style={styles.primaryText}>{quoteExpired ? "Quote expired" : quoteFreshnessWarning ? "Quote stale" : "Execute"}</Text>
             </Pressable>
           </View>
         </View>
       ) : null}
 
-      {execution ? (
+      {execution && activeExecutionView ? (
         <View style={styles.card}>
           <Text style={styles.label}>Execution session</Text>
-          <Text style={styles.value}>{execution.status}</Text>
-          <Text style={styles.meta}>Execution ID: {execution.id}</Text>
-          <Text style={styles.meta}>Recoverable: {execution.recoverable ? "yes" : "no"}</Text>
-          <Text style={styles.meta}>Next action: {execution.nextAction || "—"}</Text>
-          <Text style={styles.meta}>Updated: {execution.updatedAt}</Text>
-          {execution.txRefs.map((tx) => (
+          <Text style={styles.value}>{getSmartPayExecutionStatusLabel(activeExecutionView.status)}</Text>
+          <Text style={styles.meta}>Execution ID: {activeExecutionView.id}</Text>
+          <Text style={styles.meta}>Recoverable: {activeExecutionView.recoverable ? "yes" : "no"}</Text>
+          <Text style={styles.meta}>Next action: {activeExecutionView.nextAction || "—"}</Text>
+          <Text style={styles.meta}>Updated: {activeExecutionView.updatedAt}</Text>
+          {activeExecutionView.progress ? (
+            <>
+              <Text style={styles.meta}>Route progress: {activeExecutionView.progress.observedTxCount}/{activeExecutionView.progress.totalRouteSteps} tx observed</Text>
+              <Text style={styles.meta}>Remaining route steps: {activeExecutionView.progress.remainingRouteSteps}</Text>
+              {activeExecutionView.progress.pendingRoles.length ? (
+                <Text style={styles.meta}>Pending roles: {activeExecutionView.progress.pendingRoles.join(" → ")}</Text>
+              ) : null}
+            </>
+          ) : null}
+          {activeExecutionView.txRefs.map((tx) => (
             <Text key={`${tx.role}-${tx.txid}`} style={styles.meta}>
               {tx.role}: {tx.txid}
             </Text>
           ))}
+          {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
+          {!canRefreshExecution ? (
+            <Text style={styles.warning}>
+              {getSmartPayRefreshOrRecoverHint({
+                sessionToken,
+                hasAccountAuth,
+              })}
+            </Text>
+          ) : null}
+          {!canRefreshExecution && !hasAccountAuth ? (
+            <Text style={styles.inlineHint}>
+              This Expo build is not configured with an ANCAP Authorization header, so authenticated backend resume/history is unavailable here even though the backend contract supports it.
+            </Text>
+          ) : null}
+          {!canRecoverExecution ? (
+            <Text style={styles.inlineHint}>
+              {getSmartPayRecoverHint({
+                sessionToken,
+                hasAccountAuth,
+                recoverable: activeExecutionView.recoverable,
+              })}
+            </Text>
+          ) : null}
+          <Text style={styles.label}>Recovery tx hints (optional)</Text>
+          <Text style={styles.inlineHint}>
+            Paste observed route tx hashes or explorer links from the original signing device if refresh alone is not enough. Smart Pay recover will normalize known tx ids and map them onto quoted route steps in order.
+          </Text>
+          <TextInput
+            style={[styles.input, styles.payloadInput, styles.recoveryInput]}
+            multiline
+            value={recoveryDraftTxs}
+            onChangeText={setRecoveryDraftTxs}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="One tx hash per line, comma, or space"
+            placeholderTextColor="#64748b"
+          />
+          {recoveryDraftTxs.trim() ? (
+            <>
+              <Text style={styles.meta}>
+                Parsed recovery txs: {parsedRecoveryTxs.length}
+              </Text>
+              {parsedRecoveryInput.refs.length ? parsedRecoveryInput.refs.map((ref, index) => (
+                <Text key={`recovery-ref-${ref.txid}-${index}`} style={styles.inlineHint}>
+                  {formatSmartPayRecoveryRefPreview(ref)}
+                </Text>
+              )) : null}
+              {parsedRecoveryInput.duplicateTokens.length ? (
+                <Text style={styles.inlineHint}>
+                  Ignored duplicates: {parsedRecoveryInput.duplicateTokens.join(", ")}
+                </Text>
+              ) : null}
+              {parsedRecoveryInput.invalidTokens.length ? (
+                <Text style={styles.warning}>
+                  Could not parse as tx hash or explorer link: {parsedRecoveryInput.invalidTokens.join(", ")}
+                </Text>
+              ) : null}
+              {recoveryInputBlockReason ? (
+                <Text style={styles.warning}>{recoveryInputBlockReason}</Text>
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.inlineHint}>Leave empty to ask the backend for a status-only recovery pass.</Text>
+          )}
           <View style={styles.row}>
-            <Pressable style={styles.secondary} onPress={onRefreshExecution} disabled={busy}>
+            <Pressable style={styles.secondary} onPress={onRefreshExecution} disabled={busy || !canRefreshExecution}>
               <Text style={styles.secondaryText}>Refresh status</Text>
             </Pressable>
-            <Pressable style={styles.secondary} onPress={onRecover} disabled={busy}>
+            <Pressable style={styles.secondary} onPress={onRecover} disabled={busy || !canRecoverExecution || !canSubmitRecoveryInput}>
               <Text style={styles.secondaryText}>Recover</Text>
             </Pressable>
           </View>
         </View>
       ) : null}
 
-      {execution && intent ? (
+      {execution && intent && activeHistoryEntry && activeReceiptDisplay ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Receipt snapshot</Text>
-          <Text style={styles.value}>{receipt?.targetAmountPaid ?? quote?.targetAmount ?? intent.amount?.value ?? "—"} {receipt?.targetAssetPaid ?? quote?.targetAsset.symbol ?? intent.asset.symbol ?? "asset"}</Text>
-          <Text style={styles.meta}>Recipient: {receipt?.recipientAddress ?? intent.recipient.address}</Text>
-          <Text style={styles.meta}>Source asset: {receipt?.sourceAssetSpent ?? quote?.sourceAsset.symbol ?? selectedAsset}</Text>
-          <Text style={styles.meta}>Source spend: {receipt?.sourceAmountSpent ?? quote?.requiredSourceAmount ?? "—"}</Text>
-          <Text style={styles.meta}>Service fee: {receipt?.serviceFeeAcp ?? quote?.serviceFeeAcp ?? "—"} ACP</Text>
-          <Text style={styles.meta}>Receipt status: {execution.status}</Text>
-          {receipt?.completedAt ? <Text style={styles.meta}>Completed at: {receipt.completedAt}</Text> : null}
-          {receipt?.merchantLabel ? <Text style={styles.meta}>Merchant: {receipt.merchantLabel}</Text> : null}
-          {execution.error ? <Text style={styles.warning}>Execution error: {execution.error}</Text> : null}
-          {receipt?.routeSummary?.length ? receipt.routeSummary.map((line, index) => (
+          <Text style={styles.label}>{getSmartPayHistorySnapshotTitle(activeHistoryEntry)}</Text>
+          <Text style={styles.value}>{activeReceiptDisplay.targetAmount} {activeReceiptDisplay.targetAsset}</Text>
+          <Text style={styles.meta}>Recipient: {activeReceiptDisplay.recipientAddress}</Text>
+          <Text style={styles.meta}>Source asset: {activeReceiptDisplay.sourceAsset}</Text>
+          <Text style={styles.meta}>Source spend: {activeReceiptDisplay.sourceAmount}</Text>
+          <Text style={styles.meta}>Service fee: {activeReceiptDisplay.serviceFeeAcp} ACP</Text>
+          <Text style={styles.meta}>{getSmartPayHistorySnapshotStatusLabel(activeHistoryEntry)}: {getSmartPayExecutionStatusLabel(activeExecutionView?.status ?? execution.status)}</Text>
+          <Text style={styles.meta}>History source: {getSmartPayHistorySourceLabel(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistorySourceHint(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryFreshnessLabel(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryFreshnessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryAccessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryActionHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+          {activeProgressLabel ? <Text style={styles.meta}>{activeProgressLabel}</Text> : null}
+          {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
+          <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
+          {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
+          {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
+          {activeReceiptDisplay.completedAt ? <Text style={styles.meta}>Completed at: {activeReceiptDisplay.completedAt}</Text> : null}
+          {activeReceiptDisplay.merchantLabel ? <Text style={styles.meta}>Merchant: {activeReceiptDisplay.merchantLabel}</Text> : null}
+          {activeExecutionView?.error ? <Text style={styles.warning}>Execution error: {activeExecutionView.error}</Text> : null}
+          <Text style={styles.label}>Route summary</Text>
+          {activeReceiptDisplay.routeSummary.length ? activeReceiptDisplay.routeSummary.map((line, index) => (
             <Text key={`receipt-route-${index}`} style={styles.meta}>
               {line}
             </Text>
-          )) : quote?.route?.length ? quote.route.map((step, index) => (
-            <Text key={`receipt-route-fallback-${step.kind}-${index}`} style={styles.meta}>
-              Step {index + 1}: {step.kind} {step.fromAsset} → {step.toAsset} via {step.network}
-            </Text>
-          )) : null}
-          {receipt?.networkFees?.length ? receipt.networkFees.map((fee, index) => (
+          )) : <Text style={styles.meta}>No route summary available yet.</Text>}
+          <Text style={styles.label}>{getSmartPayHistoryNetworkFeesLabel(activeReceiptDisplay)}</Text>
+          {getSmartPayHistoryNetworkFeesHint(activeReceiptDisplay) ? (
+            <Text style={styles.inlineHint}>{getSmartPayHistoryNetworkFeesHint(activeReceiptDisplay)}</Text>
+          ) : null}
+          {activeReceiptDisplay.networkFees.length ? activeReceiptDisplay.networkFees.map((fee, index) => (
             <Text key={`receipt-fee-${fee.network}-${fee.assetSymbol}-${index}`} style={styles.meta}>
-              Network fee: {fee.amount} {fee.assetSymbol} on {fee.network}
+              {fee.amount} {fee.assetSymbol} on {fee.network}
             </Text>
-          )) : null}
-          {(receipt?.txRefs?.length ? receipt.txRefs : execution.txRefs).length ? (receipt?.txRefs ?? execution.txRefs).map((tx) => (
+          )) : <Text style={styles.meta}>No network fees reported.</Text>}
+          <Text style={styles.label}>Route proof coverage</Text>
+          {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
+            const txRef = step.txRef;
+            return (
+              <View key={step.key} style={styles.txRow}>
+                <Text style={styles.meta}>
+                  {step.status === "linked" ? "✓" : "…"} {step.label}
+                </Text>
+                {txRef ? (
+                  <>
+                    <Text style={styles.meta}>{step.role} tx: {txRef.txid}</Text>
+                    {txRef.explorerUrl ? (
+                      <Pressable onPress={() => void onOpenExplorerUrl(txRef.explorerUrl)}>
+                        <Text style={styles.inlineAction}>{txRef.explorerUrl}</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.inlineHint}>Explorer link pending for this route step.</Text>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.inlineHint}>No linked tx observed for this route step yet.</Text>
+                )}
+              </View>
+            );
+          }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => (
             <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
               <Text style={styles.meta}>{tx.role} tx: {tx.txid}</Text>
               {tx.explorerUrl ? (
                 <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
                   <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
                 </Pressable>
-              ) : null}
+              ) : (
+                <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+              )}
             </View>
           )) : <Text style={styles.meta}>No tx references reported yet.</Text>}
+          {activeAdditionalProofTxRefs.length ? (
+            <>
+              <Text style={styles.label}>Additional observed tx refs</Text>
+              {activeAdditionalProofTxRefs.map((tx) => (
+                <View key={`receipt-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                  <Text style={styles.meta}>{tx.role} tx on {tx.network}: {tx.txid}</Text>
+                  {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx) ? (
+                    <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx)}</Text>
+                  ) : null}
+                  {tx.explorerUrl ? (
+                    <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                      <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                    </Pressable>
+                  ) : (
+                    <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                  )}
+                </View>
+              ))}
+            </>
+          ) : null}
         </View>
       ) : null}
 
@@ -711,6 +1236,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   payloadInput: { minHeight: 120, textAlignVertical: "top" },
+  recoveryInput: { minHeight: 88 },
   topActions: { marginBottom: 16 },
   sectionHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   row: { flexDirection: "row", gap: 12, marginTop: 12 },
