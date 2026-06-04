@@ -17,7 +17,7 @@
     "@ancap/acp-bridge-client": "*",
     "@ancap/acp-wallet-sdk": "*",
     "@react-navigation/native": "^7.0.14",
-    "expo": "~52.0.28",
+    "expo": "~56.0.8",
     "expo-acp-core": "*",
     "expo-camera": "~16.0.18",
     "expo-clipboard": "~7.0.1",
