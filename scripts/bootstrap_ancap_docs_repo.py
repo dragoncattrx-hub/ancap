@@ -1024,6 +1024,26 @@ def run_json_command(command: list[str], *, allow_not_found: bool = False) -> An
     return json.loads(result.stdout)
 
 
+def _format_called_process_error(exc: subprocess.CalledProcessError) -> str:
+    output = exc.output.strip() if isinstance(exc.output, str) else ""
+    stderr = exc.stderr.strip() if isinstance(exc.stderr, str) else ""
+    return "\n".join(part for part in [output, stderr] if part)
+
+
+def _is_branch_protection_probe_auth_error(exc: subprocess.CalledProcessError) -> bool:
+    combined = _format_called_process_error(exc)
+    return any(
+        marker in combined
+        for marker in [
+            "403",
+            "Forbidden",
+            "Resource not accessible by integration",
+            "Requires admin access",
+            "Must have admin rights to Repository",
+        ]
+    )
+
+
 def fetch_active_github_auth_context(
     *,
     hostname: str = "github.com",
@@ -1218,16 +1238,21 @@ def fetch_live_repo_state(repo: str) -> dict[str, Any]:
 
 
 def fetch_live_branch_protection_state(repo: str, default_branch: str) -> dict[str, Any] | None:
-    payload = run_json_command(
-        [
-            "gh",
-            "api",
-            "-H",
-            "Accept: application/vnd.github+json",
-            f"repos/{repo}/branches/{default_branch}/protection",
-        ],
-        allow_not_found=True,
-    )
+    try:
+        payload = run_json_command(
+            [
+                "gh",
+                "api",
+                "-H",
+                "Accept: application/vnd.github+json",
+                f"repos/{repo}/branches/{default_branch}/protection",
+            ],
+            allow_not_found=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        if _is_branch_protection_probe_auth_error(exc):
+            return {"_probeAuthError": _format_called_process_error(exc) or "branch protection probe requires elevated GitHub repo admin access"}
+        raise
     if payload is None:
         return None
     assert isinstance(payload, dict)
@@ -1566,6 +1591,20 @@ def build_live_verification_snapshot(
             [
                 _make_live_check("branchProtection", "configured", True, False),
                 _make_live_check("branchProtection", "requiredStatusChecks", status_check_contexts, None),
+            ]
+        )
+    elif branch_protection_state.get("_probeAuthError"):
+        auth_error = branch_protection_state.get("_probeAuthError")
+        notes.append(
+            "branch protection details were not exposed in the current GitHub auth context; verify the default-branch protection with admin-capable auth if this check matters."
+        )
+        if isinstance(auth_error, str) and auth_error:
+            notes.append(f"branch protection probe error: {auth_error}")
+        checks.extend(
+            [
+                _make_live_check("branchProtection", "configured", True, None),
+                _make_live_check("branchProtection", "requiredStatusChecks", _dedupe_status_check_contexts(status_check_contexts), None),
+                _make_live_check("branchProtection", "probeAuth", "admin-capable branch protection visibility", None),
             ]
         )
     else:

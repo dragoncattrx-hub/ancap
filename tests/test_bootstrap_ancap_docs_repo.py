@@ -1089,6 +1089,79 @@ def test_fetch_active_github_auth_context_returns_none_when_status_probe_fails()
 
 
 
+def test_fetch_live_branch_protection_state_returns_auth_probe_marker_when_branch_protection_is_hidden():
+    module = load_bootstrap_script_module()
+
+    def fail(command, allow_not_found=False):
+        raise subprocess.CalledProcessError(
+            1,
+            command,
+            output='',
+            stderr='gh: Resource not accessible by integration (HTTP 403)',
+        )
+
+    original = module.run_json_command
+    try:
+        module.run_json_command = fail
+        assert module.fetch_live_branch_protection_state('dragoncattrx-hub/ancap-docs', 'main') == {
+            '_probeAuthError': 'gh: Resource not accessible by integration (HTTP 403)'
+        }
+    finally:
+        module.run_json_command = original
+
+
+
+def test_build_live_verification_snapshot_marks_hidden_branch_protection_as_unknown_not_drift():
+    module = load_bootstrap_script_module()
+    plan = module.load_bootstrap_plan()
+
+    snapshot = module.build_live_verification_snapshot(
+        'dragoncattrx-hub/ancap-docs',
+        plan,
+        repo_state={
+            'visibility': plan['repo_settings']['visibility'],
+            'description': plan['repo_settings']['description'],
+            'homepage': plan['repo_settings']['homepage'],
+            'default_branch': plan['repo_settings']['defaultBranch'],
+            'has_issues': plan['repo_settings']['features']['issues'],
+            'has_discussions': plan['repo_settings']['features']['discussions'],
+            'has_projects': plan['repo_settings']['features']['projects'],
+            'has_wiki': plan['repo_settings']['features']['wiki'],
+            'allow_merge_commit': plan['repo_settings']['mergePolicy']['mergeCommits'],
+            'allow_squash_merge': plan['repo_settings']['mergePolicy']['squashMerge'],
+            'allow_rebase_merge': plan['repo_settings']['mergePolicy']['rebaseMerge'],
+            'delete_branch_on_merge': plan['repo_settings']['mergePolicy']['autoDeleteHeadBranches'],
+            'security_and_analysis': {
+                'secret_scanning': {'status': 'enabled'},
+                'secret_scanning_push_protection': {'status': 'enabled'},
+            },
+        },
+        branch_protection_state={'_probeAuthError': 'gh: Resource not accessible by integration (HTTP 403)'},
+        status_check_contexts=['Docs CI / docs-bundle'],
+    )
+
+    assert snapshot['ok'] is False
+    assert snapshot['driftCount'] == 0
+    assert snapshot['unknownCount'] == 3
+    branch_checks = {
+        (check['field'], check['status']): check
+        for check in snapshot['checks']
+        if check['scope'] == 'branchProtection'
+    }
+    assert ('configured', 'unknown') in branch_checks
+    assert ('requiredStatusChecks', 'unknown') in branch_checks
+    assert ('probeAuth', 'unknown') in branch_checks
+    assert any(
+        'branch protection details were not exposed in the current GitHub auth context' in note
+        for note in snapshot['notes']
+    )
+    assert any(
+        'branch protection probe error: gh: Resource not accessible by integration (HTTP 403)' in note
+        for note in snapshot['notes']
+    )
+
+
+
 def test_build_discussion_admin_action_automation_summary_emits_graphql_commands_for_automatable_actions():
     module = load_bootstrap_script_module()
 
