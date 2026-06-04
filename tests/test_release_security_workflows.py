@@ -11,6 +11,7 @@ TESTS_CONFTEST_PATH = Path("tests/conftest.py")
 def test_backend_ci_keeps_honest_bandit_and_docker_build_guards():
     workflow_text = BACKEND_CI_PATH.read_text(encoding="utf-8")
 
+    assert 'GH_TOKEN: ${{ github.token }}' in workflow_text
     assert 'python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt' in workflow_text
     assert 'docker build -t ancap:build-check .' in workflow_text
     assert '.githooks/**' in workflow_text
@@ -32,6 +33,7 @@ def test_backend_ci_keeps_honest_bandit_and_docker_build_guards():
 def test_release_workflow_runs_secret_hygiene_gate_before_release_checks():
     workflow_text = RELEASE_WORKFLOW_PATH.read_text(encoding="utf-8")
 
+    assert 'GH_TOKEN: ${{ github.token }}' in workflow_text
     assert '      - name: Checkout' in workflow_text
     assert '          fetch-depth: 0' in workflow_text
     assert '      - name: Secret hygiene evidence bundle' in workflow_text

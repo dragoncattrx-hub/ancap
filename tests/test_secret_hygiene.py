@@ -1869,8 +1869,13 @@ def test_install_git_hooks_script_treats_equivalent_relative_hooks_path_as_alrea
 
     githooks_dir = tmp_path / ".githooks"
     githooks_dir.mkdir()
-    (githooks_dir / "pre-commit").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
-    (githooks_dir / "pre-push").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
+    pre_commit = githooks_dir / "pre-commit"
+    pre_push = githooks_dir / "pre-push"
+    pre_commit.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
+    pre_push.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
+    if sys.platform != "win32":
+        pre_commit.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+        pre_push.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
     subprocess.run(["git", "branch", "-m", "master"], cwd=tmp_path, check=True, capture_output=True, text=True)

@@ -96,6 +96,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
+      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
