@@ -5,6 +5,7 @@ BACKEND_CI_PATH = Path(".github/workflows/backend-ci.yml")
 RELEASE_WORKFLOW_PATH = Path(".github/workflows/release.yml")
 RELEASE_PROCESS_PATH = Path(".github/RELEASE_PROCESS.md")
 SECRET_HYGIENE_WORKFLOW_PATH = Path(".github/workflows/secret-hygiene.yml")
+TESTS_CONFTEST_PATH = Path("tests/conftest.py")
 
 
 def test_backend_ci_keeps_honest_bandit_and_docker_build_guards():
@@ -187,3 +188,12 @@ def test_release_process_doc_uses_secret_hygiene_gate():
     assert 'py -3 scripts/install_git_hooks.py --check' in release_process
     assert 'pytest tests/test_secret_hygiene.py tests/test_release_security_workflows.py -q' in release_process
     assert '# 2. Secret hygiene gates pass before release' in release_process
+
+
+def test_db_runtime_reset_only_touches_postgres_for_db_backed_fixtures():
+    conftest_text = TESTS_CONFTEST_PATH.read_text(encoding="utf-8")
+
+    assert 'DB_STATE_RESET_FIXTURES = {"client", "client_unauth", "db_cursor", "base_vertical_id"}' in conftest_text
+    assert 'def reset_test_runtime_state(request):' in conftest_text
+    assert 'if DB_STATE_RESET_FIXTURES.intersection(request.fixturenames):' in conftest_text
+    assert 'text-only/document/workflow tests should stay' in conftest_text

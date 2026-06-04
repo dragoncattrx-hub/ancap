@@ -328,10 +328,19 @@ def _reset_ledger_invariant_halted():
     engine.dispose()
 
 
+DB_STATE_RESET_FIXTURES = {"client", "client_unauth", "db_cursor", "base_vertical_id"}
+
+
 @pytest.fixture(autouse=True)
-def reset_test_runtime_state():
-    """Ensure cross-test in-memory/runtime state does not leak between tests."""
-    _reset_ledger_invariant_halted()
+def reset_test_runtime_state(request):
+    """Ensure cross-test in-memory/runtime state does not leak between tests.
+
+    Only touch the database when the collected test actually uses one of the
+    shared DB-backed fixtures; text-only/document/workflow tests should stay
+    runnable on hosts/CI jobs without PostgreSQL.
+    """
+    if DB_STATE_RESET_FIXTURES.intersection(request.fixturenames):
+        _reset_ledger_invariant_halted()
     clear_rate_limit_state()
     yield
     clear_rate_limit_state()

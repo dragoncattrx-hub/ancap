@@ -23,6 +23,8 @@ def _validate_filename_component(value: str, *, flag_name: str) -> str:
     trimmed = value.strip()
     if not trimmed:
         raise ValueError(f"{flag_name} requires a non-empty value")
+    if "/" in trimmed or "\\" in trimmed:
+        raise ValueError(f"{flag_name} must be a filename component only, not a path: {trimmed}")
 
     candidate = Path(trimmed)
     if candidate.name != trimmed or candidate.parent != Path("."):

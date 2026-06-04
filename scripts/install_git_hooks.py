@@ -96,12 +96,14 @@ def check_git_hooks(*, repo_root: Path, hooks_path: str) -> int:
         return 1
 
     if sys.platform != "win32":
-        non_executable_hooks = [path for path in hook_files if not _is_hook_executable(path)]
+        non_executable_hooks = [
+            path.relative_to(repo_root).as_posix()
+            for path in hook_files
+            if not _is_hook_executable(path)
+        ]
         if non_executable_hooks:
-            non_exec_text = ", ".join(path.relative_to(repo_root).as_posix() for path in non_executable_hooks)
             print(
-                "Git hooks are configured but not executable: "
-                f"{non_exec_text}",
+                "Git hooks are configured but not executable: " + ", ".join(non_executable_hooks),
                 file=sys.stderr,
             )
             return 1
