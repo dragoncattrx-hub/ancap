@@ -6,12 +6,15 @@ import {
   canSmartPayRefreshOrRecover,
   getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
+  formatSmartPayRouteStepIndexLabel,
   getSmartPayExecutionStatusLabel,
   getSmartPayHistoryAccessHint,
   getSmartPayHistoryAccessLabel,
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
   getSmartPayHistoryAdditionalProofHint,
+  getSmartPayHistoryNextStepHint,
+  getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
   getSmartPayHistoryAdditionalProofTxRefs,
   getSmartPayHistoryAmountLabel,
@@ -35,6 +38,7 @@ import {
   getSmartPayRefreshOrRecoverHint,
   hasSmartPayLiveSessionAccess,
   canSmartPayRecoverExecution,
+  resolveSmartPayExecutionSessionToken,
 } from "./smart-pay-history-view";
 import {
   canSubmitSmartPayRecoveryInput,
@@ -278,6 +282,13 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayExecutionStatusLabel("completed")).toBe("Completed");
   });
 
+  it("formats explicit route step indexes as stable 1-based labels", () => {
+    expect(formatSmartPayRouteStepIndexLabel(1)).toBe("route step 1");
+    expect(formatSmartPayRouteStepIndexLabel(2)).toBe("route step 2");
+    expect(formatSmartPayRouteStepIndexLabel(0)).toBeNull();
+    expect(formatSmartPayRouteStepIndexLabel(null)).toBeNull();
+  });
+
   it("prefers receipt amount labels over quote or intent fallbacks", () => {
     expect(getSmartPayHistoryAmountLabel(makeEntry("1", "completed"))).toBe("14.8 ACP");
 
@@ -458,6 +469,20 @@ describe("smart pay history view helpers", () => {
   });
 
   it("allows refresh from a local session token or signed-in backend ownership, but gates recovery on recoverable state", () => {
+    const backendOnly = makeEntry("1-token", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+    });
+    const localLive = makeEntry("2-token", "pending_reconciliation", {
+      sessionToken: "session-2-token",
+      snapshotOrigin: "local+backend",
+    });
+
+    expect(resolveSmartPayExecutionSessionToken(localLive, null)).toBe("session-2-token");
+    expect(resolveSmartPayExecutionSessionToken(backendOnly, "fallback-session")).toBe("fallback-session");
+    expect(resolveSmartPayExecutionSessionToken(null, " fallback-session ")).toBe("fallback-session");
+    expect(resolveSmartPayExecutionSessionToken(backendOnly, null)).toBeNull();
+
     expect(canSmartPayRefreshOrRecover({ sessionToken: "session-123", hasAccountAuth: false })).toBe(true);
     expect(canSmartPayRefreshOrRecover({ sessionToken: null, hasAccountAuth: true })).toBe(true);
     expect(canSmartPayRefreshOrRecover({ sessionToken: null, hasAccountAuth: false })).toBe(false);
@@ -651,6 +676,126 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionLabel(snapshotOnly)).toBe("Snapshot only");
     expect(getSmartPayHistoryActionHint(snapshotOnly)).toContain(
       "otherwise only the saved snapshot is available"
+    );
+  });
+
+  it("suggests the most useful next step for awaiting, in-flight, failed, and finalized history snapshots", () => {
+    const awaitingLocal = makeEntry("23", "awaiting_local_signature", {
+      receipt: null,
+      execution: {
+        ...makeEntry("23", "awaiting_local_signature", { receipt: null }).execution,
+        nextAction: "sign_swap_tx",
+      },
+      quote: {
+        ...makeEntry("23", "awaiting_local_signature", { receipt: null }).quote!,
+        route: [
+          {
+            kind: "swap",
+            network: "bsc",
+            dexOrRail: "pancakeswap",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "2.5",
+          },
+        ],
+      },
+    });
+    const staleRecoverable = makeEntry("24", "pending_reconciliation", {
+      savedAt: "2026-05-28T17:00:00.000Z",
+      execution: {
+        ...makeEntry("24", "pending_reconciliation").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+      },
+    });
+    const failedRecoverable = makeEntry("25", "failed", {
+      execution: {
+        ...makeEntry("25", "failed").execution,
+        recoverable: true,
+        nextAction: "refresh_status",
+      },
+      receipt: null,
+    });
+    const completedMissingProof = makeEntry("26", "completed", {
+      quote: {
+        ...makeEntry("26", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: null,
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("26", "completed").execution,
+        txRefs: [],
+      },
+      receipt: {
+        ...makeEntry("26", "completed").receipt!,
+        txRefs: [],
+        routeSummary: ["1. bridge ACP -> wACP on acp"],
+      },
+    });
+    const completedLinkedButStale = makeEntry("27", "completed", {
+      savedAt: "2026-05-28T17:00:00.000Z",
+      execution: {
+        ...makeEntry("27", "completed").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-27",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-27",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("27", "completed").receipt!,
+        completedAt: "2026-05-28T17:00:00.000Z",
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-27",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-27",
+          },
+        ],
+      },
+    });
+
+    const now = Date.parse("2026-05-28T18:03:00.000Z");
+
+    expect(getSmartPayHistoryNextStepLabel(awaitingLocal)).toBe("Next step: sign on the original device");
+    expect(getSmartPayHistoryNextStepHint(awaitingLocal)).toContain("complete the required signature");
+
+    expect(getSmartPayHistoryNextStepLabel(staleRecoverable, { hasAccountAuth: false }, now)).toBe(
+      "Next step: refresh or recover now"
+    );
+    expect(getSmartPayHistoryNextStepHint(staleRecoverable, { hasAccountAuth: false }, now)).toContain(
+      "Refresh status first"
+    );
+
+    expect(getSmartPayHistoryNextStepLabel(failedRecoverable)).toBe("Next step: recover with observed tx refs");
+    expect(getSmartPayHistoryNextStepHint(failedRecoverable)).toContain(
+      "paste observed tx hashes/explorer links"
+    );
+
+    expect(getSmartPayHistoryNextStepLabel(completedMissingProof, { hasAccountAuth: true }, now)).toBe(
+      "Next step: refresh final proof"
+    );
+    expect(getSmartPayHistoryNextStepHint(completedMissingProof, { hasAccountAuth: true }, now)).toContain(
+      "lacks full linked proof coverage"
+    );
+
+    expect(getSmartPayHistoryNextStepLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(
+      "Next step: refresh the receipt snapshot"
+    );
+    expect(getSmartPayHistoryNextStepHint(completedLinkedButStale, { hasAccountAuth: true }, now)).toContain(
+      "getting stale"
     );
   });
 

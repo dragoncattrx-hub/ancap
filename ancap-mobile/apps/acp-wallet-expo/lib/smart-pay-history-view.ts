@@ -241,6 +241,16 @@ function formatSmartPayRouteStepLabel(
   return `Step ${stepIndex}: ${step.kind} ${step.fromAsset} → ${step.toAsset} via ${step.network}${formatSmartPayRouteStepRail(step)}`;
 }
 
+export function formatSmartPayRouteStepIndexLabel(routeStepIndex: number | null | undefined): string | null {
+  if (!Number.isInteger(routeStepIndex) || routeStepIndex === undefined || routeStepIndex === null) {
+    return null;
+  }
+  if (routeStepIndex < 1) {
+    return null;
+  }
+  return `route step ${routeStepIndex}`;
+}
+
 export function getSmartPayHistoryReceiptDisplay(entry: SmartPayHistoryEntry): SmartPayHistoryReceiptDisplay {
   const receiptNetworkFees = entry.receipt?.networkFees ?? [];
   const quoteNetworkFees = entry.quote?.networkFee ?? [];
@@ -705,9 +715,9 @@ export function getSmartPayHistoryAdditionalProofTxRefHint(
   if (ref.routeStepIndex != null) {
     const expectedTarget = formatSmartPayExpectedRouteStepTarget(entry, ref.routeStepIndex);
     if (!expectedTarget) {
-      return `Claims quoted route step ${ref.routeStepIndex}, but this quote only has ${pluralize(route.length, "step", "steps")}.`;
+      return `Claims quoted ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but this quote only has ${pluralize(route.length, "step", "steps")}.`;
     }
-    return `Claims quoted route step ${ref.routeStepIndex}, but that step expects ${expectedTarget}.`;
+    return `Claims quoted ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but that step expects ${expectedTarget}.`;
   }
 
   return `${formatSmartPayAdditionalProofRefSubject(ref)} is stored separately because it does not map to any quoted route step yet.`;
@@ -751,6 +761,7 @@ export type SmartPayHistoryAccessOptions = {
 
 export type SmartPayHistoryFreshnessOptions = SmartPayHistoryAccessOptions;
 export type SmartPayHistoryActionOptions = SmartPayHistoryAccessOptions;
+export type SmartPayHistoryNextStepOptions = SmartPayHistoryAccessOptions;
 
 export type SmartPayExecutionAccessOptions = {
   sessionToken?: string | null;
@@ -848,6 +859,19 @@ export function getSmartPayHistoryFreshnessHint(
 
 export function hasSmartPayLiveSessionAccess(entry: SmartPayHistoryEntry): boolean {
   return Boolean(entry.sessionToken?.trim());
+}
+
+export function resolveSmartPayExecutionSessionToken(
+  entry: SmartPayHistoryEntry | null | undefined,
+  fallbackSessionToken?: string | null
+): string | null {
+  const entrySessionToken = entry?.sessionToken?.trim();
+  if (entrySessionToken) {
+    return entrySessionToken;
+  }
+
+  const fallback = fallbackSessionToken?.trim();
+  return fallback ? fallback : null;
 }
 
 export function canSmartPayRefreshOrRecover(
@@ -961,4 +985,136 @@ export function getSmartPayHistoryActionHint(
     ...refreshOptions,
     recoverable: entry.execution.recoverable,
   });
+}
+
+function hasIncompleteSmartPayHistoryProof(entry: SmartPayHistoryEntry): boolean {
+  const { linkedTxCount, expectedRouteSteps } = getSmartPayHistoryProofCounts(entry);
+
+  if (expectedRouteSteps > 0) {
+    return linkedTxCount < expectedRouteSteps;
+  }
+
+  return Boolean(entry.receipt && linkedTxCount === 0);
+}
+
+function isSmartPayHistoryStale(
+  entry: SmartPayHistoryEntry,
+  now = Date.now(),
+  thresholdMs = 30 * 60_000
+): boolean {
+  const timestamp = getSmartPayHistoryFreshnessTimestamp(entry);
+  if (timestamp === null) {
+    return true;
+  }
+  return Math.max(now - timestamp, 0) >= thresholdMs;
+}
+
+export function getSmartPayHistoryNextStepLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryNextStepOptions = {},
+  now = Date.now()
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+  const refreshAvailable = canSmartPayRefreshOrRecover(refreshOptions);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
+  const stale = isSmartPayHistoryStale(entry, now);
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return hasSmartPayLiveSessionAccess(entry)
+        ? "Next step: sign on the original device"
+        : "Next step: restore the original device session";
+    case "pending_reconciliation":
+      if (!refreshAvailable) {
+        return "Next step: sign in or restore the original device";
+      }
+      return stale ? "Next step: refresh or recover now" : "Next step: monitor or refresh";
+    case "failed":
+      if (recoverAvailable) {
+        return "Next step: recover with observed tx refs";
+      }
+      if (refreshAvailable) {
+        return "Next step: refresh failure details";
+      }
+      return "Next step: inspect the saved failure snapshot";
+    case "completed":
+      if (incompleteProof && refreshAvailable) {
+        return "Next step: refresh final proof";
+      }
+      if (incompleteProof) {
+        return "Next step: inspect the saved receipt snapshot";
+      }
+      if (refreshAvailable && stale) {
+        return "Next step: refresh the receipt snapshot";
+      }
+      return "Next step: inspect receipt details";
+    default:
+      return refreshAvailable ? "Next step: refresh status" : "Next step: inspect the saved snapshot";
+  }
+}
+
+export function getSmartPayHistoryNextStepHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryNextStepOptions = {},
+  now = Date.now()
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+  const refreshAvailable = canSmartPayRefreshOrRecover(refreshOptions);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
+  const stale = isSmartPayHistoryStale(entry, now);
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      if (hasSmartPayLiveSessionAccess(entry)) {
+        return "This route has not started yet. Restore the original device-local session and complete the required signature before route progress can continue.";
+      }
+      return options.hasAccountAuth
+        ? "Backend history can refresh ownership-linked status, but it cannot create the missing local signature. Open the original signing device session before this payment can continue."
+        : "This snapshot cannot create the missing local signature by itself. Restore the original signing device session before this payment can continue.";
+    case "pending_reconciliation":
+      if (!refreshAvailable) {
+        return "This in-flight snapshot cannot refresh from this device right now. Sign in to the owning ANCAP account or restore the original device session before trusting current route progress.";
+      }
+      if (stale) {
+        return "Route activity may have continued after this snapshot. Refresh status first, then recover with observed tx hashes or explorer links if proof coverage is still incomplete.";
+      }
+      return "This route is still in flight. Keep monitoring it here, and refresh status if you expect more tx proof refs or route-step updates.";
+    case "failed":
+      if (recoverAvailable) {
+        return "Refresh status if the route may already have completed elsewhere, or paste observed tx hashes/explorer links to reconcile partial proof before retrying.";
+      }
+      if (refreshAvailable) {
+        return "Recovery is no longer available for this failure state, but refreshing can still pull newer backend receipt or error context if it exists.";
+      }
+      return "Only the saved failure context is available on this device until you sign in or restore the original device session.";
+    case "completed":
+      if (incompleteProof && refreshAvailable) {
+        return "This payment is completed, but the saved snapshot still lacks full linked proof coverage. Refresh status/receipt for newer proof refs and final fee details.";
+      }
+      if (incompleteProof) {
+        return "This payment is completed, but the saved snapshot still lacks full linked proof coverage. Sign in or restore the original device session if you need newer receipt/proof data.";
+      }
+      if (refreshAvailable && stale) {
+        return "This saved receipt/proof snapshot is getting stale. Refresh it before relying on final fee totals or proof links elsewhere.";
+      }
+      return "This snapshot already contains the latest saved receipt context, route summary, and linked proof coverage available on this device.";
+    default:
+      return refreshAvailable
+        ? "Refresh status to confirm whether newer execution or receipt data is available."
+        : "Only the saved snapshot is available on this device right now.";
+  }
 }
