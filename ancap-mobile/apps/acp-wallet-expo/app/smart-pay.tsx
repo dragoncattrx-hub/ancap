@@ -97,6 +97,7 @@ import {
   parseSmartPayRecoveryInput,
 } from "@/lib/smart-pay-recovery";
 import {
+  deriveSmartPayExecuteSnapshotOrigin,
   deriveSmartPayLiveUpdateSnapshotOrigin,
   deriveSmartPaySnapshotOrigin,
 } from "@/lib/smart-pay-snapshot-origin";
@@ -618,9 +619,10 @@ export default function SmartPayScreen() {
       });
       const nextSessionToken = result.sessionToken ?? null;
       const receiptResult = await getApi().getSmartPayReceipt(result.execution.id, nextSessionToken);
-      const nextSnapshotOrigin = deriveSmartPaySnapshotOrigin({
+      const nextSnapshotOrigin = deriveSmartPayExecuteSnapshotOrigin({
         hasAccountAuth,
-        sessionToken: nextSessionToken,
+        nextSessionToken,
+        currentOrigin: snapshotOrigin ?? null,
       });
       setExecution(result.execution);
       setReceipt(receiptResult);

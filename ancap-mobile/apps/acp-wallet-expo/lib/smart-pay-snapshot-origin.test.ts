@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deriveSmartPayExecuteSnapshotOrigin,
   deriveSmartPayLiveUpdateSnapshotOrigin,
   deriveSmartPaySnapshotOrigin,
 } from "./smart-pay-snapshot-origin";
@@ -51,6 +52,16 @@ describe("deriveSmartPaySnapshotOrigin", () => {
         hasAccountAuth: true,
         sessionToken: "session-token",
         previousOrigin: "local",
+      })
+    ).toBe("local");
+  });
+
+  it("keeps fresh execute snapshots local even when the device is signed in", () => {
+    expect(
+      deriveSmartPayExecuteSnapshotOrigin({
+        hasAccountAuth: true,
+        nextSessionToken: "session-token",
+        currentOrigin: "local",
       })
     ).toBe("local");
   });

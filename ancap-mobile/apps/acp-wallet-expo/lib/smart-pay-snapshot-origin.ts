@@ -7,6 +7,12 @@ export type DeriveSmartPaySnapshotOriginInput = {
   regainedSessionTokenFromBackend?: boolean;
 };
 
+export type DeriveSmartPayExecuteSnapshotOriginInput = {
+  hasAccountAuth: boolean;
+  nextSessionToken?: string | null;
+  currentOrigin?: SmartPayHistorySnapshotOrigin | null;
+};
+
 export type DeriveSmartPayLiveUpdateSnapshotOriginInput = {
   hasAccountAuth: boolean;
   requestSessionToken?: string | null;
@@ -54,6 +60,12 @@ export function deriveSmartPaySnapshotOrigin(
     return "backend";
   }
 
+  return "local";
+}
+
+export function deriveSmartPayExecuteSnapshotOrigin(
+  _input: DeriveSmartPayExecuteSnapshotOriginInput
+): SmartPayHistorySnapshotOrigin {
   return "local";
 }
 
