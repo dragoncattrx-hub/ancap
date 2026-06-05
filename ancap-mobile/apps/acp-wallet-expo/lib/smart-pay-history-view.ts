@@ -1011,11 +1011,20 @@ export function getSmartPayHistoryAdditionalProofTxRefHint(
   }
 
   if (ref.routeStepIndex != null) {
+    const routeStepLabel = formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`;
     const expectedTarget = formatSmartPayExpectedRouteStepTarget(entry, ref.routeStepIndex);
     if (!expectedTarget) {
-      return `Claims quoted ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but this quote only has ${pluralize(route.length, "step", "steps")}.`;
+      return `Claims quoted ${routeStepLabel}, but this quote only has ${pluralize(route.length, "step", "steps")}.`;
     }
-    return `Claims quoted ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but that step expects ${expectedTarget}.`;
+
+    const matchedStep = getSmartPayHistoryProofRouteSteps(entry).find(
+      (step) => step.stepIndex === ref.routeStepIndex && Boolean(step.txRef)
+    );
+    if (matchedStep?.txRef && getSmartPayTxRefIdentityKey(matchedStep.txRef) !== getSmartPayTxRefIdentityKey(ref)) {
+      return `Claims quoted ${routeStepLabel}, but that step is already linked to ${matchedStep.txRef.role} on ${matchedStep.txRef.network} in this snapshot.`;
+    }
+
+    return `Claims quoted ${routeStepLabel}, but that step expects ${expectedTarget}.`;
   }
 
   return `${formatSmartPayAdditionalProofRefSubject(ref)} is stored separately because it does not map to any quoted route step yet.`;

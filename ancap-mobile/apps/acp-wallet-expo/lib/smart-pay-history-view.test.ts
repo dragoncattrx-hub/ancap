@@ -1676,6 +1676,71 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("explains when an extra quoted-route proof ref points at an already-linked step", () => {
+    const duplicateQuotedStep = makeEntry("12duplicate-quoted-step", "completed", {
+      quote: {
+        ...makeEntry("12duplicate-quoted-step", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12duplicate-quoted-step", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-primary-quoted-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-primary-quoted-proof",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-duplicate-quoted-proof",
+            explorerUrl: "https://bscscan.com/tx/fixture-duplicate-quoted-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12duplicate-quoted-step", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-primary-quoted-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-primary-quoted-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryAdditionalProofTxRefs(duplicateQuotedStep)).toEqual([
+      {
+        role: "merchant_payout",
+        network: "bsc",
+        txid: "fixture-duplicate-quoted-proof",
+        explorerUrl: "https://bscscan.com/tx/fixture-duplicate-quoted-proof",
+        routeStepIndex: 1,
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefHint(duplicateQuotedStep, getSmartPayHistoryAdditionalProofTxRefs(duplicateQuotedStep)[0]!)).toBe(
+      "Claims quoted route step 1, but that step is already linked to bridge on acp in this snapshot."
+    );
+    expect(getSmartPayHistoryAdditionalProofHint(duplicateQuotedStep)).toBe(
+      "Additional observed tx refs: merchant_payout on bsc — Claims quoted route step 1, but that step is already linked to bridge on acp in this snapshot."
+    );
+  });
+
   it("explains whether route proof steps are explicitly indexed, loosely matched, or still pending", () => {
     const explicitlyIndexed = makeEntry("12hint-indexed", "completed", {
       quote: {
