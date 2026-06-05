@@ -1128,6 +1128,26 @@ export function getSmartPayHistoryPendingProofHint(entry: SmartPayHistoryEntry):
     .join(" → ")}.`;
 }
 
+export function getSmartPayHistoryProofEmptyStateHint(
+  entry: SmartPayHistoryEntry | null | undefined
+): string {
+  if (!entry) {
+    return "No tx references observed yet.";
+  }
+
+  const { hasRouteProofContext } = getSmartPayHistoryProofRouteContext(entry);
+  if (!hasRouteProofContext) {
+    return "No tx references observed yet.";
+  }
+
+  const additionalRefs = getSmartPayHistoryAdditionalProofTxRefs(entry);
+  if (additionalRefs.length > 0) {
+    return "No route-linked tx refs observed yet. Additional observed tx refs are listed separately below.";
+  }
+
+  return "No route-linked tx refs observed yet.";
+}
+
 export type SmartPayHistoryAccessOptions = {
   hasAccountAuth?: boolean;
 };

@@ -60,6 +60,7 @@ import {
   getSmartPayHistoryNetworkFeesHint,
   getSmartPayHistoryNetworkFeesLabel,
   getSmartPayHistoryPendingProofHint,
+  getSmartPayHistoryProofEmptyStateHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofRouteDetailHint,
@@ -1136,8 +1137,62 @@ export default function SmartPayScreen() {
                 <Text style={styles.meta}>Pending roles: {activeExecutionView.progress.pendingRoles.join(" → ")}</Text>
               ) : null}
             </>
+          ) : activeProgressLabel ? (
+            <Text style={styles.meta}>{activeProgressLabel}</Text>
           ) : null}
-          {activeExecutionTxRefs.length ? activeExecutionTxRefs.map((tx) => {
+          {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
+          {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text> : null}
+          {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text> : null}
+          {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
+          {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
+          {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
+          {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
+          <Text style={styles.label}>Observed route proof</Text>
+          {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
+            const txRef = step.txRef;
+            return (
+              <View key={`execution-${step.key}`} style={styles.txRow}>
+                <Text style={styles.meta}>
+                  {step.status === "linked" ? "✓" : "…"} {step.label}
+                </Text>
+                <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry!, step)}</Text>
+                {txRef ? (
+                  <>
+                    <Text style={styles.meta}>{step.role} tx: {txRef.txid}</Text>
+                    {txRef.explorerUrl ? (
+                      <Pressable onPress={() => void onOpenExplorerUrl(txRef.explorerUrl)}>
+                        <Text style={styles.inlineAction}>{txRef.explorerUrl}</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.inlineHint}>Explorer link pending for this route step.</Text>
+                    )}
+                  </>
+                ) : null}
+              </View>
+            );
+          }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => {
+            const proofTxHint = activeHistoryEntry
+              ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
+              : null;
+            return (
+              <View key={`execution-linked-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                <Text style={styles.meta}>
+                  {tx.role} tx on {tx.network}: {tx.txid}
+                  {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
+                </Text>
+                {proofTxHint ? (
+                  <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {tx.explorerUrl ? (
+                  <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                    <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                )}
+              </View>
+            );
+          }) : activeExecutionTxRefs.length ? activeExecutionTxRefs.map((tx) => {
             const proofTxHint = activeHistoryEntry
               ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
               : null;
@@ -1159,8 +1214,27 @@ export default function SmartPayScreen() {
                 )}
               </View>
             );
-          }) : <Text style={styles.meta}>No tx references observed yet.</Text>}
-          {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
+          }) : <Text style={styles.meta}>{getSmartPayHistoryProofEmptyStateHint(activeHistoryEntry)}</Text>}
+          {activeAdditionalProofTxRefs.length ? (
+            <>
+              <Text style={styles.label}>Additional observed tx refs</Text>
+              {activeAdditionalProofTxRefs.map((tx) => (
+                <View key={`execution-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                  <Text style={styles.meta}>{tx.role} tx on {tx.network}: {tx.txid}</Text>
+                  {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx) ? (
+                    <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx)}</Text>
+                  ) : null}
+                  {tx.explorerUrl ? (
+                    <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                      <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                    </Pressable>
+                  ) : (
+                    <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                  )}
+                </View>
+              ))}
+            </>
+          ) : null}
           {!canRefreshExecution ? (
             <Text style={styles.warning}>
               {getSmartPayRefreshOrRecoverHint({
@@ -1324,7 +1398,7 @@ export default function SmartPayScreen() {
                 <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
               )}
             </View>
-          )) : <Text style={styles.meta}>No tx references reported yet.</Text>}
+          )) : <Text style={styles.meta}>{getSmartPayHistoryProofEmptyStateHint(activeHistoryEntry)}</Text>}
           {activeAdditionalProofTxRefs.length ? (
             <>
               <Text style={styles.label}>Additional observed tx refs</Text>

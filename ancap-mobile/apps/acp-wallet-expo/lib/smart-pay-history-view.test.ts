@@ -29,6 +29,7 @@ import {
   getSmartPayHistorySnapshotStatusLabel,
   getSmartPayHistorySnapshotTitle,
   getSmartPayHistoryPendingProofHint,
+  getSmartPayHistoryProofEmptyStateHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofRouteDetailHint,
@@ -2191,6 +2192,96 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryProofHint(snapshotOnly)).toBe(
       "Receipt data is stored, but no route-linked tx proof refs are attached yet."
+    );
+    expect(getSmartPayHistoryProofEmptyStateHint(snapshotOnly)).toBe(
+      "No tx references observed yet."
+    );
+  });
+
+  it("distinguishes between zero route-linked proof and zero observed tx refs in the active proof panel", () => {
+    const withStoredExtraOnly = makeEntry("16b-extra-only", "completed", {
+      quote: {
+        ...makeEntry("16b-extra-only", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("16b-extra-only", "completed").execution,
+        txRefs: [
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-extra-only-refund",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-extra-only-refund",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("16b-extra-only", "completed").receipt!,
+        txRefs: [
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-extra-only-refund",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-extra-only-refund",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofTxRefs(withStoredExtraOnly)).toHaveLength(1);
+    expect(getSmartPayHistoryProofRouteSteps(withStoredExtraOnly)).toEqual([
+      expect.objectContaining({
+        stepIndex: 1,
+        status: "pending",
+        txRef: null,
+      }),
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(withStoredExtraOnly)).toEqual([
+      expect.objectContaining({
+        role: "refund",
+        network: "acp",
+        txid: "fixture-extra-only-refund",
+      }),
+    ]);
+    expect(getSmartPayHistoryProofEmptyStateHint(withStoredExtraOnly)).toBe(
+      "No route-linked tx refs observed yet. Additional observed tx refs are listed separately below."
+    );
+
+    const noObservedRefs = makeEntry("16c-no-observed-refs", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("16c-no-observed-refs", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("16c-no-observed-refs", "pending_reconciliation").execution,
+        txRefs: [],
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProofEmptyStateHint(noObservedRefs)).toBe(
+      "No route-linked tx refs observed yet."
+    );
+    expect(getSmartPayHistoryProofEmptyStateHint(null)).toBe(
+      "No tx references observed yet."
     );
   });
 
