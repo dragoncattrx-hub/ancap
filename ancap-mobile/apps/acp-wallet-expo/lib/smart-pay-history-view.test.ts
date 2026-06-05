@@ -30,6 +30,8 @@ import {
   getSmartPayHistoryPendingProofHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofRouteDetailHint,
+  getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
@@ -1749,6 +1751,56 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProofRouteStepHint(pendingStoredReceipt, getSmartPayHistoryProofRouteSteps(pendingStoredReceipt)[1]!)).toBe(
       "Awaiting proof ref for stored receipt route step 2: settlement review pending."
     );
+
+    expect(getSmartPayHistoryProofRouteDetailLabel(explicitlyIndexed)).toBe(
+      "Proof linkage detail: 1 explicit · 0 inferred · 0 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(explicitlyIndexed)).toBe(
+      "1 quoted route step linked via explicit route-step indexes."
+    );
+    expect(getSmartPayHistoryProofRouteDetailLabel(looselyMatched)).toBe(
+      "Proof linkage detail: 0 explicit · 1 inferred · 0 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(looselyMatched)).toBe(
+      "1 quoted route step linked by role/network matching without explicit route-step indexes."
+    );
+    expect(getSmartPayHistoryProofRouteDetailLabel(pendingQuoted)).toBe(
+      "Proof linkage detail: 0 explicit · 0 inferred · 1 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(pendingQuoted)).toBe(
+      "1 quoted route step still pending."
+    );
+    expect(getSmartPayHistoryProofRouteDetailLabel(pendingStoredReceipt)).toBe(
+      "Proof linkage detail: 1 explicit · 0 inferred · 1 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(pendingStoredReceipt)).toBe(
+      "1 stored receipt route step linked via explicit route-step indexes; 1 stored receipt route step still pending."
+    );
+  });
+
+  it("returns null proof-linkage detail when there is no route-proof context", () => {
+    const noRouteProofContext = makeEntry("12route-detail-none", "completed", {
+      receipt: null,
+      quote: {
+        ...makeEntry("12route-detail-none", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("12route-detail-none", "completed").execution,
+        progress: null,
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-standalone-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-standalone-proof",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteDetailLabel(noRouteProofContext)).toBeNull();
+    expect(getSmartPayHistoryProofRouteDetailHint(noRouteProofContext)).toBeNull();
   });
 
   it("returns null pending-proof hint when there is no route-proof context or all tracked steps are linked", () => {

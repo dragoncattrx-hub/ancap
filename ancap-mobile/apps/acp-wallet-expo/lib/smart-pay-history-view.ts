@@ -749,6 +749,45 @@ function getSmartPayHistoryProofRouteContext(entry: SmartPayHistoryEntry): {
   };
 }
 
+function getSmartPayHistoryProofRouteLinkageCounts(entry: SmartPayHistoryEntry): {
+  hasQuotedRoute: boolean;
+  hasRouteProofContext: boolean;
+  expectedRouteSteps: number;
+  explicitLinkedSteps: number;
+  inferredLinkedSteps: number;
+  pendingSteps: number;
+} {
+  const { hasQuotedRoute, hasRouteProofContext } = getSmartPayHistoryProofRouteContext(entry);
+  const routeSteps = getSmartPayHistoryProofRouteSteps(entry);
+
+  let explicitLinkedSteps = 0;
+  let inferredLinkedSteps = 0;
+  let pendingSteps = 0;
+
+  for (const step of routeSteps) {
+    if (!step.txRef) {
+      pendingSteps += 1;
+      continue;
+    }
+
+    if (step.txRef.routeStepIndex === step.stepIndex) {
+      explicitLinkedSteps += 1;
+      continue;
+    }
+
+    inferredLinkedSteps += 1;
+  }
+
+  return {
+    hasQuotedRoute,
+    hasRouteProofContext,
+    expectedRouteSteps: routeSteps.length,
+    explicitLinkedSteps,
+    inferredLinkedSteps,
+    pendingSteps,
+  };
+}
+
 export function getSmartPayHistoryProofLabel(entry: SmartPayHistoryEntry): string {
   const { linkedTxCount, expectedRouteSteps } = getSmartPayHistoryProofCounts(entry);
   const { hasRouteProofContext, linkedStepsLabel } = getSmartPayHistoryProofRouteContext(entry);
@@ -867,6 +906,48 @@ export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string
     default:
       return "Route-linked proof refs are not attached to this snapshot yet.";
   }
+}
+
+export function getSmartPayHistoryProofRouteDetailLabel(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+  if (!counts.hasRouteProofContext || counts.expectedRouteSteps === 0) {
+    return null;
+  }
+
+  return `Proof linkage detail: ${counts.explicitLinkedSteps} explicit · ${counts.inferredLinkedSteps} inferred · ${counts.pendingSteps} pending`;
+}
+
+export function getSmartPayHistoryProofRouteDetailHint(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+  if (!counts.hasRouteProofContext || counts.expectedRouteSteps === 0) {
+    return null;
+  }
+
+  const routeStepLabel = counts.hasQuotedRoute ? "quoted route step" : "stored receipt route step";
+  const routeStepLabelPlural = `${routeStepLabel}s`;
+  const segments: string[] = [];
+
+  if (counts.explicitLinkedSteps > 0) {
+    segments.push(
+      `${pluralize(counts.explicitLinkedSteps, routeStepLabel, routeStepLabelPlural)} linked via explicit route-step indexes`
+    );
+  }
+
+  if (counts.inferredLinkedSteps > 0) {
+    segments.push(
+      `${pluralize(counts.inferredLinkedSteps, routeStepLabel, routeStepLabelPlural)} linked by role/network matching without explicit route-step indexes`
+    );
+  }
+
+  if (counts.pendingSteps > 0) {
+    segments.push(`${pluralize(counts.pendingSteps, routeStepLabel, routeStepLabelPlural)} still pending`);
+  }
+
+  if (segments.length === 0) {
+    return null;
+  }
+
+  return `${segments.join("; ")}.`;
 }
 
 function formatSmartPayHistoryProofStepSummary(step: SmartPayHistoryProofRouteStep): string {

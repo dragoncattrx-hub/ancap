@@ -61,6 +61,8 @@ import {
   getSmartPayHistoryPendingProofHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofRouteDetailHint,
+  getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
@@ -524,6 +526,14 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryPendingProofHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
+  const activeProofRouteDetailLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofRouteDetailLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeProofRouteDetailHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofRouteDetailHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
   const activeLinkedProofTxRefs = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryProofTxRefs(activeHistoryEntry) : []),
     [activeHistoryEntry]
@@ -835,6 +845,8 @@ export default function SmartPayScreen() {
               <Text style={styles.historySectionTitle}>{section.title}</Text>
               {section.entries.map((entry) => {
                 const pendingProofHint = getSmartPayHistoryPendingProofHint(entry);
+                const proofRouteDetailLabel = getSmartPayHistoryProofRouteDetailLabel(entry);
+                const proofRouteDetailHint = getSmartPayHistoryProofRouteDetailHint(entry);
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
                 const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
                 const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
@@ -887,6 +899,12 @@ export default function SmartPayScreen() {
                     ) : null}
                     <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofHint(entry)}</Text>
+                    {proofRouteDetailLabel ? (
+                      <Text style={styles.meta}>{proofRouteDetailLabel}</Text>
+                    ) : null}
+                    {proofRouteDetailHint ? (
+                      <Text style={styles.inlineHint}>{proofRouteDetailHint}</Text>
+                    ) : null}
                     {pendingProofHint ? (
                       <Text style={styles.inlineHint}>{pendingProofHint}</Text>
                     ) : null}
@@ -1231,6 +1249,8 @@ export default function SmartPayScreen() {
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
           <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
+          {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
+          {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
           {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
           {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
           {activeReceiptDisplay.completedAt ? <Text style={styles.meta}>Completed at: {formatSmartPayTimestamp(activeReceiptDisplay.completedAt)}</Text> : null}
