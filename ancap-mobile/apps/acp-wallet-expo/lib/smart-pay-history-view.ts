@@ -234,6 +234,11 @@ export type SmartPayHistoryReceiptDisplay = {
   serviceFeeAcp: string;
   completedAt: string | null;
   merchantLabel: string | null;
+  merchantLabelSource: "receipt" | "intent" | "none";
+  merchantCategory: string | null;
+  merchantWebsite: string | null;
+  merchantInvoiceId: string | null;
+  merchantDetailsSource: "intent" | "none";
   routeSummary: string[];
   networkFees: SmartPayReceipt["networkFees"];
   networkFeesSource: SmartPayHistoryNetworkFeesSource;
@@ -273,6 +278,18 @@ export function getSmartPayHistoryReceiptDisplay(entry: SmartPayHistoryEntry): S
         ? "quote_fallback"
         : "quote"
       : "none";
+  const receiptMerchantLabel = entry.receipt?.merchantLabel?.trim() ?? "";
+  const intentMerchantLabel = entry.intent.merchant?.label?.trim() ?? "";
+  const merchantLabel = receiptMerchantLabel || intentMerchantLabel || null;
+  const merchantLabelSource = receiptMerchantLabel
+    ? "receipt"
+    : intentMerchantLabel
+      ? "intent"
+      : "none";
+  const merchantCategory = entry.intent.merchant?.category?.trim() ?? null;
+  const merchantWebsite = entry.intent.merchant?.website?.trim() ?? null;
+  const merchantInvoiceId = entry.intent.merchant?.invoiceId?.trim() ?? null;
+  const merchantDetailsSource = merchantCategory || merchantWebsite || merchantInvoiceId ? "intent" : "none";
 
   return {
     recipientAddress: entry.receipt?.recipientAddress ?? entry.intent.recipient.address,
@@ -282,13 +299,35 @@ export function getSmartPayHistoryReceiptDisplay(entry: SmartPayHistoryEntry): S
     targetAmount: entry.receipt?.targetAmountPaid ?? entry.quote?.targetAmount ?? entry.intent.amount?.value ?? "—",
     serviceFeeAcp: entry.receipt?.serviceFeeAcp ?? entry.quote?.serviceFeeAcp ?? "—",
     completedAt: entry.receipt?.completedAt ?? null,
-    merchantLabel: entry.receipt?.merchantLabel ?? null,
+    merchantLabel,
+    merchantLabelSource,
+    merchantCategory,
+    merchantWebsite,
+    merchantInvoiceId,
+    merchantDetailsSource,
     routeSummary: entry.receipt?.routeSummary?.length
       ? entry.receipt.routeSummary
       : (entry.quote?.route ?? []).map((step, index) => formatSmartPayRouteStepLabel(step, index + 1)),
     networkFees,
     networkFeesSource,
   };
+}
+
+export function getSmartPayHistoryMerchantHint(display: SmartPayHistoryReceiptDisplay): string | null {
+  switch (display.merchantLabelSource) {
+    case "receipt":
+      return display.merchantDetailsSource === "intent"
+        ? "Merchant label comes from the stored receipt snapshot. Website/category/invoice details still come from the parsed payment intent."
+        : "Merchant label comes from the stored receipt snapshot.";
+    case "intent":
+      return "Merchant label comes from the parsed payment intent until a receipt snapshot confirms it.";
+    case "none":
+      return display.merchantDetailsSource === "intent"
+        ? "Merchant details come from the parsed payment intent until a receipt snapshot confirms them."
+        : null;
+    default:
+      return null;
+  }
 }
 
 export function getSmartPayHistoryNetworkFeesLabel(display: SmartPayHistoryReceiptDisplay): string {

@@ -21,6 +21,7 @@ import {
   getSmartPayHistoryAmountLabel,
   getSmartPayHistoryFreshnessHint,
   getSmartPayHistoryFreshnessLabel,
+  getSmartPayHistoryMerchantHint,
   getSmartPayHistoryNetworkFeesHint,
   getSmartPayHistoryNetworkFeesLabel,
   getSmartPayHistoryReceiptDisplay,
@@ -386,6 +387,11 @@ describe("smart pay history view helpers", () => {
       serviceFeeAcp: "0.2",
       completedAt: "2026-05-28T18:07:00.000Z",
       merchantLabel: "Merged merchant",
+      merchantLabelSource: "receipt",
+      merchantCategory: null,
+      merchantWebsite: null,
+      merchantInvoiceId: null,
+      merchantDetailsSource: "none",
       routeSummary: ["1. bridge ACP -> wACP on acp", "2. swap wACP -> USDT on bsc"],
       networkFees: [
         {
@@ -430,6 +436,11 @@ describe("smart pay history view helpers", () => {
       serviceFeeAcp: "0.2",
       completedAt: null,
       merchantLabel: null,
+      merchantLabelSource: "none",
+      merchantCategory: null,
+      merchantWebsite: null,
+      merchantInvoiceId: null,
+      merchantDetailsSource: "none",
       routeSummary: ["Step 1: swap wACP → USDT via bsc via pancakeswap"],
       networkFees: [
         {
@@ -440,6 +451,63 @@ describe("smart pay history view helpers", () => {
       ],
       networkFeesSource: "quote",
     });
+  });
+
+  it("falls back to parsed merchant intent labels until a receipt snapshot confirms the merchant", () => {
+    const intentMerchantOnly = makeEntry("4-merchant", "pending_reconciliation", {
+      intent: {
+        ...makeEntry("4-merchant", "pending_reconciliation").intent,
+        merchant: {
+          label: "Intent merchant",
+          category: "services",
+          website: "https://merchant.example",
+          invoiceId: "inv-4-merchant",
+        },
+      },
+      receipt: null,
+    });
+
+    const display = getSmartPayHistoryReceiptDisplay(intentMerchantOnly);
+
+    expect(display.merchantLabel).toBe("Intent merchant");
+    expect(display.merchantLabelSource).toBe("intent");
+    expect(display.merchantCategory).toBe("services");
+    expect(display.merchantWebsite).toBe("https://merchant.example");
+    expect(display.merchantInvoiceId).toBe("inv-4-merchant");
+    expect(display.merchantDetailsSource).toBe("intent");
+    expect(getSmartPayHistoryMerchantHint(display)).toBe(
+      "Merchant label comes from the parsed payment intent until a receipt snapshot confirms it."
+    );
+  });
+
+  it("keeps intent-side merchant details visible even after a receipt label exists", () => {
+    const mergedMerchantDetails = makeEntry("4-merchant-details", "completed", {
+      intent: {
+        ...makeEntry("4-merchant-details", "completed").intent,
+        merchant: {
+          label: "Intent merchant",
+          category: "services",
+          website: "https://merchant.example/pay",
+          invoiceId: "inv-merchant-details",
+        },
+      },
+      receipt: {
+        ...makeEntry("4-merchant-details", "completed").receipt!,
+        merchantLabel: "Receipt merchant",
+      },
+    });
+
+    const display = getSmartPayHistoryReceiptDisplay(mergedMerchantDetails);
+
+    expect(display.merchantLabel).toBe("Receipt merchant");
+    expect(display.merchantLabelSource).toBe("receipt");
+    expect(display.merchantCategory).toBe("services");
+    expect(display.merchantWebsite).toBe("https://merchant.example/pay");
+    expect(display.merchantInvoiceId).toBe("inv-merchant-details");
+    expect(display.merchantDetailsSource).toBe("intent");
+    expect(getSmartPayHistoryMerchantHint(display)).toBe(
+      "Merchant label comes from the stored receipt snapshot. Website/category/invoice details still come from the parsed payment intent."
+    );
   });
 
   it("labels receipt network fees separately from quote-estimated fees", () => {

@@ -55,6 +55,7 @@ import {
   getSmartPayHistoryFreshnessHint,
   getSmartPayHistoryFreshnessLabel,
   getSmartPayHistoryReceiptDisplay,
+  getSmartPayHistoryMerchantHint,
   getSmartPayHistoryNetworkFeesHint,
   getSmartPayHistoryNetworkFeesLabel,
   getSmartPayHistoryPendingProofHint,
@@ -835,6 +836,8 @@ export default function SmartPayScreen() {
               {section.entries.map((entry) => {
                 const pendingProofHint = getSmartPayHistoryPendingProofHint(entry);
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
+                const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
+                const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
 
                 return (
                   <Pressable
@@ -851,6 +854,23 @@ export default function SmartPayScreen() {
                       </View>
                     </View>
                     <Text style={styles.meta}>Recipient: {entry.receipt?.recipientAddress ?? entry.intent.recipient.address}</Text>
+                    {receiptDisplay.merchantLabel ? (
+                      <Text style={styles.meta}>Merchant: {receiptDisplay.merchantLabel}</Text>
+                    ) : null}
+                    {receiptDisplay.merchantCategory ? (
+                      <Text style={styles.meta}>Merchant category: {receiptDisplay.merchantCategory}</Text>
+                    ) : null}
+                    {receiptDisplay.merchantInvoiceId ? (
+                      <Text style={styles.meta}>Invoice: {receiptDisplay.merchantInvoiceId}</Text>
+                    ) : null}
+                    {receiptDisplay.merchantWebsite ? (
+                      <Pressable onPress={() => void onOpenExplorerUrl(receiptDisplay.merchantWebsite)}>
+                        <Text style={styles.inlineAction}>{receiptDisplay.merchantWebsite}</Text>
+                      </Pressable>
+                    ) : null}
+                    {merchantHint ? (
+                      <Text style={styles.inlineHint}>{merchantHint}</Text>
+                    ) : null}
                     <Text style={styles.meta}>Execution: {entry.execution.id}</Text>
                     <Text style={styles.meta}>History source: {getSmartPayHistorySourceLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistorySourceHint(entry)}</Text>
@@ -980,6 +1000,14 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Recipient: {intent.recipient.address}</Text>
           <Text style={styles.meta}>Amount: {intent.amount?.value ?? "—"}</Text>
           <Text style={styles.meta}>Parse method: {intent.parseMethod}</Text>
+          {intent.merchant?.label ? <Text style={styles.meta}>Merchant: {intent.merchant.label}</Text> : null}
+          {intent.merchant?.category ? <Text style={styles.meta}>Merchant category: {intent.merchant.category}</Text> : null}
+          {intent.merchant?.invoiceId ? <Text style={styles.meta}>Invoice: {intent.merchant.invoiceId}</Text> : null}
+          {intent.merchant?.website ? (
+            <Pressable onPress={() => void onOpenExplorerUrl(intent.merchant?.website)}>
+              <Text style={styles.inlineAction}>{intent.merchant.website}</Text>
+            </Pressable>
+          ) : null}
           {intent.memo?.value ? <Text style={styles.meta}>Memo: {intent.memo.value}</Text> : null}
           {intentFreshnessWarning ? <Text style={styles.warning}>{intentFreshnessWarning}</Text> : null}
           {intent.warnings.length ? <Text style={styles.warning}>Warnings: {intent.warnings.join(" · ")}</Text> : null}
@@ -1022,6 +1050,14 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Target amount: {quote.targetAmount}</Text>
           <Text style={styles.meta}>Source spend: {quote.requiredSourceAmount} {quote.sourceAsset.symbol}</Text>
           <Text style={styles.meta}>Service fee: {quote.serviceFeeAcp} ACP</Text>
+          {intent.merchant?.label ? <Text style={styles.meta}>Merchant: {intent.merchant.label}</Text> : null}
+          {intent.merchant?.category ? <Text style={styles.meta}>Merchant category: {intent.merchant.category}</Text> : null}
+          {intent.merchant?.invoiceId ? <Text style={styles.meta}>Invoice: {intent.merchant.invoiceId}</Text> : null}
+          {intent.merchant?.website ? (
+            <Pressable onPress={() => void onOpenExplorerUrl(intent.merchant?.website)}>
+              <Text style={styles.inlineAction}>{intent.merchant.website}</Text>
+            </Pressable>
+          ) : null}
           <Text style={styles.meta}>{getSmartPayQuoteExpiryLabel(quote)}</Text>
           <Text style={quoteExpired ? styles.warning : styles.meta}>{getSmartPayQuoteExpiryHint(quote)}</Text>
           {quoteFreshnessWarning ? <Text style={styles.warning}>{quoteFreshnessWarning}</Text> : null}
@@ -1199,6 +1235,16 @@ export default function SmartPayScreen() {
           {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
           {activeReceiptDisplay.completedAt ? <Text style={styles.meta}>Completed at: {formatSmartPayTimestamp(activeReceiptDisplay.completedAt)}</Text> : null}
           {activeReceiptDisplay.merchantLabel ? <Text style={styles.meta}>Merchant: {activeReceiptDisplay.merchantLabel}</Text> : null}
+          {activeReceiptDisplay.merchantCategory ? <Text style={styles.meta}>Merchant category: {activeReceiptDisplay.merchantCategory}</Text> : null}
+          {activeReceiptDisplay.merchantInvoiceId ? <Text style={styles.meta}>Invoice: {activeReceiptDisplay.merchantInvoiceId}</Text> : null}
+          {activeReceiptDisplay.merchantWebsite ? (
+            <Pressable onPress={() => void onOpenExplorerUrl(activeReceiptDisplay.merchantWebsite)}>
+              <Text style={styles.inlineAction}>{activeReceiptDisplay.merchantWebsite}</Text>
+            </Pressable>
+          ) : null}
+          {getSmartPayHistoryMerchantHint(activeReceiptDisplay) ? (
+            <Text style={styles.inlineHint}>{getSmartPayHistoryMerchantHint(activeReceiptDisplay)}</Text>
+          ) : null}
           {activeExecutionView?.error ? <Text style={styles.warning}>Execution error: {activeExecutionView.error}</Text> : null}
           <Text style={styles.label}>Route summary</Text>
           {activeReceiptDisplay.routeSummary.length ? activeReceiptDisplay.routeSummary.map((line, index) => (
