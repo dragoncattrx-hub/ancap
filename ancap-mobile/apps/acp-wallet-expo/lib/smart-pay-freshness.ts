@@ -51,11 +51,24 @@ export function getSmartPayQuoteFreshnessWarning(
   return null;
 }
 
+export function shouldInvalidateSmartPayParsedIntent(
+  intent: SmartPayPaymentIntent | null,
+  rawPayload: string
+): boolean {
+  return Boolean(intent) && Boolean(getSmartPayIntentFreshnessWarning(intent, rawPayload));
+}
+
+export function shouldInvalidateSmartPayQuote(
+  options: SmartPayQuoteFreshnessOptions
+): boolean {
+  return Boolean(options.quote) && Boolean(getSmartPayQuoteFreshnessWarning(options));
+}
+
 export function canSmartPayRequestQuote(
   intent: SmartPayPaymentIntent | null,
   rawPayload: string
 ): boolean {
-  return Boolean(intent) && !getSmartPayIntentFreshnessWarning(intent, rawPayload);
+  return Boolean(intent) && !shouldInvalidateSmartPayParsedIntent(intent, rawPayload);
 }
 
 export function canSmartPayReviewQuote(

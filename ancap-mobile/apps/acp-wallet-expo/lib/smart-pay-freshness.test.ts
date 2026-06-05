@@ -5,6 +5,8 @@ import {
   canSmartPayReviewQuote,
   getSmartPayIntentFreshnessWarning,
   getSmartPayQuoteFreshnessWarning,
+  shouldInvalidateSmartPayParsedIntent,
+  shouldInvalidateSmartPayQuote,
 } from "./smart-pay-freshness";
 
 function makeIntent(overrides: Partial<SmartPayPaymentIntent> = {}): SmartPayPaymentIntent {
@@ -101,6 +103,7 @@ describe("smart pay freshness helpers", () => {
     expect(getSmartPayIntentFreshnessWarning(intent, "acp:addr2?amount=1.0")).toBe(
       "Payload changed since the last parse. Parse again before requesting a quote."
     );
+    expect(shouldInvalidateSmartPayParsedIntent(intent, "acp:addr2?amount=1.0")).toBe(true);
     expect(canSmartPayRequestQuote(intent, "acp:addr2?amount=1.0")).toBe(false);
   });
 
@@ -139,6 +142,14 @@ describe("smart pay freshness helpers", () => {
     ).toBe(
       "Preferred source asset changed from ACP to USDT. Get a fresh quote before reviewing or executing payment."
     );
+    expect(
+      shouldInvalidateSmartPayQuote({
+        intent,
+        quote,
+        rawPayload: intent.rawPayload,
+        selectedAsset: "USDT",
+      })
+    ).toBe(true);
   });
 
   it("allows review only when payload, asset, and expiry are still fresh", () => {
@@ -157,6 +168,14 @@ describe("smart pay freshness helpers", () => {
         now
       )
     ).toBe(true);
+    expect(
+      shouldInvalidateSmartPayQuote({
+        intent,
+        quote,
+        rawPayload: intent.rawPayload,
+        selectedAsset: "ACP",
+      })
+    ).toBe(false);
     expect(
       canSmartPayReviewQuote(
         {
@@ -189,6 +208,18 @@ describe("smart pay freshness helpers", () => {
         },
         Date.parse("2026-05-30T19:00:01.000Z")
       )
+    ).toBe(false);
+  });
+
+  it("does not request resets when intent or quote is already missing", () => {
+    expect(shouldInvalidateSmartPayParsedIntent(null, "acp:addr2?amount=1.0")).toBe(false);
+    expect(
+      shouldInvalidateSmartPayQuote({
+        intent: makeIntent(),
+        quote: null,
+        rawPayload: "acp:addr2?amount=1.0",
+        selectedAsset: "ACP",
+      })
     ).toBe(false);
   });
 });

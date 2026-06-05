@@ -83,6 +83,8 @@ import {
   canSmartPayReviewQuote,
   getSmartPayIntentFreshnessWarning,
   getSmartPayQuoteFreshnessWarning,
+  shouldInvalidateSmartPayParsedIntent,
+  shouldInvalidateSmartPayQuote,
 } from "@/lib/smart-pay-freshness";
 import {
   clearSmartPaySession,
@@ -189,6 +191,20 @@ export default function SmartPayScreen() {
       }),
     [intent, quote, rawPayload, selectedAsset]
   );
+  const shouldResetParsedIntent = useMemo(
+    () => shouldInvalidateSmartPayParsedIntent(intent, rawPayload),
+    [intent, rawPayload]
+  );
+  const shouldResetQuote = useMemo(
+    () =>
+      shouldInvalidateSmartPayQuote({
+        intent,
+        quote,
+        rawPayload,
+        selectedAsset,
+      }),
+    [intent, quote, rawPayload, selectedAsset]
+  );
   const canRequestQuote = useMemo(
     () => canSmartPayRequestQuote(intent, rawPayload),
     [intent, rawPayload]
@@ -283,6 +299,37 @@ export default function SmartPayScreen() {
     if (!hydrated) return;
     void saveSmartPaySession(buildCurrentPersistedSession());
   }, [hydrated, rawPayload, payloadSource, selectedAsset, intent, quote, execution, receipt, sessionToken, snapshotOrigin, recoveryDraftTxs]);
+
+  useEffect(() => {
+    if (!hydrated || !shouldResetQuote || !quote) {
+      return;
+    }
+
+    setQuote(null);
+    setExecution(null);
+    setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
+    setShowConfirmation(false);
+    setConfirmationAccepted(false);
+  }, [hydrated, quote, shouldResetQuote]);
+
+  useEffect(() => {
+    if (!hydrated || !shouldResetParsedIntent || !intent) {
+      return;
+    }
+
+    setIntent(null);
+    setQuote(null);
+    setExecution(null);
+    setReceipt(null);
+    setSessionToken(null);
+    setSnapshotOrigin("local");
+    setRecoveryDraftTxs("");
+    setShowConfirmation(false);
+    setConfirmationAccepted(false);
+  }, [hydrated, intent, shouldResetParsedIntent]);
 
   const onPaste = async () => {
     const text = await Clipboard.getStringAsync();
