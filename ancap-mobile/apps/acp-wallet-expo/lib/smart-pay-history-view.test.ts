@@ -8,6 +8,7 @@ import {
   getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
   formatSmartPayRouteStepIndexLabel,
+  formatSmartPayTxRefLabel,
   getSmartPayExecutionStatusLabel,
   getSmartPayHistoryAccessHint,
   getSmartPayHistoryAccessLabel,
@@ -343,6 +344,27 @@ describe("smart pay history view helpers", () => {
     expect(formatSmartPayRouteStepIndexLabel(2)).toBe("route step 2");
     expect(formatSmartPayRouteStepIndexLabel(0)).toBeNull();
     expect(formatSmartPayRouteStepIndexLabel(null)).toBeNull();
+  });
+
+  it("formats tx refs with optional route-step suffixes for consistent execution and receipt labels", () => {
+    expect(
+      formatSmartPayTxRefLabel({
+        role: "bridge",
+        network: "acp",
+        txid: "fixture-proof-bridge",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-bridge",
+        routeStepIndex: 2,
+      })
+    ).toBe("bridge tx on acp: fixture-proof-bridge (route step 2)");
+    expect(
+      formatSmartPayTxRefLabel({
+        role: "payment",
+        network: "bsc",
+        txid: "fixture-proof-payment",
+        explorerUrl: null,
+        routeStepIndex: null,
+      })
+    ).toBe("payment tx on bsc: fixture-proof-payment");
   });
 
   it("explains active proof refs using matched route-step context when available", () => {

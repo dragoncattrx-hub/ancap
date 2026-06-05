@@ -39,6 +39,7 @@ import {
   getSmartPayActiveExecutionTxRefs,
   getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
+  formatSmartPayTxRefLabel,
   canSmartPayRefreshOrRecover,
   getSmartPayExecutionStatusLabel,
   getSmartPayHistoryAccessHint,
@@ -50,7 +51,6 @@ import {
   getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
   getSmartPayHistoryProofTxRefHint,
-  formatSmartPayRouteStepIndexLabel,
   getSmartPayHistoryAdditionalProofTxRefs,
   getSmartPayHistoryAmountLabel,
   getSmartPayHistoryFreshnessHint,
@@ -1176,10 +1176,7 @@ export default function SmartPayScreen() {
               : null;
             return (
               <View key={`execution-linked-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                <Text style={styles.meta}>
-                  {tx.role} tx on {tx.network}: {tx.txid}
-                  {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
-                </Text>
+                <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
                 ) : null}
@@ -1198,10 +1195,7 @@ export default function SmartPayScreen() {
               : null;
             return (
               <View key={`${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                <Text style={styles.meta}>
-                  {tx.role} tx on {tx.network}: {tx.txid}
-                  {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
-                </Text>
+                <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
                 ) : null}
@@ -1220,7 +1214,7 @@ export default function SmartPayScreen() {
               <Text style={styles.label}>Additional observed tx refs</Text>
               {activeAdditionalProofTxRefs.map((tx) => (
                 <View key={`execution-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                  <Text style={styles.meta}>{tx.role} tx on {tx.network}: {tx.txid}</Text>
+                  <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                   {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx) ? (
                     <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx)}</Text>
                   ) : null}
@@ -1389,7 +1383,7 @@ export default function SmartPayScreen() {
             );
           }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => (
             <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
-              <Text style={styles.meta}>{tx.role} tx: {tx.txid}</Text>
+              <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
               {tx.explorerUrl ? (
                 <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
                   <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
@@ -1404,7 +1398,7 @@ export default function SmartPayScreen() {
               <Text style={styles.label}>Additional observed tx refs</Text>
               {activeAdditionalProofTxRefs.map((tx) => (
                 <View key={`receipt-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                  <Text style={styles.meta}>{tx.role} tx on {tx.network}: {tx.txid}</Text>
+                  <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                   {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx) ? (
                     <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx)}</Text>
                   ) : null}

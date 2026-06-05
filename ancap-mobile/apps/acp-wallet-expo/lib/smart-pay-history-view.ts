@@ -266,6 +266,13 @@ export function formatSmartPayRouteStepIndexLabel(routeStepIndex: number | null 
   return `route step ${routeStepIndex}`;
 }
 
+export function formatSmartPayTxRefLabel(ref: SmartPayExecution["txRefs"][number]): string {
+  const routeStepLabel = formatSmartPayRouteStepIndexLabel(ref.routeStepIndex);
+  return routeStepLabel
+    ? `${ref.role} tx on ${ref.network}: ${ref.txid} (${routeStepLabel})`
+    : `${ref.role} tx on ${ref.network}: ${ref.txid}`;
+}
+
 export function getSmartPayHistoryReceiptDisplay(entry: SmartPayHistoryEntry): SmartPayHistoryReceiptDisplay {
   const receiptNetworkFees = entry.receipt?.networkFees ?? [];
   const quoteNetworkFees = entry.quote?.networkFee ?? [];
