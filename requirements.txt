@@ -2411,9 +2411,9 @@ watchfiles==1.2.0 \
     --hash=sha256:faea288b6f0ab1902ef08f4ca6de005dccf856c4e0c4f21b8c5fce02d90a1b08 \
     --hash=sha256:fff610d7bb2256a317bb1e96f0d7862c7aa8076733ee5df0fd41bbe76a24a4f4
     # via uvicorn
-web3==7.13.0 \
-    --hash=sha256:281795e0f5d404c1374e1771f6710bb43e0c975f3141366eb1680763edfb4806 \
-    --hash=sha256:4da7e953300577b7dadbaf430e5fd4479b127b1ad4910234b230fdcb8a49f735
+web3==7.15.0 \
+    --hash=sha256:2a2bcbab8fcf120c2256ddbdc88fcc80a47c100ad758659a980e9fab66609171 \
+    --hash=sha256:bbeba510aaa4eb3c99662d911db9d2a648ab40f608cf0269065f7db1d1d0b0c0
     # via -r requirements.in
 websockets==15.0.1 \
     --hash=sha256:0701bc3cfcb9164d04a14b149fd74be7347a530ad3bbf15ab2c678a2cd3dd9a2 \
