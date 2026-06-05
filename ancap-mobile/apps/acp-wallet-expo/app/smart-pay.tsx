@@ -897,7 +897,7 @@ export default function SmartPayScreen() {
                     {getSmartPayHistoryProgressHint(entry) ? (
                       <Text style={styles.meta}>{getSmartPayHistoryProgressHint(entry)}</Text>
                     ) : null}
-                    <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryProofLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofHint(entry)}</Text>
                     {proofRouteDetailLabel ? (
                       <Text style={styles.meta}>{proofRouteDetailLabel}</Text>
@@ -1247,7 +1247,7 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           {activeProgressLabel ? <Text style={styles.meta}>{activeProgressLabel}</Text> : null}
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
-          <Text style={styles.meta}>Proof: {getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
           {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
