@@ -49,6 +49,7 @@ import {
   getSmartPayHistoryNextStepHint,
   getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
+  getSmartPayHistoryProofTxRefHint,
   formatSmartPayRouteStepIndexLabel,
   getSmartPayHistoryAdditionalProofTxRefs,
   getSmartPayHistoryAmountLabel,
@@ -1136,21 +1137,29 @@ export default function SmartPayScreen() {
               ) : null}
             </>
           ) : null}
-          {activeExecutionTxRefs.length ? activeExecutionTxRefs.map((tx) => (
-            <View key={`${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-              <Text style={styles.meta}>
-                {tx.role} tx on {tx.network}: {tx.txid}
-                {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
-              </Text>
-              {tx.explorerUrl ? (
-                <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
-                  <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
-                </Pressable>
-              ) : (
-                <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
-              )}
-            </View>
-          )) : <Text style={styles.meta}>No tx references observed yet.</Text>}
+          {activeExecutionTxRefs.length ? activeExecutionTxRefs.map((tx) => {
+            const proofTxHint = activeHistoryEntry
+              ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
+              : null;
+            return (
+              <View key={`${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                <Text style={styles.meta}>
+                  {tx.role} tx on {tx.network}: {tx.txid}
+                  {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
+                </Text>
+                {proofTxHint ? (
+                  <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {tx.explorerUrl ? (
+                  <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                    <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                )}
+              </View>
+            );
+          }) : <Text style={styles.meta}>No tx references observed yet.</Text>}
           {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
           {!canRefreshExecution ? (
             <Text style={styles.warning}>

@@ -17,6 +17,7 @@ import {
   getSmartPayHistoryNextStepHint,
   getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
+  getSmartPayHistoryProofTxRefHint,
   getSmartPayHistoryAdditionalProofTxRefs,
   getSmartPayHistoryAmountLabel,
   getSmartPayHistoryFreshnessHint,
@@ -341,6 +342,86 @@ describe("smart pay history view helpers", () => {
     expect(formatSmartPayRouteStepIndexLabel(2)).toBe("route step 2");
     expect(formatSmartPayRouteStepIndexLabel(0)).toBeNull();
     expect(formatSmartPayRouteStepIndexLabel(null)).toBeNull();
+  });
+
+  it("explains active proof refs using matched route-step context when available", () => {
+    const entry = makeEntry("4-proof-hint", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("4-proof-hint", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "native bridge",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "14.9",
+          },
+          {
+            kind: "swap",
+            network: "bsc",
+            dexOrRail: "pancakeswap",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "14.7",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("4-proof-hint", "pending_reconciliation").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "proof-bridge-1",
+            explorerUrl: "https://ancap.cloud/acp/tx/proof-bridge-1",
+            routeStepIndex: 1,
+          },
+          {
+            role: "swap",
+            network: "bsc",
+            txid: "proof-swap-2",
+            explorerUrl: null,
+            routeStepIndex: null,
+          },
+        ],
+      },
+      receipt: null,
+    });
+
+    const proofRefs = getSmartPayHistoryProofTxRefs(entry);
+    expect(getSmartPayHistoryProofTxRefHint(entry, proofRefs[0]!)).toBe(
+      "Linked via explicit quoted route step 1 proof ref."
+    );
+    expect(getSmartPayHistoryProofTxRefHint(entry, proofRefs[1]!)).toBe(
+      "Linked by swap on bsc because this saved proof ref does not carry an explicit quoted route-step index."
+    );
+  });
+
+  it("falls back to a generic proof-ref hint when no route metadata is available", () => {
+    const entry = makeEntry("5-proof-hint-generic", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("5-proof-hint-generic", "pending_reconciliation").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("5-proof-hint-generic", "pending_reconciliation").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "proof-generic-1",
+            explorerUrl: null,
+            routeStepIndex: null,
+          },
+        ],
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProofTxRefHint(entry, getSmartPayHistoryProofTxRefs(entry)[0]!)).toBe(
+      "Observed payment on acp proof ref; no quoted or stored route-step metadata is available in this snapshot."
+    );
   });
 
   it("prefers receipt amount labels over quote or intent fallbacks", () => {

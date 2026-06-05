@@ -1021,6 +1021,25 @@ export function getSmartPayHistoryAdditionalProofTxRefHint(
   return `${formatSmartPayAdditionalProofRefSubject(ref)} is stored separately because it does not map to any quoted route step yet.`;
 }
 
+export function getSmartPayHistoryProofTxRefHint(
+  entry: SmartPayHistoryEntry,
+  ref: SmartPayExecution["txRefs"][number]
+): string | null {
+  const { hasRouteProofContext } = getSmartPayHistoryProofRouteContext(entry);
+  if (!hasRouteProofContext) {
+    return `Observed ${formatSmartPayAdditionalProofRefSubject(ref)} proof ref; no quoted or stored route-step metadata is available in this snapshot.`;
+  }
+
+  const matchedStep = getSmartPayHistoryProofRouteSteps(entry).find(
+    (step) => step.txRef && getSmartPayTxRefIdentityKey(step.txRef) === getSmartPayTxRefIdentityKey(ref)
+  );
+  if (matchedStep) {
+    return getSmartPayHistoryProofRouteStepHint(entry, matchedStep);
+  }
+
+  return getSmartPayHistoryAdditionalProofTxRefHint(entry, ref);
+}
+
 export function getSmartPayHistoryAdditionalProofHint(entry: SmartPayHistoryEntry): string | null {
   const additionalRefs = getSmartPayHistoryAdditionalProofTxRefs(entry);
   if (additionalRefs.length === 0) {
