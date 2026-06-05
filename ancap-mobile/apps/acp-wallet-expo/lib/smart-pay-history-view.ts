@@ -726,6 +726,63 @@ export function getSmartPayHistoryProofLabel(entry: SmartPayHistoryEntry): strin
   return "On-chain proof: no tx references linked yet";
 }
 
+function getSmartPayHistoryProofRouteStepContextLabel(
+  entry: SmartPayHistoryEntry,
+  step: SmartPayHistoryProofRouteStep
+): string {
+  const { hasQuotedRoute } = getSmartPayHistoryProofRouteContext(entry);
+  const routeStepLabel = formatSmartPayRouteStepIndexLabel(step.stepIndex) ?? `route step ${step.stepIndex}`;
+  return hasQuotedRoute ? `quoted ${routeStepLabel}` : `stored receipt ${routeStepLabel}`;
+}
+
+function getSmartPayHistoryProofRouteStepPendingDetail(
+  entry: SmartPayHistoryEntry,
+  step: SmartPayHistoryProofRouteStep
+): string | null {
+  const { hasQuotedRoute } = getSmartPayHistoryProofRouteContext(entry);
+
+  if (hasQuotedRoute) {
+    return formatSmartPayExpectedRouteStepTarget(entry, step.stepIndex);
+  }
+
+  const summaryLine = entry.receipt?.routeSummary[step.stepIndex - 1]?.trim();
+  if (!summaryLine) {
+    return null;
+  }
+
+  return summaryLine.replace(new RegExp(`^${step.stepIndex}[.)]\\s*`), "").trim() || summaryLine;
+}
+
+export function getSmartPayHistoryProofRouteStepHint(
+  entry: SmartPayHistoryEntry,
+  step: SmartPayHistoryProofRouteStep
+): string {
+  const { hasQuotedRoute } = getSmartPayHistoryProofRouteContext(entry);
+  const contextLabel = getSmartPayHistoryProofRouteStepContextLabel(entry, step);
+  const txRef = step.txRef;
+
+  if (txRef) {
+    if (txRef.routeStepIndex === step.stepIndex) {
+      return `Linked via explicit ${contextLabel} proof ref.`;
+    }
+
+    if (hasQuotedRoute) {
+      return `Linked by ${step.role.replace(/_/g, " ")} on ${step.network} because this saved proof ref does not carry an explicit quoted route-step index.`;
+    }
+
+    return `Linked by stored receipt proof matching ${step.role.replace(/_/g, " ")} on ${step.network} because this saved ref does not carry an explicit stored route-step index.`;
+  }
+
+  const pendingDetail = getSmartPayHistoryProofRouteStepPendingDetail(entry, step);
+  if (pendingDetail) {
+    return hasQuotedRoute
+      ? `Awaiting proof ref for ${contextLabel}; this step expects ${pendingDetail}.`
+      : `Awaiting proof ref for ${contextLabel}: ${pendingDetail}.`;
+  }
+
+  return `Awaiting proof ref for ${contextLabel}.`;
+}
+
 export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string {
   const { linkedTxCount, explorerLinkedTxCount, expectedRouteSteps, additionalTxCount } = getSmartPayHistoryProofCounts(entry);
   const { hasQuotedRoute, hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);

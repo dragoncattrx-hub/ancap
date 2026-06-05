@@ -60,6 +60,7 @@ import {
   getSmartPayHistoryPendingProofHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryProgressHint,
@@ -1222,6 +1223,7 @@ export default function SmartPayScreen() {
                 <Text style={styles.meta}>
                   {step.status === "linked" ? "✓" : "…"} {step.label}
                 </Text>
+                <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry, step)}</Text>
                 {txRef ? (
                   <>
                     <Text style={styles.meta}>{step.role} tx: {txRef.txid}</Text>
@@ -1233,9 +1235,7 @@ export default function SmartPayScreen() {
                       <Text style={styles.inlineHint}>Explorer link pending for this route step.</Text>
                     )}
                   </>
-                ) : (
-                  <Text style={styles.inlineHint}>No linked tx observed for this route step yet.</Text>
-                )}
+                ) : null}
               </View>
             );
           }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => (

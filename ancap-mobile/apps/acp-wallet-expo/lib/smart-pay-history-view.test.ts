@@ -29,6 +29,7 @@ import {
   getSmartPayHistoryPendingProofHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryProgressHint,
@@ -1521,6 +1522,164 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryAdditionalProofHint(routed)).toBe(
       "Additional observed tx refs: merchant_payout on bsc — Claims quoted route step 1, but that step expects bridge on acp via ancap_bridge_v1."
+    );
+  });
+
+  it("explains whether route proof steps are explicitly indexed, loosely matched, or still pending", () => {
+    const explicitlyIndexed = makeEntry("12hint-indexed", "completed", {
+      quote: {
+        ...makeEntry("12hint-indexed", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-indexed", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-indexed-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-indexed-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-indexed", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-indexed-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-indexed-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    const looselyMatched = makeEntry("12hint-loose", "completed", {
+      quote: {
+        ...makeEntry("12hint-loose", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-loose", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-loose-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-loose-proof",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-loose", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-loose-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-loose-proof",
+          },
+        ],
+      },
+    });
+
+    const pendingQuoted = makeEntry("12hint-pending", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("12hint-pending", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-pending", "pending_reconciliation").execution,
+        txRefs: [],
+      },
+      receipt: {
+        ...makeEntry("12hint-pending", "pending_reconciliation").receipt!,
+        txRefs: [],
+      },
+    });
+
+    const pendingStoredReceipt = makeEntry("12hint-stored", "completed", {
+      quote: {
+        ...makeEntry("12hint-stored", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("12hint-stored", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 1,
+          remainingRouteSteps: 1,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-stored-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-stored-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-stored", "completed").receipt!,
+        routeSummary: [
+          "1. transfer ACP -> ACP on acp",
+          "2. settlement review pending",
+        ],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-stored-proof",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-stored-proof",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteStepHint(explicitlyIndexed, getSmartPayHistoryProofRouteSteps(explicitlyIndexed)[0]!)).toBe(
+      "Linked via explicit quoted route step 1 proof ref."
+    );
+    expect(getSmartPayHistoryProofRouteStepHint(looselyMatched, getSmartPayHistoryProofRouteSteps(looselyMatched)[0]!)).toBe(
+      "Linked by bridge on acp because this saved proof ref does not carry an explicit quoted route-step index."
+    );
+    expect(getSmartPayHistoryProofRouteStepHint(pendingQuoted, getSmartPayHistoryProofRouteSteps(pendingQuoted)[0]!)).toBe(
+      "Awaiting proof ref for quoted route step 1; this step expects bridge on acp via ancap_bridge_v1."
+    );
+    expect(getSmartPayHistoryProofRouteStepHint(pendingStoredReceipt, getSmartPayHistoryProofRouteSteps(pendingStoredReceipt)[1]!)).toBe(
+      "Awaiting proof ref for stored receipt route step 2: settlement review pending."
     );
   });
 
