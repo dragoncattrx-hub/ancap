@@ -263,11 +263,12 @@ def client_unauth(client):
     bare.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def db_cursor():
     """Raw DBAPI cursor for direct SQL (injecting malformed events, bypassing API).
 
-    Uses the same sync engine as the `client` fixture so both share the same test DB.
+    Use a fresh connection per test so direct SQL writes do not inherit transaction
+    state from earlier tests when the session-scoped TestClient keeps the app/engine alive.
     Caller is responsible for committing if needed.
     """
     sync_url = _sync_database_url()

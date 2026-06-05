@@ -4,6 +4,7 @@ import {
   buildSmartPayActiveHistoryEntry,
   buildSmartPayHistorySections,
   canSmartPayRefreshOrRecover,
+  getSmartPayActiveExecutionTxRefs,
   getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
   formatSmartPayRouteStepIndexLabel,
@@ -251,6 +252,55 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayActiveExecutionView(mergedEntry, rawExecution)).toEqual(mergedEntry.execution);
     expect(getSmartPayActiveExecutionView(null, rawExecution)).toEqual(rawExecution);
     expect(getSmartPayActiveExecutionView(null, null)).toBeNull();
+  });
+
+  it("prefers merged proof refs for the active execution panel when history is richer than the in-memory execution snapshot", () => {
+    const rawExecution = makeEntry("15-refs", "pending_reconciliation", {
+      execution: {
+        ...makeEntry("15-refs", "pending_reconciliation").execution,
+        txRefs: [],
+      },
+      receipt: null,
+    }).execution;
+    const mergedEntry = makeEntry("15-refs", "pending_reconciliation", {
+      execution: {
+        ...makeEntry("15-refs", "pending_reconciliation").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-bridge-proof-link",
+            explorerUrl: null,
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("15-refs", "completed").receipt!,
+        paymentExecutionId: "exec-15-refs",
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-bridge-proof-link",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-bridge-proof-link",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayActiveExecutionTxRefs(mergedEntry, rawExecution)).toEqual([
+      {
+        role: "bridge",
+        network: "acp",
+        txid: "fixture-bridge-proof-link",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-bridge-proof-link",
+        routeStepIndex: 1,
+      },
+    ]);
+    expect(getSmartPayActiveExecutionTxRefs(null, rawExecution)).toEqual([]);
+    expect(getSmartPayActiveExecutionTxRefs(null, null)).toEqual([]);
   });
 
   it("groups entries by execution lifecycle for UI sections", () => {
@@ -1452,8 +1502,8 @@ describe("smart pay history view helpers", () => {
     );
   });
 
-  it("returns null pending-proof hint when there is no quoted route or all quoted steps are linked", () => {
-    const noQuotedRoute = makeEntry("12", "completed", {
+  it("returns null pending-proof hint when there is no route-proof context or all tracked steps are linked", () => {
+    const noRouteProofContext = makeEntry("12", "completed", {
       execution: {
         ...makeEntry("12", "completed").execution,
         txRefs: [
@@ -1465,8 +1515,13 @@ describe("smart pay history view helpers", () => {
           },
         ],
       },
+      quote: {
+        ...makeEntry("12", "completed").quote!,
+        route: [],
+      },
       receipt: {
         ...makeEntry("12", "completed").receipt!,
+        routeSummary: [],
         txRefs: [
           {
             role: "payment",
@@ -1516,8 +1571,45 @@ describe("smart pay history view helpers", () => {
       },
     });
 
-    expect(getSmartPayHistoryPendingProofHint(noQuotedRoute)).toBeNull();
+    const fullyLinkedStoredReceiptRoute = makeEntry("12b", "completed", {
+      quote: {
+        ...makeEntry("12b", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("12b", "completed").execution,
+        progress: {
+          totalRouteSteps: 1,
+          observedTxCount: 1,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-payment-12b",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-payment-12b",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12b", "completed").receipt!,
+        routeSummary: ["1. transfer ACP -> ACP on acp"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-payment-12b",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-payment-12b",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryPendingProofHint(noRouteProofContext)).toBeNull();
     expect(getSmartPayHistoryPendingProofHint(fullyLinkedRoute)).toBeNull();
+    expect(getSmartPayHistoryPendingProofHint(fullyLinkedStoredReceiptRoute)).toBeNull();
   });
 
   it("keeps quoted-route proof coverage visible when a receipt snapshot exists without linked tx refs yet", () => {
@@ -1747,11 +1839,41 @@ describe("smart pay history view helpers", () => {
       },
     });
 
+    expect(getSmartPayHistoryProofRouteSteps(receiptSummaryOnly)).toEqual([
+      {
+        key: "receipt_route|1",
+        stepIndex: 1,
+        role: "payment",
+        network: "acp",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 1: transfer ACP -> ACP on acp",
+        status: "linked",
+        txRef: {
+          role: "payment",
+          network: "acp",
+          txid: "fixture-proof-20",
+          explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20",
+        },
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(receiptSummaryOnly)).toEqual([
+      {
+        role: "refund",
+        network: "acp",
+        txid: "fixture-refund-20",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20",
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofHint(receiptSummaryOnly)).toBe(
+      "Additional observed tx refs: refund on acp — refund on acp is stored separately because it does not map to any stored receipt route step yet."
+    );
     expect(getSmartPayHistoryProofLabel(receiptSummaryOnly)).toBe(
       "On-chain proof: 1/1 receipt route steps linked"
     );
     expect(getSmartPayHistoryProofHint(receiptSummaryOnly)).toBe(
-      "Linked proof covers all stored receipt route steps; 1 explorer link available."
+      "Linked proof covers all stored receipt route steps; 1 explorer link available. 1 additional tx ref is stored separately because it does not map to a stored receipt route step yet."
     );
   });
 
@@ -1803,7 +1925,7 @@ describe("smart pay history view helpers", () => {
     );
   });
 
-  it("does not treat receipt-only refund rows as route-proof coverage when no quoted route is available", () => {
+  it("does not treat receipt-only refund rows as stored receipt route-proof coverage when no quoted route is available", () => {
     const receiptSummaryWithRefund = makeEntry("20c", "completed", {
       quote: {
         ...makeEntry("20c", "completed").quote!,
@@ -1856,7 +1978,399 @@ describe("smart pay history view helpers", () => {
       "On-chain proof: 1/1 receipt route steps linked"
     );
     expect(getSmartPayHistoryProofHint(receiptSummaryWithRefund)).toBe(
-      "Linked proof covers all stored receipt route steps; 1 explorer link available."
+      "Linked proof covers all stored receipt route steps; 1 explorer link available. 1 additional tx ref is stored separately because it does not map to a stored receipt route step yet."
+    );
+    expect(getSmartPayHistoryAdditionalProofHint(receiptSummaryWithRefund)).toBe(
+      "Additional observed tx refs: refund on acp — refund on acp is stored separately because it does not map to any stored receipt route step yet."
+    );
+  });
+
+  it("maps receipt-summary-only proof coverage into pending stored receipt route steps when no quoted route exists", () => {
+    const receiptSummaryOnly = makeEntry("20d", "completed", {
+      quote: {
+        ...makeEntry("20d", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20d", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 1,
+          remainingRouteSteps: 1,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20d",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20d",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20d", "completed").receipt!,
+        routeSummary: [
+          "1. transfer ACP -> ACP on acp",
+          "2. settlement review pending",
+        ],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20d",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20d",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteSteps(receiptSummaryOnly)).toEqual([
+      {
+        key: "receipt_route|1",
+        stepIndex: 1,
+        role: "payment",
+        network: "acp",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 1: transfer ACP -> ACP on acp",
+        status: "linked",
+        txRef: {
+          role: "payment",
+          network: "acp",
+          txid: "fixture-proof-20d",
+          explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20d",
+        },
+      },
+      {
+        key: "receipt_route|2",
+        stepIndex: 2,
+        role: "receipt_route",
+        network: "unknown",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 2: settlement review pending",
+        status: "pending",
+        txRef: null,
+      },
+    ]);
+    expect(getSmartPayHistoryPendingProofHint(receiptSummaryOnly)).toBe(
+      "Pending stored receipt route proof (1 step): step 2 settlement review pending."
+    );
+    expect(getSmartPayHistoryProofLabel(receiptSummaryOnly)).toBe(
+      "On-chain proof: 1/2 receipt route steps linked"
+    );
+  });
+
+  it("does not let a generic transfer-style proof ref satisfy unrelated stored receipt summary text", () => {
+    const receiptSummaryOnly = makeEntry("20d-transfer-mismatch", "completed", {
+      quote: {
+        ...makeEntry("20d-transfer-mismatch", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20d-transfer-mismatch", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 2,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-transfer-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-transfer-mismatch",
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-transfer-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-transfer-mismatch",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20d-transfer-mismatch", "completed").receipt!,
+        routeSummary: ["1. transfer ACP -> ACP on acp", "2. settlement review pending"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-transfer-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-transfer-mismatch",
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-transfer-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-transfer-mismatch",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteSteps(receiptSummaryOnly)).toEqual([
+      {
+        key: "receipt_route|1",
+        stepIndex: 1,
+        role: "payment",
+        network: "acp",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 1: transfer ACP -> ACP on acp",
+        status: "linked",
+        txRef: {
+          role: "payment",
+          network: "acp",
+          txid: "fixture-proof-transfer-mismatch",
+          explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-transfer-mismatch",
+        },
+      },
+      {
+        key: "receipt_route|2",
+        stepIndex: 2,
+        role: "receipt_route",
+        network: "unknown",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 2: settlement review pending",
+        status: "pending",
+        txRef: null,
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(receiptSummaryOnly)).toEqual([
+      {
+        role: "refund",
+        network: "acp",
+        txid: "fixture-refund-transfer-mismatch",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-transfer-mismatch",
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofHint(receiptSummaryOnly)).toBe(
+      "Additional observed tx refs: refund on acp — refund on acp is stored separately because it does not map to any stored receipt route step yet."
+    );
+    expect(getSmartPayHistoryPendingProofHint(receiptSummaryOnly)).toBe(
+      "Pending stored receipt route proof (1 step): step 2 settlement review pending."
+    );
+  });
+
+  it("surfaces pending stored receipt route proof hints when only receipt-summary context remains", () => {
+    const conflictingIndexedRef = makeEntry("20f", "completed", {
+      quote: {
+        ...makeEntry("20f", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20f", "completed").execution,
+        progress: {
+          totalRouteSteps: 1,
+          observedTxCount: 1,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20f",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20f",
+            routeStepIndex: 1,
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-20f",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20f",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20f", "completed").receipt!,
+        routeSummary: ["1. transfer ACP -> ACP on acp"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20f",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20f",
+            routeStepIndex: 1,
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-20f",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20f",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryAdditionalProofTxRefHint(conflictingIndexedRef, getSmartPayHistoryAdditionalProofTxRefs(conflictingIndexedRef)[0]!)).toBe(
+      "Claims stored receipt route step 1, but that step is already linked to payment on acp in this snapshot."
+    );
+    expect(getSmartPayHistoryAdditionalProofHint(conflictingIndexedRef)).toBe(
+      "Additional observed tx refs: refund on acp — Claims stored receipt route step 1, but that step is already linked to payment on acp in this snapshot."
+    );
+
+    const incompatibleIndexedRef = makeEntry("20g", "completed", {
+      quote: {
+        ...makeEntry("20g", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20g", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 2,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20g",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20g",
+            routeStepIndex: 1,
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-20g",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20g",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20g", "completed").receipt!,
+        routeSummary: [
+          "1. transfer ACP -> ACP on acp",
+          "2. settlement review pending",
+        ],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20g",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20g",
+            routeStepIndex: 1,
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-20g",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20g",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteSteps(incompatibleIndexedRef)).toEqual([
+      {
+        key: "receipt_route|1",
+        stepIndex: 1,
+        role: "payment",
+        network: "acp",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 1: transfer ACP -> ACP on acp",
+        status: "linked",
+        txRef: {
+          role: "payment",
+          network: "acp",
+          txid: "fixture-proof-20g",
+          explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20g",
+          routeStepIndex: 1,
+        },
+      },
+      {
+        key: "receipt_route|2",
+        stepIndex: 2,
+        role: "receipt_route",
+        network: "unknown",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 2: settlement review pending",
+        status: "pending",
+        txRef: null,
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(incompatibleIndexedRef)).toEqual([
+      {
+        role: "refund",
+        network: "acp",
+        txid: "fixture-refund-20g",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-20g",
+        routeStepIndex: 2,
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefHint(incompatibleIndexedRef, getSmartPayHistoryAdditionalProofTxRefs(incompatibleIndexedRef)[0]!)).toBe(
+      "Claims stored receipt route step 2, but that stored step summary does not match refund on acp."
+    );
+    expect(getSmartPayHistoryAdditionalProofHint(incompatibleIndexedRef)).toBe(
+      "Additional observed tx refs: refund on acp — Claims stored receipt route step 2, but that stored step summary does not match refund on acp."
+    );
+    expect(getSmartPayHistoryPendingProofHint(incompatibleIndexedRef)).toBe(
+      "Pending stored receipt route proof (1 step): step 2 settlement review pending."
+    );
+
+    const receiptSummaryOnly = makeEntry("20e", "completed", {
+      quote: {
+        ...makeEntry("20e", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20e", "completed").execution,
+        progress: {
+          totalRouteSteps: 3,
+          observedTxCount: 1,
+          remainingRouteSteps: 2,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20e",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20e",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20e", "completed").receipt!,
+        routeSummary: [
+          "1. transfer ACP -> ACP on acp",
+          "2. settlement review pending",
+          "3. final receipt export pending",
+        ],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-proof-20e",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-20e",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryPendingProofHint(receiptSummaryOnly)).toBe(
+      "Pending stored receipt route proof (2 steps): step 2 settlement review pending → step 3 final receipt export pending."
+    );
+    expect(getSmartPayHistoryProofLabel(receiptSummaryOnly)).toBe(
+      "On-chain proof: 1/3 receipt route steps linked"
     );
   });
 

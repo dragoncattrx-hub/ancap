@@ -10,6 +10,7 @@ from fastapi import HTTPException
 import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.services.acp_wallet import _run_walletd
@@ -196,7 +197,19 @@ async def attribute_referral(
         if referred_agent and rc.owner_user_id and referred_agent.owner_user_id == rc.owner_user_id:
             raise HTTPException(status_code=400, detail="Self-referral is not allowed")
 
-    # uniqueness enforced by partial unique indexes; rely on DB for idempotency.
+    if referred_user_id is not None:
+        existing_user = await session.execute(
+            select(ReferralAttribution).where(ReferralAttribution.referred_user_id == referred_user_id)
+        )
+        if existing_user.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=409, detail="Referral already attributed")
+    if referred_agent_id is not None:
+        existing_agent = await session.execute(
+            select(ReferralAttribution).where(ReferralAttribution.referred_agent_id == referred_agent_id)
+        )
+        if existing_agent.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=409, detail="Referral already attributed")
+
     ra = ReferralAttribution(
         referral_code_id=rc.id,
         referred_user_id=referred_user_id,
@@ -207,7 +220,7 @@ async def attribute_referral(
     session.add(ra)
     try:
         await session.flush()
-    except Exception as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=409, detail="Referral already attributed") from e
     return ra
 

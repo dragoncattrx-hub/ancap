@@ -5,8 +5,8 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import select, text
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Agent, FaucetClaim, LedgerEventTypeEnum
@@ -74,37 +74,27 @@ async def claim_faucet(
         if existing is not None:
             return existing
 
-    # insert claim idempotently: if rejected/held/granted already exists for user, keep first granted
-    stmt = (
-        insert(FaucetClaim)
-        .values(
-            user_id=user_id,
-            agent_id=agent_id,
-            currency=currency,
-            amount_value=amount_value,
-            claim_status=claim_status,
-            risk_flags={"reason": decision.reason} if decision.reason else {},
-        )
-        .on_conflict_do_nothing(
-            index_elements=["user_id"],
-            index_where=text("user_id IS NOT NULL AND claim_status = 'granted'"),
-        )
-        .returning(FaucetClaim.id)
+    claim = FaucetClaim(
+        user_id=user_id,
+        agent_id=agent_id,
+        currency=currency,
+        amount_value=amount_value,
+        claim_status=claim_status,
+        risk_flags={"reason": decision.reason} if decision.reason else {},
     )
-    res = await session.execute(stmt)
-    new_id = res.scalar_one_or_none()
-    if not new_id:
-        # fetch existing granted claim
+    session.add(claim)
+    try:
+        await session.flush()
+    except IntegrityError:
+        await session.rollback()
         if user_id is not None:
             r = await session.execute(
                 select(FaucetClaim).where(FaucetClaim.user_id == user_id, FaucetClaim.claim_status == "granted")
             )
-            existing = r.scalar_one()
-            return existing
+            existing = r.scalar_one_or_none()
+            if existing is not None:
+                return existing
         raise HTTPException(status_code=409, detail="Faucet claim already exists")
-
-    r2 = await session.execute(select(FaucetClaim).where(FaucetClaim.id == new_id))
-    claim = r2.scalar_one()
 
     if claim.claim_status != "granted":
         return claim

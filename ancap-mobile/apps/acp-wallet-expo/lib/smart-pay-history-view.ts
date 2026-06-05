@@ -163,6 +163,16 @@ export function getSmartPayActiveExecutionView(
   return activeHistoryEntry?.execution ?? execution ?? null;
 }
 
+export function getSmartPayActiveExecutionTxRefs(
+  activeHistoryEntry: SmartPayHistoryEntry | null | undefined,
+  execution: SmartPayExecution | null | undefined
+): SmartPayExecution["txRefs"] {
+  if (activeHistoryEntry) {
+    return getSmartPayHistoryProofTxRefs(activeHistoryEntry);
+  }
+  return execution?.txRefs ?? [];
+}
+
 function getSmartPayHistoryFreshnessTimestamp(entry: SmartPayHistoryEntry): number | null {
   const snapshotTimestamp = [entry.execution.updatedAt, entry.savedAt].reduce<number | null>((best, value) => {
     const parsed = parseSmartPayTimestamp(value);
@@ -427,21 +437,85 @@ function getSmartPayHistoryRouteProofRole(
   return step.kind;
 }
 
+function normalizeSmartPayTxRefRole(role: string | null | undefined): string {
+  return role?.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ") ?? "";
+}
+
+function isLikelyReceiptRouteProofRole(normalizedRole: string): boolean {
+  return normalizedRole === "bridge"
+    || normalizedRole === "swap"
+    || normalizedRole === "payment"
+    || normalizedRole === "merchant payout"
+    || normalizedRole === "transfer";
+}
+
+function getNormalizedSmartPayReceiptRouteSummaryLine(summaryLine: string | undefined): string {
+  return summaryLine?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+}
+
+function getSmartPayReceiptRouteProofRoleAliases(normalizedRole: string): string[] {
+  switch (normalizedRole) {
+    case "payment":
+      return ["payment", "transfer", "merchant payout", "payout"];
+    case "merchant payout":
+      return ["merchant payout", "payout", "transfer", "payment"];
+    case "transfer":
+      return ["transfer", "payment", "merchant payout", "payout"];
+    default:
+      return [normalizedRole];
+  }
+}
+
+function isSmartPayReceiptRouteProofTxRefCompatible(
+  ref: SmartPayExecution["txRefs"][number],
+  summaryLine: string | undefined,
+  stepIndex: number
+): boolean {
+  if (ref.routeStepIndex != null && ref.routeStepIndex !== stepIndex) {
+    return false;
+  }
+
+  const normalizedRole = normalizeSmartPayTxRefRole(ref.role);
+  if (!normalizedRole) {
+    return true;
+  }
+
+  const normalizedSummaryLine = getNormalizedSmartPayReceiptRouteSummaryLine(summaryLine);
+  if (!normalizedSummaryLine) {
+    return isLikelyReceiptRouteProofRole(normalizedRole);
+  }
+
+  return getSmartPayReceiptRouteProofRoleAliases(normalizedRole).some((alias) => normalizedSummaryLine.includes(alias));
+}
+
 function isLikelyReceiptRouteProofTxRef(ref: SmartPayExecution["txRefs"][number]): boolean {
   if (ref.routeStepIndex != null) {
     return true;
   }
 
-  const normalizedRole = ref.role.trim().toLowerCase();
-  if (!normalizedRole) {
-    return true;
+  return isLikelyReceiptRouteProofRole(normalizeSmartPayTxRefRole(ref.role));
+}
+
+function formatSmartPayReceiptRouteStepLabel(summaryLine: string | undefined, stepIndex: number): string {
+  const trimmed = summaryLine?.trim();
+  if (!trimmed) {
+    return `Receipt step ${stepIndex}`;
   }
 
-  return normalizedRole === "bridge"
-    || normalizedRole === "swap"
-    || normalizedRole === "payment"
-    || normalizedRole === "merchant_payout"
-    || normalizedRole === "transfer";
+  const normalized = trimmed.replace(new RegExp(`^${stepIndex}[.)]\\s*`), "").trim();
+  return `Receipt step ${stepIndex}: ${normalized || trimmed}`;
+}
+
+function getSmartPayReceiptRouteStepCount(entry: SmartPayHistoryEntry): number {
+  const receiptRouteSummaryCount = entry.receipt?.routeSummary.length ?? 0;
+  if (receiptRouteSummaryCount === 0) {
+    return 0;
+  }
+
+  return Math.max(
+    entry.execution.progress?.totalRouteSteps ?? 0,
+    receiptRouteSummaryCount
+  );
 }
 
 export function getSmartPayHistoryProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
@@ -477,6 +551,40 @@ export function getSmartPayHistoryProofRouteSteps(
   const route = entry.quote?.route ?? [];
 
   if (route.length === 0) {
+    const receiptRouteSummary = entry.receipt?.routeSummary ?? [];
+    const receiptRouteSteps = getSmartPayReceiptRouteStepCount(entry);
+    if (receiptRouteSteps > 0) {
+      const unmatchedRefs = refs.filter((ref) => isLikelyReceiptRouteProofTxRef(ref));
+
+      return Array.from({ length: receiptRouteSteps }, (_, index) => {
+        const stepIndex = index + 1;
+        const summaryLine = receiptRouteSummary[index];
+        const directIndexMatch = unmatchedRefs.findIndex(
+          (candidate) => isSmartPayReceiptRouteProofTxRefCompatible(candidate, summaryLine, stepIndex)
+            && candidate.routeStepIndex === stepIndex
+        );
+        const sequentialMatch = unmatchedRefs.findIndex(
+          (candidate) => candidate.routeStepIndex == null
+            && isSmartPayReceiptRouteProofTxRefCompatible(candidate, summaryLine, stepIndex)
+        );
+        const matchIndex = directIndexMatch >= 0 ? directIndexMatch : sequentialMatch;
+        const txRef = matchIndex >= 0 ? unmatchedRefs.splice(matchIndex, 1)[0] ?? null : null;
+
+        return {
+          key: `receipt_route|${stepIndex}`,
+          stepIndex,
+          role: txRef?.role ?? "receipt_route",
+          network: txRef?.network ?? "unknown",
+          kind: "receipt_route",
+          fromAsset: "—",
+          toAsset: "—",
+          label: formatSmartPayReceiptRouteStepLabel(receiptRouteSummary[index], stepIndex),
+          status: txRef ? "linked" : "pending",
+          txRef,
+        };
+      });
+    }
+
     return refs.map((txRef, index) => ({
       key: `${txRef.role}|${txRef.network}|${txRef.txid}|${index + 1}`,
       stepIndex: txRef.routeStepIndex ?? index + 1,
@@ -523,15 +631,15 @@ export function getSmartPayHistoryProofRouteSteps(
 }
 
 export function getSmartPayHistoryAdditionalProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
-  const route = entry.quote?.route ?? [];
   const refs = getSmartPayHistoryProofTxRefs(entry);
+  const proofRouteSteps = getSmartPayHistoryProofRouteSteps(entry);
 
-  if (route.length === 0) {
+  if (proofRouteSteps.length === 0) {
     return [];
   }
 
   const matched = new Set(
-    getSmartPayHistoryProofRouteSteps(entry)
+    proofRouteSteps
       .filter((step) => Boolean(step.txRef))
       .map((step) => getSmartPayTxRefIdentityKey(step.txRef!))
   );
@@ -550,39 +658,25 @@ export function getSmartPayHistoryProofCounts(entry: SmartPayHistoryEntry): {
   const additionalRefs = getSmartPayHistoryAdditionalProofTxRefs(entry);
   const hasQuotedRoute = (entry.quote?.route.length ?? 0) > 0;
   const hasReceiptRouteSummary = (entry.receipt?.routeSummary.length ?? 0) > 0;
-  const linkedRouteSteps = hasQuotedRoute
-    ? routeSteps.filter((step) => Boolean(step.txRef))
-    : [];
-  const receiptRouteProofRefs = hasQuotedRoute
-    ? refs
-    : refs.filter((ref) => isLikelyReceiptRouteProofTxRef(ref));
   const expectedRouteSteps = hasQuotedRoute
     ? routeSteps.length
     : hasReceiptRouteSummary
-      ? Math.max(
-          entry.execution.progress?.totalRouteSteps ?? 0,
-          entry.receipt?.routeSummary.length ?? 0
-        )
+      ? getSmartPayReceiptRouteStepCount(entry)
       : 0;
-  const linkedTxCount = hasQuotedRoute
+  const linkedRouteSteps = routeSteps.filter((step) => Boolean(step.txRef));
+  const explorerLinkedRouteSteps = linkedRouteSteps.filter((step) => Boolean(step.txRef?.explorerUrl?.trim()));
+  const linkedTxCount = expectedRouteSteps > 0
     ? linkedRouteSteps.length
-    : hasReceiptRouteSummary && expectedRouteSteps > 0
-      ? Math.min(receiptRouteProofRefs.length, expectedRouteSteps)
-      : refs.length;
-  const explorerLinkedTxCount = hasQuotedRoute
-    ? linkedRouteSteps.filter((step) => Boolean(step.txRef?.explorerUrl?.trim())).length
-    : hasReceiptRouteSummary && expectedRouteSteps > 0
-      ? Math.min(
-          receiptRouteProofRefs.filter((ref) => Boolean(ref.explorerUrl?.trim())).length,
-          linkedTxCount
-        )
-      : refs.filter((ref) => Boolean(ref.explorerUrl?.trim())).length;
+    : refs.length;
+  const explorerLinkedTxCount = expectedRouteSteps > 0
+    ? explorerLinkedRouteSteps.length
+    : refs.filter((ref) => Boolean(ref.explorerUrl?.trim())).length;
 
   return {
     linkedTxCount,
     explorerLinkedTxCount,
     expectedRouteSteps,
-    additionalTxCount: hasQuotedRoute ? additionalRefs.length : 0,
+    additionalTxCount: additionalRefs.length,
   };
 }
 
@@ -634,14 +728,15 @@ export function getSmartPayHistoryProofLabel(entry: SmartPayHistoryEntry): strin
 
 export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string {
   const { linkedTxCount, explorerLinkedTxCount, expectedRouteSteps, additionalTxCount } = getSmartPayHistoryProofCounts(entry);
-  const { hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);
+  const { hasQuotedRoute, hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);
 
   if (hasRouteProofContext && expectedRouteSteps > 0) {
     const explorerPart = explorerLinkedTxCount > 0
       ? `${pluralize(explorerLinkedTxCount, "explorer link", "explorer links")} available`
       : "explorer links pending";
+    const unmatchedStepLabel = hasQuotedRoute ? "quoted route step" : "stored receipt route step";
     const extraPart = additionalTxCount > 0
-      ? ` ${pluralize(additionalTxCount, "additional tx ref", "additional tx refs")} ${additionalTxCount === 1 ? "is" : "are"} stored separately because ${additionalTxCount === 1 ? "it does" : "they do"} not map to a quoted route step yet.`
+      ? ` ${pluralize(additionalTxCount, "additional tx ref", "additional tx refs")} ${additionalTxCount === 1 ? "is" : "are"} stored separately because ${additionalTxCount === 1 ? "it does" : "they do"} not map to a ${unmatchedStepLabel} yet.`
       : "";
     if (linkedTxCount >= expectedRouteSteps && linkedTxCount > 0) {
       return `Linked proof covers all ${fullCoverageLabel}; ${explorerPart}.${extraPart}`;
@@ -680,8 +775,11 @@ export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string
 
 function formatSmartPayHistoryProofStepSummary(step: SmartPayHistoryProofRouteStep): string {
   const normalizedRole = step.role.replace(/_/g, " ");
-  const roleDetail = normalizedRole !== step.kind ? ` (${normalizedRole})` : "";
-  const route = step.label.replace(/^Step \d+: /, "");
+  const normalizedKind = step.kind.replace(/_/g, " ");
+  const roleDetail = normalizedRole !== normalizedKind ? ` (${normalizedRole})` : "";
+  const route = step.label
+    .replace(/^Step \d+: /, "")
+    .replace(/^Receipt step \d+: /, "");
   return `step ${step.stepIndex} ${route}${roleDetail}`;
 }
 
@@ -709,7 +807,30 @@ export function getSmartPayHistoryAdditionalProofTxRefHint(
 ): string | null {
   const route = entry.quote?.route ?? [];
   if (route.length === 0) {
-    return null;
+    const receiptRouteSteps = getSmartPayReceiptRouteStepCount(entry);
+    if (receiptRouteSteps === 0) {
+      return null;
+    }
+
+    if (ref.routeStepIndex != null) {
+      if (ref.routeStepIndex > receiptRouteSteps) {
+        return `Claims stored receipt ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but this snapshot only tracks ${pluralize(receiptRouteSteps, "step", "steps")}.`;
+      }
+
+      const matchedStep = getSmartPayHistoryProofRouteSteps(entry).find(
+        (step) => step.stepIndex === ref.routeStepIndex && Boolean(step.txRef)
+      );
+      if (matchedStep?.txRef && getSmartPayTxRefIdentityKey(matchedStep.txRef) !== getSmartPayTxRefIdentityKey(ref)) {
+        return `Claims stored receipt ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but that step is already linked to ${matchedStep.txRef.role} on ${matchedStep.txRef.network} in this snapshot.`;
+      }
+
+      const summaryLine = entry.receipt?.routeSummary[ref.routeStepIndex - 1];
+      if (!isSmartPayReceiptRouteProofTxRefCompatible(ref, summaryLine, ref.routeStepIndex)) {
+        return `Claims stored receipt ${formatSmartPayRouteStepIndexLabel(ref.routeStepIndex) ?? `route step ${ref.routeStepIndex}`}, but that stored step summary does not match ${formatSmartPayAdditionalProofRefSubject(ref)}.`;
+      }
+    }
+
+    return `${formatSmartPayAdditionalProofRefSubject(ref)} is stored separately because it does not map to any stored receipt route step yet.`;
   }
 
   if (ref.routeStepIndex != null) {
@@ -735,8 +856,8 @@ export function getSmartPayHistoryAdditionalProofHint(entry: SmartPayHistoryEntr
 }
 
 export function getSmartPayHistoryPendingProofHint(entry: SmartPayHistoryEntry): string | null {
-  const hasQuotedRoute = (entry.quote?.route.length ?? 0) > 0;
-  if (!hasQuotedRoute) {
+  const { hasQuotedRoute, hasRouteProofContext } = getSmartPayHistoryProofRouteContext(entry);
+  if (!hasRouteProofContext) {
     return null;
   }
 
@@ -750,7 +871,8 @@ export function getSmartPayHistoryPendingProofHint(entry: SmartPayHistoryEntry):
     return null;
   }
 
-  return `Pending quoted route proof (${pluralize(pendingSteps.length, "step", "steps")}): ${pendingSteps
+  const prefix = hasQuotedRoute ? "Pending quoted route proof" : "Pending stored receipt route proof";
+  return `${prefix} (${pluralize(pendingSteps.length, "step", "steps")}): ${pendingSteps
     .map((step) => formatSmartPayHistoryProofStepSummary(step))
     .join(" → ")}.`;
 }

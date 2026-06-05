@@ -36,6 +36,7 @@ import {
 import {
   buildSmartPayActiveHistoryEntry,
   buildSmartPayHistorySections,
+  getSmartPayActiveExecutionTxRefs,
   getSmartPayActiveExecutionView,
   formatSmartPayTimestamp,
   canSmartPayRefreshOrRecover,
@@ -504,6 +505,10 @@ export default function SmartPayScreen() {
         hasAccountAuth,
         recoverable: activeExecutionView.recoverable,
       })
+  );
+  const activeExecutionTxRefs = useMemo(
+    () => getSmartPayActiveExecutionTxRefs(activeHistoryEntry, execution),
+    [activeHistoryEntry, execution]
   );
   const activeProgressLabel = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryProgressLabel(activeHistoryEntry) : null),
@@ -1076,8 +1081,8 @@ export default function SmartPayScreen() {
               ) : null}
             </>
           ) : null}
-          {activeExecutionView.txRefs.length ? activeExecutionView.txRefs.map((tx) => (
-            <View key={`${tx.role}-${tx.txid}`} style={styles.txRow}>
+          {activeExecutionTxRefs.length ? activeExecutionTxRefs.map((tx) => (
+            <View key={`${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
               <Text style={styles.meta}>
                 {tx.role} tx on {tx.network}: {tx.txid}
                 {formatSmartPayRouteStepIndexLabel(tx.routeStepIndex) ? ` (${formatSmartPayRouteStepIndexLabel(tx.routeStepIndex)})` : ""}
