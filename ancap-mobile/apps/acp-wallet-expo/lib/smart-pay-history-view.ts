@@ -1072,11 +1072,25 @@ export function getSmartPayHistoryActionLabel(
     recoverable: entry.execution.recoverable,
   });
 
+  if (entry.execution.status === "awaiting_local_signature") {
+    if (hasSmartPayLiveSessionAccess(entry)) {
+      return "Restore original session";
+    }
+    return refreshAvailable ? "Refresh status only" : "Snapshot only";
+  }
+
   if (refreshAvailable && recoverAvailable) {
     return "Refresh status + recover available";
   }
   if (refreshAvailable) {
-    return "Refresh status only";
+    switch (entry.execution.status) {
+      case "completed":
+        return "Refresh receipt only";
+      case "failed":
+        return "Refresh failure details";
+      default:
+        return "Refresh status only";
+    }
   }
   return "Snapshot only";
 }
@@ -1089,6 +1103,16 @@ export function getSmartPayHistoryActionHint(
     sessionToken: entry.sessionToken,
     hasAccountAuth: options.hasAccountAuth,
   };
+
+  if (entry.execution.status === "awaiting_local_signature") {
+    if (hasSmartPayLiveSessionAccess(entry)) {
+      return "Restore the original device-local session first. This payment still needs the pending local signature before route progress can continue. Refresh status can confirm whether the signing device already advanced the route, and recovery only helps after you have observed a broadcast tx to reconcile.";
+    }
+    if (options.hasAccountAuth) {
+      return "Backend history can refresh ownership-linked status, but it cannot create the missing local signature. Open the original signing device session before this payment can continue.";
+    }
+    return getSmartPayHistoryAccessHint(entry, options);
+  }
 
   if (!canSmartPayRefreshOrRecover(refreshOptions)) {
     return getSmartPayHistoryAccessHint(entry, options);

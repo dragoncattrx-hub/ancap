@@ -706,6 +706,13 @@ describe("smart pay history view helpers", () => {
       sessionToken: null,
       snapshotOrigin: "backend",
     });
+    const awaitingLocalLive = makeEntry("16b", "awaiting_local_signature", {
+      snapshotOrigin: "local",
+    });
+    const awaitingLocalBackendOnly = makeEntry("16c", "awaiting_local_signature", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+    });
     const snapshotOnly = makeEntry("17", "completed", {
       sessionToken: null,
       snapshotOrigin: "local",
@@ -717,10 +724,25 @@ describe("smart pay history view helpers", () => {
     );
 
     expect(getSmartPayHistoryActionLabel(backendFinalized, { hasAccountAuth: true })).toBe(
-      "Refresh status only"
+      "Refresh receipt only"
     );
     expect(getSmartPayHistoryActionHint(backendFinalized, { hasAccountAuth: true })).toContain(
       "already in a final state"
+    );
+
+    expect(getSmartPayHistoryActionLabel(awaitingLocalLive)).toBe("Restore original session");
+    expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
+      "needs the pending local signature"
+    );
+    expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
+      "recovery only helps after you have observed a broadcast tx"
+    );
+
+    expect(getSmartPayHistoryActionLabel(awaitingLocalBackendOnly, { hasAccountAuth: true })).toBe(
+      "Refresh status only"
+    );
+    expect(getSmartPayHistoryActionHint(awaitingLocalBackendOnly, { hasAccountAuth: true })).toContain(
+      "cannot create the missing local signature"
     );
 
     expect(getSmartPayHistoryActionLabel(snapshotOnly)).toBe("Snapshot only");
