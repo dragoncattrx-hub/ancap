@@ -1046,9 +1046,30 @@ describe("smart pay history view helpers", () => {
 
   it("falls back to receipt summary or tx refs when explicit route progress is absent", () => {
     const completed = makeEntry("1", "completed", {
+      execution: {
+        ...makeEntry("1", "completed").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-payment",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-payment",
+            routeStepIndex: 1,
+          },
+        ],
+      },
       receipt: {
         ...makeEntry("1", "completed").receipt!,
-        routeSummary: ["bridge", "swap"],
+        routeSummary: ["1. transfer ACP -> ACP on acp", "2. settlement review pending"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-payment",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-payment",
+            routeStepIndex: 1,
+          },
+        ],
       },
     });
     const awaitingSignature = makeEntry("4", "awaiting_local_signature", {
@@ -1058,16 +1079,42 @@ describe("smart pay history view helpers", () => {
       },
       receipt: null,
     });
+    const txOnly = makeEntry("4b", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("4b", "pending_reconciliation").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("4b", "pending_reconciliation").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-tx-only",
+            explorerUrl: null,
+          },
+        ],
+      },
+      receipt: null,
+    });
 
     expect(getSmartPayHistoryProgressLabel(completed)).toBe(
-      "Receipt route summary: 2 steps recorded"
+      "Route progress: 1/2 route steps linked · 1 pending proof link"
     );
-    expect(getSmartPayHistoryProgressHint(completed)).toContain("Receipt snapshot completed at");
+    expect(getSmartPayHistoryProgressHint(completed)).toBe(
+      "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 2 stored receipt route steps, with 1 linked proof ref and 1 pending proof link."
+    );
     expect(getSmartPayHistoryProgressLabel(awaitingSignature)).toBe(
       "Route progress: waiting for local signature"
     );
     expect(getSmartPayHistoryProgressHint(awaitingSignature)).toBe(
       "Waiting for sign swap tx before route progress can continue."
+    );
+    expect(getSmartPayHistoryProgressLabel(txOnly)).toBe(
+      "Execution references: 1 tx recorded"
+    );
+    expect(getSmartPayHistoryProgressHint(txOnly)).toBe(
+      "Route submitted; waiting for reconciliation updates."
     );
   });
 
@@ -2105,6 +2152,12 @@ describe("smart pay history view helpers", () => {
       },
     });
 
+    expect(getSmartPayHistoryProgressLabel(routeSnapshotOnly)).toBe(
+      "Route progress: 0/3 route steps linked · 3 pending proof links"
+    );
+    expect(getSmartPayHistoryProgressHint(routeSnapshotOnly)).toBe(
+      "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 3 quoted route steps, with 0 linked proof refs and 3 pending proof links."
+    );
     expect(getSmartPayHistoryProofLabel(routeSnapshotOnly)).toBe(
       "On-chain proof: 0/3 route steps linked"
     );
@@ -2440,12 +2493,7 @@ describe("smart pay history view helpers", () => {
       },
       execution: {
         ...makeEntry("20d", "completed").execution,
-        progress: {
-          totalRouteSteps: 2,
-          observedTxCount: 1,
-          remainingRouteSteps: 1,
-          pendingRoles: [],
-        },
+        progress: null,
         txRefs: [
           {
             role: "payment",
@@ -2503,6 +2551,12 @@ describe("smart pay history view helpers", () => {
         txRef: null,
       },
     ]);
+    expect(getSmartPayHistoryProgressLabel(receiptSummaryOnly)).toBe(
+      "Route progress: 1/2 route steps linked · 1 pending proof link"
+    );
+    expect(getSmartPayHistoryProgressHint(receiptSummaryOnly)).toBe(
+      "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 2 stored receipt route steps, with 1 linked proof ref and 1 pending proof link."
+    );
     expect(getSmartPayHistoryPendingProofHint(receiptSummaryOnly)).toBe(
       "Pending stored receipt route proof (1 step): step 2 settlement review pending."
     );
