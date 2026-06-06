@@ -395,14 +395,42 @@ function getSmartPayHistoryFallbackRouteProgress(entry: SmartPayHistoryEntry): {
   };
 }
 
+function formatSmartPayFallbackRouteProgressSummary(
+  fallbackRouteProgress: NonNullable<ReturnType<typeof getSmartPayHistoryFallbackRouteProgress>>
+): string {
+  return `This saved snapshot tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`;
+}
+
+function shouldPreferFallbackRouteProgress(
+  entry: SmartPayHistoryEntry,
+  progress: NonNullable<SmartPayExecution["progress"]>,
+  fallbackRouteProgress: NonNullable<ReturnType<typeof getSmartPayHistoryFallbackRouteProgress>> | null
+): boolean {
+  if (!fallbackRouteProgress) {
+    return false;
+  }
+
+  if (entry.execution.status === "completed" || entry.execution.status === "failed") {
+    return true;
+  }
+
+  return progress.totalRouteSteps !== fallbackRouteProgress.trackedSteps
+    || progress.remainingRouteSteps !== fallbackRouteProgress.pendingSteps
+    || progress.observedTxCount !== fallbackRouteProgress.linkedSteps;
+}
+
 export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): string | null {
   const progress = entry.execution.progress;
-  if (progress) {
+  const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
+  const preferFallbackRouteProgress = progress
+    ? shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)
+    : false;
+
+  if (progress && !preferFallbackRouteProgress) {
     const remaining = pluralize(progress.remainingRouteSteps, "route step", "route steps");
     return `Route progress: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed · ${remaining} remaining`;
   }
 
-  const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
   if (fallbackRouteProgress) {
     return `Route progress: ${fallbackRouteProgress.linkedSteps}/${fallbackRouteProgress.trackedSteps} route steps linked · ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}`;
   }
@@ -427,40 +455,49 @@ export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): st
 export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): string | null {
   const progress = entry.execution.progress;
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
+  const preferFallbackRouteProgress = progress
+    ? shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)
+    : false;
   switch (entry.execution.status) {
     case "awaiting_local_signature": {
       const nextAction = entry.execution.nextAction?.replace(/_/g, " ") ?? "local signature";
-      if (progress?.pendingRoles.length) {
+      if (progress?.pendingRoles.length && !preferFallbackRouteProgress) {
         return `Waiting for ${nextAction}; pending route roles: ${progress.pendingRoles.join(" → ")}.`;
       }
       if (fallbackRouteProgress) {
-        return `Waiting for ${nextAction} before route progress can continue. This snapshot already tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`;
+        const routeRolePrefix = progress?.pendingRoles.length
+          ? `Waiting for ${nextAction}; pending route roles: ${progress.pendingRoles.join(" → ")}.`
+          : `Waiting for ${nextAction} before route progress can continue.`;
+        return `${routeRolePrefix} ${formatSmartPayFallbackRouteProgressSummary(fallbackRouteProgress)}`;
       }
       return `Waiting for ${nextAction} before route progress can continue.`;
     }
     case "pending_reconciliation":
-      if (progress?.pendingRoles.length) {
+      if (progress?.pendingRoles.length && !preferFallbackRouteProgress) {
         return `Route submitted; pending roles: ${progress.pendingRoles.join(" → ")}.`;
       }
       if (fallbackRouteProgress) {
-        return `Route submitted; this snapshot currently tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`;
+        const routeRolePrefix = progress?.pendingRoles.length
+          ? `Route submitted; pending roles: ${progress.pendingRoles.join(" → ")}.`
+          : "Route submitted;";
+        return `${routeRolePrefix} ${formatSmartPayFallbackRouteProgressSummary(fallbackRouteProgress)}`;
       }
       return "Route submitted; waiting for reconciliation updates.";
     case "failed":
       if (entry.execution.error) {
         return fallbackRouteProgress
-          ? `Execution needs attention: ${entry.execution.error}. This saved snapshot still tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`
+          ? `Execution needs attention: ${entry.execution.error}. ${formatSmartPayFallbackRouteProgressSummary(fallbackRouteProgress)}`
           : `Execution needs attention: ${entry.execution.error}.`;
       }
       return fallbackRouteProgress
-        ? `Execution needs attention before route completion. This saved snapshot still tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`
+        ? `Execution needs attention before route completion. ${formatSmartPayFallbackRouteProgressSummary(fallbackRouteProgress)}`
         : "Execution needs attention before route completion.";
     case "completed": {
       const completionPrefix = entry.receipt?.completedAt
         ? `Receipt snapshot completed at ${formatSmartPayTimestamp(entry.receipt.completedAt)}.`
         : "Execution completed; receipt snapshot is available.";
       if (fallbackRouteProgress) {
-        return `${completionPrefix} This saved snapshot tracks ${pluralize(fallbackRouteProgress.trackedSteps, `${fallbackRouteProgress.routeContextLabel} step`, `${fallbackRouteProgress.routeContextLabel} steps`)}, with ${pluralize(fallbackRouteProgress.linkedSteps, "linked proof ref", "linked proof refs")} and ${pluralize(fallbackRouteProgress.pendingSteps, "pending proof link", "pending proof links")}.`;
+        return `${completionPrefix} ${formatSmartPayFallbackRouteProgressSummary(fallbackRouteProgress)}`;
       }
       return completionPrefix;
     }

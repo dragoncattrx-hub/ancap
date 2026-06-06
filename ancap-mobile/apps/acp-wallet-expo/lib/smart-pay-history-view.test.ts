@@ -1141,6 +1141,119 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("prefers proof-derived fallback progress when saved execution progress conflicts with receipt-route proof context", () => {
+    const completedWithStaleProgress = makeEntry("1c", "completed", {
+      quote: {
+        ...makeEntry("1c", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("1c", "completed").execution,
+        progress: {
+          totalRouteSteps: 1,
+          observedTxCount: 2,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-payment-1c",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-payment-1c",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("1c", "completed").receipt!,
+        routeSummary: ["1. transfer ACP -> ACP on acp", "2. settlement review pending"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-payment-1c",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-payment-1c",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProgressLabel(completedWithStaleProgress)).toBe(
+      "Route progress: 1/2 route steps linked · 1 pending proof link"
+    );
+    expect(getSmartPayHistoryProgressHint(completedWithStaleProgress)).toBe(
+      "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 2 stored receipt route steps, with 1 linked proof ref and 1 pending proof link."
+    );
+  });
+
+  it("keeps pending-role guidance while adding fallback proof progress when in-flight execution progress is stale", () => {
+    const inFlightWithStaleProgress = makeEntry("4c", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("4c", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "swap",
+            network: "bsc",
+            dexOrRail: "ancap_router_v1",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("4c", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 1,
+          observedTxCount: 1,
+          remainingRouteSteps: 0,
+          pendingRoles: ["swap"],
+        },
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-progress-bridge-4c",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-bridge-4c",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("4c", "completed").receipt!,
+        paymentExecutionId: "exec-4c",
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp",
+          "2. swap wACP -> USDT on bsc",
+        ],
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-progress-bridge-4c",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-bridge-4c",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProgressLabel(inFlightWithStaleProgress)).toBe(
+      "Route progress: 1/2 route steps linked · 1 pending proof link"
+    );
+    expect(getSmartPayHistoryProgressHint(inFlightWithStaleProgress)).toBe(
+      "Route submitted; pending roles: swap. This saved snapshot tracks 2 quoted route steps, with 1 linked proof ref and 1 pending proof link."
+    );
+  });
+
   it("summarizes route-linked proof coverage from receipt and execution tx refs", () => {
     const completed = makeEntry("5", "completed", {
       execution: {
