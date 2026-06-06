@@ -38,6 +38,7 @@ import {
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
+  getSmartPayHistoryExecutionProgressDetailLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistoryProgressLabel,
   getSmartPayHistorySourceHint,
@@ -1046,7 +1047,7 @@ describe("smart pay history view helpers", () => {
     );
   });
 
-  it("formats route progress labels and hints for in-flight executions", () => {
+  it("formats route progress labels, detail lines, and hints for in-flight executions", () => {
     const inFlight = makeEntry("2", "pending_reconciliation", {
       execution: {
         ...makeEntry("2", "pending_reconciliation").execution,
@@ -1062,6 +1063,11 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProgressLabel(inFlight)).toBe(
       "Route progress: 1/3 tx observed · 2 route steps remaining"
     );
+    expect(getSmartPayHistoryExecutionProgressDetailLines(inFlight)).toEqual([
+      "Route progress detail: 1/3 tx observed",
+      "Remaining route steps: 2",
+      "Pending roles: swap → merchant_payout",
+    ]);
     expect(getSmartPayHistoryProgressHint(inFlight)).toBe(
       "Route submitted; pending roles: swap → merchant_payout."
     );
@@ -1181,6 +1187,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProgressLabel(completedWithStaleProgress)).toBe(
       "Route progress: 1/2 route steps linked · 1 pending proof link"
     );
+    expect(getSmartPayHistoryExecutionProgressDetailLines(completedWithStaleProgress)).toEqual([]);
     expect(getSmartPayHistoryProgressHint(completedWithStaleProgress)).toBe(
       "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 2 stored receipt route steps, with 1 linked proof ref and 1 pending proof link."
     );
@@ -1249,6 +1256,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProgressLabel(inFlightWithStaleProgress)).toBe(
       "Route progress: 1/2 route steps linked · 1 pending proof link"
     );
+    expect(getSmartPayHistoryExecutionProgressDetailLines(inFlightWithStaleProgress)).toEqual([]);
     expect(getSmartPayHistoryProgressHint(inFlightWithStaleProgress)).toBe(
       "Route submitted; pending roles: swap. This saved snapshot tracks 2 quoted route steps, with 1 linked proof ref and 1 pending proof link."
     );

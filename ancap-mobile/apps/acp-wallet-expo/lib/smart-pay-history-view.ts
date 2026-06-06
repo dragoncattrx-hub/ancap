@@ -452,6 +452,29 @@ export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): st
   }
 }
 
+export function getSmartPayHistoryExecutionProgressDetailLines(entry: SmartPayHistoryEntry): string[] {
+  const progress = entry.execution.progress;
+  if (!progress) {
+    return [];
+  }
+
+  const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
+  if (shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)) {
+    return [];
+  }
+
+  const lines = [
+    `Route progress detail: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed`,
+    `Remaining route steps: ${progress.remainingRouteSteps}`,
+  ];
+
+  if (progress.pendingRoles.length) {
+    lines.push(`Pending roles: ${progress.pendingRoles.join(" → ")}`);
+  }
+
+  return lines;
+}
+
 export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): string | null {
   const progress = entry.execution.progress;
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);

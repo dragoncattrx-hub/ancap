@@ -68,6 +68,7 @@ import {
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
+  getSmartPayHistoryExecutionProgressDetailLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistoryProgressLabel,
   getSmartPayHistorySnapshotStatusLabel,
@@ -518,6 +519,10 @@ export default function SmartPayScreen() {
   );
   const activeProgressLabel = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryProgressLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeExecutionProgressDetailLines = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryExecutionProgressDetailLines(activeHistoryEntry) : []),
     [activeHistoryEntry]
   );
   const activeProgressHint = useMemo(
@@ -1129,13 +1134,11 @@ export default function SmartPayScreen() {
             </>
           ) : null}
           <Text style={styles.meta}>Updated: {formatSmartPayTimestamp(activeExecutionView.updatedAt)}</Text>
-          {activeExecutionView.progress ? (
+          {activeExecutionProgressDetailLines.length ? (
             <>
-              <Text style={styles.meta}>Route progress: {activeExecutionView.progress.observedTxCount}/{activeExecutionView.progress.totalRouteSteps} tx observed</Text>
-              <Text style={styles.meta}>Remaining route steps: {activeExecutionView.progress.remainingRouteSteps}</Text>
-              {activeExecutionView.progress.pendingRoles.length ? (
-                <Text style={styles.meta}>Pending roles: {activeExecutionView.progress.pendingRoles.join(" → ")}</Text>
-              ) : null}
+              {activeExecutionProgressDetailLines.map((line) => (
+                <Text key={line} style={styles.meta}>{line}</Text>
+              ))}
             </>
           ) : activeProgressLabel ? (
             <Text style={styles.meta}>{activeProgressLabel}</Text>
