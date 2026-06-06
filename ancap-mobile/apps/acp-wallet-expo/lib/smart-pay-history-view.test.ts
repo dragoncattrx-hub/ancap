@@ -1535,6 +1535,99 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("matches quoted route steps from alias roles and case-insensitive networks even without explicit route-step indexes", () => {
+    const completed = makeEntry("7d-merchant-alias-inferred", "completed", {
+      quote: {
+        ...makeEntry("7d-merchant-alias-inferred", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("7d-merchant-alias-inferred", "completed").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "BSC",
+            txid: "fixture-inferred-payout-proof",
+            explorerUrl: "https://bscscan.com/tx/fixture-inferred-payout-proof",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("7d-merchant-alias-inferred", "completed").receipt!,
+        txRefs: [],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteSteps(completed)).toEqual([
+      {
+        key: "bridge|acp|1",
+        stepIndex: 1,
+        role: "bridge",
+        network: "acp",
+        kind: "bridge",
+        fromAsset: "ACP",
+        toAsset: "wACP",
+        label: "Step 1: bridge ACP → wACP via acp via ancap_bridge_v1",
+        status: "pending",
+        txRef: null,
+      },
+      {
+        key: "merchant_payout|bsc|2",
+        stepIndex: 2,
+        role: "merchant_payout",
+        network: "bsc",
+        kind: "transfer",
+        fromAsset: "wACP",
+        toAsset: "USDT",
+        label: "Step 2: transfer wACP → USDT via bsc via merchant payout",
+        status: "linked",
+        txRef: {
+          role: "payment",
+          network: "BSC",
+          txid: "fixture-inferred-payout-proof",
+          explorerUrl: "https://bscscan.com/tx/fixture-inferred-payout-proof",
+        },
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(completed)).toEqual([]);
+    expect(getSmartPayHistoryProofLabel(completed)).toBe(
+      "On-chain proof: 1/2 route steps linked"
+    );
+    expect(getSmartPayHistoryProofHint(completed)).toBe(
+      "Linked proof currently covers 1/2 quoted route steps; 1 explorer link available."
+    );
+    expect(getSmartPayHistoryProofRouteDetailLabel(completed)).toBe(
+      "Proof linkage detail: 0 explicit · 1 inferred · 1 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(completed)).toBe(
+      "1 quoted route step linked by role/network matching without explicit route-step indexes; 1 quoted route step still pending."
+    );
+    expect(getSmartPayHistoryProofRouteStepHint(completed, getSmartPayHistoryProofRouteSteps(completed)[1]!)).toBe(
+      "Linked by merchant payout on bsc because this saved proof ref does not carry an explicit quoted route-step index."
+    );
+  });
+
   it("separates additional observed tx refs that do not map to the quoted route", () => {
     const routed = makeEntry("9", "completed", {
       quote: {

@@ -804,7 +804,8 @@ export function getSmartPayHistoryProofRouteSteps(
         && isSmartPayProofTxRefCompatibleWithRouteStep(candidate, role, step.network)
     );
     const roleNetworkMatch = unmatchedRefs.findIndex(
-      (candidate) => candidate.routeStepIndex == null && candidate.role === role && candidate.network === step.network
+      (candidate) => candidate.routeStepIndex == null
+        && isSmartPayProofTxRefCompatibleWithRouteStep(candidate, role, step.network)
     );
     const matchIndex = directIndexMatch >= 0 ? directIndexMatch : roleNetworkMatch;
     const txRef = matchIndex >= 0 ? unmatchedRefs.splice(matchIndex, 1)[0] ?? null : null;
