@@ -1136,18 +1136,27 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProgressLabel(completed)).toBe(
       "Route progress: 1/2 route steps linked · 1 pending proof link"
     );
+    expect(getSmartPayHistoryExecutionProgressDisplayLines(completed)).toEqual([
+      "Route progress: 1/2 route steps linked · 1 pending proof link",
+    ]);
     expect(getSmartPayHistoryProgressHint(completed)).toBe(
       "Receipt snapshot completed at 2026-05-28 18:02 UTC. This saved snapshot tracks 2 stored receipt route steps, with 1 linked proof ref and 1 pending proof link."
     );
     expect(getSmartPayHistoryProgressLabel(awaitingSignature)).toBe(
       "Route progress: waiting for local signature"
     );
+    expect(getSmartPayHistoryExecutionProgressDisplayLines(awaitingSignature)).toEqual([
+      "Route progress: waiting for local signature",
+    ]);
     expect(getSmartPayHistoryProgressHint(awaitingSignature)).toBe(
       "Waiting for sign swap tx before route progress can continue."
     );
     expect(getSmartPayHistoryProgressLabel(txOnly)).toBe(
       "Execution references: 1 tx recorded"
     );
+    expect(getSmartPayHistoryExecutionProgressDisplayLines(txOnly)).toEqual([
+      "Execution references: 1 tx recorded",
+    ]);
     expect(getSmartPayHistoryProgressHint(txOnly)).toBe(
       "Route submitted; waiting for reconciliation updates."
     );

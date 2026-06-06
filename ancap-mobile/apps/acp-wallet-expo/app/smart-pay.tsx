@@ -70,7 +70,6 @@ import {
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryProgressHint,
-  getSmartPayHistoryProgressLabel,
   getSmartPayHistorySnapshotStatusLabel,
   getSmartPayHistorySnapshotTitle,
   getSmartPayHistorySourceHint,
@@ -517,10 +516,6 @@ export default function SmartPayScreen() {
     () => getSmartPayActiveExecutionTxRefs(activeHistoryEntry, execution),
     [activeHistoryEntry, execution]
   );
-  const activeProgressLabel = useMemo(
-    () => (activeHistoryEntry ? getSmartPayHistoryProgressLabel(activeHistoryEntry) : null),
-    [activeHistoryEntry]
-  );
   const activeExecutionProgressDisplayLines = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryExecutionProgressDisplayLines(activeHistoryEntry) : []),
     [activeHistoryEntry]
@@ -857,6 +852,7 @@ export default function SmartPayScreen() {
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
                 const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
                 const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
+                const progressDisplayLines = getSmartPayHistoryExecutionProgressDisplayLines(entry);
 
                 return (
                   <Pressable
@@ -898,8 +894,10 @@ export default function SmartPayScreen() {
                     <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryNextStepLabel(entry, { hasAccountAuth })}</Text>
-                    {getSmartPayHistoryProgressLabel(entry) ? (
-                      <Text style={styles.meta}>{getSmartPayHistoryProgressLabel(entry)}</Text>
+                    {progressDisplayLines.length ? (
+                      progressDisplayLines.map((line) => (
+                        <Text key={`history-progress-${entry.id}-${line}`} style={styles.meta}>{line}</Text>
+                      ))
                     ) : null}
                     {getSmartPayHistoryProgressHint(entry) ? (
                       <Text style={styles.meta}>{getSmartPayHistoryProgressHint(entry)}</Text>
