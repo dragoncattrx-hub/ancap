@@ -1158,6 +1158,22 @@ export function getSmartPayHistoryProofProvenanceHint(entry: SmartPayHistoryEntr
   return "All linked proof refs are already backed by the saved receipt snapshot.";
 }
 
+export function getSmartPayHistoryTxRefStorageHint(
+  entry: SmartPayHistoryEntry,
+  ref: SmartPayExecution["txRefs"][number]
+): string {
+  const receiptKeys = new Set((entry.receipt?.txRefs ?? []).map((item) => getSmartPayTxRefIdentityKey(item)));
+  if (receiptKeys.has(getSmartPayTxRefIdentityKey(ref))) {
+    return "This tx ref is already backed by the saved receipt snapshot.";
+  }
+
+  if (entry.receipt) {
+    return "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it.";
+  }
+
+  return "This tx ref is currently visible only from saved execution history; no saved receipt snapshot includes it yet.";
+}
+
 function formatSmartPayHistoryProofStepSummary(step: SmartPayHistoryProofRouteStep): string {
   const normalizedRole = step.role.replace(/_/g, " ");
   const normalizedKind = step.kind.replace(/_/g, " ");

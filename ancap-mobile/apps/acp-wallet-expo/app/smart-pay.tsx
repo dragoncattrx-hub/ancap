@@ -70,6 +70,7 @@ import {
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
+  getSmartPayHistoryTxRefStorageHint,
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistorySnapshotStatusLabel,
@@ -1169,12 +1170,18 @@ export default function SmartPayScreen() {
           <Text style={styles.label}>Observed route proof</Text>
           {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
             const txRef = step.txRef;
+            const txRefStorageHint = txRef
+              ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry!, txRef)
+              : null;
             return (
               <View key={`execution-${step.key}`} style={styles.txRow}>
                 <Text style={styles.meta}>
                   {step.status === "linked" ? "✓" : "…"} {step.label}
                 </Text>
                 <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry!, step)}</Text>
+                {txRefStorageHint ? (
+                  <Text style={styles.inlineHint}>{txRefStorageHint}</Text>
+                ) : null}
                 {txRef ? (
                   <>
                     <Text style={styles.meta}>{step.role} tx: {txRef.txid}</Text>
@@ -1193,11 +1200,17 @@ export default function SmartPayScreen() {
             const proofTxHint = activeHistoryEntry
               ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
               : null;
+            const proofTxStorageHint = activeHistoryEntry
+              ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx)
+              : null;
             return (
               <View key={`execution-linked-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
                 <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {proofTxStorageHint ? (
+                  <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
                 ) : null}
                 {tx.explorerUrl ? (
                   <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
@@ -1212,11 +1225,17 @@ export default function SmartPayScreen() {
             const proofTxHint = activeHistoryEntry
               ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
               : null;
+            const proofTxStorageHint = activeHistoryEntry
+              ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx)
+              : null;
             return (
               <View key={`${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
                 <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {proofTxStorageHint ? (
+                  <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
                 ) : null}
                 {tx.explorerUrl ? (
                   <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
@@ -1231,21 +1250,28 @@ export default function SmartPayScreen() {
           {activeAdditionalProofTxRefs.length ? (
             <>
               <Text style={styles.label}>Additional observed tx refs</Text>
-              {activeAdditionalProofTxRefs.map((tx) => (
-                <View key={`execution-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                  <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
-                  {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx) ? (
-                    <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx)}</Text>
-                  ) : null}
-                  {tx.explorerUrl ? (
-                    <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
-                      <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
-                    </Pressable>
-                  ) : (
-                    <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
-                  )}
-                </View>
-              ))}
+              {activeAdditionalProofTxRefs.map((tx) => {
+                const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx);
+                const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry!, tx);
+                return (
+                  <View key={`execution-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                    <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
+                    {additionalProofHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    {additionalProofStorageHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofStorageHint}</Text>
+                    ) : null}
+                    {tx.explorerUrl ? (
+                      <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                        <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                    )}
+                  </View>
+                );
+              })}
             </>
           ) : null}
           {!canRefreshExecution ? (
@@ -1384,12 +1410,18 @@ export default function SmartPayScreen() {
           <Text style={styles.label}>Route proof coverage</Text>
           {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
             const txRef = step.txRef;
+            const txRefStorageHint = txRef
+              ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, txRef)
+              : null;
             return (
               <View key={step.key} style={styles.txRow}>
                 <Text style={styles.meta}>
                   {step.status === "linked" ? "✓" : "…"} {step.label}
                 </Text>
                 <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry, step)}</Text>
+                {txRefStorageHint ? (
+                  <Text style={styles.inlineHint}>{txRefStorageHint}</Text>
+                ) : null}
                 {txRef ? (
                   <>
                     <Text style={styles.meta}>{step.role} tx: {txRef.txid}</Text>
@@ -1404,36 +1436,49 @@ export default function SmartPayScreen() {
                 ) : null}
               </View>
             );
-          }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => (
-            <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
-              <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
-              {tx.explorerUrl ? (
-                <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
-                  <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
-                </Pressable>
-              ) : (
-                <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
-              )}
-            </View>
-          )) : <Text style={styles.meta}>{getSmartPayHistoryProofEmptyStateHint(activeHistoryEntry)}</Text>}
+          }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => {
+            const proofTxStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx);
+            return (
+              <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
+                <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
+                {proofTxStorageHint ? (
+                  <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
+                ) : null}
+                {tx.explorerUrl ? (
+                  <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                    <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                )}
+              </View>
+            );
+          }) : <Text style={styles.meta}>{getSmartPayHistoryProofEmptyStateHint(activeHistoryEntry)}</Text>}
           {activeAdditionalProofTxRefs.length ? (
             <>
               <Text style={styles.label}>Additional observed tx refs</Text>
-              {activeAdditionalProofTxRefs.map((tx) => (
-                <View key={`receipt-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
-                  <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
-                  {getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx) ? (
-                    <Text style={styles.inlineHint}>{getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx)}</Text>
-                  ) : null}
-                  {tx.explorerUrl ? (
-                    <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
-                      <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
-                    </Pressable>
-                  ) : (
-                    <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
-                  )}
-                </View>
-              ))}
+              {activeAdditionalProofTxRefs.map((tx) => {
+                const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx);
+                const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx);
+                return (
+                  <View key={`receipt-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
+                    <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
+                    {additionalProofHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    {additionalProofStorageHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofStorageHint}</Text>
+                    ) : null}
+                    {tx.explorerUrl ? (
+                      <Pressable onPress={() => void onOpenExplorerUrl(tx.explorerUrl)}>
+                        <Text style={styles.inlineAction}>{tx.explorerUrl}</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.inlineHint}>Explorer link pending for this tx reference.</Text>
+                    )}
+                  </View>
+                );
+              })}
             </>
           ) : null}
         </View>

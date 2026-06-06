@@ -40,6 +40,7 @@ import {
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
+  getSmartPayHistoryTxRefStorageHint,
   getSmartPayHistoryExecutionProgressDetailLines,
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryProgressHint,
@@ -1697,6 +1698,122 @@ describe("smart pay history view helpers", () => {
 
     expect(getSmartPayHistoryProofProvenanceLabel(noProof)).toBeNull();
     expect(getSmartPayHistoryProofProvenanceHint(noProof)).toBeNull();
+  });
+
+  it("explains whether linked and additional proof refs are receipt-backed or execution-only", () => {
+    const mixedProof = makeEntry("7c-proof-storage", "completed", {
+      quote: {
+        ...makeEntry("7c-proof-storage", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("7c-proof-storage", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-storage-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-storage-bridge",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-storage-payout",
+            explorerUrl: "https://bscscan.com/tx/fixture-storage-payout",
+            routeStepIndex: 2,
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-storage-refund",
+            explorerUrl: null,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("7c-proof-storage", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-storage-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-storage-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+
+    const routeSteps = getSmartPayHistoryProofRouteSteps(mixedProof);
+    expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[0]!.txRef!)).toBe(
+      "This tx ref is already backed by the saved receipt snapshot."
+    );
+    expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[1]!.txRef!)).toBe(
+      "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
+    );
+    expect(getSmartPayHistoryTxRefStorageHint(mixedProof, getSmartPayHistoryAdditionalProofTxRefs(mixedProof)[0]!)).toBe(
+      "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
+    );
+
+    const noReceiptSnapshot = makeEntry("7c-proof-storage-no-receipt", "completed", {
+      receipt: null,
+      quote: {
+        ...makeEntry("7c-proof-storage-no-receipt", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("7c-proof-storage-no-receipt", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-storage-bridge-no-receipt",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-storage-bridge-no-receipt",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+
+    expect(
+      getSmartPayHistoryTxRefStorageHint(
+        noReceiptSnapshot,
+        getSmartPayHistoryProofRouteSteps(noReceiptSnapshot)[0]!.txRef!
+      )
+    ).toBe(
+      "This tx ref is currently visible only from saved execution history; no saved receipt snapshot includes it yet."
+    );
   });
 
   it("does not count additional unmatched explorer links as quoted-route proof coverage", () => {
