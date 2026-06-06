@@ -33,6 +33,8 @@ import {
   getSmartPayHistoryProofEmptyStateHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofProvenanceHint,
+  getSmartPayHistoryProofProvenanceLabel,
   getSmartPayHistoryProofRouteDetailHint,
   getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
@@ -1376,6 +1378,12 @@ describe("smart pay history view helpers", () => {
         explorerUrl: "https://ancap.cloud/acp/tx/fixture-bridge",
       },
     ]);
+    expect(getSmartPayHistoryProofProvenanceLabel(completed)).toBe(
+      "Proof provenance: 1 receipt-backed · 1 execution-only"
+    );
+    expect(getSmartPayHistoryProofProvenanceHint(completed)).toBe(
+      "Receipt-backed refs already exist in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them."
+    );
   });
 
   it("deduplicates proof refs case-insensitively while keeping the richer explorer-linked entry", () => {
@@ -1412,6 +1420,12 @@ describe("smart pay history view helpers", () => {
         explorerUrl: "https://ancap.cloud/acp/tx/FIXTURE-TX-ALPHA",
       },
     ]);
+    expect(getSmartPayHistoryProofProvenanceLabel(completed)).toBe(
+      "Proof provenance: 1 receipt-backed · 0 execution-only"
+    );
+    expect(getSmartPayHistoryProofProvenanceHint(completed)).toBe(
+      "All linked proof refs are already backed by the saved receipt snapshot."
+    );
   });
 
   it("separates additional observed tx refs that do not map to the quoted route", () => {
@@ -1470,6 +1484,19 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProofHint(routed)).toBe(
       "Linked proof covers all quoted route steps; 1 explorer link available. 1 additional tx ref is stored separately because it does not map to a quoted route step yet."
     );
+  });
+
+  it("returns null proof provenance when there are no linked proof refs yet", () => {
+    const noProof = makeEntry("7c", "pending_reconciliation", {
+      execution: {
+        ...makeEntry("7c", "pending_reconciliation").execution,
+        txRefs: [],
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProofProvenanceLabel(noProof)).toBeNull();
+    expect(getSmartPayHistoryProofProvenanceHint(noProof)).toBeNull();
   });
 
   it("does not count additional unmatched explorer links as quoted-route proof coverage", () => {

@@ -63,6 +63,8 @@ import {
   getSmartPayHistoryProofEmptyStateHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryProofProvenanceHint,
+  getSmartPayHistoryProofProvenanceLabel,
   getSmartPayHistoryProofRouteDetailHint,
   getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
@@ -536,6 +538,14 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryProofRouteDetailHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
+  const activeProofProvenanceLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofProvenanceLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeProofProvenanceHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofProvenanceHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
   const activeLinkedProofTxRefs = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryProofTxRefs(activeHistoryEntry) : []),
     [activeHistoryEntry]
@@ -849,6 +859,8 @@ export default function SmartPayScreen() {
                 const pendingProofHint = getSmartPayHistoryPendingProofHint(entry);
                 const proofRouteDetailLabel = getSmartPayHistoryProofRouteDetailLabel(entry);
                 const proofRouteDetailHint = getSmartPayHistoryProofRouteDetailHint(entry);
+                const proofProvenanceLabel = getSmartPayHistoryProofProvenanceLabel(entry);
+                const proofProvenanceHint = getSmartPayHistoryProofProvenanceHint(entry);
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
                 const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
                 const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
@@ -909,6 +921,12 @@ export default function SmartPayScreen() {
                     ) : null}
                     {proofRouteDetailHint ? (
                       <Text style={styles.inlineHint}>{proofRouteDetailHint}</Text>
+                    ) : null}
+                    {proofProvenanceLabel ? (
+                      <Text style={styles.meta}>{proofProvenanceLabel}</Text>
+                    ) : null}
+                    {proofProvenanceHint ? (
+                      <Text style={styles.inlineHint}>{proofProvenanceHint}</Text>
                     ) : null}
                     {pendingProofHint ? (
                       <Text style={styles.inlineHint}>{pendingProofHint}</Text>
@@ -1144,6 +1162,8 @@ export default function SmartPayScreen() {
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text> : null}
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
           {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
+          {activeProofProvenanceLabel ? <Text style={styles.meta}>{activeProofProvenanceLabel}</Text> : null}
+          {activeProofProvenanceHint ? <Text style={styles.inlineHint}>{activeProofProvenanceHint}</Text> : null}
           {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
           {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
           <Text style={styles.label}>Observed route proof</Text>
@@ -1329,6 +1349,8 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
           {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
+          {activeProofProvenanceLabel ? <Text style={styles.meta}>{activeProofProvenanceLabel}</Text> : null}
+          {activeProofProvenanceHint ? <Text style={styles.inlineHint}>{activeProofProvenanceHint}</Text> : null}
           {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
           {activeAdditionalProofHint ? <Text style={styles.inlineHint}>{activeAdditionalProofHint}</Text> : null}
           {activeReceiptDisplay.completedAt ? <Text style={styles.meta}>Completed at: {formatSmartPayTimestamp(activeReceiptDisplay.completedAt)}</Text> : null}

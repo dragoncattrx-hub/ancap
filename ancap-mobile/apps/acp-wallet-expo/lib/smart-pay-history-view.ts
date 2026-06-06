@@ -1073,6 +1073,58 @@ export function getSmartPayHistoryProofRouteDetailHint(entry: SmartPayHistoryEnt
   return `${segments.join("; ")}.`;
 }
 
+function getSmartPayHistoryProofProvenanceCounts(entry: SmartPayHistoryEntry): {
+  linkedTxCount: number;
+  receiptBackedCount: number;
+  executionOnlyCount: number;
+} {
+  const proofRefs = getSmartPayHistoryProofTxRefs(entry);
+  const receiptKeys = new Set((entry.receipt?.txRefs ?? []).map((ref) => getSmartPayTxRefIdentityKey(ref)));
+
+  let receiptBackedCount = 0;
+  let executionOnlyCount = 0;
+
+  for (const ref of proofRefs) {
+    if (receiptKeys.has(getSmartPayTxRefIdentityKey(ref))) {
+      receiptBackedCount += 1;
+    } else {
+      executionOnlyCount += 1;
+    }
+  }
+
+  return {
+    linkedTxCount: proofRefs.length,
+    receiptBackedCount,
+    executionOnlyCount,
+  };
+}
+
+export function getSmartPayHistoryProofProvenanceLabel(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofProvenanceCounts(entry);
+  if (counts.linkedTxCount === 0) {
+    return null;
+  }
+
+  return `Proof provenance: ${counts.receiptBackedCount} receipt-backed · ${counts.executionOnlyCount} execution-only`;
+}
+
+export function getSmartPayHistoryProofProvenanceHint(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofProvenanceCounts(entry);
+  if (counts.linkedTxCount === 0) {
+    return null;
+  }
+
+  if (counts.receiptBackedCount > 0 && counts.executionOnlyCount > 0) {
+    return "Receipt-backed refs already exist in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them.";
+  }
+
+  if (counts.executionOnlyCount > 0) {
+    return "Linked proof refs are currently visible only from saved execution history. Refresh status/receipt if you need final receipt-backed proof coverage.";
+  }
+
+  return "All linked proof refs are already backed by the saved receipt snapshot.";
+}
+
 function formatSmartPayHistoryProofStepSummary(step: SmartPayHistoryProofRouteStep): string {
   const normalizedRole = step.role.replace(/_/g, " ");
   const normalizedKind = step.kind.replace(/_/g, " ");
