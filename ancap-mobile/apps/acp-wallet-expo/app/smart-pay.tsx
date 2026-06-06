@@ -68,7 +68,7 @@ import {
   getSmartPayHistoryProofRouteStepHint,
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
-  getSmartPayHistoryExecutionProgressDetailLines,
+  getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistoryProgressLabel,
   getSmartPayHistorySnapshotStatusLabel,
@@ -521,8 +521,8 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryProgressLabel(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
-  const activeExecutionProgressDetailLines = useMemo(
-    () => (activeHistoryEntry ? getSmartPayHistoryExecutionProgressDetailLines(activeHistoryEntry) : []),
+  const activeExecutionProgressDisplayLines = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryExecutionProgressDisplayLines(activeHistoryEntry) : []),
     [activeHistoryEntry]
   );
   const activeProgressHint = useMemo(
@@ -1134,14 +1134,12 @@ export default function SmartPayScreen() {
             </>
           ) : null}
           <Text style={styles.meta}>Updated: {formatSmartPayTimestamp(activeExecutionView.updatedAt)}</Text>
-          {activeExecutionProgressDetailLines.length ? (
+          {activeExecutionProgressDisplayLines.length ? (
             <>
-              {activeExecutionProgressDetailLines.map((line) => (
+              {activeExecutionProgressDisplayLines.map((line) => (
                 <Text key={line} style={styles.meta}>{line}</Text>
               ))}
             </>
-          ) : activeProgressLabel ? (
-            <Text style={styles.meta}>{activeProgressLabel}</Text>
           ) : null}
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text> : null}
@@ -1325,7 +1323,9 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>{getSmartPayHistoryAccessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryActionHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(activeHistoryEntry, { hasAccountAuth })}</Text>
-          {activeProgressLabel ? <Text style={styles.meta}>{activeProgressLabel}</Text> : null}
+          {activeExecutionProgressDisplayLines.length ? activeExecutionProgressDisplayLines.map((line) => (
+            <Text key={`receipt-progress-${line}`} style={styles.meta}>{line}</Text>
+          )) : null}
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
           <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
