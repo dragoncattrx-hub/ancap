@@ -539,26 +539,58 @@ export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): str
   }
 }
 
-function pickRicherTxRef(
+function normalizeSmartPayTxRefNetwork(network: string | null | undefined): string {
+  return network?.trim().toLowerCase() ?? "";
+}
+
+function mergeSmartPayTxRef(
   current: SmartPayExecution["txRefs"][number],
   incoming: SmartPayExecution["txRefs"][number]
 ): SmartPayExecution["txRefs"][number] {
   const currentExplorer = current.explorerUrl?.trim() ?? "";
   const incomingExplorer = incoming.explorerUrl?.trim() ?? "";
-  const currentRouteStepIndex = current.routeStepIndex ?? null;
-  const incomingRouteStepIndex = incoming.routeStepIndex ?? null;
+  const currentRouteStepIndex = current.routeStepIndex;
+  const incomingRouteStepIndex = incoming.routeStepIndex;
+  const mergedRouteStepIndex = currentRouteStepIndex ?? incomingRouteStepIndex;
 
-  if (currentRouteStepIndex === null && incomingRouteStepIndex !== null) {
-    return incoming;
+  return {
+    ...current,
+    role: current.role?.trim() ? current.role : incoming.role,
+    network: current.network?.trim() ? current.network : incoming.network,
+    txid: current.txid?.trim() ? current.txid : incoming.txid,
+    explorerUrl: currentExplorer || incomingExplorer || null,
+    ...(mergedRouteStepIndex != null ? { routeStepIndex: mergedRouteStepIndex } : {}),
+  };
+}
+
+function getSmartPayCanonicalTxRefIdentityRole(role: string | null | undefined): string {
+  const normalizedRole = normalizeSmartPayTxRefRole(role);
+  if (normalizedRole === "payment"
+    || normalizedRole === "merchant payout"
+    || normalizedRole === "transfer"
+    || normalizedRole === "payout") {
+    return "payment";
   }
-  if (!currentExplorer && incomingExplorer) {
-    return incoming;
-  }
-  return current;
+  return normalizedRole || "unknown";
 }
 
 function getSmartPayTxRefIdentityKey(ref: SmartPayExecution["txRefs"][number]): string {
-  return `${ref.role}|${ref.network}|${ref.txid.trim().toLowerCase()}`;
+  return `${getSmartPayCanonicalTxRefIdentityRole(ref.role)}|${normalizeSmartPayTxRefNetwork(ref.network)}|${ref.txid.trim().toLowerCase()}`;
+}
+
+function areSmartPayRouteProofRolesCompatible(
+  candidateRole: string | null | undefined,
+  expectedRole: string
+): boolean {
+  const normalizedCandidateRole = normalizeSmartPayTxRefRole(candidateRole);
+  const normalizedExpectedRole = normalizeSmartPayTxRefRole(expectedRole);
+
+  if (!normalizedCandidateRole || normalizedCandidateRole === normalizedExpectedRole) {
+    return true;
+  }
+
+  return getSmartPayCanonicalTxRefIdentityRole(normalizedCandidateRole)
+    === getSmartPayCanonicalTxRefIdentityRole(normalizedExpectedRole);
 }
 
 function isSmartPayProofTxRefCompatibleWithRouteStep(
@@ -566,13 +598,13 @@ function isSmartPayProofTxRefCompatibleWithRouteStep(
   role: string,
   network: string
 ): boolean {
-  const candidateRole = candidate.role?.trim();
-  const candidateNetwork = candidate.network?.trim();
+  const candidateNetwork = normalizeSmartPayTxRefNetwork(candidate.network);
+  const expectedNetwork = normalizeSmartPayTxRefNetwork(network);
 
-  if (candidateRole && candidateRole !== role) {
+  if (!areSmartPayRouteProofRolesCompatible(candidate.role, role)) {
     return false;
   }
-  if (candidateNetwork && candidateNetwork !== network) {
+  if (candidateNetwork && candidateNetwork !== expectedNetwork) {
     return false;
   }
 
@@ -687,7 +719,7 @@ export function getSmartPayHistoryProofTxRefs(entry: SmartPayHistoryEntry): Smar
   for (const ref of refs) {
     const key = getSmartPayTxRefIdentityKey(ref);
     const existing = merged.get(key);
-    merged.set(key, existing ? pickRicherTxRef(existing, ref) : ref);
+    merged.set(key, existing ? mergeSmartPayTxRef(existing, ref) : ref);
   }
 
   return [...merged.values()];

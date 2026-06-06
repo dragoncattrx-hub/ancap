@@ -1428,6 +1428,113 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("deduplicates semantically equivalent payment and merchant payout refs for the same tx while keeping route-step metadata", () => {
+    const completed = makeEntry("7c-merchant-alias", "completed", {
+      quote: {
+        ...makeEntry("7c-merchant-alias", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("7c-merchant-alias", "completed").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "BSC",
+            txid: "fixture-shared-payout-proof",
+            explorerUrl: null,
+            routeStepIndex: 2,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("7c-merchant-alias", "completed").receipt!,
+        txRefs: [
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "FIXTURE-SHARED-PAYOUT-PROOF",
+            explorerUrl: "https://bscscan.com/tx/FIXTURE-SHARED-PAYOUT-PROOF",
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofTxRefs(completed)).toEqual([
+      {
+        role: "merchant_payout",
+        network: "bsc",
+        txid: "FIXTURE-SHARED-PAYOUT-PROOF",
+        explorerUrl: "https://bscscan.com/tx/FIXTURE-SHARED-PAYOUT-PROOF",
+        routeStepIndex: 2,
+      },
+    ]);
+    expect(getSmartPayHistoryProofRouteSteps(completed)).toEqual([
+      {
+        key: "bridge|acp|1",
+        stepIndex: 1,
+        role: "bridge",
+        network: "acp",
+        kind: "bridge",
+        fromAsset: "ACP",
+        toAsset: "wACP",
+        label: "Step 1: bridge ACP → wACP via acp via ancap_bridge_v1",
+        status: "pending",
+        txRef: null,
+      },
+      {
+        key: "merchant_payout|bsc|2",
+        stepIndex: 2,
+        role: "merchant_payout",
+        network: "bsc",
+        kind: "transfer",
+        fromAsset: "wACP",
+        toAsset: "USDT",
+        label: "Step 2: transfer wACP → USDT via bsc via merchant payout",
+        status: "linked",
+        txRef: {
+          role: "merchant_payout",
+          network: "bsc",
+          txid: "FIXTURE-SHARED-PAYOUT-PROOF",
+          explorerUrl: "https://bscscan.com/tx/FIXTURE-SHARED-PAYOUT-PROOF",
+          routeStepIndex: 2,
+        },
+      },
+    ]);
+    expect(getSmartPayHistoryProofLabel(completed)).toBe(
+      "On-chain proof: 1/2 route steps linked"
+    );
+    expect(getSmartPayHistoryProofHint(completed)).toBe(
+      "Linked proof currently covers 1/2 quoted route steps; 1 explorer link available."
+    );
+    expect(getSmartPayHistoryProofProvenanceLabel(completed)).toBe(
+      "Proof provenance: 1 receipt-backed · 0 execution-only"
+    );
+    expect(getSmartPayHistoryProofRouteDetailLabel(completed)).toBe(
+      "Proof linkage detail: 1 explicit · 0 inferred · 1 pending"
+    );
+  });
+
   it("separates additional observed tx refs that do not map to the quoted route", () => {
     const routed = makeEntry("9", "completed", {
       quote: {
