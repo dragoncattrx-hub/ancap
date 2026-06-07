@@ -47,6 +47,8 @@ import {
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
   getSmartPayHistoryAdditionalProofHint,
+  getSmartPayHistoryAdditionalProofProvenanceHint,
+  getSmartPayHistoryAdditionalProofProvenanceLabel,
   getSmartPayHistoryNextStepHint,
   getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
@@ -563,6 +565,14 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryAdditionalProofHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
+  const activeAdditionalProofProvenanceLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryAdditionalProofProvenanceLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeAdditionalProofProvenanceHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryAdditionalProofProvenanceHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
   const activeReceiptDisplay = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryReceiptDisplay(activeHistoryEntry) : null),
     [activeHistoryEntry]
@@ -863,6 +873,8 @@ export default function SmartPayScreen() {
                 const proofProvenanceLabel = getSmartPayHistoryProofProvenanceLabel(entry);
                 const proofProvenanceHint = getSmartPayHistoryProofProvenanceHint(entry);
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
+                const additionalProofProvenanceLabel = getSmartPayHistoryAdditionalProofProvenanceLabel(entry);
+                const additionalProofProvenanceHint = getSmartPayHistoryAdditionalProofProvenanceHint(entry);
                 const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
                 const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
                 const progressDisplayLines = getSmartPayHistoryExecutionProgressDisplayLines(entry);
@@ -934,6 +946,12 @@ export default function SmartPayScreen() {
                     ) : null}
                     {additionalProofHint ? (
                       <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    {additionalProofProvenanceLabel ? (
+                      <Text style={styles.meta}>{additionalProofProvenanceLabel}</Text>
+                    ) : null}
+                    {additionalProofProvenanceHint ? (
+                      <Text style={styles.inlineHint}>{additionalProofProvenanceHint}</Text>
                     ) : null}
                     <Text style={styles.meta}>{getSmartPayHistoryAccessHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryActionHint(entry, { hasAccountAuth })}</Text>
@@ -1250,6 +1268,12 @@ export default function SmartPayScreen() {
           {activeAdditionalProofTxRefs.length ? (
             <>
               <Text style={styles.label}>Additional observed tx refs</Text>
+              {activeAdditionalProofProvenanceLabel ? (
+                <Text style={styles.meta}>{activeAdditionalProofProvenanceLabel}</Text>
+              ) : null}
+              {activeAdditionalProofProvenanceHint ? (
+                <Text style={styles.inlineHint}>{activeAdditionalProofProvenanceHint}</Text>
+              ) : null}
               {activeAdditionalProofTxRefs.map((tx) => {
                 const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx);
                 const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry!, tx);
@@ -1408,6 +1432,12 @@ export default function SmartPayScreen() {
             </Text>
           )) : <Text style={styles.meta}>No network fees reported.</Text>}
           <Text style={styles.label}>Route proof coverage</Text>
+          {activeProofProvenanceLabel ? (
+            <Text style={styles.meta}>{activeProofProvenanceLabel}</Text>
+          ) : null}
+          {activeProofProvenanceHint ? (
+            <Text style={styles.inlineHint}>{activeProofProvenanceHint}</Text>
+          ) : null}
           {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
             const txRef = step.txRef;
             const txRefStorageHint = txRef
@@ -1457,6 +1487,12 @@ export default function SmartPayScreen() {
           {activeAdditionalProofTxRefs.length ? (
             <>
               <Text style={styles.label}>Additional observed tx refs</Text>
+              {activeAdditionalProofProvenanceLabel ? (
+                <Text style={styles.meta}>{activeAdditionalProofProvenanceLabel}</Text>
+              ) : null}
+              {activeAdditionalProofProvenanceHint ? (
+                <Text style={styles.inlineHint}>{activeAdditionalProofProvenanceHint}</Text>
+              ) : null}
               {activeAdditionalProofTxRefs.map((tx) => {
                 const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx);
                 const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx);

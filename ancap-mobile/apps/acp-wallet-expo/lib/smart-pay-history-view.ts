@@ -1106,18 +1106,20 @@ export function getSmartPayHistoryProofRouteDetailHint(entry: SmartPayHistoryEnt
   return `${segments.join("; ")}.`;
 }
 
-function getSmartPayHistoryProofProvenanceCounts(entry: SmartPayHistoryEntry): {
-  linkedTxCount: number;
+function getSmartPayHistoryTxRefProvenanceCounts(
+  entry: SmartPayHistoryEntry,
+  refs: SmartPayExecution["txRefs"]
+): {
+  txCount: number;
   receiptBackedCount: number;
   executionOnlyCount: number;
 } {
-  const proofRefs = getSmartPayHistoryProofTxRefs(entry);
   const receiptKeys = new Set((entry.receipt?.txRefs ?? []).map((ref) => getSmartPayTxRefIdentityKey(ref)));
 
   let receiptBackedCount = 0;
   let executionOnlyCount = 0;
 
-  for (const ref of proofRefs) {
+  for (const ref of refs) {
     if (receiptKeys.has(getSmartPayTxRefIdentityKey(ref))) {
       receiptBackedCount += 1;
     } else {
@@ -1126,36 +1128,66 @@ function getSmartPayHistoryProofProvenanceCounts(entry: SmartPayHistoryEntry): {
   }
 
   return {
-    linkedTxCount: proofRefs.length,
+    txCount: refs.length,
     receiptBackedCount,
     executionOnlyCount,
   };
 }
 
-export function getSmartPayHistoryProofProvenanceLabel(entry: SmartPayHistoryEntry): string | null {
-  const counts = getSmartPayHistoryProofProvenanceCounts(entry);
-  if (counts.linkedTxCount === 0) {
+function formatSmartPayHistoryTxRefProvenanceLabel(
+  prefix: string,
+  counts: ReturnType<typeof getSmartPayHistoryTxRefProvenanceCounts>
+): string | null {
+  if (counts.txCount === 0) {
     return null;
   }
 
-  return `Proof provenance: ${counts.receiptBackedCount} receipt-backed · ${counts.executionOnlyCount} execution-only`;
+  return `${prefix}: ${counts.receiptBackedCount} receipt-backed · ${counts.executionOnlyCount} execution-only`;
 }
 
-export function getSmartPayHistoryProofProvenanceHint(entry: SmartPayHistoryEntry): string | null {
-  const counts = getSmartPayHistoryProofProvenanceCounts(entry);
-  if (counts.linkedTxCount === 0) {
+function formatSmartPayHistoryTxRefProvenanceHint(
+  subjectPlural: string,
+  counts: ReturnType<typeof getSmartPayHistoryTxRefProvenanceCounts>
+): string | null {
+  if (counts.txCount === 0) {
     return null;
   }
 
   if (counts.receiptBackedCount > 0 && counts.executionOnlyCount > 0) {
-    return "Receipt-backed refs already exist in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them.";
+    return `Some ${subjectPlural} are already stored in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them.`;
   }
 
   if (counts.executionOnlyCount > 0) {
-    return "Linked proof refs are currently visible only from saved execution history. Refresh status/receipt if you need final receipt-backed proof coverage.";
+    return `${subjectPlural[0]!.toUpperCase()}${subjectPlural.slice(1)} are currently visible only from saved execution history. Refresh status/receipt if you need a newer receipt snapshot to include them.`;
   }
 
-  return "All linked proof refs are already backed by the saved receipt snapshot.";
+  return `All ${subjectPlural} are already backed by the saved receipt snapshot.`;
+}
+
+function getSmartPayHistoryProofProvenanceCounts(entry: SmartPayHistoryEntry) {
+  return getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryProofTxRefs(entry));
+}
+
+export function getSmartPayHistoryProofProvenanceLabel(entry: SmartPayHistoryEntry): string | null {
+  return formatSmartPayHistoryTxRefProvenanceLabel("Proof provenance", getSmartPayHistoryProofProvenanceCounts(entry));
+}
+
+export function getSmartPayHistoryProofProvenanceHint(entry: SmartPayHistoryEntry): string | null {
+  return formatSmartPayHistoryTxRefProvenanceHint("linked proof refs", getSmartPayHistoryProofProvenanceCounts(entry));
+}
+
+export function getSmartPayHistoryAdditionalProofProvenanceLabel(entry: SmartPayHistoryEntry): string | null {
+  return formatSmartPayHistoryTxRefProvenanceLabel(
+    "Additional proof provenance",
+    getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryAdditionalProofTxRefs(entry))
+  );
+}
+
+export function getSmartPayHistoryAdditionalProofProvenanceHint(entry: SmartPayHistoryEntry): string | null {
+  return formatSmartPayHistoryTxRefProvenanceHint(
+    "additional proof refs",
+    getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryAdditionalProofTxRefs(entry))
+  );
 }
 
 export function getSmartPayHistoryTxRefStorageHint(

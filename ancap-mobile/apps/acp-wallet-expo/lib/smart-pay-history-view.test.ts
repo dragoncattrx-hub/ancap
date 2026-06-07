@@ -1383,7 +1383,7 @@ describe("smart pay history view helpers", () => {
       "Proof provenance: 1 receipt-backed · 1 execution-only"
     );
     expect(getSmartPayHistoryProofProvenanceHint(completed)).toBe(
-      "Receipt-backed refs already exist in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them."
+      "Some linked proof refs are already stored in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them."
     );
   });
 
