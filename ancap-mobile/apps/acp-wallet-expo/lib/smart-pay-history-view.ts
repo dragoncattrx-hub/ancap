@@ -1118,6 +1118,80 @@ export function getSmartPayHistoryProofRouteDetailHint(entry: SmartPayHistoryEnt
   return `${segments.join("; ")}.`;
 }
 
+export function getSmartPayHistoryProofQualityLabel(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+  if (!counts.hasRouteProofContext || counts.expectedRouteSteps === 0) {
+    const proofCounts = getSmartPayHistoryProofCounts(entry);
+    if (proofCounts.linkedTxCount === 0) {
+      return null;
+    }
+    return "Proof quality: unstructured tx refs only";
+  }
+
+  if (counts.pendingSteps === counts.expectedRouteSteps) {
+    return "Proof quality: waiting for proof links";
+  }
+
+  if (counts.pendingSteps > 0) {
+    if (counts.explicitLinkedSteps > 0 && counts.inferredLinkedSteps > 0) {
+      return "Proof quality: mixed partial coverage";
+    }
+    if (counts.explicitLinkedSteps > 0) {
+      return "Proof quality: partial explicit coverage";
+    }
+    if (counts.inferredLinkedSteps > 0) {
+      return "Proof quality: partial inferred coverage";
+    }
+  }
+
+  if (counts.inferredLinkedSteps === 0) {
+    return "Proof quality: fully explicit";
+  }
+  if (counts.explicitLinkedSteps === 0) {
+    return "Proof quality: fully inferred";
+  }
+
+  return "Proof quality: mixed linked coverage";
+}
+
+export function getSmartPayHistoryProofQualityHint(entry: SmartPayHistoryEntry): string | null {
+  const counts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+  if (!counts.hasRouteProofContext || counts.expectedRouteSteps === 0) {
+    const proofCounts = getSmartPayHistoryProofCounts(entry);
+    if (proofCounts.linkedTxCount === 0) {
+      return null;
+    }
+    return "This snapshot has observed tx refs, but no quoted or stored route-step context to verify whether they map onto the intended payment route.";
+  }
+
+  const routeStepLabel = counts.hasQuotedRoute ? "quoted route" : "stored receipt route";
+
+  if (counts.pendingSteps === counts.expectedRouteSteps) {
+    return `None of the ${routeStepLabel} steps are linked to proof refs yet.`;
+  }
+
+  if (counts.pendingSteps > 0) {
+    if (counts.explicitLinkedSteps > 0 && counts.inferredLinkedSteps > 0) {
+      return `Some ${routeStepLabel} steps are linked by explicit indexes, some only by inferred role/network matching, and some are still pending proof refs.`;
+    }
+    if (counts.explicitLinkedSteps > 0) {
+      return `Linked ${routeStepLabel} steps are backed by explicit route-step indexes so far, but some steps still need proof refs.`;
+    }
+    if (counts.inferredLinkedSteps > 0) {
+      return `Current ${routeStepLabel} coverage depends on inferred role/network matching, and some steps still need proof refs.`;
+    }
+  }
+
+  if (counts.inferredLinkedSteps === 0) {
+    return `All linked ${routeStepLabel} steps are backed by explicit route-step indexes.`;
+  }
+  if (counts.explicitLinkedSteps === 0) {
+    return `All linked ${routeStepLabel} steps are inferred from role/network matching because explicit route-step indexes are missing from saved proof refs.`;
+  }
+
+  return `This snapshot links every ${routeStepLabel} step, but some links are explicit and others are inferred from role/network matching.`;
+}
+
 function getSmartPayHistoryTxRefProvenanceCounts(
   entry: SmartPayHistoryEntry,
   refs: SmartPayExecution["txRefs"]

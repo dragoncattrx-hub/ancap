@@ -68,6 +68,8 @@ import {
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
+  getSmartPayHistoryProofQualityHint,
+  getSmartPayHistoryProofQualityLabel,
   getSmartPayHistoryProofRouteDetailHint,
   getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
@@ -542,6 +544,14 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryProofRouteDetailHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
+  const activeProofQualityLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofQualityLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeProofQualityHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProofQualityHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
   const activeProofProvenanceLabel = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryProofProvenanceLabel(activeHistoryEntry) : null),
     [activeHistoryEntry]
@@ -871,6 +881,8 @@ export default function SmartPayScreen() {
                 const pendingProofHint = getSmartPayHistoryPendingProofHint(entry);
                 const proofRouteDetailLabel = getSmartPayHistoryProofRouteDetailLabel(entry);
                 const proofRouteDetailHint = getSmartPayHistoryProofRouteDetailHint(entry);
+                const proofQualityLabel = getSmartPayHistoryProofQualityLabel(entry);
+                const proofQualityHint = getSmartPayHistoryProofQualityHint(entry);
                 const proofProvenanceLabel = getSmartPayHistoryProofProvenanceLabel(entry);
                 const proofProvenanceHint = getSmartPayHistoryProofProvenanceHint(entry);
                 const additionalProofHint = getSmartPayHistoryAdditionalProofHint(entry);
@@ -935,6 +947,12 @@ export default function SmartPayScreen() {
                     ) : null}
                     {proofRouteDetailHint ? (
                       <Text style={styles.inlineHint}>{proofRouteDetailHint}</Text>
+                    ) : null}
+                    {proofQualityLabel ? (
+                      <Text style={styles.meta}>{proofQualityLabel}</Text>
+                    ) : null}
+                    {proofQualityHint ? (
+                      <Text style={styles.inlineHint}>{proofQualityHint}</Text>
                     ) : null}
                     {proofProvenanceLabel ? (
                       <Text style={styles.meta}>{proofProvenanceLabel}</Text>
@@ -1182,6 +1200,8 @@ export default function SmartPayScreen() {
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text> : null}
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
           {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
+          {activeProofQualityLabel ? <Text style={styles.meta}>{activeProofQualityLabel}</Text> : null}
+          {activeProofQualityHint ? <Text style={styles.inlineHint}>{activeProofQualityHint}</Text> : null}
           {activeProofProvenanceLabel ? <Text style={styles.meta}>{activeProofProvenanceLabel}</Text> : null}
           {activeProofProvenanceHint ? <Text style={styles.inlineHint}>{activeProofProvenanceHint}</Text> : null}
           {activePendingProofHint ? <Text style={styles.inlineHint}>{activePendingProofHint}</Text> : null}
@@ -1440,6 +1460,12 @@ export default function SmartPayScreen() {
           ) : null}
           {activeProofRouteDetailHint ? (
             <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text>
+          ) : null}
+          {activeProofQualityLabel ? (
+            <Text style={styles.meta}>{activeProofQualityLabel}</Text>
+          ) : null}
+          {activeProofQualityHint ? (
+            <Text style={styles.inlineHint}>{activeProofQualityHint}</Text>
           ) : null}
           {activeProofProvenanceLabel ? (
             <Text style={styles.meta}>{activeProofProvenanceLabel}</Text>

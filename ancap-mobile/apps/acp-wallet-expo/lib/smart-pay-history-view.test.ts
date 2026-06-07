@@ -38,6 +38,8 @@ import {
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
+  getSmartPayHistoryProofQualityHint,
+  getSmartPayHistoryProofQualityLabel,
   getSmartPayHistoryProofRouteDetailHint,
   getSmartPayHistoryProofRouteDetailLabel,
   getSmartPayHistoryProofRouteStepHint,
@@ -2617,11 +2619,23 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProofRouteDetailHint(explicitlyIndexed)).toBe(
       "1 quoted route step linked via explicit route-step indexes."
     );
+    expect(getSmartPayHistoryProofQualityLabel(explicitlyIndexed)).toBe(
+      "Proof quality: fully explicit"
+    );
+    expect(getSmartPayHistoryProofQualityHint(explicitlyIndexed)).toBe(
+      "All linked quoted route steps are backed by explicit route-step indexes."
+    );
     expect(getSmartPayHistoryProofRouteDetailLabel(looselyMatched)).toBe(
       "Proof linkage detail: 0 explicit · 1 inferred · 0 pending"
     );
     expect(getSmartPayHistoryProofRouteDetailHint(looselyMatched)).toBe(
       "1 quoted route step linked by role/network matching without explicit route-step indexes."
+    );
+    expect(getSmartPayHistoryProofQualityLabel(looselyMatched)).toBe(
+      "Proof quality: fully inferred"
+    );
+    expect(getSmartPayHistoryProofQualityHint(looselyMatched)).toBe(
+      "All linked quoted route steps are inferred from role/network matching because explicit route-step indexes are missing from saved proof refs."
     );
     expect(getSmartPayHistoryProofRouteDetailLabel(pendingQuoted)).toBe(
       "Proof linkage detail: 0 explicit · 0 inferred · 1 pending"
@@ -2629,11 +2643,23 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProofRouteDetailHint(pendingQuoted)).toBe(
       "1 quoted route step still pending."
     );
+    expect(getSmartPayHistoryProofQualityLabel(pendingQuoted)).toBe(
+      "Proof quality: waiting for proof links"
+    );
+    expect(getSmartPayHistoryProofQualityHint(pendingQuoted)).toBe(
+      "None of the quoted route steps are linked to proof refs yet."
+    );
     expect(getSmartPayHistoryProofRouteDetailLabel(pendingStoredReceipt)).toBe(
       "Proof linkage detail: 1 explicit · 0 inferred · 1 pending"
     );
     expect(getSmartPayHistoryProofRouteDetailHint(pendingStoredReceipt)).toBe(
       "1 stored receipt route step linked via explicit route-step indexes; 1 stored receipt route step still pending."
+    );
+    expect(getSmartPayHistoryProofQualityLabel(pendingStoredReceipt)).toBe(
+      "Proof quality: partial explicit coverage"
+    );
+    expect(getSmartPayHistoryProofQualityHint(pendingStoredReceipt)).toBe(
+      "Linked stored receipt route steps are backed by explicit route-step indexes so far, but some steps still need proof refs."
     );
   });
 
@@ -2660,6 +2686,12 @@ describe("smart pay history view helpers", () => {
 
     expect(getSmartPayHistoryProofRouteDetailLabel(noRouteProofContext)).toBeNull();
     expect(getSmartPayHistoryProofRouteDetailHint(noRouteProofContext)).toBeNull();
+    expect(getSmartPayHistoryProofQualityLabel(noRouteProofContext)).toBe(
+      "Proof quality: unstructured tx refs only"
+    );
+    expect(getSmartPayHistoryProofQualityHint(noRouteProofContext)).toBe(
+      "This snapshot has observed tx refs, but no quoted or stored route-step context to verify whether they map onto the intended payment route."
+    );
   });
 
   it("returns null pending-proof hint when there is no route-proof context or all tracked steps are linked", () => {
