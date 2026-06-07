@@ -1589,7 +1589,9 @@ export function getSmartPayHistoryActionLabel(
   if (refreshAvailable) {
     switch (entry.execution.status) {
       case "completed":
-        return "Refresh receipt only";
+        return hasSmartPayHistoryReceiptProofLag(entry)
+          ? "Refresh receipt + proof sync"
+          : "Refresh receipt only";
       case "failed":
         return "Refresh failure details";
       default:
@@ -1631,10 +1633,22 @@ export function getSmartPayHistoryActionHint(
     return getSmartPayRefreshOrRecoverHint(refreshOptions);
   }
 
+  if (entry.execution.status === "completed" && hasSmartPayHistoryReceiptProofLag(entry)) {
+    return "This execution is already complete, but some observed proof refs are still visible only from saved execution history. Refresh status/receipt to pull a newer receipt snapshot that includes the missing proof links if the backend has reconciled them.";
+  }
+
   return getSmartPayRecoverHint({
     ...refreshOptions,
     recoverable: entry.execution.recoverable,
   });
+}
+
+function hasSmartPayHistoryReceiptProofLag(entry: SmartPayHistoryEntry): boolean {
+  if (!entry.receipt) {
+    return false;
+  }
+
+  return getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryProofTxRefs(entry)).executionOnlyCount > 0;
 }
 
 function hasIncompleteSmartPayHistoryProof(entry: SmartPayHistoryEntry): boolean {
@@ -1701,6 +1715,9 @@ export function getSmartPayHistoryNextStepLabel(
       if (incompleteProof) {
         return "Next step: inspect the saved receipt snapshot";
       }
+      if (refreshAvailable && hasSmartPayHistoryReceiptProofLag(entry)) {
+        return "Next step: refresh receipt proof sync";
+      }
       if (refreshAvailable && stale) {
         return "Next step: refresh the receipt snapshot";
       }
@@ -1757,6 +1774,9 @@ export function getSmartPayHistoryNextStepHint(
       }
       if (incompleteProof) {
         return "This payment is completed, but the saved snapshot still lacks full linked proof coverage. Sign in or restore the original device session if you need newer receipt/proof data.";
+      }
+      if (refreshAvailable && hasSmartPayHistoryReceiptProofLag(entry)) {
+        return "This payment is completed, but the saved receipt snapshot still lags behind execution history for some observed proof refs. Refresh status/receipt to sync those execution-only proof links into a newer receipt snapshot if backend reconciliation has caught up.";
       }
       if (refreshAvailable && stale) {
         return "This saved receipt/proof snapshot is getting stale. Refresh it before relying on final fee totals or proof links elsewhere.";

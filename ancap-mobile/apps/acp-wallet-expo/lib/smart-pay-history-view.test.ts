@@ -912,6 +912,72 @@ describe("smart pay history view helpers", () => {
       "already in a final state"
     );
 
+    const receiptProofLag = makeEntry("16-final-proof-lag", "completed", {
+      quote: {
+        ...makeEntry("16-final-proof-lag", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "5.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "4.9",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("16-final-proof-lag", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-final-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-final-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-final-proof-lag-payout",
+            explorerUrl: "https://bscscan.com/tx/fixture-final-proof-lag-payout",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("16-final-proof-lag", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-final-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-final-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryActionLabel(receiptProofLag, { hasAccountAuth: true })).toBe(
+      "Refresh receipt + proof sync"
+    );
+    expect(getSmartPayHistoryActionHint(receiptProofLag, { hasAccountAuth: true })).toContain(
+      "still visible only from saved execution history"
+    );
+
     expect(getSmartPayHistoryActionLabel(awaitingLocalLive)).toBe("Restore original session");
     expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
       "needs the pending local signature"
@@ -1020,6 +1086,61 @@ describe("smart pay history view helpers", () => {
         ],
       },
     });
+    const completedWithReceiptProofLag = makeEntry("27b", "completed", {
+      receipt: {
+        ...makeEntry("27b", "completed").receipt!,
+        routeSummary: ["1. bridge ACP -> wACP on acp"],
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-proof-27b-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-27b-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      quote: {
+        ...makeEntry("27b", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "9.8",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.7",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("27b", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-proof-27b-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-proof-27b-bridge",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-proof-27b-payout",
+            explorerUrl: "https://bscscan.com/tx/fixture-proof-27b-payout",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+    });
 
     const now = Date.parse("2026-05-28T18:03:00.000Z");
 
@@ -1043,6 +1164,13 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryNextStepHint(completedMissingProof, { hasAccountAuth: true }, now)).toContain(
       "lacks full linked proof coverage"
+    );
+
+    expect(getSmartPayHistoryNextStepLabel(completedWithReceiptProofLag, { hasAccountAuth: true }, now)).toBe(
+      "Next step: refresh receipt proof sync"
+    );
+    expect(getSmartPayHistoryNextStepHint(completedWithReceiptProofLag, { hasAccountAuth: true }, now)).toContain(
+      "receipt snapshot still lags behind execution history"
     );
 
     expect(getSmartPayHistoryNextStepLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(
