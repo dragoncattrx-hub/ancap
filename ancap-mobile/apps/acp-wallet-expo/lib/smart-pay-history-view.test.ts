@@ -39,6 +39,9 @@ import {
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
+  getSmartPayHistoryRecoverButtonLabel,
+  getSmartPayHistoryRecoveryInputHint,
+  getSmartPayHistoryRecoveryInputLabel,
   getSmartPayHistoryProofQualityHint,
   getSmartPayHistoryProofQualityLabel,
   getSmartPayHistoryProofRouteDetailHint,
@@ -1016,6 +1019,41 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionHint(receiptProofLag)).toContain(
       "Sign in to the owning ANCAP account or restore the original device session"
     );
+  });
+
+  it("tailors recovery-input labels, hints, and button text to the current execution state", () => {
+    const awaitingLocal = makeEntry("recover-awaiting", "awaiting_local_signature", {
+      receipt: null,
+      execution: {
+        ...makeEntry("recover-awaiting", "awaiting_local_signature", { receipt: null }).execution,
+        recoverable: true,
+      },
+    });
+    const failed = makeEntry("recover-failed", "failed", {
+      receipt: null,
+      execution: {
+        ...makeEntry("recover-failed", "failed", { receipt: null }).execution,
+        recoverable: true,
+      },
+    });
+    const completed = makeEntry("recover-completed", "completed", {
+      execution: {
+        ...makeEntry("recover-completed", "completed").execution,
+        recoverable: false,
+      },
+    });
+
+    expect(getSmartPayHistoryRecoveryInputLabel(awaitingLocal)).toBe("Recovery tx hints after signature (optional)");
+    expect(getSmartPayHistoryRecoveryInputHint(awaitingLocal)).toContain("still needs the original local signature");
+    expect(getSmartPayHistoryRecoverButtonLabel(awaitingLocal)).toBe("Status-only recover");
+    expect(getSmartPayHistoryRecoverButtonLabel(awaitingLocal, 2)).toBe("Recover with 2 tx refs");
+
+    expect(getSmartPayHistoryRecoveryInputLabel(failed)).toBe("Recovery / reconcile tx hints (optional)");
+    expect(getSmartPayHistoryRecoveryInputHint(failed)).toContain("reconcile partial proof before you decide whether to retry");
+
+    expect(getSmartPayHistoryRecoveryInputLabel(completed)).toBe("Recovery tx hints (optional)");
+    expect(getSmartPayHistoryRecoveryInputHint(completed)).toContain("Recovery is unavailable");
+    expect(getSmartPayHistoryRecoverButtonLabel(completed)).toBe("Recovery unavailable");
   });
 
   it("tailors restore hints so restored history cards do not over-promise refresh/recover access", () => {

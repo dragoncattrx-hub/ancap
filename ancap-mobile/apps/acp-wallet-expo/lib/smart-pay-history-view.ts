@@ -1817,6 +1817,45 @@ export function getSmartPayHistoryRestoreHint(
     : "Tap to restore this saved snapshot and quoted payment context.";
 }
 
+export function getSmartPayHistoryRecoveryInputLabel(entry: SmartPayHistoryEntry): string {
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return "Recovery tx hints after signature (optional)";
+    case "failed":
+      return "Recovery / reconcile tx hints (optional)";
+    default:
+      return "Recovery tx hints (optional)";
+  }
+}
+
+export function getSmartPayHistoryRecoveryInputHint(entry: SmartPayHistoryEntry): string {
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return "This payment still needs the original local signature before route progress can continue. Leave this empty for now, or paste a broadcast tx hash/explorer link later if you need to reconcile progress from another device.";
+    case "failed":
+      return "If this route may already have progressed before the failure surfaced here, paste observed tx hashes or explorer links to reconcile partial proof before you decide whether to retry.";
+    case "completed":
+      return "This execution is already final. Recovery is unavailable, but the saved proof refs above remain available for inspection.";
+    default:
+      return "Paste observed route tx hashes or explorer links from the original signing device if refresh alone is not enough. Smart Pay recover will normalize known tx ids and map them onto quoted route steps in order.";
+  }
+}
+
+export function getSmartPayHistoryRecoverButtonLabel(
+  entry: SmartPayHistoryEntry,
+  recoveryRefCount = 0
+): string {
+  if (!entry.execution.recoverable) {
+    return "Recovery unavailable";
+  }
+
+  if (recoveryRefCount > 0) {
+    return `Recover with ${recoveryRefCount} tx ${recoveryRefCount === 1 ? "ref" : "refs"}`;
+  }
+
+  return "Status-only recover";
+}
+
 function hasSmartPayHistoryReceiptProofLag(entry: SmartPayHistoryEntry): boolean {
   if (!entry.receipt) {
     return false;

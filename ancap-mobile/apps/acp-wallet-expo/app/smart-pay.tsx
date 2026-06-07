@@ -67,6 +67,9 @@ import {
   getSmartPayHistoryProofEmptyStateHint,
   getSmartPayHistoryProofHint,
   getSmartPayHistoryProofLabel,
+  getSmartPayHistoryRecoverButtonLabel,
+  getSmartPayHistoryRecoveryInputHint,
+  getSmartPayHistoryRecoveryInputLabel,
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
   getSmartPayHistoryProofQualityHint,
@@ -1338,9 +1341,11 @@ export default function SmartPayScreen() {
               })}
             </Text>
           ) : null}
-          <Text style={styles.label}>Recovery tx hints (optional)</Text>
+          <Text style={styles.label}>{activeHistoryEntry ? getSmartPayHistoryRecoveryInputLabel(activeHistoryEntry) : "Recovery tx hints (optional)"}</Text>
           <Text style={styles.inlineHint}>
-            Paste observed route tx hashes or explorer links from the original signing device if refresh alone is not enough. Smart Pay recover will normalize known tx ids and map them onto quoted route steps in order.
+            {activeHistoryEntry
+              ? getSmartPayHistoryRecoveryInputHint(activeHistoryEntry)
+              : "Paste observed route tx hashes or explorer links from the original signing device if refresh alone is not enough. Smart Pay recover will normalize known tx ids and map them onto quoted route steps in order."}
           </Text>
           <TextInput
             style={[styles.input, styles.payloadInput, styles.recoveryInput]}
@@ -1384,7 +1389,11 @@ export default function SmartPayScreen() {
               <Text style={styles.secondaryText}>{activeHistoryEntry ? getSmartPayHistoryRefreshButtonLabel(activeHistoryEntry, { hasAccountAuth }) : "Refresh status"}</Text>
             </Pressable>
             <Pressable style={styles.secondary} onPress={onRecover} disabled={busy || !canRecoverExecution || !canSubmitRecoveryInput}>
-              <Text style={styles.secondaryText}>Recover</Text>
+              <Text style={styles.secondaryText}>
+                {activeHistoryEntry
+                  ? getSmartPayHistoryRecoverButtonLabel(activeHistoryEntry, parsedRecoveryInput.refs.length)
+                  : "Recover"}
+              </Text>
             </Pressable>
           </View>
         </View>
