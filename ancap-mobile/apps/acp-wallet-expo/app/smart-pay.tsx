@@ -46,6 +46,7 @@ import {
   getSmartPayHistoryAccessLabel,
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
+  getSmartPayHistoryRestoreHint,
   getSmartPayHistoryAdditionalProofHint,
   getSmartPayHistoryAdditionalProofProvenanceHint,
   getSmartPayHistoryAdditionalProofProvenanceLabel,
@@ -983,11 +984,7 @@ export default function SmartPayScreen() {
                       <Text style={styles.warning}>Error: {entry.execution.error}</Text>
                     ) : null}
                     <Text style={styles.inlineHint}>
-                      {hasSmartPayLiveSessionAccess(entry)
-                        ? "Tap to restore this live payment session."
-                        : hasAccountAuth
-                          ? "Tap to restore this snapshot, then refresh or recover through your signed-in ANCAP account."
-                          : "Tap to restore this receipt snapshot and quoted payment context."}
+                      {getSmartPayHistoryRestoreHint(entry, { hasAccountAuth })}
                     </Text>
                   </Pressable>
                 );

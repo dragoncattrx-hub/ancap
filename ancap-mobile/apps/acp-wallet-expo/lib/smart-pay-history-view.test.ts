@@ -14,6 +14,7 @@ import {
   getSmartPayHistoryAccessLabel,
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
+  getSmartPayHistoryRestoreHint,
   getSmartPayHistoryAdditionalProofHint,
   getSmartPayHistoryAdditionalProofProvenanceHint,
   getSmartPayHistoryAdditionalProofProvenanceLabel,
@@ -1011,6 +1012,100 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionLabel(snapshotOnly)).toBe("Snapshot only");
     expect(getSmartPayHistoryActionHint(snapshotOnly)).toContain(
       "otherwise only the saved snapshot is available"
+    );
+  });
+
+  it("tailors restore hints so restored history cards do not over-promise refresh/recover access", () => {
+    const liveAwaitingSignature = makeEntry("27-restore-live-awaiting", "awaiting_local_signature", {
+      snapshotOrigin: "local",
+    });
+    const backendRecoverable = makeEntry("27-restore-backend-recoverable", "pending_reconciliation", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+    });
+    const backendCompletedProofLag = makeEntry("27-restore-backend-proof-lag", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+      quote: {
+        ...makeEntry("27-restore-backend-proof-lag", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "5.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "4.9",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("27-restore-backend-proof-lag", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-restore-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-restore-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-restore-proof-lag-payout",
+            explorerUrl: "https://bscscan.com/tx/fixture-restore-proof-lag-payout",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("27-restore-backend-proof-lag", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-restore-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-restore-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+    const backendCompleted = makeEntry("27-restore-backend-completed", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+    });
+    const localSnapshotOnly = makeEntry("27-restore-local-snapshot", "failed", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+    });
+
+    expect(getSmartPayHistoryRestoreHint(liveAwaitingSignature)).toBe(
+      "Tap to restore this live payment session and finish the pending local signature on the original device."
+    );
+    expect(getSmartPayHistoryRestoreHint(backendRecoverable, { hasAccountAuth: true })).toBe(
+      "Tap to restore this snapshot, then refresh or recover through your signed-in ANCAP account."
+    );
+    expect(getSmartPayHistoryRestoreHint(backendCompletedProofLag, { hasAccountAuth: true })).toBe(
+      "Tap to restore this snapshot, then refresh receipt/proof sync through your signed-in ANCAP account."
+    );
+    expect(getSmartPayHistoryRestoreHint(backendCompleted, { hasAccountAuth: true })).toBe(
+      "Tap to restore this snapshot, then refresh receipt details through your signed-in ANCAP account."
+    );
+    expect(getSmartPayHistoryRestoreHint(localSnapshotOnly)).toBe(
+      "Tap to restore this saved failure snapshot and quoted payment context."
     );
   });
 

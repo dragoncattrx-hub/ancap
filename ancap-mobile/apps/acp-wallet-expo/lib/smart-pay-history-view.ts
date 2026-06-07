@@ -1743,6 +1743,74 @@ export function getSmartPayHistoryActionHint(
   });
 }
 
+export function getSmartPayHistoryRestoreHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {}
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+  const refreshAvailable = canSmartPayRefreshOrRecover(refreshOptions);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
+
+  if (hasSmartPayLiveSessionAccess(entry)) {
+    return entry.execution.status === "awaiting_local_signature"
+      ? "Tap to restore this live payment session and finish the pending local signature on the original device."
+      : "Tap to restore this live payment session.";
+  }
+
+  if (!refreshAvailable) {
+    switch (entry.execution.status) {
+      case "awaiting_local_signature":
+        return "Tap to restore this snapshot. The original signing device session is still required before this payment can continue.";
+      case "completed":
+        return "Tap to restore this receipt snapshot and quoted payment context.";
+      case "failed":
+        return "Tap to restore this saved failure snapshot and quoted payment context.";
+      default:
+        return "Tap to restore this saved snapshot and quoted payment context.";
+    }
+  }
+
+  if (entry.execution.status === "awaiting_local_signature") {
+    return options.hasAccountAuth
+      ? "Tap to restore this snapshot. Your signed-in ANCAP account can refresh status, but the original device session is still required to sign."
+      : "Tap to restore this snapshot, then refresh status from the original device session.";
+  }
+
+  if (recoverAvailable) {
+    return options.hasAccountAuth
+      ? "Tap to restore this snapshot, then refresh or recover through your signed-in ANCAP account."
+      : "Tap to restore this snapshot, then refresh or recover through the original device session.";
+  }
+
+  if (entry.execution.status === "completed") {
+    if (hasSmartPayHistoryReceiptProofLag(entry)) {
+      return options.hasAccountAuth
+        ? "Tap to restore this snapshot, then refresh receipt/proof sync through your signed-in ANCAP account."
+        : "Tap to restore this snapshot, then refresh receipt/proof sync from the original device session.";
+    }
+
+    return options.hasAccountAuth
+      ? "Tap to restore this snapshot, then refresh receipt details through your signed-in ANCAP account."
+      : "Tap to restore this receipt snapshot and quoted payment context.";
+  }
+
+  if (entry.execution.status === "failed") {
+    return options.hasAccountAuth
+      ? "Tap to restore this snapshot, then refresh failure details through your signed-in ANCAP account."
+      : "Tap to restore this saved failure snapshot and quoted payment context.";
+  }
+
+  return options.hasAccountAuth
+    ? "Tap to restore this snapshot, then refresh status through your signed-in ANCAP account."
+    : "Tap to restore this saved snapshot and quoted payment context.";
+}
+
 function hasSmartPayHistoryReceiptProofLag(entry: SmartPayHistoryEntry): boolean {
   if (!entry.receipt) {
     return false;
