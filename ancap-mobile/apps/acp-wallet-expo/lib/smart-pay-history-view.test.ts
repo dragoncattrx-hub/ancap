@@ -39,6 +39,8 @@ import {
   getSmartPayHistoryProofLabel,
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
+  getSmartPayHistoryProofSyncHint,
+  getSmartPayHistoryProofSyncLabel,
   getSmartPayHistoryRecoverButtonLabel,
   getSmartPayHistoryRecoveryInputHint,
   getSmartPayHistoryRecoveryInputLabel,
@@ -1392,6 +1394,43 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryNextStepHint(completedWithReceiptProofLag, {}, now)).toContain(
       "reopen the original device session"
+    );
+
+    expect(getSmartPayHistoryProofSyncLabel(completedMissingProof, { hasAccountAuth: true }, now)).toBe(
+      "Proof sync state: final proof refresh available"
+    );
+    expect(getSmartPayHistoryProofSyncHint(completedMissingProof, { hasAccountAuth: true }, now)).toContain(
+      "still lack linked proof refs"
+    );
+    expect(getSmartPayHistoryProofSyncLabel(completedWithReceiptProofLag, { hasAccountAuth: true }, now)).toBe(
+      "Proof sync state: receipt lags execution proof"
+    );
+    expect(getSmartPayHistoryProofSyncHint(completedWithReceiptProofLag, { hasAccountAuth: true }, now)).toContain(
+      "saved execution history is ahead of the stored receipt snapshot"
+    );
+    expect(getSmartPayHistoryProofSyncLabel(completedWithReceiptProofLag, {}, now)).toBe(
+      "Proof sync state: receipt proof lag is snapshot-only"
+    );
+    expect(getSmartPayHistoryProofSyncHint(completedWithReceiptProofLag, {}, now)).toContain(
+      "cannot refresh them anonymously"
+    );
+    expect(getSmartPayHistoryProofSyncLabel(staleRecoverable, { hasAccountAuth: false }, now)).toBe(
+      "Proof sync state: route proof still syncing"
+    );
+    expect(getSmartPayHistoryProofSyncHint(staleRecoverable, { hasAccountAuth: false }, now)).toContain(
+      "Refresh status or recover with observed tx refs"
+    );
+    expect(getSmartPayHistoryProofSyncLabel(awaitingLocal)).toBe(
+      "Proof sync state: waiting for signing device"
+    );
+    expect(getSmartPayHistoryProofSyncHint(awaitingLocal)).toContain(
+      "completes the pending local signature"
+    );
+    expect(getSmartPayHistoryProofSyncLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(
+      "Proof sync state: synced snapshot should be refreshed"
+    );
+    expect(getSmartPayHistoryProofSyncHint(completedLinkedButStale, { hasAccountAuth: true }, now)).toContain(
+      "internally consistent"
     );
 
     expect(getSmartPayHistoryNextStepLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(

@@ -73,6 +73,8 @@ import {
   getSmartPayHistoryProofProvenanceHint,
   getSmartPayHistoryProofProvenanceLabel,
   getSmartPayHistoryProofQualityHint,
+  getSmartPayHistoryProofSyncHint,
+  getSmartPayHistoryProofSyncLabel,
   getSmartPayHistoryProofQualityLabel,
   getSmartPayHistoryProofRouteDetailHint,
   getSmartPayHistoryProofRouteDetailLabel,
@@ -946,6 +948,8 @@ export default function SmartPayScreen() {
                     ) : null}
                     <Text style={styles.meta}>{getSmartPayHistoryProofLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofHint(entry)}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryProofSyncLabel(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.inlineHint}>{getSmartPayHistoryProofSyncHint(entry, { hasAccountAuth })}</Text>
                     {proofRouteDetailLabel ? (
                       <Text style={styles.meta}>{proofRouteDetailLabel}</Text>
                     ) : null}
@@ -1461,6 +1465,8 @@ export default function SmartPayScreen() {
           <Text style={styles.label}>Route proof coverage</Text>
           <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
           <Text style={styles.inlineHint}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryProofSyncLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.inlineHint}>{getSmartPayHistoryProofSyncHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           {activeProofRouteDetailLabel ? (
             <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text>
           ) : null}

@@ -1874,6 +1874,106 @@ function hasIncompleteSmartPayHistoryProof(entry: SmartPayHistoryEntry): boolean
   return Boolean(entry.receipt && linkedTxCount === 0);
 }
 
+export function getSmartPayHistoryProofSyncLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
+): string {
+  const refreshAvailable = canSmartPayRefreshOrRecover({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  });
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const receiptProofLag = hasSmartPayHistoryReceiptProofLag(entry);
+  const stale = isSmartPayHistoryStale(entry, now);
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return "Proof sync state: waiting for signing device";
+    case "pending_reconciliation":
+      return "Proof sync state: route proof still syncing";
+    case "failed":
+      return incompleteProof
+        ? "Proof sync state: failed before proof completion"
+        : "Proof sync state: failed with saved proof context";
+    case "completed":
+      if (incompleteProof) {
+        return refreshAvailable
+          ? "Proof sync state: final proof refresh available"
+          : "Proof sync state: final proof missing from restored snapshot";
+      }
+      if (receiptProofLag) {
+        return refreshAvailable
+          ? "Proof sync state: receipt lags execution proof"
+          : "Proof sync state: receipt proof lag is snapshot-only";
+      }
+      if (stale && refreshAvailable) {
+        return "Proof sync state: synced snapshot should be refreshed";
+      }
+      return "Proof sync state: receipt and proof synced";
+    default:
+      return refreshAvailable
+        ? "Proof sync state: refresh available"
+        : "Proof sync state: snapshot only";
+  }
+}
+
+export function getSmartPayHistoryProofSyncHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
+): string {
+  const refreshAvailable = canSmartPayRefreshOrRecover({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  });
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const receiptProofLag = hasSmartPayHistoryReceiptProofLag(entry);
+  const stale = isSmartPayHistoryStale(entry, now);
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      return hasSmartPayLiveSessionAccess(entry)
+        ? "No route proof can sync until the original device completes the pending local signature."
+        : "No route proof can sync from this restored snapshot until the original signing device session is reopened.";
+    case "pending_reconciliation":
+      if (refreshAvailable) {
+        return incompleteProof
+          ? "This route is still reconciling. Refresh status or recover with observed tx refs if newer proof should already exist elsewhere."
+          : "This route is still reconciling. Refresh status or recover with observed tx refs if newer route-step proof should exist elsewhere, even though at least one execution proof ref is already saved.";
+      }
+      return incompleteProof
+        ? "This route is still reconciling, but this snapshot cannot refresh anonymously from here. Sign in or restore the original device session before trusting current proof coverage."
+        : "This route is still reconciling, but this snapshot cannot refresh anonymously from here even though some execution proof is already saved.";
+    case "failed":
+      if (incompleteProof) {
+        return refreshAvailable
+          ? "This execution failed before full proof coverage was captured. Refresh or recover if route activity may have continued elsewhere."
+          : "This saved failure snapshot is missing full proof coverage and cannot refresh anonymously from here.";
+      }
+      return "This failure snapshot already retains the available saved proof context for inspection.";
+    case "completed":
+      if (incompleteProof) {
+        return refreshAvailable
+          ? "The payment is final, but some quoted or stored receipt route steps still lack linked proof refs. Refresh status/receipt for a newer finalized proof snapshot."
+          : "The payment is final, but this restored snapshot still lacks some linked proof refs. Sign in or restore the original device session for a newer finalized proof snapshot.";
+      }
+      if (receiptProofLag) {
+        return refreshAvailable
+          ? "All observed proof refs are not yet receipt-backed here: saved execution history is ahead of the stored receipt snapshot. Refresh receipt data to pull those proof refs into the finalized receipt view if reconciliation has finished."
+          : "Saved execution history already knows about more proof refs than this restored receipt snapshot exposes, but this device cannot refresh them anonymously right now.";
+      }
+      if (stale && refreshAvailable) {
+        return "The saved receipt/proof snapshot is internally consistent, but it is aging; refresh before relying on it for the latest final fee or proof details.";
+      }
+      return "The saved receipt snapshot and linked proof refs are aligned for this device's latest known final state.";
+    default:
+      return refreshAvailable
+        ? "Refresh this snapshot to confirm whether newer proof sync data is available."
+        : "Only the saved proof-sync context is available on this device right now.";
+  }
+}
+
 function isSmartPayHistoryStale(
   entry: SmartPayHistoryEntry,
   now = Date.now(),
