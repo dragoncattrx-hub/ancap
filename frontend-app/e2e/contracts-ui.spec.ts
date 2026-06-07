@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { createPasswordUserSession, seedAuthenticatedPage } from "./support/auth";
+
 test("contracts UI: accept + complete triggers payout", async ({ page, request }) => {
   const baseUrl =
     process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
@@ -8,59 +10,18 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   const idk = () => `idk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  // Create + login user to get a valid JWT for UI
-  const email = `e2e_${uniq()}@example.com`;
-  const password = `pw_${uniq()}`;
   const turnstileToken = process.env.PLAYWRIGHT_TURNSTILE_TOKEN;
-  const regPayload: Record<string, unknown> = { email, password, display_name: "E2E Contracts" };
-  if (turnstileToken) regPayload.turnstile_token = turnstileToken;
-  const reg = await request.post(`${apiBase}/auth/users`, {
-    data: regPayload,
+  const { token, userData } = await createPasswordUserSession(request, {
+    apiBase,
+    displayName: "E2E Contracts",
+    emailPrefix: "e2e",
+    turnstileToken,
   });
-  if (!reg.ok() && reg.status() !== 400) {
-    throw new Error(`register failed: ${reg.status()} ${await reg.text()}`);
-  }
-  const loginPayload: Record<string, unknown> = { email, password };
-  if (turnstileToken) loginPayload.turnstile_token = turnstileToken;
-  const login = await request.post(`${apiBase}/auth/login`, {
-    data: loginPayload,
-  });
-  if (!login.ok()) throw new Error(`login failed: ${login.status()} ${await login.text()}`);
-  const token = (await login.json()).access_token as string;
-
-  const me = await request.get(`${apiBase}/users/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!me.ok()) throw new Error(`me failed: ${me.status()} ${await me.text()}`);
-  const meJson = await me.json();
-  const userData = {
-    id: meJson.id,
-    email: meJson.email,
-    display_name: meJson.display_name || (meJson.email || "user").split("@")[0],
-  };
-  await page.addInitScript(
-    ({ u }) => {
-      localStorage.setItem("ancap_user", JSON.stringify(u));
-    },
-    { u: userData },
-  );
-  const authCookieTargets = Array.from(new Set([baseUrl, new URL(apiBase).origin]));
-  await page.context().addCookies(
-    authCookieTargets.map((url) => ({
-      name: "ancap_token",
-      value: token,
-      url,
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict" as const,
-    })),
-  );
-  await page.route("**/users/me", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(userData),
-    });
+  await seedAuthenticatedPage(page, {
+    baseUrl,
+    apiBase,
+    token,
+    userData,
   });
 
   const authHeaders = { Authorization: `Bearer ${token}`, "X-Requested-With": "XMLHttpRequest" };
