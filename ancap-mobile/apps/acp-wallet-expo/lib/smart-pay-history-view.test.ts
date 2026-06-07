@@ -1013,6 +1013,9 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionHint(snapshotOnly)).toContain(
       "otherwise only the saved snapshot is available"
     );
+    expect(getSmartPayHistoryActionHint(receiptProofLag)).toContain(
+      "Sign in to the owning ANCAP account or restore the original device session"
+    );
   });
 
   it("tailors restore hints so restored history cards do not over-promise refresh/recover access", () => {
@@ -1106,6 +1109,70 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryRestoreHint(localSnapshotOnly)).toBe(
       "Tap to restore this saved failure snapshot and quoted payment context."
+    );
+
+    const localCompletedProofLagSnapshot = makeEntry("27-restore-local-proof-lag", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+      quote: {
+        ...makeEntry("27-restore-local-proof-lag", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "3.2",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "3.1",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("27-restore-local-proof-lag", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-restore-local-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-restore-local-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+          {
+            role: "merchant_payout",
+            network: "bsc",
+            txid: "fixture-restore-local-proof-lag-payout",
+            explorerUrl: "https://bscscan.com/tx/fixture-restore-local-proof-lag-payout",
+            routeStepIndex: 2,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("27-restore-local-proof-lag", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-restore-local-proof-lag-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-restore-local-proof-lag-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+    expect(getSmartPayHistoryRestoreHint(localCompletedProofLagSnapshot)).toBe(
+      "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need receipt proof sync beyond this saved snapshot."
     );
   });
 
@@ -1281,6 +1348,12 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryNextStepHint(completedWithReceiptProofLag, { hasAccountAuth: true }, now)).toContain(
       "receipt snapshot still lags behind execution history"
+    );
+    expect(getSmartPayHistoryNextStepLabel(completedWithReceiptProofLag, {}, now)).toBe(
+      "Next step: sign in or restore original device for proof sync"
+    );
+    expect(getSmartPayHistoryNextStepHint(completedWithReceiptProofLag, {}, now)).toContain(
+      "reopen the original device session"
     );
 
     expect(getSmartPayHistoryNextStepLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(

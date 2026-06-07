@@ -1721,6 +1721,9 @@ export function getSmartPayHistoryActionHint(
   }
 
   if (!canSmartPayRefreshOrRecover(refreshOptions)) {
+    if (entry.execution.status === "completed" && hasSmartPayHistoryReceiptProofLag(entry)) {
+      return "This saved receipt snapshot still lags behind execution history for some observed proof refs. Sign in to the owning ANCAP account or restore the original device session if you need a newer receipt snapshot that includes those proof links.";
+    }
     return getSmartPayHistoryAccessHint(entry, options);
   }
 
@@ -1768,6 +1771,9 @@ export function getSmartPayHistoryRestoreHint(
       case "awaiting_local_signature":
         return "Tap to restore this snapshot. The original signing device session is still required before this payment can continue.";
       case "completed":
+        if (hasSmartPayHistoryReceiptProofLag(entry)) {
+          return "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need receipt proof sync beyond this saved snapshot.";
+        }
         return "Tap to restore this receipt snapshot and quoted payment context.";
       case "failed":
         return "Tap to restore this saved failure snapshot and quoted payment context.";
@@ -1883,8 +1889,10 @@ export function getSmartPayHistoryNextStepLabel(
       if (incompleteProof) {
         return "Next step: inspect the saved receipt snapshot";
       }
-      if (refreshAvailable && hasSmartPayHistoryReceiptProofLag(entry)) {
-        return "Next step: refresh receipt proof sync";
+      if (hasSmartPayHistoryReceiptProofLag(entry)) {
+        return refreshAvailable
+          ? "Next step: refresh receipt proof sync"
+          : "Next step: sign in or restore original device for proof sync";
       }
       if (refreshAvailable && stale) {
         return "Next step: refresh the receipt snapshot";
@@ -1943,8 +1951,10 @@ export function getSmartPayHistoryNextStepHint(
       if (incompleteProof) {
         return "This payment is completed, but the saved snapshot still lacks full linked proof coverage. Sign in or restore the original device session if you need newer receipt/proof data.";
       }
-      if (refreshAvailable && hasSmartPayHistoryReceiptProofLag(entry)) {
-        return "This payment is completed, but the saved receipt snapshot still lags behind execution history for some observed proof refs. Refresh status/receipt to sync those execution-only proof links into a newer receipt snapshot if backend reconciliation has caught up.";
+      if (hasSmartPayHistoryReceiptProofLag(entry)) {
+        return refreshAvailable
+          ? "This payment is completed, but the saved receipt snapshot still lags behind execution history for some observed proof refs. Refresh status/receipt to sync those execution-only proof links into a newer receipt snapshot if backend reconciliation has caught up."
+          : "This payment is completed, but the saved receipt snapshot still lags behind execution history for some observed proof refs. Sign in to the same ANCAP account or reopen the original device session if you need a newer receipt snapshot that includes those proof links.";
       }
       if (refreshAvailable && stale) {
         return "This saved receipt/proof snapshot is getting stale. Refresh it before relying on final fee totals or proof links elsewhere.";
