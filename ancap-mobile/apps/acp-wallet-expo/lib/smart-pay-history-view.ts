@@ -647,6 +647,12 @@ function getNormalizedSmartPayReceiptRouteSummaryLine(summaryLine: string | unde
   return summaryLine?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
 }
 
+function getSmartPayReceiptRouteSummaryNetwork(summaryLine: string | undefined): string {
+  const normalizedSummaryLine = getNormalizedSmartPayReceiptRouteSummaryLine(summaryLine);
+  const match = normalizedSummaryLine.match(/\bon\s+([a-z0-9_-]+)\b/);
+  return match?.[1]?.trim() ?? "";
+}
+
 function getSmartPayReceiptRouteProofRoleAliases(normalizedRole: string): string[] {
   switch (normalizedRole) {
     case "payment":
@@ -666,6 +672,12 @@ function isSmartPayReceiptRouteProofTxRefCompatible(
   stepIndex: number
 ): boolean {
   if (ref.routeStepIndex != null && ref.routeStepIndex !== stepIndex) {
+    return false;
+  }
+
+  const normalizedSummaryNetwork = getSmartPayReceiptRouteSummaryNetwork(summaryLine);
+  const normalizedRefNetwork = normalizeSmartPayTxRefNetwork(ref.network);
+  if (normalizedSummaryNetwork && normalizedRefNetwork && normalizedSummaryNetwork !== normalizedRefNetwork) {
     return false;
   }
 

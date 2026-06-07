@@ -3180,6 +3180,106 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("does not let a stored receipt proof ref with the wrong network satisfy a summary step", () => {
+    const receiptSummaryOnly = makeEntry("20d-network-mismatch", "completed", {
+      quote: {
+        ...makeEntry("20d-network-mismatch", "completed").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("20d-network-mismatch", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 2,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "payment",
+            network: "bsc",
+            txid: "fixture-proof-network-mismatch",
+            explorerUrl: "https://bscscan.com/tx/fixture-proof-network-mismatch",
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-network-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-network-mismatch",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("20d-network-mismatch", "completed").receipt!,
+        routeSummary: ["1. transfer ACP -> ACP on acp", "2. settlement review pending"],
+        txRefs: [
+          {
+            role: "payment",
+            network: "bsc",
+            txid: "fixture-proof-network-mismatch",
+            explorerUrl: "https://bscscan.com/tx/fixture-proof-network-mismatch",
+          },
+          {
+            role: "refund",
+            network: "acp",
+            txid: "fixture-refund-network-mismatch",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-network-mismatch",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteSteps(receiptSummaryOnly)).toEqual([
+      {
+        key: "receipt_route|1",
+        stepIndex: 1,
+        role: "receipt_route",
+        network: "unknown",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 1: transfer ACP -> ACP on acp",
+        status: "pending",
+        txRef: null,
+      },
+      {
+        key: "receipt_route|2",
+        stepIndex: 2,
+        role: "receipt_route",
+        network: "unknown",
+        kind: "receipt_route",
+        fromAsset: "—",
+        toAsset: "—",
+        label: "Receipt step 2: settlement review pending",
+        status: "pending",
+        txRef: null,
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefs(receiptSummaryOnly)).toEqual([
+      {
+        role: "payment",
+        network: "bsc",
+        txid: "fixture-proof-network-mismatch",
+        explorerUrl: "https://bscscan.com/tx/fixture-proof-network-mismatch",
+      },
+      {
+        role: "refund",
+        network: "acp",
+        txid: "fixture-refund-network-mismatch",
+        explorerUrl: "https://ancap.cloud/acp/tx/fixture-refund-network-mismatch",
+      },
+    ]);
+    expect(getSmartPayHistoryAdditionalProofTxRefHint(receiptSummaryOnly, getSmartPayHistoryAdditionalProofTxRefs(receiptSummaryOnly)[0]!)).toBe(
+      "payment on bsc is stored separately because it does not map to any stored receipt route step yet."
+    );
+    expect(getSmartPayHistoryAdditionalProofHint(receiptSummaryOnly)).toBe(
+      "Additional observed tx refs: payment on bsc — payment on bsc is stored separately because it does not map to any stored receipt route step yet. refund on acp — refund on acp is stored separately because it does not map to any stored receipt route step yet."
+    );
+    expect(getSmartPayHistoryPendingProofHint(receiptSummaryOnly)).toBe(
+      "Pending stored receipt route proof (2 steps): step 1 transfer ACP -> ACP on acp → step 2 settlement review pending."
+    );
+  });
+
   it("does not let a generic transfer-style proof ref satisfy unrelated stored receipt summary text", () => {
     const receiptSummaryOnly = makeEntry("20d-transfer-mismatch", "completed", {
       quote: {
