@@ -15,6 +15,8 @@ import {
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
   getSmartPayHistoryAdditionalProofHint,
+  getSmartPayHistoryAdditionalProofProvenanceHint,
+  getSmartPayHistoryAdditionalProofProvenanceLabel,
   getSmartPayHistoryNextStepHint,
   getSmartPayHistoryNextStepLabel,
   getSmartPayHistoryAdditionalProofTxRefHint,
@@ -1767,13 +1769,27 @@ describe("smart pay history view helpers", () => {
     });
 
     const routeSteps = getSmartPayHistoryProofRouteSteps(mixedProof);
+    const additionalProofRefs = getSmartPayHistoryAdditionalProofTxRefs(mixedProof);
+
+    expect(getSmartPayHistoryProofProvenanceLabel(mixedProof)).toBe(
+      "Proof provenance: 1 receipt-backed · 1 execution-only"
+    );
+    expect(getSmartPayHistoryProofProvenanceHint(mixedProof)).toBe(
+      "Some linked proof refs are already stored in the saved receipt snapshot. Execution-only refs are still visible only from saved execution history until a newer receipt snapshot includes them."
+    );
+    expect(getSmartPayHistoryAdditionalProofProvenanceLabel(mixedProof)).toBe(
+      "Additional proof provenance: 0 receipt-backed · 1 execution-only"
+    );
+    expect(getSmartPayHistoryAdditionalProofProvenanceHint(mixedProof)).toBe(
+      "Additional proof refs are currently visible only from saved execution history. Refresh status/receipt if you need a newer receipt snapshot to include them."
+    );
     expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[0]!.txRef!)).toBe(
       "This tx ref is already backed by the saved receipt snapshot."
     );
     expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[1]!.txRef!)).toBe(
       "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
     );
-    expect(getSmartPayHistoryTxRefStorageHint(mixedProof, getSmartPayHistoryAdditionalProofTxRefs(mixedProof)[0]!)).toBe(
+    expect(getSmartPayHistoryTxRefStorageHint(mixedProof, additionalProofRefs[0]!)).toBe(
       "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
     );
 

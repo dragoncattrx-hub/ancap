@@ -1164,8 +1164,19 @@ function formatSmartPayHistoryTxRefProvenanceHint(
   return `All ${subjectPlural} are already backed by the saved receipt snapshot.`;
 }
 
+function getSmartPayHistoryLinkedProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
+  const routeSteps = getSmartPayHistoryProofRouteSteps(entry);
+  if (routeSteps.length > 0) {
+    return routeSteps
+      .map((step) => step.txRef)
+      .filter((ref): ref is NonNullable<typeof ref> => Boolean(ref));
+  }
+
+  return getSmartPayHistoryProofTxRefs(entry);
+}
+
 function getSmartPayHistoryProofProvenanceCounts(entry: SmartPayHistoryEntry) {
-  return getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryProofTxRefs(entry));
+  return getSmartPayHistoryTxRefProvenanceCounts(entry, getSmartPayHistoryLinkedProofTxRefs(entry));
 }
 
 export function getSmartPayHistoryProofProvenanceLabel(entry: SmartPayHistoryEntry): string | null {
