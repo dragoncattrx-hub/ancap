@@ -25,6 +25,7 @@ import {
   getSmartPayHistoryAmountLabel,
   getSmartPayHistoryFreshnessHint,
   getSmartPayHistoryFreshnessLabel,
+  getSmartPayHistoryRefreshButtonLabel,
   getSmartPayHistoryMerchantHint,
   getSmartPayHistoryNetworkFeesHint,
   getSmartPayHistoryNetworkFeesLabel,
@@ -900,11 +901,15 @@ describe("smart pay history view helpers", () => {
       snapshotOrigin: "local",
     });
 
+    expect(getSmartPayHistoryRefreshButtonLabel(localRecoverable)).toBe("Refresh status");
     expect(getSmartPayHistoryActionLabel(localRecoverable)).toBe("Refresh status + recover available");
     expect(getSmartPayHistoryActionHint(localRecoverable)).toContain(
       "original device-local session token"
     );
 
+    expect(getSmartPayHistoryRefreshButtonLabel(backendFinalized, { hasAccountAuth: true })).toBe(
+      "Refresh receipt"
+    );
     expect(getSmartPayHistoryActionLabel(backendFinalized, { hasAccountAuth: true })).toBe(
       "Refresh receipt only"
     );
@@ -971,6 +976,9 @@ describe("smart pay history view helpers", () => {
       },
     });
 
+    expect(getSmartPayHistoryRefreshButtonLabel(receiptProofLag, { hasAccountAuth: true })).toBe(
+      "Refresh receipt + proof sync"
+    );
     expect(getSmartPayHistoryActionLabel(receiptProofLag, { hasAccountAuth: true })).toBe(
       "Refresh receipt + proof sync"
     );
@@ -978,6 +986,7 @@ describe("smart pay history view helpers", () => {
       "still visible only from saved execution history"
     );
 
+    expect(getSmartPayHistoryRefreshButtonLabel(awaitingLocalLive)).toBe("Refresh status");
     expect(getSmartPayHistoryActionLabel(awaitingLocalLive)).toBe("Restore original session");
     expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
       "needs the pending local signature"
@@ -986,6 +995,9 @@ describe("smart pay history view helpers", () => {
       "recovery only helps after you have observed a broadcast tx"
     );
 
+    expect(getSmartPayHistoryRefreshButtonLabel(awaitingLocalBackendOnly, { hasAccountAuth: true })).toBe(
+      "Refresh status"
+    );
     expect(getSmartPayHistoryActionLabel(awaitingLocalBackendOnly, { hasAccountAuth: true })).toBe(
       "Refresh status only"
     );
@@ -993,6 +1005,7 @@ describe("smart pay history view helpers", () => {
       "cannot create the missing local signature"
     );
 
+    expect(getSmartPayHistoryRefreshButtonLabel(snapshotOnly)).toBe("Refresh status");
     expect(getSmartPayHistoryActionLabel(snapshotOnly)).toBe("Snapshot only");
     expect(getSmartPayHistoryActionHint(snapshotOnly)).toContain(
       "otherwise only the saved snapshot is available"

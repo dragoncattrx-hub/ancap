@@ -57,6 +57,7 @@ import {
   getSmartPayHistoryAmountLabel,
   getSmartPayHistoryFreshnessHint,
   getSmartPayHistoryFreshnessLabel,
+  getSmartPayHistoryRefreshButtonLabel,
   getSmartPayHistoryReceiptDisplay,
   getSmartPayHistoryMerchantHint,
   getSmartPayHistoryNetworkFeesHint,
@@ -1363,7 +1364,7 @@ export default function SmartPayScreen() {
           )}
           <View style={styles.row}>
             <Pressable style={styles.secondary} onPress={onRefreshExecution} disabled={busy || !canRefreshExecution}>
-              <Text style={styles.secondaryText}>Refresh status</Text>
+              <Text style={styles.secondaryText}>{activeHistoryEntry ? getSmartPayHistoryRefreshButtonLabel(activeHistoryEntry, { hasAccountAuth }) : "Refresh status"}</Text>
             </Pressable>
             <Pressable style={styles.secondary} onPress={onRecover} disabled={busy || !canRecoverExecution || !canSubmitRecoveryInput}>
               <Text style={styles.secondaryText}>Recover</Text>

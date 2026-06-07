@@ -1388,6 +1388,7 @@ export type SmartPayHistoryAccessOptions = {
 export type SmartPayHistoryFreshnessOptions = SmartPayHistoryAccessOptions;
 export type SmartPayHistoryActionOptions = SmartPayHistoryAccessOptions;
 export type SmartPayHistoryNextStepOptions = SmartPayHistoryAccessOptions;
+export type SmartPayHistoryRefreshButtonOptions = SmartPayHistoryAccessOptions;
 
 export type SmartPayExecutionAccessOptions = {
   sessionToken?: string | null;
@@ -1560,6 +1561,31 @@ export function getSmartPayHistoryAccessHint(
     return "This snapshot does not include the original device-local session token, but authenticated backend history on this signed-in device can still refresh status/receipt and attempt recovery for executions owned by the same ANCAP account.";
   }
   return "This snapshot does not include the original device-local session token. If this device is signed into the same ANCAP account, backend history can still refresh status/receipt and attempt recovery; otherwise only the saved snapshot is available.";
+}
+
+export function getSmartPayHistoryRefreshButtonLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryRefreshButtonOptions = {}
+): string {
+  const refreshAvailable = canSmartPayRefreshOrRecover({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  });
+
+  if (!refreshAvailable) {
+    return "Refresh status";
+  }
+
+  switch (entry.execution.status) {
+    case "completed":
+      return hasSmartPayHistoryReceiptProofLag(entry)
+        ? "Refresh receipt + proof sync"
+        : "Refresh receipt";
+    case "failed":
+      return "Refresh failure details";
+    default:
+      return "Refresh status";
+  }
 }
 
 export function getSmartPayHistoryActionLabel(
