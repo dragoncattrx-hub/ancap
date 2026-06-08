@@ -1187,7 +1187,11 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>Next action: {activeExecutionView.nextAction || "—"}</Text>
           {activeHistoryEntry ? (
             <>
+              <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+              <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryNextStepLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+              <Text style={styles.meta}>{getSmartPayHistoryAccessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+              <Text style={styles.meta}>{getSmartPayHistoryActionHint(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(activeHistoryEntry, { hasAccountAuth })}</Text>
             </>
           ) : null}
@@ -1202,6 +1206,8 @@ export default function SmartPayScreen() {
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry)}</Text> : null}
+          {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofSyncLabel(activeHistoryEntry, { hasAccountAuth })}</Text> : null}
+          {activeHistoryEntry ? <Text style={styles.inlineHint}>{getSmartPayHistoryProofSyncHint(activeHistoryEntry, { hasAccountAuth })}</Text> : null}
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}
           {activeProofRouteDetailHint ? <Text style={styles.inlineHint}>{activeProofRouteDetailHint}</Text> : null}
           {activeProofQualityLabel ? <Text style={styles.meta}>{activeProofQualityLabel}</Text> : null}
