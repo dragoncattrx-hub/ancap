@@ -890,6 +890,7 @@ describe("smart pay history view helpers", () => {
   });
 
   it("summarizes whether a history snapshot can refresh, recover, or only restore static context", () => {
+    const now = Date.parse("2026-05-28T18:10:00.000Z");
     const localRecoverable = makeEntry("15", "pending_reconciliation", {
       snapshotOrigin: "local",
     });
@@ -915,13 +916,13 @@ describe("smart pay history view helpers", () => {
       "original device-local session token"
     );
 
-    expect(getSmartPayHistoryRefreshButtonLabel(backendFinalized, { hasAccountAuth: true })).toBe(
+    expect(getSmartPayHistoryRefreshButtonLabel(backendFinalized, { hasAccountAuth: true }, now)).toBe(
       "Refresh receipt"
     );
-    expect(getSmartPayHistoryActionLabel(backendFinalized, { hasAccountAuth: true })).toBe(
+    expect(getSmartPayHistoryActionLabel(backendFinalized, { hasAccountAuth: true }, now)).toBe(
       "Refresh receipt only"
     );
-    expect(getSmartPayHistoryActionHint(backendFinalized, { hasAccountAuth: true })).toContain(
+    expect(getSmartPayHistoryActionHint(backendFinalized, { hasAccountAuth: true }, now)).toContain(
       "already in a final state"
     );
 
@@ -990,16 +991,38 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionLabel(receiptProofLag, { hasAccountAuth: true })).toBe(
       "Refresh receipt + proof sync"
     );
-    expect(getSmartPayHistoryActionHint(receiptProofLag, { hasAccountAuth: true })).toContain(
+    expect(getSmartPayHistoryActionHint(receiptProofLag, { hasAccountAuth: true }, now)).toContain(
       "still visible only from saved execution history"
+    );
+
+    const staleCompletedReceipt = makeEntry("16d", "completed", {
+      receipt: {
+        ...makeEntry("16d", "completed").receipt!,
+        completedAt: "2026-05-28T17:00:00.000Z",
+      },
+      execution: {
+        ...makeEntry("16d", "completed").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+      },
+      savedAt: "2026-05-28T17:00:00.000Z",
+    });
+
+    expect(getSmartPayHistoryRefreshButtonLabel(staleCompletedReceipt, { hasAccountAuth: true }, now)).toBe(
+      "Refresh stale receipt snapshot"
+    );
+    expect(getSmartPayHistoryActionLabel(staleCompletedReceipt, { hasAccountAuth: true }, now)).toBe(
+      "Refresh stale receipt snapshot"
+    );
+    expect(getSmartPayHistoryActionHint(staleCompletedReceipt, { hasAccountAuth: true }, now)).toContain(
+      "saved receipt/proof snapshot is aging"
     );
 
     expect(getSmartPayHistoryRefreshButtonLabel(awaitingLocalLive)).toBe("Refresh status");
     expect(getSmartPayHistoryActionLabel(awaitingLocalLive)).toBe("Restore original session");
-    expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
+    expect(getSmartPayHistoryActionHint(awaitingLocalLive, {}, now)).toContain(
       "needs the pending local signature"
     );
-    expect(getSmartPayHistoryActionHint(awaitingLocalLive)).toContain(
+    expect(getSmartPayHistoryActionHint(awaitingLocalLive, {}, now)).toContain(
       "recovery only helps after you have observed a broadcast tx"
     );
 
@@ -1009,7 +1032,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionLabel(awaitingLocalBackendOnly, { hasAccountAuth: true })).toBe(
       "Refresh status only"
     );
-    expect(getSmartPayHistoryActionHint(awaitingLocalBackendOnly, { hasAccountAuth: true })).toContain(
+    expect(getSmartPayHistoryActionHint(awaitingLocalBackendOnly, { hasAccountAuth: true }, now)).toContain(
       "cannot create the missing local signature"
     );
 
@@ -1018,7 +1041,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionHint(snapshotOnly)).toContain(
       "otherwise only the saved snapshot is available"
     );
-    expect(getSmartPayHistoryActionHint(receiptProofLag)).toContain(
+    expect(getSmartPayHistoryActionHint(receiptProofLag, {}, now)).toContain(
       "Sign in to the owning ANCAP account or restore the original device session"
     );
 
@@ -1498,6 +1521,15 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryNextStepHint(completedLinkedButStale, { hasAccountAuth: true }, now)).toContain(
       "getting stale"
+    );
+    expect(getSmartPayHistoryRefreshButtonLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(
+      "Refresh stale receipt snapshot"
+    );
+    expect(getSmartPayHistoryActionLabel(completedLinkedButStale, { hasAccountAuth: true }, now)).toBe(
+      "Refresh stale receipt snapshot"
+    );
+    expect(getSmartPayHistoryActionHint(completedLinkedButStale, { hasAccountAuth: true }, now)).toContain(
+      "saved receipt/proof snapshot is aging"
     );
   });
 

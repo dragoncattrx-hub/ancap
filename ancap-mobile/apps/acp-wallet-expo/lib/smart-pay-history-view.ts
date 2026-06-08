@@ -1654,13 +1654,15 @@ export function getSmartPayHistoryAccessHint(
 
 export function getSmartPayHistoryRefreshButtonLabel(
   entry: SmartPayHistoryEntry,
-  options: SmartPayHistoryRefreshButtonOptions = {}
+  options: SmartPayHistoryRefreshButtonOptions = {},
+  now = Date.now()
 ): string {
   const refreshAvailable = canSmartPayRefreshOrRecover({
     sessionToken: entry.sessionToken,
     hasAccountAuth: options.hasAccountAuth,
   });
   const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const stale = isSmartPayHistoryStale(entry, now);
 
   if (!refreshAvailable) {
     return "Refresh status";
@@ -1671,9 +1673,10 @@ export function getSmartPayHistoryRefreshButtonLabel(
       if (incompleteProof) {
         return "Refresh final proof";
       }
-      return hasSmartPayHistoryReceiptProofLag(entry)
-        ? "Refresh receipt + proof sync"
-        : "Refresh receipt";
+      if (hasSmartPayHistoryReceiptProofLag(entry)) {
+        return "Refresh receipt + proof sync";
+      }
+      return stale ? "Refresh stale receipt snapshot" : "Refresh receipt";
     case "failed":
       return "Refresh failure details";
     default:
@@ -1683,7 +1686,8 @@ export function getSmartPayHistoryRefreshButtonLabel(
 
 export function getSmartPayHistoryActionLabel(
   entry: SmartPayHistoryEntry,
-  options: SmartPayHistoryActionOptions = {}
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
 ): string {
   const refreshAvailable = canSmartPayRefreshOrRecover({
     sessionToken: entry.sessionToken,
@@ -1695,6 +1699,7 @@ export function getSmartPayHistoryActionLabel(
     recoverable: entry.execution.recoverable,
   });
   const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const stale = isSmartPayHistoryStale(entry, now);
 
   if (entry.execution.status === "awaiting_local_signature") {
     if (hasSmartPayLiveSessionAccess(entry)) {
@@ -1712,9 +1717,10 @@ export function getSmartPayHistoryActionLabel(
         if (incompleteProof) {
           return "Refresh final proof";
         }
-        return hasSmartPayHistoryReceiptProofLag(entry)
-          ? "Refresh receipt + proof sync"
-          : "Refresh receipt only";
+        if (hasSmartPayHistoryReceiptProofLag(entry)) {
+          return "Refresh receipt + proof sync";
+        }
+        return stale ? "Refresh stale receipt snapshot" : "Refresh receipt only";
       case "failed":
         return "Refresh failure details";
       default:
@@ -1726,7 +1732,8 @@ export function getSmartPayHistoryActionLabel(
 
 export function getSmartPayHistoryActionHint(
   entry: SmartPayHistoryEntry,
-  options: SmartPayHistoryActionOptions = {}
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
 ): string {
   const refreshOptions = {
     sessionToken: entry.sessionToken,
@@ -1770,6 +1777,9 @@ export function getSmartPayHistoryActionHint(
     }
     if (hasSmartPayHistoryReceiptProofLag(entry)) {
       return "This execution is already complete, but some observed proof refs are still visible only from saved execution history. Refresh status/receipt to pull a newer receipt snapshot that includes the missing proof links if the backend has reconciled them.";
+    }
+    if (isSmartPayHistoryStale(entry, now)) {
+      return "This execution is already complete and internally consistent, but the saved receipt/proof snapshot is aging. Refresh the stale receipt snapshot before relying on final fee totals or proof links elsewhere.";
     }
   }
 
