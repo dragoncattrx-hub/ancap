@@ -1213,24 +1213,41 @@ describe("smart pay history view helpers", () => {
       sessionToken: null,
       snapshotOrigin: "backend",
     });
+    const backendCompletedStale = makeEntry("27-restore-backend-completed-stale", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+      savedAt: "2026-05-28T17:00:00.000Z",
+      execution: {
+        ...makeEntry("27-restore-backend-completed-stale", "completed").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+      },
+      receipt: {
+        ...makeEntry("27-restore-backend-completed-stale", "completed").receipt!,
+        completedAt: "2026-05-28T17:00:00.000Z",
+      },
+    });
     const localSnapshotOnly = makeEntry("27-restore-local-snapshot", "failed", {
       sessionToken: null,
       snapshotOrigin: "local",
     });
+    const now = Date.parse("2026-05-28T18:10:00.000Z");
 
-    expect(getSmartPayHistoryRestoreHint(liveAwaitingSignature)).toBe(
+    expect(getSmartPayHistoryRestoreHint(liveAwaitingSignature, {}, now)).toBe(
       "Tap to restore this live payment session and finish the pending local signature on the original device."
     );
-    expect(getSmartPayHistoryRestoreHint(backendRecoverable, { hasAccountAuth: true })).toBe(
+    expect(getSmartPayHistoryRestoreHint(backendRecoverable, { hasAccountAuth: true }, now)).toBe(
       "Tap to restore this snapshot, then refresh or recover through your signed-in ANCAP account."
     );
-    expect(getSmartPayHistoryRestoreHint(backendCompletedProofLag, { hasAccountAuth: true })).toBe(
+    expect(getSmartPayHistoryRestoreHint(backendCompletedProofLag, { hasAccountAuth: true }, now)).toBe(
       "Tap to restore this snapshot, then refresh receipt/proof sync through your signed-in ANCAP account."
     );
-    expect(getSmartPayHistoryRestoreHint(backendCompleted, { hasAccountAuth: true })).toBe(
+    expect(getSmartPayHistoryRestoreHint(backendCompleted, { hasAccountAuth: true }, now)).toBe(
       "Tap to restore this snapshot, then refresh receipt details through your signed-in ANCAP account."
     );
-    expect(getSmartPayHistoryRestoreHint(localSnapshotOnly)).toBe(
+    expect(getSmartPayHistoryRestoreHint(backendCompletedStale, { hasAccountAuth: true }, now)).toBe(
+      "Tap to restore this snapshot, then refresh the stale receipt snapshot through your signed-in ANCAP account."
+    );
+    expect(getSmartPayHistoryRestoreHint(localSnapshotOnly, {}, now)).toBe(
       "Tap to restore this saved failure snapshot and quoted payment context."
     );
 
@@ -1294,8 +1311,25 @@ describe("smart pay history view helpers", () => {
         ],
       },
     });
-    expect(getSmartPayHistoryRestoreHint(localCompletedProofLagSnapshot)).toBe(
+    expect(getSmartPayHistoryRestoreHint(localCompletedProofLagSnapshot, {}, now)).toBe(
       "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need receipt proof sync beyond this saved snapshot."
+    );
+
+    const localCompletedStaleSnapshot = makeEntry("27-restore-local-stale", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+      savedAt: "2026-05-28T17:00:00.000Z",
+      execution: {
+        ...makeEntry("27-restore-local-stale", "completed").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+      },
+      receipt: {
+        ...makeEntry("27-restore-local-stale", "completed").receipt!,
+        completedAt: "2026-05-28T17:00:00.000Z",
+      },
+    });
+    expect(getSmartPayHistoryRestoreHint(localCompletedStaleSnapshot, {}, now)).toBe(
+      "Tap to restore this stale receipt snapshot and inspect the saved proof context. Sign in or reopen the original device session later if you need fresher receipt/proof data."
     );
   });
 

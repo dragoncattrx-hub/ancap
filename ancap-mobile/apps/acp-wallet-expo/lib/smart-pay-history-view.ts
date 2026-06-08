@@ -1791,7 +1791,8 @@ export function getSmartPayHistoryActionHint(
 
 export function getSmartPayHistoryRestoreHint(
   entry: SmartPayHistoryEntry,
-  options: SmartPayHistoryActionOptions = {}
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
 ): string {
   const refreshOptions = {
     sessionToken: entry.sessionToken,
@@ -1803,6 +1804,7 @@ export function getSmartPayHistoryRestoreHint(
     recoverable: entry.execution.recoverable,
   });
   const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const stale = isSmartPayHistoryStale(entry, now);
 
   if (hasSmartPayLiveSessionAccess(entry)) {
     return entry.execution.status === "awaiting_local_signature"
@@ -1820,6 +1822,9 @@ export function getSmartPayHistoryRestoreHint(
         }
         if (hasSmartPayHistoryReceiptProofLag(entry)) {
           return "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need receipt proof sync beyond this saved snapshot.";
+        }
+        if (stale) {
+          return "Tap to restore this stale receipt snapshot and inspect the saved proof context. Sign in or reopen the original device session later if you need fresher receipt/proof data.";
         }
         return "Tap to restore this receipt snapshot and quoted payment context.";
       case "failed":
@@ -1851,6 +1856,11 @@ export function getSmartPayHistoryRestoreHint(
       return options.hasAccountAuth
         ? "Tap to restore this snapshot, then refresh receipt/proof sync through your signed-in ANCAP account."
         : "Tap to restore this snapshot, then refresh receipt/proof sync from the original device session.";
+    }
+    if (stale) {
+      return options.hasAccountAuth
+        ? "Tap to restore this snapshot, then refresh the stale receipt snapshot through your signed-in ANCAP account."
+        : "Tap to restore this snapshot, then refresh the stale receipt snapshot from the original device session.";
     }
 
     return options.hasAccountAuth
