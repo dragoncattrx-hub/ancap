@@ -476,13 +476,18 @@ export function getSmartPayHistoryExecutionProgressDetailLines(entry: SmartPayHi
 }
 
 export function getSmartPayHistoryExecutionProgressDisplayLines(entry: SmartPayHistoryEntry): string[] {
+  const progressLabel = getSmartPayHistoryProgressLabel(entry);
   const detailLines = getSmartPayHistoryExecutionProgressDetailLines(entry);
-  if (detailLines.length > 0) {
+
+  if (!progressLabel) {
     return detailLines;
   }
 
-  const progressLabel = getSmartPayHistoryProgressLabel(entry);
-  return progressLabel ? [progressLabel] : [];
+  if (detailLines.length === 0) {
+    return [progressLabel];
+  }
+
+  return detailLines[0] === progressLabel ? detailLines : [progressLabel, ...detailLines];
 }
 
 export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): string | null {

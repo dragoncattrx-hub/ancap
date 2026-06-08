@@ -1463,6 +1463,7 @@ describe("smart pay history view helpers", () => {
       "Pending roles: swap → merchant_payout",
     ]);
     expect(getSmartPayHistoryExecutionProgressDisplayLines(inFlight)).toEqual([
+      "Route progress: 1/3 tx observed · 2 route steps remaining",
       "Route progress detail: 1/3 tx observed",
       "Remaining route steps: 2",
       "Pending roles: swap → merchant_payout",
