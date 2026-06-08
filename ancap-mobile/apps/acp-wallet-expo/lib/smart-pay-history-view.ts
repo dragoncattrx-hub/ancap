@@ -1632,6 +1632,102 @@ export function getSmartPayRecoverHint(
   return getSmartPayRefreshOrRecoverHint(options);
 }
 
+export function getSmartPayHistoryRecoveryStateLabel(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {}
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+  const refreshAvailable = canSmartPayRefreshOrRecover(refreshOptions);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      if (hasSmartPayLiveSessionAccess(entry)) {
+        return "Recovery state: waiting for original device signature";
+      }
+      return refreshAvailable
+        ? "Recovery state: backend status-only until original device signs"
+        : "Recovery state: snapshot only until original device signs";
+    case "pending_reconciliation":
+      if (recoverAvailable) {
+        return "Recovery state: recoverable with observed tx refs";
+      }
+      return refreshAvailable
+        ? "Recovery state: refresh-only reconciliation snapshot"
+        : "Recovery state: sign in or restore original device for recovery";
+    case "failed":
+      if (recoverAvailable) {
+        return "Recovery state: recoverable after failure";
+      }
+      return refreshAvailable
+        ? "Recovery state: refresh-only failure snapshot"
+        : "Recovery state: saved failure snapshot only";
+    case "completed":
+      return refreshAvailable
+        ? "Recovery state: finalized — refresh only"
+        : "Recovery state: finalized snapshot only";
+    default:
+      if (recoverAvailable) {
+        return "Recovery state: recoverable with observed tx refs";
+      }
+      return refreshAvailable ? "Recovery state: refresh available" : "Recovery state: snapshot only";
+  }
+}
+
+export function getSmartPayHistoryRecoveryStateHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryActionOptions = {}
+): string {
+  const refreshOptions = {
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+  };
+  const refreshAvailable = canSmartPayRefreshOrRecover(refreshOptions);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    ...refreshOptions,
+    recoverable: entry.execution.recoverable,
+  });
+
+  switch (entry.execution.status) {
+    case "awaiting_local_signature":
+      if (hasSmartPayLiveSessionAccess(entry)) {
+        return "Recovery cannot begin until the original device completes the pending local signature and creates route txs to reconcile.";
+      }
+      return options.hasAccountAuth
+        ? "Backend history can refresh ownership-linked status, but recovery cannot begin until the original device creates the signed route tx."
+        : "This restored snapshot cannot create the missing signature by itself. Reopen the original device session before recovery or route progress can start.";
+    case "pending_reconciliation":
+      if (recoverAvailable) {
+        return "If refresh does not pull the latest route proof, paste observed tx hashes or explorer links to reconcile this in-flight route.";
+      }
+      return refreshAvailable
+        ? "This route can still refresh, but recovery is no longer available for this saved snapshot."
+        : "This in-flight snapshot cannot refresh or recover anonymously from here. Sign in or reopen the original device session first.";
+    case "failed":
+      if (recoverAvailable) {
+        return "If the route may have progressed despite the failure shown here, recover with observed tx hashes or explorer links before retrying.";
+      }
+      return refreshAvailable
+        ? "Recovery is no longer available for this failure snapshot, but refreshing can still pull newer backend error or receipt context."
+        : "Only the saved failure context is available here until you sign in or reopen the original device session.";
+    case "completed":
+      return refreshAvailable
+        ? "Recovery is closed because this payment is already final. You can still refresh receipt/proof data from the latest accessible session or backend snapshot."
+        : "Recovery is closed because this payment is already final, and this device only has the saved receipt/history snapshot.";
+    default:
+      return getSmartPayRecoverHint({
+        ...refreshOptions,
+        recoverable: entry.execution.recoverable,
+      });
+  }
+}
+
 export function getSmartPayHistoryAccessLabel(
   entry: SmartPayHistoryEntry,
   options: SmartPayHistoryAccessOptions = {}

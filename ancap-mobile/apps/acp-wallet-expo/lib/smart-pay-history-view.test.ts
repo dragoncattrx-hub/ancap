@@ -41,6 +41,8 @@ import {
   getSmartPayHistoryProofProvenanceLabel,
   getSmartPayHistoryProofSyncHint,
   getSmartPayHistoryProofSyncLabel,
+  getSmartPayHistoryRecoveryStateHint,
+  getSmartPayHistoryRecoveryStateLabel,
   getSmartPayHistoryRecoverButtonLabel,
   getSmartPayHistoryRecoveryInputHint,
   getSmartPayHistoryRecoveryInputLabel,
@@ -1139,6 +1141,69 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryRecoveryInputLabel(completed)).toBe("Recovery tx hints (optional)");
     expect(getSmartPayHistoryRecoveryInputHint(completed)).toContain("Recovery is unavailable");
     expect(getSmartPayHistoryRecoverButtonLabel(completed)).toBe("Recovery unavailable");
+  });
+
+  it("labels recovery state across live, auth-backed, failed, and finalized snapshots", () => {
+    const awaitingLocalLive = makeEntry("recovery-live-awaiting", "awaiting_local_signature", {
+      snapshotOrigin: "local",
+    });
+    const awaitingLocalSnapshotOnly = makeEntry("recovery-snapshot-awaiting", "awaiting_local_signature", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+    });
+    const inFlightRecoverable = makeEntry("recovery-pending", "pending_reconciliation", {
+      sessionToken: "session-recovery-pending",
+      snapshotOrigin: "local+backend",
+    });
+    const failedRecoverable = makeEntry("recovery-failed", "failed", {
+      sessionToken: "session-recovery-failed",
+      snapshotOrigin: "local+backend",
+    });
+    const completedBackend = makeEntry("recovery-completed", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "backend",
+    });
+
+    expect(getSmartPayHistoryRecoveryStateLabel(awaitingLocalLive)).toBe(
+      "Recovery state: waiting for original device signature"
+    );
+    expect(getSmartPayHistoryRecoveryStateHint(awaitingLocalLive)).toContain(
+      "original device completes the pending local signature"
+    );
+
+    expect(getSmartPayHistoryRecoveryStateLabel(awaitingLocalSnapshotOnly, { hasAccountAuth: true })).toBe(
+      "Recovery state: backend status-only until original device signs"
+    );
+    expect(getSmartPayHistoryRecoveryStateHint(awaitingLocalSnapshotOnly, { hasAccountAuth: true })).toContain(
+      "cannot begin until the original device creates the signed route tx"
+    );
+    expect(getSmartPayHistoryRecoveryStateLabel(awaitingLocalSnapshotOnly)).toBe(
+      "Recovery state: snapshot only until original device signs"
+    );
+
+    expect(getSmartPayHistoryRecoveryStateLabel(inFlightRecoverable)).toBe(
+      "Recovery state: recoverable with observed tx refs"
+    );
+    expect(getSmartPayHistoryRecoveryStateHint(inFlightRecoverable)).toContain(
+      "paste observed tx hashes or explorer links"
+    );
+
+    expect(getSmartPayHistoryRecoveryStateLabel(failedRecoverable)).toBe(
+      "Recovery state: recoverable after failure"
+    );
+    expect(getSmartPayHistoryRecoveryStateHint(failedRecoverable)).toContain(
+      "before retrying"
+    );
+
+    expect(getSmartPayHistoryRecoveryStateLabel(completedBackend, { hasAccountAuth: true })).toBe(
+      "Recovery state: finalized — refresh only"
+    );
+    expect(getSmartPayHistoryRecoveryStateHint(completedBackend, { hasAccountAuth: true })).toContain(
+      "Recovery is closed because this payment is already final"
+    );
+    expect(getSmartPayHistoryRecoveryStateLabel(completedBackend)).toBe(
+      "Recovery state: finalized snapshot only"
+    );
   });
 
   it("tailors restore hints so restored history cards do not over-promise refresh/recover access", () => {

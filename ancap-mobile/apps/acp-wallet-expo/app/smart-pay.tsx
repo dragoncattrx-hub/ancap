@@ -46,6 +46,8 @@ import {
   getSmartPayHistoryAccessLabel,
   getSmartPayHistoryActionHint,
   getSmartPayHistoryActionLabel,
+  getSmartPayHistoryRecoveryStateHint,
+  getSmartPayHistoryRecoveryStateLabel,
   getSmartPayHistoryRestoreHint,
   getSmartPayHistoryAdditionalProofHint,
   getSmartPayHistoryAdditionalProofProvenanceHint,
@@ -936,6 +938,7 @@ export default function SmartPayScreen() {
                     <Text style={styles.meta}>{getSmartPayHistoryFreshnessLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryFreshnessHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>Recovery state: {getSmartPayHistoryRecoveryStateLabel(entry, { hasAccountAuth }).replace(/^Recovery state: /, "")}</Text>
                     <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryNextStepLabel(entry, { hasAccountAuth })}</Text>
                     {progressDisplayLines.length ? (
@@ -981,6 +984,7 @@ export default function SmartPayScreen() {
                       <Text style={styles.inlineHint}>{additionalProofProvenanceHint}</Text>
                     ) : null}
                     <Text style={styles.meta}>{getSmartPayHistoryAccessHint(entry, { hasAccountAuth })}</Text>
+                    <Text style={styles.meta}>{getSmartPayHistoryRecoveryStateHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryActionHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>Saved: {formatSmartPayTimestamp(entry.savedAt)}</Text>
@@ -1188,9 +1192,11 @@ export default function SmartPayScreen() {
           {activeHistoryEntry ? (
             <>
               <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+              <Text style={styles.meta}>Recovery state: {getSmartPayHistoryRecoveryStateLabel(activeHistoryEntry, { hasAccountAuth }).replace(/^Recovery state: /, "")}</Text>
               <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryNextStepLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryAccessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+              <Text style={styles.meta}>{getSmartPayHistoryRecoveryStateHint(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryActionHint(activeHistoryEntry, { hasAccountAuth })}</Text>
               <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(activeHistoryEntry, { hasAccountAuth })}</Text>
             </>
@@ -1423,9 +1429,11 @@ export default function SmartPayScreen() {
           <Text style={styles.meta}>{getSmartPayHistoryFreshnessLabel(activeHistoryEntry)}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryFreshnessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>Resume access: {getSmartPayHistoryAccessLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>Recovery state: {getSmartPayHistoryRecoveryStateLabel(activeHistoryEntry, { hasAccountAuth }).replace(/^Recovery state: /, "")}</Text>
           <Text style={styles.meta}>Available actions: {getSmartPayHistoryActionLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryNextStepLabel(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryAccessHint(activeHistoryEntry, { hasAccountAuth })}</Text>
+          <Text style={styles.meta}>{getSmartPayHistoryRecoveryStateHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryActionHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryNextStepHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           {activeExecutionProgressDisplayLines.length ? activeExecutionProgressDisplayLines.map((line) => (
