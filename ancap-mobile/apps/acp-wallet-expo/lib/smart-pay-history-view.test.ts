@@ -3002,6 +3002,239 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("covers mixed and partially inferred proof-quality branches", () => {
+    const mixedPartialCoverage = makeEntry("12hint-mixed-partial", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("12hint-mixed-partial", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "swap",
+            network: "bsc",
+            dexOrRail: "pancakeswap",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: null,
+            fromAsset: "USDT",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-mixed-partial", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 3,
+          observedTxCount: 2,
+          remainingRouteSteps: 1,
+          pendingRoles: ["payment"],
+        },
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-mixed-explicit",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-mixed-explicit",
+            routeStepIndex: 1,
+          },
+          {
+            role: "swap",
+            network: "bsc",
+            txid: "fixture-mixed-inferred",
+            explorerUrl: "https://bscscan.com/tx/fixture-mixed-inferred",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-mixed-partial", "pending_reconciliation").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-mixed-explicit",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-mixed-explicit",
+            routeStepIndex: 1,
+          },
+          {
+            role: "swap",
+            network: "bsc",
+            txid: "fixture-mixed-inferred",
+            explorerUrl: "https://bscscan.com/tx/fixture-mixed-inferred",
+          },
+        ],
+      },
+    });
+
+    const partialInferredCoverage = makeEntry("12hint-partial-inferred", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("12hint-partial-inferred", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: null,
+            fromAsset: "USDT",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-partial-inferred", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 1,
+          remainingRouteSteps: 1,
+          pendingRoles: ["payment"],
+        },
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-partial-inferred",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-partial-inferred",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-partial-inferred", "pending_reconciliation").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-partial-inferred",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-partial-inferred",
+          },
+        ],
+      },
+    });
+
+    const mixedLinkedCoverage = makeEntry("12hint-mixed-linked", "completed", {
+      quote: {
+        ...makeEntry("12hint-mixed-linked", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: null,
+            fromAsset: "USDT",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("12hint-mixed-linked", "completed").execution,
+        progress: {
+          totalRouteSteps: 2,
+          observedTxCount: 2,
+          remainingRouteSteps: 0,
+          pendingRoles: [],
+        },
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-mixed-linked-explicit",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-mixed-linked-explicit",
+            routeStepIndex: 1,
+          },
+          {
+            role: "payment",
+            network: "bsc",
+            txid: "fixture-mixed-linked-inferred",
+            explorerUrl: "https://bscscan.com/tx/fixture-mixed-linked-inferred",
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("12hint-mixed-linked", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-mixed-linked-explicit",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-mixed-linked-explicit",
+            routeStepIndex: 1,
+          },
+          {
+            role: "payment",
+            network: "bsc",
+            txid: "fixture-mixed-linked-inferred",
+            explorerUrl: "https://bscscan.com/tx/fixture-mixed-linked-inferred",
+          },
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryProofRouteDetailLabel(mixedPartialCoverage)).toBe(
+      "Proof linkage detail: 1 explicit · 1 inferred · 1 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(mixedPartialCoverage)).toBe(
+      "1 quoted route step linked via explicit route-step indexes; 1 quoted route step linked by role/network matching without explicit route-step indexes; 1 quoted route step still pending."
+    );
+    expect(getSmartPayHistoryProofQualityLabel(mixedPartialCoverage)).toBe(
+      "Proof quality: mixed partial coverage"
+    );
+    expect(getSmartPayHistoryProofQualityHint(mixedPartialCoverage)).toBe(
+      "Some quoted route steps are linked by explicit indexes, some only by inferred role/network matching, and some are still pending proof refs."
+    );
+
+    expect(getSmartPayHistoryProofRouteDetailLabel(partialInferredCoverage)).toBe(
+      "Proof linkage detail: 0 explicit · 1 inferred · 1 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(partialInferredCoverage)).toBe(
+      "1 quoted route step linked by role/network matching without explicit route-step indexes; 1 quoted route step still pending."
+    );
+    expect(getSmartPayHistoryProofQualityLabel(partialInferredCoverage)).toBe(
+      "Proof quality: partial inferred coverage"
+    );
+    expect(getSmartPayHistoryProofQualityHint(partialInferredCoverage)).toBe(
+      "Current quoted route coverage depends on inferred role/network matching, and some steps still need proof refs."
+    );
+
+    expect(getSmartPayHistoryProofRouteDetailLabel(mixedLinkedCoverage)).toBe(
+      "Proof linkage detail: 1 explicit · 1 inferred · 0 pending"
+    );
+    expect(getSmartPayHistoryProofRouteDetailHint(mixedLinkedCoverage)).toBe(
+      "1 quoted route step linked via explicit route-step indexes; 1 quoted route step linked by role/network matching without explicit route-step indexes."
+    );
+    expect(getSmartPayHistoryProofQualityLabel(mixedLinkedCoverage)).toBe(
+      "Proof quality: mixed linked coverage"
+    );
+    expect(getSmartPayHistoryProofQualityHint(mixedLinkedCoverage)).toBe(
+      "This snapshot links every quoted route step, but some links are explicit and others are inferred from role/network matching."
+    );
+  });
+
   it("returns null proof-linkage detail when there is no route-proof context", () => {
     const noRouteProofContext = makeEntry("12route-detail-none", "completed", {
       receipt: null,
