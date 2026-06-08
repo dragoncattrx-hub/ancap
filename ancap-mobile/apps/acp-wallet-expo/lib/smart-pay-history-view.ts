@@ -1047,6 +1047,10 @@ export function getSmartPayHistoryProofRouteStepHint(
 export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string {
   const { linkedTxCount, explorerLinkedTxCount, expectedRouteSteps, additionalTxCount } = getSmartPayHistoryProofCounts(entry);
   const { hasQuotedRoute, hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);
+  const recoverAvailable = canSmartPayRecoverExecution({
+    sessionToken: entry.sessionToken,
+    recoverable: entry.execution.recoverable,
+  });
 
   if (hasRouteProofContext && expectedRouteSteps > 0) {
     const explorerPart = explorerLinkedTxCount > 0
@@ -1081,7 +1085,9 @@ export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string
     case "awaiting_local_signature":
       return "Proof links appear after route execution starts and tx refs are observed.";
     case "pending_reconciliation":
-      return "Refresh this session or recover with observed tx hashes/explorer links after route activity to attach tx proof refs.";
+      return recoverAvailable
+        ? "Refresh this session or recover with observed tx hashes/explorer links after route activity to attach tx proof refs."
+        : "Refresh this session after route activity to attach tx proof refs. Recovery is no longer available for this in-flight snapshot.";
     case "failed":
       return "Proof refs may remain partial until the route is retried or reconciled.";
     case "completed":
@@ -1989,7 +1995,13 @@ export function getSmartPayHistoryProofSyncHint(
     sessionToken: entry.sessionToken,
     hasAccountAuth: options.hasAccountAuth,
   });
+  const recoverAvailable = canSmartPayRecoverExecution({
+    sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
+    recoverable: entry.execution.recoverable,
+  });
   const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+  const hasObservedProofRefs = getSmartPayHistoryProofTxRefs(entry).length > 0;
   const receiptProofLag = hasSmartPayHistoryReceiptProofLag(entry);
   const stale = isSmartPayHistoryStale(entry, now);
 
@@ -2000,9 +2012,20 @@ export function getSmartPayHistoryProofSyncHint(
         : "No route proof can sync from this restored snapshot until the original signing device session is reopened.";
     case "pending_reconciliation":
       if (refreshAvailable) {
-        return incompleteProof
-          ? "This route is still reconciling. Refresh status or recover with observed tx refs if newer proof should already exist elsewhere."
-          : "This route is still reconciling. Refresh status or recover with observed tx refs if newer route-step proof should exist elsewhere, even though at least one execution proof ref is already saved.";
+        if (!recoverAvailable) {
+          if (incompleteProof) {
+            return "This route is still reconciling. Refresh status if newer proof should already exist elsewhere, but recovery is no longer available for this snapshot.";
+          }
+          return hasObservedProofRefs
+            ? "This route is still reconciling. Refresh status if newer route-step proof should exist elsewhere, even though at least one execution proof ref is already saved. Recovery is no longer available for this snapshot."
+            : "This route is still reconciling. Refresh status if newer proof should already exist elsewhere, but recovery is no longer available for this snapshot.";
+        }
+        if (incompleteProof) {
+          return "This route is still reconciling. Refresh status or recover with observed tx refs if newer proof should already exist elsewhere.";
+        }
+        return hasObservedProofRefs
+          ? "This route is still reconciling. Refresh status or recover with observed tx refs if newer route-step proof should exist elsewhere, even though at least one execution proof ref is already saved."
+          : "This route is still reconciling. Refresh status or recover with observed tx refs if newer proof should already exist elsewhere.";
       }
       return incompleteProof
         ? "This route is still reconciling, but this snapshot cannot refresh anonymously from here. Sign in or restore the original device session before trusting current proof coverage."
@@ -2074,7 +2097,10 @@ export function getSmartPayHistoryNextStepLabel(
       if (!refreshAvailable) {
         return "Next step: sign in or restore the original device";
       }
-      return stale ? "Next step: refresh or recover now" : "Next step: monitor or refresh";
+      if (stale) {
+        return recoverAvailable ? "Next step: refresh or recover now" : "Next step: refresh status now";
+      }
+      return "Next step: monitor or refresh";
     case "failed":
       if (recoverAvailable) {
         return "Next step: recover with observed tx refs";
@@ -2134,7 +2160,9 @@ export function getSmartPayHistoryNextStepHint(
         return "This in-flight snapshot cannot refresh from this device right now. Sign in to the owning ANCAP account or restore the original device session before trusting current route progress.";
       }
       if (stale) {
-        return "Route activity may have continued after this snapshot. Refresh status first, then recover with observed tx hashes or explorer links if proof coverage is still incomplete.";
+        return recoverAvailable
+          ? "Route activity may have continued after this snapshot. Refresh status first, then recover with observed tx hashes or explorer links if proof coverage is still incomplete."
+          : "Route activity may have continued after this snapshot. Refresh status first to pull newer route progress or proof refs; recovery is no longer available for this snapshot.";
       }
       return "This route is still in flight. Keep monitoring it here, and refresh status if you expect more tx proof refs or route-step updates.";
     case "failed":

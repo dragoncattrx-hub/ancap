@@ -4415,6 +4415,33 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("avoids promising recovery for pending snapshots that can only refresh", () => {
+    const pendingRefreshOnly = makeEntry("14b", "pending_reconciliation", {
+      execution: {
+        ...makeEntry("14b", "pending_reconciliation").execution,
+        recoverable: false,
+        updatedAt: "2026-05-28T17:20:00.000Z",
+        txRefs: [],
+      },
+      receipt: null,
+      savedAt: "2026-05-28T17:20:00.000Z",
+    });
+    const now = Date.parse("2026-05-28T18:03:00.000Z");
+
+    expect(getSmartPayHistoryProofHint(pendingRefreshOnly)).toBe(
+      "Refresh this session after route activity to attach tx proof refs. Recovery is no longer available for this in-flight snapshot."
+    );
+    expect(getSmartPayHistoryProofSyncHint(pendingRefreshOnly, { hasAccountAuth: false }, now)).toBe(
+      "This route is still reconciling. Refresh status if newer proof should already exist elsewhere, but recovery is no longer available for this snapshot."
+    );
+    expect(getSmartPayHistoryNextStepLabel(pendingRefreshOnly, { hasAccountAuth: false }, now)).toBe(
+      "Next step: refresh status now"
+    );
+    expect(getSmartPayHistoryNextStepHint(pendingRefreshOnly, { hasAccountAuth: false }, now)).toBe(
+      "Route activity may have continued after this snapshot. Refresh status first to pull newer route progress or proof refs; recovery is no longer available for this snapshot."
+    );
+  });
+
   it("normalizes recovery tx inputs from explorer links and de-duplicates them", () => {
     expect(normalizeSmartPayRecoveryToken(" https://bscscan.com/tx/fixture-tx-alpha ")).toBe("fixture-tx-alpha");
     expect(normalizeSmartPayRecoveryToken("https://ancap.cloud/acp/tx/fixture-tx-beta?foo=bar")).toBe("fixture-tx-beta");
