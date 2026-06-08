@@ -1473,6 +1473,39 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("avoids misleading 0/0 route-progress text when only pending roles are known", () => {
+    const pendingRolesOnly = makeEntry("2b", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("2b", "pending_reconciliation").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("2b", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 0,
+          observedTxCount: 0,
+          remainingRouteSteps: 0,
+          pendingRoles: ["swap", "merchant_payout"],
+        },
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProgressLabel(pendingRolesOnly)).toBe(
+      "Route progress: reconciliation pending"
+    );
+    expect(getSmartPayHistoryExecutionProgressDetailLines(pendingRolesOnly)).toEqual([
+      "Pending roles: swap → merchant_payout",
+    ]);
+    expect(getSmartPayHistoryExecutionProgressDisplayLines(pendingRolesOnly)).toEqual([
+      "Route progress: reconciliation pending",
+      "Pending roles: swap → merchant_payout",
+    ]);
+    expect(getSmartPayHistoryProgressHint(pendingRolesOnly)).toBe(
+      "Route submitted; pending roles: swap → merchant_payout."
+    );
+  });
+
   it("falls back to receipt summary or tx refs when explicit route progress is absent", () => {
     const completed = makeEntry("1", "completed", {
       execution: {

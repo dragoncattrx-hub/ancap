@@ -419,14 +419,20 @@ function shouldPreferFallbackRouteProgress(
     || progress.observedTxCount !== fallbackRouteProgress.linkedSteps;
 }
 
+function hasStructuredSmartPayExecutionProgress(
+  progress: SmartPayExecution["progress"] | null | undefined
+): progress is NonNullable<SmartPayExecution["progress"]> {
+  return Boolean(progress && progress.totalRouteSteps > 0);
+}
+
 export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): string | null {
   const progress = entry.execution.progress;
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
-  const preferFallbackRouteProgress = progress
+  const preferFallbackRouteProgress = hasStructuredSmartPayExecutionProgress(progress)
     ? shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)
     : false;
 
-  if (progress && !preferFallbackRouteProgress) {
+  if (hasStructuredSmartPayExecutionProgress(progress) && !preferFallbackRouteProgress) {
     const remaining = pluralize(progress.remainingRouteSteps, "route step", "route steps");
     return `Route progress: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed · ${remaining} remaining`;
   }
@@ -459,14 +465,18 @@ export function getSmartPayHistoryExecutionProgressDetailLines(entry: SmartPayHi
   }
 
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
-  if (shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)) {
+  if (hasStructuredSmartPayExecutionProgress(progress) && shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)) {
     return [];
   }
 
-  const lines = [
-    `Route progress detail: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed`,
-    `Remaining route steps: ${progress.remainingRouteSteps}`,
-  ];
+  const lines: string[] = [];
+
+  if (hasStructuredSmartPayExecutionProgress(progress)) {
+    lines.push(
+      `Route progress detail: ${progress.observedTxCount}/${progress.totalRouteSteps} tx observed`,
+      `Remaining route steps: ${progress.remainingRouteSteps}`,
+    );
+  }
 
   if (progress.pendingRoles.length) {
     lines.push(`Pending roles: ${progress.pendingRoles.join(" → ")}`);
@@ -493,7 +503,7 @@ export function getSmartPayHistoryExecutionProgressDisplayLines(entry: SmartPayH
 export function getSmartPayHistoryProgressHint(entry: SmartPayHistoryEntry): string | null {
   const progress = entry.execution.progress;
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
-  const preferFallbackRouteProgress = progress
+  const preferFallbackRouteProgress = hasStructuredSmartPayExecutionProgress(progress)
     ? shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)
     : false;
   switch (entry.execution.status) {
