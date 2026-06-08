@@ -1021,6 +1021,66 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryActionHint(receiptProofLag)).toContain(
       "Sign in to the owning ANCAP account or restore the original device session"
     );
+
+    const missingFinalProofSnapshotOnly = makeEntry("16-final-proof-missing-snapshot", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+      quote: {
+        ...makeEntry("16-final-proof-missing-snapshot", "completed").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "5.0",
+          },
+          {
+            kind: "transfer",
+            network: "bsc",
+            dexOrRail: "merchant payout",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "4.9",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("16-final-proof-missing-snapshot", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-final-proof-missing-snapshot-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-final-proof-missing-snapshot-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("16-final-proof-missing-snapshot", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-final-proof-missing-snapshot-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-final-proof-missing-snapshot-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+          "2. payout wACP -> USDT on bsc",
+        ],
+      },
+    });
+
+    expect(getSmartPayHistoryRefreshButtonLabel(missingFinalProofSnapshotOnly)).toBe("Refresh status");
+    expect(getSmartPayHistoryActionLabel(missingFinalProofSnapshotOnly)).toBe("Snapshot only");
+    expect(getSmartPayHistoryActionHint(missingFinalProofSnapshotOnly)).toContain(
+      "still lacks linked proof refs for some quoted or stored route steps"
+    );
   });
 
   it("tailors recovery-input labels, hints, and button text to the current execution state", () => {

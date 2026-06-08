@@ -1660,6 +1660,7 @@ export function getSmartPayHistoryRefreshButtonLabel(
     sessionToken: entry.sessionToken,
     hasAccountAuth: options.hasAccountAuth,
   });
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
 
   if (!refreshAvailable) {
     return "Refresh status";
@@ -1667,6 +1668,9 @@ export function getSmartPayHistoryRefreshButtonLabel(
 
   switch (entry.execution.status) {
     case "completed":
+      if (incompleteProof) {
+        return "Refresh final proof";
+      }
       return hasSmartPayHistoryReceiptProofLag(entry)
         ? "Refresh receipt + proof sync"
         : "Refresh receipt";
@@ -1690,6 +1694,7 @@ export function getSmartPayHistoryActionLabel(
     hasAccountAuth: options.hasAccountAuth,
     recoverable: entry.execution.recoverable,
   });
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
 
   if (entry.execution.status === "awaiting_local_signature") {
     if (hasSmartPayLiveSessionAccess(entry)) {
@@ -1704,6 +1709,9 @@ export function getSmartPayHistoryActionLabel(
   if (refreshAvailable) {
     switch (entry.execution.status) {
       case "completed":
+        if (incompleteProof) {
+          return "Refresh final proof";
+        }
         return hasSmartPayHistoryReceiptProofLag(entry)
           ? "Refresh receipt + proof sync"
           : "Refresh receipt only";
@@ -1736,8 +1744,13 @@ export function getSmartPayHistoryActionHint(
   }
 
   if (!canSmartPayRefreshOrRecover(refreshOptions)) {
-    if (entry.execution.status === "completed" && hasSmartPayHistoryReceiptProofLag(entry)) {
-      return "This saved receipt snapshot still lags behind execution history for some observed proof refs. Sign in to the owning ANCAP account or restore the original device session if you need a newer receipt snapshot that includes those proof links.";
+    if (entry.execution.status === "completed") {
+      if (hasIncompleteSmartPayHistoryProof(entry)) {
+        return "This saved receipt snapshot still lacks linked proof refs for some quoted or stored route steps. Sign in to the owning ANCAP account or restore the original device session if you need a newer finalized proof snapshot.";
+      }
+      if (hasSmartPayHistoryReceiptProofLag(entry)) {
+        return "This saved receipt snapshot still lags behind execution history for some observed proof refs. Sign in to the owning ANCAP account or restore the original device session if you need a newer receipt snapshot that includes those proof links.";
+      }
     }
     return getSmartPayHistoryAccessHint(entry, options);
   }
@@ -1751,8 +1764,13 @@ export function getSmartPayHistoryActionHint(
     return getSmartPayRefreshOrRecoverHint(refreshOptions);
   }
 
-  if (entry.execution.status === "completed" && hasSmartPayHistoryReceiptProofLag(entry)) {
-    return "This execution is already complete, but some observed proof refs are still visible only from saved execution history. Refresh status/receipt to pull a newer receipt snapshot that includes the missing proof links if the backend has reconciled them.";
+  if (entry.execution.status === "completed") {
+    if (hasIncompleteSmartPayHistoryProof(entry)) {
+      return "This execution is already complete, but some quoted or stored route steps still lack linked proof refs. Refresh status/receipt to pull a newer finalized proof snapshot if backend reconciliation has caught up.";
+    }
+    if (hasSmartPayHistoryReceiptProofLag(entry)) {
+      return "This execution is already complete, but some observed proof refs are still visible only from saved execution history. Refresh status/receipt to pull a newer receipt snapshot that includes the missing proof links if the backend has reconciled them.";
+    }
   }
 
   return getSmartPayRecoverHint({
@@ -1774,6 +1792,7 @@ export function getSmartPayHistoryRestoreHint(
     ...refreshOptions,
     recoverable: entry.execution.recoverable,
   });
+  const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
 
   if (hasSmartPayLiveSessionAccess(entry)) {
     return entry.execution.status === "awaiting_local_signature"
@@ -1786,6 +1805,9 @@ export function getSmartPayHistoryRestoreHint(
       case "awaiting_local_signature":
         return "Tap to restore this snapshot. The original signing device session is still required before this payment can continue.";
       case "completed":
+        if (incompleteProof) {
+          return "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need a newer finalized proof snapshot.";
+        }
         if (hasSmartPayHistoryReceiptProofLag(entry)) {
           return "Tap to restore this snapshot and inspect the saved receipt/proof context. Sign in or reopen the original device session later if you need receipt proof sync beyond this saved snapshot.";
         }
@@ -1810,6 +1832,11 @@ export function getSmartPayHistoryRestoreHint(
   }
 
   if (entry.execution.status === "completed") {
+    if (incompleteProof) {
+      return options.hasAccountAuth
+        ? "Tap to restore this snapshot, then refresh final proof through your signed-in ANCAP account."
+        : "Tap to restore this snapshot, then refresh final proof from the original device session.";
+    }
     if (hasSmartPayHistoryReceiptProofLag(entry)) {
       return options.hasAccountAuth
         ? "Tap to restore this snapshot, then refresh receipt/proof sync through your signed-in ANCAP account."
@@ -1882,11 +1909,11 @@ function hasSmartPayHistoryReceiptProofLag(entry: SmartPayHistoryEntry): boolean
 function hasIncompleteSmartPayHistoryProof(entry: SmartPayHistoryEntry): boolean {
   const { linkedTxCount, expectedRouteSteps } = getSmartPayHistoryProofCounts(entry);
 
-  if (expectedRouteSteps > 0) {
-    return linkedTxCount < expectedRouteSteps;
+  if (expectedRouteSteps === 0) {
+    return false;
   }
 
-  return Boolean(entry.receipt && linkedTxCount === 0);
+  return linkedTxCount < expectedRouteSteps;
 }
 
 export function getSmartPayHistoryProofSyncLabel(
