@@ -1531,6 +1531,34 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryProofSyncHint(completedWithReceiptProofLag, {}, now)).toContain(
       "cannot refresh them anonymously"
     );
+
+    const completedLinkedButStaleSnapshotOnly = makeEntry("27c", "completed", {
+      sessionToken: null,
+      snapshotOrigin: "local",
+      execution: {
+        ...makeEntry("27c", "completed").execution,
+        updatedAt: "2026-05-28T17:00:00.000Z",
+      },
+      receipt: {
+        ...makeEntry("27c", "completed").receipt!,
+        completedAt: "2026-05-28T17:00:00.000Z",
+      },
+      savedAt: "2026-05-28T17:00:00.000Z",
+    });
+
+    expect(getSmartPayHistoryProofSyncLabel(completedLinkedButStaleSnapshotOnly, {}, now)).toBe(
+      "Proof sync state: synced snapshot is stale"
+    );
+    expect(getSmartPayHistoryProofSyncHint(completedLinkedButStaleSnapshotOnly, {}, now)).toContain(
+      "cannot refresh anonymously"
+    );
+    expect(getSmartPayHistoryNextStepLabel(completedLinkedButStaleSnapshotOnly, {}, now)).toBe(
+      "Next step: sign in or restore for fresher receipt data"
+    );
+    expect(getSmartPayHistoryNextStepHint(completedLinkedButStaleSnapshotOnly, {}, now)).toContain(
+      "cannot refresh anonymously"
+    );
+
     expect(getSmartPayHistoryProofSyncLabel(staleRecoverable, { hasAccountAuth: false }, now)).toBe(
       "Proof sync state: route proof still syncing"
     );

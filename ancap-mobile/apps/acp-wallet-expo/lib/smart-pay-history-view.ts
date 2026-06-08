@@ -1978,6 +1978,9 @@ export function getSmartPayHistoryProofSyncLabel(
       if (stale && refreshAvailable) {
         return "Proof sync state: synced snapshot should be refreshed";
       }
+      if (stale) {
+        return "Proof sync state: synced snapshot is stale";
+      }
       return "Proof sync state: receipt and proof synced";
     default:
       return refreshAvailable
@@ -2050,6 +2053,9 @@ export function getSmartPayHistoryProofSyncHint(
       }
       if (stale && refreshAvailable) {
         return "The saved receipt/proof snapshot is internally consistent, but it is aging; refresh before relying on it for the latest final fee or proof details.";
+      }
+      if (stale) {
+        return "The saved receipt/proof snapshot is internally consistent, but it is stale on this device and cannot refresh anonymously right now. Sign in or restore the original device session if you need fresher final fee or proof details.";
       }
       return "The saved receipt snapshot and linked proof refs are aligned for this device's latest known final state.";
     default:
@@ -2124,6 +2130,9 @@ export function getSmartPayHistoryNextStepLabel(
       if (refreshAvailable && stale) {
         return "Next step: refresh the receipt snapshot";
       }
+      if (stale) {
+        return "Next step: sign in or restore for fresher receipt data";
+      }
       return "Next step: inspect receipt details";
     default:
       return refreshAvailable ? "Next step: refresh status" : "Next step: inspect the saved snapshot";
@@ -2187,6 +2196,9 @@ export function getSmartPayHistoryNextStepHint(
       }
       if (refreshAvailable && stale) {
         return "This saved receipt/proof snapshot is getting stale. Refresh it before relying on final fee totals or proof links elsewhere.";
+      }
+      if (stale) {
+        return "This saved receipt/proof snapshot is getting stale and cannot refresh anonymously from this device right now. Sign in or reopen the original device session if you need fresher final fee or proof details; otherwise treat it as historical context.";
       }
       return "This snapshot already contains the latest saved receipt context, route summary, and linked proof coverage available on this device.";
     default:
