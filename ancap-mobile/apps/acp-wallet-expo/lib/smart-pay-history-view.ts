@@ -40,6 +40,10 @@ export type SmartPayHistoryOverviewStats = {
   missingProofEntryCount: number;
   receiptLagEntryCount: number;
   staleCount: number;
+  liveTelemetryProgressCount: number;
+  proofLinkFallbackProgressCount: number;
+  rawTxRefProgressCount: number;
+  statusOnlyProgressCount: number;
   trackedRouteStepCount: number;
   explicitLinkedRouteStepCount: number;
   inferredLinkedRouteStepCount: number;
@@ -130,6 +134,10 @@ export function getSmartPayHistoryOverviewStats(
     missingProofEntryCount: 0,
     receiptLagEntryCount: 0,
     staleCount: 0,
+    liveTelemetryProgressCount: 0,
+    proofLinkFallbackProgressCount: 0,
+    rawTxRefProgressCount: 0,
+    statusOnlyProgressCount: 0,
     trackedRouteStepCount: 0,
     explicitLinkedRouteStepCount: 0,
     inferredLinkedRouteStepCount: 0,
@@ -204,6 +212,22 @@ export function getSmartPayHistoryOverviewStats(
       stats.staleCount += 1;
     }
 
+    switch (getSmartPayHistoryProgressSource(entry).kind) {
+      case "live_execution":
+        stats.liveTelemetryProgressCount += 1;
+        break;
+      case "proof_snapshot":
+        stats.proofLinkFallbackProgressCount += 1;
+        break;
+      case "raw_tx_refs":
+        stats.rawTxRefProgressCount += 1;
+        break;
+      case "status_only":
+      default:
+        stats.statusOnlyProgressCount += 1;
+        break;
+    }
+
     const proofLinkageCounts = getSmartPayHistoryProofRouteLinkageCounts(entry);
     if (proofLinkageCounts.hasRouteProofContext) {
       stats.trackedRouteStepCount += proofLinkageCounts.expectedRouteSteps;
@@ -266,6 +290,7 @@ export function getSmartPayHistoryOverviewLines(
     `Sessions: ${stats.totalCount} total · ${stats.inFlightCount} in flight · ${stats.needsAttentionCount} need attention · ${stats.completedCount} completed`,
     `Resume & actions: ${stats.liveResumeCount} live on this device · ${stats.refreshableCount} refreshable · ${stats.recoverableCount} recoverable · ${stats.snapshotOnlyCount} snapshot-only`,
     `Proof & freshness: ${stats.proofFollowUpCount} need follow-up${proofFollowUpBreakdown} · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
+    `Progress sources: ${stats.liveTelemetryProgressCount} live telemetry · ${stats.proofLinkFallbackProgressCount} proof-link fallback · ${stats.rawTxRefProgressCount} raw tx refs · ${stats.statusOnlyProgressCount} status-only snapshots`,
   ];
 
   if (
@@ -657,12 +682,15 @@ function shouldPreferFallbackRouteProgress(
     || progress.observedTxCount !== fallbackRouteProgress.linkedSteps;
 }
 
-function getSmartPayHistoryProgressSource(
-  entry: SmartPayHistoryEntry
-): {
+type SmartPayHistoryProgressSource = {
+  kind: "live_execution" | "proof_snapshot" | "raw_tx_refs" | "status_only";
   label: string;
   hint: string;
-} {
+};
+
+function getSmartPayHistoryProgressSource(
+  entry: SmartPayHistoryEntry
+): SmartPayHistoryProgressSource {
   const progress = entry.execution.progress;
   const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
   const preferFallbackRouteProgress = hasStructuredSmartPayExecutionProgress(progress)
@@ -671,6 +699,7 @@ function getSmartPayHistoryProgressSource(
 
   if (hasStructuredSmartPayExecutionProgress(progress) && !preferFallbackRouteProgress) {
     return {
+      kind: "live_execution",
       label: "Route progress source: live execution telemetry",
       hint: progress.pendingRoles.length
         ? "These route-step counts come from the saved execution progress payload, with pending roles reported directly by the execution lifecycle."
@@ -685,12 +714,14 @@ function getSmartPayHistoryProgressSource(
 
     if (hasStructuredSmartPayExecutionProgress(progress) && preferFallbackRouteProgress) {
       return {
+        kind: "proof_snapshot",
         label: `Route progress source: ${sourceLabel}`,
         hint: `Saved execution progress no longer matches the linked-vs-pending ${fallbackRouteProgress.routeContextLabel} proof coverage, so this view falls back to route proof linkage instead of stale execution counters.`,
       };
     }
 
     return {
+      kind: "proof_snapshot",
       label: `Route progress source: ${sourceLabel}`,
       hint: `This snapshot derives route progress from linked vs pending proof refs mapped onto the ${fallbackRouteProgress.routeContextLabel}, not from structured live execution counters.`,
     };
@@ -698,12 +729,14 @@ function getSmartPayHistoryProgressSource(
 
   if (entry.execution.txRefs.length > 0) {
     return {
+      kind: "raw_tx_refs",
       label: "Route progress source: raw execution tx refs",
       hint: "No structured route-step progress is saved here, so this view can only report the observed execution tx references.",
     };
   }
 
   return {
+    kind: "status_only",
     label: "Route progress source: saved execution status",
     hint: "This snapshot has no structured route progress or observed tx refs yet, so only the saved execution status is available.",
   };

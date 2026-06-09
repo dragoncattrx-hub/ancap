@@ -442,6 +442,7 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 1 live on this device · 1 refreshable · 1 recoverable · 2 snapshot-only",
       "Action states: 0 need original-device signature · 0 refresh-only · 2 stale read-only",
       "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
+      "Progress sources: 1 live telemetry · 1 proof-link fallback · 0 raw tx refs · 1 status-only snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
       "Proof provenance: 0 linked receipt-backed · 2 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
@@ -452,6 +453,7 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 1 live on this device · 3 refreshable · 2 recoverable · 0 snapshot-only",
       "Action states: 0 need original-device signature · 1 refresh-only · 0 stale read-only",
       "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
+      "Progress sources: 1 live telemetry · 1 proof-link fallback · 0 raw tx refs · 1 status-only snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
       "Proof provenance: 0 linked receipt-backed · 2 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
@@ -499,6 +501,7 @@ describe("smart pay history view helpers", () => {
       "Sessions: 1 total · 0 in flight · 0 need attention · 1 completed",
       "Resume & actions: 0 live on this device · 0 refreshable · 0 recoverable · 1 snapshot-only",
       "Proof & freshness: 0 need follow-up · 0 stale snapshots",
+      "Progress sources: 0 live telemetry · 0 proof-link fallback · 1 raw tx refs · 0 status-only snapshots",
       "Tracked route proof: 0 tracked steps · 1 unstructured snapshot with tx refs only",
       "Proof provenance: 1 linked receipt-backed · 0 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 0 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting · 1 unstructured",
@@ -547,6 +550,7 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 2 live on this device · 2 refreshable · 1 recoverable · 1 snapshot-only",
       "Action states: 1 need original-device signature · 1 refresh-only · 1 stale read-only",
       "Proof & freshness: 0 need follow-up · 1 stale snapshot",
+      "Progress sources: 0 live telemetry · 0 proof-link fallback · 0 raw tx refs · 3 status-only snapshots",
     ]);
   });
 
@@ -4094,6 +4098,100 @@ describe("smart pay history view helpers", () => {
     );
     expect(overviewLines).toContain(
       "Proof quality mix: 1 explicit-backed · 1 inferred-only · 1 mixed · 1 waiting · 1 unstructured"
+    );
+  });
+
+  it("summarizes progress-source mix across the visible history overview", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("progress-overview-live", "pending_reconciliation", {
+        execution: {
+          ...makeEntry("progress-overview-live", "pending_reconciliation").execution,
+          progress: {
+            totalRouteSteps: 2,
+            observedTxCount: 1,
+            remainingRouteSteps: 1,
+            pendingRoles: ["swap"],
+          },
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-progress-live",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-live",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+      }),
+      makeEntry("progress-overview-fallback", "completed", {
+        execution: {
+          ...makeEntry("progress-overview-fallback", "completed").execution,
+          progress: {
+            totalRouteSteps: 1,
+            observedTxCount: 0,
+            remainingRouteSteps: 1,
+            pendingRoles: [],
+          },
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "fixture-progress-fallback",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-fallback",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("progress-overview-fallback", "completed").receipt!,
+          routeSummary: ["1. transfer ACP -> ACP on acp"],
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "fixture-progress-fallback",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-fallback",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+      }),
+      makeEntry("progress-overview-raw", "failed", {
+        quote: {
+          ...makeEntry("progress-overview-raw", "failed").quote!,
+          route: [],
+        },
+        execution: {
+          ...makeEntry("progress-overview-raw", "failed").execution,
+          progress: null,
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "fixture-progress-raw",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-raw",
+            },
+          ],
+        },
+        receipt: null,
+      }),
+      makeEntry("progress-overview-status", "awaiting_local_signature", {
+        quote: {
+          ...makeEntry("progress-overview-status", "awaiting_local_signature").quote!,
+          route: [],
+        },
+        execution: {
+          ...makeEntry("progress-overview-status", "awaiting_local_signature").execution,
+          progress: null,
+          txRefs: [],
+        },
+        receipt: null,
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toContain(
+      "Progress sources: 1 live telemetry · 1 proof-link fallback · 1 raw tx refs · 1 status-only snapshots"
     );
   });
 
