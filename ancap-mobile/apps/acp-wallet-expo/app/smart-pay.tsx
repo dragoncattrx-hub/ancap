@@ -88,6 +88,8 @@ import {
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryOverviewLines,
   getSmartPayHistoryProgressHint,
+  getSmartPayHistoryProgressSourceHint,
+  getSmartPayHistoryProgressSourceLabel,
   getSmartPayHistorySnapshotStatusLabel,
   getSmartPayHistorySnapshotTitle,
   getSmartPayHistorySourceHint,
@@ -546,6 +548,14 @@ export default function SmartPayScreen() {
     () => (activeHistoryEntry ? getSmartPayHistoryProgressHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
   );
+  const activeProgressSourceLabel = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProgressSourceLabel(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
+  const activeProgressSourceHint = useMemo(
+    () => (activeHistoryEntry ? getSmartPayHistoryProgressSourceHint(activeHistoryEntry) : null),
+    [activeHistoryEntry]
+  );
   const activePendingProofHint = useMemo(
     () => (activeHistoryEntry ? getSmartPayHistoryPendingProofHint(activeHistoryEntry) : null),
     [activeHistoryEntry]
@@ -913,6 +923,8 @@ export default function SmartPayScreen() {
                 const receiptDisplay = getSmartPayHistoryReceiptDisplay(entry);
                 const merchantHint = getSmartPayHistoryMerchantHint(receiptDisplay);
                 const progressDisplayLines = getSmartPayHistoryExecutionProgressDisplayLines(entry);
+                const progressSourceLabel = getSmartPayHistoryProgressSourceLabel(entry);
+                const progressSourceHint = getSmartPayHistoryProgressSourceHint(entry);
 
                 return (
                   <Pressable
@@ -963,6 +975,8 @@ export default function SmartPayScreen() {
                     {getSmartPayHistoryProgressHint(entry) ? (
                       <Text style={styles.meta}>{getSmartPayHistoryProgressHint(entry)}</Text>
                     ) : null}
+                    <Text style={styles.meta}>{progressSourceLabel}</Text>
+                    <Text style={styles.inlineHint}>{progressSourceHint}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofLabel(entry)}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofHint(entry, { hasAccountAuth })}</Text>
                     <Text style={styles.meta}>{getSmartPayHistoryProofSyncLabel(entry, { hasAccountAuth })}</Text>
@@ -1224,6 +1238,8 @@ export default function SmartPayScreen() {
             </>
           ) : null}
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
+          {activeProgressSourceLabel ? <Text style={styles.meta}>{activeProgressSourceLabel}</Text> : null}
+          {activeProgressSourceHint ? <Text style={styles.inlineHint}>{activeProgressSourceHint}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry, { hasAccountAuth })}</Text> : null}
           {activeHistoryEntry ? <Text style={styles.meta}>{getSmartPayHistoryProofSyncLabel(activeHistoryEntry, { hasAccountAuth })}</Text> : null}
@@ -1476,6 +1492,8 @@ export default function SmartPayScreen() {
             <Text key={`receipt-progress-${line}`} style={styles.meta}>{line}</Text>
           )) : null}
           {activeProgressHint ? <Text style={styles.meta}>{activeProgressHint}</Text> : null}
+          {activeProgressSourceLabel ? <Text style={styles.meta}>{activeProgressSourceLabel}</Text> : null}
+          {activeProgressSourceHint ? <Text style={styles.inlineHint}>{activeProgressSourceHint}</Text> : null}
           <Text style={styles.meta}>{getSmartPayHistoryProofLabel(activeHistoryEntry)}</Text>
           <Text style={styles.meta}>{getSmartPayHistoryProofHint(activeHistoryEntry, { hasAccountAuth })}</Text>
           {activeProofRouteDetailLabel ? <Text style={styles.meta}>{activeProofRouteDetailLabel}</Text> : null}

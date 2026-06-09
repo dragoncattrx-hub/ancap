@@ -657,10 +657,70 @@ function shouldPreferFallbackRouteProgress(
     || progress.observedTxCount !== fallbackRouteProgress.linkedSteps;
 }
 
+function getSmartPayHistoryProgressSource(
+  entry: SmartPayHistoryEntry
+): {
+  label: string;
+  hint: string;
+} {
+  const progress = entry.execution.progress;
+  const fallbackRouteProgress = getSmartPayHistoryFallbackRouteProgress(entry);
+  const preferFallbackRouteProgress = hasStructuredSmartPayExecutionProgress(progress)
+    ? shouldPreferFallbackRouteProgress(entry, progress, fallbackRouteProgress)
+    : false;
+
+  if (hasStructuredSmartPayExecutionProgress(progress) && !preferFallbackRouteProgress) {
+    return {
+      label: "Route progress source: live execution telemetry",
+      hint: progress.pendingRoles.length
+        ? "These route-step counts come from the saved execution progress payload, with pending roles reported directly by the execution lifecycle."
+        : "These route-step counts come from the saved execution progress payload rather than inferred proof matching.",
+    };
+  }
+
+  if (fallbackRouteProgress) {
+    const sourceLabel = fallbackRouteProgress.routeContextLabel === "quoted route"
+      ? "quoted route proof snapshot"
+      : "stored receipt route proof snapshot";
+
+    if (hasStructuredSmartPayExecutionProgress(progress) && preferFallbackRouteProgress) {
+      return {
+        label: `Route progress source: ${sourceLabel}`,
+        hint: `Saved execution progress no longer matches the linked-vs-pending ${fallbackRouteProgress.routeContextLabel} proof coverage, so this view falls back to route proof linkage instead of stale execution counters.`,
+      };
+    }
+
+    return {
+      label: `Route progress source: ${sourceLabel}`,
+      hint: `This snapshot derives route progress from linked vs pending proof refs mapped onto the ${fallbackRouteProgress.routeContextLabel}, not from structured live execution counters.`,
+    };
+  }
+
+  if (entry.execution.txRefs.length > 0) {
+    return {
+      label: "Route progress source: raw execution tx refs",
+      hint: "No structured route-step progress is saved here, so this view can only report the observed execution tx references.",
+    };
+  }
+
+  return {
+    label: "Route progress source: saved execution status",
+    hint: "This snapshot has no structured route progress or observed tx refs yet, so only the saved execution status is available.",
+  };
+}
+
 function hasStructuredSmartPayExecutionProgress(
   progress: SmartPayExecution["progress"] | null | undefined
 ): progress is NonNullable<SmartPayExecution["progress"]> {
   return Boolean(progress && progress.totalRouteSteps > 0);
+}
+
+export function getSmartPayHistoryProgressSourceLabel(entry: SmartPayHistoryEntry): string {
+  return getSmartPayHistoryProgressSource(entry).label;
+}
+
+export function getSmartPayHistoryProgressSourceHint(entry: SmartPayHistoryEntry): string {
+  return getSmartPayHistoryProgressSource(entry).hint;
 }
 
 export function getSmartPayHistoryProgressLabel(entry: SmartPayHistoryEntry): string | null {

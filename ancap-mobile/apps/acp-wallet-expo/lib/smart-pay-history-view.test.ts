@@ -60,6 +60,8 @@ import {
   getSmartPayHistoryOverviewLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistoryProgressLabel,
+  getSmartPayHistoryProgressSourceHint,
+  getSmartPayHistoryProgressSourceLabel,
   getSmartPayHistorySourceHint,
   getSmartPayHistorySourceLabel,
   getSmartPayRecoverHint,
@@ -2225,6 +2227,136 @@ describe("smart pay history view helpers", () => {
     ]);
     expect(getSmartPayHistoryProgressHint(inFlightWithStaleProgress)).toBe(
       "Route submitted; pending roles: swap. This saved snapshot tracks 2 quoted route steps, with 1 linked proof ref and 1 pending proof link."
+    );
+  });
+
+  it("labels whether route progress comes from live execution telemetry, proof fallback, tx refs, or status only", () => {
+    const inFlightLiveProgress = makeEntry("progress-source-live", "pending_reconciliation", {
+      execution: {
+        ...makeEntry("progress-source-live", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 3,
+          observedTxCount: 1,
+          remainingRouteSteps: 2,
+          pendingRoles: ["swap", "merchant_payout"],
+        },
+      },
+    });
+    const inFlightProofFallback = makeEntry("progress-source-fallback", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("progress-source-fallback", "pending_reconciliation").quote!,
+        route: [
+          {
+            kind: "bridge",
+            network: "acp",
+            dexOrRail: "ancap_bridge_v1",
+            fromAsset: "ACP",
+            toAsset: "wACP",
+            estimatedOut: "10.0",
+          },
+          {
+            kind: "swap",
+            network: "bsc",
+            dexOrRail: "ancap_router_v1",
+            fromAsset: "wACP",
+            toAsset: "USDT",
+            estimatedOut: "9.8",
+          },
+        ],
+      },
+      execution: {
+        ...makeEntry("progress-source-fallback", "pending_reconciliation").execution,
+        progress: {
+          totalRouteSteps: 1,
+          observedTxCount: 1,
+          remainingRouteSteps: 0,
+          pendingRoles: ["swap"],
+        },
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-progress-source-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-source-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("progress-source-fallback", "completed").receipt!,
+        paymentExecutionId: "exec-progress-source-fallback",
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp",
+          "2. swap wACP -> USDT on bsc",
+        ],
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-progress-source-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-progress-source-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+    });
+    const txRefsOnly = makeEntry("progress-source-tx-only", "pending_reconciliation", {
+      quote: {
+        ...makeEntry("progress-source-tx-only", "pending_reconciliation").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("progress-source-tx-only", "pending_reconciliation").execution,
+        txRefs: [
+          {
+            role: "payment",
+            network: "acp",
+            txid: "fixture-progress-source-tx-only",
+            explorerUrl: null,
+          },
+        ],
+      },
+      receipt: null,
+    });
+    const statusOnly = makeEntry("progress-source-status-only", "awaiting_local_signature", {
+      quote: {
+        ...makeEntry("progress-source-status-only", "awaiting_local_signature").quote!,
+        route: [],
+      },
+      execution: {
+        ...makeEntry("progress-source-status-only", "awaiting_local_signature").execution,
+        txRefs: [],
+        progress: null,
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProgressSourceLabel(inFlightLiveProgress)).toBe(
+      "Route progress source: live execution telemetry"
+    );
+    expect(getSmartPayHistoryProgressSourceHint(inFlightLiveProgress)).toBe(
+      "These route-step counts come from the saved execution progress payload, with pending roles reported directly by the execution lifecycle."
+    );
+
+    expect(getSmartPayHistoryProgressSourceLabel(inFlightProofFallback)).toBe(
+      "Route progress source: quoted route proof snapshot"
+    );
+    expect(getSmartPayHistoryProgressSourceHint(inFlightProofFallback)).toBe(
+      "Saved execution progress no longer matches the linked-vs-pending quoted route proof coverage, so this view falls back to route proof linkage instead of stale execution counters."
+    );
+
+    expect(getSmartPayHistoryProgressSourceLabel(txRefsOnly)).toBe(
+      "Route progress source: raw execution tx refs"
+    );
+    expect(getSmartPayHistoryProgressSourceHint(txRefsOnly)).toBe(
+      "No structured route-step progress is saved here, so this view can only report the observed execution tx references."
+    );
+
+    expect(getSmartPayHistoryProgressSourceLabel(statusOnly)).toBe(
+      "Route progress source: saved execution status"
+    );
+    expect(getSmartPayHistoryProgressSourceHint(statusOnly)).toBe(
+      "This snapshot has no structured route progress or observed tx refs yet, so only the saved execution status is available."
     );
   });
 
