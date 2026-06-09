@@ -1044,11 +1044,15 @@ export function getSmartPayHistoryProofRouteStepHint(
   return `Awaiting proof ref for ${contextLabel}.`;
 }
 
-export function getSmartPayHistoryProofHint(entry: SmartPayHistoryEntry): string {
+export function getSmartPayHistoryProofHint(
+  entry: SmartPayHistoryEntry,
+  options: SmartPayHistoryAccessOptions = {}
+): string {
   const { linkedTxCount, explorerLinkedTxCount, expectedRouteSteps, additionalTxCount } = getSmartPayHistoryProofCounts(entry);
   const { hasQuotedRoute, hasRouteProofContext, fullCoverageLabel, zeroCoverageLabel } = getSmartPayHistoryProofRouteContext(entry);
   const recoverAvailable = canSmartPayRecoverExecution({
     sessionToken: entry.sessionToken,
+    hasAccountAuth: options.hasAccountAuth,
     recoverable: entry.execution.recoverable,
   });
 

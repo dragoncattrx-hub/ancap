@@ -4508,6 +4508,24 @@ describe("smart pay history view helpers", () => {
     );
   });
 
+  it("mentions authenticated backend recovery when the original session token is missing", () => {
+    const pendingWithoutSessionToken = makeEntry("14auth", "pending_reconciliation", {
+      sessionToken: null,
+      execution: {
+        ...makeEntry("14auth", "pending_reconciliation").execution,
+        txRefs: [],
+      },
+      receipt: null,
+    });
+
+    expect(getSmartPayHistoryProofHint(pendingWithoutSessionToken, { hasAccountAuth: false })).toBe(
+      "Refresh this session after route activity to attach tx proof refs. Recovery is no longer available for this in-flight snapshot."
+    );
+    expect(getSmartPayHistoryProofHint(pendingWithoutSessionToken, { hasAccountAuth: true })).toBe(
+      "Refresh this session or recover with observed tx hashes/explorer links after route activity to attach tx proof refs."
+    );
+  });
+
   it("avoids promising recovery for pending snapshots that can only refresh", () => {
     const pendingRefreshOnly = makeEntry("14b", "pending_reconciliation", {
       execution: {
