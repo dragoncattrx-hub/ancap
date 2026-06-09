@@ -84,6 +84,7 @@ import {
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryTxRefStorageHint,
+  getSmartPayHistoryTxRefStorageLabel,
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryOverviewLines,
   getSmartPayHistoryProgressHint,
@@ -1238,6 +1239,9 @@ export default function SmartPayScreen() {
           <Text style={styles.label}>Observed route proof</Text>
           {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
             const txRef = step.txRef;
+            const txRefStorageLabel = txRef
+              ? getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry!, txRef)
+              : null;
             const txRefStorageHint = txRef
               ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry!, txRef)
               : null;
@@ -1247,6 +1251,9 @@ export default function SmartPayScreen() {
                   {step.status === "linked" ? "✓" : "…"} {step.label}
                 </Text>
                 <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry!, step)}</Text>
+                {txRefStorageLabel ? (
+                  <Text style={styles.meta}>{txRefStorageLabel}</Text>
+                ) : null}
                 {txRefStorageHint ? (
                   <Text style={styles.inlineHint}>{txRefStorageHint}</Text>
                 ) : null}
@@ -1268,6 +1275,9 @@ export default function SmartPayScreen() {
             const proofTxHint = activeHistoryEntry
               ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
               : null;
+            const proofTxStorageLabel = activeHistoryEntry
+              ? getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry, tx)
+              : null;
             const proofTxStorageHint = activeHistoryEntry
               ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx)
               : null;
@@ -1276,6 +1286,9 @@ export default function SmartPayScreen() {
                 <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {proofTxStorageLabel ? (
+                  <Text style={styles.meta}>{proofTxStorageLabel}</Text>
                 ) : null}
                 {proofTxStorageHint ? (
                   <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
@@ -1293,6 +1306,9 @@ export default function SmartPayScreen() {
             const proofTxHint = activeHistoryEntry
               ? getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx)
               : null;
+            const proofTxStorageLabel = activeHistoryEntry
+              ? getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry, tx)
+              : null;
             const proofTxStorageHint = activeHistoryEntry
               ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx)
               : null;
@@ -1301,6 +1317,9 @@ export default function SmartPayScreen() {
                 <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {proofTxStorageLabel ? (
+                  <Text style={styles.meta}>{proofTxStorageLabel}</Text>
                 ) : null}
                 {proofTxStorageHint ? (
                   <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
@@ -1326,12 +1345,16 @@ export default function SmartPayScreen() {
               ) : null}
               {activeAdditionalProofTxRefs.map((tx) => {
                 const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry!, tx);
+                const additionalProofStorageLabel = getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry!, tx);
                 const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry!, tx);
                 return (
                   <View key={`execution-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
                     <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                     {additionalProofHint ? (
                       <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    {additionalProofStorageLabel ? (
+                      <Text style={styles.meta}>{additionalProofStorageLabel}</Text>
                     ) : null}
                     {additionalProofStorageHint ? (
                       <Text style={styles.inlineHint}>{additionalProofStorageHint}</Text>
@@ -1517,6 +1540,9 @@ export default function SmartPayScreen() {
           ) : null}
           {activeProofRouteSteps.length ? activeProofRouteSteps.map((step) => {
             const txRef = step.txRef;
+            const txRefStorageLabel = txRef
+              ? getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry, txRef)
+              : null;
             const txRefStorageHint = txRef
               ? getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, txRef)
               : null;
@@ -1526,6 +1552,9 @@ export default function SmartPayScreen() {
                   {step.status === "linked" ? "✓" : "…"} {step.label}
                 </Text>
                 <Text style={styles.inlineHint}>{getSmartPayHistoryProofRouteStepHint(activeHistoryEntry, step)}</Text>
+                {txRefStorageLabel ? (
+                  <Text style={styles.meta}>{txRefStorageLabel}</Text>
+                ) : null}
                 {txRefStorageHint ? (
                   <Text style={styles.inlineHint}>{txRefStorageHint}</Text>
                 ) : null}
@@ -1545,12 +1574,16 @@ export default function SmartPayScreen() {
             );
           }) : activeLinkedProofTxRefs.length ? activeLinkedProofTxRefs.map((tx) => {
             const proofTxHint = getSmartPayHistoryProofTxRefHint(activeHistoryEntry, tx);
+            const proofTxStorageLabel = getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry, tx);
             const proofTxStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx);
             return (
               <View key={`receipt-${tx.role}-${tx.txid}`} style={styles.txRow}>
                 <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                 {proofTxHint ? (
                   <Text style={styles.inlineHint}>{proofTxHint}</Text>
+                ) : null}
+                {proofTxStorageLabel ? (
+                  <Text style={styles.meta}>{proofTxStorageLabel}</Text>
                 ) : null}
                 {proofTxStorageHint ? (
                   <Text style={styles.inlineHint}>{proofTxStorageHint}</Text>
@@ -1576,12 +1609,16 @@ export default function SmartPayScreen() {
               ) : null}
               {activeAdditionalProofTxRefs.map((tx) => {
                 const additionalProofHint = getSmartPayHistoryAdditionalProofTxRefHint(activeHistoryEntry, tx);
+                const additionalProofStorageLabel = getSmartPayHistoryTxRefStorageLabel(activeHistoryEntry, tx);
                 const additionalProofStorageHint = getSmartPayHistoryTxRefStorageHint(activeHistoryEntry, tx);
                 return (
                   <View key={`receipt-extra-${tx.role}-${tx.network}-${tx.txid}`} style={styles.txRow}>
                     <Text style={styles.meta}>{formatSmartPayTxRefLabel(tx)}</Text>
                     {additionalProofHint ? (
                       <Text style={styles.inlineHint}>{additionalProofHint}</Text>
+                    ) : null}
+                    {additionalProofStorageLabel ? (
+                      <Text style={styles.meta}>{additionalProofStorageLabel}</Text>
                     ) : null}
                     {additionalProofStorageHint ? (
                       <Text style={styles.inlineHint}>{additionalProofStorageHint}</Text>

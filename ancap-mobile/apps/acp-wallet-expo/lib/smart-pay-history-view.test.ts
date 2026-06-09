@@ -54,6 +54,7 @@ import {
   getSmartPayHistoryProofRouteSteps,
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryTxRefStorageHint,
+  getSmartPayHistoryTxRefStorageLabel,
   getSmartPayHistoryExecutionProgressDetailLines,
   getSmartPayHistoryExecutionProgressDisplayLines,
   getSmartPayHistoryOverviewLines,
@@ -2722,11 +2723,20 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryAdditionalProofProvenanceHint(mixedProof)).toBe(
       "Additional proof refs are currently visible only from saved execution history. Refresh status/receipt if you need a newer receipt snapshot to include them."
     );
+    expect(getSmartPayHistoryTxRefStorageLabel(mixedProof, routeSteps[0]!.txRef!)).toBe(
+      "Proof source: receipt-backed snapshot"
+    );
     expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[0]!.txRef!)).toBe(
       "This tx ref is already backed by the saved receipt snapshot."
     );
+    expect(getSmartPayHistoryTxRefStorageLabel(mixedProof, routeSteps[1]!.txRef!)).toBe(
+      "Proof source: execution history only"
+    );
     expect(getSmartPayHistoryTxRefStorageHint(mixedProof, routeSteps[1]!.txRef!)).toBe(
       "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
+    );
+    expect(getSmartPayHistoryTxRefStorageLabel(mixedProof, additionalProofRefs[0]!)).toBe(
+      "Proof source: execution history only"
     );
     expect(getSmartPayHistoryTxRefStorageHint(mixedProof, additionalProofRefs[0]!)).toBe(
       "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
@@ -2761,6 +2771,14 @@ describe("smart pay history view helpers", () => {
       },
     });
 
+    expect(
+      getSmartPayHistoryTxRefStorageLabel(
+        noReceiptSnapshot,
+        getSmartPayHistoryProofRouteSteps(noReceiptSnapshot)[0]!.txRef!
+      )
+    ).toBe(
+      "Proof source: execution history only (no receipt snapshot yet)"
+    );
     expect(
       getSmartPayHistoryTxRefStorageHint(
         noReceiptSnapshot,
