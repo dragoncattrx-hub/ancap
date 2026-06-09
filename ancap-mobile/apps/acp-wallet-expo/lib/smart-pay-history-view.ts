@@ -42,6 +42,10 @@ export type SmartPayHistoryOverviewStats = {
   explicitLinkedRouteStepCount: number;
   inferredLinkedRouteStepCount: number;
   pendingRouteStepCount: number;
+  explicitBackedProofEntryCount: number;
+  inferredOnlyProofEntryCount: number;
+  mixedProofEntryCount: number;
+  waitingProofEntryCount: number;
   unstructuredProofEntryCount: number;
 };
 
@@ -122,6 +126,10 @@ export function getSmartPayHistoryOverviewStats(
     explicitLinkedRouteStepCount: 0,
     inferredLinkedRouteStepCount: 0,
     pendingRouteStepCount: 0,
+    explicitBackedProofEntryCount: 0,
+    inferredOnlyProofEntryCount: 0,
+    mixedProofEntryCount: 0,
+    waitingProofEntryCount: 0,
     unstructuredProofEntryCount: 0,
   };
 
@@ -185,9 +193,24 @@ export function getSmartPayHistoryOverviewStats(
       stats.pendingRouteStepCount += proofLinkageCounts.pendingSteps;
     }
 
-    const proofCounts = getSmartPayHistoryProofCounts(entry);
-    if (!proofLinkageCounts.hasRouteProofContext && proofCounts.linkedTxCount > 0) {
-      stats.unstructuredProofEntryCount += 1;
+    switch (getSmartPayHistoryOverviewProofQualityBucket(entry)) {
+      case "explicit_backed":
+        stats.explicitBackedProofEntryCount += 1;
+        break;
+      case "inferred_only":
+        stats.inferredOnlyProofEntryCount += 1;
+        break;
+      case "mixed":
+        stats.mixedProofEntryCount += 1;
+        break;
+      case "waiting":
+        stats.waitingProofEntryCount += 1;
+        break;
+      case "unstructured":
+        stats.unstructuredProofEntryCount += 1;
+        break;
+      default:
+        break;
     }
   }
 
@@ -230,6 +253,18 @@ export function getSmartPayHistoryOverviewLines(
   } else if (stats.unstructuredProofEntryCount > 0) {
     lines.push(
       `Tracked route proof: 0 tracked steps · ${stats.unstructuredProofEntryCount} unstructured snapshot${stats.unstructuredProofEntryCount === 1 ? "" : "s"} with tx refs only`
+    );
+  }
+
+  if (
+    stats.explicitBackedProofEntryCount > 0 ||
+    stats.inferredOnlyProofEntryCount > 0 ||
+    stats.mixedProofEntryCount > 0 ||
+    stats.waitingProofEntryCount > 0 ||
+    stats.unstructuredProofEntryCount > 0
+  ) {
+    lines.push(
+      `Proof quality mix: ${stats.explicitBackedProofEntryCount} explicit-backed · ${stats.inferredOnlyProofEntryCount} inferred-only · ${stats.mixedProofEntryCount} mixed · ${stats.waitingProofEntryCount} waiting${stats.unstructuredProofEntryCount > 0 ? ` · ${stats.unstructuredProofEntryCount} unstructured` : ""}`
     );
   }
 
@@ -1299,6 +1334,42 @@ export function getSmartPayHistoryProofRouteDetailHint(entry: SmartPayHistoryEnt
   }
 
   return `${segments.join("; ")}.`;
+}
+
+function getSmartPayHistoryOverviewProofQualityBucket(
+  entry: SmartPayHistoryEntry
+): "explicit_backed" | "inferred_only" | "mixed" | "waiting" | "unstructured" | null {
+  const counts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+  if (!counts.hasRouteProofContext || counts.expectedRouteSteps === 0) {
+    const proofCounts = getSmartPayHistoryProofCounts(entry);
+    return proofCounts.linkedTxCount > 0 ? "unstructured" : null;
+  }
+
+  if (counts.pendingSteps === counts.expectedRouteSteps) {
+    return "waiting";
+  }
+
+  if (counts.pendingSteps > 0) {
+    if (counts.explicitLinkedSteps > 0 && counts.inferredLinkedSteps > 0) {
+      return "mixed";
+    }
+    if (counts.explicitLinkedSteps > 0) {
+      return "explicit_backed";
+    }
+    if (counts.inferredLinkedSteps > 0) {
+      return "inferred_only";
+    }
+    return "waiting";
+  }
+
+  if (counts.inferredLinkedSteps === 0) {
+    return "explicit_backed";
+  }
+  if (counts.explicitLinkedSteps === 0) {
+    return "inferred_only";
+  }
+
+  return "mixed";
 }
 
 export function getSmartPayHistoryProofQualityLabel(entry: SmartPayHistoryEntry): string | null {

@@ -440,6 +440,7 @@ describe("smart pay history view helpers", () => {
       "Action states: 0 need original-device signature · 0 refresh-only · 2 stale read-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
+      "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
 
     expect(getSmartPayHistoryOverviewLines(entries, { hasAccountAuth: true }, now)).toEqual([
@@ -448,6 +449,7 @@ describe("smart pay history view helpers", () => {
       "Action states: 0 need original-device signature · 1 refresh-only · 0 stale read-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
+      "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
   });
 
@@ -493,6 +495,7 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 0 live on this device · 0 refreshable · 0 recoverable · 1 snapshot-only",
       "Proof & freshness: 0 need follow-up · 0 stale snapshots",
       "Tracked route proof: 0 tracked steps · 1 unstructured snapshot with tx refs only",
+      "Proof quality mix: 0 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting · 1 unstructured",
     ]);
   });
 
@@ -3587,6 +3590,218 @@ describe("smart pay history view helpers", () => {
     );
     expect(getSmartPayHistoryProofQualityHint(mixedLinkedCoverage)).toBe(
       "This snapshot links every quoted route step, but some links are explicit and others are inferred from role/network matching."
+    );
+  });
+
+  it("adds proof-quality mix counts to the overview for explicit, inferred, mixed, waiting, and unstructured snapshots", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("38", "completed", {
+        quote: {
+          ...makeEntry("38", "completed").quote!,
+          route: [
+            {
+              kind: "bridge",
+              network: "acp",
+              dexOrRail: "ancap_bridge_v1",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              estimatedOut: "10.0",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("38", "completed").execution,
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-explicit",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-explicit",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("38", "completed").receipt!,
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-explicit",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-explicit",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+      }),
+      makeEntry("39", "completed", {
+        quote: {
+          ...makeEntry("39", "completed").quote!,
+          route: [
+            {
+              kind: "bridge",
+              network: "acp",
+              dexOrRail: "ancap_bridge_v1",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              estimatedOut: "10.0",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("39", "completed").execution,
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-inferred",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-inferred",
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("39", "completed").receipt!,
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-inferred",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-inferred",
+            },
+          ],
+        },
+      }),
+      makeEntry("40", "pending_reconciliation", {
+        quote: {
+          ...makeEntry("40", "pending_reconciliation").quote!,
+          route: [
+            {
+              kind: "bridge",
+              network: "acp",
+              dexOrRail: "ancap_bridge_v1",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              estimatedOut: "10.0",
+            },
+            {
+              kind: "swap",
+              network: "bsc",
+              dexOrRail: "pancakeswap",
+              fromAsset: "wACP",
+              toAsset: "USDT",
+              estimatedOut: "9.8",
+            },
+            {
+              kind: "transfer",
+              network: "bsc",
+              dexOrRail: null,
+              fromAsset: "USDT",
+              toAsset: "USDT",
+              estimatedOut: "9.8",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("40", "pending_reconciliation").execution,
+          progress: {
+            totalRouteSteps: 3,
+            observedTxCount: 2,
+            remainingRouteSteps: 1,
+            pendingRoles: ["payment"],
+          },
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-mixed-explicit",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-mixed-explicit",
+              routeStepIndex: 1,
+            },
+            {
+              role: "swap",
+              network: "bsc",
+              txid: "fixture-overview-mixed-inferred",
+              explorerUrl: "https://bscscan.com/tx/fixture-overview-mixed-inferred",
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("40", "completed").receipt!,
+          paymentExecutionId: "exec-40",
+          paymentIntentId: "intent-40",
+          routeSummary: [],
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "fixture-overview-mixed-explicit",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-mixed-explicit",
+              routeStepIndex: 1,
+            },
+            {
+              role: "swap",
+              network: "bsc",
+              txid: "fixture-overview-mixed-inferred",
+              explorerUrl: "https://bscscan.com/tx/fixture-overview-mixed-inferred",
+            },
+          ],
+        },
+      }),
+      makeEntry("41", "pending_reconciliation", {
+        quote: {
+          ...makeEntry("41", "pending_reconciliation").quote!,
+          route: [
+            {
+              kind: "bridge",
+              network: "acp",
+              dexOrRail: "ancap_bridge_v1",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              estimatedOut: "10.0",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("41", "pending_reconciliation").execution,
+          progress: {
+            totalRouteSteps: 1,
+            observedTxCount: 0,
+            remainingRouteSteps: 1,
+            pendingRoles: ["bridge"],
+          },
+          txRefs: [],
+        },
+        receipt: {
+          ...makeEntry("41", "completed").receipt!,
+          paymentExecutionId: "exec-41",
+          paymentIntentId: "intent-41",
+          routeSummary: [],
+          txRefs: [],
+        },
+      }),
+      makeEntry("42", "completed", {
+        quote: {
+          ...makeEntry("42", "completed").quote!,
+          route: [],
+        },
+        receipt: null,
+        execution: {
+          ...makeEntry("42", "completed").execution,
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "fixture-overview-unstructured",
+              explorerUrl: "https://ancap.cloud/acp/tx/fixture-overview-unstructured",
+            },
+          ],
+        },
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toContain(
+      "Proof quality mix: 1 explicit-backed · 1 inferred-only · 1 mixed · 1 waiting · 1 unstructured"
     );
   });
 
