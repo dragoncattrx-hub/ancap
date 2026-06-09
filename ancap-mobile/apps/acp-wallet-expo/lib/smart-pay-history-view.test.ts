@@ -437,6 +437,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toEqual([
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 1 refreshable · 1 recoverable · 2 snapshot-only",
+      "Action states: 0 need original-device signature · 0 refresh-only · 2 stale read-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
     ]);
@@ -444,6 +445,7 @@ describe("smart pay history view helpers", () => {
     expect(getSmartPayHistoryOverviewLines(entries, { hasAccountAuth: true }, now)).toEqual([
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 3 refreshable · 2 recoverable · 0 snapshot-only",
+      "Action states: 0 need original-device signature · 1 refresh-only · 0 stale read-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
     ]);
@@ -491,6 +493,51 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 0 live on this device · 0 refreshable · 0 recoverable · 1 snapshot-only",
       "Proof & freshness: 0 need follow-up · 0 stale snapshots",
       "Tracked route proof: 0 tracked steps · 1 unstructured snapshot with tx refs only",
+    ]);
+  });
+
+  it("surfaces original-device, refresh-only, and stale read-only action-state counts in the overview", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("35", "awaiting_local_signature", {
+        execution: {
+          ...makeEntry("35", "awaiting_local_signature").execution,
+          updatedAt: "2026-05-28T18:32:00.000Z",
+        },
+        savedAt: "2026-05-28T18:32:00.000Z",
+      }),
+      makeEntry("36", "pending_reconciliation", {
+        execution: {
+          ...makeEntry("36", "pending_reconciliation").execution,
+          recoverable: false,
+          updatedAt: "2026-05-28T18:34:00.000Z",
+          txRefs: [],
+        },
+        receipt: null,
+        savedAt: "2026-05-28T18:34:00.000Z",
+      }),
+      makeEntry("37", "completed", {
+        sessionToken: null,
+        snapshotOrigin: "backend",
+        execution: {
+          ...makeEntry("37", "completed").execution,
+          updatedAt: "2026-05-28T17:00:00.000Z",
+        },
+        receipt: {
+          ...makeEntry("37", "completed").receipt!,
+          completedAt: "2026-05-28T17:00:00.000Z",
+          routeSummary: [],
+          txRefs: [],
+        },
+        savedAt: "2026-05-28T17:00:00.000Z",
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toEqual([
+      "Sessions: 3 total · 2 in flight · 0 need attention · 1 completed",
+      "Resume & actions: 2 live on this device · 2 refreshable · 1 recoverable · 1 snapshot-only",
+      "Action states: 1 need original-device signature · 1 refresh-only · 1 stale read-only",
+      "Proof & freshness: 0 need follow-up · 1 stale snapshot",
     ]);
   });
 

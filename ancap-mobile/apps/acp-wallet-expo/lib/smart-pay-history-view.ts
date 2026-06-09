@@ -33,6 +33,9 @@ export type SmartPayHistoryOverviewStats = {
   refreshableCount: number;
   recoverableCount: number;
   snapshotOnlyCount: number;
+  originalDeviceSignatureCount: number;
+  refreshOnlyCount: number;
+  staleReadOnlyCount: number;
   proofFollowUpCount: number;
   staleCount: number;
   trackedRouteStepCount: number;
@@ -110,6 +113,9 @@ export function getSmartPayHistoryOverviewStats(
     refreshableCount: 0,
     recoverableCount: 0,
     snapshotOnlyCount: 0,
+    originalDeviceSignatureCount: 0,
+    refreshOnlyCount: 0,
+    staleReadOnlyCount: 0,
     proofFollowUpCount: 0,
     staleCount: 0,
     trackedRouteStepCount: 0,
@@ -155,6 +161,15 @@ export function getSmartPayHistoryOverviewStats(
     if (!refreshAvailable && !recoverAvailable) {
       stats.snapshotOnlyCount += 1;
     }
+    if (entry.execution.status === "awaiting_local_signature") {
+      stats.originalDeviceSignatureCount += 1;
+    }
+    if (refreshAvailable && !recoverAvailable && entry.execution.status !== "awaiting_local_signature") {
+      stats.refreshOnlyCount += 1;
+    }
+    if (!refreshAvailable && isSmartPayHistoryStale(entry, now)) {
+      stats.staleReadOnlyCount += 1;
+    }
     if (hasIncompleteSmartPayHistoryProof(entry) || hasSmartPayHistoryReceiptProofLag(entry)) {
       stats.proofFollowUpCount += 1;
     }
@@ -195,6 +210,18 @@ export function getSmartPayHistoryOverviewLines(
     `Resume & actions: ${stats.liveResumeCount} live on this device · ${stats.refreshableCount} refreshable · ${stats.recoverableCount} recoverable · ${stats.snapshotOnlyCount} snapshot-only`,
     `Proof & freshness: ${stats.proofFollowUpCount} need follow-up · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
   ];
+
+  if (
+    stats.originalDeviceSignatureCount > 0 ||
+    stats.refreshOnlyCount > 0 ||
+    stats.staleReadOnlyCount > 0
+  ) {
+    lines.splice(
+      2,
+      0,
+      `Action states: ${stats.originalDeviceSignatureCount} need original-device signature · ${stats.refreshOnlyCount} refresh-only · ${stats.staleReadOnlyCount} stale read-only`
+    );
+  }
 
   if (stats.trackedRouteStepCount > 0) {
     lines.push(
