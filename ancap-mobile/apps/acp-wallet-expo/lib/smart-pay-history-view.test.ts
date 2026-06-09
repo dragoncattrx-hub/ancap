@@ -2742,6 +2742,44 @@ describe("smart pay history view helpers", () => {
       "This tx ref is currently visible only from saved execution history; refresh status/receipt if you need a newer receipt snapshot to include it."
     );
 
+    const receiptBackedButExecutionEnriched = makeEntry("7c-proof-storage-enriched", "completed", {
+      quote: mixedProof.quote,
+      execution: {
+        ...makeEntry("7c-proof-storage-enriched", "completed").execution,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-storage-enriched-bridge",
+            explorerUrl: "https://ancap.cloud/acp/tx/fixture-storage-enriched-bridge",
+            routeStepIndex: 1,
+          },
+        ],
+      },
+      receipt: {
+        ...makeEntry("7c-proof-storage-enriched", "completed").receipt!,
+        txRefs: [
+          {
+            role: "bridge",
+            network: "acp",
+            txid: "fixture-storage-enriched-bridge",
+            explorerUrl: null,
+          },
+        ],
+        routeSummary: [
+          "1. bridge ACP -> wACP on acp via ancap_bridge_v1",
+        ],
+      },
+    });
+
+    const enrichedRouteRef = getSmartPayHistoryProofRouteSteps(receiptBackedButExecutionEnriched)[0]!.txRef!;
+    expect(getSmartPayHistoryTxRefStorageLabel(receiptBackedButExecutionEnriched, enrichedRouteRef)).toBe(
+      "Proof source: receipt-backed snapshot + execution metadata"
+    );
+    expect(getSmartPayHistoryTxRefStorageHint(receiptBackedButExecutionEnriched, enrichedRouteRef)).toBe(
+      "This tx ref is already backed by the saved receipt snapshot, and the current view keeps richer explorer or route-link metadata from saved execution history."
+    );
+
     const noReceiptSnapshot = makeEntry("7c-proof-storage-no-receipt", "completed", {
       receipt: null,
       quote: {

@@ -1549,6 +1549,26 @@ function formatSmartPayHistoryTxRefProvenanceHint(
   return `All ${subjectPlural} are already backed by the saved receipt snapshot.`;
 }
 
+function findSmartPayReceiptBackedTxRef(
+  entry: SmartPayHistoryEntry,
+  ref: SmartPayExecution["txRefs"][number]
+): SmartPayExecution["txRefs"][number] | null {
+  return (entry.receipt?.txRefs ?? []).find(
+    (item) => getSmartPayTxRefIdentityKey(item) === getSmartPayTxRefIdentityKey(ref)
+  ) ?? null;
+}
+
+function isSmartPayReceiptBackedTxRefExecutionEnriched(
+  receiptRef: SmartPayExecution["txRefs"][number],
+  mergedRef: SmartPayExecution["txRefs"][number]
+): boolean {
+  const receiptExplorer = receiptRef.explorerUrl?.trim() ?? "";
+  const mergedExplorer = mergedRef.explorerUrl?.trim() ?? "";
+
+  return receiptExplorer !== mergedExplorer
+    || (receiptRef.routeStepIndex ?? null) !== (mergedRef.routeStepIndex ?? null);
+}
+
 function getSmartPayHistoryLinkedProofTxRefs(entry: SmartPayHistoryEntry): SmartPayExecution["txRefs"] {
   const routeSteps = getSmartPayHistoryProofRouteSteps(entry);
   if (routeSteps.length > 0) {
@@ -1590,9 +1610,11 @@ export function getSmartPayHistoryTxRefStorageHint(
   entry: SmartPayHistoryEntry,
   ref: SmartPayExecution["txRefs"][number]
 ): string {
-  const receiptKeys = new Set((entry.receipt?.txRefs ?? []).map((item) => getSmartPayTxRefIdentityKey(item)));
-  if (receiptKeys.has(getSmartPayTxRefIdentityKey(ref))) {
-    return "This tx ref is already backed by the saved receipt snapshot.";
+  const receiptRef = findSmartPayReceiptBackedTxRef(entry, ref);
+  if (receiptRef) {
+    return isSmartPayReceiptBackedTxRefExecutionEnriched(receiptRef, ref)
+      ? "This tx ref is already backed by the saved receipt snapshot, and the current view keeps richer explorer or route-link metadata from saved execution history."
+      : "This tx ref is already backed by the saved receipt snapshot.";
   }
 
   if (entry.receipt) {
@@ -1606,9 +1628,11 @@ export function getSmartPayHistoryTxRefStorageLabel(
   entry: SmartPayHistoryEntry,
   ref: SmartPayExecution["txRefs"][number]
 ): string {
-  const receiptKeys = new Set((entry.receipt?.txRefs ?? []).map((item) => getSmartPayTxRefIdentityKey(item)));
-  if (receiptKeys.has(getSmartPayTxRefIdentityKey(ref))) {
-    return "Proof source: receipt-backed snapshot";
+  const receiptRef = findSmartPayReceiptBackedTxRef(entry, ref);
+  if (receiptRef) {
+    return isSmartPayReceiptBackedTxRefExecutionEnriched(receiptRef, ref)
+      ? "Proof source: receipt-backed snapshot + execution metadata"
+      : "Proof source: receipt-backed snapshot";
   }
 
   if (entry.receipt) {
