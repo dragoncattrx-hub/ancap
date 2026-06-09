@@ -37,6 +37,8 @@ export type SmartPayHistoryOverviewStats = {
   refreshOnlyCount: number;
   staleReadOnlyCount: number;
   proofFollowUpCount: number;
+  missingProofEntryCount: number;
+  receiptLagEntryCount: number;
   staleCount: number;
   trackedRouteStepCount: number;
   explicitLinkedRouteStepCount: number;
@@ -121,6 +123,8 @@ export function getSmartPayHistoryOverviewStats(
     refreshOnlyCount: 0,
     staleReadOnlyCount: 0,
     proofFollowUpCount: 0,
+    missingProofEntryCount: 0,
+    receiptLagEntryCount: 0,
     staleCount: 0,
     trackedRouteStepCount: 0,
     explicitLinkedRouteStepCount: 0,
@@ -178,8 +182,15 @@ export function getSmartPayHistoryOverviewStats(
     if (!refreshAvailable && isSmartPayHistoryStale(entry, now)) {
       stats.staleReadOnlyCount += 1;
     }
-    if (hasIncompleteSmartPayHistoryProof(entry) || hasSmartPayHistoryReceiptProofLag(entry)) {
+    const incompleteProof = hasIncompleteSmartPayHistoryProof(entry);
+    const receiptProofLag = hasSmartPayHistoryReceiptProofLag(entry);
+
+    if (incompleteProof) {
       stats.proofFollowUpCount += 1;
+      stats.missingProofEntryCount += 1;
+    } else if (receiptProofLag) {
+      stats.proofFollowUpCount += 1;
+      stats.receiptLagEntryCount += 1;
     }
     if (isSmartPayHistoryStale(entry, now)) {
       stats.staleCount += 1;
@@ -228,10 +239,14 @@ export function getSmartPayHistoryOverviewLines(
     return [];
   }
 
+  const proofFollowUpBreakdown = stats.proofFollowUpCount > 0
+    ? ` (${stats.missingProofEntryCount} missing proof · ${stats.receiptLagEntryCount} receipt lag)`
+    : "";
+
   const lines = [
     `Sessions: ${stats.totalCount} total · ${stats.inFlightCount} in flight · ${stats.needsAttentionCount} need attention · ${stats.completedCount} completed`,
     `Resume & actions: ${stats.liveResumeCount} live on this device · ${stats.refreshableCount} refreshable · ${stats.recoverableCount} recoverable · ${stats.snapshotOnlyCount} snapshot-only`,
-    `Proof & freshness: ${stats.proofFollowUpCount} need follow-up · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
+    `Proof & freshness: ${stats.proofFollowUpCount} need follow-up${proofFollowUpBreakdown} · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
   ];
 
   if (

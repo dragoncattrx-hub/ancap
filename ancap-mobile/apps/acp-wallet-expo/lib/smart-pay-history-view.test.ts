@@ -438,7 +438,7 @@ describe("smart pay history view helpers", () => {
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 1 refreshable · 1 recoverable · 2 snapshot-only",
       "Action states: 0 need original-device signature · 0 refresh-only · 2 stale read-only",
-      "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+      "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
@@ -447,7 +447,7 @@ describe("smart pay history view helpers", () => {
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 3 refreshable · 2 recoverable · 0 snapshot-only",
       "Action states: 0 need original-device signature · 1 refresh-only · 0 stale read-only",
-      "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+      "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
@@ -542,6 +542,102 @@ describe("smart pay history view helpers", () => {
       "Action states: 1 need original-device signature · 1 refresh-only · 1 stale read-only",
       "Proof & freshness: 0 need follow-up · 1 stale snapshot",
     ]);
+  });
+
+  it("breaks overview proof follow-up down into missing-proof versus receipt-lag buckets", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("37-follow-up", "completed", {
+        savedAt: "2026-05-28T18:36:00.000Z",
+        quote: {
+          ...makeEntry("37-follow-up", "completed").quote!,
+          route: [
+            {
+              kind: "bridge",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              network: "acp",
+              estimatedOut: "14.9",
+            },
+            {
+              kind: "swap",
+              fromAsset: "wACP",
+              toAsset: "USDT",
+              network: "bsc",
+              estimatedOut: "14.7",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("37-follow-up", "completed").execution,
+          updatedAt: "2026-05-28T18:36:00.000Z",
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "overview-missing-proof-bridge",
+              explorerUrl: "https://ancap.cloud/acp/tx/overview-missing-proof-bridge",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("37-follow-up", "completed").receipt!,
+          completedAt: "2026-05-28T18:36:00.000Z",
+          routeSummary: [
+            "1. bridge ACP -> wACP on acp",
+            "2. swap wACP -> USDT on bsc",
+          ],
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "overview-missing-proof-bridge",
+              explorerUrl: "https://ancap.cloud/acp/tx/overview-missing-proof-bridge",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+      }),
+      makeEntry("38-follow-up", "completed", {
+        savedAt: "2026-05-28T18:37:00.000Z",
+        quote: {
+          ...makeEntry("38-follow-up", "completed").quote!,
+          route: [
+            {
+              kind: "transfer",
+              fromAsset: "ACP",
+              toAsset: "ACP",
+              network: "acp",
+              estimatedOut: "14.8",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("38-follow-up", "completed").execution,
+          updatedAt: "2026-05-28T18:37:00.000Z",
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "overview-receipt-lag-payment",
+              explorerUrl: "https://ancap.cloud/acp/tx/overview-receipt-lag-payment",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("38-follow-up", "completed").receipt!,
+          completedAt: "2026-05-28T18:37:00.000Z",
+          routeSummary: ["1. transfer ACP -> ACP on acp"],
+          txRefs: [],
+        },
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toContain(
+      "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 0 stale snapshots"
+    );
   });
 
   it("formats saved timestamps with stable UTC output", () => {
