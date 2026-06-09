@@ -49,6 +49,10 @@ export type SmartPayHistoryOverviewStats = {
   mixedProofEntryCount: number;
   waitingProofEntryCount: number;
   unstructuredProofEntryCount: number;
+  linkedReceiptBackedProofRefCount: number;
+  linkedExecutionOnlyProofRefCount: number;
+  additionalReceiptBackedProofRefCount: number;
+  additionalExecutionOnlyProofRefCount: number;
 };
 
 function pickLatestSmartPayTimestamp(...values: Array<string | null | undefined>): string {
@@ -135,6 +139,10 @@ export function getSmartPayHistoryOverviewStats(
     mixedProofEntryCount: 0,
     waitingProofEntryCount: 0,
     unstructuredProofEntryCount: 0,
+    linkedReceiptBackedProofRefCount: 0,
+    linkedExecutionOnlyProofRefCount: 0,
+    additionalReceiptBackedProofRefCount: 0,
+    additionalExecutionOnlyProofRefCount: 0,
   };
 
   for (const entry of entries) {
@@ -223,6 +231,17 @@ export function getSmartPayHistoryOverviewStats(
       default:
         break;
     }
+
+    const linkedProofProvenance = getSmartPayHistoryProofProvenanceCounts(entry);
+    stats.linkedReceiptBackedProofRefCount += linkedProofProvenance.receiptBackedCount;
+    stats.linkedExecutionOnlyProofRefCount += linkedProofProvenance.executionOnlyCount;
+
+    const additionalProofProvenance = getSmartPayHistoryTxRefProvenanceCounts(
+      entry,
+      getSmartPayHistoryAdditionalProofTxRefs(entry)
+    );
+    stats.additionalReceiptBackedProofRefCount += additionalProofProvenance.receiptBackedCount;
+    stats.additionalExecutionOnlyProofRefCount += additionalProofProvenance.executionOnlyCount;
   }
 
   return stats;
@@ -268,6 +287,17 @@ export function getSmartPayHistoryOverviewLines(
   } else if (stats.unstructuredProofEntryCount > 0) {
     lines.push(
       `Tracked route proof: 0 tracked steps · ${stats.unstructuredProofEntryCount} unstructured snapshot${stats.unstructuredProofEntryCount === 1 ? "" : "s"} with tx refs only`
+    );
+  }
+
+  if (
+    stats.linkedReceiptBackedProofRefCount > 0 ||
+    stats.linkedExecutionOnlyProofRefCount > 0 ||
+    stats.additionalReceiptBackedProofRefCount > 0 ||
+    stats.additionalExecutionOnlyProofRefCount > 0
+  ) {
+    lines.push(
+      `Proof provenance: ${stats.linkedReceiptBackedProofRefCount} linked receipt-backed · ${stats.linkedExecutionOnlyProofRefCount} linked execution-only · ${stats.additionalReceiptBackedProofRefCount} additional receipt-backed · ${stats.additionalExecutionOnlyProofRefCount} additional execution-only`
     );
   }
 

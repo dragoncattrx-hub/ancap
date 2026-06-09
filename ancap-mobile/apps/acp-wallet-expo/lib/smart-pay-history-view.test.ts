@@ -440,6 +440,7 @@ describe("smart pay history view helpers", () => {
       "Action states: 0 need original-device signature · 0 refresh-only · 2 stale read-only",
       "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
+      "Proof provenance: 0 linked receipt-backed · 2 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
 
@@ -449,6 +450,7 @@ describe("smart pay history view helpers", () => {
       "Action states: 0 need original-device signature · 1 refresh-only · 0 stale read-only",
       "Proof & freshness: 2 need follow-up (1 missing proof · 1 receipt lag) · 2 stale snapshots",
       "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
+      "Proof provenance: 0 linked receipt-backed · 2 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 2 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting",
     ]);
   });
@@ -495,6 +497,7 @@ describe("smart pay history view helpers", () => {
       "Resume & actions: 0 live on this device · 0 refreshable · 0 recoverable · 1 snapshot-only",
       "Proof & freshness: 0 need follow-up · 0 stale snapshots",
       "Tracked route proof: 0 tracked steps · 1 unstructured snapshot with tx refs only",
+      "Proof provenance: 1 linked receipt-backed · 0 linked execution-only · 0 additional receipt-backed · 0 additional execution-only",
       "Proof quality mix: 0 explicit-backed · 0 inferred-only · 0 mixed · 0 waiting · 1 unstructured",
     ]);
   });
@@ -3896,7 +3899,12 @@ describe("smart pay history view helpers", () => {
       }),
     ];
 
-    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toContain(
+    const overviewLines = getSmartPayHistoryOverviewLines(entries, {}, now);
+
+    expect(overviewLines).toContain(
+      "Proof provenance: 4 linked receipt-backed · 1 linked execution-only · 0 additional receipt-backed · 0 additional execution-only"
+    );
+    expect(overviewLines).toContain(
       "Proof quality mix: 1 explicit-backed · 1 inferred-only · 1 mixed · 1 waiting · 1 unstructured"
     );
   });
