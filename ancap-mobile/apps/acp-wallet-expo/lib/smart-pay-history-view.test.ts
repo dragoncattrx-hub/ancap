@@ -56,6 +56,7 @@ import {
   getSmartPayHistoryTxRefStorageHint,
   getSmartPayHistoryExecutionProgressDetailLines,
   getSmartPayHistoryExecutionProgressDisplayLines,
+  getSmartPayHistoryOverviewLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistoryProgressLabel,
   getSmartPayHistorySourceHint,
@@ -343,6 +344,107 @@ describe("smart pay history view helpers", () => {
     expect(sections[0]?.entries[0]?.execution.status).toBe("pending_reconciliation");
     expect(sections[1]?.entries[0]?.execution.status).toBe("failed");
     expect(sections[2]?.entries[0]?.execution.status).toBe("completed");
+  });
+
+  it("summarizes history overview counts for resume, proof follow-up, and stale state", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("31", "pending_reconciliation", {
+        quote: {
+          ...makeEntry("31", "pending_reconciliation").quote!,
+          route: [
+            {
+              kind: "bridge",
+              fromAsset: "ACP",
+              toAsset: "wACP",
+              network: "acp",
+              estimatedOut: "14.9",
+            },
+            {
+              kind: "swap",
+              fromAsset: "wACP",
+              toAsset: "USDT",
+              network: "bsc",
+              estimatedOut: "14.7",
+            },
+          ],
+        },
+        execution: {
+          ...makeEntry("31", "pending_reconciliation").execution,
+          updatedAt: "2026-05-28T18:25:00.000Z",
+          progress: {
+            totalRouteSteps: 2,
+            observedTxCount: 1,
+            remainingRouteSteps: 1,
+            pendingRoles: ["swap"],
+          },
+          txRefs: [
+            {
+              role: "bridge",
+              network: "acp",
+              txid: "history-overview-bridge",
+              explorerUrl: "https://ancap.cloud/acp/tx/history-overview-bridge",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        savedAt: "2026-05-28T18:25:00.000Z",
+      }),
+      makeEntry("32", "failed", {
+        sessionToken: null,
+        snapshotOrigin: "backend",
+        quote: {
+          ...makeEntry("32", "failed").quote!,
+          route: [],
+        },
+        execution: {
+          ...makeEntry("32", "failed").execution,
+          updatedAt: "2026-05-28T17:00:00.000Z",
+          progress: {
+            totalRouteSteps: 0,
+            observedTxCount: 0,
+            remainingRouteSteps: 0,
+            pendingRoles: ["payment"],
+          },
+        },
+        savedAt: "2026-05-28T17:00:00.000Z",
+      }),
+      makeEntry("33", "completed", {
+        sessionToken: null,
+        snapshotOrigin: "backend",
+        execution: {
+          ...makeEntry("33", "completed").execution,
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "history-overview-complete",
+              explorerUrl: "https://ancap.cloud/acp/tx/history-overview-complete",
+              routeStepIndex: 1,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("33", "completed").receipt!,
+          completedAt: "2026-05-28T17:05:00.000Z",
+          routeSummary: ["1. transfer ACP -> ACP on acp"],
+          txRefs: [],
+        },
+        savedAt: "2026-05-28T17:05:00.000Z",
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toEqual([
+      "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
+      "Resume & actions: 1 live on this device · 1 refreshable · 1 recoverable · 2 snapshot-only",
+      "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+    ]);
+
+    expect(getSmartPayHistoryOverviewLines(entries, { hasAccountAuth: true }, now)).toEqual([
+      "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
+      "Resume & actions: 1 live on this device · 3 refreshable · 2 recoverable · 0 snapshot-only",
+      "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+    ]);
   });
 
   it("formats saved timestamps with stable UTC output", () => {

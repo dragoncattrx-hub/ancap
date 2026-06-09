@@ -85,6 +85,7 @@ import {
   getSmartPayHistoryProofTxRefs,
   getSmartPayHistoryTxRefStorageHint,
   getSmartPayHistoryExecutionProgressDisplayLines,
+  getSmartPayHistoryOverviewLines,
   getSmartPayHistoryProgressHint,
   getSmartPayHistorySnapshotStatusLabel,
   getSmartPayHistorySnapshotTitle,
@@ -193,9 +194,13 @@ export default function SmartPayScreen() {
     return uniq.length > 0 ? uniq : ["ACP", "wACP", "USDT"];
   }, [capabilities]);
 
-  const historySections = useMemo(() => buildSmartPayHistorySections(history), [history]);
-  const quoteExpired = useMemo(() => (quote ? isSmartPayQuoteExpired(quote) : false), [quote]);
   const hasAccountAuth = useMemo(() => hasApiAuthHeader(), []);
+  const historySections = useMemo(() => buildSmartPayHistorySections(history), [history]);
+  const historyOverviewLines = useMemo(
+    () => getSmartPayHistoryOverviewLines(history, { hasAccountAuth }),
+    [history, hasAccountAuth]
+  );
+  const quoteExpired = useMemo(() => (quote ? isSmartPayQuoteExpired(quote) : false), [quote]);
   const sharedDraft = useMemo(
     () => getSmartPaySharedDraft(sharedParams),
     [sharedParams.asset, sharedParams.payload, sharedParams.rawPayload, sharedParams.selectedAsset]
@@ -879,6 +884,14 @@ export default function SmartPayScreen() {
           </View>
           <Text style={styles.meta}>Secure device-local snapshots merged with authenticated backend payment history when available. Clearing history removes only the local secure-store snapshots on this device; signed-in backend payment history remains server-side and will still reappear here when account-authenticated history is enabled.</Text>
           <Text style={styles.meta}>Entries without the original session token may still refresh/recover after account sign-in, but anonymous live resume remains unavailable on this device.</Text>
+          {historyOverviewLines.length ? (
+            <View style={styles.historyOverviewCard}>
+              <Text style={styles.historyOverviewTitle}>History overview</Text>
+              {historyOverviewLines.map((line) => (
+                <Text key={`history-overview-${line}`} style={styles.meta}>{line}</Text>
+              ))}
+            </View>
+          ) : null}
           {!hasAccountAuth ? (
             <Text style={styles.inlineHint}>Account-authenticated backend history is currently disabled in this Expo build. Set EXPO_PUBLIC_ANCAP_API_AUTH_HEADER to enable authenticated payment history/resume for the same ANCAP account.</Text>
           ) : null}
@@ -1659,6 +1672,15 @@ const styles = StyleSheet.create({
   },
   chipText: { color: "#cbd5e1", fontWeight: "600" },
   chipTextActive: { color: "#042f1a" },
+  historyOverviewCard: {
+    marginTop: 12,
+    borderColor: "#1f2937",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#0f172a",
+  },
+  historyOverviewTitle: { color: "#e2e8f0", fontWeight: "700", marginBottom: 4 },
   historySection: { marginTop: 14 },
   historySectionTitle: { color: "#e2e8f0", fontWeight: "700", marginBottom: 4 },
   historyItem: {

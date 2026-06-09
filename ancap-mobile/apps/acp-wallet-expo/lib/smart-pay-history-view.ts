@@ -24,6 +24,19 @@ export type SmartPayHistorySection = {
   entries: SmartPayHistoryEntry[];
 };
 
+export type SmartPayHistoryOverviewStats = {
+  totalCount: number;
+  inFlightCount: number;
+  needsAttentionCount: number;
+  completedCount: number;
+  liveResumeCount: number;
+  refreshableCount: number;
+  recoverableCount: number;
+  snapshotOnlyCount: number;
+  proofFollowUpCount: number;
+  staleCount: number;
+};
+
 function pickLatestSmartPayTimestamp(...values: Array<string | null | undefined>): string {
   const best = values.reduce<{ value: string | null; timestamp: number | null }>(
     (current, value) => {
@@ -76,6 +89,89 @@ export function buildSmartPayHistorySections(entries: SmartPayHistoryEntry[]): S
     title: section.title,
     entries: grouped.get(section.key) ?? [],
   })).filter((section) => section.entries.length > 0);
+}
+
+export function getSmartPayHistoryOverviewStats(
+  entries: SmartPayHistoryEntry[],
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
+): SmartPayHistoryOverviewStats {
+  const stats: SmartPayHistoryOverviewStats = {
+    totalCount: entries.length,
+    inFlightCount: 0,
+    needsAttentionCount: 0,
+    completedCount: 0,
+    liveResumeCount: 0,
+    refreshableCount: 0,
+    recoverableCount: 0,
+    snapshotOnlyCount: 0,
+    proofFollowUpCount: 0,
+    staleCount: 0,
+  };
+
+  for (const entry of entries) {
+    switch (bucketForStatus(entry.execution.status)) {
+      case "in_flight":
+        stats.inFlightCount += 1;
+        break;
+      case "needs_attention":
+        stats.needsAttentionCount += 1;
+        break;
+      case "completed":
+      default:
+        stats.completedCount += 1;
+        break;
+    }
+
+    const refreshAvailable = canSmartPayRefreshOrRecover({
+      sessionToken: entry.sessionToken,
+      hasAccountAuth: options.hasAccountAuth,
+    });
+    const recoverAvailable = canSmartPayRecoverExecution({
+      sessionToken: entry.sessionToken,
+      hasAccountAuth: options.hasAccountAuth,
+      recoverable: entry.execution.recoverable,
+    });
+
+    if (hasSmartPayLiveSessionAccess(entry)) {
+      stats.liveResumeCount += 1;
+    }
+    if (refreshAvailable) {
+      stats.refreshableCount += 1;
+    }
+    if (recoverAvailable) {
+      stats.recoverableCount += 1;
+    }
+    if (!refreshAvailable && !recoverAvailable) {
+      stats.snapshotOnlyCount += 1;
+    }
+    if (hasIncompleteSmartPayHistoryProof(entry) || hasSmartPayHistoryReceiptProofLag(entry)) {
+      stats.proofFollowUpCount += 1;
+    }
+    if (isSmartPayHistoryStale(entry, now)) {
+      stats.staleCount += 1;
+    }
+  }
+
+  return stats;
+}
+
+export function getSmartPayHistoryOverviewLines(
+  entries: SmartPayHistoryEntry[],
+  options: SmartPayHistoryActionOptions = {},
+  now = Date.now()
+): string[] {
+  const stats = getSmartPayHistoryOverviewStats(entries, options, now);
+
+  if (stats.totalCount === 0) {
+    return [];
+  }
+
+  return [
+    `Sessions: ${stats.totalCount} total · ${stats.inFlightCount} in flight · ${stats.needsAttentionCount} need attention · ${stats.completedCount} completed`,
+    `Resume & actions: ${stats.liveResumeCount} live on this device · ${stats.refreshableCount} refreshable · ${stats.recoverableCount} recoverable · ${stats.snapshotOnlyCount} snapshot-only`,
+    `Proof & freshness: ${stats.proofFollowUpCount} need follow-up · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
+  ];
 }
 
 export function formatSmartPayTimestamp(value: string): string {
