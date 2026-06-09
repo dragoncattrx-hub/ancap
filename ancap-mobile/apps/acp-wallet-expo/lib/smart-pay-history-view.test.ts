@@ -438,12 +438,59 @@ describe("smart pay history view helpers", () => {
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 1 refreshable · 1 recoverable · 2 snapshot-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+      "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
     ]);
 
     expect(getSmartPayHistoryOverviewLines(entries, { hasAccountAuth: true }, now)).toEqual([
       "Sessions: 3 total · 1 in flight · 1 need attention · 1 completed",
       "Resume & actions: 1 live on this device · 3 refreshable · 2 recoverable · 0 snapshot-only",
       "Proof & freshness: 2 need follow-up · 2 stale snapshots",
+      "Tracked route proof: 2/3 steps linked (2 explicit · 0 inferred) · 1 pending",
+    ]);
+  });
+
+  it("summarizes unstructured proof-only history when no route-step context exists", () => {
+    const now = Date.parse("2026-05-28T18:40:00.000Z");
+    const entries = [
+      makeEntry("34", "completed", {
+        quote: {
+          ...makeEntry("34", "completed").quote!,
+          route: [],
+        },
+        execution: {
+          ...makeEntry("34", "completed").execution,
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "history-overview-unstructured-proof",
+              explorerUrl: "https://ancap.cloud/acp/tx/history-overview-unstructured-proof",
+              routeStepIndex: null,
+            },
+          ],
+        },
+        receipt: {
+          ...makeEntry("34", "completed").receipt!,
+          routeSummary: [],
+          txRefs: [
+            {
+              role: "payment",
+              network: "acp",
+              txid: "history-overview-unstructured-proof",
+              explorerUrl: "https://ancap.cloud/acp/tx/history-overview-unstructured-proof",
+              routeStepIndex: null,
+            },
+          ],
+        },
+        savedAt: "2026-05-28T18:35:00.000Z",
+      }),
+    ];
+
+    expect(getSmartPayHistoryOverviewLines(entries, {}, now)).toEqual([
+      "Sessions: 1 total · 0 in flight · 0 need attention · 1 completed",
+      "Resume & actions: 0 live on this device · 0 refreshable · 0 recoverable · 1 snapshot-only",
+      "Proof & freshness: 0 need follow-up · 0 stale snapshots",
+      "Tracked route proof: 0 tracked steps · 1 unstructured snapshot with tx refs only",
     ]);
   });
 

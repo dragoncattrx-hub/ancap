@@ -35,6 +35,11 @@ export type SmartPayHistoryOverviewStats = {
   snapshotOnlyCount: number;
   proofFollowUpCount: number;
   staleCount: number;
+  trackedRouteStepCount: number;
+  explicitLinkedRouteStepCount: number;
+  inferredLinkedRouteStepCount: number;
+  pendingRouteStepCount: number;
+  unstructuredProofEntryCount: number;
 };
 
 function pickLatestSmartPayTimestamp(...values: Array<string | null | undefined>): string {
@@ -107,6 +112,11 @@ export function getSmartPayHistoryOverviewStats(
     snapshotOnlyCount: 0,
     proofFollowUpCount: 0,
     staleCount: 0,
+    trackedRouteStepCount: 0,
+    explicitLinkedRouteStepCount: 0,
+    inferredLinkedRouteStepCount: 0,
+    pendingRouteStepCount: 0,
+    unstructuredProofEntryCount: 0,
   };
 
   for (const entry of entries) {
@@ -151,6 +161,19 @@ export function getSmartPayHistoryOverviewStats(
     if (isSmartPayHistoryStale(entry, now)) {
       stats.staleCount += 1;
     }
+
+    const proofLinkageCounts = getSmartPayHistoryProofRouteLinkageCounts(entry);
+    if (proofLinkageCounts.hasRouteProofContext) {
+      stats.trackedRouteStepCount += proofLinkageCounts.expectedRouteSteps;
+      stats.explicitLinkedRouteStepCount += proofLinkageCounts.explicitLinkedSteps;
+      stats.inferredLinkedRouteStepCount += proofLinkageCounts.inferredLinkedSteps;
+      stats.pendingRouteStepCount += proofLinkageCounts.pendingSteps;
+    }
+
+    const proofCounts = getSmartPayHistoryProofCounts(entry);
+    if (!proofLinkageCounts.hasRouteProofContext && proofCounts.linkedTxCount > 0) {
+      stats.unstructuredProofEntryCount += 1;
+    }
   }
 
   return stats;
@@ -167,11 +190,23 @@ export function getSmartPayHistoryOverviewLines(
     return [];
   }
 
-  return [
+  const lines = [
     `Sessions: ${stats.totalCount} total · ${stats.inFlightCount} in flight · ${stats.needsAttentionCount} need attention · ${stats.completedCount} completed`,
     `Resume & actions: ${stats.liveResumeCount} live on this device · ${stats.refreshableCount} refreshable · ${stats.recoverableCount} recoverable · ${stats.snapshotOnlyCount} snapshot-only`,
     `Proof & freshness: ${stats.proofFollowUpCount} need follow-up · ${stats.staleCount} stale snapshot${stats.staleCount === 1 ? "" : "s"}`,
   ];
+
+  if (stats.trackedRouteStepCount > 0) {
+    lines.push(
+      `Tracked route proof: ${stats.explicitLinkedRouteStepCount + stats.inferredLinkedRouteStepCount}/${stats.trackedRouteStepCount} steps linked (${stats.explicitLinkedRouteStepCount} explicit · ${stats.inferredLinkedRouteStepCount} inferred) · ${stats.pendingRouteStepCount} pending${stats.unstructuredProofEntryCount > 0 ? ` · ${stats.unstructuredProofEntryCount} unstructured snapshot${stats.unstructuredProofEntryCount === 1 ? "" : "s"}` : ""}`
+    );
+  } else if (stats.unstructuredProofEntryCount > 0) {
+    lines.push(
+      `Tracked route proof: 0 tracked steps · ${stats.unstructuredProofEntryCount} unstructured snapshot${stats.unstructuredProofEntryCount === 1 ? "" : "s"} with tx refs only`
+    );
+  }
+
+  return lines;
 }
 
 export function formatSmartPayTimestamp(value: string): string {
