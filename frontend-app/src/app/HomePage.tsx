@@ -161,14 +161,17 @@ export function HomePage() {
                     {t("homePage.acpLead")}
                   </p>
                   <div className="action-cluster" style={{ marginBottom: 22 }}>
-                    <Link href="/ai/workflows" className="btn btn-primary">
-                      {t("homePage.buyWorkflow")}
+                    <Link href="/token-snapshot" className="btn btn-primary">
+                      Run Free Token Snapshot
                     </Link>
-                    <Link href="/pricing" className="btn btn-ghost">
-                      {t("homePage.viewPricing")}
+                    <Link href="/ai/run/token-risk-report-pro" className="btn btn-primary">
+                      Buy Pro Risk Report
+                    </Link>
+                    <Link href="/pay/create" className="btn btn-ghost">
+                      Create Payment Link
                     </Link>
                     <Link href="/developers" className="btn btn-ghost">
-                      {t("homePage.agentApi")}
+                      Integrate ANCAP API
                     </Link>
                   </div>
                   <div className="action-cluster">

@@ -1113,6 +1113,20 @@ Security and ops hardening completed in this audit:
 
 ---
 
+## Commerce & Agent Track (2026-Q3)
+
+Execution detail: **`docs/ANCAP_COMMERCE_ROADMAP.md`** (90-day commerce + AI agent plan).
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| Days 1–14 | **Shipped in repo** | Landing 4 CTAs, `/pricing`, ANCAP Pay MVP (`/pay`, `/merchant`, `/invoices`), `/buy-acp`, `/status`, `/explorer` beta, analytics events |
+| Days 15–30 | **Shipped in repo** | Merchant dashboard + CSV, claim codes MVP, Workflow Store 2.0 bundles, creator payout UI |
+| Days 31–60 | **Shipped in repo** | MCP server (`mcp-server/`), paid API challenge/settle/consume, `/mcp` docs |
+| Days 61–90 | **Partial** | Payment scanner API + parse UX; embedded wallet / Business treasury UI stubs; full reserves dashboard → ongoing |
+| Ongoing | **Shipped in repo** | `/compliance`, `docs/COMPLIANCE_ONRAMP_MATRIX.md`, MiCA-safe messaging |
+
+---
+
 ## Working tree rule
 
 Before ending every session:

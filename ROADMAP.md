@@ -19,6 +19,7 @@ Current repo-wide truth is:
 - the biggest remaining tails are **security / CI / prod-hardening**
 - the ACP mobile wallet still needs **native build closure, device verification, and release work**
 - monetization now needs **depth** rather than another thesis document
+- monetization depth → see `docs/ANCAP_COMMERCE_ROADMAP.md`
 
 For delivery order, blockers, and true remaining work, use `MASTER_ROADMAP.md`.
 

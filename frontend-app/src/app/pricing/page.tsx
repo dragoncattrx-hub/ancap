@@ -39,15 +39,18 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <section className="mb-10 grid gap-4 md:grid-cols-4">
+        <section className="mb-10 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           {[
-            ["Entry", "Free snapshot or 10-19 ACP starter workflow."],
-            ["Premium", "59-149 ACP reports, listing packs, and campaign builders."],
-            ["Bundle", "249-349 ACP launch and agent commerce packs."],
-            ["Creator", "Publish paid workflows and earn ACP from successful runs."],
-          ].map(([title, text]) => (
+            ["Free", "0", "Token snapshot, limited wallet"],
+            ["Pro", "9–19 €/mo", "Reports, saved scans, history"],
+            ["Creator", "19 €/mo", "Publish workflows, earnings"],
+            ["Merchant", "29–99 €/mo", "Invoices, QR, payment links"],
+            ["Developer", "49–199 €/mo", "API keys, MCP, spend caps"],
+            ["Enterprise", "Custom", "Treasury, SLA, compliance"],
+          ].map(([title, price, text]) => (
             <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <div className="text-sm font-semibold text-white/90">{title}</div>
+              <div className="mt-2 text-lg font-bold text-emerald-300">{price}</div>
               <p className="mt-2 text-sm leading-6 text-white/62">{text}</p>
             </div>
           ))}

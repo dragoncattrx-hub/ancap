@@ -66,6 +66,10 @@ from app.api.routers import (
     subscriptions,
     webhooks,
     social_profiles,
+    merchant,
+    acp_explorer,
+    claim_codes,
+    payment_scanner,
 )
 
 settings = get_settings()
@@ -223,6 +227,11 @@ ALL_ROUTERS = [
     subscriptions.router,
     webhooks.router,
     social_profiles.router,
+    merchant.pay_router,
+    merchant.merchant_router,
+    acp_explorer.router,
+    claim_codes.router,
+    payment_scanner.router,
 ]
 
 for r in ALL_ROUTERS:

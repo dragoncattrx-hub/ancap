@@ -1278,6 +1278,119 @@ export const creators = {
   },
 };
 
+export const pay = {
+  async createPaymentLink(data: {
+    title: string;
+    amount: string;
+    currency?: string;
+    description?: string;
+    expires_in_hours?: number;
+  }) {
+    return apiFetch("/pay/payment-links", { method: "POST", body: JSON.stringify(data) });
+  },
+  async getPaymentLink(id: string) {
+    return apiFetch(`/pay/payment-links/${encodeURIComponent(id)}`);
+  },
+  async getPublicPaymentLink(code: string) {
+    return apiFetch(`/pay/${encodeURIComponent(code)}`);
+  },
+  async checkoutPaymentLink(code: string, data?: { payment_method?: string; payment_reference?: string }) {
+    return apiFetch(`/pay/${encodeURIComponent(code)}/checkout`, {
+      method: "POST",
+      body: JSON.stringify(data || { payment_method: "credits" }),
+    });
+  },
+  async createInvoice(data: {
+    customer_email?: string;
+    line_items: Array<{ description: string; quantity: number; unit_amount: string; currency: string }>;
+    due_in_days?: number;
+    notes?: string;
+    create_payment_link?: boolean;
+  }) {
+    return apiFetch("/pay/invoices", { method: "POST", body: JSON.stringify(data) });
+  },
+  async getInvoice(id: string) {
+    return apiFetch(`/pay/invoices/${encodeURIComponent(id)}`);
+  },
+};
+
+export const merchant = {
+  async dashboard() {
+    return apiFetch("/merchant/dashboard");
+  },
+  async listPayments() {
+    return apiFetch("/merchant/payments");
+  },
+  async exportCsv() {
+    return apiFetchRaw("/merchant/export.csv");
+  },
+};
+
+export const claimCodes = {
+  async create(data: {
+    amount: string;
+    currency?: string;
+    max_redemptions?: number;
+    expires_in_hours?: number;
+    campaign_label?: string;
+    pin?: string;
+  }) {
+    return apiFetch("/claim-codes/create", { method: "POST", body: JSON.stringify(data) });
+  },
+  async redeem(data: { code: string; pin?: string }) {
+    return apiFetch("/claim-codes/redeem", { method: "POST", body: JSON.stringify(data) });
+  },
+  async listMine() {
+    return apiFetch("/claim-codes/mine");
+  },
+};
+
+export const acpExplorer = {
+  async status() {
+    return apiFetch("/acp/explorer/status");
+  },
+  async blocks(limit = 10) {
+    return apiFetch(`/acp/explorer/blocks?limit=${encodeURIComponent(String(limit))}`);
+  },
+  async getTx(txid: string) {
+    return apiFetch(`/acp/explorer/tx/${encodeURIComponent(txid)}`);
+  },
+  async getAddress(address: string) {
+    return apiFetch(`/acp/explorer/address/${encodeURIComponent(address)}`);
+  },
+};
+
+export const payouts = {
+  async list(status?: string) {
+    const suffix = status ? `?status=${encodeURIComponent(status)}` : "";
+    return apiFetch(`/payouts${suffix}`);
+  },
+  async request(data: {
+    amount: string;
+    currency?: string;
+    destination: string;
+    method?: "acp_wallet" | "bsc_address" | "bank_transfer";
+  }) {
+    return apiFetch("/payouts/request", {
+      method: "POST",
+      body: JSON.stringify({
+        amount: { amount: data.amount, currency: data.currency || "ACP" },
+        method: data.method || "acp_wallet",
+        destination: data.destination,
+      }),
+    });
+  },
+};
+
+export const paymentScanner = {
+  async parse(raw_text: string, source: "paste" | "qr" | "ocr" = "paste") {
+    return apiFetch("/payment-scanner/parse", {
+      method: "POST",
+      body: JSON.stringify({ raw_text, source }),
+    });
+  },
+};
+
 export const organizations = {
   async list() {
     return apiFetch("/organizations");
@@ -1553,6 +1666,12 @@ export const api = {
   growthDashboard,
   referrals,
   payments,
+  pay,
+  merchant,
+  claimCodes,
+  acpExplorer,
+  payouts,
+  paymentScanner,
   subscriptions,
   organizations,
   webhooks,

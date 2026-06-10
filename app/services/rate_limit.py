@@ -89,3 +89,14 @@ async def enforce_rate_limit(*, key: str, limit: int, window_seconds: int) -> No
             )
 
         bucket.append(now)
+
+
+async def check_rate_limit(key: str, *, limit: int, window_seconds: int) -> bool:
+    """Return True when the request is allowed, False when rate limited."""
+    try:
+        await enforce_rate_limit(key=key, limit=limit, window_seconds=window_seconds)
+        return True
+    except HTTPException as exc:
+        if exc.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
+            return False
+        raise

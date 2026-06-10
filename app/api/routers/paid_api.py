@@ -795,3 +795,137 @@ async def campaign_score(
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
     return await _run_paid_api_product("campaign-score", body, session, x_api_key, idempotency_key)
+
+
+# --- Hardened paid API gateway (challenge / settle / consume) ---
+
+import secrets as _secrets
+from pydantic import BaseModel, Field
+
+
+class PaidApiChallengeResponse(BaseModel):
+    challenge_id: str
+    nonce: str
+    product_slug: str
+    amount: str
+    currency: str
+    expires_at: str
+    signature_input: str
+
+
+class PaidApiSettleRequest(BaseModel):
+    challenge_id: str
+    nonce: str
+    product_slug: str
+    signature: str
+
+
+class PaidApiConsumeRequest(BaseModel):
+    settle_id: str
+    request: PaidApiAnalyzeRequest
+
+
+_paid_api_challenges: dict[str, dict] = {}
+_paid_api_settlements: dict[str, dict] = {}
+
+
+def _challenge_signature(secret: str, challenge_id: str, nonce: str, product_slug: str, amount: str) -> str:
+    payload = f"{challenge_id}:{nonce}:{product_slug}:{amount}"
+    return hashlib.sha256(f"{secret}:{payload}".encode()).hexdigest()
+
+
+@router.get("/challenge", response_model=PaidApiChallengeResponse)
+async def paid_api_challenge(
+    session: DbSession,
+    product_slug: str = Query(..., min_length=2),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    product = _product(product_slug)
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="X-API-Key required")
+    key_record = await resolve_key_record(session, raw_key=x_api_key)
+    if key_record is None:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    challenge_id = _secrets.token_urlsafe(16)
+    nonce = _secrets.token_hex(16)
+    expires_at = datetime.now(UTC) + timedelta(seconds=180)
+    amount = str(product.price.amount)
+    currency = product.price.currency
+    signature_input = f"{challenge_id}:{nonce}:{product.slug}:{amount}"
+    _paid_api_challenges[challenge_id] = {
+        "nonce": nonce,
+        "product_slug": product.slug,
+        "amount": amount,
+        "currency": currency,
+        "api_key_id": str(key_record.row_id),
+        "expires_at": expires_at,
+    }
+    return PaidApiChallengeResponse(
+        challenge_id=challenge_id,
+        nonce=nonce,
+        product_slug=product.slug,
+        amount=amount,
+        currency=currency,
+        expires_at=expires_at.isoformat(),
+        signature_input=signature_input,
+    )
+
+
+@router.post("/settle")
+async def paid_api_settle(
+    body: PaidApiSettleRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="X-API-Key required")
+    key_record = await resolve_key_record(session, raw_key=x_api_key)
+    if key_record is None:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    challenge = _paid_api_challenges.pop(body.challenge_id, None)
+    if challenge is None:
+        raise HTTPException(status_code=404, detail="Challenge not found or already used")
+    if challenge["nonce"] != body.nonce or challenge["product_slug"] != body.product_slug:
+        raise HTTPException(status_code=400, detail="Challenge mismatch")
+    if challenge["expires_at"] < datetime.now(UTC):
+        raise HTTPException(status_code=410, detail="Challenge expired")
+    if str(key_record.row_id) != challenge["api_key_id"]:
+        raise HTTPException(status_code=403, detail="API key mismatch")
+
+    expected = _challenge_signature(x_api_key, body.challenge_id, body.nonce, body.product_slug, challenge["amount"])
+    if body.signature != expected:
+        raise HTTPException(status_code=403, detail="Invalid signature")
+
+    settle_id = _secrets.token_urlsafe(18)
+    _paid_api_settlements[settle_id] = {
+        "product_slug": body.product_slug,
+        "api_key": x_api_key,
+        "idempotency_key": idempotency_key,
+        "expires_at": datetime.now(UTC) + timedelta(seconds=300),
+    }
+    return {"settle_id": settle_id, "status": "authorized", "product_slug": body.product_slug}
+
+
+@router.post("/consume", response_model=PaidApiAnalyzeResponse)
+async def paid_api_consume(
+    body: PaidApiConsumeRequest,
+    session: DbSession,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    settlement = _paid_api_settlements.pop(body.settle_id, None)
+    if settlement is None:
+        raise HTTPException(status_code=404, detail="Settlement not found or already consumed")
+    if settlement["expires_at"] < datetime.now(UTC):
+        raise HTTPException(status_code=410, detail="Settlement expired")
+    if x_api_key != settlement["api_key"]:
+        raise HTTPException(status_code=403, detail="API key mismatch")
+    return await _run_paid_api_product(
+        settlement["product_slug"],
+        body.request,
+        session,
+        x_api_key,
+        settlement.get("idempotency_key"),
+    )

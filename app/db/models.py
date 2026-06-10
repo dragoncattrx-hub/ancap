@@ -1938,3 +1938,100 @@ class MobileDevice(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     user = relationship("User", foreign_keys=[user_id])
+
+
+class MerchantAccount(Base):
+    """Merchant profile for ANCAP Pay (payment links, invoices)."""
+    __tablename__ = "merchant_accounts"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    display_name = Column(String(128), nullable=False, default="Merchant")
+    plan_tier = Column(String(32), nullable=False, default="starter", index=True)
+    fee_bps = Column(Integer, nullable=False, default=100)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+
+
+class PaymentLink(Base):
+    __tablename__ = "payment_links"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    merchant_account_id = Column(UUID(as_uuid=False), ForeignKey("merchant_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    code = Column(String(32), nullable=False, unique=True, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    amount_currency = Column(String(10), nullable=False, default="ACP")
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="pending", index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    payment_intent_id = Column(UUID(as_uuid=False), ForeignKey("payment_intents.id", ondelete="SET NULL"), nullable=True)
+    payer_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    merchant_account = relationship("MerchantAccount", foreign_keys=[merchant_account_id])
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+    payer_user = relationship("User", foreign_keys=[payer_user_id])
+
+    __table_args__ = (
+        Index("ix_payment_links_owner_created", "owner_user_id", "created_at"),
+    )
+
+
+class MerchantInvoice(Base):
+    __tablename__ = "merchant_invoices"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    merchant_account_id = Column(UUID(as_uuid=False), ForeignKey("merchant_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    invoice_number = Column(String(64), nullable=False, index=True)
+    customer_email = Column(String(255), nullable=True)
+    line_items_json = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    amount_currency = Column(String(10), nullable=False, default="ACP")
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="draft", index=True)
+    due_at = Column(DateTime(timezone=True), nullable=True)
+    payment_link_id = Column(UUID(as_uuid=False), ForeignKey("payment_links.id", ondelete="SET NULL"), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    merchant_account = relationship("MerchantAccount", foreign_keys=[merchant_account_id])
+    payment_link = relationship("PaymentLink", foreign_keys=[payment_link_id])
+
+    __table_args__ = (
+        Index("ix_merchant_invoices_owner_created", "owner_user_id", "created_at"),
+    )
+
+
+class ClaimCode(Base):
+    __tablename__ = "claim_codes"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    secret_hash = Column(String(128), nullable=False)
+    code_hint = Column(String(8), nullable=False)
+    amount_currency = Column(String(10), nullable=False, default="ACP")
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="active", index=True)
+    max_redemptions = Column(Integer, nullable=False, default=1)
+    redemption_count = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    campaign_label = Column(String(128), nullable=True)
+    pin_hash = Column(String(128), nullable=True)
+    lock_ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner_user = relationship("User", foreign_keys=[owner_user_id])
+
+    __table_args__ = (
+        Index("ix_claim_codes_owner_created", "owner_user_id", "created_at"),
+    )
