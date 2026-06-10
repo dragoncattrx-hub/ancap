@@ -1,13 +1,16 @@
-wACP/USDT technical liquidity bootstrap is live on PancakeSwap V2.
+ANCAP update: more Smart Pay UX improvements are now live in ACP Wallet.
 
-wACP contract: 0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402
-Pool: https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601
-Swap: https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402
+Already shipped:
+- clearer labels for receipt-backed proof refs when execution metadata is still preserved
+- Smart Pay history overview now summarizes proof provenance across visible sessions
+- stale finalized receipts now show a distinct refresh action
+- recovery, refresh-only, stale read-only, and original-device-signature states are surfaced more clearly
 
-This is a technical smoke-test bootstrap, not a deep-liquidity market launch.
+Recent commits:
+- b9eaed8 label enriched Smart Pay proof refs
+- 0026114 summarize Smart Pay proof provenance
+- 6135391 label stale Smart Pay receipt refresh
+- ffc3ce1 summarize Smart Pay overview action states
 
-Public docs: https://ancap.cloud/docs/wacp
-Status: https://ancap.cloud/api/v1/wacp/status
-Reserve proof: https://ancap.cloud/api/v1/wacp/reserve-proof
-
-ANCAP: https://ancap.cloud/
+ANCAP Platform - AI-Native Capital Allocation
+https://ancap.cloud/

@@ -36,12 +36,12 @@
 - **Mail:** admin@ancap.cloud via HestiaCP/Dovecot, port 25 issue (external delivery broken)
 
 ### Server: 185.114.117.241
-- Ubuntu 22.04.5 LTS, 40GB disk (87% used, 5.1GB free — WARNING)
-- Docker containers: api (healthy), frontend, postgres (healthy), acp-node, nginx proxy
-- SSH: pubkey only, `ancapadmin` user (no root login)
-- **No fail2ban** — SSH brute force attacks hitting constantly (blocked IPs visible in auth.log)
-- **No UFW** configured — firewall wide open
-- **Packages need updates:** bind9, galera-4, mariadb, nginx, libpq
+- Ubuntu 22.04.5 LTS, 40GB disk (~59% used as of 2026-06-10)
+- Docker containers: api (healthy), frontend, postgres (healthy), redis, acp-node, nginx proxy
+- SSH: pubkey only, `ancapadmin` user (no root login, password auth disabled)
+- **UFW active** — SSH rate-limited, HTTP/HTTPS/mail/HestiaCP ports allowed
+- **fail2ban active**
+- HestiaCP panel on :8083 — credentials rotated 2026-06-10; store in private `Sicret/` only
 
 ### Known Issues
 1. **Port 25** is open on server but mail delivery from external fails — likely provider-level block
@@ -130,7 +130,7 @@
 - **Local copy:** `~/Desktop/ANCAP/`
 - **Server path:** `/home/ancapadmin/`
 - **Docker compose:** `/home/ancapadmin/docker-compose.yml`
-- **HestiaCP:** https://185.114.117.241:8083 (admin / PvZDQ7G2h7)
+- **HestiaCP:** https://185.114.117.241:8083 — credentials in private `Sicret/` store (never commit passwords)
 
 ## API Keys (update as needed)
 > ⚠️ **WARNING:** API keys are stored here for coordination purposes. Never commit real keys to public repos.

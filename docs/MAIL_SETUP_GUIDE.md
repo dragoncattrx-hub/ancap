@@ -1,29 +1,27 @@
 # ANCAP Mail System — Setup Guide
-**Date:** 2026-05-22 | **ARDO Agent**
+**Date:** 2026-05-22 | **Last audit:** 2026-06-10 | **ARDO Agent**
 
 ---
 
-## Current State
+## Current State (2026-06-10 audit)
 
 ### What's Working
-- **Exim4** configured as LOCAL mode, listening on `0.0.0.0:25`
-- **Dovecot** running on ports 143/993/110/995 (IMAP/POP3)
-- **Local mail delivery** works: `admin@ancap.cloud` delivers to `/home/admin/mail/ancap.cloud/admin/Maildir/`
-- **Outbound mail** works via direct SMTP to external servers (gmail tested successfully)
-- **SPF** configured and published
-- **DMARC** configured and published
+- **Exim4** active; **Dovecot** active on IMAP/POP3 ports
+- **System hostname / exim `primary_hostname`:** `mail.ancap.cloud` (fixed 2026-06-10 via Hestia `v-change-sys-hostname`)
+- **Local mail delivery** works for `admin@ancap.cloud`
+- **SPF** published: `v=spf1 mx a:mail.ancap.cloud ip4:185.114.117.241 ~all`
+- **DKIM** published at `mail._domainkey.ancap.cloud`
+- **DMARC** published at `_dmarc.ancap.cloud`
+- **MX:** `10 mail.ancap.cloud`
+- Mailbox password rotated 2026-06-10 — store in private `Sicret/server-credentials-*.txt`
 
-### What's NOT Working
-- **Port 25 inbound from outside** — external SMTP servers can't connect to port 25
-  - This is a **VPS provider-level block**, not a server configuration issue
-  - The server IS listening on port 25 (exim4 confirmed)
-  - UFW firewall has port 25 ALLOW
-  - But external connections timeout — provider NAT blocks it
-- **DKIM** — key generated, needs DNS record added to Cloudflare
+### What's NOT Working / Remaining
+- **Reverse DNS (PTR)** for `185.114.117.241` still points to `vast-perinatal.my-doctor-bill.com` instead of `mail.ancap.cloud` — **open a provider ticket** to fix PTR; this hurts outbound deliverability until corrected
+- **Port 25 inbound from outside** may still be blocked at the VPS provider NAT layer (common anti-spam policy)
 
-### Provider Issue
-The VPS (provider: likely a budget KVM host based on hostname `v575190186.local`) 
-blocks inbound port 25 at the network level. This is a common anti-spam measure.
+### Provider actions required
+1. Set PTR for `185.114.117.241` → `mail.ancap.cloud`
+2. Optionally request inbound port 25 unblock if direct SMTP reception is required
 
 **Solution options:**
 1. Request the VPS provider to open port 25 (most budget providers don't)
@@ -105,7 +103,7 @@ dig TXT mail._domainkey.ancap.cloud +short
 - **SMTP:** `mail.ancap.cloud` port 587 (STARTTLS) or port 465 (SSL/TLS)
 - **POP3:** `mail.ancap.cloud` port 995 (SSL/TLS)
 - **Username:** `admin@ancap.cloud`
-- **Password:** `AncapInbox2026Q9`
+- **Password:** stored in private `Sicret/server-credentials-*.txt` (rotate via HestiaCP → Mail → account)
 
 Webmail: https://webmail.ancap.cloud/ (via Apache/Roundcube if installed)
 

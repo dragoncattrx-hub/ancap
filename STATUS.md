@@ -1,6 +1,6 @@
 # ANCAP Status
 
-> Updated: 2026-06-01
+> Updated: 2026-06-10
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
@@ -8,9 +8,11 @@
 ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
 The three biggest remaining tails are:
-1. **security / CI / prod-hardening**
+1. **security / CI / prod-hardening** — 2026-06-10 audit: creds rotated, server patched, HestiaCP restricted, mail hostname fixed
 2. **ACP mobile wallet completion to a real device-ready release**
 3. **monetization depth after the first ACP-first revenue loop**
+
+**2026-06-10 audit:** see `MASTER_ROADMAP.md` § Post-audit roadmap for next priorities (explorer, monitoring, backups, mobile release, CI/CD deploy).
 
 Active trust/adoption track running alongside those priorities:
 - **GitHub-first open-source transparency**, where public-safe components become easier to audit, integrate, and contribute to, while keys, bridge signer operations, deploy secrets, and sensitive infrastructure stay private.

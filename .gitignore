@@ -60,6 +60,8 @@ htmlcov/
 
 # Logs
 *.log
+tmp-gh-run-*.log
+frontend-e2e-*.log
 
 # OS
 .DS_Store
@@ -100,7 +102,6 @@ tmp_graphql_introspect.py
 
 # Project planning docs (not source of truth)
 IMPROVEMENT_PLAN.md
-PRODUCTION_ROADMAP.md
 
 # Temporary scripts / migration artifacts
 tmp/

@@ -1071,7 +1071,7 @@ Week 8 (Priority 4c -- Monetization: platform)
 Week 9 (Priority 5 -- Mobile)
   5.1  PIN + biometrics (real device verification)
   5.1  SecureVault (real device verification)
-  5.1  MASVS L1 checklist
+  5.1  MASVS/device-release verification (real hardware)
 
 Week 10 (Priority 6 -- Architecture hygiene)
   6.1  Deployment story cleanup (remove Cloudflare artifacts or migrate)
@@ -1083,6 +1083,33 @@ Ongoing (Priority 7 -- Later)
   7   Retention / LTV mechanics
   Playwright smoke in CI (Phase 7 from old roadmap)
   React Flow strategy canvas
+
+---
+
+## Post-audit roadmap (2026-06-10)
+
+Security and ops hardening completed in this audit:
+- Rotated HestiaCP admin, root console, and `admin@ancap.cloud` mailbox passwords (stored in private `Sicret/`)
+- Removed plaintext credentials from tracked docs; secret-hygiene scan passes
+- `apt upgrade` applied on production host; Docker reclaimed ~7.8 GB
+- HestiaCP `:8083` restricted to admin IP + localhost (UFW)
+- Exim hostname aligned to `mail.ancap.cloud`; SPF/DKIM/DMARC verified in DNS
+- Repository cleanup: tmp/log artifacts removed, `.gitignore` tightened, README project tree added
+
+### Next priorities (Q3 2026)
+
+| ID | Track | Deliverable | Why |
+|----|-------|-------------|-----|
+| R1 | **ACP transparency** | Public block explorer (`/explorer` or `explorer.ancap.cloud`) — height, txs, addresses | Trust + auditability for native chain |
+| R2 | **Ops monitoring** | Uptime + ACP block-height + container health alerts (Telegram/email) | Catch chain/API regressions early |
+| R3 | **Backups** | Automated nightly Postgres + ACP chain data export off-server | Disaster recovery |
+| R4 | **Mail deliverability** | Provider PTR → `mail.ancap.cloud`; optional SES/SendGrid relay fallback | Fix external delivery reputation |
+| R5 | **Mobile release** | EAS production build, store listings, MASVS sign-off | Close device-ready wallet tail |
+| R6 | **Monetization depth** | Workflow subscriptions, partner API tiers, creator payout UX | Revenue after first ACP loop |
+| R7 | **CI/CD deploy** | GitHub Actions → SSH deploy to tunnel host (replace manual scripts) | Faster, repeatable releases |
+| R8 | **ACP chain UX** | Document tx-driven mining; optional empty-mempool heartbeat blocks for liveness | Explain low block height on low traffic |
+
+**ACP chain note:** production miner only produces blocks when the mempool is non-empty (`ACP-crypto/acp-node/src/miner.rs`). Block height ~21 on low traffic is expected, not a node failure.
 
 ---
 

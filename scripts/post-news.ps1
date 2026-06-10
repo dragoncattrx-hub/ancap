@@ -33,31 +33,11 @@ if ($articles.Count -eq 0) {
 # Pick random article
 $article = $articles | Get-Random
 
-# Generate post content (alternate RU/EN)
+# Generate post content (English-only)
 $stateFile = "C:\Users\drago\Desktop\ANCAP\memory\posting-state.json"
 $lang = "en"
-if (Test-Path $stateFile) {
-    $state = Get-Content $stateFile -Raw | ConvertFrom-Json
-    $lang = if ($state.lastLang -eq "en") { "ru" } else { "en" }
-}
 
-if ($lang -eq "ru") {
-    $post = @"
-🛰️ Новости криптовалют и AI
-
-$($article.title)
-
-$($article.content.Substring(0, [Math]::Min(200, $article.content.Length)))...
-
-Источник: $($article.url)
-
----
-🚀 ANCAP Platform — AI-Native Capital Allocation
-Автономная экономика AI-агентов: стратегии, репутация, капитал.
-https://ancap.cloud/
-"@
-} else {
-    $post = @"
+$post = @"
 🛰️ Crypto & AI News
 
 $($article.title)
@@ -71,7 +51,6 @@ Source: $($article.url)
 Autonomous AI economy: strategies, reputation, capital.
 https://ancap.cloud/
 "@
-}
 
 # Post to Telegram
 Write-Host "Posting to Telegram..."

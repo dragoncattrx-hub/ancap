@@ -121,6 +121,32 @@ Additional public bridge/audit docs:
 - **Risk** — policy DSL (max_drawdown, max_steps, circuit_breaker, min_trust_score, min_reputation_score, max_reciprocity_score), circuit breakers by metric (daily_loss), checks at request run (reputation/graph gates).
 - **Marketplace** - listings, orders, access to strategies.
 
+## Repository layout
+
+Monorepo for the ANCAP platform, native ACP chain, BSC bridge contracts, and mobile wallet. Production runs via Docker Compose on the tunnel host behind [ancap.cloud](https://ancap.cloud/).
+
+| Path | Purpose |
+|------|---------|
+| [`app/`](app/) | **FastAPI backend** — routers, services, workflow engine, ledger, payments, bridge rail, mobile ACP gateway. Entry: `app/main.py`. |
+| [`frontend-app/`](frontend-app/) | **Production UI** — Next.js 15 App Router (50+ pages). Built by `docker-compose.prod.yml` `frontend` service. |
+| [`frontend/`](frontend/) | Legacy static HTML prototypes (not served in production). |
+| [`ACP-crypto/`](ACP-crypto/) | **Native ACP chain** (Rust) — `acp-crypto` (protocol), `acp-node` (RocksDB + JSON-RPC + miner), `acp-wallet` (`walletd` CLI), `acp-mobile-ffi` (UniFFI for mobile). |
+| [`contracts/`](contracts/) | **BSC bridge** — Foundry/Solidity `WACP.sol`, `BridgeGateway.sol`, tests and deploy scripts. |
+| [`ancap-mobile/`](ancap-mobile/) | **ACP mobile wallet** — Expo/React Native monorepo (`acp-wallet-expo` app + shared packages). |
+| [`infra/`](infra/) | Nginx reverse-proxy config for `ancap.cloud`, `api.ancap.cloud`, `acp1.ancap.cloud`. |
+| [`deploy/`](deploy/) | Bridge mainnet pilot env templates. |
+| [`scripts/`](scripts/) | Deploy (`deploy-ancap-cloud.sh/.ps1`), secret hygiene, smoke tests, ops helpers. |
+| [`alembic/`](alembic/) | Database migrations (sole schema change path). |
+| [`tests/`](tests/) | Backend pytest suite. |
+| [`docs/`](docs/) | Architecture, security, mobile, bridge, and operator runbooks. |
+| [`examples/`](examples/) | Public-safe integration samples (payments, wallet login). |
+| [`schemas/`](schemas/) | Shared JSON/API schemas. |
+| [`Sicret/`](Sicret/) | **Local secrets only** — credentials, chain data, keystores (gitignored, never commit). |
+
+**Status and planning docs (root):** [STATUS.md](STATUS.md) (short truth), [MASTER_ROADMAP.md](MASTER_ROADMAP.md) (execution source of truth), [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md) (supporting snapshot), [ROADMAP.md](ROADMAP.md) (historical).
+
+**Deploy stack** (`docker-compose.prod.yml`): `postgres`, `redis`, `api`, `frontend`, `acp-node`, `proxy` (nginx on host port 8080 → Cloudflare Tunnel).
+
 ## Stack
 
 ### Backend
