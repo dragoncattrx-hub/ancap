@@ -29,7 +29,8 @@ from app.services.merchant_pay import (
     merchant_volume_total,
     pay_url_for_code,
 )
-from app.services.webhook_dispatcher import dispatch_event_to_subscribers
+from app.api.routers.commerce import enforce_payment_link_plan_limit
+from app.services.webhook_dispatcher import dispatch_event_to_owner_subscribers
 
 router = APIRouter(tags=["ANCAP Pay"])
 pay_router = APIRouter(prefix="/pay", tags=["ANCAP Pay"])
@@ -85,6 +86,7 @@ async def create_payment_link(
 ):
     user_uuid = UUID(user_id)
     merchant = await get_or_create_merchant_account(session, user_uuid)
+    await enforce_payment_link_plan_limit(session, merchant)
     amount = _parse_amount(body.amount)
     currency = body.currency.strip().upper()
     expires_at = None
@@ -162,10 +164,11 @@ async def checkout_payment_link(
         payer_user_id=UUID(user_id),
         payment_reference=body.payment_reference,
     )
-    await dispatch_event_to_subscribers(
+    await dispatch_event_to_owner_subscribers(
         session,
-        "merchant.payment.captured",
-        {
+        owner_user_id=row.owner_user_id,
+        event_type="merchant.payment.captured",
+        payload={
             "payment_link_id": str(row.id),
             "payment_link_code": row.code,
             "payment_intent_id": str(intent.id),
@@ -363,6 +366,63 @@ async def merchant_export_csv(session: DbSession, user_id: str = Depends(require
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="ancap-merchant-payments.csv"'},
     )
+
+
+@pay_router.get("/invoices/{invoice_id}/export.txt")
+async def export_invoice_text(
+    invoice_id: str,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    try:
+        parsed = UUID(invoice_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Invoice not found") from exc
+    invoice = await session.get(MerchantInvoice, parsed)
+    if invoice is None or str(invoice.owner_user_id) != user_id:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    lines = [
+        f"ANCAP Invoice {invoice.invoice_number}",
+        f"Status: {invoice.status}",
+        f"Customer: {invoice.customer_email or '—'}",
+        f"Amount: {invoice.amount_value} {invoice.amount_currency}",
+        f"Due: {invoice.due_at.isoformat() if invoice.due_at else '—'}",
+        "",
+        "Line items:",
+    ]
+    for item in invoice.line_items_json or []:
+        if isinstance(item, dict):
+            lines.append(
+                f"- {item.get('description', 'Item')} x{item.get('quantity', 1)} @ {item.get('unit_amount')} {item.get('currency', invoice.amount_currency)}"
+            )
+    if invoice.notes:
+        lines.extend(["", f"Notes: {invoice.notes}"])
+    body = "\n".join(lines)
+    return Response(
+        content=body,
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{invoice.invoice_number}.txt"'},
+    )
+
+
+@pay_router.get("/{code}/qr")
+async def payment_link_qr_meta(code: str, session: DbSession):
+    """QR checkout metadata for static/dynamic merchant payment links."""
+    row = await session.scalar(select(PaymentLink).where(PaymentLink.code == code))
+    if row is None:
+        raise HTTPException(status_code=404, detail="Payment link not found")
+    pay_url = pay_url_for_code(row.code)
+    acp_uri = f"acp:{row.owner_user_id}?amount={row.amount_value}&currency={row.amount_currency}&code={row.code}"
+    return {
+        "code": row.code,
+        "title": row.title,
+        "amount": str(row.amount_value),
+        "currency": row.amount_currency,
+        "status": row.status,
+        "pay_url": pay_url,
+        "acp_payment_uri": acp_uri,
+        "qr_payload": pay_url,
+    }
 
 
 @merchant_router.get("/payments")

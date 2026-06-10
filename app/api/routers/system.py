@@ -37,6 +37,7 @@ from app.jobs.reputation_tick import reputation_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.schemas import DecisionLogPublic
 from app.services.cache import redis_ping
+from app.services.graph_enforcement_preview import build_graph_enforcement_preview
 from app.services.ledger import check_ledger_invariant, is_ledger_invariant_halted, set_ledger_invariant_halted
 
 router = APIRouter(prefix="/system", tags=["System"])
@@ -402,6 +403,17 @@ async def ops_ledger_invariant_status(session: DbSession, user_id: str = Depends
     _ = user_id
     halted = await is_ledger_invariant_halted(session)
     return {"halted": halted}
+
+
+@router.get("/graph-enforcement/preview")
+async def graph_enforcement_preview_for_console(
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+    limit: int = 50,
+):
+    """Read-only graph enforcement preview for authenticated console users."""
+    _ = user_id
+    return await build_graph_enforcement_preview(session, limit=limit)
 
 
 @_internal_router.get("/decision-logs", response_model=list[DecisionLogPublic])

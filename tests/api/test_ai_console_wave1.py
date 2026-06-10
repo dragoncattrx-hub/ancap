@@ -287,6 +287,19 @@ def test_system_jobs_tick_sends_referral_onchain_payout_jobs_when_runtime_enable
         get_settings.cache_clear()
 
 
+def test_system_graph_enforcement_preview_for_authenticated_user(client):
+    token = _register_and_login(client)
+    response = client.get(
+        "/v1/system/graph-enforcement/preview?limit=5",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert "enabled" in body
+    assert "thresholds" in body
+    assert isinstance(body["items"], list)
+
+
 def test_decision_logs_written_for_listing_gate(client, base_vertical_id, monkeypatch):
     # This test specifically asserts the participation-gate denial path. The
     # global test environment has gates disabled to keep the rest of the suite

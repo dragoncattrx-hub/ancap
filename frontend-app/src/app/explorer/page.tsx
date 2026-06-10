@@ -10,6 +10,7 @@ export default function ExplorerPage() {
   const [status, setStatus] = useState<any>(null);
   const [blocks, setBlocks] = useState<any[]>([]);
   const [searchTx, setSearchTx] = useState("");
+  const [searchAddr, setSearchAddr] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,6 +30,13 @@ export default function ExplorerPage() {
     const txid = searchTx.trim();
     if (!txid) return;
     window.location.href = buildAcpTxHref(txid, "/explorer/tx");
+  }
+
+  function onAddressSearch(event: FormEvent) {
+    event.preventDefault();
+    const addr = searchAddr.trim();
+    if (!addr) return;
+    window.location.href = `/explorer/address/${encodeURIComponent(addr)}`;
   }
 
   return (
@@ -53,7 +61,18 @@ export default function ExplorerPage() {
             onChange={(e) => setSearchTx(e.target.value)}
           />
           <button type="submit" className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
-            Search
+            Search tx
+          </button>
+        </form>
+        <form onSubmit={onAddressSearch} className="mt-3 flex gap-2">
+          <input
+            className="flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
+            placeholder="Search ACP address"
+            value={searchAddr}
+            onChange={(e) => setSearchAddr(e.target.value)}
+          />
+          <button type="submit" className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold">
+            Search address
           </button>
         </form>
         <section className="mt-8">
@@ -80,7 +99,7 @@ export default function ExplorerPage() {
           </div>
         </section>
         <Link href="/reserves" className="mt-6 inline-block text-sm text-emerald-300">
-          View reserves stub
+          View reserves dashboard
         </Link>
       </main>
     </div>

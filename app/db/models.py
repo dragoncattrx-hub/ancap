@@ -2035,3 +2035,15 @@ class ClaimCode(Base):
     __table_args__ = (
         Index("ix_claim_codes_owner_created", "owner_user_id", "created_at"),
     )
+
+
+class RampWaitlistEntry(Base):
+    __tablename__ = "ramp_waitlist_entries"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    email = Column(String(320), nullable=False, index=True)
+    interest = Column(String(64), nullable=False, default="stablecoin_topup", index=True)
+    region = Column(String(64), nullable=True)
+    notes = Column(String(500), nullable=True)
+    status = Column(String(32), nullable=False, default="pending", index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)

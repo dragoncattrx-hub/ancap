@@ -30,6 +30,7 @@ const EVENT_TYPES = [
   "run.failed",
   "payment.captured",
   "payment.refunded",
+  "merchant.payment.captured",
   "receipt.ready",
   "api.usage.created",
   "user.registered",

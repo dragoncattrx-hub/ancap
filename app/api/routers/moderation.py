@@ -9,6 +9,7 @@ from app.api.deps import DbSession, require_platform_admin
 from app.config import get_settings
 from app.db.models import AgentLink, Agent
 from app.services.agent_graph_metrics import get_agent_graph_metrics
+from app.services.graph_enforcement_preview import build_graph_enforcement_preview
 from sqlalchemy import select
 
 router = APIRouter(prefix="/moderation", tags=["Moderation"])
@@ -21,42 +22,7 @@ async def graph_enforcement_preview(
     _admin_user_id: str = Depends(require_platform_admin),
 ):
     """Preview which active agents would be auto-quarantined by current graph thresholds."""
-    settings = get_settings()
-    q = (
-        select(Agent)
-        .where(Agent.status == "active")
-        .order_by(Agent.created_at.desc())
-        .limit(min(max(limit, 1), 200))
-    )
-    agents = (await session.execute(q)).scalars().all()
-    items = []
-    for a in agents:
-        metrics = await get_agent_graph_metrics(session, a.id)
-        reasons = []
-        if settings.graph_enforcement_block_if_in_cycle and bool(metrics.get("in_cycle")):
-            reasons.append("in_cycle")
-        if float(metrics.get("suspicious_density", 0) or 0) >= float(settings.graph_enforcement_suspicious_density):
-            reasons.append("suspicious_density")
-        if int(metrics.get("cluster_size", 0) or 0) > int(settings.graph_enforcement_max_cluster_size):
-            reasons.append("cluster_size")
-        if reasons:
-            items.append(
-                {
-                    "agent_id": str(a.id),
-                    "agent_name": a.display_name,
-                    "reasons": reasons,
-                    "metrics": metrics,
-                }
-            )
-    return {
-        "enabled": bool(settings.ff_graph_auto_enforcement),
-        "thresholds": {
-            "suspicious_density": settings.graph_enforcement_suspicious_density,
-            "max_cluster_size": settings.graph_enforcement_max_cluster_size,
-            "block_if_in_cycle": settings.graph_enforcement_block_if_in_cycle,
-        },
-        "items": items,
-    }
+    return await build_graph_enforcement_preview(session, limit=limit)
 
 
 @router.get("/agents/{agent_id}/graph-context")

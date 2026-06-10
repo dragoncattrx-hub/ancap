@@ -113,10 +113,18 @@ export default async function WorkflowsPage() {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {premiumWorkflows.map((workflow) => (
                 <article key={workflow.slug} className="rounded-2xl border border-white/10 bg-black/15 p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-                      {workflow.category}
-                    </span>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                        {workflow.category}
+                      </span>
+                      <span className="rounded-full border border-sky-300/25 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100">
+                        SLA ~{workflow.estimated_time_minutes || 15}m
+                      </span>
+                      <span className="rounded-full border border-violet-300/25 bg-violet-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-100">
+                        Verified by ANCAP
+                      </span>
+                    </div>
                     <span className="text-sm font-semibold text-emerald-300">{workflow.price.amount} {workflow.price.currency}</span>
                   </div>
                   <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>
@@ -173,9 +181,14 @@ export default async function WorkflowsPage() {
               {bundles.map((bundle) => (
                 <article key={bundle.slug} className="rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.06] p-6">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <span className="rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-                      {bundle.category}
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                        {bundle.category}
+                      </span>
+                      <span className="rounded-full border border-violet-300/25 bg-violet-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-100">
+                        Verified by ANCAP
+                      </span>
+                    </div>
                     <span className="text-sm font-semibold text-emerald-300">
                       {bundle.price.amount} {bundle.price.currency} · {bundle.discount_percent > 0 ? `${bundle.discount_percent}% bundle discount` : "premium pack"}
                     </span>

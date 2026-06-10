@@ -106,15 +106,51 @@ async def dispatch_webhook_event(
     }
 
 
+async def dispatch_event_to_owner_subscribers(
+    session: AsyncSession,
+    *,
+    owner_user_id: str | UUID,
+    event_type: str,
+    payload: dict[str, Any],
+) -> dict[str, int]:
+    """Dispatch only to webhook endpoints owned by the given user."""
+    owner_id = str(owner_user_id)
+    q = select(WebhookEndpoint).where(
+        WebhookEndpoint.is_active == True,
+        WebhookEndpoint.owner_user_id == owner_id,
+    )
+    r = await session.execute(q)
+    endpoints = list(r.scalars().all())
+    subscribed = [ep for ep in endpoints if ep.event_types and event_type in ep.event_types]
+    results = {"dispatched": 0, "failed": 0}
+    for ep in subscribed:
+        try:
+            result = await dispatch_webhook_event(session, ep, event_type, payload)
+            if result["status"] == "delivered":
+                results["dispatched"] += 1
+            else:
+                results["failed"] += 1
+        except Exception:
+            results["failed"] += 1
+    return results
+
+
 async def dispatch_event_to_subscribers(
     session: AsyncSession,
     event_type: str,
     payload: dict[str, Any],
+    *,
+    owner_user_id: str | UUID | None = None,
 ) -> dict[str, int]:
-    """Find all active endpoints subscribed to event_type and dispatch to each."""
+    """Find active endpoints subscribed to event_type and dispatch to each.
+
+    When owner_user_id is set, only that user's endpoints receive the event.
+    """
     q = select(WebhookEndpoint).where(
         WebhookEndpoint.is_active == True,
     )
+    if owner_user_id is not None:
+        q = q.where(WebhookEndpoint.owner_user_id == str(owner_user_id))
     r = await session.execute(q)
     endpoints = list(r.scalars().all())
 

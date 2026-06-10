@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc, select
 
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.config import get_settings
 from app.db.models import ClaimCode, LedgerEventTypeEnum
 from app.schemas.claim_codes import (
@@ -168,6 +168,64 @@ async def redeem_claim_code(body: ClaimCodeRedeemRequest, session: DbSession, us
         ledger_event_id=str(ev.id),
         proof_url=f"{base}/proof-center?ledger_event={ev.id}",
     )
+
+
+@router.get("/admin/overview")
+async def claim_codes_admin_overview(session: DbSession, _admin: str = Depends(require_platform_admin)):
+    rows = (await session.scalars(select(ClaimCode).order_by(desc(ClaimCode.created_at)).limit(500))).all()
+    suspicious = []
+    campaign_stats: dict[str, dict[str, int]] = {}
+    for row in rows:
+        label = row.campaign_label or "unlabeled"
+        bucket = campaign_stats.setdefault(label, {"codes": 0, "redemptions": 0, "active": 0})
+        bucket["codes"] += 1
+        bucket["redemptions"] += int(row.redemption_count or 0)
+        if row.status == "active":
+            bucket["active"] += 1
+        flags = []
+        if row.status == "active" and row.redemption_count >= row.max_redemptions:
+            flags.append("over_redemption_cap")
+        if row.status == "active" and row.expires_at and row.expires_at < datetime.now(UTC):
+            flags.append("expired_but_active")
+        if row.max_redemptions > 50:
+            flags.append("high_max_redemptions")
+        if flags:
+            suspicious.append(
+                {
+                    "id": str(row.id),
+                    "code_hint": row.code_hint,
+                    "owner_user_id": str(row.owner_user_id),
+                    "status": row.status,
+                    "redemption_count": row.redemption_count,
+                    "max_redemptions": row.max_redemptions,
+                    "campaign_label": row.campaign_label,
+                    "flags": flags,
+                }
+            )
+    return {
+        "total_codes": len(rows),
+        "suspicious": suspicious[:100],
+        "campaign_stats": campaign_stats,
+    }
+
+
+@router.post("/admin/{claim_code_id}/freeze")
+async def freeze_claim_code(
+    claim_code_id: str,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
+    try:
+        parsed = UUID(claim_code_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Claim code not found") from exc
+    row = await session.get(ClaimCode, parsed)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Claim code not found")
+    row.status = "frozen"
+    row.updated_at = datetime.now(UTC)
+    await session.flush()
+    return {"status": "frozen", "id": str(row.id)}
 
 
 @router.get("/mine")

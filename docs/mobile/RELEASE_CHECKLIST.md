@@ -25,6 +25,7 @@ This file is intentionally practical: it records what the repo already has, what
 ### Entry conditions
 
 - [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host
+- [~] Android Expo dev-build verification on Windows host (`npx expo run:android` against packaged `expo-acp-core`) — run before Play Internal upload
 - [ ] iOS native artifacts packaged via `ancap-mobile/scripts/build-ios-native.ps1`
 - [ ] Device matrix execution started from `docs/mobile/DEVICE_MATRIX.md`
 - [ ] Native create/send/sign path verified in dev builds

@@ -1,6 +1,6 @@
 # ANCAP Status Matrix
 
-> Status: active summary | Updated: 2026-06-01
+> Status: active summary | Updated: 2026-06-10
 > Primary source of truth: `MASTER_ROADMAP.md`
 > Purpose: remove confusion between roadmap/status documents and provide one compact view of what is done, what is partial, and what is next.
 
@@ -23,7 +23,7 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-06-01, the project is **not fully release-complete end-to-end**.
+As of 2026-06-10, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** (ANCAP Pay, claim codes, explorer, MCP, paid API UI) is now shipped on production (`93b6625`).
 
 The core platform is largely built, but the biggest remaining tails are:
 
@@ -57,6 +57,7 @@ Parallel trust/adoption track:
 | Production UI/admin surfaces | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Billing, organizations, webhooks, analytics, proof center, strategy builder baseline are present. |
 | Proof / receipts / realtime status | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Receipts/proof and run status infrastructure exist. |
 | ACP checkout / first revenue loop | **Baseline done** | Medium-High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | First ACP-first monetization loop exists, but still needs deeper conversion and payout mechanics. |
+| Commerce & agent track (Pay, claim codes, explorer, MCP) | **Shipped MVP** | High | `docs/ANCAP_COMMERCE_ROADMAP.md`, `MASTER_ROADMAP.md` | Payment links, invoices, merchant dashboard, claim codes, explorer/reserves/supply surfaces, payment scanner preview, plan-tier scaffolding, and ramp waitlist are in repo + prod; Stripe live E2E closure and OCR/autopay remain open. |
 | Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This remains one of the three biggest remaining tails overall, but the production-secret baseline sub-slice is now closed on the current host/runtime and the Cloudflare-edge header mismatch is now closed too; the remaining work is exposed-key rotation / upstream access cleanup. |
 | Mobile wallet | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md` | Wallet is far along but not release-ready; native build closure, device verification, and release work remain. |
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |

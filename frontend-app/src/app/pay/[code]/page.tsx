@@ -25,13 +25,18 @@ export default function PayCheckoutPage() {
   const code = params?.code || "";
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [link, setLink] = useState<PaymentLink | null>(null);
+  const [qrMeta, setQrMeta] = useState<any>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const row = await pay.getPublicPaymentLink(code);
+      const [row, qr] = await Promise.all([
+        pay.getPublicPaymentLink(code),
+        pay.getPaymentLinkQr(code).catch(() => null),
+      ]);
       setLink(row);
+      setQrMeta(qr);
       commerceEvents.workflowView(`pay_link_${code}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Payment link not found");
@@ -102,6 +107,13 @@ export default function PayCheckoutPage() {
             <Link href="/buy-acp" className="mt-4 block text-sm text-white/60">
               Need credits? Buy ACP
             </Link>
+            {qrMeta?.qr_payload ? (
+              <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 text-sm">
+                <div className="font-semibold text-white/85">Merchant QR payload</div>
+                <p className="mt-2 break-all font-mono text-xs text-white/65">{qrMeta.qr_payload}</p>
+                <p className="mt-2 text-white/55">Scan or share this URL for static checkout. Dynamic amount links use the amount above.</p>
+              </div>
+            ) : null}
           </div>
         ) : null}
         {error && link ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}

@@ -70,6 +70,7 @@ from app.api.routers import (
     acp_explorer,
     claim_codes,
     payment_scanner,
+    commerce,
 )
 
 settings = get_settings()
@@ -232,6 +233,7 @@ ALL_ROUTERS = [
     acp_explorer.router,
     claim_codes.router,
     payment_scanner.router,
+    commerce.router,
 ]
 
 for r in ALL_ROUTERS:

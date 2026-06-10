@@ -566,3 +566,41 @@ async def stripe_webhook(
         event_id=event_id,
         event_type=event_type,
     )
+
+
+@router.get("/payments/stripe/verification-readiness")
+async def stripe_verification_readiness(session: DbSession, user_id: str = Depends(require_platform_admin)):
+    """Operator surface for Stripe E2E closure checklist (MASTER_ROADMAP §4.1)."""
+    settings = get_settings()
+    configured = stripe_payments.stripe_is_configured()
+    last_event = await session.scalar(
+        select(StripeEvent).order_by(StripeEvent.created_at.desc()).limit(1)
+    )
+    recent_captured = await session.scalar(
+        select(PaymentIntent)
+        .where(
+            PaymentIntent.payment_method == "stripe",
+            PaymentIntent.status == PaymentIntentStatusEnum.captured.value,
+        )
+        .order_by(PaymentIntent.updated_at.desc())
+        .limit(1)
+    )
+    webhook_confirmed = False
+    if recent_captured and isinstance(recent_captured.provider_payload_json, dict):
+        payload = recent_captured.provider_payload_json
+        webhook_confirmed = bool(payload.get("stripe_last_event_id")) and str(
+            payload.get("settlement_signal") or ""
+        ).lower() == "webhook"
+    return {
+        "stripe_configured": configured,
+        "publishable_key_present": bool((settings.stripe_publishable_key or "").strip()),
+        "webhook_secret_present": bool((settings.stripe_webhook_secret or "").strip()),
+        "last_stripe_event_id": last_event.stripe_event_id if last_event else None,
+        "last_stripe_event_type": last_event.event_type if last_event else None,
+        "last_stripe_event_at": last_event.created_at.isoformat() if last_event and last_event.created_at else None,
+        "recent_captured_intent_id": str(recent_captured.id) if recent_captured else None,
+        "recent_capture_webhook_confirmed": webhook_confirmed,
+        "runbook": "/docs/STRIPE_VERIFICATION_RUNBOOK.md",
+        "evidence_template": "/docs/STRIPE_VERIFICATION_EVIDENCE_TEMPLATE.md",
+        "closure_ready": configured and webhook_confirmed,
+    }

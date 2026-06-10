@@ -73,11 +73,18 @@ export default function InvoicesPage() {
           <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
             <div>Invoice {result.invoice_number}</div>
             <div className="mt-2 text-white/65">Status: {result.status}</div>
-            {result.payment_link ? (
-              <Link href={`/pay/${result.payment_link.code}`} className="mt-3 inline-block text-emerald-300">
-                Open payment link
-              </Link>
-            ) : null}
+            <div className="mt-4 flex flex-wrap gap-3">
+              {result.payment_link ? (
+                <Link href={`/pay/${result.payment_link.code}`} className="text-emerald-300">
+                  Open payment link
+                </Link>
+              ) : null}
+              {result.id ? (
+                <a href={pay.invoiceExportUrl(result.id)} className="text-emerald-300">
+                  Download export (TXT)
+                </a>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </main>

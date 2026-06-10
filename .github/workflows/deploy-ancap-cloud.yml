@@ -1,0 +1,29 @@
+name: Deploy ancap.cloud
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ancap-cloud
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'dragoncattrx-hub/ancap'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ANCAP_DEPLOY_HOST }}
+          username: ${{ secrets.ANCAP_DEPLOY_USER }}
+          key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /opt/ancap-migration/current
+            git fetch origin master
+            git reset --hard origin/master
+            bash scripts/deploy-ancap-cloud.sh --skip-git-pull

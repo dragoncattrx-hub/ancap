@@ -1,42 +1,82 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { useAuth } from "@/components/AuthProvider";
 import { decisionLogs, referrals, governance } from "@/lib/api";
 
+const EMPTY_GRAPH_PREVIEW = {
+  enabled: false,
+  thresholds: {
+    suspicious_density: "-",
+    max_cluster_size: "-",
+    block_if_in_cycle: false,
+  },
+  items: [],
+};
+
 export default function AiConsolePage() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
-  const [graphPreview, setGraphPreview] = useState<any>(null);
+  const [graphPreview, setGraphPreview] = useState<any>(EMPTY_GRAPH_PREVIEW);
   const [scope, setScope] = useState("");
   const [error, setError] = useState("");
   const [creatingCode, setCreatingCode] = useState(false);
   const [createdCode, setCreatedCode] = useState("");
 
   async function load() {
-    try {
+    if (!isAuthenticated) {
+      setSummary(null);
+      setLogs([]);
+      setGraphPreview(EMPTY_GRAPH_PREVIEW);
       setError("");
-      const [s, l, gp] = await Promise.all([
-        referrals.mySummary(),
-        decisionLogs.list(100, scope || undefined),
-        governance.graphEnforcementPreview(25),
-      ]);
-      setSummary(s);
-      setLogs(l || []);
-      setGraphPreview(gp || null);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load AI console");
+      return;
+    }
+
+    setError("");
+    const [summaryResult, logsResult, graphResult] = await Promise.allSettled([
+      referrals.mySummary(),
+      decisionLogs.list(100, scope || undefined),
+      governance.graphEnforcementPreview(25),
+    ]);
+
+    if (summaryResult.status === "fulfilled") {
+      setSummary(summaryResult.value);
+    } else {
+      setSummary(null);
+    }
+
+    if (logsResult.status === "fulfilled") {
+      setLogs(logsResult.value || []);
+    } else {
+      setLogs([]);
+    }
+
+    if (graphResult.status === "fulfilled") {
+      setGraphPreview(graphResult.value || EMPTY_GRAPH_PREVIEW);
+    } else {
+      setGraphPreview(EMPTY_GRAPH_PREVIEW);
+    }
+
+    const failures = [summaryResult, logsResult, graphResult].filter((result) => result.status === "rejected");
+    if (failures.length === failures.length) {
+      const first = failures[0] as PromiseRejectedResult;
+      setError(first.reason?.message || "Failed to load AI console");
     }
   }
 
   useEffect(() => {
-    load();
+    if (authLoading) return;
+    void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope]);
+  }, [scope, isAuthenticated, authLoading]);
 
   async function createReferralCode() {
     try {
       setCreatingCode(true);
+      setError("");
       const out = await referrals.createCode();
       setCreatedCode(out.code || "");
       await load();
@@ -60,11 +100,26 @@ export default function AiConsolePage() {
           </div>
           <div className="action-cluster">
             <a className="btn btn-ghost" href="/runs/new?dry_run=true">Open Dry-run Explorer</a>
-            <button className="btn btn-primary" onClick={createReferralCode} disabled={creatingCode}>
+            <button
+              className="btn btn-primary"
+              onClick={createReferralCode}
+              disabled={creatingCode || !isAuthenticated}
+            >
               {creatingCode ? "Creating…" : "Create referral code"}
             </button>
           </div>
         </div>
+
+        {!authLoading && !isAuthenticated ? (
+          <div className="card" style={{ marginBottom: 14 }}>
+            <p style={{ margin: 0, color: "var(--text-muted)" }}>
+              Sign in to load incentives, decision logs, and graph enforcement preview.
+            </p>
+            <Link href="/login?next=/ai-console" className="btn btn-primary" style={{ marginTop: 12, display: "inline-block" }}>
+              Log in
+            </Link>
+          </div>
+        ) : null}
 
         {error && <div className="alert alert-error">{error}</div>}
         {createdCode && (
@@ -92,7 +147,7 @@ export default function AiConsolePage() {
             <p style={{ color: "var(--text-muted)" }}>
               Use run mode + dry-run to inspect execution traces before production execution.
             </p>
-            <a className="btn btn-ghost" href="/runs/new?run_mode=backtest&dry_run=true">
+             <a className="btn btn-ghost" href="/runs/new?run_mode=backtest&dry_run=true">
               Start dry-run
             </a>
           </div>
@@ -106,6 +161,7 @@ export default function AiConsolePage() {
               style={{ width: 220 }}
               value={scope}
               onChange={(e) => setScope(e.target.value)}
+              disabled={!isAuthenticated}
             >
               <option value="">All scopes</option>
               <option value="runs.create">runs.create</option>
@@ -193,4 +249,3 @@ export default function AiConsolePage() {
     </div>
   );
 }
-

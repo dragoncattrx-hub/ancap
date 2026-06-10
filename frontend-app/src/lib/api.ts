@@ -1312,6 +1312,33 @@ export const pay = {
   async getInvoice(id: string) {
     return apiFetch(`/pay/invoices/${encodeURIComponent(id)}`);
   },
+  invoiceExportUrl(id: string) {
+    return `${API_BASE}/pay/invoices/${encodeURIComponent(id)}/export.txt`;
+  },
+  async getPaymentLinkQr(code: string) {
+    return apiFetch(`/pay/${encodeURIComponent(code)}/qr`);
+  },
+};
+
+export const commerce = {
+  async listPlans() {
+    return apiFetch("/commerce/plans");
+  },
+  async selectPlan(tier: string) {
+    return apiFetch("/commerce/plans/select", { method: "POST", body: JSON.stringify({ tier }) });
+  },
+  async joinRampWaitlist(data: { email: string; interest?: string; region?: string; notes?: string }) {
+    return apiFetch("/commerce/ramp-waitlist", { method: "POST", body: JSON.stringify(data) });
+  },
+};
+
+export const wacpPublic = {
+  async status() {
+    return apiFetch("/wacp/status");
+  },
+  async reserveProof() {
+    return apiFetch("/wacp/reserve-proof");
+  },
 };
 
 export const merchant = {
@@ -1490,7 +1517,7 @@ export const decisionLogs = {
     const params = new URLSearchParams({ limit: String(limit) });
     if (scope) params.append("scope", scope);
     if (reason_code) params.append("reason_code", reason_code);
-    return apiFetch(`/system/decision-logs?${params.toString()}`);
+    return apiFetch(`/internal/ops/decision-logs?${params.toString()}`);
   },
 };
 
@@ -1558,7 +1585,7 @@ export const governance = {
     });
   },
   async graphEnforcementPreview(limit = 50) {
-    return apiFetch(`/moderation/graph-enforcement/preview?limit=${limit}`);
+    return apiFetch(`/system/graph-enforcement/preview?limit=${limit}`);
   },
 };
 
@@ -1672,6 +1699,8 @@ export const api = {
   acpExplorer,
   payouts,
   paymentScanner,
+  commerce,
+  wacpPublic,
   subscriptions,
   organizations,
   webhooks,
