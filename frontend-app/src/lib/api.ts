@@ -119,7 +119,26 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
     });
   }
 
-  return res.json();
+  if (res.status === 204) {
+    return null;
+  }
+
+  const contentLength = res.headers.get("content-length");
+  if (contentLength === "0") {
+    return null;
+  }
+
+  const contentType = (res.headers.get("content-type") || "").toLowerCase();
+  const rawBody = await res.text();
+  if (!rawBody.trim()) {
+    return null;
+  }
+
+  if (contentType.includes("application/json") || contentType.includes("+json")) {
+    return JSON.parse(rawBody);
+  }
+
+  return rawBody;
 }
 
 // Auth API
