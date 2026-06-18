@@ -30,7 +30,7 @@
     "expo-secure-store": "~14.0.1",
     "expo-status-bar": "~2.0.1",
     "i18next": "^26.2.0",
-    "react": "18.3.1",
+    "react": "19.2.7",
     "react-i18next": "^17.0.8",
     "react-native": "0.76.6",
     "react-native-qrcode-svg": "^6.3.14",
@@ -40,6 +40,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
-    "@types/react": "~18.3.12"
+    "@types/react": "~19.2.16"
   }
 }

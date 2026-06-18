@@ -8,7 +8,7 @@
   "peerDependencies": {
     "expo": "*",
     "expo-modules-core": "*",
-    "react": "*",
+    "react": "^18.3.1",
     "react-native": "*"
   }
 }
