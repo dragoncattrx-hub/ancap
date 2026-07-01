@@ -112,15 +112,17 @@ def test_happy_buyer_buys_two_distinct_listings(client, base_vertical_id):
     assert r.status_code == 201, r.text
 
 
-def test_fail_ledger_halted_blocks_order_and_ledger_ops(client, base_vertical_id):
+def test_fail_ledger_halted_blocks_order_and_ledger_ops(client, base_vertical_id, monkeypatch):
   """When ledger invariant is halted, order placement and ledger ops are blocked."""
+  import uuid as _uuid
+
+  from app.config import get_settings
+
   seller = _agent(client, "sm_seller3", ["seller"])
   buyer = _agent(client, "sm_buyer3", ["buyer"])
   _, _, listing_id = _strategy_version_and_listing(client, base_vertical_id, seller)
 
   # Force a violation via jobs tick: easiest is to call /system/jobs/tick until halted=true.
-  from app.config import get_settings
-
   settings = get_settings()
   headers = {}
   if settings.cron_secret:
@@ -128,9 +130,30 @@ def test_fail_ledger_halted_blocks_order_and_ledger_ops(client, base_vertical_id
   tick = client.post("/v1/system/jobs/tick", headers=headers)
   assert tick.status_code in (200, 403)
 
-  status = client.get("/v1/internal/ops/ledger-invariant-status")
-  assert status.status_code == 200
-  halted = status.json().get("halted")
+  # /internal/ops/ledger-invariant-status is now platform-admin-only.
+  admin_res = client.post(
+    "/v1/auth/users",
+    json={
+      "email": f"sm_ledger_admin_{_uuid.uuid4().hex[:10]}@example.com",
+      "password": "password123",
+      "display_name": "sm-ledger-admin",
+    },
+    headers={"Authorization": ""},
+  )
+  assert admin_res.status_code in (200, 201), admin_res.text
+  admin_headers = {"Authorization": f"Bearer {admin_res.json()['access_token']}"}
+  admin_me = client.get("/v1/users/me", headers=admin_headers)
+  assert admin_me.status_code == 200, admin_me.text
+
+  monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", admin_me.json()["id"])
+  get_settings.cache_clear()
+  try:
+    status = client.get("/v1/internal/ops/ledger-invariant-status", headers=admin_headers)
+    assert status.status_code == 200
+    halted = status.json().get("halted")
+  finally:
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
+    get_settings.cache_clear()
   if not halted:
     # If invariant is still fine, we skip strict assertion – this is environment-dependent.
     return

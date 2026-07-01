@@ -172,8 +172,8 @@ def test_android_native_build_truth_is_in_sync_across_docs() -> None:
 
     assert "| P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in master
     assert "| P1-6 | Link bindings in `expo-acp-core` Android | [x] | Kotlin + JNI wired; `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in mobile
-    assert "| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist, but Expo Android dev-build/runtime verification is still pending and iOS still depends on P1-7 |" in mobile
-    assert "| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |" in mobile
+    assert "| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |" in mobile
+    assert "| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |" in mobile
     assert "Android runtime verification" in device_matrix
     assert "`libacp_mobile_ffi.so` artifacts for `arm64-v8a`, `armeabi-v7a`, and `x86_64`" in device_matrix
     assert "- [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host" in release_checklist
