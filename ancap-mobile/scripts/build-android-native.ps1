@@ -23,25 +23,26 @@ function Resolve-AndroidSdkPath {
 }
 
 function Resolve-AndroidNdkPath([string]$sdkPath) {
-  $candidates = @()
-  if ($env:ANDROID_NDK_HOME) {
-    $candidates += $env:ANDROID_NDK_HOME
+  if ($env:ANDROID_NDK_HOME -and (Test-Path $env:ANDROID_NDK_HOME)) {
+    return (Resolve-Path $env:ANDROID_NDK_HOME).Path
   }
-  if ($sdkPath) {
-    $candidates += (Join-Path $sdkPath "ndk-bundle")
-    $ndkRoot = Join-Path $sdkPath "ndk"
-    if (Test-Path $ndkRoot) {
-      $versionDirs = Get-ChildItem $ndkRoot -Directory | Sort-Object Name -Descending
-      foreach ($dir in $versionDirs) {
-        $candidates += $dir.FullName
-      }
+
+  $ndkRoot = if ($sdkPath) { Join-Path $sdkPath "ndk" } else { $null }
+  if ($ndkRoot -and (Test-Path $ndkRoot)) {
+    $versionDirs = Get-ChildItem $ndkRoot -Directory | Sort-Object Name -Descending
+    $preferred = $versionDirs | Where-Object { $_.Name -match '^28\.' } | Select-Object -First 1
+    if ($preferred) {
+      return $preferred.FullName
+    }
+    $fallback = $versionDirs | Select-Object -First 1
+    if ($fallback) {
+      return $fallback.FullName
     }
   }
 
-  foreach ($path in $candidates | Where-Object { $_ }) {
-    if (Test-Path $path) {
-      return (Resolve-Path $path).Path
-    }
+  $legacy = if ($sdkPath) { Join-Path $sdkPath "ndk-bundle" } else { $null }
+  if ($legacy -and (Test-Path $legacy)) {
+    return (Resolve-Path $legacy).Path
   }
 
   return $null
@@ -56,9 +57,9 @@ $env:ANDROID_NDK_HOME = Resolve-AndroidNdkPath $env:ANDROID_HOME
 if (-not $env:ANDROID_NDK_HOME) {
   $sdkManagerHint = Join-Path $env:ANDROID_HOME "cmdline-tools\latest\bin\sdkmanager.bat"
   $hint = if (Test-Path $sdkManagerHint) {
-    "Install an NDK, e.g. `"$sdkManagerHint`" `"ndk;27.1.12297006`""
+    "Install NDK r28+, e.g. `"$sdkManagerHint`" `"ndk;28.0.13004108`""
   } else {
-    "Install an NDK from Android Studio → SDK Manager → SDK Tools / SDK Platforms."
+    "Install NDK r28+ from Android Studio → SDK Manager → SDK Tools (NDK 28.0.13004108 or newer)."
   }
   Write-Error "Android NDK not found under '$($env:ANDROID_HOME)'. $hint"
 }

@@ -4,11 +4,10 @@ apply plugin: 'kotlin-android'
 group = 'expo.modules.acpcore'
 version = '0.1.0'
 
+def nodeResolve = rootProject.ext.nodeResolve
+
 def expoModulesCorePlugin = new File(
-  ["node", "--print", "require.resolve('expo-modules-core/package.json')"]
-    .execute(null, rootDir)
-    .text
-    .trim()
+  nodeResolve("expo-modules-core/package.json")
 ).getParentFile().absolutePath + "/android/ExpoModulesCorePlugin.gradle"
 apply from: expoModulesCorePlugin
 applyKotlinExpoModulesCorePlugin()

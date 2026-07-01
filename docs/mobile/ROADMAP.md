@@ -79,7 +79,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|--------|
 | P4-1 | Expo app (`apps/acp-wallet-expo`) | [x] | expo-router |
 | P4-2 | Navigation (onboarding + home) | [x] | |
-| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist, but Expo Android dev-build/runtime verification is still pending and iOS still depends on P1-7 |
+| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |
 | P4-4 | Tabs: Wallet / Activity / Send / Settings | [x] | |
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
@@ -87,7 +87,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-8 | PIN + biometrics | [~] | PIN lock + biometric unlock preference wired in Expo app; still needs real device verification |
 | P4-9 | SecureVault (Keychain / Keystore) | [~] | device-only SecureStore wired; enabling biometrics now migrates mnemonic + keystore into biometric-gated secure storage and adds iOS Face ID permission config; real device verification still pending |
 | P4-10 | Dashboard (ACP + wACP) | [x] | wACP via BSC RPC (fetchWacpBalanceWei); ACP via ACP API |
-| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
 | P4-12 | Transaction history | [x] | |
 | P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
@@ -176,7 +176,7 @@ Scope truth:
 
 The original 8–12 week estimate is no longer the right way to read this document. The project is now in the late-stage completion zone, where the remaining duration depends mostly on host/tooling blockers and release verification:
 
-- Android Expo dev-build/runtime verification with the emitted `.so` artifacts
+- Android real runtime/device verification with the emitted `.so` artifacts (host-side `assembleDebug` is now verified on the current Windows machine)
 - macOS/Xcode packaging for iOS native artifacts
 - real device verification of create/send/lock/unlock/biometric flows
 - MASVS/security checklist closure

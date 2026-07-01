@@ -10,5 +10,8 @@
     "expo-modules-core": "*",
     "react": "*",
     "react-native": "*"
+  },
+  "devDependencies": {
+    "expo-modules-core": "~2.2.0"
   }
 }

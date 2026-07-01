@@ -61,19 +61,46 @@ Without `EXPO_PUBLIC_ANCAP_API_AUTH_HEADER`, the Expo Smart Pay screen still sup
 
 **Import wallet (dev):** run `walletd new` from `ACP-crypto`, paste address + mnemonic + `keystore_json` into Import screen.
 
-### Native core (Android dev build)
+### Android Studio (native dev build)
 
-Expo Go does **not** load custom Rust. Use a development build:
+Expo Go does **not** load custom Rust. Use a development build.
 
 ```powershell
-# 1) Build .so libraries
+# One-shot setup: npm install, local.properties, Gradle check
+.\ancap-mobile\scripts\prepare-android-studio.ps1
+
+# Optional: compile Rust FFI (.so) before opening Studio
+.\ancap-mobile\scripts\prepare-android-studio.ps1 -BuildNative
+```
+
+Then in **Android Studio**:
+
+1. **Open** `ancap-mobile/apps/acp-wallet-expo/android` (not the ANCAP repo root).
+2. **Sync** Gradle (File → Sync Project with Gradle Files).
+3. **Run** the `app` configuration on an emulator or device.
+
+If sync fails with “Cannot run program node”, re-run the prepare script — it writes `node.dir` into `local.properties`.
+
+```powershell
+# 1) Build .so libraries (when wallet crypto is needed)
 .\ancap-mobile\scripts\build-android-native.ps1
 
-# 2) Dev client + run on device/emulator
+# 2) Ensure Gradle sees Java on Windows hosts
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+
+# 3) Dev client + run on device/emulator
 cd ancap-mobile
 npm install
 cd apps/acp-wallet-expo
 npx expo run:android
+```
+
+If you want a host-side sanity check before launching Expo, `apps/acp-wallet-expo/android` should now pass:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+cd ancap-mobile\apps\acp-wallet-expo\android
+.\gradlew.bat :app:assembleDebug
 ```
 
 ### Native core (iOS dev build)

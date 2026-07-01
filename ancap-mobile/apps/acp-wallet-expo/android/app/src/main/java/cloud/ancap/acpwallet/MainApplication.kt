@@ -30,7 +30,9 @@ class MainApplication : Application(), ReactApplication {
 
           override fun getJSMainModuleName(): String = ".expo/.virtual-metro-entry"
 
-          override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
+          // Load embedded JS bundle from APK (debuggableVariants = [] in app/build.gradle).
+          // Metro + fast refresh: npx expo start --dev-client, then reload in app.
+          override fun getUseDeveloperSupport(): Boolean = false
 
           override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
           override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
@@ -48,6 +50,35 @@ class MainApplication : Application(), ReactApplication {
       load()
     }
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
+    // debuggableVariants = [] embeds JS; skip expo-dev-client launcher (no Metro required).
+    skipDevLauncherForEmbeddedBundle()
+  }
+
+  private fun skipDevLauncherForEmbeddedBundle() {
+    if (!BuildConfig.DEBUG) {
+      return
+    }
+    try {
+      val controllerClass = Class.forName("expo.modules.devlauncher.DevLauncherController")
+      val wasInitialized = controllerClass.getMethod("wasInitialized").invoke(null) as Boolean
+      if (!wasInitialized) {
+        return
+      }
+      val controller = controllerClass.getMethod("getInstance").invoke(null) ?: return
+      val appMode = Class.forName("expo.modules.devlauncher.DevLauncherController\$Mode")
+        .enumConstants
+        .first { it.toString() == "APP" }
+      controllerClass.getDeclaredField("mode").apply {
+        isAccessible = true
+        set(controller, appMode)
+      }
+      controllerClass.getDeclaredField("useDeveloperSupport").apply {
+        isAccessible = true
+        setBoolean(controller, false)
+      }
+    } catch (_: Exception) {
+      // Fall back to default dev-client launcher if internals change.
+    }
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
