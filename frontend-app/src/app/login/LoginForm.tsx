@@ -8,6 +8,7 @@ import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { TURNSTILE_ENABLED } from "@/lib/turnstile";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -43,7 +44,7 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
       }
       const mnemonic = await login(email, password, turnstileToken);
@@ -71,7 +72,7 @@ export function LoginForm() {
       if (!email.trim()) {
         throw new Error("Enter your email first");
       }
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
       }
       await requestPasswordReset(email.trim(), turnstileToken);
@@ -260,7 +261,7 @@ export function LoginForm() {
             continueHref={nextHref}
             continueLabel={recoveryTarget ? "Continue to wallet recovery" : undefined}
             turnstileToken={turnstileToken}
-            turnstileRequired
+            turnstileRequired={TURNSTILE_ENABLED}
             turnstileErrorMessage="Complete the captcha to continue."
             onConnected={() => {
               setError("");

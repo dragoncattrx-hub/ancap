@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { WorkflowRunPanel } from "@/components/workflow/WorkflowRunPanel";
 import { getFallbackWorkflowTemplate, type WorkflowTemplate } from "@/lib/workflowStore";
+import { getServerApiBase } from "@/lib/serverApi";
 
-const API_BASE = process.env.NODE_ENV === "development" ? "http://127.0.0.1:8001" : "https://ancap.cloud/api/v1";
+const API_BASE = getServerApiBase();
 
 async function getWorkflowTemplate(template: string): Promise<WorkflowTemplate | null> {
   try {

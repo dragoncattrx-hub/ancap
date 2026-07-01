@@ -7,6 +7,7 @@ import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { TURNSTILE_ENABLED } from "@/lib/turnstile";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -31,7 +32,7 @@ export default function RegisterPage() {
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("ref")?.trim() || ""
           : "";
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
       }
       const mnemonic = await register(email, password, displayName, referralCode || undefined, turnstileToken);

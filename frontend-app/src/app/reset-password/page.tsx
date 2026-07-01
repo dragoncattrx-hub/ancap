@@ -5,6 +5,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { TURNSTILE_ENABLED } from "@/lib/turnstile";
 import { useAuth } from "@/components/AuthProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { useWallet } from "@/components/WalletProvider";
@@ -65,7 +66,7 @@ function ResetPasswordForm() {
       if (password !== confirmPassword) {
         throw new Error("Passwords do not match");
       }
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
       }
       await resetPassword(token, password, turnstileToken);
@@ -100,7 +101,7 @@ function ResetPasswordForm() {
       if (password !== confirmPassword) {
         throw new Error("Passwords do not match");
       }
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
       }
       await recoverPasswordWithWallet(address, password, chainId, turnstileToken);
@@ -200,11 +201,11 @@ function ResetPasswordForm() {
                   <WalletConnectCard
                     compact
                     showContinue={false}
-                    turnstileRequired
+                    turnstileRequired={TURNSTILE_ENABLED}
                     turnstileToken={turnstileToken}
                     turnstileErrorMessage="Complete the captcha first, then connect the linked wallet."
                   />
-                  <button type="button" className="btn btn-primary" onClick={() => void handleWalletRecovery()} disabled={walletRecoveryLoading || !isConnected || !address || !turnstileToken}>
+                  <button type="button" className="btn btn-primary" onClick={() => void handleWalletRecovery()} disabled={walletRecoveryLoading || !isConnected || !address || (TURNSTILE_ENABLED && !turnstileToken)}>
                     {walletRecoveryLoading ? "Trying wallet recovery..." : "Recover with linked wallet"}
                   </button>
                   {walletRecoveryInfo && <div style={{ color: "#86efac" }}>{walletRecoveryInfo}</div>}
