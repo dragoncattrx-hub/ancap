@@ -1,7 +1,15 @@
 ﻿# ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-05-29
+> Created: 2026-05-23 | Last updated: 2026-07-01
+
+## Hardening + deploy wave (2026-07-01)
+
+Completed in the `2026-07-01` hardening deploy:
+- **Server**: root + HestiaCP admin passwords rotated (stored in server-side `Sicret/`), `apt full-upgrade` applied, ~13 GB Docker build cache pruned (disk 70% → 42%), kernel security reboot done, and all six prod compose services now carry `restart: unless-stopped` (both live containers and `docker-compose.prod.yml`).
+- **Backend security**: `/v1/system/jobs/tick*` fails closed without `CRON_SECRET` outside development; `POST /acp/tx/broadcast` requires an authenticated user or a registered device token (`X-Device-Token`) plus per-caller rate limit; `walletd` deterministic fallback raises in production; `POST /chain/anchor` requires user or agent API-key auth; debug platform-admin bypass removed; `/internal/ops/ledger-invariant-status` is platform-admin only.
+- **Smart Pay durability**: intents/quotes/executions/receipts persist to the new `mobile_smart_pay_records` table (migration `c4d5e6f7a8b9`) with in-process cache + DB rehydration; execute requires an authenticated user.
+- **Frontend**: Turnstile is optional when no site key is configured (dev unblock); SSR API base unified via `getServerApiBase()` (`ANCAP_SERVER_API_URL=http://api:8000` in prod compose); `/pricing` reads live workflow-store templates/bundles with static fallback; `/token-snapshot` now calls a real backend endpoint (`POST /token-snapshot`) doing on-chain contract + ERC-20 interface checks on BSC/Ethereum; primary/secondary navigation fully translated into RU/UK/DE.
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
 > Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
@@ -840,8 +848,8 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | ID | Task | Status / blocker |
 |----|------|------------------|
 | P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host with Android SDK/NDK installed, emitting `arm64-v8a`, `armeabi-v7a`, and `x86_64` `libacp_mobile_ffi.so` artifacts into `ancap-mobile/modules/expo-acp-core/android/src/main/jniLibs` |
-| P4-3 | Create wallet via FFI | [~] Android native artifacts now exist, but Expo Android dev-build/runtime verification is still pending and iOS still depends on P1-7 |
-| P4-11 | Send + preview + sign | [~] Android native artifacts now exist, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
+| P4-3 | Create wallet via FFI | [~] Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but runtime/device verification is still pending and iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
 | P1-7 | iOS Swift UniFFI link | [~] Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode and verify packaged artifacts |
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)
