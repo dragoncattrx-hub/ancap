@@ -172,7 +172,6 @@ def test_smart_pay_execute_receipt_and_recover(client):
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     assert exec_res.status_code == 200, exec_res.text
     exec_payload = exec_res.json()
@@ -620,7 +619,6 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     session_token = exec_res.json()["sessionToken"]
     execution_id = exec_res.json()["execution"]["id"]
@@ -712,7 +710,6 @@ def test_smart_pay_recover_prefers_structured_refs_over_duplicate_plain_txids(cl
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     session_token = exec_res.json()["sessionToken"]
     execution_id = exec_res.json()["execution"]["id"]
@@ -793,7 +790,6 @@ def test_smart_pay_recover_accepts_explorer_links_inside_client_known_txs(client
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     session_token = exec_res.json()["sessionToken"]
     execution_id = exec_res.json()["execution"]["id"]
@@ -851,7 +847,6 @@ def test_smart_pay_recover_accepts_structured_locator_in_client_known_ref_txid(c
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     session_token = exec_res.json()["sessionToken"]
     execution_id = exec_res.json()["execution"]["id"]
@@ -929,7 +924,6 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
             "confirmationAccepted": True,
             "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
         },
-        headers={"Authorization": ""},
     )
     session_token = exec_res.json()["sessionToken"]
     execution_id = exec_res.json()["execution"]["id"]
@@ -1370,6 +1364,27 @@ def test_acp_estimate_fee(client):
     )
     assert r.status_code == 200
     assert r.json()["feeAcp"]
+
+
+def test_acp_broadcast_requires_auth_or_device(client, monkeypatch):
+    """Broadcast is not an open relay: anonymous callers without a registered device get 401."""
+    monkeypatch.setattr(mobile_acp.wallet_acp, "_require_acp_rpc_url", lambda: "http://rpc.test")
+    r = client.post(
+        "/v1/acp/tx/broadcast",
+        json={"rawTx": "deadbeef" * 8},
+        headers={"Authorization": ""},
+    )
+    assert r.status_code == 401
+
+
+def test_acp_broadcast_unknown_device_token_rejected(client, monkeypatch):
+    monkeypatch.setattr(mobile_acp.wallet_acp, "_require_acp_rpc_url", lambda: "http://rpc.test")
+    r = client.post(
+        "/v1/acp/tx/broadcast",
+        json={"rawTx": "deadbeef" * 8},
+        headers={"Authorization": "", "X-Device-Token": "not-a-registered-device"},
+    )
+    assert r.status_code == 401
 
 
 def test_acp_broadcast_invalid_hex(client, monkeypatch):

@@ -12,11 +12,13 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, unquote, urlparse
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
 
-from app.api.deps import get_current_user_id, require_auth
+from app.api.deps import DbSession, get_current_user_id, require_auth
 from app.api.routers import wallet_acp
+from app.db.models import MobileDevice, MobileSmartPayRecord
 from app.config import get_settings
 from app.schemas.mobile_acp import (
     AcpBroadcastRequest,
@@ -123,12 +125,129 @@ def _new_session_token() -> str:
     return hashlib.sha256(uuid4().hex.encode("utf-8")).hexdigest()
 
 
+# In-process cache in front of the durable mobile_smart_pay_records table.
 _PAYMENT_INTENTS: dict[str, PaymentIntentResponseItem] = {}
 _SMART_PAY_QUOTES: dict[str, SmartPayQuoteItem] = {}
 _SMART_PAY_EXECUTIONS: dict[str, SmartPayExecutionItem] = {}
 _SMART_PAY_RECEIPTS: dict[str, SmartPayReceiptItem] = {}
 _SMART_PAY_EXECUTION_OWNERS: dict[str, str | None] = {}
 _SMART_PAY_EXECUTION_SESSION_TOKENS: dict[str, str] = {}
+
+
+async def _persist_smart_pay_record(
+    session,
+    *,
+    record_id: str,
+    kind: str,
+    payload_model,
+    owner_user_id: str | None = None,
+    session_token: str | None = None,
+) -> None:
+    """Write-through persistence so Smart Pay state survives API restarts."""
+    record = await session.get(MobileSmartPayRecord, record_id)
+    data = payload_model.model_dump(mode="json")
+    if record is None:
+        session.add(
+            MobileSmartPayRecord(
+                id=record_id,
+                kind=kind,
+                owner_user_id=owner_user_id,
+                session_token=session_token,
+                payload=data,
+            )
+        )
+    else:
+        record.payload = data
+        if owner_user_id is not None:
+            record.owner_user_id = owner_user_id
+        if session_token is not None:
+            record.session_token = session_token
+    await session.flush()
+
+
+async def _hydrate_intent(session, intent_id: str) -> PaymentIntentResponseItem | None:
+    intent_id = (intent_id or "").strip()
+    cached = _PAYMENT_INTENTS.get(intent_id)
+    if cached is not None:
+        return cached
+    record = await session.get(MobileSmartPayRecord, intent_id)
+    if record is None or record.kind != "intent":
+        return None
+    intent = PaymentIntentResponseItem.model_validate(record.payload)
+    _PAYMENT_INTENTS[intent.id] = intent
+    return intent
+
+
+async def _hydrate_quote(session, quote_id: str) -> SmartPayQuoteItem | None:
+    quote_id = (quote_id or "").strip()
+    cached = _SMART_PAY_QUOTES.get(quote_id)
+    if cached is not None:
+        return cached
+    record = await session.get(MobileSmartPayRecord, quote_id)
+    if record is None or record.kind != "quote":
+        return None
+    quote = SmartPayQuoteItem.model_validate(record.payload)
+    _SMART_PAY_QUOTES[quote.quote_id] = quote
+    return quote
+
+
+async def _hydrate_execution(session, execution_id: str) -> SmartPayExecutionItem | None:
+    execution_id = (execution_id or "").strip()
+    cached = _SMART_PAY_EXECUTIONS.get(execution_id)
+    if cached is not None:
+        return cached
+    record = await session.get(MobileSmartPayRecord, execution_id)
+    if record is None or record.kind != "execution":
+        return None
+    execution = SmartPayExecutionItem.model_validate(record.payload)
+    _SMART_PAY_EXECUTIONS[execution.id] = execution
+    _SMART_PAY_EXECUTION_OWNERS[execution.id] = str(record.owner_user_id) if record.owner_user_id else None
+    if record.session_token:
+        _SMART_PAY_EXECUTION_SESSION_TOKENS[execution.id] = record.session_token
+    return execution
+
+
+async def _hydrate_receipt(session, execution_id: str) -> SmartPayReceiptItem | None:
+    execution_id = (execution_id or "").strip()
+    cached = _SMART_PAY_RECEIPTS.get(execution_id)
+    if cached is not None:
+        return cached
+    record = await session.get(MobileSmartPayRecord, f"spr_{execution_id}")
+    if record is None or record.kind != "receipt":
+        return None
+    receipt = SmartPayReceiptItem.model_validate(record.payload)
+    _SMART_PAY_RECEIPTS[execution_id] = receipt
+    return receipt
+
+
+async def _persist_execution_bundle(
+    session,
+    *,
+    intent: PaymentIntentResponseItem,
+    quote: SmartPayQuoteItem,
+    execution: SmartPayExecutionItem,
+    owner_user_id: str | None,
+    session_token: str | None,
+) -> None:
+    receipt = _SMART_PAY_RECEIPTS.get(execution.id)
+    await _persist_smart_pay_record(session, record_id=intent.id, kind="intent", payload_model=intent)
+    await _persist_smart_pay_record(session, record_id=quote.quote_id, kind="quote", payload_model=quote)
+    await _persist_smart_pay_record(
+        session,
+        record_id=execution.id,
+        kind="execution",
+        payload_model=execution,
+        owner_user_id=owner_user_id,
+        session_token=session_token,
+    )
+    if receipt is not None:
+        await _persist_smart_pay_record(
+            session,
+            record_id=receipt.id,
+            kind="receipt",
+            payload_model=receipt,
+            owner_user_id=owner_user_id,
+        )
 
 
 def _supported_assets() -> list[SmartPaySupportedAsset]:
@@ -1143,11 +1262,44 @@ async def acp_estimate_fee(body: AcpFeeEstimateRequest):
 
 
 @router.post("/acp/tx/broadcast", response_model=AcpBroadcastResponse)
-async def acp_broadcast(request: Request, body: AcpBroadcastRequest):
+async def acp_broadcast(
+    request: Request,
+    body: AcpBroadcastRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    device_token: str | None = Header(default=None, alias="X-Device-Token"),
+):
     s = get_settings()
+
+    # Broadcast is not an open relay: require an authenticated user or a
+    # registered active mobile device (registration itself requires auth).
+    caller_scope: str | None = None
+    if user_id:
+        caller_scope = f"user:{user_id}"
+    elif device_token:
+        row = await session.execute(
+            select(MobileDevice).where(
+                MobileDevice.device_token == device_token.strip(),
+                MobileDevice.is_active == True,  # noqa: E712
+            )
+        )
+        device = row.scalars().first()
+        if device is not None:
+            caller_scope = f"device:{device.id}"
+    if caller_scope is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Broadcast requires authentication or a registered device (X-Device-Token)",
+        )
+
     ip = get_request_ip(request)
     await enforce_rate_limit(
         key=f"mobile:broadcast:{ip}",
+        limit=s.mobile_broadcast_rate_limit_per_minute,
+        window_seconds=60,
+    )
+    await enforce_rate_limit(
+        key=f"mobile:broadcast:{caller_scope}",
         limit=s.mobile_broadcast_rate_limit_per_minute,
         window_seconds=60,
     )
@@ -1207,64 +1359,91 @@ async def smart_pay_capabilities():
 
 
 @router.post("/mobile/smart-pay/parse", response_model=SmartQrParseResponse)
-async def smart_pay_parse(body: SmartQrParseRequest):
+async def smart_pay_parse(body: SmartQrParseRequest, session: DbSession):
     intent = _parse_smart_qr_payload(body.source, body.raw_payload)
+    await _persist_smart_pay_record(session, record_id=intent.id, kind="intent", payload_model=intent)
     return SmartQrParseResponse(payment_intent=intent)
 
 
 @router.post("/mobile/smart-pay/quote", response_model=SmartPayQuoteResponse)
-async def smart_pay_quote(body: SmartPayQuoteRequest):
-    intent = _get_payment_intent_or_404(body.payment_intent_id)
+async def smart_pay_quote(body: SmartPayQuoteRequest, session: DbSession):
+    intent = await _hydrate_intent(session, body.payment_intent_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="paymentIntentId not found")
     quote = _build_quote(intent, body)
+    await _persist_smart_pay_record(session, record_id=quote.quote_id, kind="quote", payload_model=quote)
     return SmartPayQuoteResponse(quote=quote)
 
 
 @router.post("/mobile/smart-pay/execute", response_model=SmartPayExecutionResponse)
 async def smart_pay_execute(
     body: SmartPayExecuteRequest,
-    user_id: str | None = Depends(get_current_user_id),
+    session: DbSession,
+    user_id: str = Depends(require_auth),
 ):
     if not body.confirmation_accepted:
         raise HTTPException(status_code=400, detail="confirmationAccepted must be true")
-    intent = _get_payment_intent_or_404(body.payment_intent_id)
-    quote = _get_quote_or_404(body.quote_id)
+    intent = await _hydrate_intent(session, body.payment_intent_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="paymentIntentId not found")
+    quote = await _hydrate_quote(session, body.quote_id)
+    if quote is None:
+        raise HTTPException(status_code=404, detail="quoteId not found")
     if quote.payment_intent_id != intent.id:
         raise HTTPException(status_code=409, detail="quote does not belong to payment intent")
     execution = _build_execution(intent, quote)
     session_token = _new_session_token()
     _SMART_PAY_EXECUTION_OWNERS[execution.id] = user_id
     _SMART_PAY_EXECUTION_SESSION_TOKENS[execution.id] = session_token
+    await _persist_execution_bundle(
+        session,
+        intent=intent,
+        quote=quote,
+        execution=execution,
+        owner_user_id=user_id,
+        session_token=session_token,
+    )
     return SmartPayExecutionResponse(execution=execution, session_token=session_token)
 
 
 @router.get("/mobile/smart-pay/payments", response_model=SmartPayPaymentHistoryResponse)
 async def smart_pay_payment_history(
+    session: DbSession,
     limit: int = Query(default=20, ge=1, le=100),
     user_id: str = Depends(require_auth),
 ):
-    owned_executions = [
-        execution
-        for execution in _SMART_PAY_EXECUTIONS.values()
-        if _SMART_PAY_EXECUTION_OWNERS.get(execution.id) == user_id
-    ]
-    payments = [
-        _build_payment_history_entry(execution)
-        for execution in sorted(
-            owned_executions,
-            key=lambda item: (item.updated_at, item.created_at, item.id),
-            reverse=True,
-        )[:limit]
-    ]
+    rows = await session.execute(
+        select(MobileSmartPayRecord)
+        .where(
+            MobileSmartPayRecord.kind == "execution",
+            MobileSmartPayRecord.owner_user_id == user_id,
+        )
+        .order_by(MobileSmartPayRecord.updated_at.desc())
+        .limit(limit)
+    )
+    payments: list[SmartPayPaymentHistoryEntry] = []
+    for record in rows.scalars().all():
+        execution = await _hydrate_execution(session, record.id)
+        if execution is None:
+            continue
+        # Ensure the sync history builder finds intent/quote/receipt in cache.
+        if await _hydrate_intent(session, execution.payment_intent_id) is None:
+            continue
+        if await _hydrate_quote(session, execution.quote_id) is None:
+            continue
+        await _hydrate_receipt(session, execution.id)
+        payments.append(_build_payment_history_entry(execution))
     return SmartPayPaymentHistoryResponse(payments=payments)
 
 
 @router.get("/mobile/smart-pay/payments/{execution_id}", response_model=SmartPayExecutionResponse)
 async def smart_pay_payment_status(
     execution_id: str,
+    session: DbSession,
     session_token: str | None = Query(default=None, alias="sessionToken"),
     user_id: str | None = Depends(get_current_user_id),
 ):
-    execution = _SMART_PAY_EXECUTIONS.get((execution_id or "").strip())
+    execution = await _hydrate_execution(session, execution_id)
     if execution is None:
         raise HTTPException(status_code=404, detail="execution not found")
     _require_execution_access(execution.id, user_id, session_token)
@@ -1274,13 +1453,16 @@ async def smart_pay_payment_status(
 @router.get("/mobile/smart-pay/payments/{execution_id}/receipt", response_model=SmartPayReceiptItem)
 async def smart_pay_receipt(
     execution_id: str,
+    session: DbSession,
     session_token: str | None = Query(default=None, alias="sessionToken"),
     user_id: str | None = Depends(get_current_user_id),
 ):
-    receipt = _SMART_PAY_RECEIPTS.get((execution_id or "").strip())
+    # Hydrate the execution first so ownership/session-token checks work after restart.
+    execution = await _hydrate_execution(session, execution_id)
+    receipt = await _hydrate_receipt(session, execution_id)
     if receipt is None:
         raise HTTPException(status_code=404, detail="receipt not found")
-    _require_execution_access(execution_id, user_id, session_token)
+    _require_execution_access(execution.id if execution else execution_id, user_id, session_token)
     return receipt
 
 
@@ -1288,15 +1470,20 @@ async def smart_pay_receipt(
 async def smart_pay_recover(
     execution_id: str,
     body: SmartPayRecoverRequest,
+    session: DbSession,
     session_token: str | None = Query(default=None, alias="sessionToken"),
     user_id: str | None = Depends(get_current_user_id),
 ):
-    execution = _SMART_PAY_EXECUTIONS.get((execution_id or "").strip())
+    execution = await _hydrate_execution(session, execution_id)
     if execution is None:
         raise HTTPException(status_code=404, detail="execution not found")
     _require_execution_access(execution.id, user_id, session_token)
-    quote = _get_quote_or_404(execution.quote_id)
-    intent = _get_payment_intent_or_404(execution.payment_intent_id)
+    quote = await _hydrate_quote(session, execution.quote_id)
+    if quote is None:
+        raise HTTPException(status_code=404, detail="quoteId not found")
+    intent = await _hydrate_intent(session, execution.payment_intent_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="paymentIntentId not found")
     known_refs: list[object] = list(execution.tx_refs)
     existing_tx_ref_count = len(known_refs)
     known_refs.extend(body.client_known_refs)
@@ -1318,6 +1505,14 @@ async def smart_pay_recover(
         }
     )
     _store_execution_and_receipt(intent, quote, execution)
+    await _persist_execution_bundle(
+        session,
+        intent=intent,
+        quote=quote,
+        execution=execution,
+        owner_user_id=_SMART_PAY_EXECUTION_OWNERS.get(execution.id),
+        session_token=_get_session_token(execution.id),
+    )
     return SmartPayExecutionResponse(execution=execution, session_token=_get_session_token(execution.id))
 
 

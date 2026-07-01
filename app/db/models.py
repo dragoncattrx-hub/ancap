@@ -2037,6 +2037,27 @@ class ClaimCode(Base):
     )
 
 
+class MobileSmartPayRecord(Base):
+    """Durable store for mobile Smart Pay objects (intents, quotes, executions, receipts).
+
+    Payloads are serialized Pydantic response models; ownership/session token
+    columns only apply to execution records.
+    """
+    __tablename__ = "mobile_smart_pay_records"
+
+    id = Column(String(80), primary_key=True)  # pi_*/q_*/pe_*/spr_* identifiers
+    kind = Column(String(20), nullable=False, index=True)  # intent | quote | execution | receipt
+    owner_user_id = Column(UUID(as_uuid=False), nullable=True, index=True)
+    session_token = Column(String(128), nullable=True)
+    payload = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_mobile_smart_pay_records_owner_kind", "owner_user_id", "kind"),
+    )
+
+
 class RampWaitlistEntry(Base):
     __tablename__ = "ramp_waitlist_entries"
 

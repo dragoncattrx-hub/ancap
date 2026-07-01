@@ -25,17 +25,25 @@ export type AcpApiClientOptions = {
   baseUrl: string;
   fetchImpl?: typeof fetch;
   authHeader?: string;
+  /** Registered mobile device token; required by /acp/tx/broadcast when not authenticated. */
+  deviceToken?: string;
 };
 
 export class AcpApiClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
   private readonly authHeader?: string;
+  private deviceToken?: string;
 
   constructor(options: AcpApiClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.authHeader = options.authHeader;
+    this.deviceToken = options.deviceToken;
+  }
+
+  setDeviceToken(token: string | undefined): void {
+    this.deviceToken = token;
   }
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -47,6 +55,9 @@ export class AcpApiClient {
     };
     if (this.authHeader) {
       headers.Authorization = this.authHeader;
+    }
+    if (this.deviceToken && !headers["X-Device-Token"]) {
+      headers["X-Device-Token"] = this.deviceToken;
     }
     const res = await this.fetchImpl(url, {
       ...init,
