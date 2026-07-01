@@ -96,8 +96,6 @@ async def require_platform_admin(
     settings = get_settings()
     allowed = set(settings.platform_admin_user_ids_allowlist)
     if not allowed:
-        if settings.debug:
-            return user_id
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Platform admin access is not configured",

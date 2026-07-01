@@ -1,9 +1,10 @@
 """L3: On-chain anchoring API."""
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 
-from app.api.deps import DbSession
+from app.api.deps import DbSession, get_agent_id_from_api_key, get_current_user_id
 from app.config import get_settings
 from app.schemas.chain import AnchorCreateRequest, AnchorPublic
 from app.db.models import ChainAnchor
@@ -13,9 +14,28 @@ from sqlalchemy import select
 router = APIRouter(prefix="/chain", tags=["Chain anchors (L3)"])
 
 
+async def _require_user_or_agent(
+    user_id: Annotated[str | None, Depends(get_current_user_id)],
+    agent_id: Annotated[str | None, Depends(get_agent_id_from_api_key)],
+) -> str:
+    """Anchor writes require an authenticated user or an agent API key."""
+    caller = user_id or agent_id
+    if not caller:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required (Bearer token or X-API-Key)",
+        )
+    return caller
+
+
 @router.post("/anchor", response_model=AnchorPublic, status_code=201)
-async def create_anchor(body: AnchorCreateRequest, session: DbSession):
+async def create_anchor(
+    body: AnchorCreateRequest,
+    session: DbSession,
+    caller_id: Annotated[str, Depends(_require_user_or_agent)],
+):
     """Submit payload hash for on-chain anchoring. Driver: mock | acp | ethereum | solana (config: chain_anchor_driver + *_rpc_url)."""
+    _ = caller_id
     settings = get_settings()
     driver = get_anchor_driver(settings.chain_anchor_driver or "mock")
     if driver is None:

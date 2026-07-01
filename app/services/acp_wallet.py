@@ -35,6 +35,15 @@ def _walletd_available() -> bool:
     return bool(p or shutil.which("walletd"))
 
 
+def _require_walletd_in_production() -> None:
+    """The deterministic dev fallback must never produce production wallets."""
+    if get_settings().environment == "production":
+        raise RuntimeError(
+            "ACP wallet helper (walletd) is unavailable in production; "
+            "refusing insecure fallback wallet generation"
+        )
+
+
 def _fallback_mnemonic() -> str:
     words = [
         "apple", "bridge", "cannon", "dawn", "ember", "forest",
@@ -83,6 +92,7 @@ def generate_mnemonic() -> str:
 
 def generate_wallet_secret() -> tuple[str, str, str]:
     if not _walletd_available():
+        _require_walletd_in_production()
         mnemonic = _fallback_mnemonic()
         address = _fallback_address(f"{mnemonic}:{secrets.token_hex(8)}")
         payload = json.dumps({"v": 2, "mnemonic": mnemonic, "keystore_json": "{}"}, separators=(",", ":"))
@@ -101,6 +111,7 @@ def generate_wallet_secret() -> tuple[str, str, str]:
 
 def derive_address(mnemonic: str, derivation_path: str = DEFAULT_DERIVATION_PATH) -> str:
     if not _walletd_available():
+        _require_walletd_in_production()
         return _fallback_address(f"{mnemonic}:{derivation_path or DEFAULT_DERIVATION_PATH}")
     args = ["address", "--mnemonic", mnemonic]
     if derivation_path:

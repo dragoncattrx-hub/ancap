@@ -398,8 +398,8 @@ async def ops_economy_health(session: DbSession, admin_user_id: str = Depends(re
 
 
 @_internal_router.get("/ledger-invariant-status")
-async def ops_ledger_invariant_status(session: DbSession, user_id: str = Depends(require_auth)):
-    """Ledger invariant halt status. Auth required."""
+async def ops_ledger_invariant_status(session: DbSession, user_id: str = Depends(require_platform_admin)):
+    """Ledger invariant halt status. Platform admin required."""
     _ = user_id
     halted = await is_ledger_invariant_halted(session)
     return {"halted": halted}
@@ -615,6 +615,18 @@ async def _process_system_jobs_tick_queue(job_run_id: str) -> None:
                 result["result"]["retry_queue"] = pending_summary
 
 
+def _enforce_cron_secret(request: Request) -> None:
+    """Fail closed: outside development, jobs tick always requires a configured CRON_SECRET."""
+    settings = get_settings()
+    if settings.cron_secret:
+        provided_secret = request.headers.get("X-Cron-Secret")
+        if provided_secret != settings.cron_secret:
+            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
+        return
+    if settings.environment != "development":
+        raise HTTPException(status_code=403, detail="Cron secret is not configured; jobs tick is disabled")
+
+
 @router.post("/jobs/tick/async", status_code=202)
 async def jobs_tick_async(
     request: Request,
@@ -623,13 +635,9 @@ async def jobs_tick_async(
     """
     Async job tick: enqueues all jobs as a background task and returns immediately.
     Use this for normal scheduled runs (e.g., cron every 5 min).
-    Protected by optional CRON_SECRET (X-Cron-Secret header).
+    Requires CRON_SECRET (X-Cron-Secret header) outside development.
     """
-    settings = get_settings()
-    if settings.cron_secret:
-        provided_secret = request.headers.get("X-Cron-Secret")
-        if provided_secret != settings.cron_secret:
-            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
+    _enforce_cron_secret(request)
 
     job_run_id = await _enqueue_system_jobs_tick_run(trigger_source="api")
     background_tasks.add_task(_process_system_jobs_tick_queue, job_run_id)
@@ -647,11 +655,7 @@ async def jobs_tick(request: Request, session: DbSession):
     Synchronous job tick: runs all jobs in the request path.
     Use only for manual emergency triggers (ops console).
     Prefer /jobs/tick/async for scheduling.
-    Protected by optional CRON_SECRET (X-Cron-Secret header).
+    Requires CRON_SECRET (X-Cron-Secret header) outside development.
     """
-    settings = get_settings()
-    if settings.cron_secret:
-        provided_secret = request.headers.get("X-Cron-Secret")
-        if provided_secret != settings.cron_secret:
-            raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
+    _enforce_cron_secret(request)
     return await _run_all_jobs(session)
