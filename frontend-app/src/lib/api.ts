@@ -14,6 +14,12 @@ const API_BASE =
   (process.env.NODE_ENV === "development"
     ? "/api/v1"
     : "https://ancap.cloud/api/v1");
+
+/** Resolved client-side API base URL (e.g. "/api/v1" in dev). */
+export function getApiUrl(): string {
+  return API_BASE;
+}
+
 const TOKEN_COOKIE = "ancap_token";
 const SAME_ORIGIN_REQUEST_HEADER = "XMLHttpRequest";
 

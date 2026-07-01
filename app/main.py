@@ -71,6 +71,7 @@ from app.api.routers import (
     claim_codes,
     payment_scanner,
     commerce,
+    token_snapshot,
 )
 
 settings = get_settings()
@@ -234,6 +235,7 @@ ALL_ROUTERS = [
     claim_codes.router,
     payment_scanner.router,
     commerce.router,
+    token_snapshot.router,
 ]
 
 for r in ALL_ROUTERS:
