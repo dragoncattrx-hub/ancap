@@ -128,8 +128,8 @@ def test_referral_summary_reports_reward_totals_after_first_paid_workflow(client
     body = summary.json()
     assert body["rewarded"] >= 1
     assert body["total_reward_events"] >= 1
-    assert Decimal(body["total_reward_acp_amount"]) >= Decimal("100")
-    assert Decimal(body["signup_bonus_acp_amount"]) >= Decimal("100")
+    assert Decimal(body["total_reward_acp_amount"]) >= Decimal("25")
+    assert Decimal(body["signup_bonus_acp_amount"]) >= Decimal("25")
     assert Decimal(body["commission_share_acp_amount"]) > Decimal("0")
 
     rewards = client.get("/referrals/me/rewards", headers={"Authorization": f"Bearer {owner_token}"})
@@ -138,7 +138,7 @@ def test_referral_summary_reports_reward_totals_after_first_paid_workflow(client
     trigger_types = {item["trigger_type"] for item in reward_payload}
     assert {"referral_signup_bonus", "referral_commission_share"}.issubset(trigger_types)
 
-    assert _user_balance(client, owner_token, owner_user["id"], "ACP") >= Decimal("100")
+    assert _user_balance(client, owner_token, owner_user["id"], "ACP") >= Decimal("25")
     assert _user_balance(client, referred_token, referred_user["id"], "ACP") == Decimal("6.000000000000000000")
 
 
@@ -194,8 +194,8 @@ def test_referral_rewards_enqueue_onchain_payout_jobs_when_runtime_enabled(clien
         assert len(rows) == 2
 
         payout_by_trigger = {trigger: (Decimal(str(amount)), status, to_address) for trigger, amount, status, to_address in rows}
-        assert payout_by_trigger["referral_commission_share"][0] == Decimal("4.20000000")
-        assert payout_by_trigger["referral_signup_bonus"][0] == Decimal("100")
+        assert payout_by_trigger["referral_commission_share"][0] == Decimal("1.40000000")
+        assert payout_by_trigger["referral_signup_bonus"][0] == Decimal("25")
         assert all(status == "pending" for _, status, _ in payout_by_trigger.values())
         assert all(str(to_address).startswith("acp") for _, _, to_address in payout_by_trigger.values())
     finally:

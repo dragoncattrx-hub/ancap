@@ -207,13 +207,15 @@ class Settings(BaseSettings):
     stake_to_activate_amount: str = "0"
     stake_to_activate_currency: str = "ACP"
 
-    # L3: Fees
-    run_fee_percent: str = "1"
+    # L3: Fees (platform revenue model — see docs/FINANCE_MODEL.md)
+    run_fee_percent: str = "2.5"
     run_fee_amount: str = "0"
     run_fee_currency: str = "ACP"
-    listing_fee_percent: str = "2"
+    listing_fee_percent: str = "1"
     listing_fee_amount: str = "0"
     listing_fee_currency: str = "ACP"
+    # Marketplace take rate: % of each paid order routed to the platform account.
+    order_fee_percent: str = "5"
 
     # L3: On-chain
     chain_anchor_driver: str = "mock"
@@ -240,7 +242,15 @@ class Settings(BaseSettings):
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     usdt_trc20_to_acp_rate: str = "1"
 
-    # Referral
+    # Project treasury (on-chain ACP wallet: revenue in, expenses out).
+    # Seed/keystore live outside the repo (operator Sicret storage).
+    project_treasury_acp_address: str = "acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902"
+    project_treasury_keystore_file: str = ""
+
+    # Referral (bonuses are minted from the platform account — keep them
+    # below expected lifetime platform revenue per referred user)
+    referral_signup_bonus_acp: str = "25"
+    referral_commission_share_rate: str = "0.10"
     referral_onchain_payout_enabled: bool = False
     referral_onchain_payout_keystore_file: str = ""
     referral_onchain_payout_fee_acp: str = ""

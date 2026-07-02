@@ -215,8 +215,8 @@ def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client, monkey
         summary_payload = summary.json()
         assert summary_payload["rewarded"] >= 1
         assert summary_payload["total_reward_events"] >= 1
-        assert Decimal(summary_payload["signup_bonus_acp_amount"]) >= Decimal("100")
-        assert _user_balance(client, owner["id"], "ACP", headers=owner_headers) >= Decimal("100")
+        assert Decimal(summary_payload["signup_bonus_acp_amount"]) >= Decimal("25")
+        assert _user_balance(client, owner["id"], "ACP", headers=owner_headers) >= Decimal("25")
         assert _user_balance(client, referred_user["id"], "ACP", headers=referred_headers) == Decimal("6.000000000000000000")
     finally:
         monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")

@@ -10,7 +10,7 @@ from app.config import get_settings
 from app.db.models import Order, Listing, OrderStatusEnum, AccessGrant, AccessScopeEnum, Strategy, AgentLink, Agent
 from app.services.ledger import get_or_create_account, append_event, balance_for_account
 from app.db.models import LedgerEventTypeEnum
-from app.constants import ORDER_ESCROW_ACCOUNT_OWNER_ID
+from app.constants import ORDER_ESCROW_ACCOUNT_OWNER_ID, PLATFORM_ACCOUNT_OWNER_ID
 from sqlalchemy import select, or_, func
 from app.services.ledger import is_ledger_invariant_halted
 from app.services.reputation_events import on_order_fulfilled, upsert_edge_daily
@@ -120,9 +120,21 @@ async def place_order(
     fee = listing.fee_model
     amount_value = fee.get("one_time_price", {}).get("amount") or "0"
     amount_currency = fee.get("one_time_price", {}).get("currency") or "ACP"
-    # L3: order escrow — buyer -> escrow -> seller (ledger)
+    # L3: order escrow — buyer -> escrow -> seller (ledger).
+    # Platform keeps order_fee_percent of GMV; seller receives the rest.
     amount_decimal = Decimal(amount_value) if amount_value else Decimal(0)
     if amount_decimal > 0:
+        try:
+            order_fee_percent = Decimal(str(getattr(get_settings(), "order_fee_percent", "0") or "0"))
+        except Exception:
+            order_fee_percent = Decimal(0)
+        platform_fee = Decimal(0)
+        if order_fee_percent > 0:
+            platform_fee = (amount_decimal * order_fee_percent / Decimal(100)).quantize(Decimal("0.00000001"))
+            if platform_fee > amount_decimal:
+                platform_fee = amount_decimal
+        seller_net = amount_decimal - platform_fee
+
         acc_buyer = await get_or_create_account(session, body.buyer_type, buyer_id)
         acc_seller = await get_or_create_account(session, "agent", owner_agent_id)
         acc_escrow = await get_or_create_account(session, "order_escrow", ORDER_ESCROW_ACCOUNT_OWNER_ID)
@@ -142,11 +154,33 @@ async def place_order(
             session,
             LedgerEventTypeEnum.transfer,
             amount_currency,
-            amount_decimal,
+            seller_net,
             src_account_id=acc_escrow.id,
             dst_account_id=acc_seller.id,
-            metadata={"order_settlement": True, "listing_id": str(listing.id)},
+            metadata={
+                "order_settlement": True,
+                "listing_id": str(listing.id),
+                "gross_amount": str(amount_decimal),
+                "order_fee_percent": str(order_fee_percent),
+                "platform_fee": str(platform_fee),
+            },
         )
+        if platform_fee > 0:
+            acc_platform = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+            await append_event(
+                session,
+                LedgerEventTypeEnum.fee,
+                amount_currency,
+                platform_fee,
+                src_account_id=acc_escrow.id,
+                dst_account_id=acc_platform.id,
+                metadata={
+                    "type": "order_fee_percent",
+                    "listing_id": str(listing.id),
+                    "order_fee_percent": str(order_fee_percent),
+                    "gross_amount": str(amount_decimal),
+                },
+            )
     order = Order(
         listing_id=listing.id,
         buyer_type=body.buyer_type,

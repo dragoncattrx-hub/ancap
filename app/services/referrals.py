@@ -32,8 +32,27 @@ from app.services.ledger import (
 
 
 SYSTEM_OWNER_ID = UUID("00000000-0000-0000-0000-000000000001")
-REFERRAL_SIGNUP_BONUS_ACP = Decimal("100")
-REFERRAL_COMMISSION_SHARE_RATE = Decimal("0.30")
+
+# Fallbacks if settings are malformed; runtime values come from
+# referral_signup_bonus_acp / referral_commission_share_rate in app.config.
+_DEFAULT_SIGNUP_BONUS_ACP = Decimal("25")
+_DEFAULT_COMMISSION_SHARE_RATE = Decimal("0.10")
+
+
+def referral_signup_bonus_acp() -> Decimal:
+    try:
+        value = Decimal(str(get_settings().referral_signup_bonus_acp or ""))
+        return value if value >= 0 else _DEFAULT_SIGNUP_BONUS_ACP
+    except Exception:
+        return _DEFAULT_SIGNUP_BONUS_ACP
+
+
+def referral_commission_share_rate() -> Decimal:
+    try:
+        value = Decimal(str(get_settings().referral_commission_share_rate or ""))
+        return value if Decimal("0") <= value <= Decimal("1") else _DEFAULT_COMMISSION_SHARE_RATE
+    except Exception:
+        return _DEFAULT_COMMISSION_SHARE_RATE
 
 
 @dataclass(frozen=True)
@@ -367,13 +386,13 @@ async def issue_referral_rewards_for_order(
         trigger_ref_type=trigger_ref_type,
         trigger_ref_id=buyer_id,
         currency="ACP",
-        amount_value=REFERRAL_SIGNUP_BONUS_ACP,
+        amount_value=referral_signup_bonus_acp(),
         ledger_metadata={"order_id": str(order_id)},
     )
     created_any = created_any or signup_res.created
 
     if amount_currency.upper() == "ACP" and amount_value > 0:
-        commission_amount = (amount_value * REFERRAL_COMMISSION_SHARE_RATE).quantize(Decimal("0.00000001"))
+        commission_amount = (amount_value * referral_commission_share_rate()).quantize(Decimal("0.00000001"))
         if commission_amount > 0:
             commission_res = await issue_referral_reward_idempotent(
                 session,

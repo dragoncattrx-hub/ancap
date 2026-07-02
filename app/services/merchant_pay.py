@@ -122,10 +122,12 @@ async def capture_payment_link_credits(
     ledger_event_id = str(ev.id)
 
     if platform_fee > 0:
-        fees_acc = await get_or_create_account(session, "fees", PLATFORM_ACCOUNT_OWNER_ID)
+        # Unified platform revenue account (owner_type=system): all platform
+        # fees land here so staking rewards and treasury sweeps see one bucket.
+        fees_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
         await append_event(
             session,
-            LedgerEventTypeEnum.transfer,
+            LedgerEventTypeEnum.fee,
             currency,
             platform_fee,
             src_account_id=payer_acc.id,

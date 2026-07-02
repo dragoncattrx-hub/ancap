@@ -345,6 +345,9 @@ async def fee_settings():
         "run_fee_percent": str(getattr(settings, "run_fee_percent", "0") or "0"),
         "run_fee_amount": str(getattr(settings, "run_fee_amount", "0") or "0"),
         "run_fee_currency": settings.run_fee_currency,
+        "order_fee_percent": str(getattr(settings, "order_fee_percent", "0") or "0"),
+        "referral_signup_bonus_acp": str(getattr(settings, "referral_signup_bonus_acp", "0") or "0"),
+        "referral_commission_share_rate": str(getattr(settings, "referral_commission_share_rate", "0") or "0"),
     }
 
 
