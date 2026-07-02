@@ -138,6 +138,7 @@ services:
       ACP_RPC_LISTEN: 0.0.0.0:8545
       ACP_CHAIN_ID: 1001
       ACP_DISABLE_CREATOR_VESTING: "1"
+      ACP_MINER_REWARD_ADDRESS: acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902
     volumes:
       - ./Sicret/acp:/var/lib/acp-node
     restart: unless-stopped

@@ -55,10 +55,28 @@ Expenses are debited from the same account (staking rewards, referral rewards, f
 - Purpose: the project's own wallet — revenue settles into it, operational expenses are paid out of it.
 - Seed phrase + keystore: operator-held in `Desktop/Sicret/project-treasury-wallet.txt` and
   `project-treasury-keystore.json` (NEVER committed; `Sicret/` is gitignored).
-- Funded with 1,000,000 ACP on 2026-07-02 via a validator-emission block
-  (`ACP-crypto/acp-crypto/examples/mint_emission_block.rs`), drawn from the unlocked
-  Validator Emission Reserve budget — well within the ~1.83M ACP unlocked at that time.
-  On-chain: block height 25, tx pays `1_000_000` ACP to the treasury address, 1 UTXO.
+
+## 4b. Where all finances live (2026-07-02 regenesis)
+
+| Layer | Location | What |
+|---|---|---|
+| **User/platform ledger** | Postgres `ancap` — tables `accounts`, `ledger_events` | Platform balances users see (deposits, fees, stakes, transfers). **Not wiped** on chain regenesis. |
+| **On-chain UTXOs** | `acp-node` data dir `Sicret/acp/` (bind-mount) | Real ACP coins. After regenesis v2: genesis tx at height 1. |
+| **Genesis treasury (~207M)** | NEW address in `Sicret/genesis-v2/genesis-treasury.keystore.json` + `genesis-treasury-wallet.txt` | Spendable operator pool (replaces lost 209M from broken genesis). |
+| **Hot wallet** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` — mnemonic `Sicret/acp_hot_mnemonic.txt` | 1M ACP genesis alloc; custodial withdrawals. |
+| **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` — keystore `Desktop/Sicret/project-treasury-keystore.json` | 1M ACP; miner emission target (`ACP_MINER_REWARD_ADDRESS`). |
+| **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` — `Sicret/bridge-bsc/acp-reserve-keystore.json` | 301K ACP; backs wACP on BSC. |
+| **User on-chain** | `user_acp_wallets.address` | Each user with positive ledger balance gets matching on-chain alloc in genesis v2. |
+| **Validator emission** | Protocol reserve (not a UTXO); unlocked ~10.5M/year | Flows to `ACP_MINER_REWARD_ADDRESS` (project treasury) via miner blocks. |
+| **Stakes** | Ledger `stake_escrow` accounts only | 150,600 ACP staked — ledger-only, not duplicated on-chain. |
+
+**Keystore rule (fixed 2026-07-02):** hybrid PQC wallets require `keystore_json` (KeystoreV3) to spend.
+Mnemonic alone cannot recover the address. All genesis/miner/receive wallet tools now persist keystore.
+
+- Regenesis tool: `ACP-crypto/acp-wallet/examples/build_and_submit_genesis_v2.rs`
+- Operator backup before regenesis: `Sicret/backups/20260702T131509Z/`
+
+## 4c. Project treasury (continued)
 - On-chain payouts (referral `referral_onchain_payout_*`, swaps) can be pointed at this wallet's
   keystore via `REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE` / `ACP_HOT_KEYSTORE_FILE`.
 

@@ -40,14 +40,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let id = WalletIdentity::new_from_seed(&seed, OsRng)?;
         let receive_addr = id.receive_address_v0()?;
 
-        // Ecosystem (4th): save the keystore for translations (the same mnemonic gives a different address due to random Dilithium)
-        if idx == 3 {
-            let path = "ecosystem.keystore.json";
-            let _ = std::fs::remove_file(path); // remove stale keystore from previous run
-            let ks = id.to_keystore_v3(&seed)?;
-            std::fs::File::create(path)?.write_all(serde_json::to_string_pretty(&ks)?.as_bytes())?;
-            println!("Ecosystem keystore written: {} (address: {})", path, receive_addr);
-        }
+        // PQC Dilithium keys are random — mnemonic alone cannot recover the address.
+        // Always persist keystore alongside mnemonic for every funded wallet.
+        let slug = role
+            .to_lowercase()
+            .replace([' ', '(', ')', '&'], "_")
+            .replace("__", "_");
+        let ks_path = format!("genesis-{idx}-{slug}.keystore.json");
+        let _ = std::fs::remove_file(&ks_path);
+        let ks = id.to_keystore_v3(&seed)?;
+        std::fs::File::create(&ks_path)?.write_all(serde_json::to_string_pretty(&ks)?.as_bytes())?;
+        println!("Keystore written: {} (address: {})", ks_path, receive_addr);
 
         wallets.push(GenesisWallet {
             role,
@@ -74,8 +77,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     println!("==============================================");
-    println!("IMPORTANT: Keep the mnemonics in a safe place!");
-    println!(" Loss of mnemonics = loss of access to tools.");
+    println!("IMPORTANT: Keep mnemonics AND keystore JSON in a safe place!");
+    println!(" Mnemonic alone cannot recover hybrid (PQC) addresses.");
+    println!(" Loss of keystore = permanent loss of funds.");
     println!("==============================================");
     println!();
 

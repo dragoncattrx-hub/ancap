@@ -92,25 +92,35 @@ fn main() -> anyhow::Result<()> {
     }
     let treasury_units = total_units - target_units;
 
-    // Treasury wallet for the remainder. Persist its mnemonic so the operator
-    // keeps custody of the rest of the supply (otherwise it's permanently lost).
+    // Treasury wallet for the remainder. Persist mnemonic AND keystore — PQC keys
+    // are random; mnemonic alone cannot recover the address.
     let treasury_mnemonic = Mnemonic::generate_12()?;
     let treasury_seed = treasury_mnemonic.to_seed("");
     let treasury_id = WalletIdentity::new_from_seed(&treasury_seed, OsRng)?;
     let treasury_addr_obj = treasury_id.receive_address_v0_obj()?;
     let treasury_addr_str = treasury_id.receive_address_v0()?;
+    let treasury_keystore = treasury_id.to_keystore_v3(&treasury_seed)?;
+    let treasury_keystore_json = serde_json::to_string_pretty(&treasury_keystore)?;
     {
-        // Best-effort directory create.
         if let Some(parent) = std::path::Path::new(&treasury_out_path).parent() {
             let _ = std::fs::create_dir_all(parent);
         }
         let body = format!(
-            "address: {}\namount_acp: {}\nmnemonic: {}\n",
+            "address: {}\namount_acp: {}\nmnemonic: {}\nkeystore_file: genesis-treasury.keystore.json\n",
             treasury_addr_str,
             BASE_SUPPLY_ACP - target_amount_acp,
             treasury_mnemonic.words()
         );
         std::fs::write(&treasury_out_path, body)?;
+        let ks_path = std::path::Path::new(&treasury_out_path)
+            .parent()
+            .map(|p| p.join("genesis-treasury.keystore.json"))
+            .unwrap_or_else(|| std::path::PathBuf::from("genesis-treasury.keystore.json"));
+        std::fs::write(&ks_path, &treasury_keystore_json)?;
+        eprintln!(
+            "[!] CRITICAL: keystore saved to {} — without it the treasury is unspendable",
+            ks_path.display()
+        );
     }
 
     let target_addr_obj = AddressV0::decode(&target_address)?;

@@ -1,5 +1,8 @@
 use anyhow::Result;
-use acp_crypto::{protocol_params, AddressV0, Block, Mnemonic, Transaction, TxInput, TxOutput, UNITS_PER_ACP, WalletIdentity};
+use acp_crypto::{
+    protocol_params, AddressV0, Block, Mnemonic, Transaction, TxInput, TxOutput, UNITS_PER_ACP,
+    WalletIdentity,
+};
 use rand_core::OsRng;
 use std::fs;
 use std::path::PathBuf;
@@ -14,6 +17,7 @@ const MINER_EMISSION_SIGNER_PHRASE: &str =
 const AUTO_MINER_MNEMONIC_FILE: &str = "miner-reward.mnemonic.txt";
 const AUTO_MINER_ADDRESS_FILE: &str = "miner-reward.address.txt";
 const AUTO_MINER_WALLET_FILE: &str = "miner-reward.wallet.txt";
+const AUTO_MINER_KEYSTORE_FILE: &str = "miner-reward.keystore.json";
 
 fn reserve_total_units() -> u64 {
     protocol_params::GENESIS_ACP_VALIDATOR_RESERVE.saturating_mul(UNITS_PER_ACP)
@@ -173,7 +177,14 @@ pub fn load_or_create_local_miner_reward_address(data_dir: &str) -> Result<Strin
     let id = WalletIdentity::new_from_seed(&seed, OsRng).map_err(anyhow::Error::msg)?;
     let address = id.receive_address_v0().map_err(anyhow::Error::msg)?;
     fs::write(&address_path, format!("{address}\n"))?;
-    let wallet_export = format!("Role: Auto Miner Reward Wallet\nAddress: {address}\nMnemonic: {mnemonic}\n");
+    let keystore_path = base.join(AUTO_MINER_KEYSTORE_FILE);
+    if !keystore_path.exists() {
+        let ks = id.to_keystore_v3(&seed).map_err(anyhow::Error::msg)?;
+        fs::write(&keystore_path, serde_json::to_string_pretty(&ks)?)?;
+    }
+    let wallet_export = format!(
+        "Role: Auto Miner Reward Wallet\nAddress: {address}\nMnemonic: {mnemonic}\nKeystore: {AUTO_MINER_KEYSTORE_FILE}\n"
+    );
     fs::write(base.join(AUTO_MINER_WALLET_FILE), wallet_export)?;
     Ok(address)
 }
