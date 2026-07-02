@@ -48,6 +48,7 @@ jobs:
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
           # Full no-cache rebuild of the prod stack takes ~20 minutes.
+          timeout: 120s
           command_timeout: 45m
           script_stop: true
           script: |
@@ -55,14 +56,9 @@ jobs:
             cd /opt/ancap-migration/current
             COMPOSE="docker compose -f docker-compose.prod.yml"
 
-            echo "== stop runaway builds (timeouts)"
-            if command -v docker >/dev/null 2>&1; then
-              timeout 20 docker ps -q --filter ancestor=rust:1.86-bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-              timeout 20 docker ps -q --filter ancestor=rust:1.85-bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-              timeout 20 docker ps -q --filter ancestor=rust:bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-            fi
+            echo "== quick cleanup"
             pkill -f 'cargo build' 2>/dev/null || true
-            sleep 3
+            pkill -f 'rustc' 2>/dev/null || true
             echo "== load $(cut -d' ' -f1-3 /proc/loadavg)"
 
             for attempt in 1 2 3 4 5; do
