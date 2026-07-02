@@ -4,6 +4,15 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "deploy mode"
+        required: false
+        default: recover
+        type: choice
+        options:
+          - recover
+          - full
 
 concurrency:
   group: deploy-ancap-cloud
@@ -46,4 +55,9 @@ jobs:
             cd /opt/ancap-migration/current
             git fetch origin master
             git reset --hard origin/master
-            bash scripts/deploy-ancap-cloud.sh --skip-git-pull
+            MODE="${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'recover' }}"
+            if [ "$MODE" = "full" ]; then
+              bash scripts/deploy-ancap-cloud.sh --skip-git-pull
+            else
+              bash scripts/deploy-recover.sh
+            fi
