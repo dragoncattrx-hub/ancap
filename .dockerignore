@@ -16,6 +16,11 @@ venv
 **/.next
 **/dist
 **/out
+**/.expo
+**/.expo-test-export
+**/android/.gradle
+**/android/app/build
+**/ios/build
 frontend-app/test-results
 frontend-app/playwright-report
 
