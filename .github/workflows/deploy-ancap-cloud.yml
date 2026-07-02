@@ -53,9 +53,15 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/ancap-migration/current
-            git fetch origin master
-            git reset --hard origin/master
-            sed -i 's/\r$//' scripts/deploy-recover.sh scripts/deploy-ancap-cloud.sh || true
+            for attempt in 1 2 3 4 5; do
+              if git fetch origin master; then
+                break
+              fi
+              echo "git fetch failed (attempt ${attempt}/5), retrying..."
+              sleep 15
+            done
+            git reset --hard origin/master || true
+            sed -i 's/\r$//' scripts/deploy-recover.sh scripts/deploy-ancap-cloud.sh 2>/dev/null || true
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
             else
