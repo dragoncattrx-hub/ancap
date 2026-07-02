@@ -48,9 +48,9 @@ jobs:
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
           # Full no-cache rebuild of the prod stack takes ~20 minutes.
-          timeout: 120s
+          timeout: 600s
           command_timeout: 45m
-          script_stop: true
+          script_stop: false
           script: |
             set -euo pipefail
             cd /opt/ancap-migration/current
