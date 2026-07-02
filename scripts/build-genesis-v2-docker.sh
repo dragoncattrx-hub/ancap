@@ -13,9 +13,10 @@ docker run --rm \
   -v "$(pwd)/$GENESIS_DIR/user-allocs.json:/workspace/user-allocs.json:ro" \
   -v "$(pwd)/$GENESIS_DIR:/out" \
   -w /workspace \
-  rust:1.85-bookworm \
+  rust:1.86-bookworm \
   bash -lc '
     set -euo pipefail
+    export PATH="/usr/local/cargo/bin:$PATH"
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
     apt-get install -y -qq cmake clang libclang-dev libsnappy-dev liblz4-dev libzstd-dev zlib1g-dev libbz2-dev pkg-config >/dev/null
