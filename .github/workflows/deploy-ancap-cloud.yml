@@ -56,9 +56,7 @@ jobs:
             cd /opt/ancap-migration/current
             COMPOSE="docker compose -f docker-compose.prod.yml"
 
-            echo "== quick cleanup"
-            pkill -f 'cargo build' 2>/dev/null || true
-            pkill -f 'rustc' 2>/dev/null || true
+            echo "== quick cleanup (no pkill — matches SSH script cmdline)"
             echo "== load $(cut -d' ' -f1-3 /proc/loadavg)"
 
             for attempt in 1 2 3 4 5; do

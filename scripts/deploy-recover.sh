@@ -3,15 +3,6 @@ set -euo pipefail
 cd /opt/ancap-migration/current
 COMPOSE="docker compose -f docker-compose.prod.yml"
 
-echo "== stop runaway builds (timeouts)"
-if command -v docker >/dev/null 2>&1; then
-  timeout 20 docker ps -q --filter ancestor=rust:1.86-bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-  timeout 20 docker ps -q --filter ancestor=rust:1.85-bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-  timeout 20 docker ps -q --filter ancestor=rust:bookworm 2>/dev/null | xargs -r timeout 10 docker kill 2>/dev/null || true
-fi
-pkill -f 'cargo build' 2>/dev/null || true
-sleep 3
-
 echo "== load $(cut -d' ' -f1-3 /proc/loadavg)"
 free -h | head -2
 
