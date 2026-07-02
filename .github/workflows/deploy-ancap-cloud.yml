@@ -55,6 +55,7 @@ jobs:
             cd /opt/ancap-migration/current
             git fetch origin master
             git reset --hard origin/master
+            sed -i 's/\r$//' scripts/deploy-recover.sh scripts/deploy-ancap-cloud.sh || true
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
             else
