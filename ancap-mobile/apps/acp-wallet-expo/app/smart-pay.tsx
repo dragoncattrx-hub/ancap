@@ -401,7 +401,24 @@ export default function SmartPayScreen() {
       const scans = await scanFromURLAsync(asset.uri, ["qr"]);
       const first = scans.find((item) => typeof item.data === "string" && item.data.trim());
       if (!first?.data) {
-        throw new Error("No QR code found in selected image");
+        Alert.alert(
+          "Smart Pay",
+          "No QR code found in selected image. Paste receipt/invoice OCR text instead?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Paste OCR text",
+              onPress: async () => {
+                const text = await Clipboard.getStringAsync();
+                if (text?.trim()) {
+                  setPayloadSource("ocr");
+                  setRawPayload(text.trim());
+                }
+              },
+            },
+          ],
+        );
+        return;
       }
       setPayloadSource("photo");
       setRawPayload(first.data.trim());

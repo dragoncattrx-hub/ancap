@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { ApiError, paymentScanner } from "@/lib/api";
 
+type ParseSource = "paste" | "qr" | "ocr";
+
 export default function PaymentScannerPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [raw, setRaw] = useState("");
+  const [source, setSource] = useState<ParseSource>("paste");
   const [preview, setPreview] = useState<any>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   async function onParse(event: FormEvent) {
     event.preventDefault();
@@ -20,9 +24,34 @@ export default function PaymentScannerPage() {
     setError("");
     setConfirmed(false);
     try {
-      setPreview(await paymentScanner.parse(raw, "paste"));
+      setPreview(await paymentScanner.parse(raw, source));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Parse failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onPhotoSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    setConfirmed(false);
+    try {
+      const text = await file.text().catch(() => "");
+      if (text.trim()) {
+        setSource("ocr");
+        setRaw(text.trim());
+        setPreview(await paymentScanner.parse(text.trim(), "ocr"));
+        return;
+      }
+      setError(
+        "Selected file is not plain text. Paste OCR output from a receipt/invoice photo, or use the mobile wallet camera flow.",
+      );
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Photo import failed");
     } finally {
       setBusy(false);
     }
@@ -47,12 +76,38 @@ export default function PaymentScannerPage() {
       <main className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-semibold">AI Payment Scanner</h1>
         <p className="mt-2 text-sm text-white/65">
-          Paste a payment URI, invoice text, or QR payload. Review the preview and manually confirm before executing Smart Pay.
+          Paste a payment URI, invoice/receipt OCR text, or QR payload. Review the preview and manually confirm before executing Smart Pay.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+          {(["paste", "ocr"] as ParseSource[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setSource(mode)}
+              className={`rounded-full px-4 py-2 ${
+                source === mode ? "bg-emerald-400 text-slate-950" : "border border-white/15"
+              }`}
+            >
+              {mode === "paste" ? "Paste / QR text" : "Receipt / OCR text"}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-full border border-white/15 px-4 py-2"
+          >
+            Import text file
+          </button>
+          <input ref={fileInputRef} type="file" accept=".txt,.csv,.md,text/plain" className="hidden" onChange={onPhotoSelected} />
+        </div>
         <form onSubmit={onParse} className="mt-6 space-y-3">
           <textarea
             className="min-h-[140px] w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm"
-            placeholder="acp:address?amount=10 or invoice text..."
+            placeholder={
+              source === "ocr"
+                ? "Invoice #123\nPay to: acp1...\nTotal due: 10.00 USDT"
+                : "acp:address?amount=10 or invoice text..."
+            }
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
           />
@@ -72,6 +127,7 @@ export default function PaymentScannerPage() {
             <div className="mt-1">
               Amount: {preview.amount || "—"} {preview.currency || ""}
             </div>
+            {preview.label ? <div className="mt-1">Label: {preview.label}</div> : null}
             <div className="mt-1">Confidence: {(preview.confidence * 100).toFixed(0)}%</div>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-white/65">
               {(preview.parse_notes || []).map((note: string) => (

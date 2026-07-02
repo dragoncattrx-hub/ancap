@@ -294,6 +294,18 @@ export type SmartPayExecutionProgress = {
   pendingRoles: string[];
 };
 
+export type SmartPayRouteExecutionStep = {
+  stepIndex: number;
+  action: "bridge" | "swap" | "transfer" | "payment";
+  network: string;
+  fromAsset: string;
+  toAsset: string;
+  amount?: string | null;
+  recipient?: string | null;
+  status: "ready" | "pending" | "signed" | "confirmed";
+  signingHint?: string | null;
+};
+
 export type SmartPayExecution = {
   id: string;
   paymentIntentId: string;
@@ -304,6 +316,7 @@ export type SmartPayExecution = {
   recoverable: boolean;
   nextAction?: string | null;
   progress?: SmartPayExecutionProgress | null;
+  routePlan?: SmartPayRouteExecutionStep[];
   txRefs: SmartPayTxRef[];
   error?: string | null;
 };

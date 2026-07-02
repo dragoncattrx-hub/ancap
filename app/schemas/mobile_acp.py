@@ -34,7 +34,7 @@ class SmartQrParseHint(BaseModel):
 
 
 class SmartQrParseRequest(BaseModel):
-    source: Literal["camera", "photo", "paste", "share"]
+    source: Literal["camera", "photo", "paste", "share", "ocr"]
     raw_payload: str = Field(alias="rawPayload", min_length=1, max_length=4096)
     hint: SmartQrParseHint | None = None
 
@@ -101,7 +101,7 @@ class PaymentIntentMetadata(BaseModel):
 class PaymentIntentResponseItem(BaseModel):
     id: str
     created_at: str = Field(serialization_alias="createdAt")
-    source: Literal["camera", "photo", "paste", "share"]
+    source: Literal["camera", "photo", "paste", "share", "ocr"]
     raw_payload: str = Field(serialization_alias="rawPayload")
     payload_hash: str = Field(serialization_alias="payloadHash")
     parse_method: Literal["deterministic", "heuristic", "ai"] = Field(serialization_alias="parseMethod")
@@ -232,6 +232,20 @@ class SmartPayExecutionProgress(BaseModel):
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
 
+class SmartPayRouteExecutionStep(BaseModel):
+    step_index: int = Field(serialization_alias="stepIndex")
+    action: Literal["bridge", "swap", "transfer", "payment"]
+    network: str
+    from_asset: str = Field(serialization_alias="fromAsset")
+    to_asset: str = Field(serialization_alias="toAsset")
+    amount: str | None = None
+    recipient: str | None = None
+    status: Literal["ready", "pending", "signed", "confirmed"] = "ready"
+    signing_hint: str | None = Field(default=None, serialization_alias="signingHint")
+
+    model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
+
+
 class SmartPayExecutionItem(BaseModel):
     id: str
     payment_intent_id: str = Field(serialization_alias="paymentIntentId")
@@ -242,6 +256,7 @@ class SmartPayExecutionItem(BaseModel):
     recoverable: bool
     next_action: str | None = Field(default=None, serialization_alias="nextAction")
     progress: SmartPayExecutionProgress | None = None
+    route_plan: list[SmartPayRouteExecutionStep] = Field(default_factory=list, serialization_alias="routePlan")
     tx_refs: list[SmartPayTxRef] = Field(default_factory=list, serialization_alias="txRefs")
     error: str | None = None
 

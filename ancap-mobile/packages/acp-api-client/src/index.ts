@@ -19,6 +19,7 @@ export type {
   SmartPayExecuteInput,
   SmartPayExecution,
   SmartPayExecutionProgress,
+  SmartPayRouteExecutionStep,
   SmartPayExecutionResponse,
   SmartPayHistoryEntry,
   SmartPayHistoryResponse,

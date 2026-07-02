@@ -50,6 +50,7 @@ from app.schemas.mobile_acp import (
     SmartPayQuoteResponse,
     SmartPayReceiptItem,
     SmartPayRecoverRequest,
+    SmartPayRouteExecutionStep,
     SmartPayRouteStep,
     SmartPaySupportedAsset,
     SmartPayTxRef,
@@ -57,6 +58,7 @@ from app.schemas.mobile_acp import (
     SmartQrParseResponse,
 )
 from app.schemas.wallets import AcpTransactionDetailsPublic, AcpTransactionPublic
+from app.services.payment_text_parse import parse_payment_text
 from app.services.rate_limit import enforce_rate_limit, get_request_ip
 
 
@@ -465,16 +467,88 @@ def _parse_eip681_payload(source: str, raw_payload: str) -> PaymentIntentRespons
     )
 
 
+def _parse_ocr_invoice_payload(source: str, raw_payload: str) -> PaymentIntentResponseItem:
+    parsed = parse_payment_text(raw_payload, source="ocr")
+    if not parsed.address:
+        raise HTTPException(status_code=400, detail="Unsupported or malformed OCR payload")
+
+    network = parsed.detected_network or "unknown"
+    address_type = "acp" if network == "acp" else ("evm" if parsed.address.startswith("0x") else "unknown")
+    asset_symbol = parsed.currency or ("ACP" if network == "acp" else "USDT")
+    amount = None
+    if parsed.amount:
+        amount = PaymentAmount(
+            value=parsed.amount,
+            atomic_value=None,
+            currency_symbol=asset_symbol,
+            is_exact=True,
+            is_max=False,
+        )
+
+    merchant = MerchantHint(label=parsed.label, category=None, website=None, invoice_id=parsed.label)
+    risk_flags: list[str] = []
+    warnings: list[str] = ["OCR/receipt parse requires manual review before execute."]
+    unsupported_reasons: list[str] = []
+    if network not in {"acp", "bsc"}:
+        risk_flags.append("unknown_network")
+        if network == "ethereum":
+            unsupported_reasons.append("network_not_in_first_release_scope")
+            warnings.append("Ethereum mainnet payments are not in first Smart Pay release scope.")
+    if amount is None:
+        risk_flags.append("missing_amount")
+        warnings.append("Amount not detected from OCR text; confirm before paying.")
+
+    is_supported = network in {"acp", "bsc"} and address_type in {"acp", "evm"}
+    return _make_payment_intent(
+        source=source,
+        raw_payload=raw_payload,
+        parse_method="heuristic",
+        confidence=parsed.confidence,
+        status="needs_review" if parsed.confidence < 0.75 else "parsed",
+        network=network if network != "unknown" else ("acp" if address_type == "acp" else "bsc"),
+        asset=PaymentAsset(
+            kind="native" if asset_symbol in {"ACP", "BNB", "ETH"} else "erc20",
+            symbol=asset_symbol,
+            name=asset_symbol,
+            token_address=None,
+            decimals=8 if asset_symbol == "ACP" else 18,
+            is_supported=is_supported,
+            is_allowlisted=is_supported,
+        ),
+        recipient=PaymentRecipient(
+            address=parsed.address,
+            resolved_display=None,
+            address_type=address_type,
+            checksum_valid=address_type == "evm",
+            ens_or_alias=None,
+        ),
+        amount=amount,
+        memo=None,
+        merchant=merchant if parsed.label else None,
+        risk_flags=risk_flags,
+        warnings=warnings,
+        unsupported_reasons=unsupported_reasons,
+        metadata=_base_metadata("ocr", "invoice_or_receipt"),
+    )
+
+
 def _parse_smart_qr_payload(source: str, raw_payload: str) -> PaymentIntentResponseItem:
     payload = (raw_payload or "").strip()
     if not payload:
         raise HTTPException(status_code=400, detail="rawPayload is required")
+    if source == "ocr":
+        return _parse_ocr_invoice_payload(source, payload)
     if payload.startswith("ethereum:"):
         return _parse_eip681_payload(source, payload)
     if payload.startswith("acp1"):
         return _parse_acp_payload(source, payload)
     if _EVM_ADDRESS_RE.fullmatch(payload):
         return _parse_evm_address_payload(source, payload)
+    if source in {"photo", "paste", "share"}:
+        try:
+            return _parse_ocr_invoice_payload(source, payload)
+        except HTTPException:
+            pass
     raise HTTPException(status_code=400, detail="Unsupported or malformed QR payload")
 
 
@@ -1126,6 +1200,37 @@ def _build_payment_history_entry(execution: SmartPayExecutionItem) -> SmartPayPa
     )
 
 
+def _build_route_execution_plan(
+    intent: PaymentIntentResponseItem,
+    quote: SmartPayQuoteItem,
+) -> list[SmartPayRouteExecutionStep]:
+    recipient = intent.recipient.address if intent.recipient else None
+    plan: list[SmartPayRouteExecutionStep] = []
+    for index, step in enumerate(quote.route, start=1):
+        action = step.kind if step.kind in {"bridge", "swap", "transfer"} else "payment"
+        signing_hint = {
+            "bridge": "Sign bridge deposit/claim transaction locally",
+            "swap": "Sign swap transaction locally via configured DEX/router",
+            "transfer": "Sign transfer transaction locally from wallet",
+            "payment": "Sign final payment transaction locally",
+        }.get(action, "Sign transaction locally")
+        amount = step.estimated_out or (intent.amount.value if intent.amount else None)
+        plan.append(
+            SmartPayRouteExecutionStep(
+                step_index=index,
+                action=action,  # type: ignore[arg-type]
+                network=step.network,
+                from_asset=step.from_asset,
+                to_asset=step.to_asset,
+                amount=amount,
+                recipient=recipient if action in {"transfer", "payment"} else None,
+                status="ready",
+                signing_hint=signing_hint,
+            )
+        )
+    return plan
+
+
 def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem) -> SmartPayExecutionItem:
     status, recoverable, next_action, progress = _execution_lifecycle_state(quote, [])
     execution = SmartPayExecutionItem(
@@ -1138,6 +1243,7 @@ def _build_execution(intent: PaymentIntentResponseItem, quote: SmartPayQuoteItem
         recoverable=recoverable,
         next_action=next_action,
         progress=progress,
+        route_plan=_build_route_execution_plan(intent, quote),
         tx_refs=[],
         error=None,
     )

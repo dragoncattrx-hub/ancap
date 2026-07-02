@@ -186,6 +186,19 @@ def test_smart_pay_execute_receipt_and_recover(client):
         "remainingRouteSteps": 1,
         "pendingRoles": ["payment"],
     }
+    assert execution["routePlan"] == [
+        {
+            "stepIndex": 1,
+            "action": "transfer",
+            "network": "acp",
+            "fromAsset": "ACP",
+            "toAsset": "ACP",
+            "amount": "1",
+            "recipient": addr,
+            "status": "ready",
+            "signingHint": "Sign transfer transaction locally from wallet",
+        }
+    ]
     execution_id = execution["id"]
 
     unauth_status_res = client.get(
@@ -1434,3 +1447,58 @@ def test_acp_broadcast_rate_limited(client, monkeypatch):
     assert r.status_code == 429, r.text
     assert r.json()["detail"]["code"] == "RATE_LIMITED"
     assert "retry_after_seconds" in r.json()["detail"]
+
+
+def test_smart_pay_parse_ocr_invoice_text(client):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    raw = f"Invoice #A-100\nPay to: {addr}\nTotal due: 3.25 ACP"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "ocr", "rawPayload": raw},
+    )
+    assert parsed.status_code == 200, parsed.text
+    intent = parsed.json()["paymentIntent"]
+    assert intent["recipient"]["address"] == addr
+    assert intent["amount"]["value"] == "3.25"
+    assert intent["parseMethod"] == "heuristic"
+
+
+def test_smart_pay_execute_includes_multi_step_route_plan(client):
+    contract = "0x1111111111111111111111111111111111111111"
+    recipient = "0x2222222222222222222222222222222222222222"
+    payload = f"ethereum:{contract}@56/transfer?address={recipient}&uint256=25000000"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "photo", "rawPayload": payload},
+    )
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP", "wACP", "USDT"],
+                "maxSlippageBps": 150,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    assert quote_res.status_code == 200, quote_res.text
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    exec_res = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "quoteId": quote_id,
+            "confirmationAccepted": True,
+            "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+        },
+    )
+    assert exec_res.status_code == 200, exec_res.text
+    route_plan = exec_res.json()["execution"]["routePlan"]
+    assert len(route_plan) == 3
+    assert route_plan[0]["action"] == "bridge"
+    assert route_plan[-1]["action"] == "transfer"
+    assert route_plan[-1]["recipient"] == recipient
+

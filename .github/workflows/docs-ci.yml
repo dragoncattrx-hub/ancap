@@ -2,7 +2,7 @@ name: "Docs CI"
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "master"]
     paths:
       - "README.md"
       - "LICENSE"

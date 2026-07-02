@@ -1,6 +1,6 @@
 # ANCAP Status Matrix
 
-> Status: active summary | Updated: 2026-06-10
+> Status: active summary | Updated: 2026-07-02
 > Primary source of truth: `MASTER_ROADMAP.md`
 > Purpose: remove confusion between roadmap/status documents and provide one compact view of what is done, what is partial, and what is next.
 
@@ -23,7 +23,7 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-06-10, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** (ANCAP Pay, claim codes, explorer, MCP, paid API UI) is now shipped on production (`93b6625`).
+As of 2026-07-02, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `5e13b3f` after the 2026-07-01 hardening deploy).
 
 The core platform is largely built, but the biggest remaining tails are:
 
@@ -58,7 +58,7 @@ Parallel trust/adoption track:
 | Proof / receipts / realtime status | **Largely built** | High | `PRODUCTION_ROADMAP.md` | Receipts/proof and run status infrastructure exist. |
 | ACP checkout / first revenue loop | **Baseline done** | Medium-High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | First ACP-first monetization loop exists, but still needs deeper conversion and payout mechanics. |
 | Commerce & agent track (Pay, claim codes, explorer, MCP) | **Shipped MVP** | High | `docs/ANCAP_COMMERCE_ROADMAP.md`, `MASTER_ROADMAP.md` | Payment links, invoices, merchant dashboard, claim codes, explorer/reserves/supply surfaces, payment scanner preview, plan-tier scaffolding, and ramp waitlist are in repo + prod; Stripe live E2E closure and OCR/autopay remain open. |
-| Security / CI / prod-hardening | **In progress / top priority** | High | `MASTER_ROADMAP.md` | This remains one of the three biggest remaining tails overall, but the production-secret baseline sub-slice is now closed on the current host/runtime and the Cloudflare-edge header mismatch is now closed too; the remaining work is exposed-key rotation / upstream access cleanup. |
+| Security / CI / prod-hardening | **Baseline closed / operator tail open** | High | `MASTER_ROADMAP.md`, `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md` | 2026-07-01 wave closed repo/server/deploy baseline and GitHub secrets; deploy/tick workflows now fail-closed; external upstream key revoke audit remains operator-open. |
 | Mobile wallet | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md` | Wallet is far along but not release-ready; native build closure, device verification, and release work remain. |
 | Monetization depth | **In progress / major remaining area** | High | `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md` | Focus has shifted from “launch monetization” to “deepen and de-risk monetization”. |
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
@@ -82,9 +82,13 @@ Parallel trust/adoption track:
 - public diagnostics/ops endpoints are restricted, and the scheduled jobs path is already split onto `/v1/system/jobs/tick/async`
 - auth cookie/storage/CORS hardening is live
 - public Cloudflare-routed `ancap.cloud` / `api.ancap.cloud` header checks now match the canonical `DENY` + `nosniff` + `strict-origin-when-cross-origin` + explicit `Permissions-Policy` + HSTS set
+- 2026-07-01 hardening wave shipped: see `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`
+- GitHub deploy/tick secrets configured (5 secrets); auto-deploy green on `master`
+- `/.github/workflows/deploy-ancap-cloud.yml` and `system-jobs-tick.yml` now **fail closed** when required secrets are missing (no skip-success)
+- `docs-ci.yml` triggers on both `main` and `master`
 
 **Still remaining:**
-- revoke/rotate the exposed provider key externally and complete any upstream access cleanup (operator checklist now lives in `docs/SECRET_ROTATION_RUNBOOK.md`)
+- revoke/rotate the exposed provider key externally and complete any upstream access cleanup (operator checklist now lives in `docs/SECRET_ROTATION_RUNBOOK.md` and `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`)
 
 **Truth source:** `MASTER_ROADMAP.md`
 
@@ -99,7 +103,7 @@ Parallel trust/adoption track:
 - Expo app shell and most wallet UX are implemented
 - PIN/biometrics and SecureVault are wired in app code
 - i18n is done
-- release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`, and the remaining external evidence now has copy-ready templates in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` and `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`
+- release evidence rc1 packet filled for repo-verified slice: `docs/mobile/release-evidence-v1.0.0-rc1.md`
 - public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - Smart Pay first-scope backend groundwork exists for capabilities, deterministic parse, quote, and execute/status/recover
 - Smart Pay placeholder execution lifecycle now maps recovered txs onto quoted route steps, emits explorer links, reports route-progress metadata, and can close placeholder sessions once all quoted txs are known
@@ -124,9 +128,11 @@ Parallel trust/adoption track:
 **Already true:**
 - first ACP-first workflow monetization loop exists in baseline form
 - creator/developer monetization surfaces exist in baseline form
+- repo automated Stripe webhook→ledger E2E verified: `docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md` (`pytest tests/api/test_payments.py -q` → 33 passed on 2026-07-02)
+- dated verification packet: `docs/stripe-verification-2026-07-02.md`
 
 **Still remaining:**
-- Stripe / fiat adapter live end-to-end verification (the wallet credits UI now makes this gap explicit by separating settlement source from verification status, so poll-captured credits no longer read like webhook-confirmed closure, the persisted Stripe intent/provider payload plus the wallet Stripe panel now also surface payment-method-selection and save-for-reuse evidence alongside webhook/poll provenance so manual saved-card/webhook runs can be audited after the fact instead of relying only on operator memory, `docs/STRIPE_VERIFICATION_EVIDENCE_TEMPLATE.md` now gives that remaining webhook/saved-card closure work a copy-ready evidence packet instead of loose operator notes, and `scripts/generate_stripe_verification_packet.py` now converts that template into a dated verification-round packet with prefilled round metadata plus generator/repo provenance while also refreshing the stable alias `docs/stripe-verification-latest.md` by default so operator evidence handoff does not start from an ad-hoc copy/paste header)
+- Stripe live dashboard / saved-card operator verification (Run B in verification packet still open)
 - creator earnings dashboard improvements
 - deeper API monetization reporting and spend controls
 - referral commission auto-payout ✅ baseline done (ledger reward issuance + optional on-chain payout jobs + jobs-tick execution)
@@ -141,8 +147,8 @@ Parallel trust/adoption track:
 
 This is the practical reading of the current queue from `MASTER_ROADMAP.md`:
 
-1. **Priority 0:** emergency exposed-key remediation tail
-2. **Priority 1:** CI/CD honesty and security automation
+1. **Priority 0:** external upstream key revoke audit (operator checklist in `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`)
+2. **Priority 1:** CI/CD honesty — **baseline closed** (fail-closed deploy/tick; docs-ci on `master`)
 3. **Priority 2:** domain model gaps and skipped tests
 4. **Priority 3:** auth/cookie/CORS/security-header hardening follow-through (now baseline closed in repo/runtime/public headers)
 5. **Priority 4:** monetization depth

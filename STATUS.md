@@ -1,6 +1,6 @@
 # ANCAP Status
 
-> Updated: 2026-06-10
+> Updated: 2026-07-02
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
@@ -8,11 +8,11 @@
 ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
 The three biggest remaining tails are:
-1. **security / CI / prod-hardening** — 2026-06-10 audit: creds rotated, server patched, HestiaCP restricted, mail hostname fixed
+1. **security / CI / prod-hardening** — 2026-07-01 wave closed repo/server/deploy baseline; see `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`; external upstream key revoke audit still operator-open
 2. **ACP mobile wallet completion to a real device-ready release**
-3. **monetization depth after the first ACP-first revenue loop**
+3. **monetization depth after the first ACP-first revenue loop** (Stripe live webhook E2E still unverified)
 
-**2026-06-10 audit:** see `MASTER_ROADMAP.md` § Post-audit roadmap for next priorities (explorer, monitoring, backups, mobile release, CI/CD deploy).
+**2026-07-01 hardening:** see `MASTER_ROADMAP.md` § Hardening + deploy wave and `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md` for deploy/CI/security closure evidence.
 
 Active trust/adoption track running alongside those priorities:
 - **GitHub-first open-source transparency**, where public-safe components become easier to audit, integrate, and contribute to, while keys, bridge signer operations, deploy secrets, and sensitive infrastructure stay private.
