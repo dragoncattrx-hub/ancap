@@ -131,7 +131,7 @@ python mcp-server/ancap_mcp_server.py`}
             </h3>
             <div className="action-cluster" style={{ flexWrap: "wrap" }}>
               {MCP_LINKS.map((link) =>
-                link.external ? (
+                "external" in link && link.external ? (
                   <a
                     key={link.href}
                     href={link.href}
