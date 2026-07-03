@@ -191,7 +191,31 @@ export const translations: Record<Language, TranslationTree> = {
       creatorStep2Text: "List the workflow or bundle so users and other agents can find it, understand the result, and pay in ACP.",
       creatorStep3Title: "Earn from runs",
       creatorStep3Text: "Each paid execution creates a receipt, records the run, and makes revenue attribution clear for the creator.",
-      creatorCta: "Open seller dashboard"
+      creatorCta: "Open seller dashboard",
+      mcpKicker: "MCP FOR AI AGENTS",
+      mcpTitle: "Connect Cursor, Claude, or ChatGPT to ANCAP commerce tools",
+      mcpLead:
+        "ANCAP ships a Model Context Protocol (stdio) server that calls the live ancap.cloud API with your API key. Agents can create payment links, invoices, claim codes, token risk reports, and paid workflow runs without custom glue code.",
+      mcpStep1Title: "1. Create an API key",
+      mcpStep1Text: "Sign in, open Developers, and create a key (ancap_…). Scope it to the commerce tools your agent needs.",
+      mcpStep2Title: "2. Point MCP at the server",
+      mcpStep2Text:
+        "Add mcp-server/ancap_mcp_server.py to Cursor MCP settings (or Claude Desktop) with ANCAP_API_BASE=https://ancap.cloud/api/v1.",
+      mcpStep3Title: "3. Invoke tools from the agent",
+      mcpStep3Text:
+        "Use tools like ancap.create_payment_link, ancap.run_workflow, and ancap.token_snapshot. Each call hits the production API and returns structured JSON.",
+      mcpConfigTitle: "Cursor / Claude Desktop config",
+      mcpConfigLead: "Stdio MCP server — runs locally, talks to https://ancap.cloud/api/v1:",
+      mcpCliNote: "Quick terminal check (repo root):",
+      mcpToolsTitle: "Available MCP tools",
+      mcpLinksTitle: "Documentation & routes",
+      mcpDocsLink: "MCP docs",
+      mcpApiKeysLink: "API keys",
+      mcpOpenApiLink: "OpenAPI / Swagger",
+      mcpWorkflowsLink: "Workflow catalog",
+      mcpPayLink: "Create payment link",
+      mcpSnapshotLink: "Free token snapshot",
+      mcpCta: "Full MCP guide"
     },
     acpLanding: {
       badge: "Live on platform",
@@ -476,7 +500,31 @@ export const translations: Record<Language, TranslationTree> = {
       creatorStep2Text: "Разместите workflow или bundle так, чтобы пользователи и другие агенты могли найти его, понять результат и оплатить в ACP.",
       creatorStep3Title: "Зарабатывайте на запусках",
       creatorStep3Text: "Каждый платный запуск создает receipt, фиксирует выполнение и делает attribution дохода понятной для автора.",
-      creatorCta: "Открыть seller dashboard"
+      creatorCta: "Открыть seller dashboard",
+      mcpKicker: "MCP ДЛЯ AI-АГЕНТОВ",
+      mcpTitle: "Подключите Cursor, Claude или ChatGPT к инструментам ANCAP",
+      mcpLead:
+        "ANCAP предоставляет MCP-сервер (stdio), который вызывает live API ancap.cloud по вашему API-ключу. Агенты могут создавать payment links, invoices, claim codes, token risk reports и платные workflow без своего glue-кода.",
+      mcpStep1Title: "1. Создайте API-ключ",
+      mcpStep1Text: "Войдите, откройте Developers и создайте ключ (ancap_…). Выдайте права только на нужные commerce-инструменты.",
+      mcpStep2Title: "2. Настройте MCP",
+      mcpStep2Text:
+        "Добавьте mcp-server/ancap_mcp_server.py в настройки MCP Cursor (или Claude Desktop) с ANCAP_API_BASE=https://ancap.cloud/api/v1.",
+      mcpStep3Title: "3. Вызывайте tools из агента",
+      mcpStep3Text:
+        "Используйте ancap.create_payment_link, ancap.run_workflow, ancap.token_snapshot и другие. Каждый вызов идёт в production API и возвращает JSON.",
+      mcpConfigTitle: "Конфиг Cursor / Claude Desktop",
+      mcpConfigLead: "Stdio MCP — локальный процесс, API: https://ancap.cloud/api/v1:",
+      mcpCliNote: "Быстрая проверка в терминале (корень репозитория):",
+      mcpToolsTitle: "Доступные MCP tools",
+      mcpLinksTitle: "Документация и маршруты",
+      mcpDocsLink: "Документация MCP",
+      mcpApiKeysLink: "API-ключи",
+      mcpOpenApiLink: "OpenAPI / Swagger",
+      mcpWorkflowsLink: "Каталог workflow",
+      mcpPayLink: "Создать payment link",
+      mcpSnapshotLink: "Бесплатный token snapshot",
+      mcpCta: "Полное руководство MCP"
     },
     acpLanding: {
       badge: "Работает на платформе",
@@ -761,7 +809,31 @@ export const translations: Record<Language, TranslationTree> = {
       creatorStep2Text: "Розмістіть workflow або bundle так, щоб користувачі й інші агенти могли знайти його, зрозуміти результат і оплатити в ACP.",
       creatorStep3Title: "Заробляйте на запусках",
       creatorStep3Text: "Кожен платний запуск створює receipt, фіксує виконання й робить attribution доходу зрозумілою для автора.",
-      creatorCta: "Відкрити seller dashboard"
+      creatorCta: "Відкрити seller dashboard",
+      mcpKicker: "MCP ДЛЯ AI-АГЕНТІВ",
+      mcpTitle: "Підключіть Cursor, Claude або ChatGPT до інструментів ANCAP",
+      mcpLead:
+        "ANCAP надає MCP-сервер (stdio), який викликає live API ancap.cloud за вашим API-ключем. Агенти можуть створювати payment links, invoices, claim codes, token risk reports і платні workflow без власного glue-коду.",
+      mcpStep1Title: "1. Створіть API-ключ",
+      mcpStep1Text: "Увійдіть, відкрийте Developers і створіть ключ (ancap_…). Надайте права лише на потрібні commerce-інструменти.",
+      mcpStep2Title: "2. Налаштуйте MCP",
+      mcpStep2Text:
+        "Додайте mcp-server/ancap_mcp_server.py до налаштувань MCP Cursor (або Claude Desktop) з ANCAP_API_BASE=https://ancap.cloud/api/v1.",
+      mcpStep3Title: "3. Викликайте tools з агента",
+      mcpStep3Text:
+        "Використовуйте ancap.create_payment_link, ancap.run_workflow, ancap.token_snapshot та інші. Кожен виклик йде в production API і повертає JSON.",
+      mcpConfigTitle: "Конфіг Cursor / Claude Desktop",
+      mcpConfigLead: "Stdio MCP — локальний процес, API: https://ancap.cloud/api/v1:",
+      mcpCliNote: "Швидка перевірка в терміналі (корінь репозиторію):",
+      mcpToolsTitle: "Доступні MCP tools",
+      mcpLinksTitle: "Документація та маршрути",
+      mcpDocsLink: "Документація MCP",
+      mcpApiKeysLink: "API-ключі",
+      mcpOpenApiLink: "OpenAPI / Swagger",
+      mcpWorkflowsLink: "Каталог workflow",
+      mcpPayLink: "Створити payment link",
+      mcpSnapshotLink: "Безкоштовний token snapshot",
+      mcpCta: "Повний гід MCP"
     },
     acpLanding: {
       badge: "Працює на платформі",
@@ -1046,7 +1118,31 @@ export const translations: Record<Language, TranslationTree> = {
       creatorStep2Text: "Liste den Workflow oder das Bundle, damit Nutzer und andere Agenten ihn finden, das Ergebnis verstehen und in ACP zahlen können.",
       creatorStep3Title: "An Runs verdienen",
       creatorStep3Text: "Jede bezahlte Ausführung erzeugt ein Receipt, dokumentiert den Run und macht Revenue Attribution für den Autor klar.",
-      creatorCta: "Seller dashboard öffnen"
+      creatorCta: "Seller dashboard öffnen",
+      mcpKicker: "MCP FÜR AI-AGENTEN",
+      mcpTitle: "Cursor, Claude oder ChatGPT mit ANCAP-Commerce-Tools verbinden",
+      mcpLead:
+        "ANCAP liefert einen MCP-Server (stdio), der die Live-API ancap.cloud mit Ihrem API-Key aufruft. Agenten können Payment Links, Rechnungen, Claim Codes, Token-Risk-Reports und bezahlte Workflows ohne eigenes Glue-Code ausführen.",
+      mcpStep1Title: "1. API-Key erstellen",
+      mcpStep1Text: "Anmelden, Developers öffnen und einen Key (ancap_…) erstellen. Nur die benötigten Commerce-Tools freischalten.",
+      mcpStep2Title: "2. MCP einrichten",
+      mcpStep2Text:
+        "mcp-server/ancap_mcp_server.py in Cursor MCP (oder Claude Desktop) mit ANCAP_API_BASE=https://ancap.cloud/api/v1 hinzufügen.",
+      mcpStep3Title: "3. Tools vom Agenten aufrufen",
+      mcpStep3Text:
+        "Nutzen Sie ancap.create_payment_link, ancap.run_workflow, ancap.token_snapshot u. a. Jeder Aufruf trifft die Production-API und liefert JSON.",
+      mcpConfigTitle: "Cursor / Claude Desktop Konfiguration",
+      mcpConfigLead: "Stdio MCP — läuft lokal, API: https://ancap.cloud/api/v1:",
+      mcpCliNote: "Schnelltest im Terminal (Repo-Root):",
+      mcpToolsTitle: "Verfügbare MCP-Tools",
+      mcpLinksTitle: "Dokumentation & Routen",
+      mcpDocsLink: "MCP-Dokumentation",
+      mcpApiKeysLink: "API-Keys",
+      mcpOpenApiLink: "OpenAPI / Swagger",
+      mcpWorkflowsLink: "Workflow-Katalog",
+      mcpPayLink: "Payment Link erstellen",
+      mcpSnapshotLink: "Kostenloser Token-Snapshot",
+      mcpCta: "Vollständiger MCP-Leitfaden"
     },
     acpLanding: {
       badge: "Live auf der Plattform",

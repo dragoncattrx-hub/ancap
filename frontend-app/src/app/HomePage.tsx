@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
+import { HomeMcpSection } from "@/components/HomeMcpSection";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const offerDefs = [
@@ -457,6 +458,8 @@ export function HomePage() {
               </div>
             </div>
           </section>
+
+          <HomeMcpSection />
 
           <section id="contact" style={{ textAlign: "center", padding: "74px 24px 60px" }}>
             <div className="container">
