@@ -19,9 +19,9 @@ const STORE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
 
-export type SmartPayPayloadSource = "camera" | "photo" | "paste" | "share";
+export type SmartPayPayloadSource = "camera" | "photo" | "paste" | "share" | "ocr";
 
-const SMART_PAY_PAYLOAD_SOURCES: SmartPayPayloadSource[] = ["camera", "photo", "paste", "share"];
+const SMART_PAY_PAYLOAD_SOURCES: SmartPayPayloadSource[] = ["camera", "photo", "paste", "share", "ocr"];
 const SMART_PAY_PARSE_METHODS = ["deterministic", "heuristic", "ai"] as const;
 const SMART_PAY_INTENT_STATUSES = ["parsed", "unsupported", "needs_review", "rejected"] as const;
 const SMART_PAY_NETWORKS = ["acp", "bsc", "base", "ethereum", "unknown"] as const;

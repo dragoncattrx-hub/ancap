@@ -133,7 +133,7 @@ export type SmartPayCapabilities = {
 };
 
 export type SmartQrParseInput = {
-  source: "camera" | "photo" | "paste" | "share";
+  source: "camera" | "photo" | "paste" | "share" | "ocr";
   rawPayload: string;
   hint?: {
     locale?: string | null;
@@ -191,7 +191,7 @@ export type SmartPayPaymentMetadata = {
 export type SmartPayPaymentIntent = {
   id: string;
   createdAt: string;
-  source: "camera" | "photo" | "paste" | "share";
+  source: "camera" | "photo" | "paste" | "share" | "ocr";
   rawPayload: string;
   payloadHash: string;
   parseMethod: "deterministic" | "heuristic" | "ai";

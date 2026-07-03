@@ -118,6 +118,7 @@ import {
   loadSmartPaySession,
   saveSmartPaySession,
   type PersistedSmartPaySession,
+  type SmartPayPayloadSource,
 } from "@/lib/smart-pay-session";
 import {
   canSubmitSmartPayRecoveryInput,
@@ -145,7 +146,7 @@ export default function SmartPayScreen() {
   const lastAppliedSharedDraftRef = useRef<string | null>(null);
   const [capabilities, setCapabilities] = useState<SmartPayCapabilities | null>(null);
   const [rawPayload, setRawPayload] = useState("");
-  const [payloadSource, setPayloadSource] = useState<"camera" | "photo" | "paste" | "share">("paste");
+  const [payloadSource, setPayloadSource] = useState<SmartPayPayloadSource>("paste");
   const [selectedAsset, setSelectedAsset] = useState("ACP");
   const [loadingCapabilities, setLoadingCapabilities] = useState(true);
   const [busy, setBusy] = useState(false);

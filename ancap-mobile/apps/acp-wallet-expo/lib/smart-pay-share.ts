@@ -1,3 +1,5 @@
+import type { SmartPayPayloadSource } from "./smart-pay-session";
+
 export type SmartPayShareParamValue = string | string[] | undefined;
 
 export type SmartPayShareParams = {
@@ -16,7 +18,7 @@ export type SmartPaySharedDraft = {
 
 export type SmartPaySharedDraftApplicationState = {
   rawPayload: string;
-  payloadSource: "camera" | "photo" | "paste" | "share";
+  payloadSource: SmartPayPayloadSource;
   selectedAsset: string;
 };
 
