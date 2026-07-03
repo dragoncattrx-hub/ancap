@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -24,6 +25,20 @@ const MCP_LINKS = [
   { href: "/token-snapshot", labelKey: "homePage.mcpSnapshotLink" },
 ] as const;
 
+const cardBodyStyle: CSSProperties = {
+  color: "var(--text-muted)",
+  lineHeight: 1.65,
+  margin: 0,
+  overflowWrap: "anywhere",
+  wordBreak: "break-word",
+};
+
+const cardStyle: CSSProperties = {
+  borderRadius: 8,
+  minWidth: 0,
+  overflow: "hidden",
+};
+
 export function HomeMcpSection() {
   const { t } = useLanguage();
 
@@ -44,13 +59,11 @@ export function HomeMcpSection() {
 
       <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 28 }}>
         {[1, 2, 3].map((idx) => (
-          <div key={idx} className="card" style={{ borderRadius: 8 }}>
+          <div key={idx} className="card" style={cardStyle}>
             <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 10 }}>
               {t(`homePage.mcpStep${idx}Title`)}
             </h3>
-            <p style={{ color: "var(--text-muted)", lineHeight: 1.65, margin: 0 }}>
-              {t(`homePage.mcpStep${idx}Text`)}
-            </p>
+            <p style={cardBodyStyle}>{t(`homePage.mcpStep${idx}Text`)}</p>
           </div>
         ))}
       </div>
@@ -61,18 +74,28 @@ export function HomeMcpSection() {
           display: "grid",
           gap: 24,
           alignItems: "start",
+          minWidth: 0,
         }}
       >
-        <div className="card" style={{ borderRadius: 8 }}>
+        <div className="card" style={cardStyle}>
           <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 12 }}>
             {t("homePage.mcpConfigTitle")}
           </h3>
-          <p style={{ color: "var(--text-muted)", lineHeight: 1.65, marginBottom: 14, fontSize: "0.92rem" }}>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              lineHeight: 1.65,
+              marginBottom: 14,
+              fontSize: "0.92rem",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
             {t("homePage.mcpConfigLead")}
           </p>
           <pre
             className="overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-4 text-xs leading-6"
-            style={{ margin: 0 }}
+            style={{ margin: 0, maxWidth: "100%", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
           >
 {`{
   "mcpServers": {
@@ -92,7 +115,7 @@ export function HomeMcpSection() {
           </p>
           <pre
             className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-4 text-xs leading-6"
-            style={{ margin: 0 }}
+            style={{ margin: 0, maxWidth: "100%", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
           >
 {`export ANCAP_API_KEY=ancap_...
 export ANCAP_API_BASE=https://ancap.cloud/api/v1
@@ -100,8 +123,8 @@ python mcp-server/ancap_mcp_server.py`}
           </pre>
         </div>
 
-        <div style={{ display: "grid", gap: 16 }}>
-          <div className="card" style={{ borderRadius: 8 }}>
+        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+          <div className="card" style={cardStyle}>
             <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 12 }}>
               {t("homePage.mcpToolsTitle")}
             </h3>
@@ -117,6 +140,8 @@ python mcp-server/ancap_mcp_server.py`}
                     fontFamily: "monospace",
                     fontSize: "0.78rem",
                     color: "var(--text-muted)",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
                   }}
                 >
                   {tool}
@@ -125,7 +150,7 @@ python mcp-server/ancap_mcp_server.py`}
             </ul>
           </div>
 
-          <div className="card" style={{ borderRadius: 8 }}>
+          <div className="card" style={cardStyle}>
             <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 12 }}>
               {t("homePage.mcpLinksTitle")}
             </h3>
