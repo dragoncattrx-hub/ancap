@@ -16,3 +16,12 @@ export function getServerApiBase(): string {
   if (/^https?:\/\//.test(publicUrl)) return publicUrl.replace(/\/+$/, "");
   return "https://ancap.cloud/api/v1";
 }
+
+/** SSR fetch with User-Agent (Cloudflare blocks bare Node fetch with 403). */
+export function serverApiFetch(input: string, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has("User-Agent")) {
+    headers.set("User-Agent", "ancap-frontend-ssr/1.0");
+  }
+  return fetch(input, { ...init, headers });
+}
