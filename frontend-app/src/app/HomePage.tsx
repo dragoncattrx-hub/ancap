@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HomeMcpSection } from "@/components/HomeMcpSection";
+import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const offerDefs = [
@@ -229,6 +230,14 @@ export function HomePage() {
                         {t(social.labelKey)}
                       </a>
                     ))}
+                  </div>
+                  <div style={{ marginTop: 14 }}>
+                    <WacpPublicActions
+                      layout="home"
+                      addLabel={t("homePage.wacpAddMetaMask")}
+                      downloadLabel={t("homePage.wacpDownloadLogo")}
+                      bscScanLabel={t("homePage.wacpBscScanUpdate")}
+                    />
                   </div>
                 </div>
 

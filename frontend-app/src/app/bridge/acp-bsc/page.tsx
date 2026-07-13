@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
-import { AddWacpToMetaMaskButton } from "@/components/AddWacpToMetaMaskButton";
+import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { useAuth } from "@/components/AuthProvider";
 import { bridgeRail } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
@@ -219,6 +219,19 @@ export default function BridgeAcpBscPage() {
           <div className="mt-4 rounded border border-red-900/60 bg-red-950/40 px-3 py-2 text-sm text-red-200">{error}</div>
         ) : null}
 
+        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
+          <h2 className="text-lg font-medium text-zinc-200">wACP in MetaMask</h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            Add the official BEP-20 token with logo, or download the 32×32 PNG for BscScan token update.
+          </p>
+          <div className="mt-4">
+            <WacpPublicActions
+              contractAddress={status?.wacp_contract || undefined}
+              layout="home"
+            />
+          </div>
+        </section>
+
         {status && !status.bridge_rail_enabled ? (
           <div className="mt-6 flex flex-col gap-3 rounded border border-amber-900/50 bg-amber-950/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <p className="text-sm text-amber-100">
@@ -263,11 +276,6 @@ export default function BridgeAcpBscPage() {
                 <div className="sm:col-span-2">
                   <dt className="text-zinc-500">wACP contract</dt>
                   <dd className="break-all font-mono text-xs">{status.wacp_contract || "—"}</dd>
-                  {status.wacp_contract ? (
-                    <dd className="mt-3">
-                      <AddWacpToMetaMaskButton contractAddress={status.wacp_contract} variant="bridge" />
-                    </dd>
-                  ) : null}
                 </div>
                 <div className="sm:col-span-2">
                   <dt className="text-zinc-500">Gateway</dt>

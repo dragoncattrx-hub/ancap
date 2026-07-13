@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
+import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function AcpLandingPage() {
@@ -53,6 +54,9 @@ export default function AcpLandingPage() {
                 <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener">
                   {t("acpLanding.apiDocs")}
                 </a>
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <WacpPublicActions layout="home" />
               </div>
             </div>
           </section>
