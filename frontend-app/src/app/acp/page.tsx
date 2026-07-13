@@ -41,6 +41,9 @@ export default function AcpLandingPage() {
                 <Link href="/wallet/acp" className="btn btn-primary">
                   {t("acpLanding.walletCta")}
                 </Link>
+                <Link href="/acp-supply" className="btn btn-ghost">
+                  {t("acpLanding.supplySnapshotCta")}
+                </Link>
                 <a href="/projects" className="btn btn-ghost">
                   {t("acpLanding.platformOverview")}
                 </a>
@@ -228,6 +231,9 @@ export default function AcpLandingPage() {
                   Total supply: <strong>210,000,000 ACP</strong>. Distribution: Creator 33% (69.3M), Validator Reserve 50% (105M),
                   Public/Liquidity 12% (25.2M), Ecosystem Grants 5% (10.5M).
                 </p>
+                <Link href="/acp-supply" className="btn btn-ghost" style={{ marginTop: 14 }}>
+                  {t("acpLanding.supplySnapshotCta")}
+                </Link>
               </div>
             </div>
 

@@ -225,6 +225,7 @@ export const translations: Record<Language, TranslationTree> = {
       statusLead:
         "ACP is wired into production ANCAP: configurable chain anchor drivers, ACP JSON-RPC support, custodial hot-wallet API under /v1/wallet/acp/*, and a wallet UI after sign-in.",
       walletCta: "Open ACP wallet",
+      supplySnapshotCta: "Live supply snapshot",
       platformOverview: "Platform overview",
       l123Vision: "L1/L2/L3 vision",
       apiDocs: "API docs",
@@ -534,6 +535,7 @@ export const translations: Record<Language, TranslationTree> = {
       statusLead:
         "ACP подключен к production-контуру ANCAP: настраиваемые драйверы якорения в сети, поддержка ACP JSON-RPC, API кастодиального горячего кошелька /v1/wallet/acp/* и интерфейс кошелька после входа.",
       walletCta: "Открыть ACP-кошелек",
+      supplySnapshotCta: "Снимок эмиссии (live)",
       platformOverview: "Обзор платформы",
       l123Vision: "Видение L1/L2/L3",
       apiDocs: "Документация API",
@@ -843,6 +845,7 @@ export const translations: Record<Language, TranslationTree> = {
       statusLead:
         "ACP підключено до production-контуру ANCAP: налаштовувані драйвери якорення в мережі, підтримка ACP JSON-RPC, API кастодіального гарячого гаманця /v1/wallet/acp/* та інтерфейс гаманця після входу.",
       walletCta: "Відкрити ACP-гаманець",
+      supplySnapshotCta: "Знімок емісії (live)",
       platformOverview: "Огляд платформи",
       l123Vision: "Бачення L1/L2/L3",
       apiDocs: "Документація API",
@@ -1152,6 +1155,7 @@ export const translations: Record<Language, TranslationTree> = {
       statusLead:
         "ACP ist in der Produktion von ANCAP verdrahtet: konfigurierbare Chain-Anchor-Driver, ACP JSON-RPC Support, Custodial Hot-Wallet API unter /v1/wallet/acp/* und Wallet UI nach dem Login.",
       walletCta: "ACP-Wallet öffnen",
+      supplySnapshotCta: "Live-Angebotsübersicht",
       platformOverview: "Plattformüberblick",
       l123Vision: "L1/L2/L3 Vision",
       apiDocs: "API-Dokumentation",
