@@ -1,4 +1,3 @@
-"""ACP supply page — live tokenomics snapshot section."""
 import Link from "next/link";
 
 type TokenomicsBucket = {
