@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
+import { AddWacpToMetaMaskButton } from "@/components/AddWacpToMetaMaskButton";
 import { useAuth } from "@/components/AuthProvider";
 import { bridgeRail } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
@@ -262,6 +263,11 @@ export default function BridgeAcpBscPage() {
                 <div className="sm:col-span-2">
                   <dt className="text-zinc-500">wACP contract</dt>
                   <dd className="break-all font-mono text-xs">{status.wacp_contract || "—"}</dd>
+                  {status.wacp_contract ? (
+                    <dd className="mt-3">
+                      <AddWacpToMetaMaskButton contractAddress={status.wacp_contract} variant="bridge" />
+                    </dd>
+                  ) : null}
                 </div>
                 <div className="sm:col-span-2">
                   <dt className="text-zinc-500">Gateway</dt>

@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { AddWacpToMetaMaskButton } from "@/components/AddWacpToMetaMaskButton";
 
 export const metadata = {
   title: "wACP Contracts",
@@ -24,6 +25,9 @@ export default function WacpContractsDocsPage() {
               <div><strong style={{ color: "var(--text)" }}>Verification:</strong> BscScan source match completed for the production wACP contract</div>
               <div><strong style={{ color: "var(--text)" }}>Pool:</strong> 0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</div>
               <div><strong style={{ color: "var(--text)" }}>Warning:</strong> pool is currently a technical liquidity bootstrap, not deep-liquidity market infrastructure.</div>
+              <div style={{ marginTop: 8 }}>
+                <AddWacpToMetaMaskButton variant="ghost" />
+              </div>
             </div>
           </div>
         </main>

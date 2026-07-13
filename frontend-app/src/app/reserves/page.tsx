@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { AddWacpToMetaMaskButton } from "@/components/AddWacpToMetaMaskButton";
 import { bridgeRail, wacpPublic } from "@/lib/api";
 
 export default function ReservesPage() {
@@ -56,6 +57,11 @@ export default function ReservesPage() {
               <div>Overall: {wacp.status}</div>
               <div>Reserve health: {wacp.reserve_health}</div>
               <div className="break-all">wACP (BSC): {wacp.wacp_contract || "—"}</div>
+              {wacp.wacp_contract ? (
+                <div className="mt-2">
+                  <AddWacpToMetaMaskButton contractAddress={wacp.wacp_contract} variant="bridge" />
+                </div>
+              ) : null}
               <div className="break-all">Gateway: {wacp.gateway_contract || "—"}</div>
               <div className="break-all">ACP reserve address: {wacp.reserve_acp_address || "—"}</div>
               <div>Redeem mode: {wacp.redeem_mode}</div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
+import { AddWacpToMetaMaskButton } from "@/components/AddWacpToMetaMaskButton";
 import { useAuth } from "@/components/AuthProvider";
 import { walletAcp } from "@/lib/api";
 
@@ -813,8 +814,9 @@ export default function AcpWalletPage() {
                 <div>Planned next rail: <strong style={{ color: "var(--text)" }}>BSC → ACP redeem</strong> — pending safe rollout</div>
                 <div>Current state: technical liquidity bootstrap / smoke-test market</div>
               </div>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14, alignItems: "flex-start" }}>
                 <Link href="/bridge/acp-bsc" className="btn btn-primary">Open bridge</Link>
+                <AddWacpToMetaMaskButton variant="ghost" />
                 <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">Open swap</a>
                 <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">View pool</a>
               </div>
