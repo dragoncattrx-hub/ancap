@@ -12,6 +12,7 @@ type BalanceResponse = {
   units: string;
   acp: string;
   utxo_count?: number;
+  on_chain_acp?: string | null;
   in_work_acp?: string;
   in_work_staked_acp?: string;
   in_work_ledger_acp?: string;
@@ -458,6 +459,14 @@ export default function AcpWalletPage() {
     Number.isFinite(withdrawAvailableNum) &&
     withdrawAmountValid &&
     withdrawAmountNum > withdrawAvailableNum;
+  const onChainTotalNum = Number(balance?.on_chain_acp ?? "");
+  const inWorkNum = Number(balance?.in_work_acp ?? "");
+  const operatorPoolAcp =
+    Number.isFinite(onChainTotalNum) &&
+    Number.isFinite(inWorkNum) &&
+    onChainTotalNum > inWorkNum + 0.000001
+      ? (onChainTotalNum - inWorkNum).toFixed(8).replace(/\.?0+$/, "")
+      : null;
   const withdrawDisabled =
     busy ||
     !withdrawAddressValid ||
@@ -535,8 +544,19 @@ export default function AcpWalletPage() {
                   </div>
                 )}
                 <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  User wallet on-chain balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                  Your credited balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                 </div>
+                {balance?.on_chain_acp != null && balance.on_chain_acp !== "" && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Total on-chain at this address: <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
+                  </div>
+                )}
+                {operatorPoolAcp != null && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                    Operator pool (on-chain minus ledger/stakes): <strong style={{ color: "var(--text)" }}>{operatorPoolAcp} ACP</strong>
+                    <span style={{ opacity: 0.85 }}> — includes treasury buckets on custodial hot; not in your withdrawable ledger.</span>
+                  </div>
+                )}
                 <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                   <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
                     In work
