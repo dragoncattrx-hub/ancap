@@ -6,21 +6,32 @@ import { Navigation } from "@/components/Navigation";
 import { acpExplorer } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
 
+function shortHash(hash: string | null | undefined): string {
+  const value = String(hash || "").trim();
+  if (!value) return "—";
+  if (value.length <= 18) return value;
+  return `${value.slice(0, 10)}…${value.slice(-8)}`;
+}
+
 export default function ExplorerPage() {
   const [status, setStatus] = useState<any>(null);
   const [blocks, setBlocks] = useState<any[]>([]);
   const [searchTx, setSearchTx] = useState("");
   const [searchAddr, setSearchAddr] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     void (async () => {
+      setLoading(true);
       try {
         const [s, b] = await Promise.all([acpExplorer.status(), acpExplorer.blocks(12)]);
         setStatus(s);
         setBlocks(b.items || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Explorer unavailable");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -77,6 +88,7 @@ export default function ExplorerPage() {
         </form>
         <section className="mt-8">
           <h2 className="text-lg font-semibold">Latest blocks</h2>
+          {loading ? <p className="mt-4 text-sm text-white/55">Loading blocks…</p> : null}
           <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-white/[0.04] text-white/60">
@@ -90,10 +102,19 @@ export default function ExplorerPage() {
                 {blocks.map((row) => (
                   <tr key={row.height} className="border-t border-white/10">
                     <td className="px-4 py-3">{row.height}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-white/70">{row.hash || "—"}</td>
-                    <td className="px-4 py-3">{row.tx_count}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-white/70" title={row.hash || undefined}>
+                      {shortHash(row.hash)}
+                    </td>
+                    <td className="px-4 py-3">{row.tx_count ?? 0}</td>
                   </tr>
                 ))}
+                {!loading && blocks.length === 0 ? (
+                  <tr className="border-t border-white/10">
+                    <td className="px-4 py-3 text-white/55" colSpan={3}>
+                      No blocks indexed yet.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from decimal import Decimal
+
 from fastapi import APIRouter, HTTPException
 
 from app.services.acp_rpc import acp_rpc_call
+from app.services.acp_tokenomics import _address_balance_acp
 
 router = APIRouter(prefix="/acp/explorer", tags=["ACP Explorer"])
 
@@ -34,9 +37,10 @@ async def list_blocks(limit: int = 10):
         if h < 0:
             break
         try:
-            block_hash = await acp_rpc_call("getblockhash", [h])
-            block = await acp_rpc_call("getblock", [block_hash, 1])
-            blocks.append({"height": h, "hash": block_hash, "tx_count": len(block.get("tx", [])) if isinstance(block, dict) else 0})
+            block_hash = await acp_rpc_call("getblockhash", {"height": h})
+            block = await acp_rpc_call("getblock", {"blockhash": block_hash, "verbose": True})
+            tx_list = block.get("tx", []) if isinstance(block, dict) else []
+            blocks.append({"height": h, "hash": block_hash, "tx_count": len(tx_list)})
         except RuntimeError:
             blocks.append({"height": h, "hash": None, "tx_count": 0})
     return {"block_height": height, "items": blocks}
@@ -64,9 +68,15 @@ async def tokenomics_snapshot():
 
 @router.get("/address/{address}")
 async def get_address_summary(address: str):
+    target = address.strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="address is required")
     try:
-        utxos = await acp_rpc_call("listunspent", [0, 9999999, [address]])
-        balance = sum(float(item.get("amount", 0)) for item in (utxos or []) if isinstance(item, dict))
+        balance, utxo_count = await _address_balance_acp(target)
     except RuntimeError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return {"address": address, "balance_acp": balance, "utxo_count": len(utxos or [])}
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {
+        "address": target,
+        "balance_acp": format(balance.quantize(Decimal("0.00000001")), "f").rstrip("0").rstrip(".") or "0",
+        "utxo_count": utxo_count,
+    }
