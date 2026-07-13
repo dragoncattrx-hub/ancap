@@ -100,6 +100,7 @@ from app.schemas.moderation import ModerationActionRequest
 from app.schemas.wallets import (
     AcpDepositAddressResponse,
     AcpBalanceResponse,
+    AcpTokenomicsBucket,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
     AcpTransactionPublic,
@@ -326,6 +327,7 @@ __all__ = [
     "ModerationActionRequest",
     "AcpDepositAddressResponse",
     "AcpBalanceResponse",
+    "AcpTokenomicsBucket",
     "AcpWithdrawRequest",
     "AcpWithdrawResponse",
     "AcpTransactionPublic",

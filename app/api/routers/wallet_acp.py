@@ -21,9 +21,11 @@ from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
+from app.services.acp_tokenomics import fetch_custodial_hot_breakdown
 from app.schemas import (
     AcpBalanceResponse,
     AcpDepositAddressResponse,
+    AcpTokenomicsBucket,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
     AcpTransactionPublic,
@@ -341,6 +343,18 @@ def _format_balance_note(real_acp: Decimal, in_work_acp: Decimal, available_acp:
     )
 
 
+def _format_operator_hot_balance_note(
+    tokenomics_total_acp: Decimal,
+    platform_credits_acp: Decimal,
+    available_acp: Decimal,
+) -> str:
+    return (
+        f"Operator hot on-chain total: {_decimal_to_api_str(tokenomics_total_acp)} ACP "
+        f"(ecosystem + hot buckets). Platform credits: {_decimal_to_api_str(platform_credits_acp)} ACP; "
+        f"available for withdraw: {_decimal_to_api_str(available_acp)} ACP."
+    )
+
+
 def _units_from_acp(acp: Decimal) -> str:
     return str(int((acp * Decimal(100_000_000)).to_integral_value()))
 
@@ -463,19 +477,55 @@ async def _decorate_balance_for_user(
         if include_in_work and on_chain_acp != real_acp
         else None
     )
+    display_acp = real_acp
+    display_units = _units_from_acp(real_acp)
+    display_utxo_count = int(raw.get("utxo_count") or 0)
+    tokenomics_buckets: list[AcpTokenomicsBucket] | None = None
+    view_mode: str | None = None
+    platform_credits_s: str | None = None
+    balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
+
+    if include_in_work and target_address:
+        try:
+            hot_breakdown = await fetch_custodial_hot_breakdown(target_address)
+        except Exception:
+            hot_breakdown = None
+        if hot_breakdown is not None:
+            display_acp = hot_breakdown.total_acp
+            display_units = _units_from_acp(hot_breakdown.total_acp)
+            display_utxo_count = hot_breakdown.total_utxo_count
+            tokenomics_buckets = [
+                AcpTokenomicsBucket(
+                    key=b.key,
+                    label=b.label,
+                    acp=_decimal_to_api_str(b.acp),
+                    utxo_count=b.utxo_count,
+                )
+                for b in hot_breakdown.buckets
+            ]
+            view_mode = "operator_hot"
+            platform_credits_s = _decimal_to_api_str(real_acp)
+            on_chain_s = None
+            balance_note = _format_operator_hot_balance_note(
+                hot_breakdown.total_acp, real_acp, available_acp
+            )
+
     return AcpBalanceResponse(
         address=str(raw.get("address") or ""),
-        units=_units_from_acp(real_acp),
-        acp=_decimal_to_api_str(real_acp),
-        utxo_count=int(raw.get("utxo_count") or 0),
+        units=display_units,
+        acp=_decimal_to_api_str(display_acp),
+        utxo_count=display_utxo_count,
         on_chain_acp=on_chain_s,
         in_work_acp=_decimal_to_api_str(in_work_acp),
         in_work_staked_acp=in_work_staked_s,
         in_work_ledger_acp=in_work_ledger_s,
         available_acp=_decimal_to_api_str(available_acp),
+        platform_credits_acp=platform_credits_s,
+        tokenomics_buckets=tokenomics_buckets,
+        view_mode=view_mode,
         vested_unlocked_acp=vested_unlocked_acp,
         vested_locked_acp=vested_locked_acp,
-        balance_note=_format_balance_note(real_acp, in_work_acp, available_acp),
+        balance_note=balance_note,
     )
 
 

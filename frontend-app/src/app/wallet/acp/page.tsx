@@ -7,6 +7,13 @@ import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { walletAcp } from "@/lib/api";
 
+type TokenomicsBucket = {
+  key: string;
+  label: string;
+  acp: string;
+  utxo_count: number;
+};
+
 type BalanceResponse = {
   address: string;
   units: string;
@@ -17,6 +24,9 @@ type BalanceResponse = {
   in_work_staked_acp?: string;
   in_work_ledger_acp?: string;
   available_acp?: string;
+  platform_credits_acp?: string | null;
+  tokenomics_buckets?: TokenomicsBucket[] | null;
+  view_mode?: "user" | "operator_hot" | null;
   vested_unlocked_acp?: string;
   vested_locked_acp?: string;
   balance_note?: string;
@@ -459,14 +469,7 @@ export default function AcpWalletPage() {
     Number.isFinite(withdrawAvailableNum) &&
     withdrawAmountValid &&
     withdrawAmountNum > withdrawAvailableNum;
-  const onChainTotalNum = Number(balance?.on_chain_acp ?? "");
-  const inWorkNum = Number(balance?.in_work_acp ?? "");
-  const operatorPoolAcp =
-    Number.isFinite(onChainTotalNum) &&
-    Number.isFinite(inWorkNum) &&
-    onChainTotalNum > inWorkNum + 0.000001
-      ? (onChainTotalNum - inWorkNum).toFixed(8).replace(/\.?0+$/, "")
-      : null;
+  const isOperatorHotView = balance?.view_mode === "operator_hot";
   const withdrawDisabled =
     busy ||
     !withdrawAddressValid ||
@@ -530,46 +533,90 @@ export default function AcpWalletPage() {
 
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Wallet balance</h3>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{isOperatorHotView ? "Operator hot wallet" : "Wallet balance"}</h3>
                   <span className="badge badge-active">Live</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
                   {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
-                {balance?.units != null && balance.units !== "" && (
-                  <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                    Smallest units (on-chain): <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
-                    <span style={{ opacity: 0.85 }}> — expect 1 ACP = 100,000,000 units · check: units ÷ 10⁸ ≈ ACP above</span>
+
+                {isOperatorHotView && balance?.tokenomics_buckets && balance.tokenomics_buckets.length > 0 ? (
+                  <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                    {balance.tokenomics_buckets.map((bucket) => (
+                      <div
+                        key={bucket.key}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: "var(--bg)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <strong style={{ color: "var(--text)" }}>{bucket.label}</strong>
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                          <strong style={{ color: "var(--text)" }}>{bucket.acp} ACP</strong>
+                          {" "}({bucket.utxo_count} UTXO{bucket.utxo_count === 1 ? "" : "s"})
+                        </span>
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  <>
+                    {balance?.units != null && balance.units !== "" && (
+                      <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                        Smallest units (on-chain): <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
+                        <span style={{ opacity: 0.85 }}> — expect 1 ACP = 100,000,000 units · check: units ÷ 10⁸ ≈ ACP above</span>
+                      </div>
+                    )}
+                    {balance?.on_chain_acp != null && balance.on_chain_acp !== "" && (
+                      <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                        Total on-chain at this address: <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
+                      </div>
+                    )}
+                  </>
                 )}
-                <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  Your credited balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
-                </div>
-                {balance?.on_chain_acp != null && balance.on_chain_acp !== "" && (
-                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Total on-chain at this address: <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
+
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 12,
+                    borderTop: "1px solid var(--border)",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    {isOperatorHotView ? "Your platform credits" : "Account"}
                   </div>
-                )}
-                {operatorPoolAcp != null && (
-                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                    Operator pool (on-chain minus ledger/stakes): <strong style={{ color: "var(--text)" }}>{operatorPoolAcp} ACP</strong>
-                    <span style={{ opacity: 0.85 }}> — includes treasury buckets on custodial hot; not in your withdrawable ledger.</span>
+                  {isOperatorHotView && balance?.platform_credits_acp != null && (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                      Credited balance: <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
+                    </div>
+                  )}
+                  {!isOperatorHotView && (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                      Your balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                    </div>
+                  )}
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
+                      In work
+                    </span>
+                    : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
                   </div>
-                )}
-                <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
-                    In work
-                  </span>
-                  : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
-                </div>
-                {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
-                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                    Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong> ACP · On-platform ledger: <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
+                  {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                      Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong> ACP · On-platform ledger: <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
+                    </div>
+                  )}
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                    Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                   </div>
-                )}
-                <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                  Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                 </div>
                 {balance?.vested_unlocked_acp != null && (
                   <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>

@@ -7,6 +7,13 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
 
+class AcpTokenomicsBucket(BaseModel):
+    key: str
+    label: str
+    acp: str
+    utxo_count: int = 0
+
+
 class AcpDepositAddressResponse(BaseModel):
     address: str
 
@@ -21,6 +28,9 @@ class AcpBalanceResponse(BaseModel):
     in_work_staked_acp: str | None = None
     in_work_ledger_acp: str | None = None
     available_acp: str | None = None
+    platform_credits_acp: str | None = None
+    tokenomics_buckets: list[AcpTokenomicsBucket] | None = None
+    view_mode: Literal["user", "operator_hot"] | None = None
     vested_unlocked_acp: str | None = None
     vested_locked_acp: str | None = None
     balance_note: str | None = None
