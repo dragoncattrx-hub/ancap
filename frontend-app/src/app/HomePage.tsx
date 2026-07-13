@@ -235,8 +235,6 @@ export function HomePage() {
                     <WacpPublicActions
                       layout="home"
                       addLabel={t("homePage.wacpAddMetaMask")}
-                      downloadLabel={t("homePage.wacpDownloadLogo")}
-                      bscScanLabel={t("homePage.wacpBscScanUpdate")}
                     />
                   </div>
                 </div>

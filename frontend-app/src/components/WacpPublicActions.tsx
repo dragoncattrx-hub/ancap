@@ -12,6 +12,7 @@ import {
 type WacpPublicActionsProps = {
   contractAddress?: string;
   layout?: "home" | "compact";
+  showDownloadLink?: boolean;
   showLogoUrl?: boolean;
   showBscScanLink?: boolean;
   addLabel?: string;
@@ -61,8 +62,9 @@ function WacpLogoBadge() {
 export function WacpPublicActions({
   contractAddress = WACP_BSC_CONTRACT,
   layout = "home",
-  showLogoUrl = layout === "home",
-  showBscScanLink = layout === "home",
+  showDownloadLink = false,
+  showLogoUrl = false,
+  showBscScanLink = false,
   addLabel = "Add wACP to MetaMask",
   downloadLabel = "Download token logo",
   bscScanLabel = "Update on BscScan",
@@ -105,16 +107,18 @@ export function WacpPublicActions({
           <WacpLogoBadge />
           {busy ? "Opening MetaMask…" : addLabel}
         </button>
-        <a
-          href={WACP_LOGO_PATH}
-          download="wacp-logo.png"
-          className={pillClass}
-          style={layout === "home" ? xPillStyle : undefined}
-          title="32×32 PNG, transparent background — paste into BscScan token update"
-        >
-          <WacpLogoBadge />
-          {downloadLabel}
-        </a>
+        {showDownloadLink ? (
+          <a
+            href={WACP_LOGO_PATH}
+            download="wacp-logo.png"
+            className={pillClass}
+            style={layout === "home" ? xPillStyle : undefined}
+            title="32×32 PNG, transparent background — paste into BscScan token update"
+          >
+            <WacpLogoBadge />
+            {downloadLabel}
+          </a>
+        ) : null}
         {showBscScanLink ? (
           <a
             href={WACP_BSCSCAN_TOKEN_UPDATE_URL}
@@ -156,6 +160,7 @@ export function AddWacpToMetaMaskButton(props: {
     <WacpPublicActions
       contractAddress={props.contractAddress}
       layout="compact"
+      showDownloadLink={false}
       showLogoUrl={false}
       showBscScanLink={false}
     />

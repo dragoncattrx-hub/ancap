@@ -228,6 +228,9 @@ export default function BridgeAcpBscPage() {
             <WacpPublicActions
               contractAddress={status?.wacp_contract || undefined}
               layout="home"
+              showDownloadLink
+              showLogoUrl
+              showBscScanLink
             />
           </div>
         </section>

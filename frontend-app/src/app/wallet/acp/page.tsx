@@ -816,7 +816,7 @@ export default function AcpWalletPage() {
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14, alignItems: "flex-start" }}>
                 <Link href="/bridge/acp-bsc" className="btn btn-primary">Open bridge</Link>
-                <WacpPublicActions layout="compact" showLogoUrl showBscScanLink />
+                <WacpPublicActions layout="compact" showDownloadLink showLogoUrl showBscScanLink />
                 <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">Open swap</a>
                 <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">View pool</a>
               </div>

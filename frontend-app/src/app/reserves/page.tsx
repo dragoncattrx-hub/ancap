@@ -61,6 +61,9 @@ export default function ReservesPage() {
                 <WacpPublicActions
                   contractAddress={wacp.wacp_contract || undefined}
                   layout="home"
+                  showDownloadLink
+                  showLogoUrl
+                  showBscScanLink
                 />
               </div>
               <div className="break-all">Gateway: {wacp.gateway_contract || "—"}</div>
