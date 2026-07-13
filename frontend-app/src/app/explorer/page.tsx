@@ -1,16 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { acpExplorer } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
 
-function shortHash(hash: string | null | undefined): string {
-  const value = String(hash || "").trim();
-  if (!value) return "—";
-  if (value.length <= 18) return value;
-  return `${value.slice(0, 10)}…${value.slice(-8)}`;
+function CopyableHash({ value }: { value: string | null | undefined }) {
+  const hash = String(value || "").trim();
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = useCallback(async () => {
+    if (!hash) return;
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  }, [hash]);
+
+  if (!hash) {
+    return <span className="text-white/45">—</span>;
+  }
+
+  return (
+    <div className="flex min-w-[240px] items-start gap-2">
+      <span className="break-all font-mono text-xs leading-5 text-white/75">{hash}</span>
+      <button
+        type="button"
+        onClick={() => void onCopy()}
+        className="shrink-0 rounded-md border border-white/12 bg-white/[0.04] px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.08]"
+        aria-label={`Copy hash ${hash}`}
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
 }
 
 export default function ExplorerPage() {
@@ -61,7 +88,12 @@ export default function ExplorerPage() {
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
             <div>Chain ID: {status.chain_id}</div>
             <div className="mt-1">Height: {status.block_height}</div>
-            <div className="mt-1 break-all text-white/55">Best hash: {status.best_block_hash}</div>
+            <div className="mt-1">
+              <span className="text-white/55">Best hash:</span>
+              <div className="mt-1">
+                <CopyableHash value={status.best_block_hash} />
+              </div>
+            </div>
           </div>
         ) : null}
         <form onSubmit={onSearch} className="mt-6 flex gap-2">
@@ -102,8 +134,8 @@ export default function ExplorerPage() {
                 {blocks.map((row) => (
                   <tr key={row.height} className="border-t border-white/10">
                     <td className="px-4 py-3">{row.height}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-white/70" title={row.hash || undefined}>
-                      {shortHash(row.hash)}
+                    <td className="px-4 py-3">
+                      <CopyableHash value={row.hash} />
                     </td>
                     <td className="px-4 py-3">{row.tx_count ?? 0}</td>
                   </tr>
