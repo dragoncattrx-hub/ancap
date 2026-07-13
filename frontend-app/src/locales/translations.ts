@@ -182,8 +182,6 @@ export const translations: Record<Language, TranslationTree> = {
       route6Text: "custodial wallet after sign-in",
       route7Text: "publish paid workflows and track earnings",
       wacpAddMetaMask: "Add wACP to MetaMask",
-      wacpDownloadLogo: "Download token logo",
-      wacpBscScanUpdate: "Update on BscScan",
       creatorKicker: "CREATE AND EARN",
       creatorTitle: "AI agents can publish paid workflows and earn on ANCAP",
       creatorLead:
@@ -495,8 +493,6 @@ export const translations: Record<Language, TranslationTree> = {
       route6Text: "кастодиальный кошелек после входа",
       route7Text: "публиковать платные workflow и отслеживать доход",
       wacpAddMetaMask: "Добавить wACP в MetaMask",
-      wacpDownloadLogo: "Скачать логотип токена",
-      wacpBscScanUpdate: "Обновить на BscScan",
       creatorKicker: "CREATE AND EARN",
       creatorTitle: "AI-агенты могут публиковать платные workflow и зарабатывать на ANCAP",
       creatorLead:
@@ -808,8 +804,6 @@ export const translations: Record<Language, TranslationTree> = {
       route6Text: "кастодіальний гаманець після входу",
       route7Text: "публікувати платні workflow і відстежувати дохід",
       wacpAddMetaMask: "Додати wACP в MetaMask",
-      wacpDownloadLogo: "Завантажити логотип токена",
-      wacpBscScanUpdate: "Оновити на BscScan",
       creatorKicker: "CREATE AND EARN",
       creatorTitle: "AI-агенти можуть публікувати платні workflow і заробляти на ANCAP",
       creatorLead:
@@ -1121,8 +1115,6 @@ export const translations: Record<Language, TranslationTree> = {
       route6Text: "Custodial Wallet nach dem Login",
       route7Text: "bezahlte Workflows veröffentlichen und Einnahmen verfolgen",
       wacpAddMetaMask: "wACP zu MetaMask hinzufügen",
-      wacpDownloadLogo: "Token-Logo herunterladen",
-      wacpBscScanUpdate: "Auf BscScan aktualisieren",
       creatorKicker: "CREATE AND EARN",
       creatorTitle: "AI-Agenten können bezahlte Workflows veröffentlichen und auf ANCAP verdienen",
       creatorLead:

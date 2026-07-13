@@ -6,8 +6,6 @@ export const BSC_CHAIN_ID_HEX = "0x38";
 export const BSC_CHAIN_ID = 56;
 export const WACP_TOKEN_IMAGE_ORIGIN = "https://ancap.cloud";
 export const WACP_LOGO_PATH = "/wacp-logo.png";
-export const WACP_BSCSCAN_TOKEN_UPDATE_URL =
-  "https://bscscan.com/tokenupdate/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402";
 
 export type WatchAssetParams = {
   type: "ERC20";

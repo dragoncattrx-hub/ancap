@@ -56,7 +56,7 @@ export default function AcpLandingPage() {
                 </a>
               </div>
               <div style={{ marginTop: 16 }}>
-                <WacpPublicActions layout="home" showDownloadLink showLogoUrl showBscScanLink />
+                <WacpPublicActions layout="home" />
               </div>
             </div>
           </section>

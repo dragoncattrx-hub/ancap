@@ -2,22 +2,12 @@
 
 import { useCallback, useState, type CSSProperties } from "react";
 import { watchWacpInWallet } from "@/lib/watchAsset";
-import {
-  WACP_BSC_CONTRACT,
-  WACP_BSCSCAN_TOKEN_UPDATE_URL,
-  WACP_LOGO_PATH,
-  getWacpLogoUrl,
-} from "@/lib/wacpToken";
+import { WACP_BSC_CONTRACT, WACP_LOGO_PATH } from "@/lib/wacpToken";
 
 type WacpPublicActionsProps = {
   contractAddress?: string;
   layout?: "home" | "compact";
-  showDownloadLink?: boolean;
-  showLogoUrl?: boolean;
-  showBscScanLink?: boolean;
   addLabel?: string;
-  downloadLabel?: string;
-  bscScanLabel?: string;
 };
 
 const xPillStyle: CSSProperties = {
@@ -62,18 +52,11 @@ function WacpLogoBadge() {
 export function WacpPublicActions({
   contractAddress = WACP_BSC_CONTRACT,
   layout = "home",
-  showDownloadLink = false,
-  showLogoUrl = false,
-  showBscScanLink = false,
   addLabel = "Add wACP to MetaMask",
-  downloadLabel = "Download token logo",
-  bscScanLabel = "Update on BscScan",
 }: WacpPublicActionsProps) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [message, setMessage] = useState("");
-  const logoUrl =
-    typeof window !== "undefined" ? getWacpLogoUrl(window.location.origin) : getWacpLogoUrl();
 
   const onAdd = useCallback(async () => {
     setBusy(true);
@@ -107,39 +90,7 @@ export function WacpPublicActions({
           <WacpLogoBadge />
           {busy ? "Opening MetaMask…" : addLabel}
         </button>
-        {showDownloadLink ? (
-          <a
-            href={WACP_LOGO_PATH}
-            download="wacp-logo.png"
-            className={pillClass}
-            style={layout === "home" ? xPillStyle : undefined}
-            title="32×32 PNG, transparent background — paste into BscScan token update"
-          >
-            <WacpLogoBadge />
-            {downloadLabel}
-          </a>
-        ) : null}
-        {showBscScanLink ? (
-          <a
-            href={WACP_BSCSCAN_TOKEN_UPDATE_URL}
-            className={pillClass}
-            style={layout === "home" ? xPillStyle : undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <WacpLogoBadge />
-            {bscScanLabel}
-          </a>
-        ) : null}
       </div>
-      {showLogoUrl ? (
-        <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-          <strong style={{ color: "var(--text)" }}>Token logo URL (BscScan):</strong>{" "}
-          <a href={logoUrl} style={{ color: "var(--accent-strong)", wordBreak: "break-all" }}>
-            {logoUrl}
-          </a>
-        </div>
-      ) : null}
       {status === "added" ? (
         <span style={{ fontSize: "0.82rem", color: "#10b981" }}>{message}</span>
       ) : null}
@@ -156,13 +107,5 @@ export function AddWacpToMetaMaskButton(props: {
   className?: string;
   variant?: "primary" | "ghost" | "bridge";
 }) {
-  return (
-    <WacpPublicActions
-      contractAddress={props.contractAddress}
-      layout="compact"
-      showDownloadLink={false}
-      showLogoUrl={false}
-      showBscScanLink={false}
-    />
-  );
+  return <WacpPublicActions contractAddress={props.contractAddress} layout="compact" />;
 }
