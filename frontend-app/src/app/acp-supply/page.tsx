@@ -1,38 +1,41 @@
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
-import { getServerApiBase } from "@/lib/serverApi";
+import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
+import { TokenomicsSnapshotSection } from "./TokenomicsSnapshotSection";
 
 const API_BASE = getServerApiBase();
 
 async function loadSupply() {
   try {
-    const [statusRes, explorerRes] = await Promise.all([
-      fetch(`${API_BASE}/acp/explorer/status`, { next: { revalidate: 60 } }),
-      fetch(`${API_BASE}/wacp/status`, { next: { revalidate: 60 } }),
+    const [statusRes, explorerRes, tokenomicsRes] = await Promise.all([
+      serverApiFetch(`${API_BASE}/acp/explorer/status`, { next: { revalidate: 60 } }),
+      serverApiFetch(`${API_BASE}/wacp/status`, { next: { revalidate: 60 } }),
+      serverApiFetch(`${API_BASE}/acp/explorer/tokenomics/snapshot`, { next: { revalidate: 30 } }),
     ]);
     const explorer = statusRes.ok ? await statusRes.json() : null;
     const wacp = explorerRes.ok ? await explorerRes.json() : null;
-    return { explorer, wacp };
+    const tokenomics = tokenomicsRes.ok ? await tokenomicsRes.json() : null;
+    return { explorer, wacp, tokenomics };
   } catch {
-    return { explorer: null, wacp: null };
+    return { explorer: null, wacp: null, tokenomics: null };
   }
 }
 
 export const metadata = {
   title: "ACP Supply | ANCAP transparency",
-  description: "Public ACP chain height snapshot and wACP bridge supply context.",
+  description: "Public ACP chain height snapshot and official 210M tokenomics distribution.",
 };
 
 export default async function AcpSupplyPage() {
-  const { explorer, wacp } = await loadSupply();
+  const { explorer, wacp, tokenomics } = await loadSupply();
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
-      <main className="mx-auto max-w-4xl px-4 py-10">
+      <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-3xl font-semibold">ACP supply snapshot</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          Public transparency surface for native ACP chain activity and bridged wACP context. This is not a certified audit — verify bridge contracts before moving funds.
+          Public transparency for native ACP chain activity, official genesis tokenomics (210M), and bridged wACP context.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -60,8 +63,12 @@ export default async function AcpSupplyPage() {
               <p className="mt-3 text-sm text-amber-200">Bridge status unavailable</p>
             )}
           </section>
+          <TokenomicsSnapshotSection snapshot={tokenomics} />
         </div>
         <div className="mt-8 flex flex-wrap gap-4 text-sm">
+          <Link href="/wallet/acp" className="text-emerald-300">
+            ACP wallet
+          </Link>
           <Link href="/reserves" className="text-emerald-300">
             Reserves dashboard
           </Link>

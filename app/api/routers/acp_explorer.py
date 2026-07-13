@@ -52,6 +52,16 @@ async def get_transaction(txid: str):
     return {"txid": txid.strip().lower(), "transaction": decoded or tx}
 
 
+@router.get("/tokenomics/snapshot")
+async def tokenomics_snapshot():
+    try:
+        from app.services.acp_tokenomics import build_tokenomics_snapshot
+
+        return await build_tokenomics_snapshot()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
 @router.get("/address/{address}")
 async def get_address_summary(address: str):
     try:
