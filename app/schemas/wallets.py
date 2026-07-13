@@ -16,6 +16,7 @@ class AcpBalanceResponse(BaseModel):
     units: str
     acp: str
     utxo_count: int = 0
+    on_chain_acp: str | None = None
     in_work_acp: str | None = None
     in_work_staked_acp: str | None = None
     in_work_ledger_acp: str | None = None

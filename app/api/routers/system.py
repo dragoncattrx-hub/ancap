@@ -166,13 +166,11 @@ async def _refresh_acp_rpc_probe_cache() -> None:
 
     if rpc_url:
         try:
+            from app.services.acp_rpc import acp_rpc_headers
+
             body = {"jsonrpc": "2.0", "id": 1, "method": "getblockcount", "params": {}}
-            headers = {}
-            token = os.getenv("ACP_RPC_TOKEN", "").strip()
-            if token:
-                headers["x-acp-rpc-token"] = token
             async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.post(rpc_url, json=body, headers=headers)
+                response = await client.post(rpc_url, json=body, headers=acp_rpc_headers())
             payload = response.json()
             rpc_ok = bool(response.status_code == 200 and not payload.get("error"))
             probe_status = "ok" if rpc_ok else "degraded"

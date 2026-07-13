@@ -75,7 +75,7 @@ async def check_reconciliation_mismatch_alert(session: AsyncSession) -> dict | N
         alert = {
             "alert": "reconciliation_mismatch",
             "snapshot_at": latest.snapshot_at.isoformat(),
-            "delta_wacp_wei": int(latest.delta_wacp_wei),
+            "delta_wacp_wei": str(int(latest.delta_wacp_wei or 0)),
             "reserve_health": latest.reserve_health,
             "status": latest.status,
         }
@@ -87,25 +87,26 @@ async def check_reconciliation_mismatch_alert(session: AsyncSession) -> dict | N
 async def _write_reserve_snapshot(session: AsyncSession, payload: dict) -> None:
     """Persist a BridgeReserveSnapshot row each time reconciliation runs."""
     try:
-        snapshot = BridgeReserveSnapshot(
-            id=uuid.uuid4(),
-            snapshot_at=datetime.now(timezone.utc),
-            reserve_balance_acp_smallest=payload.get("reserve_balance_acp_smallest", 0),
-            total_wacp_wei_completed=payload.get("total_wacp_wei", 0),
-            total_wacp_wei_implied=payload.get("implied_wacp_wei_from_acp", 0),
-            backing_ratio=Decimal(payload["backing_ratio"]) if payload.get("backing_ratio") else None,
-            delta_wacp_wei=payload.get("delta_wacp_wei", 0),
-            reconciliation_ok=payload.get("ok", False),
-            acp_reserve_address=payload.get("acp_reserve_address"),
-            wacp_contract=payload.get("wacp_contract"),
-            status=payload.get("status", "pending"),
-            reserve_health=payload.get("reserve_health", "pending"),
-            notes=payload.get("notes", []),
-            last_acp_block_height=payload.get("last_acp_block_height"),
-            last_bsc_block_number=payload.get("last_bsc_block_number"),
-        )
-        session.add(snapshot)
-        await session.flush()
+        async with session.begin_nested():
+            snapshot = BridgeReserveSnapshot(
+                id=uuid.uuid4(),
+                snapshot_at=datetime.now(timezone.utc),
+                reserve_balance_acp_smallest=payload.get("reserve_balance_acp_smallest", 0),
+                total_wacp_wei_completed=payload.get("total_wacp_wei", 0),
+                total_wacp_wei_implied=payload.get("implied_wacp_wei_from_acp", 0),
+                backing_ratio=Decimal(payload["backing_ratio"]) if payload.get("backing_ratio") else None,
+                delta_wacp_wei=payload.get("delta_wacp_wei", 0),
+                reconciliation_ok=payload.get("ok", False),
+                acp_reserve_address=payload.get("acp_reserve_address"),
+                wacp_contract=payload.get("wacp_contract"),
+                status=payload.get("status", "pending"),
+                reserve_health=payload.get("reserve_health", "pending"),
+                notes=payload.get("notes", []),
+                last_acp_block_height=payload.get("last_acp_block_height"),
+                last_bsc_block_number=payload.get("last_bsc_block_number"),
+            )
+            session.add(snapshot)
+            await session.flush()
     except Exception as exc:
         logger.warning("failed to write bridge reserve snapshot: %s", exc)
 

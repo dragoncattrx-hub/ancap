@@ -73,8 +73,14 @@ async def _anchor_via_rpc(
         "id": 1,
     }
     try:
+        from app.services.acp_rpc import acp_rpc_headers
+
+        headers = acp_rpc_headers() if driver_label == "ACP" else {
+            "Content-Type": "application/json",
+            "User-Agent": "ancap-backend/1.0",
+        }
         async with httpx.AsyncClient() as client:
-            r = await client.post(url, json=payload, timeout=15.0)
+            r = await client.post(url, json=payload, headers=headers, timeout=15.0)
             r.raise_for_status()
             data = r.json()
     except httpx.HTTPError as e:

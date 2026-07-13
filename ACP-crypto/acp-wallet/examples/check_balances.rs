@@ -47,7 +47,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let want: HashSet<String> = addresses.iter().cloned().collect();
-    let client = Client::new();
+    let client = Client::builder()
+        .user_agent("ancap-wallet/1.0")
+        .build()?;
     let rpc_url: String = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| "https://acp1.ancap.cloud/rpc".to_string());
 
     let best_height: u64 = rpc(&client, &rpc_url, "getblockcount", json!([]))?

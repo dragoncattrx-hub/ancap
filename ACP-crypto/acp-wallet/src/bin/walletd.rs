@@ -22,6 +22,8 @@ use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashSet};
 use std::time::Duration;
 
+const RPC_USER_AGENT: &str = "ancap-walletd/1.0";
+
 fn rpc(client: &Client, rpc_url: &str, method: &str, params: Value) -> anyhow::Result<Value> {
     let body = json!({
         "jsonrpc": "2.0",
@@ -256,7 +258,10 @@ fn cmd_address(mnemonic: Option<&str>, keystore_json: Option<&str>) -> anyhow::R
 
 fn cmd_balance(rpc_url: &str, address: &str) -> anyhow::Result<Value> {
     AddressV0::decode(address).context("invalid ACP address")?;
-    let client = Client::builder().timeout(Duration::from_secs(30)).build()?;
+    let client = Client::builder()
+        .user_agent(RPC_USER_AGENT)
+        .timeout(Duration::from_secs(30))
+        .build()?;
     let utxos = scan_utxos(&client, rpc_url, address)?;
     let units: u64 = utxos.iter().map(|u| u.amount_units).sum();
     Ok(json!({
@@ -293,7 +298,10 @@ fn cmd_submit(rpc_url: &str, raw_tx: &str) -> anyhow::Result<Value> {
     if hex.starts_with("0x") || hex.starts_with("0X") {
         hex = hex[2..].to_string();
     }
-    let client = Client::builder().timeout(Duration::from_secs(60)).build()?;
+    let client = Client::builder()
+        .user_agent(RPC_USER_AGENT)
+        .timeout(Duration::from_secs(60))
+        .build()?;
     let send_res = rpc(&client, rpc_url, "sendrawtransaction", json!({ "tx": hex }))?;
     let accepted = send_res.get("accepted").and_then(|v| v.as_bool()).unwrap_or(false);
     if accepted {
@@ -331,7 +339,10 @@ fn cmd_transfer(
         MIN_FEE_UNITS
     };
 
-    let client = Client::builder().timeout(Duration::from_secs(60)).build()?;
+    let client = Client::builder()
+        .user_agent(RPC_USER_AGENT)
+        .timeout(Duration::from_secs(60))
+        .build()?;
     let chain_id = get_chain_id(&client, rpc_url)?;
 
     let id = if let Some(kj) = keystore_json {

@@ -63,7 +63,7 @@ Expenses are debited from the same account (staking rewards, referral rewards, f
 | **User/platform ledger** | Postgres `ancap` — tables `accounts`, `ledger_events` | Platform balances users see (deposits, fees, stakes, transfers). **Not wiped** on chain regenesis. |
 | **On-chain UTXOs** | `acp-node` data dir `Sicret/acp/` (bind-mount) | Real ACP coins. After regenesis v2: genesis tx at height 1. |
 | **Genesis treasury (~207M)** | `acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl` in `Sicret/genesis-v2/genesis-treasury.keystore.json` + `genesis-treasury-wallet.txt` | Spendable operator pool (replaces lost 209M from broken genesis). Regenesis v2 accepted 2026-07-02. |
-| **Hot wallet** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` — mnemonic `Sicret/acp_hot_mnemonic.txt` | 1M ACP genesis alloc; custodial withdrawals. |
+| **Hot wallet** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` — keystore `Sicret/custodial-hot.keystore.json` (PQC; mnemonic alone insufficient) | 1M ACP genesis alloc; custodial withdrawals. See `docs/ACP_WALLET_ROLES.md`. |
 | **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` — keystore `Desktop/Sicret/project-treasury-keystore.json` | 1M ACP; miner emission target (`ACP_MINER_REWARD_ADDRESS`). |
 | **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` — `Sicret/bridge-bsc/acp-reserve-keystore.json` | 301K ACP; backs wACP on BSC. |
 | **User on-chain** | `user_acp_wallets.address` | Each user with positive ledger balance gets matching on-chain alloc in genesis v2. |

@@ -213,6 +213,26 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
             "progressed_bsc_to_acp": progressed_bsc_to_acp,
         }
 
+    confirmed_mint_ops = (
+        await session.execute(
+            select(BridgeOperation)
+            .where(
+                BridgeOperation.direction == "acp_to_bsc",
+                BridgeOperation.status == "CONFIRMED_ON_ACP",
+            )
+            .order_by(BridgeOperation.created_at.asc())
+        )
+    ).scalars().all()
+    for op in confirmed_mint_ops:
+        await append_transition(
+            session,
+            op,
+            "MINT_REQUESTED",
+            metadata={"note": "ACP deposit confirmed; BSC mint queued"},
+        )
+        progressed += 1
+        progressed_acp_to_bsc += 1
+
     reverse_ops = (
         await session.execute(
             select(BridgeOperation)
@@ -282,49 +302,65 @@ async def tick_orchestrator(session: AsyncSession) -> dict:
     for op in ops:
         deposit_ref_hex = op.deposit_ref_hex or _make_deposit_ref_hex(op)
         op.deposit_ref_hex = deposit_ref_hex
-        tx = gateway.functions.mintWrapped(
-            Web3.to_checksum_address(op.user_bsc_address),
-            int(op.amount_wacp_wei),
-            bytes.fromhex(deposit_ref_hex[2:]),
-        ).build_transaction(
-            {
-                "from": acct.address,
-                "nonce": w3.eth.get_transaction_count(acct.address, "pending"),
-                "chainId": int(w3.eth.chain_id),
-            }
-        )
-        gas_estimate = w3.eth.estimate_gas(tx)
-        tx["gas"] = int(gas_estimate * 12 // 10)
         try:
-            latest_block = w3.eth.get_block("latest")
-            base_fee = latest_block.get("baseFeePerGas")
-        except Exception:
-            base_fee = None
-        priority = w3.to_wei(1, "gwei")
-        if base_fee is not None:
-            tx["maxPriorityFeePerGas"] = priority
-            tx["maxFeePerGas"] = int(base_fee) * 2 + priority
-            tx.pop("gasPrice", None)
-        else:
-            tx["gasPrice"] = w3.eth.gas_price
-        signed = acct.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-        tx_hash_hex = tx_hash.hex()
-        op.bsc_tx_hash_mint = tx_hash_hex
-        session.add(
-            BridgeAuditEvent(
-                operation_id=op.id,
-                event_type="bsc_mint_submitted",
-                payload_json={
-                    "tx_hash": tx_hash_hex,
-                    "deposit_ref_hex": deposit_ref_hex,
-                    "amount_wacp_wei": int(op.amount_wacp_wei),
-                    "to": op.user_bsc_address,
-                },
+            tx = gateway.functions.mintWrapped(
+                Web3.to_checksum_address(op.user_bsc_address),
+                int(op.amount_wacp_wei),
+                bytes.fromhex(deposit_ref_hex[2:]),
+            ).build_transaction(
+                {
+                    "from": acct.address,
+                    "nonce": w3.eth.get_transaction_count(acct.address, "pending"),
+                    "chainId": int(w3.eth.chain_id),
+                }
             )
-        )
-        progressed += 1
-        progressed_acp_to_bsc += 1
+            gas_estimate = w3.eth.estimate_gas(tx)
+            tx["gas"] = int(gas_estimate * 12 // 10)
+            priority = w3.to_wei(1, "gwei")
+            try:
+                latest_block = w3.eth.get_block("latest")
+                base_fee = latest_block.get("baseFeePerGas")
+            except Exception:
+                base_fee = None
+            tx.pop("gasPrice", None)
+            if base_fee is not None:
+                tx["maxPriorityFeePerGas"] = priority
+                tx["maxFeePerGas"] = int(base_fee) * 2 + priority
+            else:
+                gas_price = int(w3.eth.gas_price)
+                tx["maxPriorityFeePerGas"] = priority
+                tx["maxFeePerGas"] = gas_price + priority
+            signed = acct.sign_transaction(tx)
+            tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+            tx_hash_hex = tx_hash.hex()
+            op.bsc_tx_hash_mint = tx_hash_hex
+            session.add(
+                BridgeAuditEvent(
+                    operation_id=op.id,
+                    event_type="bsc_mint_submitted",
+                    payload_json={
+                        "tx_hash": tx_hash_hex,
+                        "deposit_ref_hex": deposit_ref_hex,
+                        "amount_wacp_wei": int(op.amount_wacp_wei),
+                        "to": op.user_bsc_address,
+                    },
+                )
+            )
+            progressed += 1
+            progressed_acp_to_bsc += 1
+        except Exception as exc:
+            session.add(
+                BridgeAuditEvent(
+                    operation_id=op.id,
+                    event_type="bsc_mint_submit_failed",
+                    payload_json={
+                        "deposit_ref_hex": deposit_ref_hex,
+                        "amount_wacp_wei": int(op.amount_wacp_wei),
+                        "to": op.user_bsc_address,
+                        "error": str(exc),
+                    },
+                )
+            )
 
     await session.flush()
     return {

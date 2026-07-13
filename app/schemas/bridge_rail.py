@@ -81,10 +81,10 @@ class BridgeSnapshotResponse(BaseModel):
     id: str
     snapshot_at: datetime
     reserve_balance_acp_smallest: int
-    total_wacp_wei_completed: int
-    total_wacp_wei_implied: int
+    total_wacp_wei_completed: str
+    total_wacp_wei_implied: str
     backing_ratio: float | None
-    delta_wacp_wei: int
+    delta_wacp_wei: str
     reconciliation_ok: bool
     status: str
     reserve_health: str
@@ -165,6 +165,12 @@ class BridgeAdminReverseBindBurnRequest(BaseModel):
 
 
 class BridgeAdminReverseBindPayoutRequest(BaseModel):
+    operation_id: str
+    acp_tx_hash: str = Field(..., min_length=3, max_length=128)
+    note: str | None = None
+
+
+class BridgeAdminForwardBindDepositRequest(BaseModel):
     operation_id: str
     acp_tx_hash: str = Field(..., min_length=3, max_length=128)
     note: str | None = None

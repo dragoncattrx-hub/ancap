@@ -341,6 +341,29 @@ def _format_balance_note(real_acp: Decimal, in_work_acp: Decimal, available_acp:
     )
 
 
+def _units_from_acp(acp: Decimal) -> str:
+    return str(int((acp * Decimal(100_000_000)).to_integral_value()))
+
+
+def _custodial_balance_view(
+    on_chain_acp: Decimal,
+    staked_acp: Decimal,
+    ledger_acp: Decimal,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Map mixed custodial hot UTXOs to ledger-backed user entitlement."""
+    entitlement = staked_acp + ledger_acp
+    if entitlement <= 0:
+        available = on_chain_acp - staked_acp
+        if available < 0:
+            available = Decimal(0)
+        return on_chain_acp, staked_acp + ledger_acp, available
+    display_acp = min(on_chain_acp, entitlement)
+    available = min(ledger_acp, max(on_chain_acp - staked_acp, Decimal(0)))
+    if available < 0:
+        available = Decimal(0)
+    return display_acp, entitlement, available
+
+
 def _creator_vesting_monthly_unlock_acp() -> Decimal:
     # 69,300,000 ACP over 72 months after a 12-month cliff.
     return Decimal("962500")
@@ -412,14 +435,16 @@ async def _decorate_balance_for_user(
     *,
     include_in_work: bool,
 ) -> AcpBalanceResponse:
-    real_acp = _parse_decimal_or_zero(raw.get("acp"))
+    on_chain_acp = _parse_decimal_or_zero(raw.get("acp"))
     if include_in_work:
         in_work_acp, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
+        real_acp, in_work_acp, available_acp = _custodial_balance_view(
+            on_chain_acp, in_staked, in_ledger
+        )
     else:
         in_work_acp = in_staked = in_ledger = Decimal(0)
-    available_acp = real_acp - in_work_acp
-    if available_acp < 0:
-        available_acp = Decimal(0)
+        real_acp = on_chain_acp
+        available_acp = on_chain_acp
     in_work_staked_s = _decimal_to_api_str(in_staked) if include_in_work else None
     in_work_ledger_s = _decimal_to_api_str(in_ledger) if include_in_work else None
     vested_unlocked_acp: str | None = None
@@ -433,8 +458,17 @@ async def _decorate_balance_for_user(
         if vest is not None:
             vested_unlocked_acp = _decimal_to_api_str(vest[0])
             vested_locked_acp = _decimal_to_api_str(vest[1])
+    on_chain_s = (
+        _decimal_to_api_str(on_chain_acp)
+        if include_in_work and on_chain_acp != real_acp
+        else None
+    )
     return AcpBalanceResponse(
-        **raw,
+        address=str(raw.get("address") or ""),
+        units=_units_from_acp(real_acp),
+        acp=_decimal_to_api_str(real_acp),
+        utxo_count=int(raw.get("utxo_count") or 0),
+        on_chain_acp=on_chain_s,
         in_work_acp=_decimal_to_api_str(in_work_acp),
         in_work_staked_acp=in_work_staked_s,
         in_work_ledger_acp=in_work_ledger_s,
@@ -446,9 +480,11 @@ async def _decorate_balance_for_user(
 
 
 def _rpc_call(rpc_url: str, method: str, params: list | dict | None = None):
+    from app.services.acp_rpc import acp_rpc_headers
+
     body = {"jsonrpc": "2.0", "id": "wallet-acp-history", "method": method, "params": params or []}
     try:
-        r = httpx.post(rpc_url, json=body, timeout=30.0)
+        r = httpx.post(rpc_url, json=body, headers=acp_rpc_headers(), timeout=30.0)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ACP RPC request failed: {exc}")
     try:
@@ -1014,11 +1050,10 @@ async def withdraw(
     if body.fee_acp is not None and str(body.fee_acp).strip():
         fee = _parse_positive_decimal(body.fee_acp, "fee_acp")
     balance_res = _load_balance_result(wallet.address)
-    real_acp = _parse_decimal_or_zero(balance_res.get("acp"))
-    in_work_acp = await _in_work_acp_for_user(session, user_id)
-    available_acp = real_acp - in_work_acp
-    if available_acp < 0:
-        available_acp = Decimal(0)
+    on_chain_acp = _parse_decimal_or_zero(balance_res.get("acp"))
+    _, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
+    _, _, available_acp = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
+    in_work_acp = in_staked + in_ledger
     fee_for_check = fee if fee is not None else (Decimal(1) / Decimal(100_000_000))
     required_total = amount + fee_for_check
     if required_total > available_acp:

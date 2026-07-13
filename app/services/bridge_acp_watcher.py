@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from collections import defaultdict
 from typing import Any
 
@@ -12,19 +11,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import BridgeAuditEvent, BridgeOperation, BridgeWatcherCheckpoint
+from app.services.acp_rpc import acp_rpc_headers
 from app.services.bridge_orchestrator import append_transition
 
 logger = logging.getLogger(__name__)
 
 
+def _norm_txid(txid: str) -> str:
+    return str(txid or "").strip().lower()
+
+
 async def _json_rpc(rpc_url: str, method: str, params: list | dict | None = None) -> dict[str, Any]:
     body = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}}
-    headers = {}
-    token = os.getenv("ACP_RPC_TOKEN", "").strip()
-    if token:
-        headers["x-acp-rpc-token"] = token
     async with httpx.AsyncClient(timeout=15.0) as client:
-        r = await client.post(rpc_url, json=body, headers=headers)
+        r = await client.post(rpc_url, json=body, headers=acp_rpc_headers())
         r.raise_for_status()
         return r.json()
 
@@ -57,7 +57,7 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
         txs = block.get("tx") or []
 
         for tx in txs:
-            txid = str(tx.get("txid") or "")
+            txid = _norm_txid(str(tx.get("txid") or ""))
             if not txid:
                 continue
             sent_units = 0
@@ -69,7 +69,7 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
                 prev_vout = vin.get("vout")
                 if prev_txid is None or prev_vout is None:
                     continue
-                key = (str(prev_txid), int(prev_vout))
+                key = (_norm_txid(str(prev_txid)), int(prev_vout))
                 prev_out = out_index.pop(key, None)
                 if prev_out and prev_out[0] == address:
                     sent_units += int(prev_out[1])
@@ -103,6 +103,29 @@ async def _chain_transactions_for_address(rpc_url: str, address: str, best_heigh
 
     rows.sort(key=lambda x: (int(x["block_height"]), str(x["txid"])), reverse=True)
     return rows
+
+
+async def reserve_deposit_units_for_tx(rpc_url: str, reserve_address: str, txid: str) -> dict[str, Any]:
+    """Fetch a tx and return reserve-side deposit metadata for admin recovery."""
+    normalized = _norm_txid(txid)
+    payload = await _json_rpc(rpc_url, "getrawtransaction", {"txid": normalized, "verbose": 1})
+    if payload.get("error"):
+        raise ValueError(str(payload.get("error")))
+    result = payload.get("result") or {}
+    decoded = result.get("decoded") if isinstance(result, dict) else None
+    if not isinstance(decoded, dict):
+        raise ValueError("transaction not found")
+    reserve = reserve_address.strip()
+    received_units = sum(
+        _json_chain_amount_to_int(vout.get("amount"))
+        for vout in (decoded.get("vout") or [])
+        if str(vout.get("recipient_address") or "").strip() == reserve
+    )
+    return {
+        "txid": normalized,
+        "received_units": received_units,
+        "confirmations": int(decoded.get("confirmations") or 0),
+    }
 
 
 async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
@@ -151,7 +174,7 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
             for op in pending:
                 target_units = int(op.amount_acp_smallest or 0)
                 for tx in txs:
-                    txid = str(tx["txid"])
+                    txid = _norm_txid(str(tx["txid"]))
                     if txid in used_txids:
                         continue
                     if tx.get("direction") != "in":
@@ -244,7 +267,7 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                 )
                 confirmed_payouts += 1
         except Exception as exc:
-            logger.warning("acp deposit pickup failed: %s", exc)
+            logger.warning("acp deposit pickup failed: %s", exc, exc_info=True)
 
     await session.flush()
     return {"ok": True, "chain_key": "acp", "last_block_height": height, "matched_deposits": matched, "confirmed_payouts": confirmed_payouts}

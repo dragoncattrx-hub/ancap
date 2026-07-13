@@ -20,6 +20,7 @@
 //!   ACP_BRIDGE_RESERVE       (default acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz)
 
 use acp_crypto::{
+    keystore::KeystoreV3,
     protocol_params::{BASE_SUPPLY_ACP, UNITS_PER_ACP},
     AddressV0, Block, BlockHeader, Mnemonic, Transaction, TxInput, TxOutput, WalletIdentity,
 };
@@ -151,6 +152,22 @@ fn main() -> anyhow::Result<()> {
         .unwrap_or_else(|_| DEFAULT_PROJECT_TREASURY.to_string());
     let bridge_reserve = std::env::var("ACP_BRIDGE_RESERVE")
         .unwrap_or_else(|_| DEFAULT_BRIDGE_RESERVE.to_string());
+
+    if let Ok(hot_keystore_path) = std::env::var("ACP_HOT_KEYSTORE_FILE") {
+        let ks_json = std::fs::read_to_string(&hot_keystore_path)?;
+        let ks: KeystoreV3 = serde_json::from_str(&ks_json)?;
+        let id = WalletIdentity::from_keystore_v3(&ks)?;
+        let derived = id.receive_address_v0()?;
+        if derived != hot_addr {
+            anyhow::bail!(
+                "ACP_HOT_KEYSTORE_FILE derives {derived} but ACP_HOT_ADDRESS is {hot_addr}"
+            );
+        }
+        std::fs::copy(&hot_keystore_path, out_dir.join("custodial-hot.keystore.json"))?;
+        eprintln!("[OK] Custodial hot keystore verified and copied to {}/custodial-hot.keystore.json", out_dir.display());
+    } else {
+        eprintln!("[!] ACP_HOT_KEYSTORE_FILE not set — genesis will fund {hot_addr} but operator cannot spend without KeystoreV3");
+    }
 
     let total_units = BASE_SUPPLY_ACP
         .checked_mul(UNITS_PER_ACP)

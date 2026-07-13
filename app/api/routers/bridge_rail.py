@@ -22,6 +22,7 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.schemas.bridge_rail import (
+    BridgeAdminForwardBindDepositRequest,
     BridgeAdminReverseBindBurnRequest,
     BridgeAdminReverseBindPayoutRequest,
     BridgeAdminReverseMarkDisputedRequest,
@@ -550,10 +551,10 @@ async def list_reserve_snapshots(
             id=str(s.id),
             snapshot_at=s.snapshot_at,
             reserve_balance_acp_smallest=int(s.reserve_balance_acp_smallest),
-            total_wacp_wei_completed=int(s.total_wacp_wei_completed),
-            total_wacp_wei_implied=int(s.total_wacp_wei_implied),
+            total_wacp_wei_completed=str(int(s.total_wacp_wei_completed or 0)),
+            total_wacp_wei_implied=str(int(s.total_wacp_wei_implied or 0)),
             backing_ratio=float(s.backing_ratio) if s.backing_ratio else None,
-            delta_wacp_wei=int(s.delta_wacp_wei),
+            delta_wacp_wei=str(int(s.delta_wacp_wei or 0)),
             reconciliation_ok=s.reconciliation_ok,
             status=s.status,
             reserve_health=s.reserve_health,
@@ -827,6 +828,90 @@ async def admin_reverse_bind_burn(
                 "note": body.note,
             },
         )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
+@router.post("/admin/forward/bind-deposit", response_model=BridgeOperationPublic)
+async def admin_forward_bind_deposit(
+    body: BridgeAdminForwardBindDepositRequest,
+    session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "acp_to_bsc":
+        raise HTTPException(status_code=400, detail="Operation is not forward rail")
+    if op.status != "PENDING_DEPOSIT":
+        raise HTTPException(status_code=409, detail="Operation is not in PENDING_DEPOSIT")
+    tx_hash = str(body.acp_tx_hash).strip().lower()
+    dup = await session.scalar(
+        select(BridgeOperation.id).where(
+            BridgeOperation.id != op.id,
+            BridgeOperation.acp_tx_hash == tx_hash,
+        )
+    )
+    if dup is not None:
+        raise HTTPException(status_code=409, detail="ACP deposit tx already bound to another operation")
+    reserve = (s.bridge_reserve_acp_address or "").strip()
+    rpc = (s.acp_rpc_url or "").strip()
+    if not reserve or not rpc:
+        raise HTTPException(status_code=503, detail="ACP reserve or RPC is not configured")
+    from app.services.bridge_acp_watcher import reserve_deposit_units_for_tx
+    from app.services.bridge_orchestrator import append_transition
+
+    try:
+        deposit = await reserve_deposit_units_for_tx(rpc, reserve, tx_hash)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    expected_units = int(op.amount_acp_smallest or 0)
+    received_units = int(deposit.get("received_units") or 0)
+    if received_units != expected_units:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Deposit amount mismatch: tx credited {received_units} smallest units, intent expects {expected_units}",
+        )
+    confirmations = int(deposit.get("confirmations") or 0)
+    if confirmations < int(s.bridge_acp_confirmations):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Deposit has {confirmations} confirmations; need {s.bridge_acp_confirmations}",
+        )
+    op.acp_tx_hash = tx_hash
+    op.acp_out_index = 0
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_forward_bind_deposit",
+            payload_json={
+                "acp_tx_hash": tx_hash,
+                "received_units": received_units,
+                "confirmations": confirmations,
+                "note": body.note,
+            },
+        )
+    )
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="acp_deposit_detected",
+            payload_json={
+                "txid": tx_hash,
+                "confirmations": confirmations,
+                "net_units": received_units,
+                "admin": True,
+            },
+        )
+    )
+    await append_transition(
+        session,
+        op,
+        "CONFIRMED_ON_ACP",
+        metadata={"admin": True, "txid": tx_hash, "note": body.note},
+    )
     await session.flush()
     await session.refresh(op)
     return _serialize_operation(op)

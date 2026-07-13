@@ -910,3 +910,195 @@ def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
     op = next(x for x in mine.json() if x["id"] == op_id)
     assert op["status"] == "COMPLETED"
     assert op["acp_tx_hash"] == payout_txid
+
+
+def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("ACP_RPC_URL", "https://acp.example.invalid")
+    monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
+    monkeypatch.setenv("BRIDGE_ACP_CONFIRMATIONS", "1")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x" + ("6" * 40),
+        "amount_acp": "500000",
+    }
+    create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+    deposit_txid = f"deposit-{uuid.uuid4().hex}"
+
+    import app.services.bridge_acp_watcher as acp_watcher
+
+    async def fake_json_rpc(rpc_url, method, params=None):
+        if method == "getblockcount":
+            return {"result": 3}
+        if method == "getblockhash":
+            height = int((params or {}).get("height") or 0)
+            return {"result": f"blockhash-{height}"}
+        if method == "getblock":
+            blockhash = str((params or {}).get("blockhash") or "")
+            try:
+                height = int(blockhash.split("-")[-1])
+            except Exception:
+                height = 0
+            txs = []
+            if height == 3:
+                txs = [
+                    {
+                        "txid": deposit_txid,
+                        "vin": [{"prev_txid": "fundingtx", "vout": 0}],
+                        "vout": [
+                            {
+                                "recipient_address": "acp1qreserve0000000000000000000000000000000",
+                                "amount": 50000000000000,
+                            },
+                        ],
+                    }
+                ]
+            elif height == 2:
+                txs = [
+                    {
+                        "txid": "fundingtx",
+                        "vin": [],
+                        "vout": [
+                            {"recipient_address": "acp1qsender000000000000000000000000000000", "amount": 50000000000000},
+                        ],
+                    }
+                ]
+            return {"result": {"tx": txs}}
+        raise AssertionError(f"unexpected rpc method: {method}")
+
+    original_json_rpc = acp_watcher._json_rpc
+    acp_watcher._json_rpc = fake_json_rpc
+    try:
+        async def run_tick():
+            engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+            Session = async_sessionmaker(engine, expire_on_commit=False)
+            try:
+                async with Session() as session:
+                    result = await acp_watcher.tick_acp_checkpoint(session)
+                    await session.commit()
+                    return result
+            finally:
+                await engine.dispose()
+        result = anyio.run(run_tick)
+    finally:
+        acp_watcher._json_rpc = original_json_rpc
+
+    assert result["matched_deposits"] == 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == op_id)
+    assert op["status"] == "CONFIRMED_ON_ACP"
+    assert op["acp_tx_hash"] == deposit_txid.lower()
+
+
+def test_orchestrator_queues_live_mint_from_confirmed_on_acp(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_DRY_RUN", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x" + ("7" * 40),
+        "amount_acp": "1",
+    }
+    create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+    deposit_txid = f"deposit-{uuid.uuid4().hex}"
+
+    from sqlalchemy import select
+    from app.db.models import BridgeOperation
+    import app.services.bridge_orchestrator as orch
+
+    async def setup_confirmed():
+        engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+        Session = async_sessionmaker(engine, expire_on_commit=False)
+        try:
+            async with Session() as session:
+                op = (await session.execute(select(BridgeOperation).where(BridgeOperation.id == op_id))).scalars().one()
+                op.status = "CONFIRMED_ON_ACP"
+                op.acp_tx_hash = deposit_txid
+                op.acp_out_index = 0
+                await session.commit()
+        finally:
+            await engine.dispose()
+
+    anyio.run(setup_confirmed)
+
+    original_transfer = orch._hot_wallet_transfer
+
+    def fake_hot_wallet_transfer(acp_address, acp_smallest):
+        return {"txid": f"acp-payout-{uuid.uuid4().hex}"}
+
+    orch._hot_wallet_transfer = fake_hot_wallet_transfer
+    try:
+        async def run_tick():
+            engine = create_async_engine(_test_async_db_url(), pool_pre_ping=True)
+            Session = async_sessionmaker(engine, expire_on_commit=False)
+            try:
+                async with Session() as session:
+                    result = await orch.tick_orchestrator(session)
+                    await session.commit()
+                    return result
+            finally:
+                await engine.dispose()
+
+        result = anyio.run(run_tick)
+    finally:
+        orch._hot_wallet_transfer = original_transfer
+    assert result["progressed_acp_to_bsc"] >= 1
+
+    mine = client.get("/v1/bridge/intents/me")
+    assert mine.status_code == 200, mine.text
+    op = next(x for x in mine.json() if x["id"] == op_id)
+    assert op["status"] == "MINT_REQUESTED"
+
+
+def test_admin_forward_bind_deposit(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    monkeypatch.setenv("BRIDGE_OPERATOR_SECRET", "test-secret")
+    monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
+    monkeypatch.setenv("ACP_RPC_URL", "https://acp.example.invalid")
+    monkeypatch.setenv("BRIDGE_ACP_CONFIRMATIONS", "1")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    admin_headers = _register_bridge_admin(client, monkeypatch)
+    payload = {
+        "user_bsc_address": "0x" + ("8" * 40),
+        "amount_acp": "500000",
+    }
+    create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+    deposit_txid = "86468f2ab46ed4d681bb15bad67760c1e1d8537c32b12d47afcc8f2c9227f44c"
+
+    import app.services.bridge_acp_watcher as acp_watcher
+
+    async def fake_reserve_deposit_units_for_tx(rpc_url, reserve_address, txid):
+        assert txid == deposit_txid
+        return {"txid": txid, "received_units": 50000000000000, "confirmations": 5}
+
+    original = acp_watcher.reserve_deposit_units_for_tx
+    acp_watcher.reserve_deposit_units_for_tx = fake_reserve_deposit_units_for_tx
+    try:
+        bind = client.post(
+            "/v1/bridge/admin/forward/bind-deposit",
+            json={"operation_id": op_id, "acp_tx_hash": deposit_txid, "note": "manual recovery"},
+            headers=admin_headers,
+        )
+    finally:
+        acp_watcher.reserve_deposit_units_for_tx = original
+
+    assert bind.status_code == 200, bind.text
+    data = bind.json()
+    assert data["status"] == "CONFIRMED_ON_ACP"
+    assert data["acp_tx_hash"] == deposit_txid

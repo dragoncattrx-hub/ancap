@@ -45,10 +45,11 @@ async def list_blocks(limit: int = 10):
 @router.get("/tx/{txid}")
 async def get_transaction(txid: str):
     try:
-        tx = await acp_rpc_call("getrawtransaction", [txid, 1])
+        tx = await acp_rpc_call("getrawtransaction", {"txid": txid.strip().lower(), "verbose": 1})
     except RuntimeError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return {"txid": txid, "transaction": tx}
+    decoded = tx.get("decoded") if isinstance(tx, dict) else None
+    return {"txid": txid.strip().lower(), "transaction": decoded or tx}
 
 
 @router.get("/address/{address}")
