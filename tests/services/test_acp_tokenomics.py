@@ -7,12 +7,12 @@ from app.services.acp_tokenomics import (
 
 
 def test_breakdown_splits_ecosystem_utxo():
-    utxos = [
-        {"amount_units": ECOSYSTEM_BUCKET_UNITS},
-        {"amount_units": 232_592_980_66475607},
-        {"amount_units": 100},
+    utxo_units = [
+        ECOSYSTEM_BUCKET_UNITS,
+        23_259_298_066_475_607,
+        100,
     ]
-    result = breakdown_custodial_hot_utxos(utxos)
+    result = breakdown_custodial_hot_utxos(utxo_units)
     assert result.buckets[0].key == "ecosystem"
     assert result.buckets[0].utxo_count == 1
     assert result.buckets[0].acp == Decimal("10500000")
@@ -23,8 +23,7 @@ def test_breakdown_splits_ecosystem_utxo():
 
 
 def test_breakdown_empty_hot_pool():
-    utxos = [{"amount": 10_500_000}]
-    result = breakdown_custodial_hot_utxos(utxos)
+    result = breakdown_custodial_hot_utxos([ECOSYSTEM_BUCKET_UNITS])
     assert result.buckets[0].acp == Decimal("10500000")
     assert result.buckets[1].acp == Decimal(0)
     assert result.total_acp == Decimal("10500000")
