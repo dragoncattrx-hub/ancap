@@ -6,6 +6,7 @@
 //! Launch: cargo run -p acp-wallet --example build_and_submit_genesis
 
 use acp_crypto::{
+    keystore::KeystoreV3,
     protocol_params::{BASE_SUPPLY_ACP, UNITS_PER_ACP},
     AddressV0, Block, BlockHeader, Mnemonic, Transaction, TxInput, TxOutput,
     WalletIdentity,
@@ -14,6 +15,8 @@ use rand_core::OsRng;
 use reqwest::blocking::Client;
 use serde_json::json;
 use std::time::Duration;
+
+use std::path::Path;
 
 const CHAIN_ID: u32 = 1001;
 const DEFAULT_RPC_URL: &str = "https://acp1.ancap.cloud/rpc";
@@ -43,6 +46,89 @@ fn rpc(client: &Client, rpc_url: &str, method: &str, params: serde_json::Value) 
     Ok(res["result"].clone())
 }
 
+fn verify_genesis_keystore_manifest(genesis: &[serde_json::Value]) -> anyhow::Result<()> {
+    if std::env::var("ACP_GENESIS_SKIP_KEYSTORE_VERIFY")
+        .ok()
+        .as_deref()
+        == Some("1")
+    {
+        eprintln!("[!] ACP_GENESIS_SKIP_KEYSTORE_VERIFY=1 — skipping keystore manifest checks");
+        return Ok(());
+    }
+
+    let manifest_path = std::env::var("ACP_GENESIS_KEYSTORE_MANIFEST")
+        .unwrap_or_else(|_| "genesis-keystore-manifest.json".to_string());
+    let manifest_raw = std::fs::read_to_string(&manifest_path)
+        .map_err(|e| anyhow::anyhow!("read {manifest_path}: {e}"))?;
+    let manifest: serde_json::Value = serde_json::from_str(&manifest_raw)?;
+    let buckets = manifest
+        .get("buckets")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| anyhow::anyhow!("{manifest_path} missing buckets array"))?;
+
+    let genesis_by_role: std::collections::HashMap<String, String> = genesis
+        .iter()
+        .filter_map(|entry| {
+            let role = entry.get("role")?.as_str()?.to_string();
+            let addr = entry.get("address")?.as_str()?.to_string();
+            Some((role, addr))
+        })
+        .collect();
+
+    for bucket in buckets {
+        let role = bucket
+            .get("role")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow::anyhow!("manifest bucket missing role"))?;
+        let expected = bucket
+            .get("address")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow::anyhow!("manifest bucket {role} missing address"))?;
+        let genesis_addr = genesis_by_role
+            .get(role)
+            .ok_or_else(|| anyhow::anyhow!("genesis-addresses.json missing role {role}"))?;
+        if genesis_addr != expected {
+            anyhow::bail!(
+                "genesis keystore manifest mismatch for {role}: genesis-addresses={genesis_addr} manifest={expected}"
+            );
+        }
+    }
+
+    if let Ok(keystore_dir) = std::env::var("ACP_GENESIS_KEYSTORE_DIR") {
+        let dir = Path::new(&keystore_dir);
+        for bucket in buckets {
+            let role = bucket.get("role").and_then(|v| v.as_str()).unwrap_or("?");
+            let expected = bucket
+                .get("address")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| anyhow::anyhow!("manifest bucket {role} missing address"))?;
+            let ks_name = bucket
+                .get("keystore_file")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| anyhow::anyhow!("manifest bucket {role} missing keystore_file"))?;
+            let ks_path = dir.join(ks_name);
+            if !ks_path.exists() {
+                anyhow::bail!("missing keystore for {role}: {}", ks_path.display());
+            }
+            let ks_json = std::fs::read_to_string(&ks_path)?;
+            let ks: KeystoreV3 = serde_json::from_str(&ks_json)?;
+            let id = WalletIdentity::from_keystore_v3(&ks)?;
+            let derived = id.receive_address_v0()?;
+            if derived != expected {
+                anyhow::bail!(
+                    "keystore {ks_name} derives {derived} but manifest expects {expected} for {role}"
+                );
+            }
+            eprintln!("[OK] Keystore verified for {role}: {derived}");
+        }
+    } else {
+        eprintln!("[!] ACP_GENESIS_KEYSTORE_DIR not set — address manifest only (no keystore file verify)");
+    }
+
+    eprintln!("[OK] Genesis keystore manifest aligned with genesis-addresses.json");
+    Ok(())
+}
+
 fn main() -> anyhow::Result<()> {
     let rpc_url = std::env::var("ACP_RPC_URL").unwrap_or_else(|_| DEFAULT_RPC_URL.to_string());
     let path = "genesis-addresses.json";
@@ -50,6 +136,8 @@ fn main() -> anyhow::Result<()> {
     if genesis.len() != 4 {
         anyhow::bail!("genesis-addresses.json must contain 4 entries (Creator, Validator, Public, Ecosystem)");
     }
+
+    verify_genesis_keystore_manifest(&genesis)?;
 
     let total_units = BASE_SUPPLY_ACP * UNITS_PER_ACP;
     let mut outputs = Vec::with_capacity(4);

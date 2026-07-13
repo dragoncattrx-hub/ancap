@@ -350,7 +350,7 @@ def _format_operator_hot_balance_note(
 ) -> str:
     return (
         f"Operator hot on-chain total: {_decimal_to_api_str(tokenomics_total_acp)} ACP "
-        f"(ecosystem + hot buckets). Platform credits: {_decimal_to_api_str(platform_credits_acp)} ACP; "
+        f"(operator pool). Platform credits: {_decimal_to_api_str(platform_credits_acp)} ACP; "
         f"available for withdraw: {_decimal_to_api_str(available_acp)} ACP."
     )
 

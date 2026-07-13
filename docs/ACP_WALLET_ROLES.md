@@ -77,7 +77,7 @@ Regenesis **v3** should allocate genesis outputs to official buckets using keyst
 | Creator | `creator.keystore.json` → `acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl` |
 | Validator reserve marker | `validator-reserve.keystore.json` |
 | Public & liquidity | `public-liquidity.keystore.json` |
-| Ecosystem | **Keystore lost** for `acp1qrpavez2tttvly2umdjz8jfsdu5yjqjftuyzmau5` (PQC KeystoreV3 never saved in genesis batch). Mnemonic in `genesis-wallets.txt` does not derive this address. On 2026-07-13 the 10.5M bucket was moved to custodial hot via chain rewind + treasury transfer (`scripts/recover-ecosystem-to-hot-rewind.py`). Do **not** use `ecosystem.keystore.json` / `ecosystem-canonical.keystore.json` — wrong address `acp1qqr09ngk...`. |
+| Ecosystem | `ecosystem-grants.keystore.json` → `acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf` (migrated 2026-07-13 from custodial hot; superseded genesis slot `acp1qrpavez2...`) |
 | Bridge reserve | `bridge-reserve.keystore.json` |
 | Operator float | custodial hot keystore (generated + saved at genesis time) |
 

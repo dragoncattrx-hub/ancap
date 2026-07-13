@@ -23,7 +23,7 @@ GENESIS_KS = os.environ.get(
 CREATOR = ("creator", "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl", 69_300_000)
 VALIDATOR = ("validator", "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um", 105_000_000)
 PUBLIC = ("public", "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm", 25_200_000)
-ECOSYSTEM = ("ecosystem", "acp1qrpavez2tttvly2umdjz8jfsdu5yjqjftuyzmau5", 10_500_000)
+ECOSYSTEM = ("ecosystem", "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf", 10_500_000)
 HOT = ("hot", "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9", None)
 
 # Do not touch these (user + bridge + miner)

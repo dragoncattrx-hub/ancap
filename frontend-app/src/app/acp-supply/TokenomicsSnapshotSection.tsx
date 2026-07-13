@@ -27,7 +27,7 @@ type TokenomicsSnapshot = {
 };
 
 function statusBadge(status: string) {
-  if (status === "ok" || status === "on_hot") return "text-emerald-300";
+  if (status === "ok") return "text-emerald-300";
   if (status === "deficit") return "text-amber-300";
   return "text-rose-300";
 }
@@ -96,16 +96,12 @@ export function TokenomicsSnapshotSection({ snapshot }: { snapshot: TokenomicsSn
         {snapshot.hot_pool ? (
           <>
             <div>
-              <span className="text-white/50">Custodial hot total: </span>
-              <strong className="text-white">{snapshot.hot_pool.total_acp} ACP</strong>
-            </div>
-            <div>
-              <span className="text-white/50">Ecosystem on hot: </span>
-              <strong className="text-white">{snapshot.hot_pool.ecosystem_on_hot_acp} ACP</strong>
-            </div>
-            <div>
-              <span className="text-white/50">Operator pool on hot: </span>
+              <span className="text-white/50">Custodial hot (operator pool): </span>
               <strong className="text-white">{snapshot.hot_pool.operator_pool_acp} ACP</strong>
+            </div>
+            <div>
+              <span className="text-white/50">UTXOs on hot: </span>
+              <strong className="text-white">{snapshot.hot_pool.utxo_count}</strong>
             </div>
           </>
         ) : null}

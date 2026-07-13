@@ -18,7 +18,7 @@ HOT_KS = "/run/secrets/custodial-hot.keystore.json"
 CREATOR = "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl"
 VALIDATOR = "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um"
 PUBLIC = "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm"
-ECOSYSTEM = "acp1qrpavez2tttvly2umdjz8jfsdu5yjqjftuyzmau5"
+ECOSYSTEM = "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf"
 HOT = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
 
 TARGETS = {

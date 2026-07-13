@@ -12,7 +12,7 @@ class AcpTokenomicsBucketSnapshot(BaseModel):
     address: str
     on_chain_acp: str
     utxo_count: int
-    status: str  # ok | deficit | excess | on_hot
+    status: str  # ok | deficit | excess
     location_note: str | None = None
 
 
