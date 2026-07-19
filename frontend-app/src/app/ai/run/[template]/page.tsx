@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { WorkflowRunPanel } from "@/components/workflow/WorkflowRunPanel";
 import { getFallbackWorkflowTemplate, type WorkflowTemplate } from "@/lib/workflowStore";
-import { getServerApiBase } from "@/lib/serverApi";
+import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
 
 const API_BASE = getServerApiBase();
 
 async function getWorkflowTemplate(template: string): Promise<WorkflowTemplate | null> {
   try {
-    const res = await fetch(`${API_BASE}/workflow-store/templates/${template}`, {
+    const res = await serverApiFetch(`${API_BASE}/workflow-store/templates/${template}`, {
       next: { revalidate: 60 },
     });
 

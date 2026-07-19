@@ -13,17 +13,29 @@ EXPECTED_PROXY_HIDE_HEADERS = [
 ]
 
 PROXIED_LOCATION_SNIPPETS = [
-    """location / {\n        set $upstream_api api;\n        proxy_pass http://$upstream_api:8000;""",
+    """location / {\n        proxy_pass http://ancap_api;""",
     """location = /rpc {\n        proxy_pass http://acp-node:8545/rpc;""",
-    """location = /openapi.json {\n        set $upstream_api api;\n        proxy_pass http://$upstream_api:8000/openapi.json;""",
-    """location ^~ /api {\n        set $upstream_api api;\n        rewrite ^/api/?(.*)$ /$1 break;\n        proxy_pass http://$upstream_api:8000;""",
-    """location ^~ /_next/ {\n        set $upstream_frontend frontend;\n        proxy_pass http://$upstream_frontend:3000$request_uri;""",
-    """location / {\n        set $upstream_frontend frontend;\n        proxy_pass http://$upstream_frontend:3000$request_uri;""",
+    """location = /openapi.json {\n        proxy_pass http://ancap_api/openapi.json;""",
+    """location ^~ /api/ {\n        proxy_pass http://ancap_api/;""",
+    """location = /api {\n        proxy_pass http://ancap_api/;""",
+    """location ^~ /_next/ {\n        proxy_pass http://ancap_frontend;""",
+    """location / {\n        proxy_pass http://ancap_frontend;""",
 ]
 
 
 def _read_nginx_conf() -> str:
     return NGINX_CONF.read_text(encoding="utf-8")
+
+
+def test_named_upstreams_are_defined():
+    config = _read_nginx_conf()
+    assert "upstream ancap_api {" in config
+    assert "server api:8000;" in config
+    assert "upstream ancap_frontend {" in config
+    assert "server frontend:3000;" in config
+    # Variable-based proxy_pass historically mis-routed /api onto Next.js.
+    assert "set $upstream_api" not in config
+    assert "set $upstream_frontend" not in config
 
 
 def test_proxied_locations_hide_upstream_security_headers_before_readding_them():
@@ -36,14 +48,13 @@ def test_proxied_locations_hide_upstream_security_headers_before_readding_them()
             assert header in block, f"missing `{header}` in proxied nginx location starting with: {snippet!r}"
 
 
-
 def test_proxied_locations_readd_single_source_of_truth_security_headers():
     config = _read_nginx_conf()
 
     expected_add_headers = [
-        'add_header X-Frame-Options DENY always;',
-        'add_header X-Content-Type-Options nosniff always;',
-        'add_header Referrer-Policy strict-origin-when-cross-origin always;',
+        "add_header X-Frame-Options DENY always;",
+        "add_header X-Content-Type-Options nosniff always;",
+        "add_header Referrer-Policy strict-origin-when-cross-origin always;",
         'add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;',
         'add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;',
     ]
@@ -52,3 +63,9 @@ def test_proxied_locations_readd_single_source_of_truth_security_headers():
         block = config.split(snippet, 1)[1].split("\n    }", 1)[0]
         for header in expected_add_headers:
             assert header in block, f"missing `{header}` in proxied nginx location starting with: {snippet!r}"
+
+
+def test_api_locations_mark_upstream_for_debug():
+    config = _read_nginx_conf()
+    assert "add_header X-Ancap-Upstream api always;" in config
+    assert "add_header X-Ancap-Upstream frontend always;" in config

@@ -72,7 +72,9 @@ jobs:
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
             else
-              echo "== restart services (existing images)"
+              echo "== restart services (reload nginx config + existing images)"
+              # Recreate proxy so bind-mounted infra/nginx/default.conf is always live.
+              timeout 120 $COMPOSE up -d --force-recreate proxy || true
               timeout 120 $COMPOSE up -d api frontend acp-node proxy || true
               echo "== wait api healthy"
               healthy=0
@@ -97,11 +99,21 @@ jobs:
                 done
               fi
               timeout 120 $COMPOSE exec -T api alembic upgrade head 2>&1 | tail -3 || true
-              echo "== verify"
+              echo "== verify api + same-origin /api gateway"
               timeout 15 $COMPOSE exec -T api sh -c 'curl -sf http://127.0.0.1:8000/v1/system/fees' || true
               echo ""
+              proxy_health="$(timeout 15 $COMPOSE exec -T proxy wget -qO- http://127.0.0.1/api/v1/system/health 2>/dev/null || true)"
+              echo "proxy /api/v1/system/health -> ${proxy_health:-<empty>}"
+              case "$proxy_health" in
+                *'"status":"ok"'*|*'"status": "ok"'*) echo "OK same-origin API gateway" ;;
+                *)
+                  echo "::error::Same-origin /api gateway is broken; login will fail."
+                  timeout 15 $COMPOSE exec -T proxy nginx -T 2>&1 | tail -80 || true
+                  exit 1
+                  ;;
+              esac
               timeout 15 $COMPOSE exec -T api sh -c 'curl -sf -o /dev/null -w "treasury %{http_code}\n" http://127.0.0.1:8000/v1/treasury/status' || echo "treasury fail"
               timeout 15 $COMPOSE exec -T api sh -c 'curl -s -X POST "$ACP_RPC_URL" -H "content-type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getblockcount\",\"params\":{}}"' || true
               echo ""
-              $COMPOSE ps api acp-node frontend
+              $COMPOSE ps api acp-node frontend proxy
             fi

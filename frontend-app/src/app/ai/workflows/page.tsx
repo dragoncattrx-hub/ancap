@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { fallbackWorkflowBundles, fallbackWorkflowTemplates, type WorkflowBundle, type WorkflowTemplate } from "@/lib/workflowStore";
-import { getServerApiBase } from "@/lib/serverApi";
+import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
 
 const API_BASE = getServerApiBase();
 
 async function getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
   try {
-    const res = await fetch(`${API_BASE}/workflow-store/templates`, {
+    const res = await serverApiFetch(`${API_BASE}/workflow-store/templates`, {
       next: { revalidate: 60 },
     });
 
@@ -24,7 +24,7 @@ async function getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
 
 async function getWorkflowBundles(): Promise<WorkflowBundle[]> {
   try {
-    const res = await fetch(`${API_BASE}/workflow-store/bundles`, {
+    const res = await serverApiFetch(`${API_BASE}/workflow-store/bundles`, {
       next: { revalidate: 60 },
     });
 
