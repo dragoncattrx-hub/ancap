@@ -113,16 +113,17 @@ services:
       context: ./frontend-app
       dockerfile: Dockerfile
       args:
-        # Must include /v1 — client paths are /auth/login etc., nginx strips only /api/.
-        NEXT_PUBLIC_API_URL: /api/v1
+        # Prefer dedicated API host: public /api on ancap.cloud is stripped by an
+        # upstream edge, so same-origin /api/v1 is unreliable for browser auth.
+        NEXT_PUBLIC_API_URL: https://api.ancap.cloud/v1
         NEXT_PUBLIC_ACP_URL: /acp
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
         APP_BUILD_ID: ${APP_BUILD_ID:-unknown}
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      # Same-origin gateway: browser → nginx /api/* → FastAPI /v1/*
-      NEXT_PUBLIC_API_URL: /api/v1
+      # Browser auth/API calls go to api.ancap.cloud (CORS + cookie credentials).
+      NEXT_PUBLIC_API_URL: https://api.ancap.cloud/v1
       # SSR fetches hit the API directly over the Docker network (no tunnel round-trip).
       ANCAP_SERVER_API_URL: http://api:8000/v1
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}

@@ -65,7 +65,7 @@ def test_login(client, monkeypatch):
     set_cookie = r.headers.get("set-cookie", "")
     assert "ancap_token=" in set_cookie
     assert "HttpOnly" in set_cookie
-    assert "SameSite=strict" in set_cookie
+    assert "SameSite=lax" in set_cookie
     assert "Secure" not in set_cookie
 
 
@@ -357,7 +357,7 @@ def test_cookie_authenticated_post_requires_x_requested_with_header(client, monk
     assert ok.status_code == 200, ok.text
     cleared = ok.headers.get("set-cookie", "")
     assert "ancap_token=" in cleared
-    assert "SameSite=strict" in cleared
+    assert "SameSite=lax" in cleared
     assert "Secure" not in cleared
 
 

@@ -18,6 +18,7 @@ PROXIED_LOCATION_SNIPPETS = [
     """location = /openapi.json {\n        proxy_pass http://ancap_api/openapi.json;""",
     """location ^~ /api/ {\n        proxy_pass http://ancap_api/;""",
     """location = /api {\n        proxy_pass http://ancap_api/;""",
+    """location ^~ /v1/ {\n        proxy_pass http://ancap_api;""",
     """location ^~ /_next/ {\n        proxy_pass http://ancap_frontend;""",
     """location / {\n        proxy_pass http://ancap_frontend;""",
 ]

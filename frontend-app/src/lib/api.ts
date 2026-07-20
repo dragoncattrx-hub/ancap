@@ -9,13 +9,13 @@
 // wrong backend.
 const rawApiBase = process.env.NEXT_PUBLIC_API_URL;
 
-// Prefer same-origin /api/v1 (nginx strips /api → FastAPI). Absolute ancap.cloud
-// fallback keeps local production builds working when the proxy is unavailable.
+// Dev uses Next rewrite → local API. Production defaults to the dedicated API
+// host because an upstream edge strips /api on ancap.cloud before origin nginx.
 const API_BASE =
   rawApiBase ||
   (process.env.NODE_ENV === "development"
     ? "/api/v1"
-    : "/api/v1");
+    : "https://api.ancap.cloud/v1");
 
 /** Resolved client-side API base URL (e.g. "/api/v1" in dev). */
 export function getApiUrl(): string {

@@ -69,15 +69,31 @@ def _auth_cookie_secure(request: Request) -> bool:
     return True
 
 
+def _auth_cookie_domain(request: Request) -> str | None:
+    """Share auth cookie across ancap.cloud ↔ api.ancap.cloud."""
+    host = (
+        (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
+        or (request.headers.get("host") or "").split(",")[0].strip()
+        or (request.url.hostname or "")
+    )
+    hostname = host.split(":", 1)[0].strip().lower()
+    if hostname == "ancap.cloud" or hostname.endswith(".ancap.cloud"):
+        return ".ancap.cloud"
+    return None
+
+
 def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
+    secure = _auth_cookie_secure(request)
     response.set_cookie(
         key="ancap_token",
         value=token,
         httponly=True,
-        secure=_auth_cookie_secure(request),
-        samesite="strict",
+        secure=secure,
+        # Lax keeps same-site subdomain auth (ancap.cloud ↔ api.ancap.cloud) working.
+        samesite="lax",
         max_age=3600,
         path="/",
+        domain=_auth_cookie_domain(request),
     )
 
 
@@ -87,7 +103,8 @@ def _clear_auth_cookie(response: Response, request: Request) -> None:
         path="/",
         httponly=True,
         secure=_auth_cookie_secure(request),
-        samesite="strict",
+        samesite="lax",
+        domain=_auth_cookie_domain(request),
     )
 
 
