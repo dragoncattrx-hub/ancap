@@ -2,6 +2,15 @@
 
 import { useLanguage } from "./LanguageProvider";
 import { useEffect, useState } from "react";
+import type { Language } from "@/locales/translations";
+
+const LANG_BUTTONS: ReadonlyArray<{ code: Language; label: string }> = [
+  { code: "en", label: "EN" },
+  { code: "ru", label: "RU" },
+  { code: "uk", label: "UK" },
+  { code: "de", label: "DE" },
+  { code: "zh-Hant", label: "繁中" },
+];
 
 export function LanguageSwitcher() {
   const { lang, setLang } = useLanguage();
@@ -15,32 +24,18 @@ export function LanguageSwitcher() {
   // After hydration completes, show the correct active state
   return (
     <div className="lang-toggle">
-      <button
-        onClick={() => setLang("en")}
-        className={mounted && lang === "en" ? "active" : ""}
-      >
-        EN
-      </button>
-      <span>/</span>
-      <button
-        onClick={() => setLang("ru")}
-        className={mounted && lang === "ru" ? "active" : ""}
-      >
-        RU
-      </button>
-      <span>/</span>
-      <button
-        onClick={() => setLang("uk")}
-        className={mounted && lang === "uk" ? "active" : ""}
-      >
-        UK
-      </button>
-      <button
-        onClick={() => setLang("de")}
-        className={mounted && lang === "de" ? "active" : ""}
-      >
-        DE
-      </button>
+      {LANG_BUTTONS.map((opt, idx) => (
+        <span key={opt.code} className="inline-flex items-center gap-1">
+          {idx > 0 ? <span>/</span> : null}
+          <button
+            type="button"
+            onClick={() => setLang(opt.code)}
+            className={mounted && lang === opt.code ? "active" : ""}
+          >
+            {opt.label}
+          </button>
+        </span>
+      ))}
     </div>
   );
 }

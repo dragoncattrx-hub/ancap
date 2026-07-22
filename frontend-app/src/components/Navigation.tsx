@@ -8,6 +8,7 @@ import { useLanguage } from "./LanguageProvider";
 import { useWallet } from "./WalletProvider";
 import { useTheme } from "./ThemeProvider";
 import { getPreferredEvmProvider } from "@/lib/evmProvider";
+import type { Language } from "@/locales/translations";
 
 type NavItem = {
   label: string;
@@ -96,12 +97,13 @@ const fadeL =
 const fadeR =
   "pointer-events-none absolute inset-y-0.5 right-0 z-[1] w-7 rounded-r-xl bg-gradient-to-l from-[#050a18] via-[#050a18]/90 to-transparent";
 
-type LangCode = "en" | "ru" | "uk" | "de";
+type LangCode = Language;
 const LANG_OPTIONS: ReadonlyArray<{ code: LangCode; label: string }> = [
   { code: "en", label: "EN" },
   { code: "ru", label: "RU" },
   { code: "uk", label: "UK" },
   { code: "de", label: "DE" },
+  { code: "zh-Hant", label: "繁中" },
 ];
 
 function LangSwitcher({

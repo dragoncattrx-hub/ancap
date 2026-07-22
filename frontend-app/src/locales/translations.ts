@@ -1,13 +1,19 @@
-export type Language = "en" | "ru" | "uk" | "de";
+export type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
 
 type TranslationTree = {
   [key: string]: string | TranslationTree;
 };
 
-export const SUPPORTED_LANGUAGES: Language[] = ["en", "ru", "uk", "de"];
+export const SUPPORTED_LANGUAGES: Language[] = ["en", "ru", "uk", "de", "zh-Hant"];
 
 export function isSupportedLanguage(value: string | null | undefined): value is Language {
-  return value === "en" || value === "ru" || value === "uk" || value === "de";
+  return (
+    value === "en" ||
+    value === "ru" ||
+    value === "uk" ||
+    value === "de" ||
+    value === "zh-Hant"
+  );
 }
 
 export function t(lang: Language, key: string): string {
@@ -1268,6 +1274,317 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyModeDesc: "Du kannst die Oberfläche bereits mit verbundener Wallet betreten. Backend Wallet-Sign-Auth kann als nächster Schritt ergänzt werden.",
       walletSignInDesc: "Verbinde deine EVM-Wallet, signiere die Login-Nachricht und fahre mit wallet-basierter Authentifizierung in ANCAP fort.",
       continueToDashboard: "Zum Dashboard"
+    }
+  },
+  "zh-Hant": {
+    nav: {
+      product: "產品",
+      vision: "願景",
+      docs: "文件",
+      contact: "聯絡",
+      dashboard: "儀表板",
+      agents: "代理人",
+      strategies: "策略",
+      verticals: "垂直領域",
+      pools: "資金池",
+      funds: "基金",
+      ledger: "帳本",
+      reputation: "信譽",
+      marketplace: "市集",
+      listings: "上架項目",
+      orders: "訂單",
+      access: "存取",
+      flows: "流程",
+      sellerDashboard: "賣家",
+      acpWallet: "ACP 錢包",
+      bridgeAcpBsc: "ACP -> BSC (wACP)",
+      login: "登入",
+      logout: "登出",
+      register: "註冊",
+      main: "主要",
+      system: "系統",
+      search: "搜尋",
+      workflows: "工作流程",
+      pricing: "定價",
+      developers: "開發者",
+      webhooks: "Webhooks",
+      billing: "帳單",
+      credits: "點數",
+      feed: "動態",
+      analytics: "分析",
+      organizations: "組織",
+      builder: "建構器",
+      whitepaper: "白皮書",
+      acpPaper: "ACP 白皮書",
+      legal: "法律",
+      aiConsole: "AI 控制台",
+      referrals: "推薦",
+      evolution: "演化",
+      tournaments: "競賽",
+      bounties: "賞金",
+      chainReceipts: "鏈上收據",
+      proofCenter: "證明中心",
+      freeSnapshot: "免費快照",
+      operationsNoc: "營運 NOC",
+      auditLog: "稽核日誌",
+      aiCouncil: "AI 委員會",
+      strategyCompiler: "策略編譯器",
+      governance: "治理",
+      onboarding: "新手引導",
+      notifications: "通知",
+      leaderboards: "排行榜",
+      growth: "成長",
+      staking: "質押",
+      runs: "執行",
+      contracts: "合約"
+    },
+    hero: {
+      title: "ANCAP — AI 原生資本配置平台",
+      sub: "以加密為核心的平台，支援智慧支付、AI 輔助支付解碼、ACP 結算、可驗證執行，以及 AI 原生資本配置流程。",
+      learnMore: "了解更多",
+      workflowsCta: "開啟平台",
+      acpStrip:
+        "ACP 鏈整合與託管錢包已內建於平台。Smart Pay 正積極開發中，涵蓋掃描、解碼、預覽與支付流程。",
+      acpLink: "ACP 與鏈",
+      acpWalletLink: "錢包",
+      acpToken: "ACP 代幣與鏈",
+      followOnX: "在 X 追蹤",
+      followOnTelegram: "Telegram 頻道"
+    },
+    homePage: {
+      badge: "AI 原生支付層",
+      liveMap: "即時產品地圖",
+      productMapTitle: "ANCAP 代表什麼",
+      heroLead:
+        "ANCAP 意即 AI Native Capital Allocation Platform。ANCAP 為加密團隊提供可用的 AI 執行成果：上架包、行銷活動建構、賞金流程、代幣風險報告，以及附證明的收據。使用者以清楚價格、支付狀態與可驗證軌跡購買結果。AI 代理人也能建立自己的付費工作流程、在 ANCAP 上架，並在使用者執行時獲得收益。",
+      acpLead:
+        "ACP 鏈整合與託管錢包已可在平台使用。鏈概覽見 ACP 頁面；錢包於登入後開啟。付費工作流程與 API 使用 ACP，其中 1 ACP = 1 平台會計單位。",
+      buyWorkflow: "購買工作流程",
+      viewPricing: "查看定價",
+      agentApi: "代理人 API",
+      proofCenter: "證明中心",
+      offersKicker: "先購買",
+      offersTitle: "首批付費產品",
+      allCatalog: "完整目錄",
+      howKicker: "運作方式",
+      howTitle: "簡單邏輯：付款、執行、取得成果、驗證證明",
+      howLead:
+        "ANCAP 將 AI 執行變成可購買的產品。每個工作流程都有輸入、價格、預期輸出、支付狀態與可驗證收據。",
+      audienceKicker: "適用對象",
+      audienceTitle: "ANCAP 為誰而設",
+      routesKicker: "AI 友善路徑",
+      routesTitle: "頁面以清楚路徑溝通",
+      routesLead:
+        "對人類是導覽；對 AI 代理人則是產品地圖：哪裡購買、哪裡查價、哪裡取得證明、哪裡使用 ACP，以及哪裡串接付費 API。",
+      openDevelopers: "開啟開發者頁面",
+      acpKicker: "ACP 軌道",
+      acpTitle: "ACP 已內建於產品漏斗",
+      acpText:
+        "ACP 作為工作流程與 API 的會計單位。使用者可研究鏈、登入、開啟託管 ACP 錢包、充值，並在付款後執行付費工作流程並取得收據。",
+      acpPage: "ACP 頁面",
+      wallet: "錢包",
+      finalTitle: "從一個工作流程開始，再擴展到 API 與方案包",
+      finalText:
+        "最短價值路徑：免費代幣快照、付費專業報告，再選啟動或成長方案。若你是 AI 代理人或工作流程作者，請上架付費工作流程，並從每次完成的執行中獲益。",
+      freeSnapshot: "免費代幣快照",
+      buyAiWorkflow: "購買 AI 工作流程",
+      footer: "付費 AI 執行、ACP 支付、證明收據與代理人商務。",
+      offer1Label: "最佳起點",
+      offer1Title: "Pro Launch Pack",
+      offer1Result: "一次包含啟動稽核、上架文件包、KOL/Telegram 行銷、賞金流程與專業風險報告。",
+      offer2Label: "上架",
+      offer2Title: "交易所上架申請包",
+      offer2Result: "準備交易所答覆、盡職調查備忘錄、風險清單，以及本次執行的證明收據。",
+      offer3Label: "風險",
+      offer3Title: "Token Risk Report Pro",
+      offer3Result: "檢查代幣、流動性、持有者與證據缺口，並產出給團隊或投資委員會的報告。",
+      launchLabel: "啟動",
+      launchText: "啟動稽核、上架、行銷、賞金",
+      riskLabel: "風險",
+      riskText: "代幣報告、持有者/流動性標記、證據缺口",
+      creatorLabel: "創作",
+      creatorText: "代理人上架付費工作流程並從執行中獲益",
+      agentApiLabel: "代理人 API",
+      agentApiText: "按次計費端點、支出上限、收據",
+      proofLabel: "證明",
+      proofText: "收據網址、輸入雜湊、執行時間軸、套件",
+      step1Title: "1. 選擇工作流程",
+      step1Text: "目錄依加密團隊實際任務組織：上架、啟動、賞金、行銷、風險與代理人 API 就緒。",
+      step2Title: "2. 以 ACP 付款",
+      step2Text: "啟動前顯示價格。1 ACP 等於付費工作流程與 API 的 1 個平台會計單位。",
+      step3Title: "3. 取得結果",
+      step3Text: "輸出是可用成果：報告、文件包、行銷計畫、賞金流程或 API 收據。",
+      step4Title: "4. 驗證證明",
+      step4Text: "每次付費執行留下收據、輸入雜湊、時間軸與證明套件，可出示給團隊或代理人。",
+      audience1Title: "給加密團隊",
+      audience1Text: "ANCAP 協助購買完整營運成果：上架包、啟動稽核、行銷建構、賞金機制或代幣風險報告。",
+      audience2Title: "給 AI 代理人",
+      audience2Text: "平台提供清楚路徑、價格、API 產品、支出上限與機器可讀收據，讓代理人無需冗長人工協調即可購買執行。",
+      audience3Title: "給專案擁有者",
+      audience3Text: "收益循環圍繞 ACP：付費工作流程、方案包、證明、重複執行、API 呼叫，以及透過代幣快照的夥伴獲取。",
+      audience4Title: "給工作流程作者",
+      audience4Text: "AI 代理人與建構者可將專長包裝成付費工作流程、在市集上架，並從每次成功客戶執行賺取 ACP。",
+      route1Text: "購買現成 AI 執行",
+      route2Text: "比較單一 SKU 與方案包",
+      route3Text: "以免費風險檢查進入",
+      route4Text: "給外部 AI 代理人的付費 API 端點",
+      route5Text: "公開收據與可驗證產物",
+      route6Text: "登入後的託管錢包",
+      route7Text: "上架付費工作流程並追蹤收益",
+      wacpAddMetaMask: "將 wACP 加入 MetaMask",
+      creatorKicker: "創作並獲益",
+      creatorTitle: "AI 代理人可在 ANCAP 上架付費工作流程並獲益",
+      creatorLead:
+        "ANCAP 不只是購買工作流程的商店，也是市集：AI 代理人與作者可將可重複執行變成付費產品、放上網站、取得 ACP 收益，並為每次客戶執行附加證明收據。",
+      creatorStep1Title: "定義工作流程",
+      creatorStep1Text: "將可重複任務包裝成輸入、價格、預期輸出、證明政策與收據項目。",
+      creatorStep2Title: "在 ANCAP 上架",
+      creatorStep2Text: "上架工作流程或方案包，讓使用者與其他代理人能找到、理解結果並以 ACP 付款。",
+      creatorStep3Title: "從執行獲益",
+      creatorStep3Text: "每次付費執行產生收據、記錄執行，並讓作者收益歸屬清楚。",
+      creatorCta: "開啟賣家儀表板",
+      mcpKicker: "給 AI 代理人的 MCP",
+      mcpTitle: "將 Cursor、Claude 或 ChatGPT 連到 ANCAP 商務工具",
+      mcpLead:
+        "ANCAP 提供 MCP（stdio）伺服器，以你的 API 金鑰呼叫正式環境 ancap.cloud API。代理人可建立支付連結、發票、兌換碼、代幣風險報告與付費工作流程執行，無需自寫整合程式。",
+      mcpStep1Title: "1. 建立 API 金鑰",
+      mcpStep1Text: "登入、開啟開發者頁，建立金鑰（ancap_…），並僅授權代理人需要的商務工具。",
+      mcpStep2Title: "2. 將 MCP 指向伺服器",
+      mcpStep2Text:
+        "在 Cursor MCP（或 Claude Desktop）加入 mcp-server/ancap_mcp_server.py，並設定 ANCAP_API_BASE=https://ancap.cloud/api/v1。",
+      mcpStep3Title: "3. 由代理人呼叫工具",
+      mcpStep3Text:
+        "使用 ancap.create_payment_link、ancap.run_workflow、ancap.token_snapshot 等工具。每次呼叫打正式 API 並回傳結構化 JSON。",
+      mcpConfigTitle: "Cursor / Claude Desktop 設定",
+      mcpConfigLead: "Stdio MCP 伺服器 — 本機執行，連線 https://ancap.cloud/api/v1：",
+      mcpCliNote: "終端機快速檢查（倉庫根目錄）：",
+      mcpToolsTitle: "可用 MCP 工具",
+      mcpLinksTitle: "文件與路徑",
+      mcpDocsLink: "MCP 文件",
+      mcpApiKeysLink: "API 金鑰",
+      mcpOpenApiLink: "OpenAPI / Swagger",
+      mcpWorkflowsLink: "工作流程目錄",
+      mcpPayLink: "建立支付連結",
+      mcpSnapshotLink: "免費代幣快照",
+      mcpCta: "完整 MCP 指南"
+    },
+    acpLanding: {
+      badge: "平台已上線",
+      title: "ANCAP Chain Protocol (ACP)",
+      lead:
+        "L3 層負責治理、質押、手續費，以及 ANCAP 執行產物的鏈上錨定。本頁說明 ACP 是什麼，以及它如何對應 ANCAP 的 L1/L2/L3 路線圖。",
+      statusLead:
+        "ACP 已接入正式環境 ANCAP：可設定的鏈錨定驅動、ACP JSON-RPC、託管熱錢包 API（/v1/wallet/acp/*），以及登入後的錢包介面。",
+      walletCta: "開啟 ACP 錢包",
+      supplySnapshotCta: "即時供給快照",
+      platformOverview: "平台總覽",
+      l123Vision: "L1/L2/L3 願景",
+      apiDocs: "API 文件",
+      whatIs: "什麼是 ACP",
+      nativeToken: "原生代幣",
+      nativeTokenDesc: "用於執行手續費、責任與信譽質押、治理權重，以及罰沒擔保。",
+      chainAnchors: "鏈錨定",
+      aiIdentity: "AI 原生身分",
+      aiIdentityDesc: "L3 入門使用挑戰回應與質押啟用，提高女巫攻擊成本。",
+      anchorsCard:
+        "當 CHAIN_ANCHOR_DRIVER=acp 且 ACP_RPC_URL 指向你的節點時，可將執行與產物雜湊錨定上鏈；本機開發仍可使用 mock 驅動。",
+      tokenUtilityNote: "手續費、質押與罰沒軌道在設定處使用 ACP；更廣的市集結算依路線圖推進。"
+    },
+    product: {
+      title: "可銷售、附證明的執行工作流程",
+      desc: "ANCAP 先將具體加密工作流程產品化：購買一次執行、取得結果、檢查成本與收據，再透過訂閱與 API 重複或擴展。",
+      strategyRegistry: "策略登錄",
+      runsSandbox: "執行與沙盒",
+      riskKernel: "風險核心",
+      card1: "涵蓋上架包、啟動套件、代幣情報與成長營運的工作流程目錄。",
+      card2: "付費執行含預覽、定價、重複執行與機器可讀收據。",
+      card3: "證明、稽核軌跡與支出控管，讓 AI 工作流程能安全賣給使用者與其他代理人。"
+    },
+    vision: {
+      title: "從引擎到市場",
+      desc: "信譽 2.0、策略市集、評論與資本配置。接著是 Proof-of-Agent、質押與多個垂直領域。",
+      coreLedger: "核心帳本與可驗證執行",
+      marketLayer: "市場層",
+      autonomousEconomy: "自主經濟"
+    },
+    cta: {
+      title: "先從付費工作流程開始，再擴展到代理人商務",
+      sub: "第一個收益循環很單純：工作流程目錄、付費執行、收據、重複使用，再接 API 與 MCP。"
+    },
+    footer: {
+      suffix: "- AI 原生資本配置平台。路線圖與願景可在倉庫中取得。"
+    },
+    flows: {
+      subtitle: "執行端到端情境，產生訂單、存取授權、執行、信譽與風險訊號。"
+    },
+    dashboard: {
+      title: "儀表板",
+      agents: "代理人",
+      runs: "執行",
+      totalCapital: "總資本",
+      activeStrategies: "活躍策略",
+      totalReturn: "總報酬",
+      recentActivity: "近期活動",
+      noActivity: "尚無近期活動"
+    },
+    agents: {
+      title: "AI 代理人",
+      register: "註冊代理人",
+      strategyCreator: "策略建立者",
+      status: "狀態",
+      active: "活躍",
+      reputation: "信譽"
+    },
+    strategies: {
+      title: "交易策略",
+      create: "建立策略",
+      performance: "績效",
+      vertical: "垂直領域",
+      risk: "風險",
+      medium: "中",
+      status: "狀態",
+      active: "活躍"
+    },
+    verticals: {
+      title: "垂直領域",
+      propose: "提出垂直領域"
+    },
+    pools: {
+      title: "資本池",
+      create: "建立資金池"
+    },
+    funds: {
+      title: "基金",
+      create: "建立基金"
+    },
+    home: {
+      subtitle: "AI 原生資本配置平台",
+      dashboardDesc: "查看你的投資組合與績效",
+      agentsDesc: "瀏覽並管理 AI 代理人",
+      strategiesDesc: "探索交易策略"
+    },
+    auth: {
+      email: "電子郵件",
+      password: "密碼",
+      displayName: "顯示名稱",
+      minPassword: "至少 8 個字元",
+      loggingIn: "登入中...",
+      creatingAccount: "建立帳號中...",
+      noAccount: "還沒有帳號？",
+      haveAccount: "已經有帳號？",
+      walletOr: "或",
+      connectWallet: "連接錢包",
+      connectingWallet: "正在連接錢包...",
+      continueWithWallet: "以錢包繼續",
+      walletConnected: "錢包已連接",
+      walletNotInstalled: "此瀏覽器無法使用 MetaMask 或其他 EVM 錢包。",
+      walletBnbHint: "若要進行 wACP 與 BNB 端操作，請切換到 BNB Chain。",
+      switchToBnb: "切換到 BNB Chain",
+      connectedWallet: "已連接錢包",
+      walletOnlyMode: "錢包工作階段模式",
+      walletOnlyModeDesc: "你現在可用已連接錢包進入介面。後端錢包簽名驗證可下一步加入。",
+      walletSignInDesc: "連接你的 EVM 錢包、簽署登入訊息，並以錢包驗證繼續進入 ANCAP。",
+      continueToDashboard: "前往儀表板"
     }
   }
 };
