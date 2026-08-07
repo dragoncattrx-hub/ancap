@@ -1924,9 +1924,9 @@ python-jose[cryptography]==3.3.0 \
     --hash=sha256:55779b5e6ad599c6336191246e95eb2293a9ddebd555f796a65f838f07e5d78a \
     --hash=sha256:9b1376b023f8b298536eedd47ae1089bcdb848f1535ab30555cd92002d78923a
     # via -r requirements.in
-python-multipart==0.0.17 \
-    --hash=sha256:15dc4f487e0a9476cc1201261188ee0940165cffc94429b6fc565c4d3045cb5d \
-    --hash=sha256:41330d831cae6e2f22902704ead2826ea038d0419530eadff3ea80175aec5538
+python-multipart==0.0.31 \
+    --hash=sha256:8408153d68a9773291fc1da39a8b85a50044bddbabd2dd72e9229776b7b15e28 \
+    --hash=sha256:fc631183bb13e56db3158a4909908dfb2e23565286744e798241e63750e5d680
     # via -r requirements.in
 pyunormalize==17.0.0 \
     --hash=sha256:0949a3e56817e287febcaf1b0cc4b5adf0bb107628d379335938040947eec792 \
