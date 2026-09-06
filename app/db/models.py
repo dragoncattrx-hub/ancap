@@ -1777,6 +1777,13 @@ class OrgRoleEnum(str, enum.Enum):
     viewer = "viewer"
 
 
+class MemberVerificationStatusEnum(str, enum.Enum):
+    pending = "pending"
+    verified = "verified"
+    suspended = "suspended"
+    revoked = "revoked"
+
+
 class WebhookEventType(str, enum.Enum):
     run_completed = "run.completed"
     run_failed = "run.failed"
@@ -1817,6 +1824,20 @@ class OrganizationMember(Base):
         nullable=False,
         default=OrgRoleEnum.member,
     )
+    employee_code = Column(String(64), nullable=True)
+    verification_status = Column(
+        SQLEnum(
+            MemberVerificationStatusEnum,
+            name="memberverificationstatusenum",
+            native_enum=False,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default=MemberVerificationStatusEnum.pending,
+    )
+    nfc_uid_hash = Column(String(128), nullable=True)
+    verified_at = Column(DateTime(timezone=True), nullable=True)
+    verified_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (
@@ -1825,6 +1846,44 @@ class OrganizationMember(Base):
 
     org = relationship("Organization", foreign_keys=[org_id])
     user = relationship("User", foreign_keys=[user_id])
+    verified_by_user = relationship("User", foreign_keys=[verified_by_user_id])
+
+
+class UserNfcCredential(Base):
+    __tablename__ = "user_nfc_credentials"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    label = Column(String(120), nullable=True)
+    uid_hash = Column(String(128), nullable=False)
+    vendor = Column(String(32), nullable=False, default="biohax")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("ix_user_nfc_credentials_uid_hash", "uid_hash", unique=True),
+    )
+
+
+class OrganizationNfcPolicy(Base):
+    __tablename__ = "organization_nfc_policies"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    require_nfc_for_admins = Column(Boolean, nullable=False, default=False)
+    require_nfc_for_payments = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
 
 
 class StripeEvent(Base):
@@ -2068,3 +2127,263 @@ class RampWaitlistEntry(Base):
     notes = Column(String(500), nullable=True)
     status = Column(String(32), nullable=False, default="pending", index=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+# --- R9 Securities intake ---
+
+
+class SecurityInstrument(Base):
+    __tablename__ = "securities_instruments"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    instrument_type = Column(String(32), nullable=False, index=True)
+    issuer_name = Column(String(200), nullable=False)
+    jurisdiction = Column(String(64), nullable=False)
+    face_amount = Column(Numeric(36, 18), nullable=False)
+    currency = Column(String(8), nullable=False, default="USD")
+    isin = Column(String(16), nullable=True)
+    maturity_at = Column(DateTime(timezone=True), nullable=True)
+    share_count = Column(Numeric(36, 18), nullable=True)
+    document_hash = Column(String(128), nullable=True)
+    document_uri = Column(String(512), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+
+
+class SecurityIntakeRequest(Base):
+    __tablename__ = "securities_intake_requests"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    instrument_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("securities_instruments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    status = Column(String(32), nullable=False, default="draft", index=True)
+    submitted_by = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewer_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    instrument = relationship("SecurityInstrument", foreign_keys=[instrument_id])
+    org = relationship("Organization", foreign_keys=[org_id])
+
+    __table_args__ = (Index("ix_securities_intake_org_status", "org_id", "status"),)
+
+
+class SecurityCustodyPosition(Base):
+    __tablename__ = "securities_custody_positions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    instrument_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("securities_instruments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    intake_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("securities_intake_requests.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    location = Column(String(32), nullable=False, default="register_only")
+    custodian_ref = Column(String(200), nullable=True)
+    haircut_bps = Column(Integer, nullable=False, default=2500)
+    collateral_credit_acp = Column(Numeric(36, 18), nullable=False, default=0)
+    status = Column(String(32), nullable=False, default="active", index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+    instrument = relationship("SecurityInstrument", foreign_keys=[instrument_id])
+    intake = relationship("SecurityIntakeRequest", foreign_keys=[intake_id])
+
+
+# --- R10 Apple Watch HR fleet ---
+
+
+class WatchAsset(Base):
+    __tablename__ = "watch_assets"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    slot = Column(String(8), nullable=False)
+    band_color = Column(String(40), nullable=False)
+    serial_number = Column(String(120), nullable=False)
+    status = Column(String(32), nullable=False, default="spare", index=True)
+    battery_percent = Column(Integer, nullable=True)
+    last_rotated_at = Column(DateTime(timezone=True), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+    employee = relationship("User", foreign_keys=[employee_user_id])
+
+    __table_args__ = (
+        Index("ix_watch_assets_org_employee_slot", "org_id", "employee_user_id", "slot", unique=True),
+        Index("ix_watch_assets_org_serial", "org_id", "serial_number", unique=True),
+    )
+
+
+class WatchRotationPolicy(Base):
+    __tablename__ = "watch_rotation_policies"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    enabled = Column(Boolean, nullable=False, default=True)
+    rotation_interval_minutes = Column(Integer, nullable=False, default=240)
+    min_soc_percent = Column(Integer, nullable=False, default=25)
+    grace_minutes = Column(Integer, nullable=False, default=15)
+    viewer_roles = Column(JSONB, nullable=False, server_default=text("'[\"owner\", \"admin\"]'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+
+
+class WatchHeartRateSample(Base):
+    __tablename__ = "watch_heart_rate_samples"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    watch_asset_id = Column(UUID(as_uuid=False), ForeignKey("watch_assets.id", ondelete="SET NULL"), nullable=True, index=True)
+    bpm = Column(Integer, nullable=False)
+    on_shift = Column(Boolean, nullable=False, default=True)
+    source = Column(String(40), nullable=False, default="healthkit")
+    recorded_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    ingested_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+    employee = relationship("User", foreign_keys=[employee_user_id])
+    watch = relationship("WatchAsset", foreign_keys=[watch_asset_id])
+
+    __table_args__ = (Index("ix_watch_hr_org_employee_recorded", "org_id", "employee_user_id", "recorded_at"),)
+
+
+# --- R11 Orbital sealed edge ---
+
+
+class OrbitalEdgeNode(Base):
+    __tablename__ = "orbital_edge_nodes"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    codename = Column(String(80), nullable=False)
+    norad_id = Column(String(32), nullable=True)
+    launch_provider = Column(String(40), nullable=False, default="spacex")
+    rideshare_slot = Column(String(80), nullable=True)
+    mass_kg = Column(Numeric(10, 3), nullable=True)
+    status = Column(String(32), nullable=False, default="planned", index=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+
+    __table_args__ = (Index("ix_orbital_edge_nodes_org_codename", "org_id", "codename", unique=True),)
+
+
+class OrbitalAttestation(Base):
+    __tablename__ = "orbital_attestations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    node_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("orbital_edge_nodes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    kind = Column(String(40), nullable=False)
+    digest_sha256 = Column(String(128), nullable=False)
+    payload_uri = Column(String(512), nullable=True)
+    verified = Column(Boolean, nullable=False, default=False)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    node = relationship("OrbitalEdgeNode", foreign_keys=[node_id])
+
+
+# --- R12 AETERNA longevity marketplace ---
+
+
+class AeternaDnaVaultEntry(Base):
+    __tablename__ = "aeterna_dna_vault"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    label = Column(String(120), nullable=False)
+    source = Column(String(32), nullable=False, default="upload")
+    source_uri = Column(String(512), nullable=True)
+    content_sha256 = Column(String(128), nullable=False)
+    format_hint = Column(String(32), nullable=False, default="vcf")
+    status = Column(String(32), nullable=False, default="pending", index=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])
+    org = relationship("Organization", foreign_keys=[org_id])
+
+    __table_args__ = (Index("ix_aeterna_dna_vault_owner_created", "owner_user_id", "created_at"),)
+
+
+class AeternaIntentOrder(Base):
+    __tablename__ = "aeterna_intent_orders"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    intent_kind = Column(String(48), nullable=False, index=True)
+    vault_id = Column(UUID(as_uuid=False), ForeignKey("aeterna_dna_vault.id", ondelete="SET NULL"), nullable=True, index=True)
+    workflow_slug = Column(String(80), nullable=True)
+    status = Column(String(32), nullable=False, default="draft", index=True)
+    budget_acp = Column(Numeric(36, 18), nullable=False)
+    notes = Column(Text, nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])
+    vault = relationship("AeternaDnaVaultEntry", foreign_keys=[vault_id])
+
+    __table_args__ = (Index("ix_aeterna_intent_orders_owner_created", "owner_user_id", "created_at"),)
+
+
+class AeternaPartner(Base):
+    __tablename__ = "aeterna_partners"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(160), nullable=False)
+    jurisdiction = Column(String(64), nullable=False)
+    license_ref = Column(String(200), nullable=True)
+    website = Column(String(512), nullable=True)
+    supported_intents = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    verified = Column(Boolean, nullable=False, default=False, index=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    org = relationship("Organization", foreign_keys=[org_id])
+
+    __table_args__ = (Index("ix_aeterna_partners_org_name", "org_id", "name", unique=True),)

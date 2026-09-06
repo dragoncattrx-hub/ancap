@@ -183,3 +183,8 @@ Production smoke targets to keep using:
 - Organizations-owned API keys [DONE: POST/GET/DELETE /organizations/{id}/api-keys].
 - Signed webhook retry dashboard with replay controls [DONE: GET /webhooks/{id}/deliveries/{id}, POST /webhooks/{id}/deliveries/{id}/replay].
 - Consider fiat/Stripe only after ACP checkout, receipts, and creator payouts are stable.
+- **Securities intake** (securities / promissory notes / shares) — org treasury register, review, custody stub, haircut pledge to ACP escrow. Track: docs/SECURITIES_INTAKE_ROADMAP.md · Master priority **R9** · Phases S0–S5. Start after org identity + ACP checkout are stable; MVP = S1+S2.
+- **Apple Watch employee fleet** — 3 watches per worker (different bands), heart-rate sync via HealthKit/watchOS, mandatory charge/rotation windows. Track: docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md · Master **R10** · Mobile Phase **5.6**. Consent-gated; feature flag pple_watch_vitals.
+- **SpaceX encrypted satellite servers** - launch sealed/encrypted ANCAP edge nodes via SpaceX rideshare/manifest; ground HSM unlock; ACP orbital-edge later. Track: docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md · Master **R11** · Phases X0-X5. Long-horizon; does not block Phase 6.
+- **AETERNA longevity marketplace** — DNA vault + Sequencing.com-style import + ACP-paid genomic/longevity consult workflows + licensed partners. Track: docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md · Master **R12** · Phases A0–A5. No DIY CRISPR; does not block Phase 6.
+

@@ -28,7 +28,7 @@ Key identities:
 - **Pycache stale bytecode**: After updating Python code, sometimes old error messages persist. Fix: `find . -path "*/__pycache__/*.pyc" -delete`.
 - **FastAPI route verification**: To check if a route exists without starting the server: `python -c "from app.main import app; print([r.path for r in app.routes if 'keyword' in r.path])"`.
 - **`/internal/frontend-build`**: This is a Next.js route in `frontend-app/src/app/internal/frontend-build/route.ts` — NOT a FastAPI route. It reads `.next/BUILD_ID` or `NEXT_PUBLIC_APP_BUILD_ID` env var.
-- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable).
+- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable), 057 (org NFC identity), 058 (securities + watch fleet + orbital edge), 059 (AETERNA DNA vault + intents + partners).
 
 ## Preferences
 
@@ -69,3 +69,11 @@ Blocked (needs Android native build):
 - Send + sign via native FFI
 
 Phase 7 CI: Playwright smoke in CI (needs separate job with backend service).
+
+Planned capital track (not blocking Phase 6): Securities intake R9 — promissory notes, shares, securities register/pledge (`docs/SECURITIES_INTAKE_ROADMAP.md`). Foundation: S0 done, S1 API/tables in `058_advanced_capital_wearables_orbital`.
+
+Planned workplace wearables track (not blocking Phase 6): Apple Watch HR fleet R10 / mobile Phase 5.6 — 3 watches per employee, band rotation for charging, heart-rate sync (`docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md`). Foundation: W0 done, W1 inventory/rotation/HR ingest API in migration `058`.
+
+Planned orbital infra track (not blocking Phase 6): SpaceX encrypted satellite servers R11 — sealed ANCAP edge payloads via SpaceX; phases X0–X5 (docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md). Foundation: control-plane registry + `FF_ORBITAL_EDGE` (migration `058`).
+
+Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows, licensed partners (`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`). Foundation: A0 done, A1 API/tables in `059_aeterna_marketplace_foundation` + `FF_AETERNA`.

@@ -847,6 +847,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
+| P5.5 | Biohax NFC + org identity | [~] backend scaffolding (`057_org_nfc_identity`, `/organizations/{org_id}/identity/*`), mobile dep/i18n/permissions; NFC unlock UI + policy enforcement still open — see `docs/mobile/BIOHAX_NFC.md` |
 | P6-3 | Device matrix (iOS + Android) | [~] matrix/checklist doc added in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready verification-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |
 | P6-4 | TestFlight + Play Internal | [~] release-readiness checklist added in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |
 | P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
@@ -1128,8 +1129,89 @@ Security and ops hardening completed in this audit:
 | R6 | **Monetization depth** | Workflow subscriptions, partner API tiers, creator payout UX | Revenue after first ACP loop |
 | R7 | **CI/CD deploy** | GitHub Actions → SSH deploy to tunnel host (replace manual scripts) | Faster, repeatable releases |
 | R8 | **ACP chain UX** | Document tx-driven mining; optional empty-mempool heartbeat blocks for liveness | Explain low block height on low traffic |
+| R9 | **Securities intake** | Accept securities, promissory notes (векселя), and shares (акции) into org treasury / collateral rails | Expand capital layer beyond ACP cash; see `docs/SECURITIES_INTAKE_ROADMAP.md` |
+| R10 | **Apple Watch HR fleet** | 3 watches/employee (distinct bands), continuous heart-rate sync, charge/rotation schedule | Workplace safety + shift presence; see `docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md` |
+| R11 | **SpaceX encrypted sats** | Launch satellites with encrypted ANCAP edge servers via SpaceX rideshare/manifest | Sovereign sealed orbital compute; see docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md |
+| R12 | **AETERNA longevity** | DNA vault + ACP-paid genomic/longevity workflows + licensed partner rails (Sequencing.com import) | Eternal-life division; see `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md` |
 
 **ACP chain note:** production miner only produces blocks when the mempool is non-empty (`ACP-crypto/acp-node/src/miner.rs`). Block height ~21 on low traffic is expected, not a node failure.
+
+---
+
+## SpaceX Encrypted Satellite Servers Track (2027+) - NEW
+
+Execution detail: **docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md**.
+
+Launch **encrypted ANCAP edge servers** as satellite payloads using **SpaceX** (rideshare / Transporter-class or dedicated as required): sealed storage, authenticated uplink, ground HSM key ceremony, then ACP orbital-edge productization.
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| X0 Feasibility | [~] | Orbit/mass/power, export/legal memo, cubesat vs ESPA decision; in-repo `/orbital-edge` registry stub |
+| X1 Payload crypto arch | [~] | Encrypted server block diagram, threat model, sealed boot; attestation tables + API (FF_ORBITAL_EDGE) |
+| X2 Ground & keys | [ ] | Ground segment, dual-control HSM ceremony, ops runbooks |
+| X3 SpaceX program | [ ] | ICD/manifest path, env test plan, insurance/license with counsel |
+| X4 First flight | [ ] | FlatSat -> launch -> LEOP encrypted round-trip demo |
+| X5 ACP orbital edge | [ ] | Feature-flagged product: attestation/sealed offload; fleet cadence |
+
+**Depends on:** ACP ledger stability + org authorization model + compliance review before public claims.
+**Does not block:** Phase 6 mobile, R9 securities, R10 Watch fleet.
+
+
+## Apple Watch Employee Fleet Track (2026-Q4+) — NEW
+
+Execution detail: **`docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md`** · Mobile checklist: Phase **5.6** in `docs/mobile/ROADMAP.md`.
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| W0 Spec & consent | `[x]` | Domain, org policy, legal/consent templates |
+| W1 Backend fleet API | `[~]` | 3-watch inventory, rotation state machine, HR ingest (alerts deferred) |
+| W2 iPhone HealthKit sync | `[ ]` | Permissions, background sync, rotation coach in mobile app |
+| W3 watchOS companion | `[ ]` | Native sampling, swap haptics, band-slot complication |
+| W4 Safety dashboard | `[ ]` | Org web live/near-live HR + compliance |
+| W5 Fleet hardening | `[ ]` | Lost/maintenance workflows, battery-tuned intervals |
+
+**Policy default:** one active watch; swap on interval (4–6h) or low SOC; A/B/C bands always color-coded.  
+**Depends on:** org roles + employee consent. **Does not block:** mobile MASVS / securities S0–S2.
+
+---
+
+## Securities Intake Track (2026-Q4+) — NEW
+
+Execution detail: **`docs/SECURITIES_INTAKE_ROADMAP.md`**.
+
+Accept **securities (tsennye bumagi)**, **promissory notes (vekselya)**, and **equity shares (aktsii)** as intake instruments for verified orgs: register → review → custody stub → haircut valuation → ACP collateral hold (escrow-only first).
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| S0 Spec & domain | `[x]` | Glossary, schemas, custody model memo, status machine |
+| S1 Data + API MVP | `[~]` | Instruments / intake / custody tables; org-gated CRUD + admin review (valuations/events deferred) |
+| S2 Treasury UX | `[ ]` | Org Treasury → Securities desk; note + equity forms; dual-control review |
+| S3 Valuation & pledge | `[ ]` | Haircuts, pledge → ACP collateral credit (escrow hold), risk alerts |
+| S4 Custodian adapters | `[ ]` | Partner custody interface; optional registrar/CSD; mobile read-only + step-up |
+| S5 Ecosystem | `[ ]` | Settlement intents vs pledges; invite-only discounting; audit attestations |
+
+**Depends on:** verified org identity, stable ACP ledger/checkout, compliance matrix update.  
+**Does not block:** mobile MASVS device closure or commerce days 61–90 polish.
+
+---
+
+## AETERNA Longevity Marketplace Track (2026-Q4+) — NEW
+
+Execution detail: **`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`**.
+
+Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere panels, disease-risk, longevity plans), licensed-partner handoff. **No DIY CRISPR / gene synthesis.**
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| A0 Spec & brand | `[x]` | Schemas, `/aeterna` landing + hero, Workflow Store category |
+| A1 Vault + intent API | `[~]` | `aeterna_dna_vault` / orders / partners; `FF_AETERNA`; migration `059` |
+| A2 Checkout UX | `[ ]` | Category filter, org desk, longevity bundle UX |
+| A3 Sandbox viz | `[ ]` | Read-only annotation playground on vaulted VCF summaries |
+| A4 Partner network | `[ ]` | Verified clinics, ACP escrow until consult delivered |
+| A5 Economy | `[ ]` | Vertical `AETERNA` + creator-listed genomic workflows |
+
+**Depends on:** consent/compliance matrix, Workflow Store checkout, org roles.  
+**Does not block:** Phase 6 mobile MVP or R9–R11.
 
 ---
 

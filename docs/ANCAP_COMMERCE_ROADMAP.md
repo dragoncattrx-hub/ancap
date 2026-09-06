@@ -50,3 +50,17 @@
 | Claim codes redeemed | 200+ |
 
 See also: `docs/COMPLIANCE_ONRAMP_MATRIX.md`, `ROADMAP-MONETIZATION.md`.
+
+## Beyond 90 days — Securities intake
+
+Capital-layer follow-on: accept securities, promissory notes, and equity shares into org treasury / ACP collateral escrow.
+
+Full plan: [docs/SECURITIES_INTAKE_ROADMAP.md](SECURITIES_INTAKE_ROADMAP.md) (Master priority **R9**, phases S0–S5).
+
+
+## Beyond 90 days - SpaceX encrypted satellites
+
+Long-horizon infra: launch satellites with **encrypted ANCAP edge servers** via **SpaceX** (rideshare/manifest), sealed storage, ground HSM control plane, then ACP orbital-edge productization.
+
+Full plan: [docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md](SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md) (Master priority **R11**, phases X0-X5).
+

@@ -170,6 +170,76 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
             "corrective_action_plan": ["Owner assignment on degraded runs", "Human review for premium outputs", "Root cause logged in llm_usage_events"],
         },
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-dna-wellness-report",
+        title="AETERNA DNA Wellness Report",
+        category="AETERNA",
+        summary="Turn a vaulted genome hash / VCF summary into an ACP-paid wellness annotation brief.",
+        description="Produces a structured genomic wellness report shell from consented DNA vault metadata. Educational and consult-prep only — not a diagnosis and not a DIY editing protocol.",
+        price=Money(amount="49", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=["Trait annotation map", "Data-quality notes", "Partner handoff checklist"],
+        output_items=["Wellness annotation brief", "Variant summary table", "Consent receipt", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "vault_hash_ref", "status_timeline"],
+        tags=["aeterna", "dna", "wellness", "longevity"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-longevity-panel-brief",
+        title="AETERNA Longevity Panel Brief",
+        category="AETERNA",
+        summary="Build a longevity planning brief for licensed-partner review from DNA vault + lifestyle inputs.",
+        description="Creates a longevity panel brief with risk themes, monitoring suggestions, and clinic questions. No wet-lab protocols.",
+        price=Money(amount="79", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=55,
+        preview_items=["Longevity theme map", "Monitoring cadence", "Clinic question list"],
+        output_items=["Longevity brief", "Panel shortlist", "Partner referral memo", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "status_timeline"],
+        tags=["aeterna", "longevity", "panel"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-pigmentation-consult-brief",
+        title="AETERNA Pigmentation Consult Brief",
+        category="AETERNA",
+        summary="Prepare a pigmentation / eye-color consult brief for licensed clinical partners.",
+        description="Structures goals, genetic context from vault metadata, and questions for a licensed consult. Does not provide CRISPR guide design or DIY enhancement steps.",
+        price=Money(amount="99", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=["Goal framing", "Genetic context notes", "Consult agenda"],
+        output_items=["Consult brief", "Partner matching hints", "Risk/consent reminders", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "status_timeline"],
+        tags=["aeterna", "pigmentation", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-telomere-panel-review",
+        title="AETERNA Telomere Panel Review",
+        category="AETERNA",
+        summary="Review telomere-related panel results and produce a partner-ready interpretation shell.",
+        description="Summarizes telomere panel inputs into an interpretation shell for clinician review. Not a treatment protocol.",
+        price=Money(amount="69", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=35,
+        preview_items=["Panel summary", "Interpretation caveats", "Follow-up questions"],
+        output_items=["Telomere review memo", "Caveats list", "Partner handoff", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "status_timeline"],
+        tags=["aeterna", "telomere", "longevity"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-disease-risk-navigator",
+        title="AETERNA Disease Risk Navigator",
+        category="AETERNA",
+        summary="Navigate disease-risk themes from consented genomic metadata into a clinician discussion guide.",
+        description="Builds a disease-risk navigator for educational discussion with licensed providers. Explicitly not diagnostic.",
+        price=Money(amount="89", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=["Risk theme map", "Evidence gaps", "Clinician agenda"],
+        output_items=["Risk navigator", "Evidence gap list", "Referral memo", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "vault_hash_ref", "status_timeline"],
+        tags=["aeterna", "disease-risk", "clinical"],
+    ),
 ]
 
 
@@ -371,6 +441,29 @@ WORKFLOW_BUNDLES: list[WorkflowBundlePublic] = [
             "Three proof-backed workflow receipts",
         ],
         tags=["bundle", "merchant", "pay", "qr"],
+    ),
+    WorkflowBundlePublic(
+        slug="aeterna-longevity-pack",
+        title="AETERNA Longevity Pack",
+        category="AETERNA",
+        summary="DNA wellness + longevity panel + disease-risk navigator for ACP checkout.",
+        description="Three AETERNA consult-prep workflows for vaulted genomic metadata. Licensed-partner handoff only — no DIY gene editing.",
+        workflow_slugs=[
+            "aeterna-dna-wellness-report",
+            "aeterna-longevity-panel-brief",
+            "aeterna-disease-risk-navigator",
+        ],
+        price=Money(amount="179", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        discount_percent=15,
+        estimated_time_minutes=145,
+        output_items=[
+            "DNA wellness report",
+            "Longevity panel brief",
+            "Disease risk navigator",
+            "Three proof-backed workflow receipts",
+        ],
+        tags=["bundle", "aeterna", "longevity", "dna"],
     ),
 ]
 
@@ -873,6 +966,33 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "risk_report",
             "sections_generated": 6,
             "focus": ["risk matrix", "trust signals", "red flags", "verification steps"],
+        }
+    elif template.slug.startswith("aeterna-"):
+        intent = str(payload.get("intent_kind") or template.slug)
+        vault_ref = str(payload.get("vault_hash") or payload.get("content_sha256") or "not_provided")
+        deliverable = {
+            "division": "AETERNA",
+            "intent": intent,
+            "compliance": (
+                "Educational / consult-prep only. Not a diagnosis. "
+                "No CRISPR guide design, gene synthesis, or DIY enhancement protocols."
+            ),
+            "vault_hash_ref": vault_ref,
+            "sequencing_com_hint": "Import exports from https://sequencing.com/ into the AETERNA DNA vault first.",
+            "sections": template.output_items,
+            "partner_handoff": {
+                "required": True,
+                "note": "Route outputs to a verified licensed partner before any clinical action.",
+            },
+            "sandbox_note": (
+                "Genome sandbox explores annotations on vaulted metadata; it does not edit DNA."
+            ),
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "aeterna_longevity",
+            "sections_generated": len(template.output_items),
+            "focus": ["dna vault", "longevity consult", "partner handoff", "acp receipt"],
         }
     else:
         deliverable = {

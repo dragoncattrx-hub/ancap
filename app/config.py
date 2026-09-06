@@ -275,6 +275,8 @@ class Settings(BaseSettings):
     ff_governance_auto_apply: bool = False
     ff_external_actions: bool = False
     ff_nl_strategy_compiler: bool = False
+    ff_orbital_edge: bool = False
+    ff_aeterna: bool = False
 
     # Participation gates
     participation_gates_enabled: bool = True

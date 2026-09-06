@@ -60,6 +60,7 @@ from app.api.routers import (
     search,
     audit,
     organizations,
+    org_identity,
     payments,
     payouts,
     creators,
@@ -73,6 +74,10 @@ from app.api.routers import (
     commerce,
     token_snapshot,
     treasury,
+    securities,
+    watch_fleet,
+    orbital_edge,
+    aeterna,
 )
 
 settings = get_settings()
@@ -224,6 +229,7 @@ ALL_ROUTERS = [
     search.router,
     audit.router,
     organizations.router,
+    org_identity.router,
     payments.router,
     payouts.router,
     creators.router,
@@ -238,6 +244,10 @@ ALL_ROUTERS = [
     commerce.router,
     token_snapshot.router,
     treasury.router,
+    securities.router,
+    watch_fleet.router,
+    orbital_edge.router,
+    aeterna.router,
 ]
 
 for r in ALL_ROUTERS:

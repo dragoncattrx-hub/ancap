@@ -108,6 +108,45 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 
 ---
 
+## Phase 5.5 — Biohax NFC + org identity
+
+| ID | Task | Status |
+|----|------|--------|
+| P5.5-1 | Backend models + migration `057_org_nfc_identity` | [~] | `OrganizationMember` verification fields, `UserNfcCredential`, `OrganizationNfcPolicy` |
+| P5.5-2 | Org identity API (`/organizations/{org_id}/identity/...`) | [~] | NFC register/list/revoke, member verify/status, policy GET/PUT |
+| P5.5-3 | Mobile dep `react-native-nfc-manager` + Expo NFC permissions | [~] | package + `app.config.js` Android/iOS NFC strings |
+| P5.5-4 | i18n NFC unlock/settings strings (EN/RU/UK/DE) | [~] | `lib/i18n.ts` |
+| P5.5-5 | NFC unlock UI + local hash enrollment | [ ] | read UID, hash, compare on unlock screen |
+| P5.5-6 | Org admin verification UI (web or mobile) | [ ] | consume identity API |
+| P5.5-7 | Policy enforcement (`require_nfc_for_admins/payments`) | [ ] | gate sensitive org/payment routes |
+| P5.5-8 | DESFire / challenge–response implants | [ ] | post-MVP secure element path |
+
+Spec: `docs/mobile/BIOHAX_NFC.md`
+
+---
+
+## Phase 5.6 — Apple Watch employee HR fleet
+
+> Spec: `docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md` · Master priority **R10**
+
+Each employee receives **3 Apple Watches** with distinct bands. One is active on shift; the other two charge. The phone/org stack syncs **heart rate** and enforces a **swap schedule** tied to battery/charging.
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| P5.6-1 | Domain + migration (watch assets, assignments, rotation policy, HR samples, consent) | [ ] | org-gated inventory; exactly one `active` watch per member |
+| P5.6-2 | Fleet + rotation + vitals ingest APIs | [ ] | register 3 devices, rotate A/B/C, batch HR upload, gap/missed-swap alerts |
+| P5.6-3 | Consent + org policy (who can view HR, retention TTL) | [ ] | explicit opt-in; revoke stops ingest |
+| P5.6-4 | iPhone HealthKit sync in Expo/org module | [ ] | read HR after permission; background flush; rotation coach UI |
+| P5.6-5 | Default charge rotation UX (3 bands, countdown, charger checklist) | [ ] | default swap every 4–6h or SOC floor (e.g. 25%) |
+| P5.6-6 | watchOS companion (native) | [ ] | sampling + haptic “swap due”; complication by band slot |
+| P5.6-7 | Org safety dashboard (web) | [ ] | on-shift HR tiles, gaps, rotation compliance % |
+| P5.6-8 | Fleet ops (lost/maintenance, battery analytics) | [ ] | post-MVP hardening |
+
+**Depends on:** org membership/roles; pairs well with Phase 5.5 NFC step-up.  
+**Does not block:** wallet FFI / MASVS device closure — ship behind `apple_watch_vitals` flag.
+
+---
+
 ## Phase 6 — QA & release
 
 | ID | Task | Status |

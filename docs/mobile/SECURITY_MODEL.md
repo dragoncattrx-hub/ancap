@@ -44,6 +44,17 @@ Future hardening target:
 | Jailbreak/root warning | Dev-build warning in settings; stronger native/root attestation still later |
 | Transaction preview | Required before sign |
 
+## NFC unlock (Biohax / NTAG — Phase 5.5)
+
+Optional **presence factor** for wallet unlock when the user enrolls a Biohax-compatible NFC implant or tag:
+
+- **On-device only:** raw NFC UID bytes are read via `react-native-nfc-manager` and hashed locally (SHA-256); only the **hash** is stored in secure storage and sent to ANCAP (`UserNfcCredential.uid_hash`).
+- **Unlock stack:** enrolled UID hash match **plus PIN** (biometrics unchanged for vault secret access).
+- **Limitations:** NTAG static UIDs are cloneable; NFC is not a sole auth factor. High-value sends still require PIN/preview.
+- **Org binding:** admins may bind `nfc_uid_hash` to `OrganizationMember` during employee verification; org policy flags (`require_nfc_for_admins`, `require_nfc_for_payments`) scaffold future enforcement.
+
+See `docs/mobile/BIOHAX_NFC.md` for hardware notes, API summary, and DESFire roadmap.
+
 ## MASVS L1 baseline closure (current repo truth)
 
 The repo now covers the main MASVS-L1-applicable controls that are unblockable without final native/device release work:
