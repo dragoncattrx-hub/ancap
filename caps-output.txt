@@ -1,0 +1,43 @@
+﻿ssh : Traceback (most recent call last):
+At C:\Users\drago\AppData\Local\Temp\ps-script-8a9f6bf6-4fe9-4f24-a9e5-f4dc9c2cb89f.ps1:86 char:81
++ ... ps.sh" -Raw | ssh ancap-server "sed 's/\r$//' | bash -s" 2>&1 | Out-F ...
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<stdin>", line 14, in <module>
+  File "/usr/local/lib/python3.11/site-packages/web3/contract/contract.py", line 291, in call
+maxSingleMint 100000000000000000000000
+mintCapPerDay 200000000000000000000000
+    return call_contract_function(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/contract/utils.py", line 153, in call_contract_function
+    return_data = w3.eth.call(
+                  ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/eth/eth.py", line 247, in call
+    return self._durin_call(transaction, block_identifier, state_override)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/eth/eth.py", line 266, in _durin_call
+    return self._call(transaction, block_identifier, state_override)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/module.py", line 112, in caller
+    result = w3.manager.request_blocking(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/manager.py", line 232, in request_blocking
+    return self.formatted_response(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/manager.py", line 198, in formatted_response
+    validate_rpc_response_and_raise_if_error(
+  File "/usr/local/lib/python3.11/site-packages/web3/_utils/validation.py", line 397, in validate_rpc_response_and_rais
+e_if_error
+    response = apply_error_formatters(error_formatters, response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/web3/_utils/formatters.py", line 146, in apply_error_formatters
+    formatted_resp = pipe(response, error_formatters)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "cytoolz/functoolz.pyx", line 706, in cytoolz.functoolz.pipe
+  File "cytoolz/functoolz.pyx", line 681, in cytoolz.functoolz.c_pipe
+  File "/usr/local/lib/python3.11/site-packages/web3/_utils/error_formatters_utils.py", line 166, in raise_contract_log
+ic_error_on_revert
+    raise ContractLogicError(message, data=data)
+web3.exceptions.ContractLogicError: ('execution reverted: 0x', '0x')

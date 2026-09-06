@@ -355,6 +355,7 @@ pub fn acp_sign_transfer(
     };
 
     let client = Client::builder()
+        .user_agent("ancap-wallet/1.0")
         .timeout(Duration::from_secs(60))
         .build()
         .map_err(|e| AcpWalletException::Internal {

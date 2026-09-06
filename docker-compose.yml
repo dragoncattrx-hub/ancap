@@ -45,7 +45,7 @@ services:
       PARTICIPATION_GATES_ENABLED: ${PARTICIPATION_GATES_ENABLED:-true}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: ${CHAIN_ANCHOR_DRIVER:-mock}
-      ACP_RPC_URL: ${ACP_RPC_URL:-https://acp1.ancap.cloud/rpc}
+      ACP_RPC_URL: ${ACP_RPC_URL:-http://host.docker.internal:8545/rpc}
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
     depends_on:

@@ -1,0 +1,63 @@
+﻿owner 0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4 signer 0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4
+before maxSingleMint 600000000000000000000000
+before mintCapPerDay 1200000000000000000000000
+setCaps tx f2e0d2e494ae30ffac943915f1f1b6b830d110ca8b0ee150dbd3726f6e0fac3c
+status 1
+after maxSingleMint 600000000000000000000000
+after mintCapPerDay 1200000000000000000000000
+ssh : bsc release watcher failed: {'code': -32005, 'message': 'limit exceeded'}
+At C:\Users\drago\AppData\Local\Temp\ps-script-2a2d59a1-d70c-432b-9898-3e14e5e59148.ps1:28 char:1
++ ssh ancap-server "bash /opt/ancap-migration/current/scripts/apply-bri ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (bsc release wat...imit exceeded'}:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+failed to write bridge reserve snapshot: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.Data
+Error'>: invalid input for query argument $4: 300001000000000000000000 (value out of int64 range)
+[SQL: INSERT INTO bridge_reserve_snapshots (id, snapshot_at, reserve_balance_acp_smallest, total_wacp_wei_completed, to
+tal_wacp_wei_implied, backing_ratio, delta_wacp_wei, reconciliation_ok, acp_reserve_address, wacp_contract, status, res
+erve_health, notes, last_acp_block_height, last_bsc_block_number) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::B
+IGINT, $4::BIGINT, $5::BIGINT, $6::NUMERIC(12, 6), $7::BIGINT, $8::BOOLEAN, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $1
+2::VARCHAR, $13::JSONB, $14::BIGINT, $15::BIGINT)]
+[parameters: (UUID('326872e0-fd0e-41df-9588-f10bd58c08ce'), datetime.datetime(2026, 7, 10, 15, 9, 55, 7396, tzinfo=date
+time.timezone.utc), 0, 300001000000000000000000, 300001000000000000000000, None, 0, True, 'acp1qrz3ksr8gpv4ah208t5qvzxx
+0f4vc7a7ws7uqluz', '0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402', 'healthy', 'healthy', '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+Traceback (most recent call last):
+  File "<stdin>", line 15, in <module>
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<stdin>", line 12, in main
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 1009, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 190, in greenlet_spawn
+    result = context.switch(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2028, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 103, in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 973, in _raise_for_prerequisite_state
+    raise sa_exc.PendingRollbackError(
+sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during
+ flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlalche
+my.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.DataError'>: invalid input for query argument $4: 3000
+01000000000000000000 (value out of int64 range)
+[SQL: INSERT INTO bridge_reserve_snapshots (id, snapshot_at, reserve_balance_acp_smallest, total_wacp_wei_completed, to
+tal_wacp_wei_implied, backing_ratio, delta_wacp_wei, reconciliation_ok, acp_reserve_address, wacp_contract, status, res
+erve_health, notes, last_acp_block_height, last_bsc_block_number) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::B
+IGINT, $4::BIGINT, $5::BIGINT, $6::NUMERIC(12, 6), $7::BIGINT, $8::BOOLEAN, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $1
+2::VARCHAR, $13::JSONB, $14::BIGINT, $15::BIGINT)]
+[parameters: (UUID('326872e0-fd0e-41df-9588-f10bd58c08ce'), datetime.datetime(2026, 7, 10, 15, 9, 55, 7396, tzinfo=date
+time.timezone.utc), 0, 300001000000000000000000, 300001000000000000000000, None, 0, True, 'acp1qrz3ksr8gpv4ah208t5qvzxx
+0f4vc7a7ws7uqluz', '0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402', 'healthy', 'healthy', '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi) (Background on this error at: https://sqlalche.me/e/20/7s
+2a)

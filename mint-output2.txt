@@ -1,0 +1,9 @@
+﻿ssh : bsc release watcher failed: {'code': -32005, 'message': 'limit exceeded'}
+At C:\Users\drago\AppData\Local\Temp\ps-script-c4fb9f4d-9602-482b-84e8-40a88ea1899a.ps1:87 char:83
++ ... ly.sh" -Raw | ssh ancap-server "sed 's/\r$//' | bash -s" 2>&1 | Out-F ...
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (bsc release wat...imit exceeded'}:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+orchestrator {'ok': True, 'dry_run': False, 'progressed': 0, 'progressed_acp_to_bsc': 0, 'progressed_bsc_to_acp': 0}
+bsc {'ok': True, 'chain_key': 'bsc', 'last_block_height': 96882648, 'latest_block_height': 109193362, 'confirmed_height': 109193345, 'confirmed_mints': 0, 'matched_releases': 0, 'release_scan_from': 96882649, 'release_scan_to': 96882648}

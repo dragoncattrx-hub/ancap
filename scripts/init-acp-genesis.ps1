@@ -18,7 +18,7 @@
 param(
     [string]$TargetAddress = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
     [int]$TargetAmountAcp = 1000000,
-    [string]$RpcUrl = "https://acp1.ancap.cloud/rpc",
+    [string]$RpcUrl = "http://127.0.0.1:8545/rpc",
     [string]$RpcToken = ""
 )
 
