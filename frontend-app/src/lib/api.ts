@@ -212,9 +212,13 @@ export const auth = {
   },
 
   async register(email: string, password: string, display_name: string, referral_code?: string, turnstileToken?: string) {
+    const body: Record<string, unknown> = { email, password, display_name };
+    if (referral_code) body.referral_code = referral_code;
+    if (turnstileToken) body.turnstile_token = turnstileToken;
+    
     const data = await apiFetch("/auth/users", {
       method: "POST",
-      body: JSON.stringify({ email, password, display_name, referral_code, turnstile_token: turnstileToken }),
+      body: JSON.stringify(body),
     });
     if (data?.access_token) {
       setToken(data.access_token);
