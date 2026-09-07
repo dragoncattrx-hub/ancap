@@ -69,6 +69,8 @@ services:
       SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
       SMTP_TIMEOUT_SECONDS: ${SMTP_TIMEOUT_SECONDS:-15}
       LOGIN_ALERTS_ENABLED: ${LOGIN_ALERTS_ENABLED:-true}
+      # AETERNA longevity division (public /aeterna + vault APIs)
+      FF_AETERNA: ${FF_AETERNA:-true}
       LLM_PROVIDER: ${LLM_PROVIDER:-teneta_claude}
       LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.tenetauniversity.com}

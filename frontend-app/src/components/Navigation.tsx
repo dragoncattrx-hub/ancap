@@ -80,6 +80,8 @@ const secondaryNav: NavItem[] = [
 const publicNav: NavItem[] = [
   { label: "Product", href: "/#product", i18nKey: "nav.product" },
   { label: "Vision", href: "/#vision", i18nKey: "nav.vision" },
+  { label: "Workflows", href: "/ai/workflows", i18nKey: "nav.workflows" },
+  { label: "AETERNA", href: "/aeterna" },
   { label: "ACP Token and Chain", href: "/whitepaper/acp", i18nKey: "hero.acpToken" },
   { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
   { label: "Legal", href: "/legal/terms", i18nKey: "nav.legal" },

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
+import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
 import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
 import { getApiUrl } from "@/lib/api";
@@ -40,19 +41,20 @@ const INTENTS = [
   },
 ];
 
+/** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
 export default function AeternaPage() {
   const [status, setStatus] = useState<AeternaStatus | null>(null);
-  const [error, setError] = useState("");
+  const [heroOk, setHeroOk] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${getApiUrl()}/aeterna/status`);
-        if (!res.ok) throw new Error(`Status unavailable (${res.status})`);
+        const res = await fetch(`${getApiUrl()}/aeterna/status`, { credentials: "omit" });
+        if (!res.ok) return;
         if (!cancelled) setStatus((await res.json()) as AeternaStatus);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load AETERNA");
+      } catch {
+        /* Public page stays usable offline / when API is briefly down */
       }
     })();
     return () => {
@@ -65,14 +67,19 @@ export default function AeternaPage() {
       <Navigation />
 
       <section className="relative min-h-[100svh] overflow-hidden">
-        <Image
-          src="/aeterna/hero.jpg"
-          alt="AETERNA — DNA, Cas9 awareness, and blockchain settlement"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
+        {heroOk ? (
+          <Image
+            src="/aeterna/hero.jpg"
+            alt="AETERNA — DNA, Cas9 awareness, and blockchain settlement"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+            onError={() => setHeroOk(false)}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,#0d3a38_0%,#05070c_55%)]" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-r from-[#05070c]/90 via-[#05070c]/55 to-[#05070c]/25" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#05070c] via-transparent to-[#05070c]/40" />
 
@@ -81,11 +88,11 @@ export default function AeternaPage() {
             AETERNA
           </p>
           <h1 className="mt-5 max-w-xl text-xl font-medium tracking-[-0.02em] text-white/90 sm:text-2xl">
-            Longevity rails for DNA you own — pay ACP, explore your genome, route licensed partners.
+            Longevity rails for DNA you own — explore freely, pay ACP when you buy workflows.
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-white/65">
-            Hash local Sequencing.com exports in the browser. Buy premium workflows from 1,000,000 ACP —
-            wellness, longevity, pigmentation consults, disease-risk navigators.
+            No registration required for the DNA sandbox or local hash vault. Sign in only if you want to
+            sync a fingerprint or purchase a 1,000,000 ACP consult workflow.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
@@ -100,6 +107,17 @@ export default function AeternaPage() {
             >
               Browse AETERNA workflows
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-white/10 bg-[#05070c]" aria-label="Nanobot DNA scissors visualization">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <p className="mb-4 text-xs uppercase tracking-[0.16em] text-white/40">
+            Public demo · nanobots + chemical scissors
+          </p>
+          <div className="overflow-hidden rounded-xl border border-white/10">
+            <DnaNanobotScissors />
           </div>
         </div>
       </section>
@@ -138,40 +156,48 @@ export default function AeternaPage() {
           ))}
         </ul>
 
-        {error && <p className="mt-10 text-sm text-amber-300">{error}</p>}
-
-        {status && (
-          <section className="mt-14 border-t border-white/10 pt-10">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Division status</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">{status.tagline}</p>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-white/50">{status.compliance_note}</p>
-            <dl className="mt-8 grid gap-6 sm:grid-cols-3">
-              <div>
-                <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Feature</dt>
-                <dd className="mt-1 text-2xl font-semibold">
-                  {status.feature_enabled ? "on" : "flagged off"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Vault entries</dt>
-                <dd className="mt-1 text-2xl font-semibold">{status.vault_entries}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Workflows</dt>
-                <dd className="mt-1 text-2xl font-semibold">{status.workflow_slugs.length}</dd>
-              </div>
-            </dl>
-            <p className="mt-6 text-sm text-white/55">{status.sequencing_import_hint}</p>
-            <p className="mt-2 text-xs uppercase tracking-[0.14em] text-white/35">Next: {status.next_gate}</p>
-            <ul className="mt-6 flex flex-wrap gap-2 font-mono text-xs text-white/50">
-              {status.workflow_slugs.map((slug) => (
-                <li key={slug} className="border border-white/10 px-2 py-1">
-                  {slug}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <section className="mt-14 border-t border-white/10 pt-10">
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Division status</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
+            {status?.tagline ||
+              "Eternal life rails: DNA vault, ACP workflows, licensed longevity partners."}
+          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-white/50">
+            {status?.compliance_note ||
+              "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only."}
+          </p>
+          <dl className="mt-8 grid gap-6 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Feature</dt>
+              <dd className="mt-1 text-2xl font-semibold">
+                {status ? (status.feature_enabled ? "on" : "flagged off") : "public browse"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Vault entries</dt>
+              <dd className="mt-1 text-2xl font-semibold">{status?.vault_entries ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Workflows</dt>
+              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 5}</dd>
+            </div>
+          </dl>
+          {status && (
+            <>
+              <p className="mt-6 text-sm text-white/55">{status.sequencing_import_hint}</p>
+              <p className="mt-2 text-xs uppercase tracking-[0.14em] text-white/35">
+                Next: {status.next_gate}
+              </p>
+              <ul className="mt-6 flex flex-wrap gap-2 font-mono text-xs text-white/50">
+                {status.workflow_slugs.map((slug) => (
+                  <li key={slug} className="border border-white/10 px-2 py-1">
+                    {slug}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
       </main>
     </div>
   );
