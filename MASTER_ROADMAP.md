@@ -1128,13 +1128,13 @@ Security and ops hardening completed in this audit:
 | R5 | **Mobile release** | EAS production build, store listings, MASVS sign-off | Close device-ready wallet tail |
 | R6 | **Monetization depth** | Workflow subscriptions, partner API tiers, creator payout UX | Revenue after first ACP loop |
 | R7 | **CI/CD deploy** | GitHub Actions → SSH deploy to tunnel host (replace manual scripts) | Faster, repeatable releases |
-| R8 | **ACP chain UX** | Document tx-driven mining; optional empty-mempool heartbeat blocks for liveness | Explain low block height on low traffic |
+| R8 | **ACP Lean chain** | Fee-packed mining, 5s cadence, PQC hybrid scorecard, throttled heartbeat | `docs/ACP_LEAN_CHAIN.md` — security/speed/energy |
 | R9 | **Securities intake** | Accept securities, promissory notes (векселя), and shares (акции) into org treasury / collateral rails | Expand capital layer beyond ACP cash; see `docs/SECURITIES_INTAKE_ROADMAP.md` |
 | R10 | **Apple Watch HR fleet** | 3 watches/employee (distinct bands), continuous heart-rate sync, charge/rotation schedule | Workplace safety + shift presence; see `docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md` |
 | R11 | **SpaceX encrypted sats** | Launch satellites with encrypted ANCAP edge servers via SpaceX rideshare/manifest | Sovereign sealed orbital compute; see docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md |
 | R12 | **AETERNA longevity** | DNA vault + ACP-paid genomic/longevity workflows + licensed partner rails (Sequencing.com import) | Eternal-life division; see `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md` |
 
-**ACP chain note:** production miner only produces blocks when the mempool is non-empty (`ACP-crypto/acp-node/src/miner.rs`). Block height ~21 on low traffic is expected, not a node failure.
+**ACP chain note:** Lean v1.4 packs fee-prioritized mempool txs (up to 512 / 2 MB) on a 5s miner interval. Idle heartbeat (~60s) advances height with emission-only blocks when configured — no PoW energy burn. See `docs/ACP_LEAN_CHAIN.md`.
 
 ---
 

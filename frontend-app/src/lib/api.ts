@@ -1403,6 +1403,9 @@ export const acpExplorer = {
   async status() {
     return apiFetch("/acp/explorer/status");
   },
+  async efficiency() {
+    return apiFetch("/acp/explorer/efficiency");
+  },
   async blocks(limit = 10) {
     return apiFetch(`/acp/explorer/blocks?limit=${encodeURIComponent(String(limit))}`);
   },

@@ -51,6 +51,21 @@ fn load_config_from_env(mut cfg: NodeConfig) -> NodeConfig {
             cfg.miner_interval_secs = n.max(1);
         }
     }
+    if let Ok(v) = env::var("ACP_MINER_HEARTBEAT_ENABLED") {
+        cfg.miner_heartbeat_enabled = v.trim().eq_ignore_ascii_case("1")
+            || v.trim().eq_ignore_ascii_case("true")
+            || v.trim().eq_ignore_ascii_case("yes");
+    }
+    if let Ok(v) = env::var("ACP_MINER_HEARTBEAT_EVERY_N") {
+        if let Ok(n) = v.parse::<u64>() {
+            cfg.miner_heartbeat_every_n_ticks = n.max(1);
+        }
+    }
+    if let Ok(v) = env::var("ACP_MINER_MAX_TXS_PER_BLOCK") {
+        if let Ok(n) = v.parse::<usize>() {
+            cfg.miner_max_txs_per_block = n.max(1);
+        }
+    }
     if let Ok(v) = env::var("ACP_MINER_REWARD_ADDRESS") {
         let v = v.trim().to_string();
         if !v.is_empty() {

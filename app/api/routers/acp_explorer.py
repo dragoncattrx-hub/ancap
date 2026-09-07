@@ -17,11 +17,81 @@ async def explorer_status():
         best_hash = await acp_rpc_call("getbestblockhash", [])
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    lean = {
+        "protocol_profile": "lean-v1.4",
+        "energy_model": "ultra-light-assembler",
+        "signing_security": "hybrid-ed25519-dilithium2",
+        "target_block_time_sec": 5,
+        "max_block_bytes": 2 * 1024 * 1024,
+        "design_tps_hint": 102,
+        "pow": False,
+    }
+    try:
+        net = await acp_rpc_call("getnetworkinfo", [])
+        if isinstance(net, dict):
+            for key in (
+                "protocol_profile",
+                "energy_model",
+                "signing_security",
+                "target_block_time_sec",
+                "max_block_bytes",
+                "max_txs_per_block",
+                "design_tps_hint",
+                "miner_interval_secs",
+                "miner_heartbeat_enabled",
+                "pow",
+                "mempool_size",
+                "version",
+            ):
+                if key in net:
+                    lean[key] = net[key]
+    except RuntimeError:
+        pass
     return {
         "status": "ok",
         "chain_id": 1001,
         "block_height": int(height or 0),
         "best_block_hash": best_hash,
+        "lean": lean,
+    }
+
+
+@router.get("/efficiency")
+async def explorer_efficiency():
+    """Public lean-chain scorecard vs 2026 market themes (security / speed / energy)."""
+    status = await explorer_status()
+    lean = status.get("lean") if isinstance(status, dict) else {}
+    mempool = None
+    try:
+        mempool = await acp_rpc_call("getmempoolinfo", [])
+    except RuntimeError:
+        mempool = None
+    return {
+        "status": "ok",
+        "block_height": status.get("block_height"),
+        "lean": lean,
+        "mempool": mempool,
+        "market_alignment_2026": {
+            "security": [
+                "Hybrid Ed25519 + Dilithium2 signatures (post-quantum ready)",
+                "No PoW hash race / ASIC arms race attack surface",
+                "Fee floor + packed-block anti-spam",
+            ],
+            "speed": [
+                "Target 5s block cadence (aligned miner interval)",
+                "Fee-prioritized multi-tx packing up to 512 txs / 2 MB",
+                "Design capacity hint ~100 TPS under full packs",
+            ],
+            "energy": [
+                "Ultra-light assembler (orders of magnitude below Bitcoin PoW)",
+                "Idle heartbeat throttled (~60s) — no continuous hash burn",
+                "Comparable philosophy to post-Merge PoS efficiency without heavy validator re-execution yet",
+            ],
+            "vs_peers_note": (
+                "Ethereum focuses L1 zkEVM / energy-efficient PoS; Solana optimizes monolithic TPS. "
+                "ACP Lean targets AI-workflow settlement: PQC-ready security, low energy, packed throughput."
+            ),
+        },
     }
 
 

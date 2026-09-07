@@ -42,6 +42,7 @@ function CopyableHash({ value }: { value: string | null | undefined }) {
 
 export default function ExplorerPage() {
   const [status, setStatus] = useState<any>(null);
+  const [efficiency, setEfficiency] = useState<any>(null);
   const [blocks, setBlocks] = useState<any[]>([]);
   const [searchTx, setSearchTx] = useState("");
   const [searchAddr, setSearchAddr] = useState("");
@@ -52,9 +53,14 @@ export default function ExplorerPage() {
     void (async () => {
       setLoading(true);
       try {
-        const [s, b] = await Promise.all([acpExplorer.status(), acpExplorer.blocks(12)]);
+        const [s, b, e] = await Promise.all([
+          acpExplorer.status(),
+          acpExplorer.blocks(12),
+          acpExplorer.efficiency().catch(() => null),
+        ]);
         setStatus(s);
         setBlocks(b.items || []);
+        setEfficiency(e);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Explorer unavailable");
       } finally {
@@ -82,7 +88,9 @@ export default function ExplorerPage() {
       <Navigation />
       <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-3xl font-semibold">ACP Explorer</h1>
-        <p className="mt-2 text-sm text-white/65">Beta explorer for block height, latest blocks, and transaction lookup.</p>
+        <p className="mt-2 text-sm text-white/65">
+          Lean ACP v1.4 — PQC hybrid signatures, fee-packed blocks, ultra-light energy model (no PoW).
+        </p>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
         {status ? (
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
@@ -94,6 +102,37 @@ export default function ExplorerPage() {
                 <CopyableHash value={status.best_block_hash} />
               </div>
             </div>
+            {status.lean ? (
+              <div className="mt-4 grid gap-2 border-t border-white/10 pt-4 text-white/70 sm:grid-cols-2">
+                <div>Profile: {status.lean.protocol_profile}</div>
+                <div>Energy: {status.lean.energy_model}</div>
+                <div>Security: {status.lean.signing_security}</div>
+                <div>
+                  Cadence: {status.lean.target_block_time_sec}s · design ~{status.lean.design_tps_hint}{" "}
+                  TPS
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {efficiency?.market_alignment_2026 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {(
+              [
+                ["Security", efficiency.market_alignment_2026.security],
+                ["Speed", efficiency.market_alignment_2026.speed],
+                ["Energy", efficiency.market_alignment_2026.energy],
+              ] as const
+            ).map(([title, items]) => (
+              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <h2 className="text-sm font-semibold text-emerald-300">{title}</h2>
+                <ul className="mt-3 space-y-2 text-xs leading-5 text-white/60">
+                  {(items as string[]).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         ) : null}
         <form onSubmit={onSearch} className="mt-6 flex gap-2">

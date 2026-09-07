@@ -91,7 +91,18 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
         "getnetworkinfo" => Ok(json!({
             "chain_id": ctx.chain.chain_id,
             "version": ctx.node_version,
-            "mempool_size": ctx.mempool.len()
+            "mempool_size": ctx.mempool.len(),
+            "protocol_profile": acp_crypto::PROTOCOL_PROFILE,
+            "energy_model": acp_crypto::ENERGY_MODEL,
+            "signing_security": acp_crypto::SIGNING_SECURITY,
+            "target_block_time_sec": acp_crypto::TARGET_BLOCK_TIME_SEC,
+            "max_block_bytes": acp_crypto::MAX_BLOCK_BYTES,
+            "max_txs_per_block": ctx.config.miner_max_txs_per_block,
+            "design_tps_hint": acp_crypto::DESIGN_TPS_HINT,
+            "miner_interval_secs": ctx.config.miner_interval_secs,
+            "miner_heartbeat_enabled": ctx.config.miner_heartbeat_enabled,
+            "pow": false,
+            "notes": "Lean ACP: fee-packed blocks, hybrid PQC signatures, no proof-of-work energy burn"
         })),
 
         "ancap_anchor" => {

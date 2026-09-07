@@ -1,7 +1,8 @@
-//! Parameters of the ACP v1.3 protocol (ANCAP AI-State token).
+//! Parameters of the ACP v1.4 protocol (ANCAP AI-State token) — Lean profile.
 //!
-//! Monetary model, Genesis distribution, emission limits.
-//! Used in Genesis generation, emission calculations and rule validation.
+//! Monetary model, Genesis distribution, emission limits, and lean throughput/
+//! energy/security profile (2026 market alignment: PQC-ready, no PoW burn,
+//! packed blocks, target 5s cadence).
 
 /// There are so many minimal units in one whole ACP (1 ACP = 10^8 units). Amounts in transactions and commissions are in units.
 pub const UNITS_PER_ACP: u64 = 100_000_000; // 10^8
@@ -68,12 +69,22 @@ pub const GOVERNANCE_EXECUTION_DELAY_HOURS: u16 = 48;
 /// Offer deposit in ACP.
 pub const GOVERNANCE_PROPOSAL_DEPOSIT_ACP: u64 = 5_000;
 
-// --- Blocks ---
+// --- Blocks (Lean ACP) ---
 
 /// Target block time (seconds). Balance finalization speed and load on validators.
 pub const TARGET_BLOCK_TIME_SEC: u32 = 5;
 /// Maximum block size (bytes). 2 MB - throughput, state growth control, anti-spam. Can be regulated through governance.
 pub const MAX_BLOCK_BYTES: u32 = 2 * 1024 * 1024; // 2 MB
+/// Soft cap on user transactions packed per block by the lean miner (fee-prioritized).
+pub const MAX_TXS_PER_BLOCK: u32 = 512;
+/// Protocol profile tag for explorers / health surfaces.
+pub const PROTOCOL_PROFILE: &str = "lean-v1.4";
+/// Consensus energy model: assembler (no hash puzzle). Orders of magnitude below PoW.
+pub const ENERGY_MODEL: &str = "ultra-light-assembler";
+/// Signing security posture (hybrid classical + post-quantum).
+pub const SIGNING_SECURITY: &str = "hybrid-ed25519-dilithium2";
+/// Theoretical packed-capacity hint (MAX_TXS_PER_BLOCK / TARGET_BLOCK_TIME_SEC).
+pub const DESIGN_TPS_HINT: u32 = MAX_TXS_PER_BLOCK / TARGET_BLOCK_TIME_SEC;
 
 // --- Staking ---
 
@@ -154,5 +165,13 @@ mod tests {
             from_linear, GENESIS_ACP_CREATOR,
             "Creator vesting per month * linear months must equal creator allocation"
         );
+    }
+
+    #[test]
+    fn lean_tps_hint_matches_pack_over_cadence() {
+        assert_eq!(DESIGN_TPS_HINT, MAX_TXS_PER_BLOCK / TARGET_BLOCK_TIME_SEC);
+        assert_eq!(PROTOCOL_PROFILE, "lean-v1.4");
+        assert!(!ENERGY_MODEL.is_empty());
+        assert!(SIGNING_SECURITY.contains("dilithium"));
     }
 }

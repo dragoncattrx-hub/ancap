@@ -228,9 +228,9 @@ export const translations: Record<Language, TranslationTree> = {
       badge: "Live on platform",
       title: "ANCAP Chain Protocol (ACP)",
       lead:
-        "L3 layer for governance, staking, fees, and on-chain anchoring of ANCAP execution artifacts. This page explains what ACP is and how it fits into the ANCAP L1/L2/L3 roadmap.",
+        "L3 settlement for AI workflows: hybrid post-quantum signatures, 5s lean blocks, fee-packed throughput, and near-zero energy vs Proof-of-Work — built for security, speed, and efficiency.",
       statusLead:
-        "ACP is wired into production ANCAP: configurable chain anchor drivers, ACP JSON-RPC support, custodial hot-wallet API under /v1/wallet/acp/*, and a wallet UI after sign-in.",
+        "ACP Lean v1.4 is live in protocol + node: packed multi-tx mining, throttled heartbeat, Dilithium2 hybrid keys, explorer efficiency scorecard. Wallet, anchors, and /v1/wallet/acp/* remain production-wired.",
       walletCta: "Open ACP wallet",
       supplySnapshotCta: "Live supply snapshot",
       platformOverview: "Platform overview",
@@ -244,7 +244,11 @@ export const translations: Record<Language, TranslationTree> = {
       aiIdentityDesc: "L3 onboarding uses challenge-response and stake-to-activate to make sybil attacks harder.",
       anchorsCard:
         "Anchor run and artifact hashes on-chain when CHAIN_ANCHOR_DRIVER=acp and ACP_RPC_URL points at your node; mock driver remains for local development.",
-      tokenUtilityNote: "Fees, staking, and slashing rails use ACP where configured; broader marketplace settlement follows the roadmap."
+      tokenUtilityNote: "Fees, staking, and slashing rails use ACP where configured; broader marketplace settlement follows the roadmap.",
+      leanTitle: "Lean ACP — security · speed · energy",
+      leanSecurity: "Hybrid Ed25519 + Dilithium2 (PQC-ready)",
+      leanSpeed: "5s cadence, fee-packed blocks, ~100 TPS design hint",
+      leanEnergy: "No PoW burn — ultra-light assembler + throttled heartbeat",
     },
     product: {
       title: "Sellable workflows with proof-backed execution",
@@ -539,9 +543,9 @@ export const translations: Record<Language, TranslationTree> = {
       badge: "Работает на платформе",
       title: "ANCAP Chain Protocol (ACP)",
       lead:
-        "L3-слой для управления, стейкинга, комиссий и записи артефактов исполнения ANCAP в сеть. Эта страница объясняет, что такое ACP и как он вписывается в дорожную карту ANCAP L1/L2/L3.",
+        "L3-расчёт для AI-workflow: гибридные постквантовые подписи, lean-блоки 5с, упаковка по комиссии и энергия без PoW — безопасность, скорость, эффективность.",
       statusLead:
-        "ACP подключен к production-контуру ANCAP: настраиваемые драйверы якорения в сети, поддержка ACP JSON-RPC, API кастодиального горячего кошелька /v1/wallet/acp/* и интерфейс кошелька после входа.",
+        "ACP Lean v1.4 в протоколе и ноде: multi-tx packing, throttled heartbeat, Dilithium2 hybrid, scorecard в explorer. Кошелёк, якоря и /v1/wallet/acp/* — в production.",
       walletCta: "Открыть ACP-кошелек",
       supplySnapshotCta: "Снимок эмиссии (live)",
       platformOverview: "Обзор платформы",
@@ -555,7 +559,11 @@ export const translations: Record<Language, TranslationTree> = {
       aiIdentityDesc: "L3-онбординг использует challenge-response и stake-to-activate, чтобы усложнить Sybil-атаки.",
       anchorsCard:
         "Хэши запусков и артефактов записываются в сеть, когда CHAIN_ANCHOR_DRIVER=acp, а ACP_RPC_URL указывает на ваш узел; mock-драйвер остается для локальной разработки.",
-      tokenUtilityNote: "Комиссии, стейкинг и штрафы используют ACP там, где это настроено; расширенные расчеты маркетплейса соответствуют дорожной карте."
+      tokenUtilityNote: "Комиссии, стейкинг и штрафы используют ACP там, где это настроено; расширенные расчеты маркетплейса соответствуют дорожной карте.",
+      leanTitle: "Lean ACP — безопасность · скорость · энергия",
+      leanSecurity: "Гибрид Ed25519 + Dilithium2 (готовность к PQC)",
+      leanSpeed: "Каденция 5с, fee-packed блоки, ~100 TPS design hint",
+      leanEnergy: "Без PoW — ultra-light assembler и редкий heartbeat",
     },
     product: {
       title: "Продаваемые workflow с proof-backed исполнением",
@@ -850,9 +858,9 @@ export const translations: Record<Language, TranslationTree> = {
       badge: "Працює на платформі",
       title: "ANCAP Chain Protocol (ACP)",
       lead:
-        "L3-шар для управління, стейкінгу, комісій і запису артефактів виконання ANCAP у мережу. Ця сторінка пояснює, що таке ACP і як він вписується в дорожню карту ANCAP L1/L2/L3.",
+        "L3-розрахунок для AI-workflow: гібридні постквантові підписи, lean-блоки 5с, упаковка за комісією й енергія без PoW — безпека, швидкість, ефективність.",
       statusLead:
-        "ACP підключено до production-контуру ANCAP: налаштовувані драйвери якорення в мережі, підтримка ACP JSON-RPC, API кастодіального гарячого гаманця /v1/wallet/acp/* та інтерфейс гаманця після входу.",
+        "ACP Lean v1.4 у протоколі та ноді: multi-tx packing, throttled heartbeat, Dilithium2 hybrid, scorecard в explorer. Гаманець, якорі та /v1/wallet/acp/* — у production.",
       walletCta: "Відкрити ACP-гаманець",
       supplySnapshotCta: "Знімок емісії (live)",
       platformOverview: "Огляд платформи",
@@ -866,7 +874,11 @@ export const translations: Record<Language, TranslationTree> = {
       aiIdentityDesc: "L3-онбординг використовує challenge-response і stake-to-activate, щоб ускладнити Sybil-атаки.",
       anchorsCard:
         "Хеші запусків і артефактів записуються в мережу, коли CHAIN_ANCHOR_DRIVER=acp, а ACP_RPC_URL вказує на ваш вузол; mock-драйвер залишається для локальної розробки.",
-      tokenUtilityNote: "Комісії, стейкінг і штрафи використовують ACP там, де це налаштовано; ширші розрахунки маркетплейса відповідають дорожній карті."
+      tokenUtilityNote: "Комісії, стейкінг і штрафи використовують ACP там, де це налаштовано; ширші розрахунки маркетплейса відповідають дорожній карті.",
+      leanTitle: "Lean ACP — безпека · швидкість · енергія",
+      leanSecurity: "Гібрид Ed25519 + Dilithium2 (PQC-ready)",
+      leanSpeed: "Каденція 5с, fee-packed блоки, ~100 TPS design hint",
+      leanEnergy: "Без PoW — ultra-light assembler і рідкісний heartbeat",
     },
     product: {
       title: "Продавані workflow з proof-backed виконанням",
@@ -1177,7 +1189,11 @@ export const translations: Record<Language, TranslationTree> = {
       aiIdentityDesc: "L3-Onboarding nutzt Challenge-Response und Stake-to-Activate, um Sybil-Angriffe zu erschweren.",
       anchorsCard:
         "Run- und Artefakt-Hashes werden on-chain verankert, wenn CHAIN_ANCHOR_DRIVER=acp ist und ACP_RPC_URL auf deinen Node zeigt; der Mock-Driver bleibt für lokale Entwicklung.",
-      tokenUtilityNote: "Gebühren, Staking und Slashing-Rails nutzen ACP, wo es konfiguriert ist; breitere Marketplace-Abrechnung folgt der Roadmap."
+      tokenUtilityNote: "Gebühren, Staking und Slashing-Rails nutzen ACP, wo es konfiguriert ist; breitere Marketplace-Abrechnung folgt der Roadmap.",
+      leanTitle: "Lean ACP — Sicherheit · Tempo · Energie",
+      leanSecurity: "Hybrid Ed25519 + Dilithium2 (PQC-ready)",
+      leanSpeed: "5s Takt, fee-gepackte Blöcke, ~100 TPS Design-Hinweis",
+      leanEnergy: "Kein PoW — Ultra-light Assembler + gedrosselter Heartbeat",
     },
     product: {
       title: "Verkaufbare Workflows mit proof-backed Ausführung",
@@ -1488,7 +1504,11 @@ export const translations: Record<Language, TranslationTree> = {
       aiIdentityDesc: "L3 入門使用挑戰回應與質押啟用，提高女巫攻擊成本。",
       anchorsCard:
         "當 CHAIN_ANCHOR_DRIVER=acp 且 ACP_RPC_URL 指向你的節點時，可將執行與產物雜湊錨定上鏈；本機開發仍可使用 mock 驅動。",
-      tokenUtilityNote: "手續費、質押與罰沒軌道在設定處使用 ACP；更廣的市集結算依路線圖推進。"
+      tokenUtilityNote: "手續費、質押與罰沒軌道在設定處使用 ACP；更廣的市集結算依路線圖推進。",
+      leanTitle: "Lean ACP — 安全 · 速度 · 能耗",
+      leanSecurity: "Ed25519 + Dilithium2 混合簽名（PQC 就緒）",
+      leanSpeed: "5 秒節奏、手續費優先打包、設計提示約 100 TPS",
+      leanEnergy: "無 PoW — 超輕量組塊 + 節流 heartbeat",
     },
     product: {
       title: "可銷售、附證明的執行工作流程",

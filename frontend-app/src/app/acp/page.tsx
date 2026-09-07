@@ -61,6 +61,32 @@ export default function AcpLandingPage() {
             </div>
           </section>
 
+          <section style={{ padding: "22px 0" }}>
+            <span className="section-num">Lean</span>
+            <h2 style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 12 }}>
+              {t("acpLanding.leanTitle")}
+            </h2>
+            <div className="responsive-grid responsive-grid-3">
+              <div className="card">
+                <h3 style={{ fontWeight: 700, marginBottom: 10, color: "#34d399" }}>Security</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>{t("acpLanding.leanSecurity")}</p>
+              </div>
+              <div className="card">
+                <h3 style={{ fontWeight: 700, marginBottom: 10, color: "#34d399" }}>Speed</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>{t("acpLanding.leanSpeed")}</p>
+              </div>
+              <div className="card">
+                <h3 style={{ fontWeight: 700, marginBottom: 10, color: "#34d399" }}>Energy</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>{t("acpLanding.leanEnergy")}</p>
+              </div>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <Link href="/explorer" className="btn btn-ghost">
+                Explorer efficiency scorecard
+              </Link>
+            </div>
+          </section>
+
           {/* Section 01 */}
           <section style={{ padding: "22px 0" }}>
             <span className="section-num">01</span>

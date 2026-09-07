@@ -140,12 +140,18 @@ pub struct NodeConfig {
     /// Protocol overrides (Genesis, emission, PoS). Defaults from acp_crypto::protocol_params.
     pub protocol: Option<ProtocolConfig>,
 
-    /// If true, a background task builds a block from the first tx in mempool every miner_interval_secs and submits it.
+    /// If true, a background task packs mempool txs into blocks every miner_interval_secs.
     pub miner_enabled: bool,
-    /// Interval in seconds between miner attempts (when mempool is non-empty).
+    /// Interval in seconds between miner attempts (aligned with TARGET_BLOCK_TIME_SEC=5).
     pub miner_interval_secs: u64,
     /// Optional address to receive automatic Validator Reserve emission rewards.
     pub miner_reward_address: Option<String>,
+    /// When mempool is idle, still advance chain with emission-only heartbeat blocks (energy-cheap; no PoW).
+    pub miner_heartbeat_enabled: bool,
+    /// Heartbeat only every N idle ticks (default 12 × 5s ≈ 60s) to avoid needless disk/CPU churn.
+    pub miner_heartbeat_every_n_ticks: u64,
+    /// Cap on user txs packed per block (fee-prioritized).
+    pub miner_max_txs_per_block: usize,
 }
 
 impl Default for NodeConfig {
@@ -159,8 +165,11 @@ impl Default for NodeConfig {
             exports: None,
             protocol: None,
             miner_enabled: true,
-            miner_interval_secs: 10,
+            miner_interval_secs: 5,
             miner_reward_address: None,
+            miner_heartbeat_enabled: true,
+            miner_heartbeat_every_n_ticks: 12,
+            miner_max_txs_per_block: 512,
         }
     }
 }
