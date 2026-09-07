@@ -17,7 +17,7 @@ type FleetSummary = {
 
 export default function WatchFleetPage() {
   const params = useParams();
-  const orgId = String(params.id || "");
+  const orgId = String(params?.id || "");
   const [summary, setSummary] = useState<FleetSummary | null>(null);
   const [error, setError] = useState("");
 
