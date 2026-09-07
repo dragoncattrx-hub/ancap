@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HomeMcpSection } from "@/components/HomeMcpSection";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
+import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const offerDefs = [
@@ -286,36 +287,53 @@ export function HomePage() {
             <div
               style={{
                 borderTop: "1px solid var(--border)",
-                borderBottom: "1px solid var(--border)",
-                padding: "42px 0",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 28,
-                alignItems: "flex-end",
-                justifyContent: "space-between",
+                padding: "42px 0 0",
               }}
             >
-              <div style={{ flex: "1 1 320px", maxWidth: 720 }}>
-                <span className="section-num">AETERNA</span>
-                <h2
-                  id="aeterna-home-title"
-                  className="section-title"
-                  style={{ marginBottom: 14 }}
-                >
-                  Longevity DNA rails — hash locally, settle in ACP
-                </h2>
-                <p className="section-subtitle" style={{ maxWidth: 620, marginBottom: 0 }}>
-                  Interactive helix sandbox, client-side SHA-256 vault (no full genome on server disk),
-                  and premium AETERNA workflows at 1,000,000 ACP.
-                </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 28,
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
+                  marginBottom: 22,
+                }}
+              >
+                <div style={{ flex: "1 1 320px", maxWidth: 720 }}>
+                  <span className="section-num">AETERNA</span>
+                  <h2
+                    id="aeterna-home-title"
+                    className="section-title"
+                    style={{ marginBottom: 14 }}
+                  >
+                    Longevity DNA rails — hash locally, settle in ACP
+                  </h2>
+                  <p className="section-subtitle" style={{ maxWidth: 620, marginBottom: 0 }}>
+                    Nanobots and chemical scissors as a visual metaphor for precision genomic
+                    consults — interactive helix sandbox, hash-only vault, workflows at 1,000,000 ACP.
+                    Educational visualization, not a DIY editing kit.
+                  </p>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                  <Link href="/aeterna" className="btn btn-primary">
+                    Enter AETERNA
+                  </Link>
+                  <Link href="/aeterna#dna-sandbox" className="btn btn-ghost">
+                    DNA sandbox
+                  </Link>
+                </div>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                <Link href="/aeterna" className="btn btn-primary">
-                  Enter AETERNA
-                </Link>
-                <Link href="/aeterna#dna-sandbox" className="btn btn-ghost">
-                  DNA sandbox
-                </Link>
+              <div
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  overflow: "hidden",
+                  marginBottom: 0,
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <DnaNanobotScissors />
               </div>
             </div>
           </section>
