@@ -172,8 +172,23 @@ class UserAcpWallet(Base):
     recovery_secret_nonce_b64 = Column(Text, nullable=True)
     recovery_enabled = Column(Boolean, nullable=False, default=False)
     derivation_path = Column(String(128), nullable=False, default="m/44'/0'/0'/0/0")
+    view_pubkey_wire_hex = Column(Text, nullable=True)
+    privacy_next_index = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+
+class UserAcpPrivacyAddress(Base):
+    __tablename__ = "user_acp_privacy_addresses"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    address = Column(String(128), nullable=False, unique=True, index=True)
+    sub_index = Column(Integer, nullable=False)
+    label = Column(String(120), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     user = relationship("User", foreign_keys=[user_id])
 

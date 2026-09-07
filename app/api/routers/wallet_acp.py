@@ -3,6 +3,7 @@ import os
 import subprocess
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
@@ -16,15 +17,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
-from app.db.models import Agent, Stake, StakeStatusEnum, Account, LedgerEvent, AcpSwapOrder
+from app.db.models import Agent, Stake, StakeStatusEnum, Account, LedgerEvent, AcpSwapOrder, UserAcpPrivacyAddress
 from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_tokenomics import fetch_custodial_hot_breakdown
+from app.services import acp_privacy as privacy_svc
 from app.schemas import (
     AcpBalanceResponse,
     AcpDepositAddressResponse,
+    AcpPrivacyDepositRequest,
+    AcpPrivacyStatusPublic,
     AcpTokenomicsBucket,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
@@ -969,7 +973,122 @@ async def get_deposit_address(
             status_code=409,
             detail="ACP wallet is not initialized for this account. Please sign in again.",
         )
-    return AcpDepositAddressResponse(address=wallet.address)
+    return AcpDepositAddressResponse(
+        address=wallet.address,
+        mode="standard",
+        redacted=privacy_svc.redact_address(wallet.address),
+        privacy_profile=privacy_svc.PRIVACY_PROFILE,
+        reuse_policy="reusable_primary",
+    )
+
+
+async def _bind_view_wire(session: AsyncSession, wallet, wallet_password: str | None) -> bytes:
+    cached = (getattr(wallet, "view_pubkey_wire_hex", None) or "").strip()
+    if cached:
+        try:
+            return bytes.fromhex(cached)
+        except ValueError:
+            pass
+    if not wallet_password:
+        raise HTTPException(
+            status_code=400,
+            detail="wallet_password required once to enable unlinkable privacy receive addresses",
+        )
+    try:
+        secret = decrypt_mnemonic(
+            wallet.encrypted_mnemonic,
+            wallet.salt_b64,
+            wallet.nonce_b64,
+            wallet_password,
+        )
+        _mnemonic, keystore_json = decode_wallet_secret(secret)
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="invalid wallet password") from exc
+    if not keystore_json or keystore_json == "{}":
+        raise HTTPException(status_code=503, detail="wallet keystore unavailable for privacy binding")
+    try:
+        from app.services.acp_wallet import _run_walletd
+
+        res = _run_walletd(["address", "--keystore-json", keystore_json, "--index", "0"])
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"privacy binding requires updated walletd: {exc}",
+        ) from exc
+    view_hex = str(res.get("view_pubkey_wire_hex") or "").strip()
+    if len(view_hex) < 64:
+        raise HTTPException(
+            status_code=503,
+            detail="walletd did not return view_pubkey_wire_hex — redeploy ACP wallet helper",
+        )
+    wallet.view_pubkey_wire_hex = view_hex
+    if getattr(wallet, "privacy_next_index", None) in (None, 0):
+        wallet.privacy_next_index = 1
+    await session.flush()
+    return bytes.fromhex(view_hex)
+
+
+@router.get("/privacy/status", response_model=AcpPrivacyStatusPublic)
+async def privacy_status(
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(status_code=409, detail="ACP wallet is not initialized for this account.")
+    count = (
+        await session.execute(
+            select(func.count())
+            .select_from(UserAcpPrivacyAddress)
+            .where(UserAcpPrivacyAddress.user_id == user_id)
+        )
+    ).scalar_one()
+    return AcpPrivacyStatusPublic(
+        privacy_profile=privacy_svc.PRIVACY_PROFILE,
+        view_key_bound=bool((wallet.view_pubkey_wire_hex or "").strip()),
+        privacy_next_index=int(getattr(wallet, "privacy_next_index", 1) or 1),
+        unlinkable_receive_count=int(count or 0),
+        note=(
+            "Each privacy receive address is a one-time subaddress. "
+            "On-chain amounts remain visible to full nodes; unlinkability comes from never reusing addresses. "
+            "Not a mixer."
+        ),
+    )
+
+
+@router.post("/privacy/receive-address", response_model=AcpDepositAddressResponse, status_code=201)
+async def privacy_receive_address(
+    body: AcpPrivacyDepositRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        raise HTTPException(status_code=409, detail="ACP wallet is not initialized for this account.")
+    view_wire = await _bind_view_wire(session, wallet, body.wallet_password)
+    idx = int(getattr(wallet, "privacy_next_index", 1) or 1)
+    if idx < 1:
+        idx = 1
+    address = privacy_svc.subaddress_bech32(view_wire, idx)
+    row = UserAcpPrivacyAddress(
+        id=str(uuid.uuid4()),
+        user_id=user_id,
+        address=address,
+        sub_index=idx,
+        label=(body.label or "").strip()[:120] or None,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(row)
+    wallet.privacy_next_index = idx + 1
+    await session.flush()
+    return AcpDepositAddressResponse(
+        address=address,
+        mode="privacy",
+        sub_index=idx,
+        redacted=privacy_svc.redact_address(address),
+        privacy_profile=privacy_svc.PRIVACY_PROFILE,
+        reuse_policy="single_use_recommended",
+    )
 
 
 @router.get("/hot/balance", response_model=AcpBalanceResponse)
@@ -1023,10 +1142,11 @@ async def balance(
     )
 
 
-@router.get("/transactions", response_model=list[AcpTransactionPublic])
+@router.get("/transactions", response_model=list[AcpTransactionPublic] | list[dict])
 async def list_transactions(
     address: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=500),
+    privacy: bool = Query(default=True, description="Redact counterparties in list responses"),
     user_id: str = Depends(require_auth),
     session: AsyncSession = Depends(get_db),
 ):
@@ -1042,16 +1162,36 @@ async def list_transactions(
     if len(target) < 16:
         raise HTTPException(status_code=400, detail="address looks invalid")
     try:
-        return _chain_transactions_for_address(target, limit)
+        rows = _chain_transactions_for_address(target, limit)
     except HTTPException as exc:
-        # Keep wallet UI usable when node RPC is temporarily unavailable.
         if exc.status_code in (502, 503, 504):
             return []
         raise
+    if not privacy:
+        return rows
+    return [
+        {
+            "txid": r.txid,
+            "block_height": r.block_height,
+            "block_time": r.block_time,
+            "confirmations": r.confirmations,
+            "direction": r.direction,
+            "net_acp": r.net_acp,
+            "sent_acp": "hidden",
+            "received_acp": "hidden",
+            "privacy": True,
+            "privacy_profile": privacy_svc.PRIVACY_PROFILE,
+        }
+        for r in rows
+    ]
 
 
-@router.get("/transactions/{txid}", response_model=AcpTransactionDetailsPublic)
-async def get_transaction_details(txid: str):
+@router.get("/transactions/{txid}")
+async def get_transaction_details(
+    txid: str,
+    privacy: bool = Query(default=True),
+    user_id: str = Depends(require_auth),
+):
     txid_norm = (txid or "").strip()
     if len(txid_norm) < 16:
         raise HTTPException(status_code=400, detail="txid looks invalid")
@@ -1063,6 +1203,17 @@ async def get_transaction_details(txid: str):
         raise
     if details is None:
         raise HTTPException(status_code=404, detail="ACP transaction not found")
+    if privacy:
+        payload = details.model_dump() if hasattr(details, "model_dump") else dict(details)
+        for io in payload.get("inputs") or []:
+            if isinstance(io, dict) and io.get("address"):
+                io["address"] = privacy_svc.redact_address(str(io["address"]))
+        for io in payload.get("outputs") or []:
+            if isinstance(io, dict) and io.get("address"):
+                io["address"] = privacy_svc.redact_address(str(io["address"]))
+        payload["privacy"] = True
+        payload["privacy_profile"] = privacy_svc.PRIVACY_PROFILE
+        return payload
     return details
 
 

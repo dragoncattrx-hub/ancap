@@ -77,6 +77,17 @@ impl WalletIdentity {
         addr.encode()
     }
 
+    /// Unlinkable receive subaddress for `index` (0 = primary).
+    pub fn receive_subaddress_v0(&self, index: u32) -> Result<String> {
+        let view_wire = self.public().view.to_wire_bytes()?;
+        crate::privacy::subaddress_bech32(&view_wire, index)
+    }
+
+    /// View public key wire (hex-friendly bytes) for privacy deposit derivation without spend key.
+    pub fn view_pubkey_wire(&self) -> Result<Vec<u8>> {
+        self.public().view.to_wire_bytes()
+    }
+
     /// Same as receive_address_v0, but returns raw v0 object (hash20).
     pub fn receive_address_v0_obj(&self) -> Result<AddressV0> {
         let view_wire = self.public().view.to_wire_bytes()?;

@@ -102,7 +102,8 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
             "miner_interval_secs": ctx.config.miner_interval_secs,
             "miner_heartbeat_enabled": ctx.config.miner_heartbeat_enabled,
             "pow": false,
-            "notes": "Lean ACP: fee-packed blocks, hybrid PQC signatures, no proof-of-work energy burn"
+            "privacy_profile": acp_crypto::PRIVACY_PROFILE,
+            "notes": "Lean ACP: fee-packed blocks, hybrid PQC signatures, unlinkable subaddresses, no proof-of-work energy burn"
         })),
 
         "ancap_anchor" => {

@@ -24,6 +24,7 @@ pub mod kdf;
 pub mod keystore;
 pub mod limits;
 pub mod merkle;
+pub mod privacy;
 pub mod rpc_hex;
 pub mod seed;
 pub mod traits;
@@ -57,6 +58,9 @@ pub use crate::protocol_params::{
     DESIGN_TPS_HINT, ENERGY_MODEL, PROTOCOL_PROFILE, SIGNING_SECURITY, SLASHING_MAX_PCT,
     SLASHING_MIN_PCT, STAKE_CAP_PCT, TARGET_BLOCK_TIME_SEC, TOKEN_DECIMALS, TOKEN_NAME,
     TOKEN_TICKER, UNBONDING_DAYS, UNITS_PER_ACP,
+};
+pub use crate::privacy::{
+    redact_address, subaddress_bech32, subaddress_hash20, DEFAULT_SUBADDR_SCAN_WINDOW, PRIVACY_PROFILE,
 };
 pub use crate::tx::{Recipient, TxId, Transaction, TxInput, TxOutput};
 pub use crate::wire::{PublicKeyBytes, SignatureBytes, WireDecode, WireEncode};

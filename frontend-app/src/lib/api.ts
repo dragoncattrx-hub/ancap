@@ -482,6 +482,17 @@ export const walletAcp = {
     return apiFetch("/wallet/acp/deposit_address", { method: "POST" });
   },
 
+  async privacyStatus() {
+    return apiFetch("/wallet/acp/privacy/status");
+  },
+
+  async privacyReceiveAddress(data?: { wallet_password?: string; label?: string }) {
+    return apiFetch("/wallet/acp/privacy/receive-address", {
+      method: "POST",
+      body: JSON.stringify(data || {}),
+    });
+  },
+
   async getHotBalance() {
     return apiFetch("/wallet/acp/hot/balance");
   },
@@ -493,16 +504,19 @@ export const walletAcp = {
     return apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`);
   },
 
-  async listTransactions(params?: { address?: string; limit?: number }) {
+  async listTransactions(params?: { address?: string; limit?: number; privacy?: boolean }) {
     const qp = new URLSearchParams();
     if (params?.address) qp.append("address", params.address);
     if (params?.limit != null) qp.append("limit", String(params.limit));
+    if (params?.privacy != null) qp.append("privacy", String(params.privacy));
     const suffix = qp.toString();
     return apiFetch(`/wallet/acp/transactions${suffix ? `?${suffix}` : ""}`);
   },
 
-  async getTransaction(txid: string) {
-    return apiFetch(`/wallet/acp/transactions/${encodeURIComponent(txid)}`);
+  async getTransaction(txid: string, privacy = true) {
+    return apiFetch(
+      `/wallet/acp/transactions/${encodeURIComponent(txid)}?privacy=${encodeURIComponent(String(privacy))}`
+    );
   },
 
   async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string; fee_acp?: string }) {
@@ -1409,8 +1423,10 @@ export const acpExplorer = {
   async blocks(limit = 10) {
     return apiFetch(`/acp/explorer/blocks?limit=${encodeURIComponent(String(limit))}`);
   },
-  async getTx(txid: string) {
-    return apiFetch(`/acp/explorer/tx/${encodeURIComponent(txid)}`);
+  async getTx(txid: string, view: "redacted" | "full" = "redacted") {
+    return apiFetch(
+      `/acp/explorer/tx/${encodeURIComponent(txid)}?view=${encodeURIComponent(view)}`
+    );
   },
   async getAddress(address: string) {
     return apiFetch(`/acp/explorer/address/${encodeURIComponent(address)}`);

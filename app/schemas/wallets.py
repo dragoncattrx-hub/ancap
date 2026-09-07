@@ -16,6 +16,28 @@ class AcpTokenomicsBucket(BaseModel):
 
 class AcpDepositAddressResponse(BaseModel):
     address: str
+    mode: Literal["standard", "privacy"] = "standard"
+    sub_index: int | None = None
+    redacted: str | None = None
+    privacy_profile: str | None = None
+    reuse_policy: str | None = None
+
+
+class AcpPrivacyDepositRequest(BaseModel):
+    wallet_password: str | None = Field(
+        default=None,
+        min_length=8,
+        description="Required once if view key not cached yet — unlocks keystore to bind privacy receive set",
+    )
+    label: str | None = Field(default=None, max_length=120)
+
+
+class AcpPrivacyStatusPublic(BaseModel):
+    privacy_profile: str
+    view_key_bound: bool
+    privacy_next_index: int
+    unlinkable_receive_count: int
+    note: str
 
 
 class AcpBalanceResponse(BaseModel):

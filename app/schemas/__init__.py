@@ -99,7 +99,11 @@ from app.schemas.reputation import (
 from app.schemas.moderation import ModerationActionRequest
 from app.schemas.wallets import (
     AcpDepositAddressResponse,
+    AcpPrivacyDepositRequest,
+    AcpPrivacyStatusPublic,
     AcpBalanceResponse,
+    AcpPrivacyDepositRequest,
+    AcpPrivacyStatusPublic,
     AcpTokenomicsBucket,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
@@ -326,6 +330,8 @@ __all__ = [
     "SubjectType",
     "ModerationActionRequest",
     "AcpDepositAddressResponse",
+    "AcpPrivacyDepositRequest",
+    "AcpPrivacyStatusPublic",
     "AcpBalanceResponse",
     "AcpTokenomicsBucket",
     "AcpWithdrawRequest",

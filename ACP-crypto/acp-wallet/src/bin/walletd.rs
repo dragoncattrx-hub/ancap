@@ -239,12 +239,23 @@ fn cmd_new() -> anyhow::Result<Value> {
     let m = Mnemonic::generate_12()?;
     let (id, seed) = identity_from_mnemonic(&m.words())?;
     let address = id.receive_address_v0()?;
+    let view_wire = id.view_pubkey_wire()?;
     let keystore = id.to_keystore_v3(&seed)?;
     let keystore_json = serde_json::to_string(&keystore)?;
-    Ok(json!({ "address": address, "mnemonic": m.words(), "keystore_json": keystore_json }))
+    Ok(json!({
+        "address": address,
+        "mnemonic": m.words(),
+        "keystore_json": keystore_json,
+        "view_pubkey_wire_hex": hex::encode(view_wire),
+        "privacy_profile": acp_crypto::PRIVACY_PROFILE
+    }))
 }
 
-fn cmd_address(mnemonic: Option<&str>, keystore_json: Option<&str>) -> anyhow::Result<Value> {
+fn cmd_address(
+    mnemonic: Option<&str>,
+    keystore_json: Option<&str>,
+    index: u32,
+) -> anyhow::Result<Value> {
     let id = if let Some(kj) = keystore_json {
         identity_from_keystore_json(kj)?
     } else if let Some(m) = mnemonic {
@@ -252,8 +263,15 @@ fn cmd_address(mnemonic: Option<&str>, keystore_json: Option<&str>) -> anyhow::R
     } else {
         anyhow::bail!("either --mnemonic or --keystore-json is required")
     };
-    let address = id.receive_address_v0()?;
-    Ok(json!({ "address": address }))
+    let address = id.receive_subaddress_v0(index)?;
+    let view_wire = id.view_pubkey_wire()?;
+    Ok(json!({
+        "address": address,
+        "index": index,
+        "view_pubkey_wire_hex": hex::encode(view_wire),
+        "redacted": acp_crypto::redact_address(&address),
+        "privacy_profile": acp_crypto::PRIVACY_PROFILE
+    }))
 }
 
 fn cmd_balance(rpc_url: &str, address: &str) -> anyhow::Result<Value> {
@@ -353,10 +371,19 @@ fn cmd_transfer(
         anyhow::bail!("either --mnemonic or --keystore-json is required")
     };
     let from_address = id.receive_address_v0()?;
+    let scan_window = acp_crypto::DEFAULT_SUBADDR_SCAN_WINDOW;
 
-    let to_addr_decoded = AddressV0::decode(to.trim()).context("invalid 'to' address")?;
-
-    let mut utxos = scan_utxos(&client, rpc_url, &from_address)?;
+    let mut utxos: Vec<Utxo> = vec![];
+    let mut seen = std::collections::HashSet::<String>::new();
+    for idx in 0..=scan_window {
+        let addr = id.receive_subaddress_v0(idx)?;
+        for u in scan_utxos(&client, rpc_url, &addr)? {
+            let key = format!("{}:{}", u.txid_hex, u.vout);
+            if seen.insert(key) {
+                utxos.push(u);
+            }
+        }
+    }
     // simple greedy: largest-first to minimize inputs
     utxos.sort_by_key(|u| std::cmp::Reverse(u.amount_units));
 
@@ -377,10 +404,14 @@ fn cmd_transfer(
     }
 
     let change = sum - transfer_units - fee_units;
+    let to_addr_decoded = AddressV0::decode(to.trim()).context("invalid 'to' address")?;
     let mut outputs = vec![TxOutput::to_address_v0(transfer_units, &to_addr_decoded)];
     if change > 0 {
-        let from_addr_decoded = AddressV0::decode(&from_address)?;
-        outputs.push(TxOutput::to_address_v0(change, &from_addr_decoded));
+        // Change back to a fresh subaddress (index 1+) when possible for unlinkability;
+        // fall back to primary if only index 0 is used.
+        let change_addr = id.receive_subaddress_v0(1)?;
+        let change_decoded = AddressV0::decode(&change_addr)?;
+        outputs.push(TxOutput::to_address_v0(change, &change_decoded));
     }
 
     let inputs: Vec<TxInput> = picked
@@ -427,6 +458,7 @@ fn real_main() -> anyhow::Result<()> {
             let mut mnemonic: Option<String> = None;
             let mut keystore_json: Option<String> = None;
             let mut keystore_file: Option<String> = None;
+            let mut index: u32 = 0;
             while let Some(a) = args.next() {
                 if a == "--mnemonic" {
                     mnemonic = args.next();
@@ -434,6 +466,12 @@ fn real_main() -> anyhow::Result<()> {
                     keystore_json = args.next();
                 } else if a == "--keystore-file" {
                     keystore_file = args.next();
+                } else if a == "--index" {
+                    index = args
+                        .next()
+                        .ok_or_else(|| anyhow!("--index requires a value"))?
+                        .parse()
+                        .context("invalid --index")?;
                 }
             }
             if keystore_json.is_none() {
@@ -441,7 +479,7 @@ fn real_main() -> anyhow::Result<()> {
                     keystore_json = Some(std::fs::read_to_string(path)?);
                 }
             }
-            cmd_address(mnemonic.as_deref(), keystore_json.as_deref())?
+            cmd_address(mnemonic.as_deref(), keystore_json.as_deref(), index)?
         }
         "balance" => {
             let mut rpc_url: Option<String> = None;

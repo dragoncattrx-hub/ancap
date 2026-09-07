@@ -87,9 +87,15 @@ async def explorer_efficiency():
                 "Idle heartbeat throttled (~60s) — no continuous hash burn",
                 "Comparable philosophy to post-Merge PoS efficiency without heavy validator re-execution yet",
             ],
+            "privacy": [
+                "Unlinkable receive subaddresses (never reuse recommended)",
+                "Explorer/wallet redaction by default",
+                "Transparent ledger honesty: amounts still auditable by full nodes — not a mixer",
+            ],
             "vs_peers_note": (
-                "Ethereum focuses L1 zkEVM / energy-efficient PoS; Solana optimizes monolithic TPS. "
-                "ACP Lean targets AI-workflow settlement: PQC-ready security, low energy, packed throughput."
+                "Ethereum focuses L1 zkEVM / energy-efficient PoS; Solana optimizes monolithic TPS; "
+                "privacy coins hide amounts. ACP Lean targets AI-workflow settlement: PQC-ready security, "
+                "low energy, packed throughput, unlinkable receives."
             ),
         },
     }
@@ -117,13 +123,24 @@ async def list_blocks(limit: int = 10):
 
 
 @router.get("/tx/{txid}")
-async def get_transaction(txid: str):
+async def get_transaction(txid: str, view: str = "redacted"):
     try:
         tx = await acp_rpc_call("getrawtransaction", {"txid": txid.strip().lower(), "verbose": 1})
     except RuntimeError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     decoded = tx.get("decoded") if isinstance(tx, dict) else None
-    return {"txid": txid.strip().lower(), "transaction": decoded or tx}
+    mode = (view or "redacted").strip().lower()
+    if mode in ("redacted", "privacy", "summary"):
+        from app.services.acp_privacy import explorer_tx_redacted, PRIVACY_PROFILE
+
+        return {
+            "txid": txid.strip().lower(),
+            "view": "redacted",
+            "privacy_profile": PRIVACY_PROFILE,
+            "summary": explorer_tx_redacted(decoded or tx),
+            "hint": "Pass ?view=full to reveal decoded wire (on-chain data is still public to full nodes).",
+        }
+    return {"txid": txid.strip().lower(), "view": "full", "transaction": decoded or tx}
 
 
 @router.get("/tokenomics/snapshot")

@@ -77,6 +77,9 @@ export default function AcpWalletPage() {
   const passwordSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [depositAddress, setDepositAddress] = useState<string>("");
+  const [privacyAddress, setPrivacyAddress] = useState<string>("");
+  const [privacyBusy, setPrivacyBusy] = useState(false);
+  const [privacyPassword, setPrivacyPassword] = useState("");
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [transactions, setTransactions] = useState<AcpTransaction[]>([]);
   const [txAddressInput, setTxAddressInput] = useState("");
@@ -529,6 +532,53 @@ export default function AcpWalletPage() {
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>Copy</button>
+                </div>
+                <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                  <h4 style={{ margin: "0 0 8px", fontWeight: 800 }}>Privacy receive (unlinkable)</h4>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.5 }}>
+                    One-time subaddress — do not reuse. Not a mixer; full nodes can still see amounts.
+                  </p>
+                  <input
+                    type="password"
+                    placeholder="Wallet password (once to enable)"
+                    value={privacyPassword}
+                    onChange={(e) => setPrivacyPassword(e.target.value)}
+                    style={{ marginTop: 10, width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ marginTop: 10 }}
+                    disabled={privacyBusy}
+                    onClick={() => {
+                      void (async () => {
+                        setPrivacyBusy(true);
+                        setError("");
+                        try {
+                          const res = (await walletAcp.privacyReceiveAddress({
+                            wallet_password: privacyPassword || undefined,
+                            label: "web-wallet",
+                          })) as { address?: string };
+                          setPrivacyAddress(res.address || "");
+                          setPrivacyPassword("");
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : "Privacy address failed");
+                        } finally {
+                          setPrivacyBusy(false);
+                        }
+                      })();
+                    }}
+                  >
+                    {privacyBusy ? "Generating…" : "New privacy address"}
+                  </button>
+                  {privacyAddress ? (
+                    <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", overflowWrap: "anywhere" }}>
+                      {privacyAddress}
+                      <div style={{ marginTop: 8 }}>
+                        <button type="button" className="btn btn-ghost" onClick={() => copy(privacyAddress)}>Copy</button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
