@@ -112,9 +112,12 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         intent_orders=int(orders or 0),
         partners_verified=int(partners or 0),
         workflow_slugs=list(AETERNA_WORKFLOW_SLUGS),
-        sequencing_import_hint="Export from https://sequencing.com/ then register SHA-256 + optional source_uri.",
+        sequencing_import_hint=(
+            "Hash exports locally in the browser (1 MB streaming SHA-256), then POST only "
+            "content_sha256 + tiny metadata. Do not upload hg38/CRAM/FASTA to ANCAP — disk is hash-only."
+        ),
         compliance_note=_COMPLIANCE,
-        next_gate="Enable FF_AETERNA" if not enabled else "A2 checkout UX + partner verification queue",
+        next_gate="Enable FF_AETERNA" if not enabled else "Partner verification queue + licensed checkout UX",
     )
 
 

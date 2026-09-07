@@ -277,6 +277,49 @@ export function HomePage() {
             </div>
           </section>
 
+          <section
+            id="aeterna"
+            className="container"
+            style={{ padding: "28px 24px 56px" }}
+            aria-labelledby="aeterna-home-title"
+          >
+            <div
+              style={{
+                borderTop: "1px solid var(--border)",
+                borderBottom: "1px solid var(--border)",
+                padding: "42px 0",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 28,
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flex: "1 1 320px", maxWidth: 720 }}>
+                <span className="section-num">AETERNA</span>
+                <h2
+                  id="aeterna-home-title"
+                  className="section-title"
+                  style={{ marginBottom: 14 }}
+                >
+                  Longevity DNA rails — hash locally, settle in ACP
+                </h2>
+                <p className="section-subtitle" style={{ maxWidth: 620, marginBottom: 0 }}>
+                  Interactive helix sandbox, client-side SHA-256 vault (no full genome on server disk),
+                  and premium AETERNA workflows at 1,000,000 ACP.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                <Link href="/aeterna" className="btn btn-primary">
+                  Enter AETERNA
+                </Link>
+                <Link href="/aeterna#dna-sandbox" className="btn btn-ghost">
+                  DNA sandbox
+                </Link>
+              </div>
+            </div>
+          </section>
+
           <section className="container" style={{ padding: "28px 24px 62px" }} aria-labelledby="offers-title">
             <div className="section-header">
               <div>

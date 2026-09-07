@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
+import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
+import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
 import { getApiUrl } from "@/lib/api";
 
 type AeternaStatus = {
@@ -34,7 +36,7 @@ const INTENTS = [
   },
   {
     title: "DNA sandbox",
-    body: "Explore annotations on your sequenced data; play with maps, not wet-lab protocols.",
+    body: "Rotate the helix, swap base pairs locally, then settle ACP workflows on fingerprints — not wet-lab kits.",
   },
 ];
 
@@ -82,34 +84,48 @@ export default function AeternaPage() {
             Longevity rails for DNA you own — pay ACP, explore your genome, route licensed partners.
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-white/65">
-            Upload or link Sequencing.com exports. Buy workflows for wellness reports, longevity panels,
-            pigmentation consults, and disease-risk navigators.
+            Hash local Sequencing.com exports in the browser. Buy premium workflows from 1,000,000 ACP —
+            wellness, longevity, pigmentation consults, disease-risk navigators.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href="#dna-sandbox"
+              className="rounded-md bg-[#7ad0c8] px-5 py-3 text-sm font-semibold text-[#04201e] transition hover:bg-[#9ae0d9]"
+            >
+              Open DNA sandbox
+            </a>
             <Link
               href="/ai/workflows"
-              className="rounded-md bg-[#7ad0c8] px-5 py-3 text-sm font-semibold text-[#04201e] transition hover:bg-[#9ae0d9]"
+              className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white/90 transition hover:border-white/60"
             >
               Browse AETERNA workflows
             </Link>
-            <a
-              href="https://sequencing.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white/90 transition hover:border-white/60"
-            >
-              Sequencing.com
-            </a>
           </div>
         </div>
       </section>
 
       <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-        <section className="max-w-2xl">
+        <section id="dna-sandbox" className="scroll-mt-24">
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">DNA fragment sandbox</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
+            Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational
+            only; ANCAP never hosts full reference genomes (disk stays lean).
+          </p>
+          <div className="mt-8">
+            <DnaHelixSandbox />
+          </div>
+        </section>
+
+        <section className="mt-16">
+          <GenomeHashVaultPanel />
+        </section>
+
+        <section className="mt-16 max-w-2xl">
           <h2 className="text-2xl font-semibold tracking-[-0.03em]">What you can pay for</h2>
           <p className="mt-3 text-sm leading-7 text-white/65">
-            Priority intents settle in ACP through Workflow Store. Clinical actions stay with verified
-            partners — AETERNA is the capital and data rail, not a home CRISPR kit.
+            Priority intents settle in ACP through Workflow Store at{" "}
+            <span className="text-[#9ae0d9]">1,000,000 ACP</span> per AETERNA workflow. Clinical actions
+            stay with verified partners — AETERNA is the capital and data rail, not a home CRISPR kit.
           </p>
         </section>
 
@@ -132,7 +148,9 @@ export default function AeternaPage() {
             <dl className="mt-8 grid gap-6 sm:grid-cols-3">
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Feature</dt>
-                <dd className="mt-1 text-2xl font-semibold">{status.feature_enabled ? "on" : "flagged off"}</dd>
+                <dd className="mt-1 text-2xl font-semibold">
+                  {status.feature_enabled ? "on" : "flagged off"}
+                </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Vault entries</dt>

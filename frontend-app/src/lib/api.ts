@@ -1658,6 +1658,45 @@ export const bounties = {
   },
 };
 
+export const aeterna = {
+  async status() {
+    return apiFetch("/aeterna/status");
+  },
+  async createVault(data: {
+    label: string;
+    source?: string;
+    source_uri?: string | null;
+    content_sha256: string;
+    format_hint?: string;
+    consent_acknowledged: boolean;
+    metadata_json?: Record<string, unknown>;
+  }) {
+    return apiFetch("/aeterna/vault", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listVault() {
+    return apiFetch("/aeterna/vault");
+  },
+  async createIntent(data: {
+    intent_kind: string;
+    vault_id?: string | null;
+    workflow_slug?: string | null;
+    notes?: string | null;
+    budget_acp: string | number;
+    metadata_json?: Record<string, unknown>;
+  }) {
+    return apiFetch("/aeterna/intents", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listIntents() {
+    return apiFetch("/aeterna/intents");
+  },
+};
+
 export const settlements = {
   async listReceipts(limit = 100, status?: string) {
     const params = new URLSearchParams({ limit: String(limit) });
@@ -1737,6 +1776,7 @@ export const api = {
   evolution,
   competitions,
   bounties,
+  aeterna,
   settlements,
   autonomy,
 };

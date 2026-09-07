@@ -47,10 +47,13 @@ People pay ACP for **structured longevity workflows**: upload / link sequenced D
 - Org desk + personal vault UI.
 - Bundle: `aeterna-longevity-pack`.
 
-### Phase A3 — Sandbox viz `[ ]`
+### Phase A3 — Sandbox viz `[~]`
 
-- Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
-- No edit simulation that implies real editing capability.
+- `[x]` Procedural DNA helix on `/aeterna` (rotate + swap base pairs) — no PDB/genome blob on server.
+- `[x]` Client streaming SHA-256 vault registration (hash + ≤8KB metadata only).
+- `[x]` Homepage AETERNA promo; workflow list price **1,000,000 ACP** (pack 2,500,000 ACP).
+- `[ ]` Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
+- No edit simulation that implies real wet-lab editing capability.
 
 ### Phase A4 — Partner network `[ ]`
 

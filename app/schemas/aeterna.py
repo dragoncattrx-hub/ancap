@@ -1,12 +1,29 @@
 """AETERNA longevity / genomic wellness schemas (R12)."""
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+# Keep vault metadata tiny — never accept genome blobs on the API host.
+_METADATA_MAX_BYTES = 8_192
+_BLOCKED_METADATA_KEYS = {
+    "sequence",
+    "fasta",
+    "fastq",
+    "genome",
+    "genome_blob",
+    "bases",
+    "raw_dna",
+    "cram",
+    "bam",
+    "pdb",
+    "vcf_body",
+}
 
 
 class AeternaIntentKind(str, Enum):
@@ -56,12 +73,41 @@ class AeternaDnaVaultCreate(BaseModel):
         max_length=512,
         description="Optional Sequencing.com (or partner) deep-link / export URI",
     )
-    content_sha256: str = Field(min_length=64, max_length=128)
+    content_sha256: str = Field(
+        min_length=64,
+        max_length=128,
+        description="Client-side SHA-256 of the local export — genome bytes must not be uploaded",
+    )
     format_hint: str = Field(default="vcf", max_length=32)
     consent_acknowledged: bool = Field(
         description="User must acknowledge genomic data processing + non-DIY editing policy"
     )
-    metadata_json: dict = Field(default_factory=dict)
+    metadata_json: dict = Field(
+        default_factory=dict,
+        description="Hash-only extras (filename, byte size). Max ~8KB; sequence blobs rejected.",
+    )
+
+    @field_validator("content_sha256")
+    @classmethod
+    def _sha_hex(cls, v: str) -> str:
+        cleaned = v.strip().lower()
+        if any(c not in "0123456789abcdef" for c in cleaned):
+            raise ValueError("content_sha256 must be lowercase hex")
+        return cleaned
+
+    @field_validator("metadata_json")
+    @classmethod
+    def _metadata_hash_only(cls, v: dict) -> dict:
+        raw = json.dumps(v, separators=(",", ":"), ensure_ascii=False)
+        if len(raw.encode("utf-8")) > _METADATA_MAX_BYTES:
+            raise ValueError("metadata_json exceeds 8KB — register hash only, not genome bytes")
+        for key, val in v.items():
+            key_l = str(key).lower()
+            if key_l in _BLOCKED_METADATA_KEYS:
+                raise ValueError(f"metadata key '{key}' not allowed — hash-only vault")
+            if isinstance(val, str) and len(val) > 512:
+                raise ValueError("metadata string values must be <= 512 chars (no sequence payloads)")
+        return v
 
 
 class AeternaDnaVaultPublic(BaseModel):

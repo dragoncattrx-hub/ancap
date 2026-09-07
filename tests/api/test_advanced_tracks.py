@@ -1,6 +1,8 @@
 """Smoke tests for R9/R10/R11/R12 advanced track foundations."""
 from __future__ import annotations
 
+import pytest
+
 from app.main import app
 from app.schemas.aeterna import AeternaDnaVaultCreate, AeternaIntentKind, AeternaStatusPublic
 from app.schemas.orbital_edge import OrbitalEdgeStatusPublic, OrbitalNodeCreate
@@ -60,3 +62,25 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-pigmentation-consult-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
     assert len(aeterna) >= 5
+    for tpl in aeterna:
+        assert tpl.price.amount == "1000000"
+        assert tpl.price.currency == "ACP"
+
+
+def test_aeterna_vault_metadata_rejects_sequence_blobs():
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        AeternaDnaVaultCreate(
+            label="bad",
+            content_sha256="a" * 64,
+            consent_acknowledged=True,
+            metadata_json={"sequence": "ATCG" * 200},
+        )
+    ok = AeternaDnaVaultCreate(
+        label="ok",
+        content_sha256="b" * 64,
+        consent_acknowledged=True,
+        metadata_json={"storage_mode": "hash_only", "content_byte_size": 123},
+    )
+    assert ok.content_sha256 == "b" * 64
