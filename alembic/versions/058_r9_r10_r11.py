@@ -1,6 +1,6 @@
 """R9/R10/R11 foundations: securities, watch fleet, orbital edge.
 
-Revision ID: 058_advanced_capital_wearables_orbital
+Revision ID: 058_r9_r10_r11
 Revises: 057_org_nfc_identity
 """
 from __future__ import annotations
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision = "058_advanced_capital_wearables_orbital"
+revision = "058_r9_r10_r11"
 down_revision = "057_org_nfc_identity"
 branch_labels = None
 depends_on = None

@@ -1,7 +1,7 @@
 """R12 AETERNA longevity marketplace foundation.
 
-Revision ID: 059_aeterna_marketplace_foundation
-Revises: 058_advanced_capital_wearables_orbital
+Revision ID: 059_aeterna
+Revises: 058_r9_r10_r11
 """
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision = "059_aeterna_marketplace_foundation"
-down_revision = "058_advanced_capital_wearables_orbital"
+revision = "059_aeterna"
+down_revision = "058_r9_r10_r11"
 branch_labels = None
 depends_on = None
 

@@ -70,10 +70,10 @@ Blocked (needs Android native build):
 
 Phase 7 CI: Playwright smoke in CI (needs separate job with backend service).
 
-Planned capital track (not blocking Phase 6): Securities intake R9 — promissory notes, shares, securities register/pledge (`docs/SECURITIES_INTAKE_ROADMAP.md`). Foundation: S0 done, S1 API/tables in `058_advanced_capital_wearables_orbital`.
+Planned capital track (not blocking Phase 6): Securities intake R9 — promissory notes, shares, securities register/pledge (`docs/SECURITIES_INTAKE_ROADMAP.md`). Foundation: S0 done, S1 API/tables in `058_r9_r10_r11`.
 
 Planned workplace wearables track (not blocking Phase 6): Apple Watch HR fleet R10 / mobile Phase 5.6 — 3 watches per employee, band rotation for charging, heart-rate sync (`docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md`). Foundation: W0 done, W1 inventory/rotation/HR ingest API in migration `058`.
 
 Planned orbital infra track (not blocking Phase 6): SpaceX encrypted satellite servers R11 — sealed ANCAP edge payloads via SpaceX; phases X0–X5 (docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md). Foundation: control-plane registry + `FF_ORBITAL_EDGE` (migration `058`).
 
-Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows, licensed partners (`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`). Foundation: A0 done, A1 API/tables in `059_aeterna_marketplace_foundation` + `FF_AETERNA`.
+Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows, licensed partners (`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`). Foundation: A0 done, A1 API/tables in `059_aeterna` + `FF_AETERNA`.
