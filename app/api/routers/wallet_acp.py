@@ -17,13 +17,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
-from app.db.models import Agent, Stake, StakeStatusEnum, Account, LedgerEvent, AcpSwapOrder, UserAcpPrivacyAddress
+from app.db.models import Agent, Stake, StakeStatusEnum, Account, LedgerEvent, AcpSwapOrder, UserAcpPrivacyAddress, AcpOtcIntakeOrder
 from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_tokenomics import fetch_custodial_hot_breakdown
 from app.services import acp_privacy as privacy_svc
+from app.services import otc_intake as otc_svc
+from app.schemas.otc_intake import (
+    OtcCatalogPublic,
+    OtcMetalQuoteRequest,
+    OtcGoodsQuoteRequest,
+    OtcQuoteResponse,
+    OtcIntakeCreateRequest,
+    OtcIntakeConfirmRequest,
+    OtcIntakeOrderPublic,
+)
 from app.schemas import (
     AcpBalanceResponse,
     AcpDepositAddressResponse,
@@ -1456,4 +1466,170 @@ async def complete_swap_order(
     order.updated_at = datetime.now(timezone.utc)
     await session.flush()
     return AcpSwapCompleteResponse(order=_to_public_order(_swap_row_to_dict(order)), transfer=transfer)
+
+
+# --- OTC metals / goods intake desk -------------------------------------------------
+
+
+def _otc_row_public(row: AcpOtcIntakeOrder) -> OtcIntakeOrderPublic:
+    return OtcIntakeOrderPublic(
+        id=str(row.id),
+        user_id=str(row.user_id),
+        rail=row.rail,  # type: ignore[arg-type]
+        status=row.status,  # type: ignore[arg-type]
+        asset_label=row.asset_label,
+        asset_detail=dict(row.asset_detail or {}),
+        estimated_acp_amount=_decimal_to_api_str(_parse_decimal_or_zero(row.estimated_acp_amount)),
+        payout_acp_address=str(row.payout_acp_address),
+        intake_reference=str(row.intake_reference),
+        handoff_instructions=otc_svc.handoff_instructions(),
+        proof_ref=row.proof_ref,
+        note=row.note,
+        created_at=(row.created_at or datetime.now(timezone.utc)).isoformat().replace("+00:00", "Z"),
+        updated_at=(row.updated_at or datetime.now(timezone.utc)).isoformat().replace("+00:00", "Z"),
+    )
+
+
+@router.get("/otc/catalog", response_model=OtcCatalogPublic)
+def otc_catalog():
+    return otc_svc.catalog()
+
+
+@router.post("/otc/quote/metal", response_model=OtcQuoteResponse)
+def otc_quote_metal(body: OtcMetalQuoteRequest):
+    return otc_svc.quote_metal(
+        metal=body.metal,
+        weight_grams=body.weight_grams,
+        purity_ppt=body.purity_ppt,
+    )
+
+
+@router.post("/otc/quote/goods", response_model=OtcQuoteResponse)
+def otc_quote_goods(body: OtcGoodsQuoteRequest):
+    return otc_svc.quote_goods(
+        category=body.category,
+        estimated_value_acp=body.estimated_value_acp,
+    )
+
+
+@router.post("/otc/orders", response_model=OtcIntakeOrderPublic, status_code=201)
+async def create_otc_order(
+    body: OtcIntakeCreateRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+    x_idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    payout = _validate_acp_address(body.payout_acp_address, "payout_acp_address")
+    idempotency_key = (x_idempotency_key or "").strip() or None
+    if idempotency_key:
+        existing = (
+            await session.execute(
+                select(AcpOtcIntakeOrder).where(
+                    AcpOtcIntakeOrder.user_id == user_id,
+                    AcpOtcIntakeOrder.idempotency_key == idempotency_key,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            return _otc_row_public(existing)
+
+    if body.rail == "metal":
+        if not body.metal or not body.weight_grams:
+            raise HTTPException(status_code=400, detail="metal and weight_grams required for metal rail")
+        purity = int(body.purity_ppt or 999)
+        detail = otc_svc.build_metal_detail(
+            metal=body.metal,
+            weight_grams=body.weight_grams,
+            purity_ppt=purity,
+        )
+        quote = otc_svc.quote_metal(metal=body.metal, weight_grams=body.weight_grams, purity_ppt=purity)
+    else:
+        title = (body.goods_title or "").strip()
+        if not body.goods_category or not title or not body.estimated_value_acp:
+            raise HTTPException(
+                status_code=400,
+                detail="goods_category, goods_title, and estimated_value_acp required for goods rail",
+            )
+        detail = otc_svc.build_goods_detail(
+            category=body.goods_category,
+            title=title,
+            description=body.goods_description,
+            estimated_value_acp=body.estimated_value_acp,
+        )
+        quote = otc_svc.quote_goods(category=body.goods_category, estimated_value_acp=body.estimated_value_acp)
+
+    now = datetime.now(timezone.utc)
+    order = AcpOtcIntakeOrder(
+        id=uuid4(),
+        user_id=user_id,
+        rail=body.rail,
+        status="awaiting_handoff",
+        asset_label=otc_svc.asset_label_for(rail=body.rail, detail=detail),
+        asset_detail=detail,
+        estimated_acp_amount=_parse_decimal_or_zero(quote.estimated_acp_amount),
+        payout_acp_address=payout,
+        intake_reference=f"OTC-{uuid4().hex[:8].upper()}",
+        note=body.note.strip() if body.note else None,
+        idempotency_key=idempotency_key,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(order)
+    await session.flush()
+    return _otc_row_public(order)
+
+
+@router.get("/otc/orders", response_model=list[OtcIntakeOrderPublic])
+async def list_otc_orders(user_id: str = Depends(require_auth), session: AsyncSession = Depends(get_db)):
+    rows = (
+        await session.execute(
+            select(AcpOtcIntakeOrder)
+            .where(AcpOtcIntakeOrder.user_id == user_id)
+            .order_by(AcpOtcIntakeOrder.created_at.desc())
+        )
+    ).scalars().all()
+    return [_otc_row_public(o) for o in rows]
+
+
+@router.get("/otc/orders/{order_id}", response_model=OtcIntakeOrderPublic)
+async def get_otc_order(order_id: str, user_id: str = Depends(require_auth), session: AsyncSession = Depends(get_db)):
+    order = await session.get(AcpOtcIntakeOrder, order_id)
+    if not order or str(order.user_id) != user_id:
+        raise HTTPException(status_code=404, detail="OTC intake order not found")
+    return _otc_row_public(order)
+
+
+@router.post("/otc/orders/{order_id}/confirm", response_model=OtcIntakeOrderPublic)
+async def confirm_otc_order(
+    order_id: str,
+    body: OtcIntakeConfirmRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    order = await session.get(AcpOtcIntakeOrder, order_id)
+    if not order or str(order.user_id) != user_id:
+        raise HTTPException(status_code=404, detail="OTC intake order not found")
+    if order.status not in ("awaiting_handoff", "pending_review"):
+        raise HTTPException(status_code=409, detail="OTC order can no longer be confirmed")
+    order.status = "pending_review"
+    if body.proof_ref:
+        order.proof_ref = body.proof_ref.strip()[:256]
+    if body.note:
+        order.note = ((order.note + "\n") if order.note else "") + body.note.strip()[:500]
+    order.updated_at = datetime.now(timezone.utc)
+    await session.flush()
+    return _otc_row_public(order)
+
+
+@router.post("/otc/orders/{order_id}/cancel", response_model=OtcIntakeOrderPublic)
+async def cancel_otc_order(order_id: str, user_id: str = Depends(require_auth), session: AsyncSession = Depends(get_db)):
+    order = await session.get(AcpOtcIntakeOrder, order_id)
+    if not order or str(order.user_id) != user_id:
+        raise HTTPException(status_code=404, detail="OTC intake order not found")
+    if order.status in ("completed", "cancelled", "rejected"):
+        return _otc_row_public(order)
+    order.status = "cancelled"
+    order.updated_at = datetime.now(timezone.utc)
+    await session.flush()
+    return _otc_row_public(order)
 

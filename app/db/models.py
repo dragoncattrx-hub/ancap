@@ -1437,6 +1437,32 @@ class AcpSwapOrder(Base):
     )
 
 
+class AcpOtcIntakeOrder(Base):
+    """Precious metals / goods OTC intake → ACP after desk review."""
+
+    __tablename__ = "acp_otc_intake_orders"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    rail = Column(String(16), nullable=False, index=True)  # metal | goods
+    status = Column(String(32), nullable=False, default="awaiting_handoff", index=True)
+    asset_label = Column(String(200), nullable=False)
+    asset_detail = Column(JSONB, nullable=False, default=dict)
+    estimated_acp_amount = Column(Numeric(38, 18), nullable=False)
+    payout_acp_address = Column(String(128), nullable=False)
+    intake_reference = Column(String(64), nullable=False, unique=True, index=True)
+    proof_ref = Column(String(256), nullable=True)
+    note = Column(Text, nullable=True)
+    idempotency_key = Column(String(128), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_otc_intake_user_created", "user_id", "created_at"),
+        Index("ux_otc_intake_user_idempotency", "user_id", "idempotency_key", unique=True),
+    )
+
+
 class FaucetClaim(Base):
     __tablename__ = "faucet_claims"
 

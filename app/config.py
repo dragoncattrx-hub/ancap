@@ -241,6 +241,14 @@ class Settings(BaseSettings):
     # Wallet swap MVP
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     usdt_trc20_to_acp_rate: str = "1"
+    # OTC metals/goods desk (indicative ACP per gram; override via env JSON map if needed)
+    otc_handoff_instructions: str = ""
+    otc_metal_acp_per_gram: dict = {
+        "gold": "250",
+        "silver": "3",
+        "platinum": "120",
+        "palladium": "80",
+    }
 
     # Project treasury (on-chain ACP wallet: revenue in, expenses out).
     # Seed/keystore live outside the repo (operator Sicret storage).

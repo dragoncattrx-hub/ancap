@@ -577,6 +577,49 @@ export const walletAcp = {
       body: JSON.stringify({}),
     });
   },
+
+  async otcCatalog() {
+    return apiFetch("/wallet/acp/otc/catalog");
+  },
+
+  async otcQuoteMetal(data: { metal: string; weight_grams: string; purity_ppt?: number }) {
+    return apiFetch("/wallet/acp/otc/quote/metal", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async otcQuoteGoods(data: { category: string; estimated_value_acp: string }) {
+    return apiFetch("/wallet/acp/otc/quote/goods", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async createOtcOrder(data: Record<string, unknown>) {
+    return apiFetch("/wallet/acp/otc/orders", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async listOtcOrders() {
+    return apiFetch("/wallet/acp/otc/orders");
+  },
+
+  async confirmOtcOrder(orderId: string, data: { proof_ref?: string; note?: string }) {
+    return apiFetch(`/wallet/acp/otc/orders/${orderId}/confirm`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async cancelOtcOrder(orderId: string) {
+    return apiFetch(`/wallet/acp/otc/orders/${orderId}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+  },
 };
 
 /** wACP / BSC custodial clearing rail (see docs/bridge-spec-v1.md). */
