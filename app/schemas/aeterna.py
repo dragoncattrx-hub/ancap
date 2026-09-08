@@ -40,6 +40,7 @@ class AeternaIntentKind(str, Enum):
     longevity_plan = "longevity_plan"
     dna_sandbox_explore = "dna_sandbox_explore"
     partner_clinic_match = "partner_clinic_match"
+    organ_bioprint = "organ_bioprint"
 
 
 class AeternaDnaSource(str, Enum):
@@ -143,6 +144,7 @@ class AeternaIntentOrderPublic(BaseModel):
     status: AeternaOrderStatus
     budget_acp: Decimal
     notes: str | None
+    metadata_json: dict = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
 

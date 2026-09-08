@@ -110,3 +110,26 @@ async def org_list_vault(
     user_id: str = Depends(require_auth),
 ):
     return await svc.list_vault_entries(session, user_id=user_id, org_id=org_id)
+
+
+@router.post(
+    "/organizations/{org_id}/aeterna/intents",
+    response_model=AeternaIntentOrderPublic,
+    status_code=201,
+)
+async def org_create_intent(
+    org_id: str,
+    body: AeternaIntentOrderCreate,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    return await svc.create_intent_order(session, user_id=user_id, body=body, org_id=org_id)
+
+
+@router.get("/organizations/{org_id}/aeterna/intents", response_model=list[AeternaIntentOrderPublic])
+async def org_list_intents(
+    org_id: str,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    return await svc.list_intent_orders(session, user_id=user_id, org_id=org_id)

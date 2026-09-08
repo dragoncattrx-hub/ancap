@@ -8,6 +8,7 @@ import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
 import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
 import { getApiUrl } from "@/lib/api";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type AeternaStatus = {
   feature_enabled: boolean;
@@ -22,27 +23,12 @@ type AeternaStatus = {
   next_gate: string;
 };
 
-const INTENTS = [
-  {
-    title: "Pigmentation consult",
-    body: "Eye-color and pigmentation goals as licensed-clinic consult briefs — not DIY editing.",
-  },
-  {
-    title: "Telomere panel",
-    body: "Panel review shells for clinician interpretation of telomere-related labs.",
-  },
-  {
-    title: "Disease-risk navigator",
-    body: "Educational risk themes from vaulted genomic metadata for provider discussion.",
-  },
-  {
-    title: "DNA sandbox",
-    body: "Rotate the helix, swap base pairs locally, then settle ACP workflows on fingerprints — not wet-lab kits.",
-  },
-];
+const INTENT_KEYS = [1, 2, 3, 4, 5] as const;
+const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
 export default function AeternaPage() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<AeternaStatus | null>(null);
   const [heroOk, setHeroOk] = useState(true);
 
@@ -70,7 +56,7 @@ export default function AeternaPage() {
         {heroOk ? (
           <Image
             src="/aeterna/hero.jpg"
-            alt="AETERNA — DNA, Cas9 awareness, and blockchain settlement"
+            alt={t("aeternaPage.heroAlt")}
             fill
             priority
             className="object-cover object-center"
@@ -88,25 +74,30 @@ export default function AeternaPage() {
             AETERNA
           </p>
           <h1 className="mt-5 max-w-xl text-xl font-medium tracking-[-0.02em] text-white/90 sm:text-2xl">
-            Longevity rails for DNA you own — explore freely, pay ACP when you buy workflows.
+            {t("aeternaPage.heroTitle")}
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-white/65">
-            No registration required for the DNA sandbox or local hash vault. Sign in only if you want to
-            sync a fingerprint or purchase a 1,000,000 ACP consult workflow.
+            {t("aeternaPage.heroLead")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
               href="#dna-sandbox"
               className="rounded-md bg-[#7ad0c8] px-5 py-3 text-sm font-semibold text-[#04201e] transition hover:bg-[#9ae0d9]"
             >
-              Open DNA sandbox
+              {t("aeternaPage.openSandbox")}
             </a>
             <Link
               href="/ai/workflows"
               className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white/90 transition hover:border-white/60"
             >
-              Browse AETERNA workflows
+              {t("aeternaPage.browseWorkflows")}
             </Link>
+            <a
+              href="#organ-print"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.organSkuCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -114,7 +105,7 @@ export default function AeternaPage() {
       <section className="border-b border-white/10 bg-[#05070c]" aria-label="Nanobot DNA scissors visualization">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <p className="mb-4 text-xs uppercase tracking-[0.16em] text-white/40">
-            Public demo · nanobots + chemical scissors
+            {t("aeternaPage.demoKicker")}
           </p>
           <div className="overflow-hidden rounded-xl border border-white/10">
             <DnaNanobotScissors />
@@ -124,10 +115,9 @@ export default function AeternaPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <section id="dna-sandbox" className="scroll-mt-24">
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">DNA fragment sandbox</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.sandboxTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
-            Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational
-            only; ANCAP never hosts full reference genomes (disk stays lean).
+            {t("aeternaPage.sandboxLead")}
           </p>
           <div className="mt-8">
             <DnaHelixSandbox />
@@ -139,54 +129,68 @@ export default function AeternaPage() {
         </section>
 
         <section className="mt-16 max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">What you can pay for</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.payTitle")}</h2>
           <p className="mt-3 text-sm leading-7 text-white/65">
-            Priority intents settle in ACP through Workflow Store at{" "}
-            <span className="text-[#9ae0d9]">1,000,000 ACP</span> per AETERNA workflow. Clinical actions
-            stay with verified partners — AETERNA is the capital and data rail, not a home CRISPR kit.
+            {t("aeternaPage.payLead")}
           </p>
         </section>
 
         <ul className="mt-10 grid gap-8 sm:grid-cols-2">
-          {INTENTS.map((item) => (
-            <li key={item.title}>
-              <h3 className="text-lg font-medium tracking-[-0.02em] text-[#9ae0d9]">{item.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-white/65">{item.body}</p>
+          {INTENT_KEYS.map((idx) => (
+            <li key={idx}>
+              <h3 className="text-lg font-medium tracking-[-0.02em] text-[#9ae0d9]">{t(`aeternaPage.intent${idx}Title`)}</h3>
+              <p className="mt-2 text-sm leading-7 text-white/65">{t(`aeternaPage.intent${idx}Body`)}</p>
             </li>
           ))}
         </ul>
 
+        <section
+          id="organ-print"
+          className="mt-14 scroll-mt-24 rounded-2xl border border-[#7ad0c8]/25 bg-[#7ad0c8]/5 p-6 sm:p-8"
+        >
+          <p className="text-xs uppercase tracking-[0.16em] text-[#9ae0d9]">{t("aeternaPage.organSkuKicker")}</p>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.organSkuTitle")}</h2>
+            <p className="font-mono text-2xl font-semibold text-[#9ae0d9]">{t("aeternaPage.organSkuPrice")}</p>
+          </div>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70">{t("aeternaPage.organSkuLead")}</p>
+          <Link
+            href={`/ai/run/${ORGAN_PRINT_SLUG}`}
+            className="mt-6 inline-flex rounded-md bg-[#7ad0c8] px-5 py-3 text-sm font-semibold text-[#04201e] transition hover:bg-[#9ae0d9]"
+          >
+            {t("aeternaPage.organSkuCta")}
+          </Link>
+        </section>
+
         <section className="mt-14 border-t border-white/10 pt-10">
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Division status</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.statusTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
-            {status?.tagline ||
-              "Eternal life rails: DNA vault, ACP workflows, licensed longevity partners."}
+            {status?.tagline || t("aeternaPage.taglineFallback")}
           </p>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-white/50">
-            {status?.compliance_note ||
-              "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only."}
+            {status?.compliance_note || t("aeternaPage.complianceFallback")}
           </p>
           <dl className="mt-8 grid gap-6 sm:grid-cols-3">
             <div>
-              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Feature</dt>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.feature")}</dt>
               <dd className="mt-1 text-2xl font-semibold">
-                {status ? (status.feature_enabled ? "on" : "flagged off") : "public browse"}
+                {status ? (status.feature_enabled ? t("aeternaPage.featureOn") : t("aeternaPage.featureOff")) : t("aeternaPage.featurePublic")}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Vault entries</dt>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.vaultEntries")}</dt>
               <dd className="mt-1 text-2xl font-semibold">{status?.vault_entries ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">Workflows</dt>
-              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 5}</dd>
+              <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.workflows")}</dt>
+              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 6}</dd>
             </div>
           </dl>
           {status && (
             <>
               <p className="mt-6 text-sm text-white/55">{status.sequencing_import_hint}</p>
               <p className="mt-2 text-xs uppercase tracking-[0.14em] text-white/35">
-                Next: {status.next_gate}
+                {t("aeternaPage.next")} {status.next_gate}
               </p>
               <ul className="mt-6 flex flex-wrap gap-2 font-mono text-xs text-white/50">
                 {status.workflow_slugs.map((slug) => (

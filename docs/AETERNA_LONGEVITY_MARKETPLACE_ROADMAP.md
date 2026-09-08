@@ -7,7 +7,7 @@
 
 ## Product thesis
 
-People pay ACP for **structured longevity workflows**: upload / link sequenced DNA, explore annotated variants in a sandbox, request AI briefs, and route **licensed clinical partners** for consult intents (pigmentation, telomere panels, disease-risk reports, longevity plans).
+People pay ACP for **structured longevity workflows**: upload / link sequenced DNA, explore annotated variants in a sandbox, request AI briefs, and route **licensed clinical partners** for consult intents (pigmentation, telomere panels, disease-risk reports, longevity plans, stem-cell organ bioprint).
 
 **Non-goals (v1):** consumer DIY CRISPR/Cas9 kits, wet-lab protocols, gene synthesis, pathogen work, unlicensed enhancement procedures.
 
@@ -51,7 +51,7 @@ People pay ACP for **structured longevity workflows**: upload / link sequenced D
 
 - `[x]` Procedural DNA helix on `/aeterna` (rotate + swap base pairs) — no PDB/genome blob on server.
 - `[x]` Client streaming SHA-256 vault registration (hash + ≤8KB metadata only).
-- `[x]` Homepage AETERNA promo; workflow list price **1,000,000 ACP** (pack 2,500,000 ACP).
+- `[x]` Homepage AETERNA promo; consult workflows **1,000,000 ACP**; stem-cell organ print **250,000 ACP** per organ (pack 2,500,000 ACP).
 - `[ ]` Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
 - No edit simulation that implies real wet-lab editing capability.
 
@@ -76,6 +76,10 @@ GET  /aeterna/intents
 GET  /organizations/{org_id}/aeterna/summary
 POST /organizations/{org_id}/aeterna/partners
 GET  /organizations/{org_id}/aeterna/partners
+POST /organizations/{org_id}/aeterna/vault
+GET  /organizations/{org_id}/aeterna/vault
+POST /organizations/{org_id}/aeterna/intents
+GET  /organizations/{org_id}/aeterna/intents
 ```
 
 ## Workflow slugs (catalog)
@@ -85,3 +89,8 @@ GET  /organizations/{org_id}/aeterna/partners
 - `aeterna-pigmentation-consult-brief`
 - `aeterna-telomere-panel-review`
 - `aeterna-disease-risk-navigator`
+- `aeterna-stem-cell-organ-print` — **250,000 ACP / organ**; autologous stem cells, wisdom-tooth DPSC fallback; licensed biochemical reactor partner only.
+
+Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + longevity panel + disease-risk navigator. Organ print is sold per organ, not inside the pack.
+
+Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Execution output is a licensed-partner bioreactor handoff brief — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture.

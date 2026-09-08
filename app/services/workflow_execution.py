@@ -240,6 +240,83 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "vault_hash_ref", "status_timeline"],
         tags=["aeterna", "disease-risk", "clinical"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-stem-cell-organ-print",
+        title="AETERNA Stem-Cell Organ Print",
+        category="AETERNA",
+        summary="Licensed-partner organ bioprint from autologous stem cells — wisdom-tooth DPSC fallback — 250,000 ACP per organ.",
+        description=(
+            "Settles 250,000 ACP per organ and issues a licensed-partner bioreactor handoff. "
+            "Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. "
+            "Printing occurs only in a licensed biochemical reactor operated by a verified partner. "
+            "Not a home kit — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture."
+        ),
+        price=Money(amount="250000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=90,
+        preview_items=["Cell-source intake", "Bioreactor partner match", "Per-organ ACP quote"],
+        output_items=["Organ-print intake brief", "Cell-source plan", "Licensed bioreactor handoff", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "organ_unit_price_acp", "status_timeline"],
+        tags=["aeterna", "organ-print", "stem-cells", "bioreactor"],
+    ),
+
+    WorkflowTemplatePublic(
+        slug="market-direction-brief",
+        title="Market Direction Brief",
+        category="Markets",
+        summary="LLM scenario analysis of near-term market direction, catalysts, and risk-of-upside / downside paths.",
+        description="Uses large-model reasoning over user-supplied market context to outline bullish/base/bearish scenarios, key levels, and what would invalidate the thesis. Educational analysis only — not investment advice.",
+        price=Money(amount="25", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=25,
+        preview_items=["Direction scenarios", "Catalyst map", "Invalidation levels"],
+        output_items=["Scenario brief", "Catalyst checklist", "Watchlist levels", "Receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "status_timeline"],
+        tags=["markets", "prediction", "ai", "analysis"],
+    ),
+    WorkflowTemplatePublic(
+        slug="commodity-price-outlook",
+        title="Commodity Price Outlook",
+        category="Markets",
+        summary="AI outlook for oil, gas, metals, timber, uranium, and other commodities — supply, demand, and quote momentum.",
+        description="Builds a structured commodity outlook from user context (asset, region, horizon) with supply/demand drivers, quote-move scenarios, and desk-relevant risks. Not a guaranteed price forecast.",
+        price=Money(amount="29", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=30,
+        preview_items=["Supply/demand map", "Quote scenarios", "Desk risk notes"],
+        output_items=["Commodity outlook", "Driver matrix", "Scenario paths", "Receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "asset_reference", "status_timeline"],
+        tags=["commodities", "oil", "gas", "uranium", "markets", "ai"],
+    ),
+    WorkflowTemplatePublic(
+        slug="crypto-quote-momentum-scan",
+        title="Crypto Quote Momentum Scan",
+        category="Markets",
+        summary="AI scan of crypto quote momentum, narrative heat, and upside/downside path probabilities from your inputs.",
+        description="Produces a momentum and narrative scan for a token or market: relative strength framing, catalyst calendar, and scenario weights. Explicitly not trading signals or return promises.",
+        price=Money(amount="22", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=20,
+        preview_items=["Momentum framing", "Narrative heat", "Path weights"],
+        output_items=["Momentum scan", "Narrative map", "Scenario weights", "Receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "asset_reference", "status_timeline"],
+        tags=["crypto", "momentum", "quotes", "markets", "ai"],
+    ),
+    WorkflowTemplatePublic(
+        slug="markets-ai-radar-pro",
+        title="Markets AI Radar Pro",
+        category="Markets",
+        summary="Pro multi-asset radar: crypto + commodities quote paths, cross-asset contagion, and AI-ranked growth scenarios.",
+        description="Premium multi-horizon radar combining user market notes with structured AI scenario ranking across assets. Includes monitoring checklist and evidence gaps. Not financial advice.",
+        price=Money(amount="79", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=55,
+        preview_items=["Cross-asset radar", "Ranked scenarios", "Monitoring checklist"],
+        output_items=["Radar brief", "Ranked scenarios", "Contagion notes", "Evidence gaps", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "margin_snapshot", "status_timeline"],
+        tags=["markets", "pro", "commodities", "crypto", "prediction", "ai"],
+    ),
+
 ]
 
 
@@ -465,6 +542,33 @@ WORKFLOW_BUNDLES: list[WorkflowBundlePublic] = [
         ],
         tags=["bundle", "aeterna", "longevity", "dna"],
     ),
+
+    WorkflowBundlePublic(
+        slug="markets-intel-pack",
+        title="Markets Intel Pack",
+        category="Markets Suite",
+        summary="Four AI market-analysis workflows: direction, commodities, crypto momentum, and pro radar.",
+        description="Bundle for users who want LLM-assisted market and quote-path analysis across crypto and commodities.",
+        workflow_slugs=[
+            "market-direction-brief",
+            "commodity-price-outlook",
+            "crypto-quote-momentum-scan",
+            "markets-ai-radar-pro",
+        ],
+        price=Money(amount="119", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        discount_percent=25,
+        estimated_time_minutes=130,
+        output_items=[
+            "Market direction brief",
+            "Commodity outlook",
+            "Crypto momentum scan",
+            "Markets AI radar pro",
+            "Four proof-backed workflow receipts",
+        ],
+        tags=["bundle", "markets", "commodities", "ai"],
+    ),
+
 ]
 
 
@@ -584,7 +688,115 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
     deliverable: dict[str, Any]
     execution_summary: dict[str, Any]
 
-    if template.slug == "token-listing-pack":
+    if template.slug == "market-direction-brief":
+        horizon = str(payload.get("horizon") or payload.get("timeframe") or "14-30 days")
+        asset = str(payload.get("asset") or payload.get("market") or market)
+        deliverable = {
+            "disclaimer": "Educational scenario analysis only. Not investment, trading, or financial advice. No guaranteed returns.",
+            "scope": {"asset": asset, "horizon": horizon, "geography": geography},
+            "direction_scenarios": {
+                "bullish": {
+                    "weight": "0.30-0.40",
+                    "thesis": f"Upside path for {asset} if catalysts listed by the buyer clear and risk appetite improves.",
+                    "what_to_watch": ["Liquidity / volume confirmation", "Macro risk-on tape", "Buyer-stated catalysts"],
+                },
+                "base": {
+                    "weight": "0.35-0.45",
+                    "thesis": f"Range / choppy path for {asset} while evidence remains mixed over {horizon}.",
+                    "what_to_watch": ["Mean-reversion around key levels", "Narrative fatigue", "Desk inventory flows"],
+                },
+                "bearish": {
+                    "weight": "0.20-0.30",
+                    "thesis": f"Downside path if demand softens or forced selling appears in {asset}.",
+                    "what_to_watch": ["Break of support levels", "Funding / credit stress", "Policy shocks"],
+                },
+            },
+            "invalidation": [
+                "A hard move through the buyer's stated stop/invalidation level with volume.",
+                "Material change in supply/demand facts not present in the inputs.",
+            ],
+            "next_checks": [
+                "Refresh with live quotes and order-book depth when available.",
+                "Separate desk OTC intake pricing from speculative quote paths.",
+            ],
+        }
+        execution_summary = {
+            "status": "completed_stub",
+            "mode": "markets_scenario_analysis",
+            "note": "Stub deliverable used when LLM is unavailable; regenerate with live LLM for richer analysis.",
+        }
+    elif template.slug == "commodity-price-outlook":
+        commodity = str(payload.get("commodity") or payload.get("asset") or "oil")
+        horizon = str(payload.get("horizon") or "30-90 days")
+        deliverable = {
+            "disclaimer": "Indicative commodity outlook for education. Not a firm bid, hedge recommendation, or guaranteed price path.",
+            "commodity": commodity,
+            "horizon": horizon,
+            "region": geography,
+            "driver_matrix": {
+                "supply": ["Production / export constraints from buyer notes", "Inventory and logistics friction", "Licensing / sanctions for controlled materials"],
+                "demand": ["Industrial offtake", "Seasonality", "Substitution risk"],
+                "quotes": ["Spot vs forward framing", "ACP desk indicative rates are separate from market futures"],
+            },
+            "scenario_paths": {
+                "growth": f"Price-supportive path for {commodity} if supply tightens and demand holds.",
+                "base": f"Stabilization / range for {commodity} over {horizon}.",
+                "contraction": f"Softer quotes if inventories build or offtake slows.",
+            },
+            "desk_notes": [
+                "OTC commodity intake settles after assay/grade review — do not treat outlook as a desk bid.",
+                "Uranium and other controlled minerals may require licensed counterparties.",
+            ],
+        }
+        execution_summary = {"status": "completed_stub", "mode": "commodity_outlook", "commodity": commodity}
+    elif template.slug == "crypto-quote-momentum-scan":
+        deliverable = {
+            "disclaimer": "Momentum framing only. Not a buy/sell signal or return promise.",
+            "asset": {"project": project_name, "symbol": token_symbol, "chain": chain},
+            "momentum_framing": {
+                "relative_strength": "medium_pending_data",
+                "narrative_heat": "medium",
+                "liquidity_quality": "needs_proof",
+            },
+            "path_weights": {
+                "continuation_up": "0.25-0.35",
+                "range": "0.40-0.50",
+                "mean_reversion_down": "0.20-0.30",
+            },
+            "narrative_map": [
+                f"Positioning for {project_name} / {token_symbol} should be checked against live social and listing chatter.",
+                "Separate product utility narrative from short-term quote noise.",
+            ],
+            "evidence_gaps": competitors[:5] or ["Live volume", "Holder concentration", "Unlock calendar"],
+        }
+        execution_summary = {"status": "completed_stub", "mode": "crypto_momentum_scan"}
+    elif template.slug == "markets-ai-radar-pro":
+        assets = payload.get("assets") if isinstance(payload.get("assets"), list) else [str(payload.get("asset") or "BTC"), "oil", "ACP"]
+        deliverable = {
+            "disclaimer": "Pro radar is scenario ranking for research. Not personalized investment advice.",
+            "radar": {
+                "horizon": str(payload.get("horizon") or "multi-horizon 7d/30d/90d"),
+                "assets": assets,
+                "cross_asset_notes": [
+                    "Crypto risk appetite often co-moves with liquidity; commodities may diverge on physical supply shocks.",
+                    "ACP desk rates for metals/commodities are indicative OTC quotes, not exchange futures settles.",
+                ],
+            },
+            "ranked_scenarios": [
+                {"rank": 1, "label": "Risk-on crypto + soft commodities", "weight": "0.30"},
+                {"rank": 2, "label": "Range-bound mixed tape", "weight": "0.40"},
+                {"rank": 3, "label": "Risk-off crypto + commodity squeeze", "weight": "0.30"},
+            ],
+            "monitoring_checklist": [
+                "Refresh LLM run when material news hits buyer watchlist",
+                "Track OTC intake volumes vs quote path divergence",
+                "Document evidence sources for each scenario weight update",
+            ],
+            "evidence_gaps": constraints[:5] or ["Live futures curve", "Options skew", "Physical inventory prints"],
+        }
+        execution_summary = {"status": "completed_stub", "mode": "markets_radar_pro", "asset_count": len(assets)}
+    elif template.slug == "token-listing-pack":
+
         deliverable = {
             "positioning_summary": {
                 "project": project_name,
@@ -988,6 +1200,23 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "Genome sandbox explores annotations on vaulted metadata; it does not edit DNA."
             ),
         }
+        if template.slug == "aeterna-stem-cell-organ-print":
+            deliverable["intent"] = str(payload.get("intent_kind") or "organ_bioprint")
+            deliverable["compliance"] = (
+                "Licensed-partner bioprint intake only. Not a diagnosis. "
+                "No CRISPR guide design, gene synthesis, DIY cell culture, or unlicensed enhancement protocols."
+            )
+            deliverable["manufacturing"] = {
+                "mode": "licensed_partner_bioreactor",
+                "unit": "per_organ",
+                "price_acp": "250000",
+                "primary_cell_source": "autologous_stem_cells",
+                "fallback_cell_source": "wisdom_tooth_dental_pulp_stem_cells_dpsc",
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. "
+                    "Printing occurs only in a licensed biochemical reactor operated by a verified partner — not a home kit."
+                ),
+            }
         execution_summary = {
             "mode": "workflow_specific",
             "artifact_kind": "aeterna_longevity",

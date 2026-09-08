@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from fastapi import HTTPException
 from sqlalchemy import func, select
@@ -18,6 +19,7 @@ from app.db.models import (
 from app.schemas.aeterna import (
     AeternaDnaVaultCreate,
     AeternaDnaVaultPublic,
+    AeternaIntentKind,
     AeternaIntentOrderCreate,
     AeternaIntentOrderPublic,
     AeternaOrderStatus,
@@ -34,7 +36,33 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-pigmentation-consult-brief",
     "aeterna-telomere-panel-review",
     "aeterna-disease-risk-navigator",
+    "aeterna-stem-cell-organ-print",
 ]
+
+ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
+ORGAN_PRINT_PRICE_ACP = Decimal("250000")
+
+AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
+    AeternaIntentKind.pigmentation_consult.value: "aeterna-pigmentation-consult-brief",
+    AeternaIntentKind.telomere_panel_review.value: "aeterna-telomere-panel-review",
+    AeternaIntentKind.disease_risk_report.value: "aeterna-disease-risk-navigator",
+    AeternaIntentKind.longevity_plan.value: "aeterna-longevity-panel-brief",
+    AeternaIntentKind.dna_sandbox_explore.value: "aeterna-dna-wellness-report",
+    AeternaIntentKind.partner_clinic_match.value: "aeterna-longevity-panel-brief",
+    AeternaIntentKind.organ_bioprint.value: ORGAN_PRINT_SLUG,
+}
+
+ORGAN_PRINT_HANDOFF_META = {
+    "manufacturing_mode": "licensed_partner_bioreactor",
+    "unit": "per_organ",
+    "price_acp": "250000",
+    "primary_cell_source": "autologous_stem_cells",
+    "fallback_cell_source": "wisdom_tooth_dental_pulp_stem_cells_dpsc",
+    "note": (
+        "ANCAP settles ACP and issues a partner handoff brief. "
+        "Printing occurs only in a licensed biochemical reactor operated by a verified partner — not a home kit."
+    ),
+}
 
 _COMPLIANCE = (
     "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only. "
@@ -77,6 +105,7 @@ def _order_public(row: AeternaIntentOrder) -> AeternaIntentOrderPublic:
         status=row.status,
         budget_acp=row.budget_acp,
         notes=row.notes,
+        metadata_json=dict(row.metadata_json or {}),
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -174,9 +203,25 @@ async def create_intent_order(
             raise HTTPException(status_code=404, detail="DNA vault entry not found")
         if vault.owner_user_id != user_id and (not org_id or vault.org_id != org_id):
             raise HTTPException(status_code=403, detail="Vault entry not accessible")
-    slug = body.workflow_slug
+    slug = body.workflow_slug or AETERNA_INTENT_DEFAULT_SLUGS.get(body.intent_kind.value)
     if slug and slug not in AETERNA_WORKFLOW_SLUGS:
         raise HTTPException(status_code=400, detail="Unknown AETERNA workflow_slug")
+    if body.intent_kind == AeternaIntentKind.organ_bioprint:
+        if slug and slug != ORGAN_PRINT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="organ_bioprint requires workflow_slug aeterna-stem-cell-organ-print",
+            )
+        slug = ORGAN_PRINT_SLUG
+        if body.budget_acp < ORGAN_PRINT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="organ_bioprint budget_acp must be at least 250000 ACP per organ",
+            )
+    meta = dict(body.metadata_json or {})
+    if body.intent_kind == AeternaIntentKind.organ_bioprint:
+        for key, value in ORGAN_PRINT_HANDOFF_META.items():
+            meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(
         org_id=org_id,
@@ -187,7 +232,7 @@ async def create_intent_order(
         status=AeternaOrderStatus.draft.value,
         budget_acp=body.budget_acp,
         notes=body.notes,
-        metadata_json=body.metadata_json or {},
+        metadata_json=meta,
         created_at=now,
         updated_at=now,
     )

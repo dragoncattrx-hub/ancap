@@ -845,6 +845,11 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P4-8 | PIN + biometrics | [~] wired, real device verification pending |
 | P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
+| P5-XO | Exchange office foundation (ACP hub, all↔all quotes, tickets, Exchange tab) | [x] see `docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md` — catalog/quote/tickets API + Expo Exchange tab; ticket auth settle + auto rails still open |
+| P5-XO2 | OTC commodities + Markets AI workflows | [x] oil/gas/uranium/timber/sand/stone/ores desk rail; Markets category workflows + Markets Intel Pack on `/ai/workflows` |
+| P5-XO3 | Banknote/coin authenticity + numismatic ACP value (iPhone) | [x] see `docs/mobile/NUMISMATIC_AUTHENTICITY.md` — `/mobile/numismatic/*` + Expo Auth tab; educational prototype only |
+| P5-XO4 | Real estate / antiques / space OTC + ACP ownership certificates | [x] see `docs/mobile/TITLE_OWNERSHIP_RAILS.md` — RE sale/rental, antiques, space objects; `/ownership-proofs/*` crypto register contracts |
+| P5-XO5 | Patent inventions + recipes OTC/IP rail + ownership classes | [x] `ip` rail (`patent`/`recipe`), exchange chips `ip_*`, ownership `patent_invention`/`recipe_formula`; see `docs/mobile/TITLE_OWNERSHIP_RAILS.md` |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P5.5 | Biohax NFC + org identity | [~] backend scaffolding (`057_org_nfc_identity`, `/organizations/{org_id}/identity/*`), mobile dep/i18n/permissions; NFC unlock UI + policy enforcement still open — see `docs/mobile/BIOHAX_NFC.md` |
@@ -1199,14 +1204,14 @@ Accept **securities (tsennye bumagi)**, **promissory notes (vekselya)**, and **e
 
 Execution detail: **`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`**.
 
-Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere panels, disease-risk, longevity plans), licensed-partner handoff. **No DIY CRISPR / gene synthesis.**
+Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere panels, disease-risk, longevity plans), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner), licensed-partner handoff. **No DIY CRISPR / gene synthesis.**
 
 | Phase | Status | Deliverables |
 |-------|--------|--------------|
 | A0 Spec & brand | `[x]` | Schemas, `/aeterna` landing + hero, Workflow Store category |
 | A1 Vault + intent API | `[~]` | `aeterna_dna_vault` / orders / partners; `FF_AETERNA`; migration `059` |
 | A2 Checkout UX | `[ ]` | Category filter, org desk, longevity bundle UX |
-| A3 Sandbox viz | `[ ]` | Read-only annotation playground on vaulted VCF summaries |
+| A3 Sandbox viz | `[~]` | Helix + hash vault + homepage promo + organ-print SKU; variant browser still open |
 | A4 Partner network | `[ ]` | Verified clinics, ACP escrow until consult delivered |
 | A5 Economy | `[ ]` | Vertical `AETERNA` + creator-listed genomic workflows |
 

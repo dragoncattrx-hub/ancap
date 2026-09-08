@@ -478,6 +478,21 @@ export const ledger = {
 };
 
 // ACP Wallet API
+export const spaceAuction = {
+  async catalog() {
+    return apiFetch("/space-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/space-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async bid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/space-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const walletAcp = {
   async getDepositAddress() {
     // Prefer GET (cookie auth, no empty JSON body quirks). Fall back to POST for older gateways.
@@ -596,6 +611,69 @@ export const walletAcp = {
     });
   },
 
+  async otcQuoteCommodity(data: { commodity: string; quantity: string; grade_note?: string }) {
+    return apiFetch("/wallet/acp/otc/quote/commodity", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async otcQuoteRealEstate(data: {
+    deal_type: string;
+    estimated_value_acp: string;
+    jurisdiction?: string;
+    lease_months?: number;
+  }) {
+    return apiFetch("/wallet/acp/otc/quote/real-estate", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async otcQuoteSpace(data: {
+    object_class: string;
+    estimated_value_acp: string;
+    norad_or_cospar_id?: string;
+  }) {
+    return apiFetch("/wallet/acp/otc/quote/space", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async otcQuoteIp(data: {
+    kind: string;
+    estimated_value_acp: string;
+    registration_uri?: string;
+  }) {
+    return apiFetch("/wallet/acp/otc/quote/ip", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async ownershipCatalog() {
+    return apiFetch("/ownership-proofs/catalog");
+  },
+
+  async issueOwnershipCertificate(data: Record<string, unknown>) {
+    return apiFetch("/ownership-proofs/certificates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async listOwnershipCertificates() {
+    return apiFetch("/ownership-proofs/certificates");
+  },
+
+  async redeemOwnershipTransfer(data: { transfer_code: string; note?: string }) {
+    return apiFetch("/ownership-proofs/transfers/redeem", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
   async createOtcOrder(data: Record<string, unknown>) {
     return apiFetch("/wallet/acp/otc/orders", {
       method: "POST",
@@ -618,6 +696,17 @@ export const walletAcp = {
     return apiFetch(`/wallet/acp/otc/orders/${orderId}/cancel`, {
       method: "POST",
       body: JSON.stringify({}),
+    });
+  },
+
+  async assayGcCatalog() {
+    return apiFetch("/assay/gc/catalog");
+  },
+
+  async assayGcAnalyze(data: Record<string, unknown>) {
+    return apiFetch("/assay/gc/analyze", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   },
 };
@@ -1767,6 +1856,67 @@ export const aeterna = {
   },
   async listIntents() {
     return apiFetch("/aeterna/intents");
+  },
+  async orgSummary(orgId: string) {
+    return apiFetch(`/organizations/${orgId}/aeterna/summary`);
+  },
+  async orgCreateVault(
+    orgId: string,
+    data: {
+      label: string;
+      source?: string;
+      source_uri?: string | null;
+      content_sha256: string;
+      format_hint?: string;
+      consent_acknowledged: boolean;
+      metadata_json?: Record<string, unknown>;
+    },
+  ) {
+    return apiFetch(`/organizations/${orgId}/aeterna/vault`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async orgListVault(orgId: string) {
+    return apiFetch(`/organizations/${orgId}/aeterna/vault`);
+  },
+  async orgCreateIntent(
+    orgId: string,
+    data: {
+      intent_kind: string;
+      vault_id?: string | null;
+      workflow_slug?: string | null;
+      notes?: string | null;
+      budget_acp: string | number;
+      metadata_json?: Record<string, unknown>;
+    },
+  ) {
+    return apiFetch(`/organizations/${orgId}/aeterna/intents`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async orgListIntents(orgId: string) {
+    return apiFetch(`/organizations/${orgId}/aeterna/intents`);
+  },
+  async orgCreatePartner(
+    orgId: string,
+    data: {
+      name: string;
+      jurisdiction: string;
+      license_ref?: string | null;
+      website?: string | null;
+      supported_intents?: string[];
+      metadata_json?: Record<string, unknown>;
+    },
+  ) {
+    return apiFetch(`/organizations/${orgId}/aeterna/partners`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async orgListPartners(orgId: string) {
+    return apiFetch(`/organizations/${orgId}/aeterna/partners`);
   },
 };
 
