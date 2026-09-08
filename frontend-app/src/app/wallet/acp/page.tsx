@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { OtcIntakeDesk } from "@/components/OtcIntakeDesk";
+import { AssayGcDesk } from "@/components/AssayGcDesk";
+import { OwnershipProofDesk } from "@/components/OwnershipProofDesk";
 import { useAuth } from "@/components/AuthProvider";
 import { walletAcp } from "@/lib/api";
 
@@ -889,6 +891,10 @@ export default function AcpWalletPage() {
             </div>
 
             <OtcIntakeDesk defaultPayoutAddress={singleWalletAddress} />
+            <div style={{ marginTop: 24 }}>
+              <AssayGcDesk />
+              <OwnershipProofDesk />
+            </div>
 
             <div className="card" style={{ border: "1px solid rgba(56, 189, 248, 0.22)", background: "linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255,255,255,0.02))" }}>
               <div className="card-header">

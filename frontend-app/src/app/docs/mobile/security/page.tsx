@@ -74,6 +74,7 @@ export default function MobileSecurityDocsPage() {
             <li><Link href="/docs/wacp/risks">Bridge and custody risks</Link></li>
             <li><Link href="/legal/terms">Terms</Link></li>
             <li><Link href="/legal/privacy">Privacy</Link></li>
+            <li><Link href="/legal/cyber-defense">Collective cyber defense</Link></li>
           </ul>
         </section>
       </main>

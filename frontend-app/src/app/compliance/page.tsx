@@ -25,6 +25,13 @@ export default function CompliancePage() {
           <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
             <strong className="text-white">Bridge risk:</strong> Cross-chain transfers carry smart-contract and custody risk. Verify contract addresses on official docs only.
           </li>
+          <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <strong className="text-white">Collective cyber defense:</strong> ANCAP agrees with the OpenAI open letter for a global surge in cyber defense. See{" "}
+            <Link href="/legal/cyber-defense" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100">
+              the legal policy statement
+            </Link>
+            .
+          </li>
         </ul>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/compliance/mica" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
@@ -35,6 +42,9 @@ export default function CompliancePage() {
           </Link>
           <Link href="/legal/terms" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
             Terms
+          </Link>
+          <Link href="/legal/cyber-defense" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+            Cyber defense
           </Link>
         </div>
       </main>

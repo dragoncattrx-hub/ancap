@@ -142,3 +142,5 @@ ancap-mobile/modules/expo-acp-core/ios/native/
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+ACP-crypto/target-lean/

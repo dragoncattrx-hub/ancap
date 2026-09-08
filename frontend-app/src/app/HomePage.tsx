@@ -6,6 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { HomeMcpSection } from "@/components/HomeMcpSection";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
+import { HomeGalaxySection } from "@/components/HomeGalaxySection";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const offerDefs = [
@@ -55,13 +56,14 @@ const audienceDefs = [
 ];
 
 const productRoutes = [
-  { title: "Workflow store", href: "/ai/workflows", textKey: "homePage.route1Text" },
-  { title: "Pricing", href: "/pricing", textKey: "homePage.route2Text" },
-  { title: "Token snapshot", href: "/token-snapshot", textKey: "homePage.route3Text" },
-  { title: "Developers", href: "/developers", textKey: "homePage.route4Text" },
-  { title: "Proof Center", href: "/proof-center", textKey: "homePage.route5Text" },
-  { title: "ACP wallet", href: "/wallet/acp", textKey: "homePage.route6Text" },
-  { title: "Seller dashboard", href: "/dashboard/seller", textKey: "homePage.route7Text" },
+  { titleKey: "homePage.routeWorkflowStore", href: "/ai/workflows", textKey: "homePage.route1Text" },
+  { titleKey: "homePage.routePricing", href: "/pricing", textKey: "homePage.route2Text" },
+  { titleKey: "homePage.routeTokenSnapshot", href: "/token-snapshot", textKey: "homePage.route3Text" },
+  { titleKey: "homePage.routeDevelopers", href: "/developers", textKey: "homePage.route4Text" },
+  { titleKey: "homePage.routeProofCenter", href: "/proof-center", textKey: "homePage.route5Text" },
+  { titleKey: "homePage.routeAcpWallet", href: "/wallet/acp", textKey: "homePage.route6Text" },
+  { titleKey: "homePage.routeSellerDashboard", href: "/dashboard/seller", textKey: "homePage.route7Text" },
+  { titleKey: "homePage.routeGalaxy", href: "/galaxy", textKey: "homePage.galaxyCta" },
 ];
 
 const socialLinks = [
@@ -165,16 +167,16 @@ export function HomePage() {
                   </p>
                   <div className="action-cluster" style={{ marginBottom: 22 }}>
                     <Link href="/token-snapshot" className="btn btn-primary">
-                      Run Free Token Snapshot
+                      {t("homePage.ctaSnapshot")}
                     </Link>
                     <Link href="/ai/run/token-risk-report-pro" className="btn btn-primary">
-                      Buy Pro Risk Report
+                      {t("homePage.ctaProReport")}
                     </Link>
                     <Link href="/pay/create" className="btn btn-ghost">
-                      Create Payment Link
+                      {t("homePage.ctaPayLink")}
                     </Link>
                     <Link href="/developers" className="btn btn-ghost">
-                      Integrate ANCAP API
+                      {t("homePage.ctaApi")}
                     </Link>
                   </div>
                   <div className="action-cluster">
@@ -278,6 +280,8 @@ export function HomePage() {
             </div>
           </section>
 
+          <HomeGalaxySection />
+
           <section
             id="aeterna"
             className="container"
@@ -301,27 +305,28 @@ export function HomePage() {
                 }}
               >
                 <div style={{ flex: "1 1 320px", maxWidth: 720 }}>
-                  <span className="section-num">AETERNA</span>
-                  <h2
-                    id="aeterna-home-title"
-                    className="section-title"
-                    style={{ marginBottom: 14 }}
-                  >
-                    Longevity DNA rails — hash locally, settle in ACP
-                  </h2>
-                  <p className="section-subtitle" style={{ maxWidth: 620, marginBottom: 0 }}>
-                    Nanobots and chemical scissors as a visual metaphor for precision genomic
-                    consults — interactive helix sandbox, hash-only vault, workflows at 1,000,000 ACP.
-                    Educational visualization, not a DIY editing kit.
-                  </p>
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                  <Link href="/aeterna" className="btn btn-primary">
-                    Enter AETERNA
-                  </Link>
-                  <Link href="/aeterna#dna-sandbox" className="btn btn-ghost">
-                    DNA sandbox
-                  </Link>
+                    <span className="section-num">{t("nav.aeterna")}</span>
+                    <h2
+                      id="aeterna-home-title"
+                      className="section-title"
+                      style={{ marginBottom: 14 }}
+                    >
+                      {t("aeternaPage.homeTitle")}
+                    </h2>
+                    <p className="section-subtitle" style={{ maxWidth: 620, marginBottom: 0 }}>
+                      {t("aeternaPage.homeLead")}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                    <Link href="/aeterna" className="btn btn-primary">
+                      {t("aeternaPage.enter")}
+                    </Link>
+                    <Link href="/aeterna#dna-sandbox" className="btn btn-ghost">
+                      {t("aeternaPage.sandboxCta")}
+                    </Link>
+                    <Link href="/aeterna#organ-print" className="btn btn-ghost">
+                      {t("aeternaPage.organSkuCta")}
+                    </Link>
                 </div>
               </div>
               <div
@@ -487,7 +492,7 @@ export function HomePage() {
                       padding: 18,
                     }}
                   >
-                    <strong style={{ color: "var(--text)" }}>{route.title}</strong>
+                    <strong style={{ color: "var(--text)" }}>{t(route.titleKey)}</strong>
                     <span style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>{t(route.textKey)}</span>
                   </Link>
                 ))}
@@ -545,7 +550,7 @@ export function HomePage() {
                   {t("homePage.buyAiWorkflow")}
                 </Link>
                 <a href="/api/docs" className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-                  Swagger API
+                  {t("homePage.swaggerApi")}
                 </a>
               </div>
             </div>
