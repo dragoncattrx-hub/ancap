@@ -232,7 +232,7 @@ export const auth = {
     } catch {
       // best-effort
     }
-    # Also clear cookie client-side for immediate effect (non-HttpOnly leftovers only).
+    // Also clear cookie client-side for immediate effect (non-HttpOnly leftovers only).
     if (typeof document !== "undefined") {
       document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Lax`;
       document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; domain=.ancap.cloud; SameSite=Lax`;
