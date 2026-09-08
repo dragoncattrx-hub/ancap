@@ -47,9 +47,9 @@ jobs:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
-          # Full no-cache rebuild of the prod stack takes ~20 minutes.
+          # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           timeout: 600s
-          command_timeout: 45m
+          command_timeout: 70m
           script_stop: false
           script: |
             set -euo pipefail

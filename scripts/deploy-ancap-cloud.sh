@@ -301,7 +301,7 @@ echo "APP_BUILD_ID=$APP_BUILD_ID (must match https://ancap.cloud/internal/fronte
 echo "Validating docker-compose.prod.yml interpolation and required vars without printing resolved secrets..."
 docker compose -f "$COMPOSE" config --quiet
 
-docker compose -f "$COMPOSE" build --no-cache
+docker compose -f "$COMPOSE" build
 docker compose -f "$COMPOSE" up -d
 
 if [[ "$SKIP_MIG" -eq 0 ]]; then
