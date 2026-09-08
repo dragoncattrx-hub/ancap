@@ -34,7 +34,15 @@ def test_otc_space_catalog_has_star_planet_satellite_prices():
     assert "star" in by_class
     assert "planet" in by_class
     assert "moon" in by_class
-    assert "satellite" in by_class
+    assert "dwarf_planet" in by_class
+    assert "asteroid" in by_class
+    assert "comet" in by_class
+    assert "nebula" in by_class
+    assert "galaxy" in by_class
+    assert "black_hole" in by_class
+    assert "exoplanet" in by_class
+    assert "radiation" in by_class
+    assert Decimal(by_class["radiation"].indicative_starting_acp) > 0
     assert Decimal(by_class["star"].indicative_starting_acp) > 0
     assert Decimal(by_class["planet"].indicative_starting_acp) > 0
     assert Decimal(by_class["satellite"].indicative_starting_acp) > 0
@@ -53,6 +61,17 @@ def test_space_auction_catalog_has_priced_stars_planets_satellites(client):
     assert any(lot["id"] == "star-sol" for lot in lots)
     assert any(lot["id"] == "planet-mars" for lot in lots)
     assert any(lot["id"] == "sat-luna" for lot in lots)
+    assert any(lot["id"] == "dwarf-pluto" for lot in lots)
+    assert any(lot["id"] == "gal-milky-way" for lot in lots)
+    assert any(lot["id"] == "rad-cmb" for lot in lots)
+    assert "dwarf_planet" in kinds_found
+    assert "asteroid" in kinds_found
+    assert "comet" in kinds_found
+    assert "nebula" in kinds_found
+    assert "galaxy" in kinds_found
+    assert "black_hole" in kinds_found
+    assert "exoplanet" in kinds_found
+    assert "radiation" in kinds_found
     featured_ids = {lot["id"] for lot in data["featured"]}
     assert "planet-earth" in featured_ids
     mars = next(lot for lot in lots if lot["id"] == "planet-mars")

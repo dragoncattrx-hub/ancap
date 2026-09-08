@@ -1,4 +1,4 @@
-"""Public galaxy auction: stars, planets, satellites."""
+"""Public galaxy auction: space bodies and radiation fields."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends

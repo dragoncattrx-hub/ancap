@@ -2522,3 +2522,55 @@ class SpaceAuctionBid(Base):
         Index("ix_space_auction_bids_lot_created", "lot_id", "created_at"),
         Index("ix_space_auction_bids_lot_amount", "lot_id", "amount_acp"),
     )
+
+
+# --- FAUNA companion-animal auction (ACP escrow smart contracts) ---
+
+
+class AnimalAuctionLot(Base):
+    __tablename__ = "animal_auction_lots"
+
+    id = Column(String(64), primary_key=True)
+    seller_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    species = Column(String(32), nullable=False, index=True)
+    name = Column(String(80), nullable=False)
+    breed = Column(String(80), nullable=False)
+    age_months = Column(Integer, nullable=True)
+    blurb = Column(Text, nullable=False)
+    starting_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="live", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    featured = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    seller = relationship("User", foreign_keys=[seller_user_id])
+
+
+class AnimalAuctionBid(Base):
+    __tablename__ = "animal_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_animal_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_animal_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )

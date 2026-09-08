@@ -37,6 +37,7 @@ const primaryNav: NavItem[] = [
   { label: "Marketplace", href: "/marketplace", i18nKey: "nav.marketplace" },
   { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
   { label: "Galaxy", href: "/galaxy", i18nKey: "nav.galaxy" },
+  { label: "Fauna", href: "/fauna", i18nKey: "nav.fauna" },
   { label: "Reputation", href: "/reputation", i18nKey: "nav.reputation" },
   { label: "Ledger", href: "/ledger", i18nKey: "nav.ledger" },
 ];
@@ -84,6 +85,7 @@ const publicNav: NavItem[] = [
   { label: "Workflows", href: "/ai/workflows", i18nKey: "nav.workflows" },
   { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
   { label: "Galaxy", href: "/galaxy", i18nKey: "nav.galaxy" },
+  { label: "Fauna", href: "/fauna", i18nKey: "nav.fauna" },
   { label: "ACP Token and Chain", href: "/whitepaper/acp", i18nKey: "hero.acpToken" },
   { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
   { label: "Legal", href: "/legal/terms", i18nKey: "nav.legal" },

@@ -19,6 +19,8 @@ def test_advanced_track_routes_registered():
     assert "/aeterna/status" in paths
     assert "/space-auction/catalog" in paths
     assert "/v1/space-auction/catalog" in paths
+    assert "/animal-auction/catalog" in paths
+    assert "/v1/animal-auction/catalog" in paths
     assert "/aeterna/vault" in paths
     assert "/v1/aeterna/status" in paths
     assert "/v1/organizations/{org_id}/securities/summary" in paths

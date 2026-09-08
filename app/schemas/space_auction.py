@@ -7,7 +7,19 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-SpaceLotKind = Literal["star", "planet", "satellite"]
+SpaceLotKind = Literal[
+    "star",
+    "planet",
+    "satellite",
+    "dwarf_planet",
+    "asteroid",
+    "comet",
+    "nebula",
+    "galaxy",
+    "black_hole",
+    "exoplanet",
+    "radiation",
+]
 
 
 class SpaceAuctionLotPublic(BaseModel):

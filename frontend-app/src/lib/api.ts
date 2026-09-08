@@ -493,6 +493,35 @@ export const spaceAuction = {
   },
 };
 
+export const animalAuction = {
+  async catalog() {
+    return apiFetch("/animal-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/animal-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async list(data: {
+    species: string;
+    name: string;
+    breed: string;
+    age_months?: number | null;
+    blurb: string;
+    starting_acp: string;
+    license_acknowledged: boolean;
+  }) {
+    return apiFetch("/animal-auction/lots", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async bid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/animal-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const walletAcp = {
   async getDepositAddress() {
     // Prefer GET (cookie auth, no empty JSON body quirks). Fall back to POST for older gateways.

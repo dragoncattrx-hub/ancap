@@ -83,6 +83,7 @@ from app.api.routers import (
     orbital_edge,
     aeterna,
     space_auction,
+    animal_auction,
 )
 
 settings = get_settings()
@@ -258,6 +259,7 @@ ALL_ROUTERS = [
     orbital_edge.router,
     aeterna.router,
     space_auction.router,
+    animal_auction.router,
 ]
 
 for r in ALL_ROUTERS:

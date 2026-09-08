@@ -8,9 +8,22 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getApiUrl, spaceAuction } from "@/lib/api";
 
+type LotKind =
+  | "star"
+  | "planet"
+  | "satellite"
+  | "dwarf_planet"
+  | "asteroid"
+  | "comet"
+  | "nebula"
+  | "galaxy"
+  | "black_hole"
+  | "exoplanet"
+  | "radiation";
+
 type Lot = {
   id: string;
-  kind: "star" | "planet" | "satellite";
+  kind: LotKind;
   name: string;
   designation: string;
   parent?: string | null;
@@ -41,7 +54,7 @@ export default function GalaxyAuctionPage() {
   const { isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<"all" | Lot["kind"]>("all");
+  const [filter, setFilter] = useState<"all" | LotKind>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
@@ -96,11 +109,37 @@ export default function GalaxyAuctionPage() {
     }
   };
 
-  const kindLabel = (kind: Lot["kind"]) => {
-    if (kind === "star") return t("galaxy.stars");
-    if (kind === "planet") return t("galaxy.planets");
-    return t("galaxy.satellites");
+  const kindLabel = (kind: LotKind) => {
+    const labels: Record<LotKind, string> = {
+      star: t("galaxy.stars"),
+      planet: t("galaxy.planets"),
+      satellite: t("galaxy.satellites"),
+      dwarf_planet: t("galaxy.dwarfPlanets"),
+      asteroid: t("galaxy.asteroids"),
+      comet: t("galaxy.comets"),
+      nebula: t("galaxy.nebulae"),
+      galaxy: t("galaxy.galaxies"),
+      black_hole: t("galaxy.blackHoles"),
+      exoplanet: t("galaxy.exoplanets"),
+      radiation: t("galaxy.radiation"),
+    };
+    return labels[kind];
   };
+
+  const filters: Array<"all" | LotKind> = [
+    "all",
+    "star",
+    "planet",
+    "satellite",
+    "dwarf_planet",
+    "asteroid",
+    "comet",
+    "nebula",
+    "galaxy",
+    "black_hole",
+    "exoplanet",
+    "radiation",
+  ];
 
   return (
     <div className="min-h-screen bg-[#050814] text-[#e8eef8]">
@@ -121,7 +160,7 @@ export default function GalaxyAuctionPage() {
 
         <section className="container" style={{ padding: "28px 24px 72px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
-            {(["all", "star", "planet", "satellite"] as const).map((key) => (
+            {filters.map((key) => (
               <button
                 key={key}
                 type="button"

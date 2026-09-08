@@ -6,9 +6,22 @@ import { GalaxySolarSystem } from "@/components/GalaxySolarSystem";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getApiUrl } from "@/lib/api";
 
+type LotKind =
+  | "star"
+  | "planet"
+  | "satellite"
+  | "dwarf_planet"
+  | "asteroid"
+  | "comet"
+  | "nebula"
+  | "galaxy"
+  | "black_hole"
+  | "exoplanet"
+  | "radiation";
+
 type Lot = {
   id: string;
-  kind: "star" | "planet" | "satellite";
+  kind: LotKind;
   name: string;
   current_acp: string;
 };
@@ -34,7 +47,8 @@ export function HomeGalaxySection() {
         const pick = [
           featured.find((l) => l.kind === "star"),
           featured.find((l) => l.kind === "planet"),
-          featured.find((l) => l.kind === "satellite"),
+          featured.find((l) => l.kind === "galaxy"),
+          featured.find((l) => l.kind === "radiation"),
         ].filter((x): x is Lot => Boolean(x));
         if (!cancelled) setLots(pick);
       } catch {
@@ -46,10 +60,21 @@ export function HomeGalaxySection() {
     };
   }, []);
 
-  const kindLabel = (kind: Lot["kind"]) => {
-    if (kind === "star") return t("galaxy.stars");
-    if (kind === "planet") return t("galaxy.planets");
-    return t("galaxy.satellites");
+  const kindLabel = (kind: LotKind) => {
+    const labels: Record<LotKind, string> = {
+      star: t("galaxy.stars"),
+      planet: t("galaxy.planets"),
+      satellite: t("galaxy.satellites"),
+      dwarf_planet: t("galaxy.dwarfPlanets"),
+      asteroid: t("galaxy.asteroids"),
+      comet: t("galaxy.comets"),
+      nebula: t("galaxy.nebulae"),
+      galaxy: t("galaxy.galaxies"),
+      black_hole: t("galaxy.blackHoles"),
+      exoplanet: t("galaxy.exoplanets"),
+      radiation: t("galaxy.radiation"),
+    };
+    return labels[kind];
   };
 
   return (
