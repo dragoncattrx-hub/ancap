@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
 import { listings, orders, subscriptions } from "@/lib/api";
 
@@ -86,13 +87,14 @@ function availableSubscriptionPeriods(l: Listing): SubscriptionPeriod[] {
   return periods;
 }
 
-function subscriptionPeriodLabel(period: SubscriptionPeriod): string {
-  if (period === "quarterly") return "Quarterly";
-  if (period === "annual") return "Annual";
-  return "Monthly";
+function subscriptionPeriodLabel(period: SubscriptionPeriod, t: (key: string) => string): string {
+  if (period === "quarterly") return t("marketplace.periodQuarterly");
+  if (period === "annual") return t("marketplace.periodAnnual");
+  return t("marketplace.periodMonthly");
 }
 
 export default function MarketplacePage() {
+  const { t } = useLanguage();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -120,8 +122,8 @@ export default function MarketplacePage() {
   }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setSearch(searchInput.trim()), 250);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setSearch(searchInput.trim()), 250);
+    return () => window.clearTimeout(timer);
   }, [searchInput]);
 
   useEffect(() => {
@@ -146,7 +148,7 @@ export default function MarketplacePage() {
       setResponse(data);
       setError("");
     } catch (err: any) {
-      setError(err.message || "Failed to load marketplace");
+      setError(err.message || t("marketplace.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -171,7 +173,7 @@ export default function MarketplacePage() {
           billing_period: subscriptionPeriod,
           auto_renew: true,
         });
-        setConfirmation(`Subscription started (${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()}).`);
+        setConfirmation(`Subscription started (${subscriptionPeriodLabel(subscriptionPeriod, t).toLowerCase()}).`);
       } else {
         await orders.place({
           listing_id: orderListingId,
@@ -180,14 +182,14 @@ export default function MarketplacePage() {
           payment_method: "internal",
           note: note.trim() || undefined,
         });
-        setConfirmation("Order placed.");
+        setConfirmation(t("marketplace.orderPlaced"));
       }
       setOrderListingId(null);
       setSubscriptionPeriod("monthly");
       setNote("");
       await loadData();
     } catch (err: any) {
-      setError(err.message || "Failed to place order");
+      setError(err.message || t("marketplace.orderFailed"));
     } finally {
       setPlacingId(null);
     }
@@ -220,38 +222,38 @@ export default function MarketplacePage() {
         <div className="container" style={{ padding: "48px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
             <div>
-              <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)", margin: 0 }}>Strategy Marketplace</h1>
+              <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)", margin: 0 }}>{t("marketplace.title")}</h1>
               <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 6 }}>
-                {response?.total ?? marketListings.length} listings
-                {featuredListings.length ? ` · ${featuredListings.length} featured` : ""}
-                {trendingListings.length ? ` · ${trendingListings.length} trending` : ""}
+                {t("marketplace.listingsCount").replace("{n}", String(response?.total ?? marketListings.length))}
+                {featuredListings.length ? ` · ${t("marketplace.featuredCount").replace("{n}", String(featuredListings.length))}` : ""}
+                {trendingListings.length ? ` · ${t("marketplace.trendingCount").replace("{n}", String(trendingListings.length))}` : ""}
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <span className="badge badge-active">ACP-first</span>
-              {featuredListings.length > 0 ? <span className="badge">Featured ready</span> : null}
-              {trendingListings.length > 0 ? <span className="badge">Trending live</span> : null}
+              <span className="badge badge-active">{t("marketplace.acpFirst")}</span>
+              {featuredListings.length > 0 ? <span className="badge">{t("marketplace.featuredReady")}</span> : null}
+              {trendingListings.length > 0 ? <span className="badge">{t("marketplace.trendingLive")}</span> : null}
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: 18 }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 2fr) repeat(4, minmax(120px, 1fr))", gap: 12, alignItems: "end" }}>
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Search</span>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t("marketplace.search")}</span>
                 <input
                   type="search"
-                  placeholder="Search strategy, description, category"
+                  placeholder={t("marketplace.searchPlaceholder")}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  aria-label="Search listings"
+                  aria-label={t("marketplace.searchAria")}
                   style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.95rem", width: "100%" }}
                 />
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Category</span>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t("marketplace.category")}</span>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }}>
-                  <option value="all">All</option>
+                  <option value="all">{t("marketplace.all")}</option>
                   {categories.map((item) => (
                     <option key={item} value={item}>
                       {item}
@@ -261,23 +263,23 @@ export default function MarketplacePage() {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Min price</span>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t("marketplace.minPrice")}</span>
                 <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} inputMode="decimal" placeholder="0" style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }} />
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Max price</span>
-                <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} inputMode="decimal" placeholder="Any" style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }} />
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t("marketplace.maxPrice")}</span>
+                <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} inputMode="decimal" placeholder={t("marketplace.any")} style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }} />
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Sort</span>
-                <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sort listings" style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }}>
-                  <option value="popular">Popular</option>
-                  <option value="recent">Newest</option>
-                  <option value="price_asc">Price: low to high</option>
-                  <option value="price_desc">Price: high to low</option>
-                  <option value="rating">Top rated</option>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t("marketplace.sort")}</span>
+                <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={t("marketplace.sortAria")} style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem" }}>
+                  <option value="popular">{t("marketplace.sortPopular")}</option>
+                  <option value="recent">{t("marketplace.sortNewest")}</option>
+                  <option value="price_asc">{t("marketplace.sortPriceAsc")}</option>
+                  <option value="price_desc">{t("marketplace.sortPriceDesc")}</option>
+                  <option value="rating">{t("marketplace.sortRating")}</option>
                 </select>
               </label>
             </div>
@@ -285,7 +287,7 @@ export default function MarketplacePage() {
 
           {featuredListings.length > 0 && !loading ? (
             <div className="card" style={{ marginBottom: 18 }}>
-              <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: 10 }}>Featured</div>
+              <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: 10 }}>{t("marketplace.featured")}</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {featuredListings.slice(0, 4).map((listing) => (
                   <button
@@ -317,13 +319,13 @@ export default function MarketplacePage() {
           )}
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "48px", color: "var(--text-muted)" }}>Loading listings...</div>
+            <div style={{ textAlign: "center", padding: "48px", color: "var(--text-muted)" }}>{t("marketplace.loading")}</div>
           ) : marketListings.length === 0 ? (
             <div className="card" style={{ padding: "32px", textAlign: "center" }}>
               <p style={{ fontSize: "0.95rem", color: "var(--text-muted)" }}>
                 {response?.total === 0 && !search && category === "all" && !priceMin && !priceMax
-                  ? "No active listings yet. Once agents publish strategies, they will appear here."
-                  : "No listings match the current filters."}
+                  ? t("marketplace.emptyAll")
+                  : t("marketplace.emptyFiltered")}
               </p>
             </div>
           ) : (
@@ -345,26 +347,26 @@ export default function MarketplacePage() {
                       </div>
                       <div style={{ display: "grid", gap: 6, justifyItems: "end" }}>
                         <span className="badge badge-active">{listing.status}</span>
-                        {listing.is_featured ? <span className="badge">featured</span> : null}
-                        {listing.is_trending ? <span className="badge">trending</span> : null}
+                        {listing.is_featured ? <span className="badge">{t("marketplace.featuredBadge")}</span> : null}
+                        {listing.is_trending ? <span className="badge">{t("marketplace.trendingBadge")}</span> : null}
                       </div>
                     </div>
 
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                       {listing.category ? <span className="badge">{listing.category}</span> : null}
-                      <span className="badge">{listing.listing_purchases || 0} purchases</span>
-                      <span className="badge">{listing.listing_views || 0} views</span>
-                      <span className="badge">rating {Number(listing.rating || 0).toFixed(2)}</span>
+                      <span className="badge">{t("marketplace.purchases").replace("{n}", String(listing.listing_purchases || 0))}</span>
+                      <span className="badge">{t("marketplace.views").replace("{n}", String(listing.listing_views || 0))}</span>
+                      <span className="badge">{t("marketplace.rating").replace("{n}", Number(listing.rating || 0).toFixed(2))}</span>
                     </div>
 
                     <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-                      Price: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{formatAmount(price.amount)} {price.currency}</span>
-                      {isSubscription ? <span style={{ color: "var(--text-muted)" }}> · {subscriptionPeriodLabel(defaultPeriod)}</span> : null}
+                      {t("marketplace.price")}: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{formatAmount(price.amount)} {price.currency}</span>
+                      {isSubscription ? <span style={{ color: "var(--text-muted)" }}> · {subscriptionPeriodLabel(defaultPeriod, t)}</span> : null}
                     </div>
 
                     {listing.terms_url ? (
                       <a href={listing.terms_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: "var(--accent)", textDecoration: "none", display: "inline-block", marginBottom: "12px" }}>
-                        Terms & Conditions
+                        {t("marketplace.terms")}
                       </a>
                     ) : null}
 
@@ -379,8 +381,8 @@ export default function MarketplacePage() {
                       style={{ width: "100%" }}
                     >
                       {placingId === listing.id
-                        ? (isSubscription ? "Starting subscription..." : "Placing order...")
-                        : (isSubscription ? "Subscribe" : "Place Order")}
+                        ? (isSubscription ? t("marketplace.startingSub") : t("marketplace.placingOrder"))
+                        : (isSubscription ? t("marketplace.subscribe") : t("marketplace.placeOrder"))}
                     </button>
                   </div>
                 );
@@ -394,7 +396,7 @@ export default function MarketplacePage() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Confirm order"
+          aria-label={t("marketplace.confirmOrderAria")}
           style={{ position: "fixed", inset: 0, background: "rgba(0, 0, 0, 0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 24 }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !placingId) setOrderListingId(null);
@@ -402,15 +404,15 @@ export default function MarketplacePage() {
         >
           <div className="card" style={{ maxWidth: 500, width: "100%" }}>
             <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>
-              {(orderingListing.fee_model?.type || "") === "subscription" ? "Confirm subscription" : "Confirm order"}
+              {(orderingListing.fee_model?.type || "") === "subscription" ? t("marketplace.confirmSubscription") : t("marketplace.confirmOrder")}
             </h2>
             <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 16 }}>
               {orderingListing.strategy_name} · <strong style={{ color: "var(--accent)" }}>{formatAmount(orderingPrice.amount)} {orderingPrice.currency}</strong>
-              {(orderingListing.fee_model?.type || "") === "subscription" ? ` / ${subscriptionPeriodLabel(subscriptionPeriod).toLowerCase()}` : ""}
+              {(orderingListing.fee_model?.type || "") === "subscription" ? ` / ${subscriptionPeriodLabel(subscriptionPeriod, t).toLowerCase()}` : ""}
             </div>
             {(orderingListing.fee_model?.type || "") === "subscription" && orderingSubscriptionPeriods.length > 0 ? (
               <div style={{ marginBottom: 16 }}>
-                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>Billing period</label>
+                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>{t("marketplace.billingPeriod")}</label>
                 <select
                   value={subscriptionPeriod}
                   onChange={(e) => setSubscriptionPeriod(e.target.value as SubscriptionPeriod)}
@@ -420,26 +422,26 @@ export default function MarketplacePage() {
                     const price = subscriptionPriceForPeriod(orderingListing, period);
                     return (
                       <option key={period} value={period}>
-                        {subscriptionPeriodLabel(period)}{price ? ` · ${formatAmount(price.amount || "0")} ${normalizeCurrency(price.currency)}` : ""}
+                        {subscriptionPeriodLabel(period, t)}{price ? ` · ${formatAmount(price.amount || "0")} ${normalizeCurrency(price.currency)}` : ""}
                       </option>
                     );
                   })}
                 </select>
               </div>
             ) : null}
-            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>Note for the seller (optional)</label>
+            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 500, marginBottom: 6, color: "var(--text)" }}>{t("marketplace.noteLabel")}</label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              placeholder="Add an optional note for the seller..."
+              placeholder={t("marketplace.notePlaceholder")}
               style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "0.9rem", resize: "vertical" }}
             />
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               <button className="btn btn-primary" onClick={handlePlaceOrder} disabled={placingId !== null} style={{ flex: 1 }}>
                 {placingId
-                  ? ((orderingListing.fee_model?.type || "") === "subscription" ? "Starting..." : "Placing...")
-                  : ((orderingListing.fee_model?.type || "") === "subscription" ? "Confirm and subscribe" : "Confirm and pay")}
+                  ? ((orderingListing.fee_model?.type || "") === "subscription" ? t("marketplace.starting") : t("marketplace.placing"))
+                  : ((orderingListing.fee_model?.type || "") === "subscription" ? t("marketplace.confirmSubscribe") : t("marketplace.confirmPay"))}
               </button>
               <button
                 className="btn btn-ghost"
@@ -453,7 +455,7 @@ export default function MarketplacePage() {
                 disabled={placingId !== null}
                 style={{ flex: 1 }}
               >
-                Cancel
+                {t("marketplace.cancel")}
               </button>
             </div>
           </div>
