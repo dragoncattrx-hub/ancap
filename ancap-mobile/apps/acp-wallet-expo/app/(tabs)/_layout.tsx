@@ -15,6 +15,11 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t("tabs.wallet"), headerTitle: t("tabs.walletHeader") }} />
+      <Tabs.Screen name="exchange" options={{ title: t("tabs.exchange"), headerTitle: t("tabs.exchangeHeader") }} />
+      <Tabs.Screen
+        name="authenticity"
+        options={{ title: t("tabs.authenticity"), headerTitle: t("tabs.authenticityHeader") }}
+      />
       <Tabs.Screen name="activity" options={{ title: t("tabs.activity") }} />
       <Tabs.Screen name="send" options={{ title: t("tabs.send") }} />
       <Tabs.Screen name="bridge" options={{ title: t("tabs.bridge") }} />

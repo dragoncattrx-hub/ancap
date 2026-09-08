@@ -19,6 +19,16 @@ import type {
   SmartPayRecoverInput,
   SmartQrParseInput,
   SmartQrParseResponse,
+  ExchangeCatalog,
+  ExchangeQuote,
+  ExchangeQuoteInput,
+  ExchangeTicket,
+  ExchangeTicketCreateInput,
+  NumismaticAuthInput,
+  NumismaticAuthResult,
+  NumismaticCatalog,
+  NumismaticValueInput,
+  NumismaticValueResult,
 } from "./types.js";
 
 export type AcpApiClientOptions = {
@@ -180,6 +190,68 @@ export class AcpApiClient {
     const enc = encodeURIComponent(executionId);
     const query = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
     return this.request<SmartPayExecutionResponse>(`/mobile/smart-pay/payments/${enc}/recover${query}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  getExchangeCatalog(): Promise<ExchangeCatalog> {
+    return this.request<ExchangeCatalog>("/mobile/exchange/catalog");
+  }
+
+  quoteExchange(body: ExchangeQuoteInput): Promise<ExchangeQuote> {
+    return this.request<ExchangeQuote>("/mobile/exchange/quote", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  getExchangeQuote(quoteId: string): Promise<ExchangeQuote> {
+    const enc = encodeURIComponent(quoteId);
+    return this.request<ExchangeQuote>(`/mobile/exchange/quotes/${enc}`);
+  }
+
+  createExchangeTicket(body: ExchangeTicketCreateInput, idempotencyKey?: string): Promise<ExchangeTicket> {
+    const headers: Record<string, string> = {};
+    if (idempotencyKey) {
+      headers["Idempotency-Key"] = idempotencyKey;
+    }
+    return this.request<ExchangeTicket>("/mobile/exchange/tickets", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+  }
+
+  listExchangeTickets(): Promise<ExchangeTicket[]> {
+    return this.request<ExchangeTicket[]>("/mobile/exchange/tickets");
+  }
+
+  getExchangeTicket(ticketId: string): Promise<ExchangeTicket> {
+    const enc = encodeURIComponent(ticketId);
+    return this.request<ExchangeTicket>(`/mobile/exchange/tickets/${enc}`);
+  }
+
+  cancelExchangeTicket(ticketId: string): Promise<ExchangeTicket> {
+    const enc = encodeURIComponent(ticketId);
+    return this.request<ExchangeTicket>(`/mobile/exchange/tickets/${enc}/cancel`, {
+      method: "POST",
+    });
+  }
+
+  getNumismaticCatalog(): Promise<NumismaticCatalog> {
+    return this.request<NumismaticCatalog>("/mobile/numismatic/catalog");
+  }
+
+  authenticateNumismatic(body: NumismaticAuthInput): Promise<NumismaticAuthResult> {
+    return this.request<NumismaticAuthResult>("/mobile/numismatic/authenticate", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  valueNumismatic(body: NumismaticValueInput): Promise<NumismaticValueResult> {
+    return this.request<NumismaticValueResult>("/mobile/numismatic/value", {
       method: "POST",
       body: JSON.stringify(body),
     });

@@ -1,6 +1,13 @@
 import * as Crypto from "expo-crypto";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
+import {
+  canUseNfcUnlock,
+  disableNfcUnlock,
+  enrollNfcUnlock,
+  isNfcUnlockEnabled,
+  verifyNfcUnlock,
+} from "./nfc";
 
 const KEY_PIN = "acp_wallet_pin";
 const KEY_BIOMETRIC_TOKEN = "acp_wallet_biometric_token";
@@ -64,6 +71,7 @@ export async function verifyPin(pin: string): Promise<boolean> {
 export async function clearPinLock(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY_PIN, DEVICE_ONLY_OPTIONS);
   await disableBiometricUnlock();
+  await disableNfcUnlock();
   sessionUnlocked = false;
 }
 
@@ -142,6 +150,39 @@ export async function unlockWithBiometrics(): Promise<boolean> {
     return false;
   }
   const ok = await authenticateBiometric("Unlock ACP Wallet");
+  if (ok) {
+    markSessionUnlocked();
+  }
+  return ok;
+}
+
+export async function canUseNfcFactor(): Promise<boolean> {
+  return canUseNfcUnlock();
+}
+
+export async function isNfcFactorEnabled(): Promise<boolean> {
+  return isNfcUnlockEnabled();
+}
+
+export async function enableNfcUnlock(): Promise<void> {
+  if (!(await hasPinLock())) {
+    throw new Error("Enable PIN lock before binding an NFC implant.");
+  }
+  if (!(await canUseNfcUnlock())) {
+    throw new Error("NFC is not available. Use a native Expo dev build on an NFC-capable phone.");
+  }
+  await enrollNfcUnlock();
+}
+
+export async function disableNfcFactor(): Promise<void> {
+  await disableNfcUnlock();
+}
+
+export async function unlockWithNfc(): Promise<boolean> {
+  if (!(await isNfcUnlockEnabled())) {
+    return false;
+  }
+  const ok = await verifyNfcUnlock();
   if (ok) {
     markSessionUnlocked();
   }

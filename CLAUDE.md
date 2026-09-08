@@ -62,6 +62,8 @@ Phase 6 — ACP Mobile Wallet MVP (in progress). Active items:
 - `[ ]` SecureVault wiring (walletd fallback until native FFI ready)
 - `[ ]` i18n EN/RU/UK/DE (`i18next`)
 - `[ ]` MASVS L1 checklist
+- `[x]` Exchange office foundation — ACP-hub multi-asset catalog/quote/tickets + Expo Exchange tab (`docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md`); ticket settle + auto rails next
+- `[x]` OTC commodities rail (oil/gas/uranium/timber/sand/stone/ores) + Markets AI prediction workflows (`/ai/workflows`)
 - `[ ]` React Flow strategy canvas (Phase 7, after builder API stable)
 
 Blocked (needs Android native build):
@@ -76,4 +78,4 @@ Planned workplace wearables track (not blocking Phase 6): Apple Watch HR fleet R
 
 Planned orbital infra track (not blocking Phase 6): SpaceX encrypted satellite servers R11 — sealed ANCAP edge payloads via SpaceX; phases X0–X5 (docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md). Foundation: control-plane registry + `FF_ORBITAL_EDGE` (migration `058`).
 
-Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows, licensed partners (`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`). Foundation: A0 done, A1 API/tables in `059_aeterna` + `FF_AETERNA`.
+Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows (1,000,000 ACP), stem-cell organ print (250,000 ACP / organ, wisdom-tooth DPSC fallback, licensed bioreactor partner only). Track: `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`. Foundation: A0 done, A1 API/tables in `059_aeterna` + `FF_AETERNA`; organ-print SKU wired in catalog/intents/frontend.

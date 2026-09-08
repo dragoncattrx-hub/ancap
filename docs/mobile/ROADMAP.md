@@ -80,7 +80,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-1 | Expo app (`apps/acp-wallet-expo`) | [x] | expo-router |
 | P4-2 | Navigation (onboarding + home) | [x] | |
 | P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |
-| P4-4 | Tabs: Wallet / Activity / Send / Settings | [x] | |
+| P4-4 | Tabs: Wallet / Exchange / Activity / Send / Bridge / Settings | [x] | Exchange tab = ACP-hub multi-asset desk foundation |
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
 | P4-7 | Backup + confirm seed | [x] | backup prompt before save; native FFI still needed for real generation |
@@ -92,6 +92,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
 | P4-15 | i18n EN/RU/UK/DE | [x] | `react-i18next` wired in Expo app with persisted language selection and translated core wallet flows/screens |
+| P4-XO | Exchange office (ACP hub all↔all) | [x] | `docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md` — catalog/quote/tickets + Exchange tab; open ticket UX + auto settlement next |
 
 ---
 

@@ -12,11 +12,14 @@ import {
 } from "react-native";
 import {
   canUseBiometricUnlock,
+  canUseNfcFactor,
   hasPinLock,
   isBiometricUnlockEnabled,
+  isNfcFactorEnabled,
   markSessionUnlocked,
-  verifyPin,
   unlockWithBiometrics,
+  unlockWithNfc,
+  verifyPin,
 } from "@/lib/lock";
 
 export default function UnlockScreen() {
@@ -24,15 +27,19 @@ export default function UnlockScreen() {
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(true);
   const [biometricReady, setBiometricReady] = useState(false);
+  const [nfcReady, setNfcReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [pinEnabled, biometricEnabled, biometricAvailable] = await Promise.all([
-        hasPinLock(),
-        isBiometricUnlockEnabled(),
-        canUseBiometricUnlock(),
-      ]);
+      const [pinEnabled, biometricEnabled, biometricAvailable, nfcEnabled, nfcAvailable] =
+        await Promise.all([
+          hasPinLock(),
+          isBiometricUnlockEnabled(),
+          canUseBiometricUnlock(),
+          isNfcFactorEnabled(),
+          canUseNfcFactor(),
+        ]);
       if (cancelled) return;
       if (!pinEnabled) {
         markSessionUnlocked();
@@ -40,6 +47,7 @@ export default function UnlockScreen() {
         return;
       }
       setBiometricReady(biometricEnabled && biometricAvailable);
+      setNfcReady(nfcEnabled && nfcAvailable);
       setBusy(false);
     })();
     return () => {
@@ -65,6 +73,15 @@ export default function UnlockScreen() {
       return;
     }
     Alert.alert(t("unlock.biometricFailedTitle"), t("unlock.biometricFailedBody"));
+  };
+
+  const onNfcUnlock = async () => {
+    const ok = await unlockWithNfc();
+    if (ok) {
+      router.replace("/(tabs)");
+      return;
+    }
+    Alert.alert(t("unlock.nfcFailedTitle"), t("unlock.nfcFailedBody"));
   };
 
   if (busy) {
@@ -98,6 +115,12 @@ export default function UnlockScreen() {
       {biometricReady ? (
         <Pressable style={styles.secondary} onPress={() => void onBiometricUnlock()}>
           <Text style={styles.secondaryText}>{t("unlock.useBiometrics")}</Text>
+        </Pressable>
+      ) : null}
+
+      {nfcReady ? (
+        <Pressable style={[styles.secondary, styles.nfcButton]} onPress={() => void onNfcUnlock()}>
+          <Text style={styles.secondaryText}>{t("unlock.useNfc")}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -142,6 +165,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 14,
     borderRadius: 12,
+    marginBottom: 12,
+  },
+  nfcButton: {
+    borderColor: "#0d9488",
   },
   secondaryText: { color: "#f5f7ff", textAlign: "center", fontSize: 16 },
 });

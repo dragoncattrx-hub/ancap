@@ -5,11 +5,15 @@ import { useTranslation } from "react-i18next";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   canUseBiometricUnlock,
+  canUseNfcFactor,
   clearPinLock,
   disableBiometricUnlock,
+  disableNfcFactor,
   enableBiometricUnlock,
+  enableNfcUnlock,
   hasPinLock,
   isBiometricUnlockEnabled,
+  isNfcFactorEnabled,
   isValidPin,
   lockSession,
   setPinLock,
@@ -25,7 +29,6 @@ import {
 
 const BASE = "https://ancap.cloud";
 
-// P5-4: basic root/jailbreak/emulator detection (no native dependency needed)
 function checkInsecureEnvironment(message: string): string | null {
   if (typeof __DEV__ !== "undefined" && __DEV__) {
     return message;
@@ -39,6 +42,8 @@ export default function SettingsScreen() {
   const [pinEnabled, setPinEnabled] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [nfcEnabled, setNfcEnabled] = useState(false);
+  const [nfcAvailable, setNfcAvailable] = useState(false);
   const [vaultBiometricProtected, setVaultBiometricProtected] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("en");
   const [pin, setPin] = useState("");
@@ -60,36 +65,37 @@ export default function SettingsScreen() {
   }, [t]);
 
   const refreshState = async () => {
-    const [pinOn, biometricOn, biometricCapable, vaultProtected, language] = await Promise.all([
-      hasPinLock(),
-      isBiometricUnlockEnabled(),
-      canUseBiometricUnlock(),
-      isVaultBiometricProtected(),
-      loadLanguagePreference(),
-    ]);
+    const [pinOn, biometricOn, biometricCapable, nfcOn, nfcCapable, vaultProtected, language] =
+      await Promise.all([
+        hasPinLock(),
+        isBiometricUnlockEnabled(),
+        canUseBiometricUnlock(),
+        isNfcFactorEnabled(),
+        canUseNfcFactor(),
+        isVaultBiometricProtected(),
+        loadLanguagePreference(),
+      ]);
     setPinEnabled(pinOn);
     setBiometricEnabled(biometricOn);
     setBiometricAvailable(biometricCapable);
+    setNfcEnabled(nfcOn);
+    setNfcAvailable(nfcCapable);
     setVaultBiometricProtected(vaultProtected);
     setSelectedLanguage(language);
   };
 
   const onWipe = () => {
-    Alert.alert(
-      t("settings.removeWalletTitle"),
-      t("settings.removeWalletBody"),
-      [
-        { text: t("settings.cancel"), style: "cancel" },
-        {
-          text: t("settings.remove"),
-          style: "destructive",
-          onPress: async () => {
-            await wipeVault();
-            router.replace("/");
-          },
+    Alert.alert(t("settings.removeWalletTitle"), t("settings.removeWalletBody"), [
+      { text: t("settings.cancel"), style: "cancel" },
+      {
+        text: t("settings.remove"),
+        style: "destructive",
+        onPress: async () => {
+          await wipeVault();
+          router.replace("/");
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const onOpen = (url: string) => {
@@ -112,23 +118,19 @@ export default function SettingsScreen() {
     Alert.alert(t("settings.pinEnabledTitle"), t("settings.pinEnabledBody"));
   };
 
-  const onDisablePin = async () => {
-    Alert.alert(
-      t("settings.disableLockTitle"),
-      t("settings.disableLockBody"),
-      [
-        { text: t("settings.cancel"), style: "cancel" },
-        {
-          text: t("settings.disableTitle"),
-          style: "destructive",
-          onPress: async () => {
-            await disableVaultBiometricProtection();
-            await clearPinLock();
-            await refreshState();
-          },
+  const onDisablePin = () => {
+    Alert.alert(t("settings.disableLockTitle"), t("settings.disableLockBody"), [
+      { text: t("settings.cancel"), style: "cancel" },
+      {
+        text: t("settings.disableTitle"),
+        style: "destructive",
+        onPress: async () => {
+          await disableVaultBiometricProtection();
+          await clearPinLock();
+          await refreshState();
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const onEnableBiometrics = async () => {
@@ -142,23 +144,43 @@ export default function SettingsScreen() {
     }
   };
 
-  const onDisableBiometrics = async () => {
-    Alert.alert(
-      t("settings.disableBiometricTitle"),
-      t("settings.disableBiometricBody"),
-      [
-        { text: t("settings.cancel"), style: "cancel" },
-        {
-          text: t("settings.disableTitle"),
-          style: "destructive",
-          onPress: async () => {
-            await disableVaultBiometricProtection();
-            await disableBiometricUnlock();
-            await refreshState();
-          },
+  const onDisableBiometrics = () => {
+    Alert.alert(t("settings.disableBiometricTitle"), t("settings.disableBiometricBody"), [
+      { text: t("settings.cancel"), style: "cancel" },
+      {
+        text: t("settings.disableTitle"),
+        style: "destructive",
+        onPress: async () => {
+          await disableVaultBiometricProtection();
+          await disableBiometricUnlock();
+          await refreshState();
         },
-      ]
-    );
+      },
+    ]);
+  };
+
+  const onEnableNfc = async () => {
+    try {
+      await enableNfcUnlock();
+      await refreshState();
+      Alert.alert(t("settings.nfcEnabledTitle"), t("settings.nfcEnabledBody"));
+    } catch (e) {
+      Alert.alert(t("settings.nfcErrorTitle"), safeErrorMessage(e, "Unknown error"));
+    }
+  };
+
+  const onDisableNfc = () => {
+    Alert.alert(t("settings.disableNfcTitle"), t("settings.disableNfcBody"), [
+      { text: t("settings.cancel"), style: "cancel" },
+      {
+        text: t("settings.disableTitle"),
+        style: "destructive",
+        onPress: async () => {
+          await disableNfcFactor();
+          await refreshState();
+        },
+      },
+    ]);
   };
 
   const onLockNow = () => {
@@ -173,6 +195,7 @@ export default function SettingsScreen() {
 
   const statusParts = [pinEnabled ? t("settings.pinEnabled") : t("settings.pinDisabled")];
   if (biometricEnabled) statusParts.push(t("settings.biometricsEnabled"));
+  if (nfcEnabled) statusParts.push(t("settings.nfcEnabled"));
   if (vaultBiometricProtected) statusParts.push(t("settings.secureVaultGated"));
 
   return (
@@ -234,6 +257,7 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t("settings.appLockTitle")}</Text>
         <Text style={styles.meta}>{t("settings.statusLine", { status: statusParts.join(" · ") })}</Text>
+        <Text style={styles.meta}>{t("settings.nfcHelp")}</Text>
         <TextInput
           style={styles.input}
           value={pin}
@@ -271,6 +295,19 @@ export default function SettingsScreen() {
           <Pressable style={styles.secondary} onPress={onDisableBiometrics}>
             <Text style={styles.secondaryText}>{t("settings.disableBiometricUnlock")}</Text>
           </Pressable>
+        ) : null}
+        {pinEnabled && nfcAvailable && !nfcEnabled ? (
+          <Pressable style={styles.secondary} onPress={() => void onEnableNfc()}>
+            <Text style={styles.secondaryText}>{t("settings.enableNfcUnlock")}</Text>
+          </Pressable>
+        ) : null}
+        {pinEnabled && nfcEnabled ? (
+          <Pressable style={styles.secondary} onPress={onDisableNfc}>
+            <Text style={styles.secondaryText}>{t("settings.disableNfcUnlock")}</Text>
+          </Pressable>
+        ) : null}
+        {pinEnabled && !nfcAvailable ? (
+          <Text style={styles.meta}>{t("settings.nfcUnavailable")}</Text>
         ) : null}
         {pinEnabled ? (
           <Pressable style={styles.secondary} onPress={onLockNow}>
@@ -316,7 +353,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   warnText: { color: "#fecaca", fontSize: 13, lineHeight: 20 },
-  meta: { color: "#94a3b8", fontSize: 13, lineHeight: 20 },
+  meta: { color: "#94a3b8", fontSize: 13, lineHeight: 20, marginTop: 6 },
   languageGrid: {
     flexDirection: "row",
     flexWrap: "wrap",

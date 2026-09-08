@@ -366,3 +366,238 @@ export type SmartPayRecoverInput = {
   clientKnownTxs: string[];
   clientKnownRefs?: SmartPayClientKnownRef[];
 };
+
+/** ACP-hub mobile exchange office (multi-asset foundation). */
+export type ExchangeAssetKind =
+  | "native"
+  | "crypto"
+  | "metal"
+  | "goods"
+  | "commodity"
+  | "real_estate"
+  | "space"
+  | "ip"
+  | "fiat";
+export type ExchangeAssetAvailability = "live" | "beta" | "planned";
+export type ExchangeQuoteMode =
+  | "identity"
+  | "fixed"
+  | "indicative"
+  | "rfq"
+  | "bridge_1_1"
+  | "market_feed";
+export type ExchangeSettlementRail =
+  | "ledger"
+  | "swap_desk"
+  | "otc_metal"
+  | "otc_goods"
+  | "otc_commodity"
+  | "otc_real_estate"
+  | "otc_space"
+  | "otc_ip"
+  | "bridge"
+  | "dex_deep_link"
+  | "fiat_onramp"
+  | "hub_cross";
+export type ExchangeDirection = "into_acp" | "from_acp" | "both" | "none";
+export type ExchangeTicketStatus =
+  | "quoted"
+  | "opened"
+  | "awaiting_user"
+  | "pending_review"
+  | "settling"
+  | "completed"
+  | "cancelled"
+  | "rejected"
+  | "expired";
+
+export type ExchangeAsset = {
+  id: string;
+  symbol: string;
+  label: string;
+  kind: ExchangeAssetKind;
+  availability: ExchangeAssetAvailability;
+  direction: ExchangeDirection;
+  rail: ExchangeSettlementRail;
+  quote_mode: ExchangeQuoteMode;
+  unit: string;
+  decimals: number;
+  network?: string | null;
+  note?: string | null;
+  metadata?: Record<string, unknown>;
+};
+
+export type ExchangePair = {
+  from_asset: string;
+  to_asset: string;
+  available: boolean;
+  rail: ExchangeSettlementRail;
+  legs: number;
+  availability: ExchangeAssetAvailability;
+  note?: string | null;
+};
+
+export type ExchangeCatalog = {
+  hub_asset: string;
+  model: string;
+  assets: ExchangeAsset[];
+  pairs: ExchangePair[];
+  quote_ttl_seconds: number;
+  handoff_note: string;
+  compliance_note: string;
+};
+
+export type ExchangeQuoteLeg = {
+  from_asset: string;
+  to_asset: string;
+  from_amount: string;
+  to_amount: string;
+  rate: string;
+  rail: ExchangeSettlementRail;
+  quote_mode: ExchangeQuoteMode;
+  note?: string | null;
+};
+
+export type ExchangeQuoteInput = {
+  from_asset: string;
+  to_asset: string;
+  from_amount: string;
+  purity_ppt?: number | null;
+  goods_estimate_acp?: string | null;
+};
+
+export type ExchangeQuote = {
+  quote_id: string;
+  from_asset: string;
+  to_asset: string;
+  from_amount: string;
+  to_amount: string;
+  acp_hub_amount: string;
+  rate_from_to: string;
+  legs: ExchangeQuoteLeg[];
+  rail: ExchangeSettlementRail;
+  expires_at: string;
+  indicative: boolean;
+  rate_note: string;
+  next_step: string;
+};
+
+export type ExchangeTicketCreateInput = {
+  quote_id: string;
+  payout_acp_address?: string | null;
+  counterparty_address?: string | null;
+  note?: string | null;
+  goods_title?: string | null;
+  goods_description?: string | null;
+};
+
+export type ExchangeTicket = {
+  id: string;
+  user_id?: string | null;
+  status: ExchangeTicketStatus;
+  from_asset: string;
+  to_asset: string;
+  from_amount: string;
+  to_amount_estimated: string;
+  acp_hub_amount: string;
+  rail: ExchangeSettlementRail;
+  rail_ref_type?: string | null;
+  rail_ref_id?: string | null;
+  quote_id: string;
+  quote_snapshot?: Record<string, unknown>;
+  payout_acp_address?: string | null;
+  counterparty_address?: string | null;
+  intake_reference?: string | null;
+  handoff_instructions?: string | null;
+  next_step: string;
+  note?: string | null;
+  expires_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Banknote/coin authenticity + numismatic valuation (iPhone prototype). */
+export type NumismaticInstrumentKind = "banknote" | "coin";
+export type NumismaticAuthVerdict =
+  | "likely_genuine"
+  | "needs_review"
+  | "suspect"
+  | "insufficient_data";
+export type NumismaticGrade = "G" | "VG" | "F" | "VF" | "XF" | "AU" | "UNC" | "PR";
+export type NumismaticRarity = "common" | "scarce" | "rare" | "very_rare" | "unique_est";
+
+export type NumismaticFeatureDef = {
+  id: string;
+  label: string;
+  applies_to: NumismaticInstrumentKind[];
+  weight: number;
+};
+
+export type NumismaticCatalogCurrency = {
+  code: string;
+  label: string;
+  note_series: string[];
+  coin_series: string[];
+};
+
+export type NumismaticCatalog = {
+  currencies: NumismaticCatalogCurrency[];
+  features: NumismaticFeatureDef[];
+  grades: Array<{ code: string; label: string }>;
+  rarity_tiers: Array<{ code: string; label: string }>;
+  disclaimer: string;
+};
+
+export type NumismaticAuthInput = {
+  kind: NumismaticInstrumentKind;
+  currency_code: string;
+  series_or_denomination: string;
+  year?: number | null;
+  serial_or_mint_mark?: string | null;
+  features_present?: string[];
+  features_missing?: string[];
+  features_unchecked?: string[];
+  measured_weight_g?: string | null;
+  measured_diameter_mm?: string | null;
+  magnetic?: boolean | null;
+  notes?: string | null;
+};
+
+export type NumismaticAuthResult = {
+  kind: NumismaticInstrumentKind;
+  currency_code: string;
+  series_or_denomination: string;
+  authenticity_score: number;
+  verdict: NumismaticAuthVerdict;
+  checks: Array<{ id: string; label: string; status: string; weight: number }>;
+  flags: string[];
+  next_step: string;
+  disclaimer: string;
+};
+
+export type NumismaticValueInput = {
+  kind: NumismaticInstrumentKind;
+  currency_code: string;
+  series_or_denomination: string;
+  year?: number | null;
+  grade?: NumismaticGrade;
+  rarity?: NumismaticRarity;
+  face_value_hint?: string | null;
+  authenticity_score?: number | null;
+  quantity?: number;
+};
+
+export type NumismaticValueResult = {
+  kind: NumismaticInstrumentKind;
+  currency_code: string;
+  series_or_denomination: string;
+  grade: NumismaticGrade;
+  rarity: NumismaticRarity;
+  indicative_acp_amount: string;
+  face_reference_acp?: string | null;
+  premium_factor: string;
+  rate_note: string;
+  authenticity_note: string;
+  next_step: string;
+  disclaimer: string;
+};

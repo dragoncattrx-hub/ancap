@@ -128,10 +128,21 @@ def _parse_model_json(text: str) -> dict[str, Any]:
 
 
 def _workflow_prompt(template: WorkflowTemplatePublic, inputs: dict[str, Any]) -> str:
+    markets_extra = ""
+    if (template.category or "").lower() == "markets" or "market" in (template.slug or ""):
+        markets_extra = (
+            "This is a Markets analysis workflow.\n"
+            "Provide scenario analysis (bullish/base/bearish), catalysts, invalidation levels, and evidence gaps.\n"
+            "You MAY discuss possible quote direction and relative probabilities as scenarios.\n"
+            "You MUST include an explicit disclaimer that this is not investment advice and outcomes are uncertain.\n"
+            "Do NOT claim certainty, guaranteed returns, or that the user will profit.\n"
+            "Do NOT instruct specific trade sizes or broker orders.\n"
+        )
     return (
         "You are ANCAP's paid AI-workflow execution engine.\n"
         "Return ONLY valid JSON. Do not include markdown fences.\n"
-        "Do not promise token price, yield, listing approval, or investment returns.\n"
+        "Do not promise token price certainty, yield, listing approval, or guaranteed investment returns.\n"
+        f"{markets_extra}"
         "The JSON must include: status, workflow_slug, template_title, delivery, deliverable, execution_summary.\n\n"
         f"Workflow slug: {template.slug}\n"
         f"Workflow title: {template.title}\n"

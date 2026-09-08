@@ -29,10 +29,14 @@ from app.schemas.otc_intake import (
     OtcCatalogPublic,
     OtcMetalQuoteRequest,
     OtcGoodsQuoteRequest,
+    OtcCommodityQuoteRequest,
     OtcQuoteResponse,
     OtcIntakeCreateRequest,
     OtcIntakeConfirmRequest,
     OtcIntakeOrderPublic,
+    OtcRealEstateQuoteRequest,
+    OtcSpaceQuoteRequest,
+    OtcIpQuoteRequest,
 )
 from app.schemas import (
     AcpBalanceResponse,
@@ -1512,6 +1516,43 @@ def otc_quote_goods(body: OtcGoodsQuoteRequest):
     )
 
 
+@router.post("/otc/quote/commodity", response_model=OtcQuoteResponse)
+def otc_quote_commodity(body: OtcCommodityQuoteRequest):
+    return otc_svc.quote_commodity(
+        commodity=body.commodity,
+        quantity=body.quantity,
+        grade_note=body.grade_note,
+    )
+
+
+@router.post("/otc/quote/real-estate", response_model=OtcQuoteResponse)
+def otc_quote_real_estate(body: OtcRealEstateQuoteRequest):
+    return otc_svc.quote_real_estate(
+        deal_type=body.deal_type,
+        estimated_value_acp=body.estimated_value_acp,
+        jurisdiction=body.jurisdiction,
+        lease_months=body.lease_months,
+    )
+
+
+@router.post("/otc/quote/space", response_model=OtcQuoteResponse)
+def otc_quote_space(body: OtcSpaceQuoteRequest):
+    return otc_svc.quote_space(
+        object_class=body.object_class,
+        estimated_value_acp=body.estimated_value_acp,
+        norad_or_cospar_id=body.norad_or_cospar_id,
+    )
+
+
+@router.post("/otc/quote/ip", response_model=OtcQuoteResponse)
+def otc_quote_ip(body: OtcIpQuoteRequest):
+    return otc_svc.quote_ip(
+        kind=body.kind,
+        estimated_value_acp=body.estimated_value_acp,
+        registration_uri=body.registration_uri,
+    )
+
+
 @router.post("/otc/orders", response_model=OtcIntakeOrderPublic, status_code=201)
 async def create_otc_order(
     body: OtcIntakeCreateRequest,
@@ -1543,7 +1584,20 @@ async def create_otc_order(
             purity_ppt=purity,
         )
         quote = otc_svc.quote_metal(metal=body.metal, weight_grams=body.weight_grams, purity_ppt=purity)
-    else:
+    elif body.rail == "commodity":
+        if not body.commodity or not body.quantity:
+            raise HTTPException(status_code=400, detail="commodity and quantity required for commodity rail")
+        detail = otc_svc.build_commodity_detail(
+            commodity=body.commodity,
+            quantity=body.quantity,
+            grade_note=body.grade_note,
+        )
+        quote = otc_svc.quote_commodity(
+            commodity=body.commodity,
+            quantity=body.quantity,
+            grade_note=body.grade_note,
+        )
+    elif body.rail == "goods":
         title = (body.goods_title or "").strip()
         if not body.goods_category or not title or not body.estimated_value_acp:
             raise HTTPException(
@@ -1557,6 +1611,69 @@ async def create_otc_order(
             estimated_value_acp=body.estimated_value_acp,
         )
         quote = otc_svc.quote_goods(category=body.goods_category, estimated_value_acp=body.estimated_value_acp)
+    elif body.rail == "real_estate":
+        deal = body.re_deal_type or "sale"
+        parcel = (body.re_address_or_parcel or "").strip()
+        if not parcel or not body.estimated_value_acp:
+            raise HTTPException(
+                status_code=400,
+                detail="re_address_or_parcel and estimated_value_acp required for real_estate rail",
+            )
+        detail = otc_svc.build_real_estate_detail(
+            deal_type=deal,
+            address_or_parcel=parcel,
+            estimated_value_acp=body.estimated_value_acp,
+            jurisdiction=body.re_jurisdiction,
+            lease_months=body.re_lease_months,
+            document_hash=body.document_hash,
+        )
+        quote = otc_svc.quote_real_estate(
+            deal_type=deal,
+            estimated_value_acp=body.estimated_value_acp,
+            jurisdiction=body.re_jurisdiction,
+            lease_months=body.re_lease_months,
+        )
+    elif body.rail == "space":
+        cls = body.space_object_class or "satellite"
+        if not body.estimated_value_acp:
+            raise HTTPException(status_code=400, detail="estimated_value_acp required for space rail")
+        detail = otc_svc.build_space_detail(
+            object_class=cls,
+            estimated_value_acp=body.estimated_value_acp,
+            space_object_id=body.space_object_id,
+            jurisdiction=body.space_jurisdiction,
+            document_hash=body.document_hash,
+        )
+        quote = otc_svc.quote_space(
+            object_class=cls,
+            estimated_value_acp=body.estimated_value_acp,
+            norad_or_cospar_id=body.space_object_id,
+        )
+    elif body.rail == "ip":
+        kind = body.ip_kind or "patent"
+        title = (body.ip_title or "").strip()
+        if not title or not body.estimated_value_acp:
+            raise HTTPException(
+                status_code=400,
+                detail="ip_title and estimated_value_acp required for ip rail",
+            )
+        if not body.document_hash:
+            raise HTTPException(status_code=400, detail="document_hash required for ip rail")
+        detail = otc_svc.build_ip_detail(
+            kind=kind,
+            title=title,
+            estimated_value_acp=body.estimated_value_acp,
+            registration_uri=body.ip_registration_uri,
+            jurisdiction=body.ip_jurisdiction,
+            document_hash=body.document_hash,
+        )
+        quote = otc_svc.quote_ip(
+            kind=kind,
+            estimated_value_acp=body.estimated_value_acp,
+            registration_uri=body.ip_registration_uri,
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported OTC rail: {body.rail}")
 
     now = datetime.now(timezone.utc)
     order = AcpOtcIntakeOrder(

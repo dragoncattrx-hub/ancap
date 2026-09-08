@@ -7,7 +7,25 @@ process.env.EXPO_PUBLIC_ACP_RPC_URL ??= "https://acp1.ancap.cloud/rpc";
 // npm workspaces: keep Metro project root on the app, not the monorepo root.
 process.env.EXPO_NO_METRO_WORKSPACE_ROOT ??= "1";
 
+const expo = appJson.expo;
+const androidPermissions = Array.from(
+  new Set([...(expo.android?.permissions ?? []), "android.permission.NFC"]),
+);
+
 /** @type {import('expo/config').ConfigContext} */
 module.exports = () => ({
-  ...appJson.expo,
+  ...expo,
+  android: {
+    ...expo.android,
+    permissions: androidPermissions,
+  },
+  ios: {
+    ...expo.ios,
+    infoPlist: {
+      ...(expo.ios?.infoPlist ?? {}),
+      NFCReaderUsageDescription:
+        "Allow ANCAP ACP Wallet to read your enrolled Biohax NFC implant for wallet unlock.",
+    },
+  },
+  plugins: expo.plugins,
 });
