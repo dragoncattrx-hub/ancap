@@ -37,6 +37,10 @@ from app.api.routers import (
     wallet_acp,
     mobile_acp,
     mobile_devices,
+    exchange_office,
+    assay_gc,
+    numismatic_auth,
+    ownership_proofs,
     bridge_rail,
     wacp_public,
     system,
@@ -78,6 +82,7 @@ from app.api.routers import (
     watch_fleet,
     orbital_edge,
     aeterna,
+    space_auction,
 )
 
 settings = get_settings()
@@ -214,6 +219,10 @@ ALL_ROUTERS = [
     wallet_acp.router,
     mobile_acp.router,
     mobile_devices.router,
+    exchange_office.router,
+    assay_gc.router,
+    numismatic_auth.router,
+    ownership_proofs.router,
     bridge_rail.router,
     wacp_public.router,
     system.router,
@@ -248,6 +257,7 @@ ALL_ROUTERS = [
     watch_fleet.router,
     orbital_edge.router,
     aeterna.router,
+    space_auction.router,
 ]
 
 for r in ALL_ROUTERS:

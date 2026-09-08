@@ -1444,7 +1444,7 @@ class AcpOtcIntakeOrder(Base):
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    rail = Column(String(16), nullable=False, index=True)  # metal | goods
+    rail = Column(String(32), nullable=False, index=True)  # metal | goods | commodity | real_estate | space | ip
     status = Column(String(32), nullable=False, default="awaiting_handoff", index=True)
     asset_label = Column(String(200), nullable=False)
     asset_detail = Column(JSONB, nullable=False, default=dict)
@@ -1460,6 +1460,73 @@ class AcpOtcIntakeOrder(Base):
     __table_args__ = (
         Index("ix_otc_intake_user_created", "user_id", "created_at"),
         Index("ux_otc_intake_user_idempotency", "user_id", "idempotency_key", unique=True),
+    )
+
+
+class AcpExchangeTicket(Base):
+    """Mobile exchange-office umbrella ticket (ACP-hub multi-asset).
+
+    May reference an underlying rail order (swap desk / OTC / bridge) via rail_ref_*.
+    """
+
+    __tablename__ = "acp_exchange_tickets"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="opened", index=True)
+    from_asset = Column(String(64), nullable=False, index=True)
+    to_asset = Column(String(64), nullable=False, index=True)
+    from_amount = Column(Numeric(38, 18), nullable=False)
+    to_amount_estimated = Column(Numeric(38, 18), nullable=False)
+    acp_hub_amount = Column(Numeric(38, 18), nullable=False)
+    rail = Column(String(32), nullable=False, index=True)
+    rail_ref_type = Column(String(32), nullable=True)
+    rail_ref_id = Column(String(64), nullable=True, index=True)
+    quote_id = Column(String(64), nullable=False, index=True)
+    quote_snapshot = Column(JSONB, nullable=False, default=dict)
+    payout_acp_address = Column(String(128), nullable=True)
+    counterparty_address = Column(String(256), nullable=True)
+    intake_reference = Column(String(64), nullable=True, unique=True, index=True)
+    handoff_instructions = Column(Text, nullable=True)
+    next_step = Column(Text, nullable=True)
+    note = Column(Text, nullable=True)
+    idempotency_key = Column(String(128), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_exchange_tickets_user_created", "user_id", "created_at"),
+        Index("ux_exchange_tickets_user_idempotency", "user_id", "idempotency_key", unique=True),
+    )
+
+
+
+class AcpOwnershipCertificate(Base):
+    """ACP crypto-style ownership contract for intangible / title-linked assets."""
+
+    __tablename__ = "acp_ownership_certificates"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    contract_code = Column(String(32), nullable=False, unique=True, index=True)
+    asset_class = Column(String(64), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    subject_uri = Column(String(512), nullable=True)
+    jurisdiction = Column(String(64), nullable=True)
+    document_hash = Column(String(128), nullable=False)
+    document_uri = Column(String(512), nullable=True)
+    face_value_acp = Column(Numeric(38, 18), nullable=True)
+    status = Column(String(32), nullable=False, default="issued", index=True)
+    transfer_code_hash = Column(String(64), nullable=True, index=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    issued_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_ownership_owner_created", "owner_user_id", "created_at"),
     )
 
 
@@ -2428,3 +2495,30 @@ class AeternaPartner(Base):
     org = relationship("Organization", foreign_keys=[org_id])
 
     __table_args__ = (Index("ix_aeterna_partners_org_name", "org_id", "name", unique=True),)
+
+
+# --- Galaxy / solar-system title auction ---
+
+
+class SpaceAuctionBid(Base):
+    __tablename__ = "space_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_space_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_space_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )

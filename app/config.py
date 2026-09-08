@@ -249,6 +249,45 @@ class Settings(BaseSettings):
         "platinum": "120",
         "palladium": "80",
     }
+    # Commodities desk (indicative ACP per unit; see otc_intake.COMMODITY_UNITS)
+    otc_commodity_acp_per_unit: dict = {
+        "oil": "80",
+        "natural_gas": "0.45",
+        "uranium": "220",
+        "coal": "110",
+        "timber": "95",
+        "sand": "18",
+        "stone": "28",
+        "gravel": "22",
+        "iron_ore": "105",
+        "copper_ore": "175",
+        "lithium": "18",
+        "rare_earths": "55",
+    }
+
+    # Mobile exchange office (ACP-hub multi-asset foundation)
+    exchange_office_enabled: bool = True
+    exchange_quote_ttl_seconds: int = 120
+    # Optional override for ACP→USDT indicative quotes (else 1/usdt_trc20_to_acp_rate)
+    exchange_acp_to_usdt_rate: str = ""
+    # Placeholder fiat→ACP rates until partner on-ramp is live
+    exchange_fiat_acp_rates: dict = {
+        "usd": "1",
+        "eur": "1.08",
+        "fiat_usd": "1",
+        "fiat_eur": "1.08",
+    }
+    # Numismatic face→ACP placeholders (override per currency)
+    numismatic_face_acp_rates: dict = {
+        "USD": "1",
+        "EUR": "1.08",
+        "GBP": "1.25",
+        "UAH": "0.025",
+        "RUB": "0.011",
+        "CHF": "1.12",
+        "JPY": "0.0067",
+        "CNY": "0.14",
+    }
 
     # Project treasury (on-chain ACP wallet: revenue in, expenses out).
     # Seed/keystore live outside the repo (operator Sicret storage).
