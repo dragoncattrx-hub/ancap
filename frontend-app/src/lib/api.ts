@@ -232,9 +232,10 @@ export const auth = {
     } catch {
       // best-effort
     }
-    // Also clear cookie client-side for immediate effect
+    # Also clear cookie client-side for immediate effect (non-HttpOnly leftovers only).
     if (typeof document !== "undefined") {
-      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Strict`;
+      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; SameSite=Lax`;
+      document.cookie = `${TOKEN_COOKIE}=; Max-Age=0; path=/; domain=.ancap.cloud; SameSite=Lax`;
     }
   },
 
@@ -479,7 +480,17 @@ export const ledger = {
 // ACP Wallet API
 export const walletAcp = {
   async getDepositAddress() {
-    return apiFetch("/wallet/acp/deposit_address", { method: "POST" });
+    // Prefer GET (cookie auth, no empty JSON body quirks). Fall back to POST for older gateways.
+    try {
+      return await apiFetch("/wallet/acp/deposit_address");
+    } catch (err) {
+      const status = err instanceof ApiError ? err.status : 0;
+      if (status !== 405 && status !== 404) throw err;
+      return apiFetch("/wallet/acp/deposit_address", {
+        method: "POST",
+        body: "{}",
+      });
+    }
   },
 
   async privacyStatus() {

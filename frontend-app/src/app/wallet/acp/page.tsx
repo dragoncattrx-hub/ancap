@@ -73,7 +73,7 @@ export default function AcpWalletPage() {
   const ACP_ADDRESS_RE = /^acp1[a-z0-9]{20,100}$/;
   const PASSWORD_ROTATION_ID = "password-security";
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, changePassword } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, changePassword, logout } = useAuth();
   const passwordSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [depositAddress, setDepositAddress] = useState<string>("");
@@ -177,18 +177,52 @@ export default function AcpWalletPage() {
       ]);
 
       const warnings: string[] = [];
+      const statusOf = (res: PromiseSettledResult<unknown>) =>
+        res.status === "rejected" && typeof (res.reason as { status?: unknown })?.status === "number"
+          ? Number((res.reason as { status: number }).status)
+          : 0;
+
+      let resolvedDeposit = "";
 
       if (addrRes.status === "fulfilled") {
-        setDepositAddress(addrRes.value?.address || "");
+        resolvedDeposit = String((addrRes.value as { address?: string } | null)?.address || "").trim();
+        setDepositAddress(resolvedDeposit);
       } else {
         warnings.push(`Deposit address unavailable: ${addrRes.reason?.message || "unknown error"}`);
       }
 
       if (balRes.status === "fulfilled") {
-        setBalance(balRes.value || null);
-        setTxAddressBalance(balRes.value || null);
+        const bal = (balRes.value || null) as BalanceResponse | null;
+        if (bal && !String(bal.address || "").trim() && resolvedDeposit) {
+          bal.address = resolvedDeposit;
+        }
+        setBalance(bal);
+        setTxAddressBalance(bal);
+        const balAddr = String(bal?.address || "").trim();
+        if (balAddr && !resolvedDeposit) {
+          resolvedDeposit = balAddr;
+          setDepositAddress(balAddr);
+        }
       } else {
-        warnings.push(`Wallet balance unavailable: ${balRes.reason?.message || "unknown error"}`);
+        // Fallback: plain balance endpoint still returns address when hot decorate fails.
+        try {
+          const fallback = (await walletAcp.getBalance()) as BalanceResponse;
+          if (fallback && !String(fallback.address || "").trim() && resolvedDeposit) {
+            fallback.address = resolvedDeposit;
+          }
+          setBalance(fallback || null);
+          setTxAddressBalance(fallback || null);
+          const balAddr = String(fallback?.address || "").trim();
+          if (balAddr && !resolvedDeposit) {
+            resolvedDeposit = balAddr;
+            setDepositAddress(balAddr);
+          }
+          warnings.push(`Hot balance degraded; used /balance fallback. (${balRes.reason?.message || "error"})`);
+        } catch (fallbackErr: any) {
+          warnings.push(
+            `Wallet balance unavailable: ${balRes.reason?.message || fallbackErr?.message || "unknown error"}`,
+          );
+        }
       }
 
       if (ordersRes.status === "fulfilled") {
@@ -201,13 +235,12 @@ export default function AcpWalletPage() {
         warnings.push(`Swap history unavailable: ${ordersRes.reason?.message || "unknown error"}`);
       }
 
-      const any401 = [addrRes, balRes, ordersRes].some(
-        (res) =>
-          res.status === "rejected" &&
-          String((res.reason as any)?.message || "").includes("API error 401"),
-      );
+      const any401 = [addrRes, balRes, ordersRes].some((res) => statusOf(res) === 401);
       if (any401) {
-        router.push("/login");
+        logout();
+        const nextTarget =
+          typeof window !== "undefined" ? `/wallet/acp${window.location.hash || ""}` : "/wallet/acp";
+        router.push(`/login?next=${encodeURIComponent(nextTarget)}`);
         return;
       }
 
@@ -290,8 +323,11 @@ export default function AcpWalletPage() {
       setHistoryLoaded(true);
     } catch (e: any) {
       const msg = String(e?.message || "");
-      if (msg.includes("API error 401")) {
-        router.push("/login");
+      if (msg.includes("API error 401") || (e && typeof e === "object" && "status" in e && Number((e as { status?: unknown }).status) === 401)) {
+        logout();
+        const nextTarget =
+          typeof window !== "undefined" ? `/wallet/acp${window.location.hash || ""}` : "/wallet/acp";
+        router.push(`/login?next=${encodeURIComponent(nextTarget)}`);
         return;
       }
       if (!options?.silent) {
@@ -528,7 +564,7 @@ export default function AcpWalletPage() {
                 </div>
                 <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem" }}>Send ACP to this wallet address:</div>
                 <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                  {singleWalletAddress || "-"}
+                  {busy && !singleWalletAddress ? "Loading…" : singleWalletAddress || "-"}
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>Copy</button>
@@ -588,7 +624,7 @@ export default function AcpWalletPage() {
                   <span className="badge badge-active">Live</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
-                  {balance?.acp ?? "-"} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
+                  {busy && !balance ? "Loading…" : (balance?.acp ?? "-")} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
 

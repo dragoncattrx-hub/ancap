@@ -84,6 +84,7 @@ def _auth_cookie_domain(request: Request) -> str | None:
 
 def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
     secure = _auth_cookie_secure(request)
+    ttl_seconds = max(60, int(get_settings().access_token_expire_minutes) * 60)
     response.set_cookie(
         key="ancap_token",
         value=token,
@@ -91,7 +92,7 @@ def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
         secure=secure,
         # Lax keeps same-site subdomain auth (ancap.cloud ↔ api.ancap.cloud) working.
         samesite="lax",
-        max_age=3600,
+        max_age=ttl_seconds,
         path="/",
         domain=_auth_cookie_domain(request),
     )

@@ -302,6 +302,8 @@ async def create_wallet_for_user(
         recovery_secret_box_b64=fields["recovery_secret_box_b64"] if isinstance(fields["recovery_secret_box_b64"], str) else None,
         recovery_secret_nonce_b64=fields["recovery_secret_nonce_b64"] if isinstance(fields["recovery_secret_nonce_b64"], str) else None,
         recovery_enabled=bool(fields["recovery_enabled"]),
+        view_pubkey_wire_hex=None,
+        privacy_next_index=1,
         derivation_path=derivation_path,
         created_at=now,
         updated_at=now,

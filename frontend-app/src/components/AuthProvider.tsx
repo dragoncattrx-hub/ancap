@@ -119,7 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    const hasPersistedUser = !!storedUser;
 
     users
       .me()
@@ -131,12 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         safeSetItem("ancap_user", JSON.stringify(userData));
         safeRemoveItem(WALLET_ONLY_USER_KEY);
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (cancelled) return;
-        const status = typeof error === "object" && error !== null && "status" in error ? Number((error as { status?: unknown }).status) : null;
-        if (status === 401 && hasPersistedUser) {
-          return;
-        }
+        // Never keep a ghost UI session when the HttpOnly cookie/JWT is gone —
+        // otherwise /wallet/acp shows "-" for address/balance while nav looks logged-in.
         safeRemoveItem("ancap_user");
         safeRemoveItem(WALLET_ONLY_USER_KEY);
         setIsWalletOnlyAuthenticated(false);

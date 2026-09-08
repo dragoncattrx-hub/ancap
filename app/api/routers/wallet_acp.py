@@ -962,21 +962,30 @@ def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
     )
 
 
-@router.post("/deposit_address", response_model=AcpDepositAddressResponse)
+@router.api_route("/deposit_address", methods=["GET", "POST"], response_model=AcpDepositAddressResponse)
 async def get_deposit_address(
     user_id: str = Depends(require_auth),
     session: AsyncSession = Depends(get_db),
 ):
-    wallet = await get_wallet_for_user(session, user_id)
+    try:
+        wallet = await get_wallet_for_user(session, user_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"ACP wallet lookup failed (DB schema/migration?): {exc}",
+        ) from exc
     if wallet is None:
         raise HTTPException(
             status_code=409,
             detail="ACP wallet is not initialized for this account. Please sign in again.",
         )
+    addr = (wallet.address or "").strip()
+    if not addr:
+        raise HTTPException(status_code=500, detail="ACP wallet row has empty address")
     return AcpDepositAddressResponse(
-        address=wallet.address,
+        address=addr,
         mode="standard",
-        redacted=privacy_svc.redact_address(wallet.address),
+        redacted=privacy_svc.redact_address(addr),
         privacy_profile=privacy_svc.PRIVACY_PROFILE,
         reuse_policy="reusable_primary",
     )
@@ -1096,18 +1105,28 @@ async def hot_balance(
     user_id: str = Depends(require_auth),
     session: AsyncSession = Depends(get_db),
 ):
-    wallet = await get_wallet_for_user(session, user_id)
+    try:
+        wallet = await get_wallet_for_user(session, user_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"ACP wallet lookup failed (DB schema/migration?): {exc}",
+        ) from exc
     if wallet is None:
         raise HTTPException(
             status_code=409,
             detail="ACP wallet is not initialized for this account. Please sign in again.",
         )
-    addr = wallet.address
+    addr = (wallet.address or "").strip()
+    if not addr:
+        raise HTTPException(status_code=500, detail="ACP wallet row has empty address")
     try:
         res = _load_balance_result(addr)
     except HTTPException:
         # Keep wallet UI operational even when RPC is temporarily unavailable.
         res = {"address": addr, "units": "0", "acp": "0", "utxo_count": 0}
+    if not str(res.get("address") or "").strip():
+        res["address"] = addr
     return await _decorate_balance_for_user(session, user_id, res, include_in_work=True)
 
 

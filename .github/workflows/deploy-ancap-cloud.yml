@@ -98,7 +98,7 @@ jobs:
                   sleep 5
                 done
               fi
-              timeout 120 $COMPOSE exec -T api alembic upgrade head 2>&1 | tail -3 || true
+              timeout 120 $COMPOSE exec -T api alembic upgrade head 2>&1 | tail -20
               echo "== verify api + same-origin /api gateway"
               timeout 15 $COMPOSE exec -T api sh -c 'curl -sf http://127.0.0.1:8000/v1/system/fees' || true
               echo ""
