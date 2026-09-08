@@ -658,7 +658,21 @@ def _dec(raw: str, field: str) -> Decimal:
         raise HTTPException(status_code=400, detail=f"{field} must be a decimal") from exc
     if value <= 0:
         raise HTTPException(status_code=400, detail=f"{field} must be positive")
+    if value.as_tuple().exponent < -8:
+        raise HTTPException(status_code=400, detail=f"{field} has too many decimal places")
+    if value > Decimal("1000000000000"):
+        raise HTTPException(status_code=400, detail=f"{field} exceeds the auction ceiling")
     return value
+
+
+def _clean_note(value: str | None) -> str | None:
+    text = "".join(ch for ch in str(value or "") if ch.isprintable())
+    text = " ".join(text.split()).strip()
+    if not text:
+        return None
+    if any(ch in text for ch in "<>"):
+        raise HTTPException(status_code=400, detail="note cannot contain markup")
+    return text[:240]
 
 
 def _min_next(current: Decimal) -> Decimal:
@@ -783,7 +797,7 @@ async def place_bid(
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
-        note=(note or "").strip()[:240] or None,
+        note=_clean_note(note),
     )
     session.add(row)
     await session.flush()

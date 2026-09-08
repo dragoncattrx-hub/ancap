@@ -137,6 +137,53 @@ def test_animal_auction_list_requires_license(client):
     assert res.status_code == 400
 
 
+def test_animal_auction_list_requires_auth(client):
+    res = client.post(
+        "/v1/animal-auction/lots",
+        json={
+            "species": "dog",
+            "name": "Unauth",
+            "breed": "Mix",
+            "blurb": "Should not list without a session.",
+            "starting_acp": "500",
+            "license_acknowledged": True,
+        },
+        headers={"Authorization": ""},
+    )
+    assert res.status_code in (401, 403)
+
+
+def test_animal_auction_rejects_markup_and_ceiling(client):
+    headers = _register_user(client, "xss")
+    markup = client.post(
+        "/v1/animal-auction/lots",
+        json={
+            "species": "dog",
+            "name": "<script>alert(1)</script>",
+            "breed": "Mix",
+            "blurb": "Licensed kennel companion ready for escrow transfer.",
+            "starting_acp": "500",
+            "license_acknowledged": True,
+        },
+        headers=headers,
+    )
+    assert markup.status_code == 400
+
+    huge = client.post(
+        "/v1/animal-auction/lots",
+        json={
+            "species": "cat",
+            "name": "Mist",
+            "breed": "Domestic Shorthair",
+            "blurb": "Indoor cat looking for a new home via contract.",
+            "starting_acp": "1000000000001",
+            "license_acknowledged": True,
+        },
+        headers=headers,
+    )
+    assert huge.status_code == 400
+
+
 def test_animal_auction_bid_requires_auth(client):
     res = client.post(
         "/v1/animal-auction/lots/cat-maine-coon/bids",

@@ -246,7 +246,7 @@ export default function GalaxyAuctionPage() {
           )}
 
           <p style={{ color: "var(--text-muted)", marginTop: 28, maxWidth: 820, lineHeight: 1.7 }}>
-            {catalog?.compliance_note || t("galaxy.compliance")}
+            {t("galaxy.compliance")}
           </p>
         </section>
       </main>

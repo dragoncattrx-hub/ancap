@@ -321,7 +321,7 @@ export default function FaunaAuctionPage() {
           </div>
 
           <p style={{ color: "var(--text-muted)", marginTop: 28, maxWidth: 820, lineHeight: 1.7 }}>
-            {catalog?.compliance_note || t("faunaPage.compliance")}
+            {t("faunaPage.compliance")}
           </p>
         </section>
       </main>

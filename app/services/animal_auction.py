@@ -37,7 +37,8 @@ ALLOWED_SPECIES: tuple[AnimalSpecies, ...] = (
 
 _COMPLIANCE = (
     "FAUNA lots are licensed companion-animal transfers settled in ACP through hashed escrow smart contracts. "
-    "Wildlife, CITES-listed species, and unlicensed breeding are not listed. "
+    "Wildlife, wild-caught CITES specimens, and unlicensed breeding are not listed. "
+    "Captive-bred companions with papers may be listed. "
     "Physical handover follows local veterinary and ownership law — ANCAP is the capital and contract rail."
 )
 
@@ -176,6 +177,10 @@ def _dec(raw: str, field: str) -> Decimal:
         raise HTTPException(status_code=400, detail=f"{field} must be a decimal") from exc
     if value <= 0:
         raise HTTPException(status_code=400, detail=f"{field} must be positive")
+    if value.as_tuple().exponent < -8:
+        raise HTTPException(status_code=400, detail=f"{field} has too many decimal places")
+    if value > Decimal("1000000000000"):
+        raise HTTPException(status_code=400, detail=f"{field} exceeds the auction ceiling")
     return value
 
 
@@ -335,6 +340,8 @@ async def get_lot(session: AsyncSession, lot_id: str) -> AnimalAuctionLotPublic:
 def _clean_text(value: str, field: str, *, min_len: int, max_len: int) -> str:
     text = "".join(ch for ch in str(value) if ch.isprintable())
     text = " ".join(text.split()).strip()
+    if any(ch in text for ch in "<>"):
+        raise HTTPException(status_code=400, detail=f"{field} cannot contain markup")
     if len(text) < min_len:
         raise HTTPException(status_code=400, detail=f"{field} is too short")
     if len(text) > max_len:
@@ -417,7 +424,7 @@ async def place_bid(
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
-        note=(note or "").strip()[:240] or None,
+        note=_clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None,
         contract_hash=public.contract_hash,
         created_at=_utcnow(),
     )

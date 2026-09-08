@@ -165,10 +165,10 @@ export default function AeternaPage() {
         <section className="mt-14 border-t border-white/10 pt-10">
           <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.statusTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
-            {status?.tagline || t("aeternaPage.taglineFallback")}
+            {t("aeternaPage.taglineFallback")}
           </p>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-white/50">
-            {status?.compliance_note || t("aeternaPage.complianceFallback")}
+            {t("aeternaPage.complianceFallback")}
           </p>
           <dl className="mt-8 grid gap-6 sm:grid-cols-3">
             <div>
