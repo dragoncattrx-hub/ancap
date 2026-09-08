@@ -77,6 +77,7 @@ def test_space_auction_catalog_has_priced_stars_planets_satellites(client):
     mars = next(lot for lot in lots if lot["id"] == "planet-mars")
     assert mars["starting_acp"] == "1800000"
     assert Decimal(mars["current_acp"]) >= Decimal(mars["starting_acp"])
+    assert all(lot.get("high_bidder_user_id") is None for lot in lots)
 
 
 def test_space_auction_bid_updates_price(client):

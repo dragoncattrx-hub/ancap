@@ -95,6 +95,25 @@ def test_aeterna_vault_metadata_rejects_sequence_blobs():
     assert ok.content_sha256 == "b" * 64
 
 
+def test_aeterna_vault_source_uri_rejects_private_targets():
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        AeternaDnaVaultCreate(
+            label="ssrf",
+            content_sha256="c" * 64,
+            consent_acknowledged=True,
+            source_uri="http://169.254.169.254/latest/meta-data",
+        )
+    with pytest.raises(ValidationError):
+        AeternaDnaVaultCreate(
+            label="ssrf",
+            content_sha256="c" * 64,
+            consent_acknowledged=True,
+            source_uri="https://127.0.0.1/vault",
+        )
+
+
 def test_organ_print_execution_is_partner_handoff_only():
     from app.services.workflow_execution import execute_workflow_template, find_workflow_template
 

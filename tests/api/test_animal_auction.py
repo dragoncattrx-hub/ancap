@@ -44,6 +44,8 @@ def test_animal_auction_catalog_has_dogs_and_cats(client):
     shepherd = next(lot for lot in lots if lot["id"] == "dog-german-shepherd")
     assert shepherd["starting_acp"] == "8500"
     assert Decimal(shepherd["current_acp"]) >= Decimal(shepherd["starting_acp"])
+    assert all(lot.get("high_bidder_user_id") is None for lot in lots)
+    assert all(lot.get("seller_user_id") is None for lot in lots)
 
 
 def test_animal_auction_bid_updates_price(client):
@@ -182,6 +184,16 @@ def test_animal_auction_rejects_markup_and_ceiling(client):
         headers=headers,
     )
     assert huge.status_code == 400
+
+
+def test_animal_auction_rejects_unsafe_lot_id(client):
+    headers = _register_user(client, "path")
+    res = client.post(
+        "/v1/animal-auction/lots/dog.labrador/bids",
+        json={"amount_acp": "6200"},
+        headers=headers,
+    )
+    assert res.status_code == 404
 
 
 def test_animal_auction_bid_requires_auth(client):

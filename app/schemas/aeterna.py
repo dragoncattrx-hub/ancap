@@ -1,10 +1,12 @@
 """AETERNA longevity / genomic wellness schemas (R12)."""
 from __future__ import annotations
 
+import ipaddress
 import json
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from urllib.parse import urlparse
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -95,6 +97,28 @@ class AeternaDnaVaultCreate(BaseModel):
         if any(c not in "0123456789abcdef" for c in cleaned):
             raise ValueError("content_sha256 must be lowercase hex")
         return cleaned
+
+    @field_validator("source_uri")
+    @classmethod
+    def _https_public_uri(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        text = v.strip()
+        if not text:
+            return None
+        parsed = urlparse(text)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError("source_uri must be a public https URL")
+        host = parsed.hostname.lower().rstrip(".")
+        if host in {"localhost", "127.0.0.1", "::1"} or host.endswith(".local") or host.endswith(".internal"):
+            raise ValueError("source_uri host is not allowed")
+        try:
+            ip = ipaddress.ip_address(host)
+        except ValueError:
+            return text
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            raise ValueError("source_uri host is not allowed")
+        return text
 
     @field_validator("metadata_json")
     @classmethod

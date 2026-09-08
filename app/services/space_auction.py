@@ -10,6 +10,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import SpaceAuctionBid
+from app.services.auction_lock import lock_auction_lot, normalize_lot_id
 from app.schemas.space_auction import (
     SpaceAuctionBidPublic,
     SpaceAuctionCatalogPublic,
@@ -683,6 +684,7 @@ def _min_next(current: Decimal) -> Decimal:
 
 
 def get_lot_def(lot_id: str) -> dict[str, Any]:
+    lot_id = normalize_lot_id(lot_id, unknown="Unknown space auction lot")
     lot = _LOTS_BY_ID.get(lot_id)
     if not lot:
         raise HTTPException(status_code=404, detail="Unknown space auction lot")
@@ -723,11 +725,9 @@ def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, uuid.UUID, i
     starting = Decimal(str(lot["starting_acp"]))
     info = high.get(str(lot["id"]))
     current = starting
-    bidder = None
     count = 0
     if info:
         current = max(starting, info[0])
-        bidder = info[1] if info[0] >= starting else None
         count = info[2]
     return SpaceAuctionLotPublic(
         id=str(lot["id"]),
@@ -740,7 +740,7 @@ def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, uuid.UUID, i
         current_acp=_api_str(current),
         min_next_acp=_api_str(_min_next(current)),
         bid_count=count,
-        high_bidder_user_id=bidder,
+        high_bidder_user_id=None,
         featured=bool(lot.get("featured")),
     )
 
@@ -772,9 +772,10 @@ async def place_bid(
     amount_acp: str,
     note: str | None = None,
 ) -> SpaceAuctionBidPublic:
-    get_lot_def(lot_id)
+    lot = get_lot_def(lot_id)
     amount = _dec(amount_acp, "amount_acp")
-    public = await get_lot(session, lot_id)
+    await lock_auction_lot(session, "galaxy", str(lot["id"]))
+    public = await get_lot(session, str(lot["id"]))
     floor = Decimal(public.starting_acp)
     minimum = floor if public.bid_count == 0 else Decimal(public.min_next_acp)
     if amount < minimum:
@@ -786,14 +787,14 @@ async def place_bid(
     await session.execute(
         update(SpaceAuctionBid)
         .where(
-            SpaceAuctionBid.lot_id == lot_id,
+            SpaceAuctionBid.lot_id == str(lot["id"]),
             SpaceAuctionBid.status.in_(("placed", "winning")),
         )
         .values(status="outbid")
     )
     row = SpaceAuctionBid(
         id=str(uuid.uuid4()),
-        lot_id=lot_id,
+        lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
@@ -802,10 +803,10 @@ async def place_bid(
     session.add(row)
     await session.flush()
     await session.refresh(row)
-    updated = await get_lot(session, lot_id)
+    updated = await get_lot(session, str(lot["id"]))
     return SpaceAuctionBidPublic(
         id=uuid.UUID(str(row.id)),
-        lot_id=lot_id,
+        lot_id=str(lot["id"]),
         amount_acp=_api_str(Decimal(str(row.amount_acp))),
         status=str(row.status),
         created_at=row.created_at,

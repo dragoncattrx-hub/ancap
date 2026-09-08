@@ -13,6 +13,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AnimalAuctionBid, AnimalAuctionLot
+from app.services.auction_lock import lock_auction_lot, normalize_lot_id
 from app.schemas.animal_auction import (
     AnimalAuctionBidPublic,
     AnimalAuctionCatalogPublic,
@@ -247,6 +248,7 @@ async def _all_lot_defs(session: AsyncSession) -> list[dict[str, Any]]:
 
 
 async def _find_lot_def(session: AsyncSession, lot_id: str) -> dict[str, Any]:
+    lot_id = normalize_lot_id(lot_id, unknown="Unknown animal auction lot")
     seed = _SEED_BY_ID.get(lot_id)
     if seed:
         return dict(seed)
@@ -290,14 +292,10 @@ def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, uuid.UUID, i
     starting = Decimal(str(lot["starting_acp"]))
     info = high.get(str(lot["id"]))
     current = starting
-    bidder = None
     count = 0
     if info:
         current = max(starting, info[0])
-        bidder = info[1] if info[0] >= starting else None
         count = info[2]
-    seller = lot.get("seller_user_id")
-    seller_uuid = uuid.UUID(str(seller)) if seller else None
     return AnimalAuctionLotPublic(
         id=str(lot["id"]),
         species=lot["species"],  # type: ignore[arg-type]
@@ -309,8 +307,8 @@ def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, uuid.UUID, i
         current_acp=_api_str(current),
         min_next_acp=_api_str(_min_next(current)),
         bid_count=count,
-        high_bidder_user_id=bidder,
-        seller_user_id=seller_uuid,
+        high_bidder_user_id=None,
+        seller_user_id=None,
         featured=bool(lot.get("featured")),
         status=str(lot.get("status") or "live"),  # type: ignore[arg-type]
         contract_hash=contract_hash_for(lot),
@@ -401,7 +399,8 @@ async def place_bid(
     if seller and str(seller) == str(user_id):
         raise HTTPException(status_code=400, detail="Seller cannot bid on their own animal")
     amount = _dec(amount_acp, "amount_acp")
-    public = await get_lot(session, lot_id)
+    await lock_auction_lot(session, "fauna", str(lot["id"]))
+    public = await get_lot(session, str(lot["id"]))
     floor = Decimal(public.starting_acp)
     minimum = floor if public.bid_count == 0 else Decimal(public.min_next_acp)
     if amount < minimum:
@@ -413,14 +412,14 @@ async def place_bid(
     await session.execute(
         update(AnimalAuctionBid)
         .where(
-            AnimalAuctionBid.lot_id == lot_id,
+            AnimalAuctionBid.lot_id == str(lot["id"]),
             AnimalAuctionBid.status.in_(("placed", "winning")),
         )
         .values(status="outbid")
     )
     row = AnimalAuctionBid(
         id=str(uuid.uuid4()),
-        lot_id=lot_id,
+        lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
@@ -431,10 +430,10 @@ async def place_bid(
     session.add(row)
     await session.flush()
     await session.refresh(row)
-    updated = await get_lot(session, lot_id)
+    updated = await get_lot(session, str(lot["id"]))
     return AnimalAuctionBidPublic(
         id=uuid.UUID(str(row.id)),
-        lot_id=lot_id,
+        lot_id=str(lot["id"]),
         amount_acp=_api_str(Decimal(str(row.amount_acp))),
         status=str(row.status),
         created_at=row.created_at,
