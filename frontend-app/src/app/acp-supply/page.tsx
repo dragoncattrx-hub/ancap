@@ -3,14 +3,18 @@ import { Navigation } from "@/components/Navigation";
 import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
 import { TokenomicsSnapshotSection } from "./TokenomicsSnapshotSection";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const API_BASE = getServerApiBase();
 
 async function loadSupply() {
+  const ctrl = AbortSignal.timeout(8_000);
   try {
     const [statusRes, explorerRes, tokenomicsRes] = await Promise.all([
-      serverApiFetch(`${API_BASE}/acp/explorer/status`, { next: { revalidate: 60 } }),
-      serverApiFetch(`${API_BASE}/wacp/status`, { next: { revalidate: 60 } }),
-      serverApiFetch(`${API_BASE}/acp/explorer/tokenomics/snapshot`, { next: { revalidate: 30 } }),
+      serverApiFetch(`${API_BASE}/acp/explorer/status`, { signal: ctrl, cache: "no-store" }),
+      serverApiFetch(`${API_BASE}/wacp/status`, { signal: ctrl, cache: "no-store" }),
+      serverApiFetch(`${API_BASE}/acp/explorer/tokenomics/snapshot`, { signal: ctrl, cache: "no-store" }),
     ]);
     const explorer = statusRes.ok ? await statusRes.json() : null;
     const wacp = explorerRes.ok ? await explorerRes.json() : null;

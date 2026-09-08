@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Avoid one slow SSR page (e.g. tokenomics RPC) killing the whole Docker build.
+  staticPageGenerationTimeout: 180,
   async redirects() {
     return [
       { source: "/w", destination: "/", permanent: true },
