@@ -1,0 +1,74 @@
+name: Crypto CI
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "ACP-crypto/**"
+      - ".github/workflows/crypto-ci.yml"
+  pull_request:
+    paths:
+      - "ACP-crypto/**"
+      - ".github/workflows/crypto-ci.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acp-crypto:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ACP-crypto
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Use production Rust toolchain
+        run: |
+          rustup toolchain install 1.88.0 --profile minimal
+          rustup default 1.88.0
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake clang libclang-dev \
+            libsnappy-dev liblz4-dev libzstd-dev zlib1g-dev libbz2-dev
+
+      - name: Test default PQC feature set
+        run: cargo test -p acp-crypto --locked
+
+      - name: Test classical-only compatibility
+        run: cargo test -p acp-crypto --no-default-features --locked
+
+      - name: Compile node integration
+        run: cargo check -p acp-node --locked
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ACP-crypto
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Use audit toolchain
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal
+          rustup default 1.93.0
+
+      - name: Install pinned cargo-audit
+        run: cargo install cargo-audit --version 0.22.2 --locked
+
+      - name: Audit Rust dependencies
+        run: cargo audit --file Cargo.lock

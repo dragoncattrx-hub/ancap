@@ -305,7 +305,7 @@ export const translations: Record<Language, TranslationTree> = {
       anchorsCard: "Anchor run and artifact hashes on-chain when CHAIN_ANCHOR_DRIVER=acp and ACP_RPC_URL points at your node; mock driver remains for local development.",
       tokenUtilityNote: "Fees, staking, and slashing rails use ACP where configured; broader marketplace settlement follows the roadmap.",
       leanTitle: "Lean ACP — security · speed · energy",
-      leanSecurity: "Hybrid Ed25519 + Dilithium2 (PQC-ready)",
+      leanSecurity: "Hybrid Ed25519 + Dilithium2 signatures; experimental X-Wing draft-10 envelopes",
       leanSpeed: "5s cadence, fee-packed blocks, ~100 TPS design hint",
       leanEnergy: "No PoW burn — ultra-light assembler + throttled heartbeat"
     },
@@ -790,7 +790,7 @@ export const translations: Record<Language, TranslationTree> = {
       anchorsCard: "Хэши запусков и артефактов записываются в сеть, когда CHAIN_ANCHOR_DRIVER=acp, а ACP_RPC_URL указывает на ваш узел; mock-драйвер остается для локальной разработки.",
       tokenUtilityNote: "Комиссии, стейкинг и штрафы используют ACP там, где это настроено; расширенные расчеты маркетплейса соответствуют дорожной карте.",
       leanTitle: "Lean ACP — безопасность · скорость · энергия",
-      leanSecurity: "Гибрид Ed25519 + Dilithium2 (готовность к PQC)",
+      leanSecurity: "Гибридные подписи Ed25519 + Dilithium2; экспериментальные конверты X-Wing draft-10",
       leanSpeed: "Каденция 5с, fee-packed блоки, ~100 TPS design hint",
       leanEnergy: "Без PoW — ultra-light assembler и редкий heartbeat"
     },
@@ -1275,7 +1275,7 @@ export const translations: Record<Language, TranslationTree> = {
       anchorsCard: "Хеші запусків і артефактів записуються в мережу, коли CHAIN_ANCHOR_DRIVER=acp, а ACP_RPC_URL вказує на ваш вузол; mock-драйвер залишається для локальної розробки.",
       tokenUtilityNote: "Комісії, стейкінг і штрафи використовують ACP там, де це налаштовано; ширші розрахунки маркетплейса відповідають дорожній карті.",
       leanTitle: "Lean ACP — безпека · швидкість · енергія",
-      leanSecurity: "Гібрид Ed25519 + Dilithium2 (PQC-ready)",
+      leanSecurity: "Гібридні підписи Ed25519 + Dilithium2; експериментальні конверти X-Wing draft-10",
       leanSpeed: "Каденція 5с, fee-packed блоки, ~100 TPS design hint",
       leanEnergy: "Без PoW — ultra-light assembler і рідкісний heartbeat"
     },
@@ -1760,7 +1760,7 @@ export const translations: Record<Language, TranslationTree> = {
       anchorsCard: "Run- und Artefakt-Hashes werden on-chain verankert, wenn CHAIN_ANCHOR_DRIVER=acp ist und ACP_RPC_URL auf deinen Node zeigt; der Mock-Driver bleibt für lokale Entwicklung.",
       tokenUtilityNote: "Gebühren, Staking und Slashing-Rails nutzen ACP, wo es konfiguriert ist; breitere Marketplace-Abrechnung folgt der Roadmap.",
       leanTitle: "Lean ACP — Sicherheit · Tempo · Energie",
-      leanSecurity: "Hybrid Ed25519 + Dilithium2 (PQC-bereit)",
+      leanSecurity: "Hybride Ed25519- + Dilithium2-Signaturen; experimentelle X-Wing-draft-10-Umschläge",
       leanSpeed: "5s Takt, fee-gepackte Blöcke, ~100 TPS Design-Hinweis",
       leanEnergy: "Kein PoW — Ultra-light Assembler + gedrosselter Heartbeat"
     },
@@ -2245,7 +2245,7 @@ export const translations: Record<Language, TranslationTree> = {
       anchorsCard: "當 CHAIN_ANCHOR_DRIVER=acp 且 ACP_RPC_URL 指向你的節點時，可將執行與產物雜湊錨定上鏈；本機開發仍可使用 mock 驅動。",
       tokenUtilityNote: "手續費、質押與罰沒軌道在設定處使用 ACP；更廣的市集結算依路線圖推進。",
       leanTitle: "Lean ACP — 安全 · 速度 · 能耗",
-      leanSecurity: "Ed25519 + Dilithium2 混合簽名（PQC 就緒）",
+      leanSecurity: "Ed25519 + Dilithium2 混合簽章；實驗性 X-Wing draft-10 加密封裝",
       leanSpeed: "5 秒節奏、手續費優先打包、設計提示約 100 TPS",
       leanEnergy: "無 PoW — 超輕量組塊 + 節流 heartbeat"
     },

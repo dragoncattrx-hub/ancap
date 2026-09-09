@@ -2,18 +2,32 @@
 
 use crate::{CryptoError, Result};
 use bip39::{Language, Mnemonic as BipMnemonic};
-use zeroize::ZeroizeOnDrop;
+use rand_core::{OsRng, RngCore};
+use std::fmt;
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// Wrapper around BIP39 mnemonic.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Mnemonic(BipMnemonic);
+
+impl fmt::Debug for Mnemonic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("Mnemonic").field(&"[redacted]").finish()
+    }
+}
 
 impl Mnemonic {
     /// Generate a new mnemonic (12 words).
     pub fn generate_12() -> Result<Self> {
-        let m = BipMnemonic::generate_in(Language::English, 12)
-            .map_err(|e| CryptoError::Mnemonic(e.to_string()))?;
-        Ok(Self(m))
+        Self::generate_with_entropy_bytes(16)
+    }
+
+    /// Generate a 24-word mnemonic (256 bits of recovery entropy).
+    ///
+    /// Prefer this for newly provisioned post-quantum encryption recipients;
+    /// a derived key cannot be stronger against seed search than its mnemonic.
+    pub fn generate_24() -> Result<Self> {
+        Self::generate_with_entropy_bytes(32)
     }
 
     /// Parse from words string.
@@ -30,8 +44,20 @@ impl Mnemonic {
 
     /// Convert to Seed using optional passphrase (BIP39).
     pub fn to_seed(&self, passphrase: &str) -> Seed {
-        let bytes: [u8; 64] = self.0.to_seed(passphrase);
-        Seed(bytes.to_vec())
+        let mut bytes: [u8; 64] = self.0.to_seed(passphrase);
+        let seed = Seed(bytes.to_vec());
+        bytes.zeroize();
+        seed
+    }
+
+    fn generate_with_entropy_bytes(len: usize) -> Result<Self> {
+        let mut entropy = Zeroizing::new(vec![0u8; len]);
+        let mut rng = OsRng;
+        rng.try_fill_bytes(&mut entropy)
+            .map_err(|_| CryptoError::RandomnessUnavailable)?;
+        let mnemonic = BipMnemonic::from_entropy_in(Language::English, &entropy)
+            .map_err(|error| CryptoError::Mnemonic(error.to_string()))?;
+        Ok(Self(mnemonic))
     }
 }
 

@@ -95,6 +95,8 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
             "protocol_profile": acp_crypto::PROTOCOL_PROFILE,
             "energy_model": acp_crypto::ENERGY_MODEL,
             "signing_security": acp_crypto::SIGNING_SECURITY,
+            "encryption_security": acp_crypto::ENCRYPTION_SECURITY,
+            "encryption_status": acp_crypto::ENCRYPTION_STATUS,
             "target_block_time_sec": acp_crypto::TARGET_BLOCK_TIME_SEC,
             "max_block_bytes": acp_crypto::MAX_BLOCK_BYTES,
             "max_txs_per_block": ctx.config.miner_max_txs_per_block,
@@ -103,7 +105,7 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
             "miner_heartbeat_enabled": ctx.config.miner_heartbeat_enabled,
             "pow": false,
             "privacy_profile": acp_crypto::PRIVACY_PROFILE,
-            "notes": "Lean ACP: fee-packed blocks, hybrid PQC signatures, unlinkable subaddresses, no proof-of-work energy burn"
+            "notes": "Lean ACP: fee-packed blocks, hybrid PQC signatures, experimental X-Wing draft-10 envelopes, unlinkable subaddresses, no proof-of-work energy burn"
         })),
 
         "ancap_anchor" => {

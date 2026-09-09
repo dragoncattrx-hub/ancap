@@ -27,6 +27,30 @@ pub enum CryptoError {
     #[error("pqc error: {0}")]
     PqcError(String),
 
+    #[error("unsupported cryptographic suite")]
+    UnsupportedCryptoSuite,
+
+    #[error("invalid ciphertext")]
+    InvalidCiphertext,
+
+    #[error("encryption failed")]
+    EncryptionFailed,
+
+    #[error("decryption failed")]
+    DecryptionFailed,
+
+    #[error("key derivation failed")]
+    KdfError,
+
+    #[error("secure system randomness unavailable")]
+    RandomnessUnavailable,
+
+    #[error("message is too large")]
+    MessageTooLarge,
+
+    #[error("encryption context is too large")]
+    ContextTooLarge,
+
     #[error("mnemonic error: {0}")]
     Mnemonic(String),
 

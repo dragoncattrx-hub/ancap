@@ -21,6 +21,8 @@ async def explorer_status():
         "protocol_profile": "lean-v1.4",
         "energy_model": "ultra-light-assembler",
         "signing_security": "hybrid-ed25519-dilithium2",
+        "encryption_security": "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1",
+        "encryption_status": "experimental-off-chain-envelope",
         "privacy_profile": "unlinkable-subaddr-v1",
         "target_block_time_sec": 5,
         "max_block_bytes": 2 * 1024 * 1024,
@@ -34,6 +36,8 @@ async def explorer_status():
                 "protocol_profile",
                 "energy_model",
                 "signing_security",
+                "encryption_security",
+                "encryption_status",
                 "privacy_profile",
                 "target_block_time_sec",
                 "max_block_bytes",
@@ -76,6 +80,10 @@ async def explorer_efficiency():
         "market_alignment_2026": {
             "security": [
                 "Hybrid Ed25519 + Dilithium2 signatures (post-quantum ready)",
+                (
+                    "X-Wing draft-10 (X25519 + FIPS 203 ML-KEM-768) off-chain envelopes "
+                    "(experimental; independent review pending)"
+                ),
                 "No PoW hash race / ASIC arms race attack surface",
                 "Fee floor + packed-block anti-spam",
             ],

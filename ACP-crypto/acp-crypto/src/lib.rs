@@ -1,10 +1,11 @@
 #![forbid(unsafe_code)]
 #![allow(missing_docs)] // relax for external/build use; enable deny(missing_docs) when documenting
 
-//! ACP Crypto v0.25 — ANCAP AI-State token
+//! ACP Crypto v0.3.6 — ANCAP AI-State token
 //!
 //! - BIP39 mnemonic + seed; wallet identity (spend/view/audit)
 //! - Hybrid signatures: Ed25519 + Dilithium
+//! - Hybrid envelope encryption: X-Wing draft-10 + XChaCha20-Poly1305
 //! - Keystore v2 (single key) + v3 (identity)
 //! - Wire format (PublicKeyBytes, SignatureBytes) for TX/network
 //! - Merkle root (txids), block skeleton, RPC txid/blockhash HEX
@@ -33,10 +34,18 @@ pub mod wire;
 
 #[cfg(feature = "pqc")]
 pub mod dilithium;
+#[cfg(feature = "pqc-envelope")]
+pub mod hybrid_kem;
 
 pub use crate::domain::Domain;
 pub use crate::error::{CryptoError, Result};
 pub use crate::hybrid::{HybridPublicKey, HybridSecretKey, HybridSignature};
+#[cfg(feature = "pqc-envelope")]
+pub use crate::hybrid_kem::{
+    HybridEnvelope, HybridKemPublicKey, HybridKemSecretKey, HYBRID_ENVELOPE_VERSION,
+    HYBRID_KEM_SUITE, ML_KEM_768_CIPHERTEXT_BYTES, ML_KEM_768_PUBLIC_KEY_BYTES,
+    XWING_CIPHERTEXT_BYTES, XWING_PUBLIC_KEY_BYTES,
+};
 pub use crate::identity::{KeyRole, WalletIdentity, WalletPublicIdentity};
 pub use crate::keystore::{Keystore, KeystoreCiphertext, KeystoreJson, KeystoreV3};
 pub use crate::seed::{Mnemonic, Seed};
@@ -55,9 +64,9 @@ pub use crate::protocol_params::{
     GOVERNANCE_EXECUTION_DELAY_HOURS, GOVERNANCE_MAJORITY_PCT, GOVERNANCE_PROPOSAL_DEPOSIT_ACP,
     GOVERNANCE_QUORUM_PCT, GOVERNANCE_VOTING_DAYS, MAX_BLOCK_BYTES, MAX_TX_INPUTS_OUTPUTS,
     MAX_TXS_PER_BLOCK, MIN_DELEGATION_ACP, MIN_FEE_UNITS, MIN_VALIDATOR_STAKE_ACP, MNEMONIC_STANDARD,
-    DESIGN_TPS_HINT, ENERGY_MODEL, PROTOCOL_PROFILE, SIGNING_SECURITY, SLASHING_MAX_PCT,
-    SLASHING_MIN_PCT, STAKE_CAP_PCT, TARGET_BLOCK_TIME_SEC, TOKEN_DECIMALS, TOKEN_NAME,
-    TOKEN_TICKER, UNBONDING_DAYS, UNITS_PER_ACP,
+    DESIGN_TPS_HINT, ENERGY_MODEL, ENCRYPTION_SECURITY, ENCRYPTION_STATUS, PROTOCOL_PROFILE,
+    SIGNING_SECURITY, SLASHING_MAX_PCT, SLASHING_MIN_PCT, STAKE_CAP_PCT, TARGET_BLOCK_TIME_SEC,
+    TOKEN_DECIMALS, TOKEN_NAME, TOKEN_TICKER, UNBONDING_DAYS, UNITS_PER_ACP,
 };
 pub use crate::privacy::{
     redact_address, subaddress_bech32, subaddress_hash20, DEFAULT_SUBADDR_SCAN_WINDOW, PRIVACY_PROFILE,

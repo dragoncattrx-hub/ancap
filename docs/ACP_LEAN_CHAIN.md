@@ -7,11 +7,16 @@
 
 | Theme | What leaders are doing | ACP Lean response |
 |-------|------------------------|-------------------|
-| Security | Post-quantum roadmaps (Lean Ethereum / hash-based aggregates), multi-client diversity | **Hybrid Ed25519 + Dilithium2** signing already default |
+| Security | Post-quantum roadmaps (Lean Ethereum / hash-based aggregates), multi-client diversity | **Hybrid Ed25519 + Dilithium2** signing plus experimental **X-Wing draft-10** off-chain envelopes |
 | Speed | Solana ~1k+ real TPS; ETH L1 zkEVM / parallel exec; L2 blobs | **5s target**, **fee-packed** blocks up to **512 txs / 2 MB**, design hint ~**100 TPS** |
 | Energy | ETH Merge cut ~99.9% vs PoW; Cambridge ranks PoS intensity | **No PoW** — ultra-light assembler; idle **heartbeat ~60s** only |
 
 ACP is not trying to out-hash Bitcoin or out-Sealevel Solana overnight. It optimizes for **AI workflow settlement**: quantum-aware keys, low ops energy, predictable packed throughput.
+
+The X-Wing envelope (X25519 + FIPS 203 ML-KEM-768) is application-layer
+encryption, not a consensus change or a replacement for TLS. Its rollout
+status remains experimental pending independent review; see
+[ACP Post-Quantum Envelope Encryption](ACP_PQC_ENCRYPTION.md).
 
 ## Node changes (v1.4)
 
@@ -41,3 +46,4 @@ ACP_MINER_MAX_TXS_PER_BLOCK=512
 1. Measure live pack fill + derived TPS on explorer
 2. PoS localnet (stake / epoch / slash against existing params)
 3. Optional STARK/zk attestation path for AI run receipts
+4. FIPS 203 KAT/interoperability vectors and independent envelope review

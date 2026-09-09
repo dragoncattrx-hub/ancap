@@ -17,6 +17,8 @@ def test_explorer_status_ok(client):
                 "protocol_profile": "lean-v1.4",
                 "energy_model": "ultra-light-assembler",
                 "signing_security": "hybrid-ed25519-dilithium2",
+                "encryption_security": "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1",
+                "encryption_status": "experimental-off-chain-envelope",
                 "target_block_time_sec": 5,
                 "design_tps_hint": 102,
                 "pow": False,
@@ -28,6 +30,8 @@ def test_explorer_status_ok(client):
     assert body["block_height"] == 21
     assert body["best_block_hash"] == "blockhash-abc"
     assert body["lean"]["protocol_profile"] == "lean-v1.4"
+    assert "ml-kem-768" in body["lean"]["encryption_security"]
+    assert body["lean"]["encryption_status"] == "experimental-off-chain-envelope"
     assert body["lean"]["pow"] is False
 
 
@@ -46,6 +50,7 @@ def test_explorer_efficiency_ok(client):
     assert "speed" in body["market_alignment_2026"]
     assert "energy" in body["market_alignment_2026"]
     assert body["lean"]["protocol_profile"] == "lean-v1.4"
+    assert any("ML-KEM-768" in item for item in body["market_alignment_2026"]["security"])
 
 
 def test_explorer_blocks_ok(client):

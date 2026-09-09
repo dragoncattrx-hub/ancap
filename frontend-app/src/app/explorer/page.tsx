@@ -107,6 +107,10 @@ export default function ExplorerPage() {
                 <div>Profile: {status.lean.protocol_profile}</div>
                 <div>Energy: {status.lean.energy_model}</div>
                 <div>Security: {status.lean.signing_security}</div>
+                <div className="break-words">
+                  Encryption: {status.lean.encryption_security}
+                  {status.lean.encryption_status ? ` · ${status.lean.encryption_status}` : ""}
+                </div>
                 <div>
                   Cadence: {status.lean.target_block_time_sec}s · design ~{status.lean.design_tps_hint}{" "}
                   TPS

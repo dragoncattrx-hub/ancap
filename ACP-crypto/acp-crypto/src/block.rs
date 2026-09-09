@@ -152,10 +152,12 @@ impl Block {
     /// Minimal block wire encoding (skeleton).
     ///
     /// Layout:
+    /// ```text
     /// [0]  0x01          block-wire version
     /// header fields (fixed)
     /// tx_count (u32 LE)
     /// repeated: tx_len (u32 LE) + tx_wire bytes (Transaction::to_wire)
+    /// ```
     pub fn to_wire(&self) -> Result<Vec<u8>> {
         self.validate()?; // enforce canonical-ish encoding for now
 

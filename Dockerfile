@@ -1,4 +1,4 @@
-FROM rust:1.86-slim AS wallet-builder
+FROM rust:1.88-slim AS wallet-builder
 
 WORKDIR /app
 

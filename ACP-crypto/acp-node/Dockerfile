@@ -1,7 +1,7 @@
 # Build ACP node (Rust) with acp-crypto. Build context = ACP-crypto repo root.
 # docker build -f acp-node/Dockerfile -t ancap/acp-node:latest .
 
-FROM rust:1.85-bookworm AS builder
+FROM rust:1.88-bookworm AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake clang libclang-dev \

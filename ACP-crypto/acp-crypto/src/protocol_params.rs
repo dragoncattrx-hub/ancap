@@ -83,6 +83,19 @@ pub const PROTOCOL_PROFILE: &str = "lean-v1.4";
 pub const ENERGY_MODEL: &str = "ultra-light-assembler";
 /// Signing security posture (hybrid classical + post-quantum).
 pub const SIGNING_SECURITY: &str = "hybrid-ed25519-dilithium2";
+/// Off-chain envelope suite available in `acp-crypto` (not a consensus rule).
+#[cfg(feature = "pqc-envelope")]
+pub const ENCRYPTION_SECURITY: &str =
+    "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1";
+/// Honest rollout state: usable by applications, pending independent cryptographic review.
+#[cfg(feature = "pqc-envelope")]
+pub const ENCRYPTION_STATUS: &str = "experimental-off-chain-envelope";
+/// No envelope implementation is present in this build.
+#[cfg(not(feature = "pqc-envelope"))]
+pub const ENCRYPTION_SECURITY: &str = "none";
+/// Build-time capability state for classical-only consumers.
+#[cfg(not(feature = "pqc-envelope"))]
+pub const ENCRYPTION_STATUS: &str = "disabled-at-build-time";
 /// Theoretical packed-capacity hint (MAX_TXS_PER_BLOCK / TARGET_BLOCK_TIME_SEC).
 pub const DESIGN_TPS_HINT: u32 = MAX_TXS_PER_BLOCK / TARGET_BLOCK_TIME_SEC;
 
@@ -173,5 +186,15 @@ mod tests {
         assert_eq!(PROTOCOL_PROFILE, "lean-v1.4");
         assert!(!ENERGY_MODEL.is_empty());
         assert!(SIGNING_SECURITY.contains("dilithium"));
+        #[cfg(feature = "pqc-envelope")]
+        {
+            assert!(ENCRYPTION_SECURITY.contains("ml-kem-768"));
+            assert_eq!(ENCRYPTION_STATUS, "experimental-off-chain-envelope");
+        }
+        #[cfg(not(feature = "pqc-envelope"))]
+        {
+            assert_eq!(ENCRYPTION_SECURITY, "none");
+            assert_eq!(ENCRYPTION_STATUS, "disabled-at-build-time");
+        }
     }
 }
