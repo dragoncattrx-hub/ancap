@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { ledger, paidApi, workflowStore } from "@/lib/api";
 
 type BalanceResponse = {
@@ -42,6 +43,7 @@ type WorkflowRun = {
 
 export default function BillingPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [events, setEvents] = useState<LedgerEvent[]>([]);
@@ -82,21 +84,21 @@ export default function BillingPage() {
         setEvents(eventsResult.value.items || []);
       } else {
         setEvents([]);
-        partialFailures.push("billing events");
+        partialFailures.push(t("billingPage.partialBillingEvents"));
       }
 
       if (runsResult.status === "fulfilled") {
         setRuns(runsResult.value.items || []);
       } else {
         setRuns([]);
-        partialFailures.push("paid runs");
+        partialFailures.push(t("billingPage.partialPaidRuns"));
       }
 
       if (apiProductsResult.status === "fulfilled") {
         setApiProducts(apiProductsResult.value.items || []);
       } else {
         setApiProducts([]);
-        partialFailures.push("API products");
+        partialFailures.push(t("billingPage.partialApiProducts"));
       }
 
       if (apiUsageResult.status === "fulfilled") {
@@ -105,11 +107,11 @@ export default function BillingPage() {
       } else {
         setApiUsage([]);
         setApiUsageTotals({});
-        partialFailures.push("API usage");
+        partialFailures.push(t("billingPage.partialApiUsage"));
       }
 
       if (partialFailures.length > 0) {
-        setNotice(`Billing overview loaded with partial data. Unavailable: ${partialFailures.join(", ")}.`);
+        setNotice(t("billingPage.partialNotice").replace("{list}", partialFailures.join(", ")));
       }
     } catch (e: any) {
       setError(e?.message || String(e));
@@ -122,7 +124,7 @@ export default function BillingPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, t]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -157,22 +159,22 @@ export default function BillingPage() {
             <div className="card-header" style={{ alignItems: "flex-start" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-                  Monetization
+                  {t("billingPage.kicker")}
                 </div>
                 <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 10px" }}>
-                  Billing overview
+                  {t("billingPage.title")}
                 </h1>
                 <div style={{ color: "var(--text-muted)", maxWidth: 760, lineHeight: 1.5 }}>
-                  Credits, workflow spend, payment confirmations, and the current state of your paid execution loop.
+                  {t("billingPage.lead")}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={() => void loadData()} className="btn btn-ghost" disabled={loading}>Refresh</button>
-                <Link href="/ai/workflows" className="btn btn-primary">Buy workflow</Link>
-                <Link href="/wallet/credits" className="btn btn-ghost">Open credits</Link>
-                <Link href="/developers" className="btn btn-ghost">Paid API</Link>
-                <Link href="/proof-center" className="btn btn-ghost">Proof center</Link>
-                <Link href="/ai/runs" className="btn btn-ghost">Run history</Link>
+                <button onClick={() => void loadData()} className="btn btn-ghost" disabled={loading}>{t("billingPage.refresh")}</button>
+                <Link href="/ai/workflows" className="btn btn-primary">{t("billingPage.buyWorkflow")}</Link>
+                <Link href="/wallet/credits" className="btn btn-ghost">{t("billingPage.openCredits")}</Link>
+                <Link href="/developers" className="btn btn-ghost">{t("billingPage.paidApi")}</Link>
+                <Link href="/proof-center" className="btn btn-ghost">{t("billingPage.proofCenter")}</Link>
+                <Link href="/ai/runs" className="btn btn-ghost">{t("billingPage.runHistory")}</Link>
               </div>
             </div>
           </div>
@@ -190,14 +192,14 @@ export default function BillingPage() {
           )}
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading billing state...</div>
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>{t("billingPage.loading")}</div>
           ) : (
             <>
               <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Credits balance</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("billingPage.creditsBalance")}</div>
                   {!hasCredits ? (
-                    <div style={{ color: "var(--text-muted)" }}>No ledger credits yet.</div>
+                    <div style={{ color: "var(--text-muted)" }}>{t("billingPage.noCredits")}</div>
                   ) : (
                     <div style={{ display: "grid", gap: 8 }}>
                       {balance?.balances.map((item) => (
@@ -211,24 +213,24 @@ export default function BillingPage() {
                 </div>
 
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Workflow runs</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("billingPage.workflowRuns")}</div>
                   <div style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text)", marginBottom: 8 }}>{runStats.total}</div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <span className="badge badge-inactive">quoted {runStats.quoted}</span>
-                    <span className="badge badge-active">paid {runStats.paid}</span>
-                    <span className="badge badge-active">completed {runStats.completed}</span>
-                    {runStats.failed > 0 && <span className="badge badge-inactive">failed {runStats.failed}</span>}
+                    <span className="badge badge-inactive">{t("billingPage.quoted").replace("{n}", String(runStats.quoted))}</span>
+                    <span className="badge badge-active">{t("billingPage.paid").replace("{n}", String(runStats.paid))}</span>
+                    <span className="badge badge-active">{t("billingPage.completed").replace("{n}", String(runStats.completed))}</span>
+                    {runStats.failed > 0 && <span className="badge badge-inactive">{t("billingPage.failed").replace("{n}", String(runStats.failed))}</span>}
                   </div>
                 </div>
 
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Next billing action</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("billingPage.nextAction")}</div>
                   <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>
-                    {hasCredits ? "Use credits on the next workflow run" : "Fund wallet / confirm payment for first paid run"}
+                    {hasCredits ? t("billingPage.nextWithCredits") : t("billingPage.nextWithoutCredits")}
                   </div>
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    <Link href="/wallet/acp" className="btn btn-ghost">ACP wallet</Link>
-                    <Link href="/ai/workflows" className="btn btn-ghost">Workflow catalog</Link>
+                    <Link href="/wallet/acp" className="btn btn-ghost">{t("billingPage.acpWallet")}</Link>
+                    <Link href="/ai/workflows" className="btn btn-ghost">{t("billingPage.workflowCatalog")}</Link>
                   </div>
                 </div>
               </div>
@@ -236,22 +238,22 @@ export default function BillingPage() {
               <div className="card" style={{ marginBottom: 18 }}>
                 <div className="card-header">
                   <div>
-                    <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>Paid API metering</h2>
+                    <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>{t("billingPage.meteringTitle")}</h2>
                     <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
-                      API-key usage burns prepaid credits per endpoint call and returns machine-readable receipts with x402-compatible payment terms.
+                      {t("billingPage.meteringLead")}
                     </div>
                   </div>
-                  <Link href="/projects" className="btn btn-ghost">Manage agents</Link>
+                  <Link href="/projects" className="btn btn-ghost">{t("billingPage.manageAgents")}</Link>
                 </div>
 
                 <div className="responsive-grid responsive-grid-2">
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                      <div style={{ fontWeight: 800, color: "var(--text)" }}>Products</div>
-                      <a href={paidApi.usageExportUrl(500)} className="btn btn-ghost">Export CSV</a>
+                      <div style={{ fontWeight: 800, color: "var(--text)" }}>{t("billingPage.products")}</div>
+                      <a href={paidApi.usageExportUrl(500)} className="btn btn-ghost">{t("billingPage.exportCsv")}</a>
                     </div>
                     {apiProducts.length === 0 ? (
-                      <div style={{ color: "var(--text-muted)" }}>No paid API products loaded.</div>
+                      <div style={{ color: "var(--text-muted)" }}>{t("billingPage.noProducts")}</div>
                     ) : (
                       <div style={{ display: "grid", gap: 8 }}>
                         {apiProducts.slice(0, 5).map((product: any) => (
@@ -270,16 +272,18 @@ export default function BillingPage() {
                   </div>
 
                   <div>
-                    <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>Recent API usage</div>
+                    <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>{t("billingPage.recentApiUsage")}</div>
                     {Object.keys(apiUsageTotals).length > 0 && (
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                         {Object.entries(apiUsageTotals).map(([currency, amount]) => (
-                          <span key={currency} className="badge badge-active">30d {currency} {amount}</span>
+                          <span key={currency} className="badge badge-active">
+                            {t("billingPage.usage30d").replace("{currency}", currency).replace("{amount}", amount)}
+                          </span>
                         ))}
                       </div>
                     )}
                     {apiUsage.length === 0 ? (
-                      <div style={{ color: "var(--text-muted)" }}>No paid API usage yet.</div>
+                      <div style={{ color: "var(--text-muted)" }}>{t("billingPage.noApiUsage")}</div>
                     ) : (
                       <div style={{ display: "grid", gap: 8 }}>
                         {apiUsage.slice(0, 5).map((usage: any) => (
@@ -305,15 +309,15 @@ export default function BillingPage() {
                 <div className="card">
                   <div className="card-header">
                     <div>
-                      <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>Recent billing events</h2>
+                      <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>{t("billingPage.recentEvents")}</h2>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
-                        Latest user-ledger activity tied to credits and spend.
+                        {t("billingPage.recentEventsLead")}
                       </div>
                     </div>
                   </div>
 
                   {events.length === 0 ? (
-                    <div style={{ color: "var(--text-muted)" }}>No billing events yet.</div>
+                    <div style={{ color: "var(--text-muted)" }}>{t("billingPage.noEvents")}</div>
                   ) : (
                     <div style={{ display: "grid", gap: 10 }}>
                       {events.map((event) => (
@@ -341,15 +345,15 @@ export default function BillingPage() {
                 <div className="card">
                   <div className="card-header">
                     <div>
-                      <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>Recent paid runs</h2>
+                      <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>{t("billingPage.recentRuns")}</h2>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 6 }}>
-                        Workflow monetization loop from quote to proof bundle.
+                        {t("billingPage.recentRunsLead")}
                       </div>
                     </div>
                   </div>
 
                   {runs.length === 0 ? (
-                    <div style={{ color: "var(--text-muted)" }}>No workflow runs yet.</div>
+                    <div style={{ color: "var(--text-muted)" }}>{t("billingPage.noRuns")}</div>
                   ) : (
                     <div style={{ display: "grid", gap: 10 }}>
                       {runs.slice(0, 8).map((run) => (
@@ -373,10 +377,12 @@ export default function BillingPage() {
 
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                             {run.receipt?.proof?.payment_confirmation?.reference && (
-                              <span className="badge badge-active">payment confirmed</span>
+                              <span className="badge badge-active">{t("billingPage.paymentConfirmed")}</span>
                             )}
                             {run.receipt?.proof?.settlement_status && (
-                              <span className="badge badge-inactive">settlement {run.receipt.proof.settlement_status}</span>
+                              <span className="badge badge-inactive">
+                                {t("billingPage.settlement").replace("{status}", run.receipt.proof.settlement_status)}
+                              </span>
                             )}
                           </div>
 
@@ -385,7 +391,7 @@ export default function BillingPage() {
                               {new Date(run.created_at).toLocaleString()}
                             </div>
                             <Link href={`/ai/runs/${run.id}`} style={{ color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>
-                              Open run
+                              {t("billingPage.openRun")}
                             </Link>
                           </div>
                         </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { bridgeRail } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
 
@@ -65,6 +66,7 @@ type RedeemQuote = {
 
 export default function BridgeAcpBscPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [status, setStatus] = useState<BridgeStatus | null>(null);
   const [reserve, setReserve] = useState<ReserveSummary | null>(null);
@@ -96,11 +98,11 @@ export default function BridgeAcpBscPage() {
         setIntents([]);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load bridge");
+      setError(e instanceof Error ? e.message : t("bridgePage.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, t]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -142,7 +144,7 @@ export default function BridgeAcpBscPage() {
       });
       await load();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Request failed");
+      setError(e instanceof Error ? e.message : t("bridgePage.requestFailed"));
     } finally {
       setBusy(false);
     }
@@ -163,7 +165,7 @@ export default function BridgeAcpBscPage() {
       });
       await load();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Redeem request failed");
+      setError(e instanceof Error ? e.message : t("bridgePage.redeemFailed"));
     } finally {
       setBusy(false);
     }
@@ -174,7 +176,7 @@ export default function BridgeAcpBscPage() {
       <div className="relative min-h-screen text-zinc-100">
           <Navigation />
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-16">
-          <p className="text-zinc-400">Loading…</p>
+          <p className="text-zinc-400">{t("bridgePage.loading")}</p>
         </main>
       </div>
     );
@@ -189,18 +191,18 @@ export default function BridgeAcpBscPage() {
       <main className="relative z-10 mx-auto max-w-3xl px-4 py-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight">ACP → BSC (wACP)</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("bridgePage.title")}</h1>
             <p className="mt-2 text-sm text-zinc-400">
-              Operator-backed clearing rail. See{" "}
+              {t("bridgePage.leadBefore")}{" "}
               <a
                 href={BRIDGE_SPEC_DOC_HREF}
                 className="text-sky-400 underline decoration-sky-400/40 underline-offset-2 hover:text-sky-300"
                 target="_blank"
                 rel="noreferrer"
               >
-                docs/bridge-spec-v1.md
+                {t("bridgePage.specLink")}
               </a>{" "}
-              in the ANCAP repository.
+              {t("bridgePage.leadAfter")}
             </p>
           </div>
           {showHeaderRefresh ? (
@@ -210,7 +212,7 @@ export default function BridgeAcpBscPage() {
               onClick={() => void load()}
               disabled={loading}
             >
-              {loading ? "Refreshing..." : "Refresh"}
+              {loading ? t("bridgePage.refreshing") : t("bridgePage.refresh")}
             </button>
           ) : null}
         </div>
@@ -220,10 +222,8 @@ export default function BridgeAcpBscPage() {
         ) : null}
 
         <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-          <h2 className="text-lg font-medium text-zinc-200">wACP in MetaMask</h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            Add the official BEP-20 token with logo, or download the 32×32 PNG for BscScan token update.
-          </p>
+          <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.metamaskTitle")}</h2>
+          <p className="mt-2 text-sm text-zinc-400">{t("bridgePage.metamaskLead")}</p>
           <div className="mt-4">
             <WacpPublicActions
               contractAddress={status?.wacp_contract || undefined}
@@ -235,7 +235,9 @@ export default function BridgeAcpBscPage() {
         {status && !status.bridge_rail_enabled ? (
           <div className="mt-6 flex flex-col gap-3 rounded border border-amber-900/50 bg-amber-950/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <p className="text-sm text-amber-100">
-              Bridge rail is disabled in this deployment (<code className="text-amber-200">BRIDGE_RAIL_ENABLED</code>).
+              {t("bridgePage.railDisabled")}
+              <code className="text-amber-200">BRIDGE_RAIL_ENABLED</code>
+              {t("bridgePage.railDisabledAfter")}
             </p>
             <button
               type="button"
@@ -243,7 +245,7 @@ export default function BridgeAcpBscPage() {
               onClick={() => void load()}
               disabled={loading}
             >
-              {loading ? "Refreshing..." : "Refresh"}
+              {loading ? t("bridgePage.refreshing") : t("bridgePage.refresh")}
             </button>
           </div>
         ) : null}
@@ -251,44 +253,44 @@ export default function BridgeAcpBscPage() {
         {status && status.bridge_rail_enabled ? (
           <>
             <section className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-              <h2 className="text-lg font-medium text-zinc-200">Status</h2>
+              <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.statusTitle")}</h2>
               <dl className="mt-3 grid gap-2 text-sm text-zinc-400 sm:grid-cols-2">
                 <div>
-                  <dt className="text-zinc-500">Paused</dt>
-                  <dd>{status.bridge_rail_paused ? "yes" : "no"}</dd>
+                  <dt className="text-zinc-500">{t("bridgePage.paused")}</dt>
+                  <dd>{status.bridge_rail_paused ? t("bridgePage.yes") : t("bridgePage.no")}</dd>
                 </div>
                 <div>
-                  <dt className="text-zinc-500">Dry run</dt>
-                  <dd>{status.dry_run ? "yes" : "no"}</dd>
+                  <dt className="text-zinc-500">{t("bridgePage.dryRun")}</dt>
+                  <dd>{status.dry_run ? t("bridgePage.yes") : t("bridgePage.no")}</dd>
                 </div>
                 <div>
-                  <dt className="text-zinc-500">ACP checkpoint</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.acpCheckpoint")}</dt>
                   <dd>{status.checkpoint_acp ?? "—"}</dd>
                 </div>
                 <div>
-                  <dt className="text-zinc-500">BSC checkpoint</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.bscCheckpoint")}</dt>
                   <dd>{status.checkpoint_bsc ?? "—"}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-zinc-500">Counts by status</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.countsByStatus")}</dt>
                   <dd className="font-mono text-xs text-zinc-300">{JSON.stringify(status.counts_by_status)}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-zinc-500">wACP contract</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.wacpContract")}</dt>
                   <dd className="break-all font-mono text-xs">{status.wacp_contract || "—"}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-zinc-500">Gateway</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.gateway")}</dt>
                   <dd className="break-all font-mono text-xs">{status.gateway_contract || "—"}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-zinc-500">Reserve ACP address</dt>
+                  <dt className="text-zinc-500">{t("bridgePage.reserveAddress")}</dt>
                   <dd className="break-all font-mono text-xs">{status.reserve_acp_address || "—"}</dd>
                 </div>
                 {status.bsc_explorer_base ? (
                   <div className="sm:col-span-2">
                     <a className="text-sky-400 underline" href={status.bsc_explorer_base} target="_blank" rel="noreferrer">
-                      BSC explorer
+                      {t("bridgePage.bscExplorer")}
                     </a>
                   </div>
                 ) : null}
@@ -297,34 +299,32 @@ export default function BridgeAcpBscPage() {
 
             {reserve ? (
               <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-                <h2 className="text-lg font-medium text-zinc-200">Reserve summary (DB)</h2>
+                <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.reserveTitle")}</h2>
                 <ul className="mt-3 list-inside list-disc text-sm text-zinc-400">
-                  <li>Total ACP smallest (active + completed forward ops): {reserve.total_acp_smallest_locked_intent}</li>
-                  <li>Total wACP wei (completed mints): {reserve.total_wacp_wei_completed_mints}</li>
-                  <li>Active pending ops: {reserve.operations_pending}</li>
-                  <li>Completed ops: {reserve.operations_completed}</li>
+                  <li>{t("bridgePage.reserveAcpTotal")} {reserve.total_acp_smallest_locked_intent}</li>
+                  <li>{t("bridgePage.reserveWacpTotal")} {reserve.total_wacp_wei_completed_mints}</li>
+                  <li>{t("bridgePage.reservePending")} {reserve.operations_pending}</li>
+                  <li>{t("bridgePage.reserveCompleted")} {reserve.operations_completed}</li>
                 </ul>
               </section>
             ) : null}
 
             <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-              <h2 className="text-lg font-medium text-zinc-200">New intent (ACP → BSC)</h2>
+              <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.intentTitle")}</h2>
               {!isAuthenticated ? (
                 <p className="mt-2 text-sm text-zinc-500">
                   <button type="button" className="text-sky-400 underline" onClick={() => router.push("/login?next=/bridge/acp-bsc")}>
-                    Sign in
+                    {t("bridgePage.signIn")}
                   </button>{" "}
-                  to register an intent.
+                  {t("bridgePage.signInIntent")}
                 </p>
               ) : (
-              <p className="mt-1 text-xs text-zinc-500">
-                Registers a row in <code className="text-zinc-400">PENDING_DEPOSIT</code>. On-chain mint is performed by the operator after deposit confirmation.
-              </p>)}
+              <p className="mt-1 text-xs text-zinc-500">{t("bridgePage.intentHint")}</p>)}
               <div className="mt-4 flex flex-col gap-3">
                 {isAuthenticated ? (
                   <>
                 <label className="text-sm text-zinc-400">
-                  BSC address (0x…)
+                  {t("bridgePage.bscAddress")}
                   <input
                     className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                     value={form.user_bsc_address}
@@ -334,7 +334,7 @@ export default function BridgeAcpBscPage() {
                   />
                 </label>
                 <label className="text-sm text-zinc-400">
-                  Amount (ACP)
+                  {t("bridgePage.amountAcp")}
                   <input
                     className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                     value={form.amount_acp}
@@ -342,7 +342,7 @@ export default function BridgeAcpBscPage() {
                   />
                 </label>
                 <label className="text-sm text-zinc-400">
-                  ACP payout address (optional)
+                  {t("bridgePage.acpPayoutOptional")}
                   <input
                     className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                     value={form.user_acp_address}
@@ -356,7 +356,7 @@ export default function BridgeAcpBscPage() {
                   onClick={() => void submitIntent()}
                   className="rounded bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-40"
                 >
-                  {busy ? "Submitting…" : "Create intent"}
+                  {busy ? t("bridgePage.submitting") : t("bridgePage.createIntent")}
                 </button>
                   </>
                 ) : null}
@@ -364,23 +364,21 @@ export default function BridgeAcpBscPage() {
             </section>
 
             <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-              <h2 className="text-lg font-medium text-zinc-200">Redeem request (BSC → ACP)</h2>
+              <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.redeemTitle")}</h2>
               {!isAuthenticated ? (
                 <p className="mt-2 text-sm text-zinc-500">
                   <button type="button" className="text-sky-400 underline" onClick={() => router.push("/login?next=/bridge/acp-bsc")}>
-                    Sign in
+                    {t("bridgePage.signIn")}
                   </button>{" "}
-                  to register a redeem request.
+                  {t("bridgePage.signInRedeem")}
                 </p>
               ) : (
-              <p className="mt-1 text-xs text-zinc-500">
-                Creates a row in <code className="text-zinc-400">PENDING_BURN</code>. Next live step is user burn via gateway request, then operator/watcher confirms and sends ACP payout.
-              </p>)}
+              <p className="mt-1 text-xs text-zinc-500">{t("bridgePage.redeemHint")}</p>)}
               <div className="mt-4 flex flex-col gap-3">
                 {isAuthenticated ? (
                   <>
                     <label className="text-sm text-zinc-400">
-                      BSC address (0x…)
+                      {t("bridgePage.bscAddress")}
                       <input
                         className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                         value={redeemForm.user_bsc_address}
@@ -390,7 +388,7 @@ export default function BridgeAcpBscPage() {
                       />
                     </label>
                     <label className="text-sm text-zinc-400">
-                      ACP payout address
+                      {t("bridgePage.acpPayout")}
                       <input
                         className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                         value={redeemForm.user_acp_address}
@@ -400,7 +398,7 @@ export default function BridgeAcpBscPage() {
                       />
                     </label>
                     <label className="text-sm text-zinc-400">
-                      Amount (wACP)
+                      {t("bridgePage.amountWacp")}
                       <input
                         className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-sm"
                         value={redeemForm.amount_wacp}
@@ -409,13 +407,13 @@ export default function BridgeAcpBscPage() {
                     </label>
                     {redeemQuote ? (
                       <div className="rounded border border-zinc-800 bg-zinc-900/70 px-3 py-2 text-xs text-zinc-400">
-                        <div>ACP payout floor: <span className="font-mono text-zinc-200">{redeemQuote.acp_amount_floor}</span></div>
-                        <div>ACP smallest units: <span className="font-mono text-zinc-200">{redeemQuote.acp_smallest_floor}</span></div>
-                        <div>Remainder kept in buffer: <span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp}</span> wACP (<span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp_wei}</span> wei)</div>
+                        <div>{t("bridgePage.quoteFloor")} <span className="font-mono text-zinc-200">{redeemQuote.acp_amount_floor}</span></div>
+                        <div>{t("bridgePage.quoteSmallest")} <span className="font-mono text-zinc-200">{redeemQuote.acp_smallest_floor}</span></div>
+                        <div>{t("bridgePage.quoteRemainder")} <span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp}</span> wACP (<span className="font-mono text-zinc-200">{redeemQuote.remainder_wacp_wei}</span> wei)</div>
                         <div className="mt-1 text-zinc-500">{redeemQuote.policy}</div>
                       </div>
                     ) : (
-                      <div className="text-xs text-zinc-500">Enter a valid wACP amount to preview ACP floor payout.</div>
+                      <div className="text-xs text-zinc-500">{t("bridgePage.quotePreview")}</div>
                     )}
                     <button
                       type="button"
@@ -423,7 +421,7 @@ export default function BridgeAcpBscPage() {
                       onClick={() => void submitRedeemIntent()}
                       className="rounded bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-white disabled:opacity-40"
                     >
-                      {busy ? "Submitting…" : "Create redeem request"}
+                      {busy ? t("bridgePage.submitting") : t("bridgePage.createRedeem")}
                     </button>
                   </>
                 ) : null}
@@ -432,9 +430,9 @@ export default function BridgeAcpBscPage() {
 
             {isAuthenticated ? (
             <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-              <h2 className="text-lg font-medium text-zinc-200">My intents</h2>
+              <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.myIntents")}</h2>
               {intents.length === 0 ? (
-                <p className="mt-2 text-sm text-zinc-500">No intents yet.</p>
+                <p className="mt-2 text-sm text-zinc-500">{t("bridgePage.noIntents")}</p>
               ) : (
                 <ul className="mt-3 space-y-2 text-sm">
                   {intents.map((o) => {
@@ -466,14 +464,14 @@ export default function BridgeAcpBscPage() {
                         {acpTxHref ? (
                           <div>
                             <a className="text-sky-400 underline" href={acpTxHref} target="_blank" rel="noreferrer">
-                              Open ACP deposit tx
+                              {t("bridgePage.openAcpTx")}
                             </a>
                           </div>
                         ) : null}
                         {bscTxHref ? (
                           <div>
                             <a className="text-sky-400 underline" href={bscTxHref} target="_blank" rel="noreferrer">
-                              Open BSC tx
+                              {t("bridgePage.openBscTx")}
                             </a>
                           </div>
                         ) : null}

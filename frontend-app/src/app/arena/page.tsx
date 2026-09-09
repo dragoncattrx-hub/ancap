@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { arenaDesk } from "@/lib/api";
 
 type Market = {
@@ -43,6 +44,7 @@ function formatAcp(value: string) {
 }
 
 export default function ArenaPage() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
@@ -56,27 +58,32 @@ export default function ArenaPage() {
       setCatalog(data);
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load arena");
+      setError(err instanceof Error ? err.message : t("arenaPage.loadError"));
     }
   };
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onBet = async (marketId: string, side: "yes" | "no") => {
     if (!isAuthenticated) {
-      setError("Sign in to place ACP bets");
+      setError(t("arenaPage.signInToBet"));
       return;
     }
     setBusy(true);
     setError("");
     try {
       await arenaDesk.placeBet(marketId, { side, stake_acp: stake });
-      setInfo(`Bet placed: ${side.toUpperCase()} · ${formatAcp(stake)}`);
+      setInfo(
+        t("arenaPage.betPlaced")
+          .replace("{side}", side.toUpperCase())
+          .replace("{stake}", formatAcp(stake))
+      );
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bet failed");
+      setError(err instanceof Error ? err.message : t("arenaPage.betError"));
     } finally {
       setBusy(false);
     }
@@ -84,7 +91,7 @@ export default function ArenaPage() {
 
   const onHouse = async (game: "coinflip" | "dice", choice: string) => {
     if (!isAuthenticated) {
-      setError("Sign in to play");
+      setError(t("arenaPage.signInToPlay"));
       return;
     }
     setBusy(true);
@@ -109,11 +116,16 @@ export default function ArenaPage() {
         server_seed_hash?: string;
       };
       setInfo(
-        `${game} → ${round.result} · ${round.won ? "WIN" : "LOSS"} · payout ${formatAcp(round.payout_acp || "0")} · seed ${round.server_seed_hash?.slice(0, 10)}…`
+        t("arenaPage.houseResult")
+          .replace("{game}", game)
+          .replace("{result}", String(round.result ?? ""))
+          .replace("{outcome}", round.won ? t("arenaPage.win") : t("arenaPage.loss"))
+          .replace("{payout}", formatAcp(round.payout_acp || "0"))
+          .replace("{seed}", round.server_seed_hash?.slice(0, 10) || "")
       );
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "House play failed");
+      setError(err instanceof Error ? err.message : t("arenaPage.housePlayError"));
     } finally {
       setBusy(false);
     }
@@ -124,8 +136,10 @@ export default function ArenaPage() {
       <Navigation />
       <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
         <div>
-          <p className="text-violet-300 text-sm uppercase tracking-wide">ACP Arena</p>
-          <h1 className="text-3xl font-semibold mt-1">{catalog?.title ?? "Arena"}</h1>
+          <p className="text-violet-300 text-sm uppercase tracking-wide">{t("arenaPage.kicker")}</p>
+          <h1 className="text-3xl font-semibold mt-1">
+            {catalog?.title ?? t("arenaPage.titleFallback")}
+          </h1>
           <p className="text-slate-400 mt-2">{catalog?.tagline}</p>
         </div>
 
@@ -140,7 +154,7 @@ export default function ArenaPage() {
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <label className="block text-sm text-slate-300">
-            Stake (ACP)
+            {t("arenaPage.stakeLabel")}
             <input
               className="mt-1 w-full max-w-xs rounded-lg bg-slate-950 border border-slate-700 px-3 py-2"
               value={stake}
@@ -150,13 +164,16 @@ export default function ArenaPage() {
         </div>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-medium">Prediction markets</h2>
+          <h2 className="text-xl font-medium">{t("arenaPage.marketsTitle")}</h2>
           {(catalog?.markets ?? []).map((m) => (
             <div key={m.id} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 space-y-2">
               <div className="font-medium">{m.title}</div>
               <p className="text-sm text-slate-400">{m.description}</p>
               <p className="text-xs text-slate-500">
-                YES pool {formatAcp(m.yes_pool_acp)} · NO pool {formatAcp(m.no_pool_acp)} · {m.bet_count} bets
+                {t("arenaPage.marketPools")
+                  .replace("{yes}", formatAcp(m.yes_pool_acp))
+                  .replace("{no}", formatAcp(m.no_pool_acp))
+                  .replace("{count}", String(m.bet_count))}
               </p>
               <div className="flex gap-2">
                 <button
@@ -181,11 +198,14 @@ export default function ArenaPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-medium">House games (provably fair)</h2>
+          <h2 className="text-xl font-medium">{t("arenaPage.houseGamesTitle")}</h2>
           {(catalog?.house_games ?? []).map((g) => (
             <div key={g.id} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 space-y-2">
               <div className="font-medium">
-                {g.label} · ×{g.payout_multiple} · edge {g.house_edge_bps} bps
+                {t("arenaPage.houseGameMeta")
+                  .replace("{label}", g.label)
+                  .replace("{multiple}", g.payout_multiple)
+                  .replace("{bps}", String(g.house_edge_bps))}
               </div>
               <div className="flex flex-wrap gap-2">
                 {g.choices.map((c) => (
@@ -205,7 +225,7 @@ export default function ArenaPage() {
         </section>
 
         <Link href="/wallet" className="inline-block text-sm text-slate-400 underline">
-          ACP Wallet
+          {t("arenaPage.acpWallet")}
         </Link>
       </div>
     </main>

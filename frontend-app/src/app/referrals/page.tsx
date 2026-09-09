@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { referrals } from "@/lib/api";
 
 function formatAmount(value: any): string {
@@ -12,6 +13,7 @@ function formatAmount(value: any): string {
 }
 
 export default function ReferralsPage() {
+  const { t } = useLanguage();
   const [summary, setSummary] = useState<any>(null);
   const [attributions, setAttributions] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
@@ -38,12 +40,13 @@ export default function ReferralsPage() {
       setAttributions(attrs || []);
       setRewards(rw || []);
     } catch (e: any) {
-      setError(e?.message || "Failed to load referral cabinet");
+      setError(e?.message || t("referralsPage.loadFailed"));
     }
   }
 
   useEffect(() => {
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createCode() {
@@ -53,7 +56,7 @@ export default function ReferralsPage() {
       const out = await referrals.createCode();
       setCode(out?.code || "");
     } catch (e: any) {
-      setError(e?.message || "Failed to create referral code");
+      setError(e?.message || t("referralsPage.createFailed"));
     } finally {
       setBusy(false);
     }
@@ -66,7 +69,7 @@ export default function ReferralsPage() {
       setCopyState("copied");
       setTimeout(() => setCopyState(""), 1400);
     } catch {
-      setError("Could not copy the referral link. Please copy it manually.");
+      setError(t("referralsPage.copyFailed"));
     }
   }
 
@@ -76,14 +79,12 @@ export default function ReferralsPage() {
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="section-header" style={{ marginBottom: 16 }}>
           <div>
-            <h1 className="section-title">Referral Cabinet</h1>
-            <p className="section-subtitle">
-              Partner dashboard for links, paid-run attribution, captured-purchase rewards, and commission-ready growth campaigns.
-            </p>
+            <h1 className="section-title">{t("referralsPage.title")}</h1>
+            <p className="section-subtitle">{t("referralsPage.subtitle")}</p>
           </div>
           <div className="action-cluster">
             <button className="btn btn-primary" onClick={createCode} disabled={busy}>
-              {busy ? "Creating..." : code ? "Create another code" : "Create referral code"}
+              {busy ? t("referralsPage.creating") : code ? t("referralsPage.createAnother") : t("referralsPage.createCode")}
             </button>
           </div>
         </div>
@@ -92,79 +93,75 @@ export default function ReferralsPage() {
 
         <div className="grid md:grid-cols-2 gap-4" style={{ marginBottom: 16 }}>
           <div className="card">
-            <h3 style={{ marginTop: 0 }}>Your referral link</h3>
-            <p style={{ color: "var(--text-muted)", marginTop: 0 }}>
-              Reward policy: referrals become payable after the referred user completes a first captured paid workflow run.
-            </p>
+            <h3 style={{ marginTop: 0 }}>{t("referralsPage.yourLink")}</h3>
+            <p style={{ color: "var(--text-muted)", marginTop: 0 }}>{t("referralsPage.rewardPolicy")}</p>
             {referralLink ? (
               <>
                 <input className="input" value={referralLink} readOnly />
                 <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-                  <button className="btn btn-ghost" onClick={copyLink}>Copy link</button>
-                  {copyState === "copied" && <span style={{ color: "var(--color-success)" }}>Copied</span>}
+                  <button className="btn btn-ghost" onClick={copyLink}>{t("referralsPage.copyLink")}</button>
+                  {copyState === "copied" && <span style={{ color: "var(--color-success)" }}>{t("referralsPage.copied")}</span>}
                 </div>
               </>
             ) : (
-              <div style={{ color: "var(--text-muted)" }}>
-                Create a referral code to generate your personal invitation link.
-              </div>
+              <div style={{ color: "var(--text-muted)" }}>{t("referralsPage.createLinkHint")}</div>
             )}
           </div>
 
           <div className="card">
-            <h3 style={{ marginTop: 0 }}>ACP rewards</h3>
+            <h3 style={{ marginTop: 0 }}>{t("referralsPage.acpRewards")}</h3>
             <div style={{ color: "var(--text-muted)", fontSize: 14 }}>
-              <div>Total ACP rewards: {formatAmount(summary?.total_reward_acp_amount)} ACP</div>
-              <div>Verified referral bonus: {formatAmount(summary?.signup_bonus_acp_amount)} ACP</div>
-              <div>Commission share rewards: {formatAmount(summary?.commission_share_acp_amount)} ACP</div>
-              <div>Total reward events: {summary?.total_reward_events ?? 0}</div>
+              <div>{t("referralsPage.totalRewards")} {formatAmount(summary?.total_reward_acp_amount)} ACP</div>
+              <div>{t("referralsPage.verifiedBonus")} {formatAmount(summary?.signup_bonus_acp_amount)} ACP</div>
+              <div>{t("referralsPage.commissionShare")} {formatAmount(summary?.commission_share_acp_amount)} ACP</div>
+              <div>{t("referralsPage.totalEvents")} {summary?.total_reward_events ?? 0}</div>
             </div>
           </div>
         </div>
 
         <div className="grid md:grid-cols-4 gap-4" style={{ marginBottom: 16 }}>
           <div className="card">
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Clicks</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("referralsPage.clicks")}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)" }}>link</div>
           </div>
           <div className="card">
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Attributed users</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("referralsPage.attributedUsers")}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)" }}>{summary?.total_attributions ?? 0}</div>
           </div>
           <div className="card">
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Paid-run rewards</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("referralsPage.paidRunRewards")}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: "var(--accent)" }}>{summary?.rewarded ?? 0}</div>
           </div>
           <div className="card">
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Payable commission</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("referralsPage.payableCommission")}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: "var(--accent)" }}>{formatAmount(summary?.commission_share_acp_amount)} ACP</div>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="card">
-            <h3 style={{ marginTop: 0, marginBottom: 8 }}>Referral status</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 8 }}>{t("referralsPage.referralStatus")}</h3>
             <div style={{ color: "var(--text-muted)", fontSize: 14 }}>
-              <div>Total attributions: {summary?.total_attributions ?? 0}</div>
-              <div>Pending: {summary?.pending ?? 0}</div>
-              <div>Eligible: {summary?.eligible ?? 0}</div>
-              <div>Rewarded: {summary?.rewarded ?? 0}</div>
-              <div>Rejected: {summary?.rejected ?? 0}</div>
+              <div>{t("referralsPage.totalAttributions")} {summary?.total_attributions ?? 0}</div>
+              <div>{t("referralsPage.pending")} {summary?.pending ?? 0}</div>
+              <div>{t("referralsPage.eligible")} {summary?.eligible ?? 0}</div>
+              <div>{t("referralsPage.rewarded")} {summary?.rewarded ?? 0}</div>
+              <div>{t("referralsPage.rejected")} {summary?.rejected ?? 0}</div>
             </div>
             <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: 13 }}>
-              Last attributions: {attributions.length}
+              {t("referralsPage.lastAttributions")} {attributions.length}
             </div>
           </div>
 
           <div className="card">
-            <h3 style={{ marginTop: 0, marginBottom: 8 }}>Recent referral payouts</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 8 }}>{t("referralsPage.recentPayouts")}</h3>
             <div style={{ overflowX: "auto" }}>
               <table className="table table-zebra w-full">
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Type</th>
-                    <th>Amount</th>
+                    <th>{t("referralsPage.colTime")}</th>
+                    <th>{t("referralsPage.colType")}</th>
+                    <th>{t("referralsPage.colAmount")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -178,7 +175,7 @@ export default function ReferralsPage() {
                   {!rewards.length && (
                     <tr>
                       <td colSpan={3} style={{ color: "var(--text-muted)" }}>
-                        No referral payouts yet.
+                        {t("referralsPage.noPayouts")}
                       </td>
                     </tr>
                   )}

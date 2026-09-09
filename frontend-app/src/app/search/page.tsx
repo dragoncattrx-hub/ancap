@@ -3,15 +3,8 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { search } from "@/lib/api";
-
-const TYPE_OPTIONS = [
-  { label: "All", value: "" },
-  { label: "Agents", value: "agent" },
-  { label: "Strategies", value: "strategy" },
-  { label: "Workflows", value: "workflow" },
-  { label: "Listings", value: "listing" },
-];
 
 function ResultCard({ item }: { item: any }) {
   const typeColors: Record<string, string> = {
@@ -40,6 +33,7 @@ function ResultCard({ item }: { item: any }) {
 
 function SearchPageContent() {
   const router = useRouter();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const initialQ = searchParams?.get("q") || "";
 
@@ -51,7 +45,15 @@ function SearchPageContent() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const doSearch = useCallback(async (q: string, t: string) => {
+  const typeOptions = [
+    { label: t("searchPage.typeAll"), value: "" },
+    { label: t("searchPage.typeAgents"), value: "agent" },
+    { label: t("searchPage.typeStrategies"), value: "strategy" },
+    { label: t("searchPage.typeWorkflows"), value: "workflow" },
+    { label: t("searchPage.typeListings"), value: "listing" },
+  ];
+
+  const doSearch = useCallback(async (q: string, typeFilter: string) => {
     if (!q.trim()) {
       setResults([]);
       setTotal(0);
@@ -61,7 +63,7 @@ function SearchPageContent() {
     }
     setLoading(true);
     try {
-      const data = await search.query(q.trim(), t || undefined);
+      const data = await search.query(q.trim(), typeFilter || undefined);
       setResults(data.results || []);
       setByType(data.by_type || {});
       setTotal(data.total || 0);
@@ -88,16 +90,23 @@ function SearchPageContent() {
     void doSearch(query, type);
   };
 
+  const resultsLabel =
+    total === 0
+      ? t("searchPage.noResults").replace("{q}", query)
+      : total === 1
+        ? t("searchPage.resultOne").replace("{n}", String(total)).replace("{q}", query)
+        : t("searchPage.results").replace("{n}", String(total)).replace("{q}", query);
+
   return (
     <main className="relative z-10 max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold">Search</h1>
+      <h1 className="text-2xl font-bold">{t("searchPage.title")}</h1>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search workflows, agents, strategies..."
+          placeholder={t("searchPage.placeholder")}
           className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--accent)]"
           autoFocus
         />
@@ -105,12 +114,12 @@ function SearchPageContent() {
           type="submit"
           className="rounded-lg border border-[var(--accent)] bg-[var(--accent)]/10 px-5 py-2.5 text-sm font-medium hover:bg-[var(--accent)]/20 transition-colors"
         >
-          Search
+          {t("searchPage.submit")}
         </button>
       </form>
 
       <div className="flex gap-2 flex-wrap">
-        {TYPE_OPTIONS.map((opt) => (
+        {typeOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => {
@@ -128,19 +137,17 @@ function SearchPageContent() {
         ))}
       </div>
 
-      {loading && <div className="text-center py-12 opacity-60">Searching...</div>}
+      {loading && <div className="text-center py-12 opacity-60">{t("searchPage.searching")}</div>}
 
       {!loading && searched && (
         <>
-          <div className="text-sm opacity-60">
-            {total === 0 ? `No results for "${query}"` : `${total} result${total === 1 ? "" : "s"} for "${query}"`}
-          </div>
+          <div className="text-sm opacity-60">{resultsLabel}</div>
 
           {Object.keys(byType).length > 1 && (
             <div className="flex gap-3 text-xs opacity-60">
-              {Object.entries(byType).map(([t, count]) => (
-                <span key={t}>
-                  {t}: {count}
+              {Object.entries(byType).map(([typeKey, count]) => (
+                <span key={typeKey}>
+                  {typeKey}: {count}
                 </span>
               ))}
             </div>
@@ -155,19 +162,18 @@ function SearchPageContent() {
       )}
 
       {!loading && !searched && (
-        <div className="text-center py-12 opacity-30">
-          Enter a query to search across workflows, agents, strategies and listings.
-        </div>
+        <div className="text-center py-12 opacity-30">{t("searchPage.emptyHint")}</div>
       )}
     </main>
   );
 }
 
 export default function SearchPage() {
+  const { t } = useLanguage();
   return (
     <>
       <Navigation />
-      <Suspense fallback={<main className="relative z-10 max-w-3xl mx-auto px-4 py-8"><div className="text-center py-12 opacity-60">Loading search…</div></main>}>
+      <Suspense fallback={<main className="relative z-10 max-w-3xl mx-auto px-4 py-8"><div className="text-center py-12 opacity-60">{t("searchPage.loading")}</div></main>}>
         <SearchPageContent />
       </Suspense>
     </>

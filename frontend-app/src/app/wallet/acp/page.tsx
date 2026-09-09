@@ -9,6 +9,7 @@ import { OtcIntakeDesk } from "@/components/OtcIntakeDesk";
 import { AssayGcDesk } from "@/components/AssayGcDesk";
 import { OwnershipProofDesk } from "@/components/OwnershipProofDesk";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { walletAcp } from "@/lib/api";
 
 type TokenomicsBucket = {
@@ -77,6 +78,7 @@ export default function AcpWalletPage() {
   const PASSWORD_ROTATION_ID = "password-security";
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, changePassword, logout } = useAuth();
+  const { t } = useLanguage();
   const passwordSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [depositAddress, setDepositAddress] = useState<string>("");
@@ -191,7 +193,7 @@ export default function AcpWalletPage() {
         resolvedDeposit = String((addrRes.value as { address?: string } | null)?.address || "").trim();
         setDepositAddress(resolvedDeposit);
       } else {
-        warnings.push(`Deposit address unavailable: ${addrRes.reason?.message || "unknown error"}`);
+        warnings.push(t("walletAcpPage.depositAddressUnavailable").replace("{error}", addrRes.reason?.message || t("walletAcpPage.unknownError")));
       }
 
       if (balRes.status === "fulfilled") {
@@ -220,10 +222,10 @@ export default function AcpWalletPage() {
             resolvedDeposit = balAddr;
             setDepositAddress(balAddr);
           }
-          warnings.push(`Hot balance degraded; used /balance fallback. (${balRes.reason?.message || "error"})`);
+          warnings.push(t("walletAcpPage.hotBalanceDegraded").replace("{error}", balRes.reason?.message || "error"));
         } catch (fallbackErr: any) {
           warnings.push(
-            `Wallet balance unavailable: ${balRes.reason?.message || fallbackErr?.message || "unknown error"}`,
+            t("walletAcpPage.walletBalanceUnavailable").replace("{error}", balRes.reason?.message || fallbackErr?.message || t("walletAcpPage.unknownError")),
           );
         }
       }
@@ -235,7 +237,7 @@ export default function AcpWalletPage() {
           setSelectedOrderId(orders[0].id);
         }
       } else {
-        warnings.push(`Swap history unavailable: ${ordersRes.reason?.message || "unknown error"}`);
+        warnings.push(t("walletAcpPage.swapHistoryUnavailable").replace("{error}", ordersRes.reason?.message || t("walletAcpPage.unknownError")));
       }
 
       const any401 = [addrRes, balRes, ordersRes].some((res) => statusOf(res) === 401);
@@ -249,7 +251,7 @@ export default function AcpWalletPage() {
 
       setLoadWarnings(warnings);
     } catch (e: any) {
-      setError(e?.message || "Failed to load ACP wallet");
+      setError(e?.message || t("walletAcpPage.loadFailed"));
     } finally {
       setBusy(false);
     }
@@ -260,9 +262,9 @@ export default function AcpWalletPage() {
     if (!v) return;
     try {
       await navigator.clipboard.writeText(v);
-      setSwapInfo("Copied to clipboard.");
+      setSwapInfo(t("walletAcpPage.copied"));
     } catch {
-      setError("Clipboard is not available in this browser context");
+      setError(t("walletAcpPage.clipboardUnavailable"));
     }
   }
 
@@ -273,15 +275,15 @@ export default function AcpWalletPage() {
     const amountNum = Number(amountRaw);
 
     if (!amountRaw) {
-      errors.usdt_trc20_amount = "Tether amount is required";
+      errors.usdt_trc20_amount = t("walletAcpPage.tetherAmountRequired");
     } else if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      errors.usdt_trc20_amount = "Tether amount must be a number greater than 0";
+      errors.usdt_trc20_amount = t("walletAcpPage.tetherAmountInvalid");
     }
 
     if (!payoutAddress) {
-      errors.payout_acp_address = "Payout ACP address is required";
+      errors.payout_acp_address = t("walletAcpPage.payoutAddressRequired");
     } else if (!ACP_ADDRESS_RE.test(payoutAddress)) {
-      errors.payout_acp_address = "Invalid ACP address format (expected acp1...)";
+      errors.payout_acp_address = t("walletAcpPage.payoutAddressInvalid");
     }
 
     return { valid: Object.keys(errors).length === 0, errors };
@@ -334,7 +336,7 @@ export default function AcpWalletPage() {
         return;
       }
       if (!options?.silent) {
-        setError(msg || "Failed to load on-chain history");
+        setError(msg || t("walletAcpPage.historyLoadFailed"));
       }
     } finally {
       if (!options?.silent) {
@@ -355,10 +357,10 @@ export default function AcpWalletPage() {
     try {
       const q = await walletAcp.swapQuote({ usdt_trc20_amount: swapForm.usdt_trc20_amount.trim() });
       setQuote(q);
-      setSwapInfo(`Quote updated: ${q.estimated_acp_amount} ACP estimated payout.`);
+      setSwapInfo(t("walletAcpPage.quoteUpdated").replace("{amount}", q.estimated_acp_amount));
     } catch (e: any) {
       setQuote(null);
-      setError(e?.message || "Failed to calculate quote");
+      setError(e?.message || t("walletAcpPage.quoteFailed"));
     }
   }
 
@@ -378,10 +380,10 @@ export default function AcpWalletPage() {
       });
       await refreshAll();
       setSelectedOrderId(created.id);
-      setSwapInfo(`Swap order ${created.id} created.`);
+      setSwapInfo(t("walletAcpPage.swapCreated").replace("{id}", created.id));
       setSwapForm((prev) => ({ ...prev, tron_txid: "" }));
     } catch (e: any) {
-      setError(e?.message || "Failed to create swap order");
+      setError(e?.message || t("walletAcpPage.swapCreateFailed"));
     } finally {
       setBusy(false);
     }
@@ -397,7 +399,7 @@ export default function AcpWalletPage() {
       });
       await refreshAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to confirm swap order");
+      setError(e?.message || t("walletAcpPage.swapConfirmFailed"));
     } finally {
       setBusy(false);
     }
@@ -411,7 +413,7 @@ export default function AcpWalletPage() {
       await walletAcp.cancelSwapOrder(selectedOrder.id);
       await refreshAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to cancel swap order");
+      setError(e?.message || t("walletAcpPage.swapCancelFailed"));
     } finally {
       setBusy(false);
     }
@@ -433,7 +435,7 @@ export default function AcpWalletPage() {
       setWithdrawResult(res);
       await refreshAll();
     } catch (e: any) {
-      setError(e?.message || "Withdraw failed");
+      setError(e?.message || t("walletAcpPage.withdrawFailed"));
     } finally {
       setBusy(false);
     }
@@ -449,11 +451,11 @@ export default function AcpWalletPage() {
         .split(/\r?\n/)
         .map((x) => x.trim())
         .filter(Boolean);
-      if (!lines.length) throw new Error("Add at least one line: <address> <amount>");
+      if (!lines.length) throw new Error(t("walletAcpPage.distributionNeedLine"));
       const results: any[] = [];
       for (const line of lines) {
         const [to, amount] = line.split(/\s+/);
-        if (!to || !amount) throw new Error(`Invalid line: ${line}`);
+        if (!to || !amount) throw new Error(t("walletAcpPage.distributionInvalidLine").replace("{line}", line));
         const res = await walletAcp.withdraw({
           to_address: to,
           amount_acp: amount,
@@ -465,7 +467,7 @@ export default function AcpWalletPage() {
       setDistributionResult(results);
       await refreshAll();
     } catch (e: any) {
-      setError(e?.message || "Distribution failed");
+      setError(e?.message || t("walletAcpPage.distributionFailed"));
     } finally {
       setBusy(false);
     }
@@ -478,19 +480,19 @@ export default function AcpWalletPage() {
     setPasswordChangeInfo("");
     try {
       if (passwordChangeForm.current_password.length < 8) {
-        throw new Error("Current password is required");
+        throw new Error(t("walletAcpPage.currentPasswordRequired"));
       }
       if (passwordChangeForm.new_password.length < 8) {
-        throw new Error("New password must be at least 8 characters");
+        throw new Error(t("walletAcpPage.newPasswordMin"));
       }
       if (passwordChangeForm.new_password !== passwordChangeForm.confirm_password) {
-        throw new Error("New passwords do not match");
+        throw new Error(t("walletAcpPage.passwordsMismatch"));
       }
       await changePassword(passwordChangeForm.current_password, passwordChangeForm.new_password);
       setPasswordChangeForm({ current_password: "", new_password: "", confirm_password: "" });
-      setPasswordChangeInfo("Password updated and ACP wallet secret re-encrypted.");
+      setPasswordChangeInfo(t("walletAcpPage.passwordUpdated"));
     } catch (e: any) {
-      setError(e?.message || "Password change failed");
+      setError(e?.message || t("walletAcpPage.passwordChangeFailed"));
     } finally {
       setPasswordChangeBusy(false);
     }
@@ -529,7 +531,7 @@ export default function AcpWalletPage() {
           <div style={{ display: "grid", gap: 16, marginBottom: 18 }}>
             <div style={{ maxWidth: 760 }}>
               <h1 style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 900, letterSpacing: "-0.03em", margin: 0, color: "var(--text)" }}>
-                ACP Wallet
+                {t("walletAcpPage.title")}
               </h1>
             </div>
           </div>
@@ -562,24 +564,24 @@ export default function AcpWalletPage() {
             <div className="responsive-grid responsive-grid-3">
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Deposit address</h3>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.depositAddress")}</h3>
                   <span className="badge badge-info">ACP</span>
                 </div>
-                <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem" }}>Send ACP to this wallet address:</div>
+                <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem" }}>{t("walletAcpPage.sendAcpTo")}</div>
                 <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                  {busy && !singleWalletAddress ? "Loading…" : singleWalletAddress || "-"}
+                  {busy && !singleWalletAddress ? t("walletAcpPage.loading") : singleWalletAddress || t("walletAcpPage.dash")}
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>Copy</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>{t("walletAcpPage.copy")}</button>
                 </div>
                 <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-                  <h4 style={{ margin: "0 0 8px", fontWeight: 800 }}>Privacy receive (unlinkable)</h4>
+                  <h4 style={{ margin: "0 0 8px", fontWeight: 800 }}>{t("walletAcpPage.privacyReceive")}</h4>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.5 }}>
-                    One-time subaddress — do not reuse. Not a mixer; full nodes can still see amounts.
+                    {t("walletAcpPage.privacyReceiveLead")}
                   </p>
                   <input
                     type="password"
-                    placeholder="Wallet password (once to enable)"
+                    placeholder={t("walletAcpPage.walletPasswordOnce")}
                     value={privacyPassword}
                     onChange={(e) => setPrivacyPassword(e.target.value)}
                     style={{ marginTop: 10, width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
@@ -601,20 +603,20 @@ export default function AcpWalletPage() {
                           setPrivacyAddress(res.address || "");
                           setPrivacyPassword("");
                         } catch (err) {
-                          setError(err instanceof Error ? err.message : "Privacy address failed");
+                          setError(err instanceof Error ? err.message : t("walletAcpPage.privacyAddressFailed"));
                         } finally {
                           setPrivacyBusy(false);
                         }
                       })();
                     }}
                   >
-                    {privacyBusy ? "Generating…" : "New privacy address"}
+                    {privacyBusy ? t("walletAcpPage.generating") : t("walletAcpPage.newPrivacyAddress")}
                   </button>
                   {privacyAddress ? (
                     <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", overflowWrap: "anywhere" }}>
                       {privacyAddress}
                       <div style={{ marginTop: 8 }}>
-                        <button type="button" className="btn btn-ghost" onClick={() => copy(privacyAddress)}>Copy</button>
+                        <button type="button" className="btn btn-ghost" onClick={() => copy(privacyAddress)}>{t("walletAcpPage.copy")}</button>
                       </div>
                     </div>
                   ) : null}
@@ -623,13 +625,13 @@ export default function AcpWalletPage() {
 
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>{isOperatorHotView ? "Operator hot wallet" : "Wallet balance"}</h3>
-                  <span className="badge badge-active">Live</span>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{isOperatorHotView ? t("walletAcpPage.operatorHotWallet") : t("walletAcpPage.walletBalance")}</h3>
+                  <span className="badge badge-active">{t("walletAcpPage.live")}</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
-                  {busy && !balance ? "Loading…" : (balance?.acp ?? "-")} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
+                  {busy && !balance ? t("walletAcpPage.loading") : (balance?.acp ?? t("walletAcpPage.dash"))} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
-                {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>UTXO count: {balance.utxo_count}</div>}
+                {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.utxoCount").replace("{n}", String(balance.utxo_count))}</div>}
 
                 {isOperatorHotView && balance?.tokenomics_buckets && balance.tokenomics_buckets.length > 0 ? (
                   <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
@@ -650,7 +652,7 @@ export default function AcpWalletPage() {
                         <strong style={{ color: "var(--text)" }}>{bucket.label}</strong>
                         <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
                           <strong style={{ color: "var(--text)" }}>{bucket.acp} ACP</strong>
-                          {" "}({bucket.utxo_count} UTXO{bucket.utxo_count === 1 ? "" : "s"})
+                          {t(bucket.utxo_count === 1 ? "walletAcpPage.utxoOne" : "walletAcpPage.utxoMany").replace("{n}", String(bucket.utxo_count))}
                         </span>
                       </div>
                     ))}
@@ -659,13 +661,13 @@ export default function AcpWalletPage() {
                   <>
                     {balance?.units != null && balance.units !== "" && (
                       <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                        Smallest units (on-chain): <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
-                        <span style={{ opacity: 0.85 }}> — expect 1 ACP = 100,000,000 units · check: units ÷ 10⁸ ≈ ACP above</span>
+                        {t("walletAcpPage.smallestUnits")} <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
+                        <span style={{ opacity: 0.85 }}> {t("walletAcpPage.smallestUnitsHint")}</span>
                       </div>
                     )}
                     {balance?.on_chain_acp != null && balance.on_chain_acp !== "" && (
                       <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                        Total on-chain at this address: <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
+                        {t("walletAcpPage.totalOnChain")} <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
                       </div>
                     )}
                   </>
@@ -681,41 +683,41 @@ export default function AcpWalletPage() {
                   }}
                 >
                   <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    {isOperatorHotView ? "Your platform credits" : "Account"}
+                    {isOperatorHotView ? t("walletAcpPage.yourPlatformCredits") : t("walletAcpPage.account")}
                   </div>
                   {isOperatorHotView && balance?.platform_credits_acp != null && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      Credited balance: <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
+                      {t("walletAcpPage.creditedBalance")} <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
                     </div>
                   )}
                   {!isOperatorHotView && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      Your balance: <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                      {t("walletAcpPage.yourBalance")} <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
                     </div>
                   )}
                   <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    <span title={"In work = active ACP stakes on your agents, plus positive on-platform ledger balances " + "(user and your agents). Each stake or funded agent account reduces what you can withdraw on-chain " + "so the same ACP is not used twice. Decimals are normal (ACP has 8 decimal places)."}>
-                      In work
+                    <span title={t("walletAcpPage.inWorkTitle")}>
+                      {t("walletAcpPage.inWork")}
                     </span>
                     : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
                   </div>
                   {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                      Stakes: <strong style={{ color: "var(--text)" }}>{balance?.in_work_staked_acp ?? "—"}</strong> ACP · On-platform ledger: <strong style={{ color: "var(--text)" }}>{balance?.in_work_ledger_acp ?? "—"}</strong> ACP
+                      {t("walletAcpPage.stakesLedger").replace("{stakes}", balance?.in_work_staked_acp ?? "—").replace("{ledger}", balance?.in_work_ledger_acp ?? "—")}
                     </div>
                   )}
                   <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Available for withdraw: <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
+                    {t("walletAcpPage.availableForWithdraw")} <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                   </div>
                 </div>
                 {balance?.vested_unlocked_acp != null && (
                   <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Vested unlocked: <strong style={{ color: "var(--text)" }}>{balance.vested_unlocked_acp} ACP</strong>
+                    {t("walletAcpPage.vestedUnlocked")} <strong style={{ color: "var(--text)" }}>{balance.vested_unlocked_acp} ACP</strong>
                   </div>
                 )}
                 {balance?.vested_locked_acp != null && (
                   <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Vested locked: <strong style={{ color: "var(--text)" }}>{balance.vested_locked_acp} ACP</strong>
+                    {t("walletAcpPage.vestedLocked")} <strong style={{ color: "var(--text)" }}>{balance.vested_locked_acp} ACP</strong>
                   </div>
                 )}
                 {balance?.balance_note ? <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>{balance.balance_note}</div> : null}
@@ -723,36 +725,36 @@ export default function AcpWalletPage() {
 
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Withdraw</h3>
-                  <span className="badge badge-warning">Signed</span>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.withdraw")}</h3>
+                  <span className="badge badge-warning">{t("walletAcpPage.signed")}</span>
                 </div>
                 <form onSubmit={doWithdraw} style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <input placeholder="To address (acp1...)" value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))} className="input input-bordered w-full" required aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid} autoComplete="off" />
-                  {withdrawForm.to_address.length > 0 && !withdrawAddressValid && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>Address must start with <code>acp1</code>.</div>}
-                  <input placeholder="Amount (ACP)" value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" inputMode="decimal" required aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)} />
-                  {withdrawExceedsBalance && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>Amount exceeds available balance ({balance?.available_acp ?? balance?.acp ?? "0"} ACP).</div>}
+                  <input placeholder={t("walletAcpPage.toAddressPlaceholder")} value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))} className="input input-bordered w-full" required aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid} autoComplete="off" />
+                  {withdrawForm.to_address.length > 0 && !withdrawAddressValid && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{t("walletAcpPage.addressMustStartAcp1Before")} <code>acp1</code>{t("walletAcpPage.addressMustStartAcp1After")}</div>}
+                  <input placeholder={t("walletAcpPage.amountAcpPlaceholder")} value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" inputMode="decimal" required aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)} />
+                  {withdrawExceedsBalance && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{t("walletAcpPage.amountExceedsBalance").replace("{amount}", balance?.available_acp ?? balance?.acp ?? "0")}</div>}
                   <div style={{ display: "grid", gap: 8 }}>
-                    <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Fee mode</label>
+                    <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.feeMode")}</label>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button type="button" className="btn btn-ghost" onClick={() => { setWithdrawFeeMode("auto"); setWithdrawFeeAcp(ACP_FIXED_MIN_FEE); }} style={{ borderColor: withdrawFeeMode === "auto" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "auto" ? "#34d399" : undefined }}>Auto</button>
-                      <button type="button" className="btn btn-ghost" onClick={() => setWithdrawFeeMode("manual")} style={{ borderColor: withdrawFeeMode === "manual" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "manual" ? "#34d399" : undefined }}>Manual</button>
+                      <button type="button" className="btn btn-ghost" onClick={() => { setWithdrawFeeMode("auto"); setWithdrawFeeAcp(ACP_FIXED_MIN_FEE); }} style={{ borderColor: withdrawFeeMode === "auto" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "auto" ? "#34d399" : undefined }}>{t("walletAcpPage.auto")}</button>
+                      <button type="button" className="btn btn-ghost" onClick={() => setWithdrawFeeMode("manual")} style={{ borderColor: withdrawFeeMode === "manual" ? "rgba(16, 185, 129, 0.5)" : undefined, color: withdrawFeeMode === "manual" ? "#34d399" : undefined }}>{t("walletAcpPage.manual")}</button>
                     </div>
-                    <input placeholder="Fee (ACP)" value={withdrawFeeAcp} onChange={(e) => setWithdrawFeeAcp(e.target.value)} className="input input-bordered w-full" inputMode="decimal" disabled={withdrawFeeMode === "auto"} />
+                    <input placeholder={t("walletAcpPage.feeAcpPlaceholder")} value={withdrawFeeAcp} onChange={(e) => setWithdrawFeeAcp(e.target.value)} className="input input-bordered w-full" inputMode="decimal" disabled={withdrawFeeMode === "auto"} />
                     <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                      {withdrawFeeMode === "auto" ? `Auto now uses fixed minimum fee: ${ACP_FIXED_MIN_FEE} ACP` : "Manual fee is UI-only for now; backend still applies fixed minimum fee."}
+                      {withdrawFeeMode === "auto" ? t("walletAcpPage.autoFeeHint").replace("{fee}", ACP_FIXED_MIN_FEE) : t("walletAcpPage.manualFeeHint")}
                     </div>
                   </div>
-                  <input type="password" placeholder="Wallet password" value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required autoComplete="current-password" />
-                  <button className="btn btn-primary" type="submit" disabled={withdrawDisabled}>{busy ? "Sending..." : "Withdraw"}</button>
+                  <input type="password" placeholder={t("walletAcpPage.walletPassword")} value={withdrawForm.wallet_password} onChange={(e) => setWithdrawForm((p) => ({ ...p, wallet_password: e.target.value }))} className="input input-bordered w-full" required autoComplete="current-password" />
+                  <button className="btn btn-primary" type="submit" disabled={withdrawDisabled}>{busy ? t("walletAcpPage.sending") : t("walletAcpPage.withdraw")}</button>
                 </form>
                 {withdrawResult && <pre style={{ marginTop: 10, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(withdrawResult, null, 2)}</pre>}
                 <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                  <h4 style={{ margin: 0 }}>Bulk distribution</h4>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 4 }}>One line per transfer: <code>acp1... amount</code></div>
+                  <h4 style={{ margin: 0 }}>{t("walletAcpPage.bulkDistribution")}</h4>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 4 }}>{t("walletAcpPage.bulkHintBefore")} <code>acp1... amount</code></div>
                   <form onSubmit={runDistribution} style={{ marginTop: 10, display: "grid", gap: 8 }}>
                     <textarea className="input input-bordered w-full" rows={5} value={distributionPlan} onChange={(e) => setDistributionPlan(e.target.value)} placeholder={"acp1... 25000\nacp1... 15000"} />
-                    <input type="password" className="input input-bordered w-full" placeholder="Wallet password" value={distributionPassword} onChange={(e) => setDistributionPassword(e.target.value)} required />
-                    <button className="btn btn-ghost" type="submit" disabled={busy}>{busy ? "Processing..." : "Run bulk distribution"}</button>
+                    <input type="password" className="input input-bordered w-full" placeholder={t("walletAcpPage.walletPassword")} value={distributionPassword} onChange={(e) => setDistributionPassword(e.target.value)} required />
+                    <button className="btn btn-ghost" type="submit" disabled={busy}>{busy ? t("walletAcpPage.processing") : t("walletAcpPage.runBulk")}</button>
                   </form>
                   {distributionResult.length > 0 && <pre style={{ marginTop: 8, padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowX: "auto" }}>{JSON.stringify(distributionResult, null, 2)}</pre>}
                 </div>
@@ -762,24 +764,24 @@ export default function AcpWalletPage() {
             <div className="card" id={PASSWORD_ROTATION_ID} ref={passwordSectionRef} tabIndex={-1} style={{ maxWidth: 760, scrollMarginTop: 110 }}>
               {recoveryMode && (
                 <div style={{ marginBottom: 14, padding: "12px", borderRadius: "8px", background: "rgba(245,158,11,0.12)", color: "#fbbf24", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>ACP wallet recovery mode</div>
-                  <div>You are in the safe password rotation section.</div>
-                  <div>Use your current password here to set a new one so the ACP wallet secret can be re-encrypted safely.</div>
-                  <div>If you do not know the current password, email-only recovery is still blocked for ACP-wallet accounts.</div>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>{t("walletAcpPage.recoveryTitle")}</div>
+                  <div>{t("walletAcpPage.recoveryLine1")}</div>
+                  <div>{t("walletAcpPage.recoveryLine2")}</div>
+                  <div>{t("walletAcpPage.recoveryLine3")}</div>
                 </div>
               )}
               <div className="card-header">
-                <h3 style={{ fontWeight: 800, margin: 0 }}>Password & wallet secret</h3>
-                <span className="badge badge-warning">Safe rotation</span>
+                <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.passwordSectionTitle")}</h3>
+                <span className="badge badge-warning">{t("walletAcpPage.safeRotation")}</span>
               </div>
               <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                Accounts with an ACP wallet must change password from an authenticated session so the wallet secret can be re-encrypted safely. Email reset is intentionally blocked for this case.
+                {t("walletAcpPage.passwordSectionLead")}
               </div>
               <form onSubmit={submitPasswordChange} style={{ marginTop: 14, display: "grid", gap: 10, maxWidth: 420 }}>
                 <input
                   type="password"
                   className="input input-bordered w-full"
-                  placeholder="Current password"
+                  placeholder={t("walletAcpPage.currentPassword")}
                   value={passwordChangeForm.current_password}
                   onChange={(e) => setPasswordChangeForm((p) => ({ ...p, current_password: e.target.value }))}
                   autoComplete="current-password"
@@ -788,7 +790,7 @@ export default function AcpWalletPage() {
                 <input
                   type="password"
                   className="input input-bordered w-full"
-                  placeholder="New password"
+                  placeholder={t("walletAcpPage.newPassword")}
                   value={passwordChangeForm.new_password}
                   onChange={(e) => setPasswordChangeForm((p) => ({ ...p, new_password: e.target.value }))}
                   autoComplete="new-password"
@@ -798,7 +800,7 @@ export default function AcpWalletPage() {
                 <input
                   type="password"
                   className="input input-bordered w-full"
-                  placeholder="Confirm new password"
+                  placeholder={t("walletAcpPage.confirmNewPassword")}
                   value={passwordChangeForm.confirm_password}
                   onChange={(e) => setPasswordChangeForm((p) => ({ ...p, confirm_password: e.target.value }))}
                   autoComplete="new-password"
@@ -806,7 +808,7 @@ export default function AcpWalletPage() {
                   minLength={8}
                 />
                 <button className="btn btn-primary" type="submit" disabled={passwordChangeBusy}>
-                  {passwordChangeBusy ? "Updating password..." : "Change password safely"}
+                  {passwordChangeBusy ? t("walletAcpPage.updatingPassword") : t("walletAcpPage.changePasswordSafely")}
                 </button>
               </form>
             </div>
@@ -814,49 +816,49 @@ export default function AcpWalletPage() {
             <div className="responsive-grid responsive-grid-2">
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Internal swap desk</h3>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.internalSwapDesk")}</h3>
                   <span className="badge badge-info">Tether TRC-20 {"->"} ACP</span>
                 </div>
 
                 <form onSubmit={createSwapOrder} style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Tether amount (TRC-20)</label>
+                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.tetherAmountLabel")}</label>
                   <input className="input input-bordered w-full" value={swapForm.usdt_trc20_amount} onChange={(e) => { const value = e.target.value; setSwapForm((p) => ({ ...p, usdt_trc20_amount: value })); setSwapFormErrors((prev) => ({ ...prev, usdt_trc20_amount: undefined })); }} inputMode="decimal" required />
                   {swapFormErrors.usdt_trc20_amount && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.usdt_trc20_amount}</div>}
 
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.payoutAcpAddress")}</label>
                   <input className="input input-bordered w-full" value={swapForm.payout_acp_address} onChange={(e) => { const value = e.target.value.trim(); setSwapForm((p) => ({ ...p, payout_acp_address: value })); setSwapFormErrors((prev) => ({ ...prev, payout_acp_address: undefined })); }} required />
                   {swapFormErrors.payout_acp_address && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.payout_acp_address}</div>}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Use a lowercase ACP address starting with <code>acp1</code>.</div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("walletAcpPage.useLowercaseAcp1Before")} <code>acp1</code>{t("walletAcpPage.useLowercaseAcp1After")}</div>
 
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
+                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.noteOptional")}</label>
                   <input className="input input-bordered w-full" value={swapForm.note} onChange={(e) => setSwapForm((p) => ({ ...p, note: e.target.value }))} />
 
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    <button type="button" className="btn btn-ghost" onClick={refreshQuote} disabled={busy}>Preview quote</button>
-                    <button type="submit" className="btn btn-primary" disabled={busy || !isSwapFormValid}>{busy ? "Creating..." : "Create order"}</button>
+                    <button type="button" className="btn btn-ghost" onClick={refreshQuote} disabled={busy}>{t("walletAcpPage.previewQuote")}</button>
+                    <button type="submit" className="btn btn-primary" disabled={busy || !isSwapFormValid}>{busy ? t("walletAcpPage.creating") : t("walletAcpPage.createOrder")}</button>
                   </div>
                 </form>
 
                 {quote && (
                   <div style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7, border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg)" }}>
-                    <div>Quote rate: 1 Tether TRC-20 = {quote.rate_acp_per_usdt} ACP</div>
-                    <div>Estimated payout: <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong></div>
+                    <div>{t("walletAcpPage.quoteRate").replace("{rate}", quote.rate_acp_per_usdt)}</div>
+                    <div>{t("walletAcpPage.estimatedPayout")} <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong></div>
                   </div>
                 )}
 
                 <div style={{ marginTop: 16, padding: 10, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                  Create an internal swap order, send Tether TRC-20 to the provided address with the exact reference, then submit the TRON TXID for manual review and ACP payout.
+                  {t("walletAcpPage.swapDeskHint")}
                 </div>
               </div>
 
               <div className="card">
                 <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>Swap orders</h3>
-                  <span className="badge badge-active">History</span>
+                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.swapOrders")}</h3>
+                  <span className="badge badge-active">{t("walletAcpPage.history")}</span>
                 </div>
 
                 {swapOrders.length === 0 ? (
-                  <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No swap orders yet.</div>
+                  <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.noSwapOrders")}</div>
                 ) : (
                   <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
                     {swapOrders.map((o) => (
@@ -870,19 +872,19 @@ export default function AcpWalletPage() {
 
                 {selectedOrder && (
                   <div style={{ marginTop: 14, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", display: "grid", gap: 8 }}>
-                    <div><strong>Order:</strong> {selectedOrder.id}</div>
-                    <div><strong>Status:</strong> {selectedOrder.status}</div>
-                    <div><strong>Deposit Tether TRC-20:</strong> <span style={{ overflowWrap: "anywhere" }}>{selectedOrder.deposit_trc20_address}</span></div>
-                    <div><strong>Reference:</strong> {selectedOrder.deposit_reference}</div>
-                    <div><strong>Payout:</strong> {selectedOrder.estimated_acp_amount} ACP {"->"} {selectedOrder.payout_acp_address}</div>
-                    {selectedOrder.payout_txid && <div><strong>Payout TX:</strong> {selectedOrder.payout_txid}</div>}
+                    <div><strong>{t("walletAcpPage.orderLabel")}</strong> {selectedOrder.id}</div>
+                    <div><strong>{t("walletAcpPage.statusLabel")}</strong> {selectedOrder.status}</div>
+                    <div><strong>{t("walletAcpPage.depositTether")}</strong> <span style={{ overflowWrap: "anywhere" }}>{selectedOrder.deposit_trc20_address}</span></div>
+                    <div><strong>{t("walletAcpPage.referenceLabel")}</strong> {selectedOrder.deposit_reference}</div>
+                    <div><strong>{t("walletAcpPage.payoutLabel")}</strong> {selectedOrder.estimated_acp_amount} ACP {"->"} {selectedOrder.payout_acp_address}</div>
+                    {selectedOrder.payout_txid && <div><strong>{t("walletAcpPage.payoutTx")}</strong> {selectedOrder.payout_txid}</div>}
 
                     <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
-                      <input className="input input-bordered w-full" placeholder="TRON TXID (optional)" value={swapForm.tron_txid} onChange={(e) => setSwapForm((p) => ({ ...p, tron_txid: e.target.value }))} />
+                      <input className="input input-bordered w-full" placeholder={t("walletAcpPage.tronTxidOptional")} value={swapForm.tron_txid} onChange={(e) => setSwapForm((p) => ({ ...p, tron_txid: e.target.value }))} />
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <button type="button" className="btn btn-primary" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={confirmSelectedOrder}>I sent Tether TRC-20</button>
-                        <button type="button" className="btn btn-ghost" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={cancelSelectedOrder}>Cancel order</button>
-                        <button type="button" className="btn btn-ghost" onClick={() => copy(selectedOrder.deposit_reference)}>Copy reference</button>
+                        <button type="button" className="btn btn-primary" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={confirmSelectedOrder}>{t("walletAcpPage.iSentTether")}</button>
+                        <button type="button" className="btn btn-ghost" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={cancelSelectedOrder}>{t("walletAcpPage.cancelOrder")}</button>
+                        <button type="button" className="btn btn-ghost" onClick={() => copy(selectedOrder.deposit_reference)}>{t("walletAcpPage.copyReference")}</button>
                       </div>
                     </div>
                   </div>
@@ -898,62 +900,62 @@ export default function AcpWalletPage() {
 
             <div className="card" style={{ border: "1px solid rgba(56, 189, 248, 0.22)", background: "linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255,255,255,0.02))" }}>
               <div className="card-header">
-                <h3 style={{ fontWeight: 800, margin: 0 }}>wACP</h3>
+                <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.wacpTitle")}</h3>
                 <span className="badge badge-info">ACP {"->"} BSC</span>
               </div>
               <div style={{ marginTop: 12, display: "grid", gap: 8, color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.65 }}>
-                <div>Pair live: <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> on PancakeSwap V2</div>
-                <div>Pool: <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
-                <div>Contract: <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
-                <div>Live rail today: <strong style={{ color: "var(--text)" }}>ACP → BSC mint</strong></div>
-                <div>Planned next rail: <strong style={{ color: "var(--text)" }}>BSC → ACP redeem</strong> — pending safe rollout</div>
-                <div>Current state: technical liquidity bootstrap / smoke-test market</div>
+                <div>{t("walletAcpPage.pairLiveBefore")} <strong style={{ color: "var(--text)" }}>wACP/USDT</strong> {t("walletAcpPage.pairLiveAfter")}</div>
+                <div>{t("walletAcpPage.poolLabel")} <code>0xF391ca2bcBaB93Afa23326ebF1e35DB950841601</code></div>
+                <div>{t("walletAcpPage.contractLabel")} <code>0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402</code></div>
+                <div>{t("walletAcpPage.liveRailBefore")} <strong style={{ color: "var(--text)" }}>{t("walletAcpPage.liveRailValue")}</strong></div>
+                <div>{t("walletAcpPage.plannedRailBefore")} <strong style={{ color: "var(--text)" }}>{t("walletAcpPage.plannedRailValue")}</strong> {t("walletAcpPage.plannedRailAfter")}</div>
+                <div>{t("walletAcpPage.currentState")}</div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14, alignItems: "flex-start" }}>
-                <Link href="/bridge/acp-bsc" className="btn btn-primary">Open bridge</Link>
+                <Link href="/bridge/acp-bsc" className="btn btn-primary">{t("walletAcpPage.openBridge")}</Link>
                 <WacpPublicActions layout="compact" />
-                <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">Open swap</a>
-                <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">View pool</a>
+                <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402" className="btn btn-ghost" target="_blank" rel="noreferrer">{t("walletAcpPage.openSwap")}</a>
+                <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" className="btn btn-ghost" target="_blank" rel="noreferrer">{t("walletAcpPage.viewPool")}</a>
               </div>
             </div>
 
             <div className="card">
               <div className="card-header">
-                <h3 style={{ fontWeight: 800, margin: 0 }}>On-chain transaction history</h3>
-                <span className="badge badge-active">Explorer</span>
+                <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.onChainHistory")}</h3>
+                <span className="badge badge-active">{t("walletAcpPage.explorer")}</span>
               </div>
               <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address</label>
+                <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.addressLabel")}</label>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <input className="input input-bordered w-full" value={txAddressInput} onChange={(e) => setTxAddressInput(e.target.value)} placeholder="acp1..." />
-                  <button type="button" className="btn btn-ghost" onClick={() => refreshTransactionsByAddress(txAddressInput)} disabled={historyBusy || !txAddressInput.trim()}>Load history</button>
-                  <button type="button" className="btn btn-ghost" onClick={() => { const walletAddress = (singleWalletAddress || "").trim(); if (!walletAddress) return; setTxAddressInput(walletAddress); refreshTransactionsByAddress(walletAddress, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>Use my wallet address</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => refreshTransactionsByAddress(txAddressInput)} disabled={historyBusy || !txAddressInput.trim()}>{t("walletAcpPage.loadHistory")}</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => { const walletAddress = (singleWalletAddress || "").trim(); if (!walletAddress) return; setTxAddressInput(walletAddress); refreshTransactionsByAddress(walletAddress, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>{t("walletAcpPage.useMyWallet")}</button>
                 </div>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Showing: <span style={{ color: "var(--text)" }}>{txAddressActive || "-"}</span></div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.showing")} <span style={{ color: "var(--text)" }}>{txAddressActive || t("walletAcpPage.dash")}</span></div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  Balance: <strong style={{ color: "var(--text)" }}>{txAddressBalance?.acp ?? "0"} ACP</strong>
-                  {txAddressBalance?.utxo_count != null ? ` (${txAddressBalance.utxo_count} UTXO)` : ""}
-                  {txAddressBalance?.units != null && txAddressBalance.units !== "" ? <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>Units: {txAddressBalance.units} (÷ 10⁸ for ACP)</span> : null}
+                  {t("walletAcpPage.balanceLabel")} <strong style={{ color: "var(--text)" }}>{txAddressBalance?.acp ?? "0"} ACP</strong>
+                  {txAddressBalance?.utxo_count != null ?  t("walletAcpPage.utxoOne").replace("{n}", String(txAddressBalance.utxo_count)) : ""}
+                  {txAddressBalance?.units != null && txAddressBalance.units !== "" ? <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>{t("walletAcpPage.unitsLine").replace("{units}", txAddressBalance.units)}</span> : null}
                 </div>
               </div>
 
               {!historyLoaded ? (
-                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>History is loaded on demand to keep the wallet page fast. Click <strong style={{ color: "var(--text)" }}>Load history</strong> when needed.</div>
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.historyOnDemandBefore")} <strong style={{ color: "var(--text)" }}>{t("walletAcpPage.loadHistory")}</strong> {t("walletAcpPage.historyOnDemandAfter")}</div>
               ) : transactions.length === 0 ? (
-                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No on-chain transactions found for this address.</div>
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.noTransactions")}</div>
               ) : (
                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                   {transactions.map((tx) => (
                     <div key={`${tx.txid}-${tx.block_height}`} style={{ padding: 10, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", display: "grid", gap: 6 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                         <strong>{tx.direction.toUpperCase()}</strong>
-                        <span style={{ color: "var(--text-muted)" }}>block {tx.block_height} • {tx.confirmations} conf</span>
+                        <span style={{ color: "var(--text-muted)" }}>{t("walletAcpPage.blockConf").replace("{height}", String(tx.block_height)).replace("{conf}", String(tx.confirmations))}</span>
                       </div>
                       <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>{tx.txid}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                        <span style={{ color: "var(--text-muted)" }}>Sent: {tx.sent_acp} ACP</span>
-                        <span style={{ color: "var(--text-muted)" }}>Received: {tx.received_acp} ACP</span>
-                        <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>Net: {tx.net_acp} ACP</strong>
+                        <span style={{ color: "var(--text-muted)" }}>{t("walletAcpPage.sentLabel").replace("{amount}", tx.sent_acp)}</span>
+                        <span style={{ color: "var(--text-muted)" }}>{t("walletAcpPage.receivedLabel").replace("{amount}", tx.received_acp)}</span>
+                        <strong style={{ color: tx.net_acp.startsWith("-") ? "#ef4444" : "#10b981" }}>{t("walletAcpPage.netLabel").replace("{amount}", tx.net_acp)}</strong>
                       </div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{tx.block_time}</div>
                     </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { insuranceDesk } from "@/lib/api";
 
 type Product = {
@@ -39,6 +40,7 @@ function formatAcp(value: string) {
 }
 
 export default function InsurancePage() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
@@ -55,10 +57,10 @@ export default function InsurancePage() {
         setCatalog(data);
         if (data.products[0]) setSelected(data.products[0].coverage_class);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load insurance catalog");
+        setError(err instanceof Error ? err.message : t("insurancePage.loadError"));
       }
     })();
-  }, []);
+  }, [t]);
 
   const onQuote = async () => {
     setBusy(true);
@@ -71,7 +73,7 @@ export default function InsurancePage() {
       })) as Quote;
       setQuote(q);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Quote failed");
+      setError(err instanceof Error ? err.message : t("insurancePage.quoteError"));
     } finally {
       setBusy(false);
     }
@@ -79,7 +81,7 @@ export default function InsurancePage() {
 
   const onBuy = async () => {
     if (!isAuthenticated) {
-      setError("Sign in to buy a policy");
+      setError(t("insurancePage.signInToBuy"));
       return;
     }
     setBusy(true);
@@ -89,9 +91,11 @@ export default function InsurancePage() {
         coverage_class: selected,
         sum_insured_acp: sumInsured,
       });
-      setInfo(`Policy issued: ${(policy as { id: string }).id}`);
+      setInfo(
+        t("insurancePage.policyIssued").replace("{id}", (policy as { id: string }).id)
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Purchase failed");
+      setError(err instanceof Error ? err.message : t("insurancePage.purchaseError"));
     } finally {
       setBusy(false);
     }
@@ -102,8 +106,10 @@ export default function InsurancePage() {
       <Navigation />
       <div className="mx-auto max-w-5xl px-4 py-10 space-y-6">
         <div>
-          <p className="text-emerald-400 text-sm uppercase tracking-wide">ACP Insurance</p>
-          <h1 className="text-3xl font-semibold mt-1">{catalog?.title ?? "Insurance Desk"}</h1>
+          <p className="text-emerald-400 text-sm uppercase tracking-wide">{t("insurancePage.kicker")}</p>
+          <h1 className="text-3xl font-semibold mt-1">
+            {catalog?.title ?? t("insurancePage.titleFallback")}
+          </h1>
           <p className="text-slate-400 mt-2">{catalog?.tagline}</p>
         </div>
 
@@ -131,7 +137,10 @@ export default function InsurancePage() {
               <div className="font-medium">{p.label}</div>
               <div className="text-slate-400 text-sm mt-1">{p.description}</div>
               <div className="text-xs text-slate-500 mt-2">
-                Premium {p.premium_bps} bps · {formatAcp(p.min_sum_insured_acp)}–{formatAcp(p.max_sum_insured_acp)}
+                {t("insurancePage.premiumRange")
+                  .replace("{bps}", String(p.premium_bps))
+                  .replace("{min}", formatAcp(p.min_sum_insured_acp))
+                  .replace("{max}", formatAcp(p.max_sum_insured_acp))}
               </div>
             </button>
           ))}
@@ -139,7 +148,7 @@ export default function InsurancePage() {
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
           <label className="block text-sm text-slate-300">
-            Sum insured (ACP)
+            {t("insurancePage.sumInsuredLabel")}
             <input
               className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2"
               value={sumInsured}
@@ -153,7 +162,7 @@ export default function InsurancePage() {
               onClick={() => void onQuote()}
               className="rounded-lg bg-slate-100 text-slate-900 px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              Quote
+              {t("insurancePage.quote")}
             </button>
             <button
               type="button"
@@ -161,16 +170,19 @@ export default function InsurancePage() {
               onClick={() => void onBuy()}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              Buy with ACP
+              {t("insurancePage.buyWithAcp")}
             </button>
             <Link href="/wallet" className="rounded-lg border border-slate-700 px-4 py-2 text-sm">
-              Wallet
+              {t("insurancePage.wallet")}
             </Link>
           </div>
           {quote ? (
             <p className="text-sm text-slate-300">
-              Premium <strong>{formatAcp(quote.premium_acp)}</strong> for {formatAcp(quote.sum_insured_acp)} ·{" "}
-              {quote.term_days}d · hash {quote.quote_hash.slice(0, 12)}…
+              {t("insurancePage.quoteSummary")
+                .replace("{premium}", formatAcp(quote.premium_acp))
+                .replace("{sum}", formatAcp(quote.sum_insured_acp))
+                .replace("{days}", String(quote.term_days))
+                .replace("{hash}", quote.quote_hash.slice(0, 12))}
             </p>
           ) : null}
         </div>

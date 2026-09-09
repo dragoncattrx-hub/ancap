@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { techAuction } from "@/lib/api";
 
 type Lot = {
@@ -37,6 +38,7 @@ function formatAcp(value: string) {
 }
 
 export default function TechAuctionPage() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
@@ -51,17 +53,18 @@ export default function TechAuctionPage() {
       setCatalog(data);
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load TECH auction");
+      setError(err instanceof Error ? err.message : t("techPage.loadError"));
     }
   };
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onBid = async (lot: Lot) => {
     if (!isAuthenticated) {
-      setError("Sign in to bid on technology lots");
+      setError(t("techPage.signInToBid"));
       return;
     }
     const stake = amount.trim() || lot.min_next_acp;
@@ -72,11 +75,15 @@ export default function TechAuctionPage() {
         tx_hash?: string;
         amount_acp: string;
       };
-      setInfo(`Bid ${formatAcp(bid.amount_acp)} · tx ${bid.tx_hash?.slice(0, 12) || "anchored"}…`);
+      setInfo(
+        t("techPage.bidPlaced")
+          .replace("{amount}", formatAcp(bid.amount_acp))
+          .replace("{tx}", bid.tx_hash?.slice(0, 12) || t("techPage.anchored"))
+      );
       setSelectedId(lot.id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bid failed");
+      setError(err instanceof Error ? err.message : t("techPage.bidError"));
     } finally {
       setBusy(false);
     }
@@ -86,20 +93,20 @@ export default function TechAuctionPage() {
     <main className="min-h-screen bg-[#071018] text-slate-100">
       <Navigation />
       <section className="mx-auto max-w-5xl px-4 py-10">
-        <p className="text-sm uppercase tracking-[0.2em] text-cyan-400/80">ANCAP TECH</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-cyan-400/80">{t("techPage.kicker")}</p>
         <h1 className="mt-2 font-serif text-4xl text-white md:text-5xl">
-          {catalog?.title || "TECH Auction"}
+          {catalog?.title || t("techPage.titleFallback")}
         </h1>
         <p className="mt-3 max-w-2xl text-slate-300">
-          {catalog?.tagline || "License platform technologies settled in ACP via AuctionEscrow."}
+          {catalog?.tagline || t("techPage.taglineFallback")}
         </p>
         <p className="mt-4 text-sm text-slate-500">{catalog?.compliance_note}</p>
 
         {catalog?.technologies?.length ? (
           <div className="mt-8 grid gap-2 sm:grid-cols-2">
-            {catalog.technologies.map((t) => (
-              <div key={t.id} className="border-b border-white/10 py-2 text-sm text-slate-300">
-                <span className="text-cyan-300/90">{t.layer}</span> · {t.label}
+            {catalog.technologies.map((tech) => (
+              <div key={tech.id} className="border-b border-white/10 py-2 text-sm text-slate-300">
+                <span className="text-cyan-300/90">{tech.layer}</span> · {tech.label}
               </div>
             ))}
           </div>
@@ -107,15 +114,15 @@ export default function TechAuctionPage() {
 
         <div className="mt-8 flex flex-wrap items-end gap-3">
           <label className="text-sm text-slate-400">
-            Bid amount (ACP)
+            {t("techPage.bidAmount")}
             <input
               className="mt-1 block w-40 border border-white/15 bg-black/40 px-3 py-2 text-white"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="min next"
+              placeholder={t("techPage.minNextPlaceholder")}
             />
           </label>
-          <p className="text-sm text-slate-500">Network growth lowers bid increments (expo boost).</p>
+          <p className="text-sm text-slate-500">{t("techPage.expoHint")}</p>
         </div>
 
         {error ? <p className="mt-4 text-sm text-rose-400">{error}</p> : null}
@@ -134,10 +141,12 @@ export default function TechAuctionPage() {
               <p className="mt-1 text-sm text-cyan-200/80">{lot.stack}</p>
               <p className="mt-2 text-slate-300">{lot.blurb}</p>
               <p className="mt-3 text-sm text-slate-400">
-                Current {formatAcp(lot.current_acp)} · next ≥ {formatAcp(lot.min_next_acp)} ·{" "}
-                {lot.bid_count} bids
+                {t("techPage.lotMeta")
+                  .replace("{current}", formatAcp(lot.current_acp))
+                  .replace("{next}", formatAcp(lot.min_next_acp))
+                  .replace("{count}", String(lot.bid_count))}
                 {lot.exponential_boost_bps
-                  ? ` · expo −${lot.exponential_boost_bps} bps`
+                  ? t("techPage.lotExpo").replace("{bps}", String(lot.exponential_boost_bps))
                   : ""}
               </p>
               <button
@@ -146,7 +155,7 @@ export default function TechAuctionPage() {
                 onClick={() => void onBid(lot)}
                 className="mt-3 border border-cyan-400/40 px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-400/10 disabled:opacity-50"
               >
-                Bid ACP
+                {t("techPage.bidAcp")}
               </button>
             </li>
           ))}

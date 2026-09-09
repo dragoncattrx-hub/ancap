@@ -5,10 +5,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { ledger, payments, workflowStore } from "@/lib/api";
 import { loadStripeJs, type StripeCardElement } from "@/lib/stripe";
 import { fallbackWorkflowCreditPackages, type WorkflowCreditPackage } from "@/lib/workflowStore";
-import { getStripePaymentMethodEvidence, getStripeSettlementSignal } from "./stripe-settlement";
+import {
+  getStripePaymentMethodEvidence,
+  getStripeSettlementSignal,
+  type StripePaymentMethodEvidence,
+  type StripeSettlementSignal,
+} from "./stripe-settlement";
 
 type BalanceResponse = {
   account_id: string;
@@ -72,8 +78,56 @@ type StripeIntentResponse = {
 const STRIPE_CURRENCIES = ["USD", "EUR"] as const;
 type StripeCurrency = typeof STRIPE_CURRENCIES[number];
 
+function localizeSettlement(signal: StripeSettlementSignal, t: (key: string) => string) {
+  if (signal.source === "poll_fallback") {
+    return {
+      label: t("creditsPage.settlePollFallback"),
+      hint: t("creditsPage.settlePollHint"),
+      verificationLabel: t("creditsPage.settlePollVerify"),
+      verificationHint: t("creditsPage.settlePollVerifyHint"),
+    };
+  }
+  if (signal.source === "webhook") {
+    return {
+      label: t("creditsPage.settleWebhook"),
+      hint: t("creditsPage.settleWebhookHint"),
+      verificationLabel: t("creditsPage.settleWebhookVerify"),
+      verificationHint: t("creditsPage.settleWebhookVerifyHint"),
+    };
+  }
+  return {
+    label: t("creditsPage.settlePending"),
+    hint: signal.hint ? t("creditsPage.settlePendingHint") : "",
+    verificationLabel: t("creditsPage.settlePendingVerify"),
+    verificationHint: signal.verificationHint ? t("creditsPage.settlePendingVerifyHint") : "",
+  };
+}
+
+function localizePaymentMethodEvidence(evidence: StripePaymentMethodEvidence, t: (key: string) => string) {
+  const selectionLabel =
+    evidence.selection === "saved_method"
+      ? t("creditsPage.methodSaved")
+      : evidence.selection === "new_card"
+        ? t("creditsPage.methodNew")
+        : t("creditsPage.methodUnknown");
+  const selectionHint =
+    evidence.selection === "saved_method"
+      ? t("creditsPage.methodSavedHint")
+      : evidence.selection === "new_card"
+        ? t("creditsPage.methodNewHint")
+        : "";
+  const saveRequestedLabel =
+    evidence.saveRequested === true
+      ? t("creditsPage.saveRequested")
+      : evidence.saveRequested === false
+        ? t("creditsPage.saveNotRequested")
+        : t("creditsPage.saveUnknown");
+  return { selectionLabel, selectionHint, saveRequestedLabel };
+}
+
 export default function WalletCreditsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [events, setEvents] = useState<LedgerEvent[]>([]);
@@ -185,7 +239,7 @@ export default function WalletCreditsPage() {
         if (cancelled || !stripeCardMountRef.current) return;
         const stripe = stripeFactory(stripeIntent.stripe.publishable_key);
         if (!stripe) {
-          throw new Error("Stripe.js failed to initialize");
+          throw new Error(t("creditsPage.stripeInitFailed"));
         }
         stripeCardElementRef.current?.destroy();
         const elements = stripe.elements();
@@ -216,7 +270,7 @@ export default function WalletCreditsPage() {
       stripeCardElementRef.current?.destroy();
       stripeCardElementRef.current = null;
     };
-  }, [stripeIntent, stripeSelectedMethodId, stripePanelOpen]);
+  }, [stripeIntent, stripeSelectedMethodId, stripePanelOpen, t]);
 
   const totalCurrencies = useMemo(() => (balance?.balances || []).length, [balance]);
 
@@ -295,7 +349,7 @@ export default function WalletCreditsPage() {
       const stripeFactory = await loadStripeJs();
       const stripe = stripeFactory(stripeIntent.stripe.publishable_key);
       if (!stripe) {
-        throw new Error("Stripe.js failed to initialize");
+        throw new Error(t("creditsPage.stripeInitFailed"));
       }
       const paymentMethod = stripeSelectedMethodId
         ? stripeSelectedMethodId
@@ -303,7 +357,7 @@ export default function WalletCreditsPage() {
           ? { card: stripeCardElementRef.current }
           : undefined;
       if (!paymentMethod) {
-        throw new Error("Choose a saved card or enter a new card");
+        throw new Error(t("creditsPage.chooseCard"));
       }
       const result = await stripe.confirmCardPayment(stripeIntent.stripe.client_secret, {
         payment_method: paymentMethod,
@@ -386,6 +440,8 @@ export default function WalletCreditsPage() {
 
   const stripeSettlement = getStripeSettlementSignal(stripeIntent?.item.provider_payload);
   const stripePaymentMethodEvidence = getStripePaymentMethodEvidence(stripeIntent?.item.provider_payload);
+  const localizedSettlement = localizeSettlement(stripeSettlement, t);
+  const localizedPaymentMethod = localizePaymentMethodEvidence(stripePaymentMethodEvidence, t);
   const stripeLastEventType = stripeSettlement.lastEventType;
   const stripeLastEventId = stripeSettlement.lastEventId;
   const stripeLastEventAt = stripeSettlement.lastEventAt;
@@ -403,19 +459,19 @@ export default function WalletCreditsPage() {
             <div className="card-header" style={{ alignItems: "flex-start" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-                  Wallet credits
+                  {t("creditsPage.kicker")}
                 </div>
                 <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "var(--text)", margin: "8px 0 10px" }}>
-                  Credits & spend balance
+                  {t("creditsPage.title")}
                 </h1>
                 <div style={{ color: "var(--text-muted)", maxWidth: 760, lineHeight: 1.5 }}>
-                  Simple ledger-backed credits view for the monetization loop: what balance exists, what moved recently, and where to spend next.
+                  {t("creditsPage.lead")}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <Link href="/billing" className="btn btn-ghost">Billing overview</Link>
-                <Link href="/wallet/acp" className="btn btn-ghost">ACP wallet</Link>
-                <Link href="/ai/workflows" className="btn btn-primary">Use on workflows</Link>
+                <Link href="/billing" className="btn btn-ghost">{t("creditsPage.billingOverview")}</Link>
+                <Link href="/wallet/acp" className="btn btn-ghost">{t("creditsPage.acpWallet")}</Link>
+                <Link href="/ai/workflows" className="btn btn-primary">{t("creditsPage.useOnWorkflows")}</Link>
               </div>
             </div>
           </div>
@@ -427,22 +483,22 @@ export default function WalletCreditsPage() {
           )}
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>Loading credits…</div>
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text-muted)" }}>{t("creditsPage.loading")}</div>
           ) : (
             <>
               <div className="responsive-grid responsive-grid-3" style={{ marginBottom: 18 }}>
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Credit account</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("creditsPage.creditAccount")}</div>
                   <div style={{ color: "var(--text)", fontWeight: 800, wordBreak: "break-all" }}>{balance?.account_id || "—"}</div>
                 </div>
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Currencies</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("creditsPage.currencies")}</div>
                   <div style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text)" }}>{totalCurrencies}</div>
                 </div>
                 <div className="card">
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>Next move</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: 8 }}>{t("creditsPage.nextMove")}</div>
                   <div style={{ color: "var(--text)", fontWeight: 700 }}>
-                    Fund ACP / ACP path and connect it to paid workflow execution.
+                    {t("creditsPage.nextMoveText")}
                   </div>
                 </div>
               </div>
@@ -450,14 +506,14 @@ export default function WalletCreditsPage() {
               <div style={{ marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 12 }}>
                   <div>
-                    <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text)", margin: 0 }}>Credit packages</h2>
+                    <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text)", margin: 0 }}>{t("creditsPage.packagesTitle")}</h2>
                     <div style={{ color: "var(--text-muted)", marginTop: 4 }}>
-                      Prepaid workflow balance with traceable payment intents and ledger events.
+                      {t("creditsPage.packagesLead")}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <label style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                      <span>Stripe currency</span>
+                      <span>{t("creditsPage.stripeCurrency")}</span>
                       <select
                         value={stripeCurrency}
                         onChange={(event) => setStripeCurrency(event.target.value as StripeCurrency)}
@@ -468,13 +524,13 @@ export default function WalletCreditsPage() {
                         ))}
                       </select>
                     </label>
-                    {stripeMethodsLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Loading saved cards...</div>}
-                    {packagesLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Loading packages...</div>}
+                    {stripeMethodsLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{t("creditsPage.loadingSavedCards")}</div>}
+                    {packagesLoading && <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{t("creditsPage.loadingPackages")}</div>}
                   </div>
                 </div>
 
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 12 }}>
-                  Stripe is the fiat adapter layer. Current supported checkout currencies: {STRIPE_CURRENCIES.join(", ")}. ACP/manual invoices stay available separately.
+                  {t("creditsPage.stripeAdapterNote").replace("{currencies}", STRIPE_CURRENCIES.join(", "))}
                 </div>
 
                 {topUpIntent && (
@@ -483,7 +539,11 @@ export default function WalletCreditsPage() {
                       <div>
                         <div style={{ color: "var(--text)", fontWeight: 800 }}>{topUpIntent.package.title}</div>
                         <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 4 }}>
-                          Pay {topUpIntent.item.amount.amount} {topUpIntent.item.amount.currency} to credit {topUpIntent.package.credit_amount.amount} {topUpIntent.package.credit_amount.currency}.
+                          {t("creditsPage.payToCredit")
+                            .replace("{payAmount}", topUpIntent.item.amount.amount)
+                            .replace("{payCurrency}", topUpIntent.item.amount.currency)
+                            .replace("{creditAmount}", topUpIntent.package.credit_amount.amount)
+                            .replace("{creditCurrency}", topUpIntent.package.credit_amount.currency)}
                         </div>
                       </div>
                       <strong style={{ color: topUpIntent.credited ? "var(--accent)" : "var(--text)" }}>{topUpIntent.item.status}</strong>
@@ -491,12 +551,12 @@ export default function WalletCreditsPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: 10, alignItems: "center" }}>
                       <input
                         value={topUpReference}
-                        placeholder="payment reference"
+                        placeholder={t("creditsPage.paymentReference")}
                         style={{ minWidth: 0 }}
                         readOnly
                       />
                       <span style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", color: topUpIntent.credited ? "var(--accent)" : "var(--text-muted)", fontWeight: 800 }}>
-                        {topUpIntent.credited ? "Credited" : "Awaiting approval"}
+                        {topUpIntent.credited ? t("creditsPage.credited") : t("creditsPage.awaitingApproval")}
                       </span>
                     </div>
                   </div>
@@ -506,25 +566,32 @@ export default function WalletCreditsPage() {
                   <div className="card" style={{ marginBottom: 12, borderColor: "rgba(59,130,246,0.35)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
                       <div>
-                        <div style={{ color: "var(--text)", fontWeight: 800 }}>Stripe checkout</div>
+                        <div style={{ color: "var(--text)", fontWeight: 800 }}>{t("creditsPage.stripeCheckout")}</div>
                         <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: 4 }}>
                           {stripeIntent
-                            ? `Package ${stripeIntent.package.title}: pay ${stripeIntent.stripe.amount.amount} ${stripeIntent.stripe.amount.currency} for ${stripeIntent.package.credit_amount.amount} ${stripeIntent.package.credit_amount.currency}.`
+                            ? t("creditsPage.stripePackagePay")
+                                .replace("{title}", stripeIntent.package.title)
+                                .replace("{payAmount}", stripeIntent.stripe.amount.amount)
+                                .replace("{payCurrency}", stripeIntent.stripe.amount.currency)
+                                .replace("{creditAmount}", stripeIntent.package.credit_amount.amount)
+                                .replace("{creditCurrency}", stripeIntent.package.credit_amount.currency)
                             : stripePackageSlug
-                              ? `Preparing Stripe intent for ${stripePackageSlug} in ${stripeCurrency}...`
-                              : "Preparing Stripe checkout..."}
+                              ? t("creditsPage.preparingStripeFor")
+                                  .replace("{slug}", stripePackageSlug)
+                                  .replace("{currency}", stripeCurrency)
+                              : t("creditsPage.preparingStripe")}
                         </div>
                       </div>
                       <button type="button" className="btn btn-ghost" onClick={closeStripePanel}>
-                        Close
+                        {t("creditsPage.close")}
                       </button>
                     </div>
 
                     <div className="responsive-grid responsive-grid-2" style={{ marginBottom: 12 }}>
                       <div className="card" style={{ marginBottom: 0 }}>
-                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>Saved cards</div>
+                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>{t("creditsPage.savedCards")}</div>
                         {!stripeMethods.length ? (
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>No saved cards yet. Enter a new card below.</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{t("creditsPage.noSavedCards")}</div>
                         ) : (
                           <div style={{ display: "grid", gap: 10 }}>
                             {stripeMethods.map((method) => {
@@ -544,7 +611,9 @@ export default function WalletCreditsPage() {
                                           {(method.card?.brand || method.type || "card").toUpperCase()} •••• {method.card?.last4 || "----"}
                                         </div>
                                         <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 3 }}>
-                                          Expires {method.card?.exp_month || "--"}/{method.card?.exp_year || "----"}
+                                          {t("creditsPage.expires")
+                                            .replace("{month}", String(method.card?.exp_month || "--"))
+                                            .replace("{year}", String(method.card?.exp_year || "----"))}
                                         </div>
                                       </div>
                                     </div>
@@ -554,7 +623,7 @@ export default function WalletCreditsPage() {
                                       onClick={() => void removeStripeMethod(method.id)}
                                       disabled={stripeRemovingMethodId === method.id}
                                     >
-                                      {stripeRemovingMethodId === method.id ? "Removing..." : "Remove"}
+                                      {stripeRemovingMethodId === method.id ? t("creditsPage.removing") : t("creditsPage.remove")}
                                     </button>
                                   </div>
                                 </label>
@@ -565,7 +634,7 @@ export default function WalletCreditsPage() {
                       </div>
 
                       <div className="card" style={{ marginBottom: 0 }}>
-                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>New card</div>
+                        <div style={{ color: "var(--text)", fontWeight: 700, marginBottom: 10 }}>{t("creditsPage.newCard")}</div>
                         <label style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 12 }}>
                           <input
                             type="radio"
@@ -573,7 +642,7 @@ export default function WalletCreditsPage() {
                             checked={!stripeSelectedMethodId}
                             onChange={() => setStripeSelectedMethodId("")}
                           />
-                          Enter a fresh card in Stripe.js
+                          {t("creditsPage.enterFreshCard")}
                         </label>
                         <div
                           ref={stripeCardMountRef}
@@ -592,7 +661,7 @@ export default function WalletCreditsPage() {
                             checked={stripeSaveMethod}
                             onChange={(event) => setStripeSaveMethod(event.target.checked)}
                           />
-                          Save card for the next top-up
+                          {t("creditsPage.saveCard")}
                         </label>
                       </div>
                     </div>
@@ -601,47 +670,47 @@ export default function WalletCreditsPage() {
                       <div className="card" style={{ marginBottom: 12, borderColor: "var(--border)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                           <div>
-                            <div style={{ color: "var(--text)", fontWeight: 700 }}>Stripe PaymentIntent</div>
+                            <div style={{ color: "var(--text)", fontWeight: 700 }}>{t("creditsPage.paymentIntent")}</div>
                             <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 4 }}>
-                              {stripeIntent.stripe.payment_intent_id} • status {stripeIntent.stripe.status}
+                              {stripeIntent.stripe.payment_intent_id} • {t("creditsPage.statusLabel").replace("{status}", stripeIntent.stripe.status)}
                             </div>
                             <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 6 }}>
-                              Ledger credit status: {stripeIntent.item.status}{stripePolling ? " • waiting for webhook..." : ""}
+                              {t("creditsPage.ledgerCreditStatus").replace("{status}", stripeIntent.item.status)}{stripePolling ? ` • ${t("creditsPage.waitingWebhook")}` : ""}
                             </div>
-                            {(stripeSettlement.label || stripeLastEventType || stripeLastEventAt || stripeLastPolledAt) && (
+                            {(localizedSettlement.label || stripeLastEventType || stripeLastEventAt || stripeLastPolledAt) && (
                               <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: 6, wordBreak: "break-word" }}>
                                 <div>
-                                  Settlement signal: {stripeSettlement.label}
+                                  {t("creditsPage.settlementSignal")} {localizedSettlement.label}
                                   {stripeLastEventType ? ` • ${stripeLastEventType}` : ""}
                                   {stripeLastEventId ? ` • ${stripeLastEventId}` : ""}
-                                  {stripeLastEventAt ? ` • event ${new Date(stripeLastEventAt).toLocaleString()}` : ""}
-                                  {stripeLastPolledAt ? ` • last poll ${new Date(stripeLastPolledAt).toLocaleString()}` : ""}
+                                  {stripeLastEventAt ? ` • ${t("creditsPage.eventAt").replace("{at}", new Date(stripeLastEventAt).toLocaleString())}` : ""}
+                                  {stripeLastPolledAt ? ` • ${t("creditsPage.lastPoll").replace("{at}", new Date(stripeLastPolledAt).toLocaleString())}` : ""}
                                 </div>
                                 <div style={{ marginTop: 4 }}>
-                                  Verification status: {stripeSettlement.verificationLabel}
+                                  {t("creditsPage.verificationStatus")} {localizedSettlement.verificationLabel}
                                 </div>
                                 <div style={{ marginTop: 4 }}>
-                                  Payment method evidence: {stripePaymentMethodEvidence.selectionLabel}
+                                  {t("creditsPage.paymentMethodEvidence")} {localizedPaymentMethod.selectionLabel}
                                   {stripePaymentMethodEvidence.requestedPaymentMethodId
                                     ? ` • ${stripePaymentMethodEvidence.requestedPaymentMethodId}`
                                     : ""}
                                   {stripePaymentMethodEvidence.saveRequested !== null
-                                    ? ` • save for reuse ${stripePaymentMethodEvidence.saveRequestedLabel}`
+                                    ? ` • ${t("creditsPage.saveForReuse").replace("{label}", localizedPaymentMethod.saveRequestedLabel)}`
                                     : ""}
                                 </div>
-                                {stripeSettlement.hint && (
+                                {localizedSettlement.hint && (
                                   <div style={{ marginTop: 4 }}>
-                                    {stripeSettlement.hint}
+                                    {localizedSettlement.hint}
                                   </div>
                                 )}
-                                {stripeSettlement.verificationHint && (
+                                {localizedSettlement.verificationHint && (
                                   <div style={{ marginTop: 4 }}>
-                                    {stripeSettlement.verificationHint}
+                                    {localizedSettlement.verificationHint}
                                   </div>
                                 )}
-                                {stripePaymentMethodEvidence.selectionHint && (
+                                {localizedPaymentMethod.selectionHint && (
                                   <div style={{ marginTop: 4 }}>
-                                    {stripePaymentMethodEvidence.selectionHint}
+                                    {localizedPaymentMethod.selectionHint}
                                   </div>
                                 )}
                               </div>
@@ -661,10 +730,10 @@ export default function WalletCreditsPage() {
                         onClick={() => void submitStripePayment()}
                         disabled={!stripeIntent || stripeProcessing || stripePolling || stripeLoadingSlug === stripePackageSlug}
                       >
-                        {stripeProcessing ? "Processing..." : stripePolling ? "Waiting for webhook..." : stripeIntent?.item.status === "captured" ? "Credits added" : stripeIntent?.stripe.status === "succeeded" ? "Payment submitted" : "Pay with Stripe"}
+                        {stripeProcessing ? t("creditsPage.processing") : stripePolling ? t("creditsPage.waitingForWebhook") : stripeIntent?.item.status === "captured" ? t("creditsPage.creditsAdded") : stripeIntent?.stripe.status === "succeeded" ? t("creditsPage.paymentSubmitted") : t("creditsPage.payWithStripe")}
                       </button>
                       <button type="button" className="btn btn-ghost" onClick={closeStripePanel}>
-                        Cancel
+                        {t("creditsPage.cancel")}
                       </button>
                     </div>
                   </div>
@@ -686,15 +755,15 @@ export default function WalletCreditsPage() {
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
                         <div>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Manual / ACP price</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("creditsPage.manualAcpPrice")}</div>
                           <strong style={{ color: "var(--text)" }}>{creditPackage.price.amount} {creditPackage.price.currency}</strong>
                         </div>
                         <div style={{ textAlign: "center" }}>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Stripe checkout</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("creditsPage.stripeCheckoutLabel")}</div>
                           <strong style={{ color: "var(--text)" }}>{creditPackage.price.amount} {stripeCurrency}</strong>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Receive</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("creditsPage.receive")}</div>
                           <strong style={{ color: "var(--accent)" }}>{creditPackage.credit_amount.amount} {creditPackage.credit_amount.currency}</strong>
                         </div>
                       </div>
@@ -713,7 +782,7 @@ export default function WalletCreditsPage() {
                           onClick={() => createTopUpIntent(creditPackage)}
                           disabled={topUpLoadingSlug === creditPackage.slug}
                         >
-                          {topUpLoadingSlug === creditPackage.slug ? "Creating..." : "Create invoice"}
+                          {topUpLoadingSlug === creditPackage.slug ? t("creditsPage.creating") : t("creditsPage.createInvoice")}
                         </button>
                         <button
                           type="button"
@@ -722,7 +791,7 @@ export default function WalletCreditsPage() {
                           onClick={() => void openStripeCheckout(creditPackage)}
                           disabled={stripeLoadingSlug === creditPackage.slug}
                         >
-                          {stripeLoadingSlug === creditPackage.slug ? "Preparing Stripe..." : "Pay with Stripe"}
+                          {stripeLoadingSlug === creditPackage.slug ? t("creditsPage.preparingStripeBtn") : t("creditsPage.payWithStripe")}
                         </button>
                       </div>
                     </div>
@@ -732,9 +801,9 @@ export default function WalletCreditsPage() {
 
               <div className="responsive-grid responsive-grid-2">
                 <div className="card">
-                  <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginTop: 0, color: "var(--text)", marginBottom: 12 }}>Available balances</h2>
+                  <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginTop: 0, color: "var(--text)", marginBottom: 12 }}>{t("creditsPage.availableBalances")}</h2>
                   {!balance?.balances?.length ? (
-                    <div style={{ color: "var(--text-muted)" }}>No credits available yet.</div>
+                    <div style={{ color: "var(--text-muted)" }}>{t("creditsPage.noCreditsYet")}</div>
                   ) : (
                     <div style={{ display: "grid", gap: 10 }}>
                       {balance.balances.map((item) => (
@@ -748,9 +817,9 @@ export default function WalletCreditsPage() {
                 </div>
 
                 <div className="card">
-                  <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginTop: 0, color: "var(--text)", marginBottom: 12 }}>Recent credit events</h2>
+                  <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginTop: 0, color: "var(--text)", marginBottom: 12 }}>{t("creditsPage.recentCreditEvents")}</h2>
                   {!events.length ? (
-                    <div style={{ color: "var(--text-muted)" }}>No ledger activity yet.</div>
+                    <div style={{ color: "var(--text-muted)" }}>{t("creditsPage.noLedgerActivity")}</div>
                   ) : (
                     <div style={{ display: "grid", gap: 10 }}>
                       {events.map((event) => (
