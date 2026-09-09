@@ -2,8 +2,9 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { setNativeWalletModule } from "@ancap/acp-wallet-sdk";
+import { setNativeWalletModule, setSecureVault } from "@ancap/acp-wallet-sdk";
 import { getExpoAcpCoreModule } from "expo-acp-core";
+import { expoSecureVault } from "@/lib/secure-vault-adapter";
 import { loadLanguagePreference } from "@/lib/i18n";
 import { hasPinLock, isSessionUnlocked, lockSession } from "@/lib/lock";
 import { hasVault } from "@/lib/vault";
@@ -19,6 +20,7 @@ export default function RootLayout() {
   useEffect(() => {
     void loadLanguagePreference();
     setNativeWalletModule(getExpoAcpCoreModule());
+    setSecureVault(expoSecureVault);
   }, []);
 
   // P5-6: auto-lock — check every 30s

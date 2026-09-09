@@ -522,6 +522,116 @@ export const animalAuction = {
   },
 };
 
+export const techAuction = {
+  async catalog() {
+    return apiFetch("/tech-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/tech-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async list(data: {
+    category: string;
+    title: string;
+    stack: string;
+    blurb: string;
+    starting_acp: string;
+    license_acknowledged: boolean;
+  }) {
+    return apiFetch("/tech-auction/lots", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async placeBid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/tech-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const insuranceDesk = {
+  async catalog() {
+    return apiFetch("/insurance/catalog");
+  },
+  async quote(data: {
+    coverage_class: string;
+    sum_insured_acp: string;
+    term_days?: number;
+    asset_ref_type?: string | null;
+    asset_ref_id?: string | null;
+  }) {
+    return apiFetch("/insurance/quote", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async createPolicy(data: {
+    coverage_class: string;
+    sum_insured_acp: string;
+    term_days?: number;
+    asset_ref_type?: string | null;
+    asset_ref_id?: string | null;
+    note?: string | null;
+  }) {
+    return apiFetch("/insurance/policies", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async listPolicies() {
+    return apiFetch("/insurance/policies");
+  },
+  async fileClaim(policyId: string, data: { amount_acp: string; note?: string; evidence?: Record<string, unknown> }) {
+    return apiFetch(`/insurance/policies/${encodeURIComponent(policyId)}/claims`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const arenaDesk = {
+  async catalog() {
+    return apiFetch("/arena/catalog");
+  },
+  async placeBet(marketId: string, data: { side: "yes" | "no"; stake_acp: string }) {
+    return apiFetch(`/arena/markets/${encodeURIComponent(marketId)}/bets`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async playHouse(data: { game: "coinflip" | "dice"; stake_acp: string; choice: string }) {
+    return apiFetch("/arena/house/play", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async commitHouse(data: { game: "coinflip" | "dice"; stake_acp: string }) {
+    return apiFetch("/arena/house/commit", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async revealHouse(data: { round_id: string; choice: string; client_seed: string }) {
+    return apiFetch("/arena/house/reveal", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const exponentialGrowth = {
+  async me() {
+    return apiFetch("/growth/exponential");
+  },
+  async compound(data: { principal_acp: string; periods?: number }) {
+    return apiFetch("/growth/exponential/compound", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const walletAcp = {
   async getDepositAddress() {
     // Prefer GET (cookie auth, no empty JSON body quirks). Fall back to POST for older gateways.

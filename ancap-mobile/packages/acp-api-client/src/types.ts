@@ -516,6 +516,50 @@ export type ExchangeTicket = {
   updated_at: string;
 };
 
+/** Soulbound digital passport (org identity + BSC attestation). */
+export type DigitalPassportRecord = {
+  id: string;
+  user_id: string;
+  org_id?: string | null;
+  wallet_address: string;
+  token_id: number;
+  claim_hash: string;
+  chain_id: string;
+  contract_address?: string | null;
+  tx_hash?: string | null;
+  token_uri?: string | null;
+  status: string;
+  nfc_credential_id?: string | null;
+  issued_at?: string | null;
+  revoked_at?: string | null;
+  created_at: string;
+  explorer_url?: string | null;
+};
+
+export type DigitalPassportListResponse = {
+  items: DigitalPassportRecord[];
+};
+
+export type DigitalPassportIssueInput = {
+  wallet_address: string;
+  nfc_credential_id?: string | null;
+};
+
+export type NfcCredentialRegisterInput = {
+  uid_hash: string;
+  label?: string | null;
+};
+
+export type NfcCredentialRecord = {
+  id: string;
+  label?: string | null;
+  uid_hash: string;
+  vendor: string;
+  created_at: string;
+  revoked_at?: string | null;
+  is_active: boolean;
+};
+
 /** Banknote/coin authenticity + numismatic valuation (iPhone prototype). */
 export type NumismaticInstrumentKind = "banknote" | "coin";
 export type NumismaticAuthVerdict =

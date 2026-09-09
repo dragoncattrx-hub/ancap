@@ -117,9 +117,11 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 | P5.5-2 | Org identity API (`/organizations/{org_id}/identity/...`) | [~] | NFC register/list/revoke, member verify/status, policy GET/PUT |
 | P5.5-3 | Mobile dep `react-native-nfc-manager` + Expo NFC permissions | [~] | package + `app.config.js` Android/iOS NFC strings |
 | P5.5-4 | i18n NFC unlock/settings strings (EN/RU/UK/DE) | [~] | `lib/i18n.ts` |
-| P5.5-5 | NFC unlock UI + local hash enrollment | [ ] | read UID, hash, compare on unlock screen |
+| P5.5-5 | NFC unlock UI + local hash enrollment | [x] | `unlock.tsx`, `settings.tsx`, `lib/nfc.ts` |
+| P5.5-5b | Digital passport BSC soulbound + API | [x] | `contracts/digital-passport/`, `066_digital_passport`, `/v1/passports/*` — `docs/DIGITAL_PASSPORT.md` |
+| P5.5-5c | Mobile Passport tab + NFC backend register | [x] | `app/(tabs)/passport.tsx`, `lib/identity.ts`, `EXPO_PUBLIC_ORG_ID` |
 | P5.5-6 | Org admin verification UI (web or mobile) | [ ] | consume identity API |
-| P5.5-7 | Policy enforcement (`require_nfc_for_admins/payments`) | [ ] | gate sensitive org/payment routes |
+| P5.5-7 | Policy enforcement (`require_nfc_for_admins/payments`) | [~] | `require_nfc_for_admins` on admin identity + org API key delete; payments gate next |
 | P5.5-8 | DESFire / challenge–response implants | [ ] | post-MVP secure element path |
 
 Spec: `docs/mobile/BIOHAX_NFC.md`

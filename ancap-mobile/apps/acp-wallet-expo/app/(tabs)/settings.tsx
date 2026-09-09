@@ -26,6 +26,7 @@ import {
   isVaultBiometricProtected,
   wipeVault,
 } from "@/lib/vault";
+import { syncNfcCredentialToBackend } from "@/lib/identity";
 
 const BASE = "https://ancap.cloud";
 
@@ -162,8 +163,12 @@ export default function SettingsScreen() {
   const onEnableNfc = async () => {
     try {
       await enableNfcUnlock();
+      const synced = await syncNfcCredentialToBackend();
       await refreshState();
-      Alert.alert(t("settings.nfcEnabledTitle"), t("settings.nfcEnabledBody"));
+      Alert.alert(
+        t("settings.nfcEnabledTitle"),
+        synced ? t("settings.nfcEnabledBodySynced") : t("settings.nfcEnabledBody")
+      );
     } catch (e) {
       Alert.alert(t("settings.nfcErrorTitle"), safeErrorMessage(e, "Unknown error"));
     }

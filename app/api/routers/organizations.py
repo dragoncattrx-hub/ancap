@@ -26,6 +26,7 @@ from app.db.models import (
     WebhookEndpoint,
 )
 from app.services.api_keys import generate_key
+from app.services.org_nfc_policy import require_nfc_for_admin_actions
 from app.schemas.keys import OrgApiKeyCreateRequest, OrgApiKeyPublic, OrgApiKeySpendCapRequest
 
 
@@ -850,6 +851,9 @@ async def delete_org_api_key(
     member = role_r.scalar_one_or_none()
     if member is None:
         raise HTTPException(status_code=403, detail="Not a member")
+    if member.role not in (OrgRoleEnum.admin, OrgRoleEnum.owner):
+        raise HTTPException(status_code=403, detail="Requires admin role or higher")
+    await require_nfc_for_admin_actions(session, org_id=oid, user_id=uid, member=member)
 
     # Use a direct DELETE statement: check org_id match in WHERE, return rowcount
     from sqlalchemy import delete

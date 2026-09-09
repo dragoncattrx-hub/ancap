@@ -1,0 +1,34 @@
+# SearXNG for Theodore / OpenClaw (official image searxng/searxng)
+#
+# Usage:
+#   docker compose -f docker-compose.searxng.yml up -d
+#   # Theodore web_search → http://127.0.0.1:9080
+#
+# OpenClaw:
+#   tools.web.search.provider = "searxng"
+#   plugins.entries.searxng.config.webSearch.baseUrl = "http://127.0.0.1:9080"
+
+services:
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    ports:
+      - "9080:8080"
+    volumes:
+      - ./infra/searxng:/etc/searxng:rw
+    environment:
+      SEARXNG_BASE_URL: http://127.0.0.1:9080/
+      SEARXNG_SECRET: ${SEARXNG_SECRET:-theodore-local-searxng-change-me}
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

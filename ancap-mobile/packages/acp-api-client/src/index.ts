@@ -68,4 +68,9 @@ export type {
   NumismaticRarity,
   NumismaticValueInput,
   NumismaticValueResult,
+  DigitalPassportRecord,
+  DigitalPassportListResponse,
+  DigitalPassportIssueInput,
+  NfcCredentialRegisterInput,
+  NfcCredentialRecord,
 } from "./types.js";

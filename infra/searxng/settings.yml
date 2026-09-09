@@ -1,0 +1,39 @@
+# SearXNG settings for Theodore OpenClaw web_search (JSON API required).
+use_default_settings: true
+
+general:
+  instance_name: "Theodore SearXNG"
+  enable_metrics: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "auto"
+  formats:
+    - html
+    - json
+
+server:
+  limiter: false
+  image_proxy: false
+  # Bound inside container; host maps 9080→8080
+  bind_address: "0.0.0.0"
+  secret_key: "theodore-local-searxng-change-me"
+
+ui:
+  static_use_hash: true
+
+# Prefer engines that work without API keys for local agent use
+engines:
+  - name: duckduckgo
+    disabled: false
+  - name: wikipedia
+    disabled: false
+  - name: wikidata
+    disabled: false
+  - name: brave
+    disabled: false
+  - name: google
+    disabled: false
+  - name: bing
+    disabled: false

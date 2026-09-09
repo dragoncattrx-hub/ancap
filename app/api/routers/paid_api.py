@@ -34,6 +34,7 @@ from app.schemas import (
 from app.services.api_keys import resolve_key_record
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
+from app.services.org_nfc_policy import require_nfc_for_payments
 
 
 router = APIRouter(prefix="/paid-api", tags=["Paid API"])
@@ -320,6 +321,13 @@ async def _charge_usage(
         raw_org_id = agent.metadata_.get("org_id")
         if isinstance(raw_org_id, str) and raw_org_id.strip():
             resolved_org_id = raw_org_id.strip()
+
+    if resolved_org_id and owner_user_id is not None:
+        await require_nfc_for_payments(
+            session,
+            org_id=UUID(resolved_org_id),
+            user_id=owner_user_id,
+        )
 
     currency = product.price.currency
     amount = Decimal(product.price.amount)

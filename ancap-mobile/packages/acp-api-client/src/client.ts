@@ -29,6 +29,11 @@ import type {
   NumismaticCatalog,
   NumismaticValueInput,
   NumismaticValueResult,
+  DigitalPassportListResponse,
+  DigitalPassportIssueInput,
+  DigitalPassportRecord,
+  NfcCredentialRegisterInput,
+  NfcCredentialRecord,
 } from "./types.js";
 
 export type AcpApiClientOptions = {
@@ -252,6 +257,31 @@ export class AcpApiClient {
 
   valueNumismatic(body: NumismaticValueInput): Promise<NumismaticValueResult> {
     return this.request<NumismaticValueResult>("/mobile/numismatic/value", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  listMyPassports(): Promise<DigitalPassportListResponse> {
+    return this.request<DigitalPassportListResponse>("/passports/me");
+  }
+
+  getPassport(passportId: string): Promise<DigitalPassportRecord> {
+    const enc = encodeURIComponent(passportId);
+    return this.request<DigitalPassportRecord>(`/passports/${enc}`);
+  }
+
+  issueOrgPassport(orgId: string, body: DigitalPassportIssueInput): Promise<DigitalPassportRecord> {
+    const enc = encodeURIComponent(orgId);
+    return this.request<DigitalPassportRecord>(`/passports/organizations/${enc}/issue`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  registerOrgNfcCredential(orgId: string, body: NfcCredentialRegisterInput): Promise<NfcCredentialRecord> {
+    const enc = encodeURIComponent(orgId);
+    return this.request<NfcCredentialRecord>(`/organizations/${enc}/identity/nfc/register`, {
       method: "POST",
       body: JSON.stringify(body),
     });

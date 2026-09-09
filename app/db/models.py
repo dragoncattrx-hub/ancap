@@ -1975,6 +1975,55 @@ class UserNfcCredential(Base):
     )
 
 
+class DigitalPassportStatusEnum(str, enum.Enum):
+    pending = "pending"
+    active = "active"
+    revoked = "revoked"
+
+
+class DigitalPassport(Base):
+    __tablename__ = "digital_passports"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    wallet_address = Column(String(42), nullable=False, index=True)
+    token_id = Column(BigInteger, nullable=False, unique=True, index=True)
+    claim_hash = Column(String(66), nullable=False, index=True)
+    chain_id = Column(String(32), nullable=False, default="bsc")
+    contract_address = Column(String(42), nullable=True)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    token_uri = Column(String(512), nullable=True)
+    status = Column(
+        SQLEnum(
+            DigitalPassportStatusEnum,
+            name="digitalpassportstatusenum",
+            native_enum=False,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default=DigitalPassportStatusEnum.pending,
+    )
+    nfc_credential_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("user_nfc_credentials.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    issued_at = Column(DateTime(timezone=True), nullable=True)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+    org = relationship("Organization", foreign_keys=[org_id])
+    nfc_credential = relationship("UserNfcCredential", foreign_keys=[nfc_credential_id])
+
+    __table_args__ = (
+        Index("ix_digital_passports_user_org", "user_id", "org_id"),
+    )
+
+
 class OrganizationNfcPolicy(Base):
     __tablename__ = "organization_nfc_policies"
 
@@ -2545,6 +2594,9 @@ class AnimalAuctionLot(Base):
     starting_acp = Column(Numeric(38, 18), nullable=False)
     status = Column(String(24), nullable=False, default="live", index=True)
     contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    contract_address = Column(String(42), nullable=True)
+    chain_id = Column(String(32), nullable=True, default="bsc")
     featured = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
@@ -2566,6 +2618,7 @@ class AnimalAuctionBid(Base):
     status = Column(String(24), nullable=False, default="placed", index=True)
     note = Column(Text, nullable=True)
     contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     bidder = relationship("User", foreign_keys=[bidder_user_id])
@@ -2574,3 +2627,166 @@ class AnimalAuctionBid(Base):
         Index("ix_animal_auction_bids_lot_created", "lot_id", "created_at"),
         Index("ix_animal_auction_bids_lot_amount", "lot_id", "amount_acp"),
     )
+
+
+# --- TECH IP / technology license auction ---
+
+
+class TechAuctionLot(Base):
+    __tablename__ = "tech_auction_lots"
+
+    id = Column(String(64), primary_key=True)
+    seller_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    category = Column(String(32), nullable=False, index=True)
+    title = Column(String(120), nullable=False)
+    stack = Column(String(160), nullable=False)
+    blurb = Column(Text, nullable=False)
+    starting_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="live", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    contract_address = Column(String(42), nullable=True)
+    chain_id = Column(String(32), nullable=True, default="bsc")
+    featured = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    seller = relationship("User", foreign_keys=[seller_user_id])
+
+
+class TechAuctionBid(Base):
+    __tablename__ = "tech_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_tech_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_tech_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )
+
+
+# --- ACP Insurance (economy/insurance) ---
+
+
+class InsurancePool(Base):
+    __tablename__ = "insurance_pools"
+
+    id = Column(String(64), primary_key=True)
+    label = Column(String(120), nullable=False)
+    coverage_class = Column(String(48), nullable=False, index=True)
+    status = Column(String(24), nullable=False, default="open", index=True)
+    collateral_spec_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class InsurancePolicy(Base):
+    __tablename__ = "insurance_policies"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    pool_id = Column(String(64), ForeignKey("insurance_pools.id", ondelete="CASCADE"), nullable=False, index=True)
+    holder_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    coverage_class = Column(String(48), nullable=False, index=True)
+    coverage_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    asset_ref_type = Column(String(48), nullable=True)
+    asset_ref_id = Column(String(128), nullable=True)
+    sum_insured_acp = Column(Numeric(38, 18), nullable=False)
+    premium_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="active", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    starts_at = Column(DateTime(timezone=True), nullable=False)
+    ends_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    holder = relationship("User", foreign_keys=[holder_user_id])
+
+
+class InsuranceClaim(Base):
+    __tablename__ = "insurance_claims"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    policy_id = Column(UUID(as_uuid=False), ForeignKey("insurance_policies.id", ondelete="CASCADE"), nullable=False, index=True)
+    claimant_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="filed", index=True)
+    ref_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    note = Column(Text, nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+
+    claimant = relationship("User", foreign_keys=[claimant_user_id])
+
+
+# --- ACP Arena (prediction desk + house games) ---
+
+
+class ArenaMarket(Base):
+    __tablename__ = "arena_markets"
+
+    id = Column(String(64), primary_key=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(String(48), nullable=False, default="event", index=True)
+    status = Column(String(24), nullable=False, default="open", index=True)
+    outcome_yes_label = Column(String(80), nullable=False, default="YES")
+    outcome_no_label = Column(String(80), nullable=False, default="NO")
+    closes_at = Column(DateTime(timezone=True), nullable=True)
+    resolved_outcome = Column(String(8), nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class ArenaBet(Base):
+    __tablename__ = "arena_bets"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    market_id = Column(String(64), ForeignKey("arena_markets.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    side = Column(String(8), nullable=False)
+    stake_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="open", index=True)
+    payout_acp = Column(Numeric(38, 18), nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+
+class ArenaHouseRound(Base):
+    __tablename__ = "arena_house_rounds"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    game = Column(String(24), nullable=False, index=True)
+    stake_acp = Column(Numeric(38, 18), nullable=False)
+    choice = Column(String(32), nullable=False)
+    server_seed_hash = Column(String(64), nullable=False)
+    server_seed = Column(String(128), nullable=True)
+    result = Column(String(32), nullable=True)
+    won = Column(Boolean, nullable=True)
+    payout_acp = Column(Numeric(38, 18), nullable=True)
+    house_edge_bps = Column(Integer, nullable=False, default=200)
+    status = Column(String(24), nullable=False, default="resolved", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])

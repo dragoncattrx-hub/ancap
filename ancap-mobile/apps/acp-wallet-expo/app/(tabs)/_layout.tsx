@@ -20,6 +20,10 @@ export default function TabsLayout() {
         name="authenticity"
         options={{ title: t("tabs.authenticity"), headerTitle: t("tabs.authenticityHeader") }}
       />
+      <Tabs.Screen
+        name="passport"
+        options={{ title: t("tabs.passport"), headerTitle: t("tabs.passportHeader") }}
+      />
       <Tabs.Screen name="activity" options={{ title: t("tabs.activity") }} />
       <Tabs.Screen name="send" options={{ title: t("tabs.send") }} />
       <Tabs.Screen name="bridge" options={{ title: t("tabs.bridge") }} />

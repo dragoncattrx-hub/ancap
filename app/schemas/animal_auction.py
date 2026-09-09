@@ -53,6 +53,7 @@ class AnimalAuctionBidPublic(BaseModel):
     status: str
     created_at: datetime
     contract_hash: str
+    tx_hash: str | None = None
     lot: AnimalAuctionLotPublic
 
 

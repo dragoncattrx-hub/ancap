@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AnimalAuctionBid, AnimalAuctionLot
 from app.services.auction_lock import lock_auction_lot, normalize_lot_id
+from app.services.auction_escrow import anchor_bid, anchor_create_lot
 from app.schemas.animal_auction import (
     AnimalAuctionBidPublic,
     AnimalAuctionCatalogPublic,
@@ -367,6 +368,13 @@ async def list_animal(
         "starting_acp": _api_str(starting),
     }
     digest = contract_hash_for(payload)
+    tx_hash, contract_address = anchor_create_lot(
+        lot_id=lot_id,
+        seller_address="0x0000000000000000000000000000000000000001",
+        reserve_acp=starting,
+        claim_hash=digest,
+        vertical="fauna",
+    )
     row = AnimalAuctionLot(
         id=lot_id,
         seller_user_id=user_id,
@@ -378,6 +386,9 @@ async def list_animal(
         starting_acp=starting,
         status="live",
         contract_hash=digest,
+        tx_hash=tx_hash,
+        contract_address=contract_address,
+        chain_id="bsc",
         featured=False,
         created_at=_utcnow(),
     )
@@ -417,14 +428,23 @@ async def place_bid(
         )
         .values(status="outbid")
     )
+    bid_id = uuid.uuid4()
+    bid_hash = hashlib.sha256(f"{bid_id}:{user_id}:{amount}".encode()).hexdigest()
+    tx_hash, _ = anchor_bid(
+        lot_id=str(lot["id"]),
+        bidder_address="0x0000000000000000000000000000000000000002",
+        amount_acp=amount,
+        bid_hash=bid_hash,
+    )
     row = AnimalAuctionBid(
-        id=str(uuid.uuid4()),
+        id=str(bid_id),
         lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
         note=_clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None,
         contract_hash=public.contract_hash,
+        tx_hash=tx_hash,
         created_at=_utcnow(),
     )
     session.add(row)
@@ -438,5 +458,6 @@ async def place_bid(
         status=str(row.status),
         created_at=row.created_at,
         contract_hash=str(row.contract_hash),
+        tx_hash=getattr(row, "tx_hash", None),
         lot=updated,
     )

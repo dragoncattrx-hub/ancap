@@ -65,6 +65,7 @@ from app.api.routers import (
     audit,
     organizations,
     org_identity,
+    digital_passport,
     payments,
     payouts,
     creators,
@@ -84,6 +85,10 @@ from app.api.routers import (
     aeterna,
     space_auction,
     animal_auction,
+    insurance,
+    arena,
+    exponential_growth,
+    tech_auction,
 )
 
 settings = get_settings()
@@ -240,6 +245,7 @@ ALL_ROUTERS = [
     audit.router,
     organizations.router,
     org_identity.router,
+    digital_passport.router,
     payments.router,
     payouts.router,
     creators.router,
@@ -260,6 +266,10 @@ ALL_ROUTERS = [
     aeterna.router,
     space_auction.router,
     animal_auction.router,
+    insurance.router,
+    arena.router,
+    exponential_growth.router,
+    tech_auction.router,
 ]
 
 for r in ALL_ROUTERS:

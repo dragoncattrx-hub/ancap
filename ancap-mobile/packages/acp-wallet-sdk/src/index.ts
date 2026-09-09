@@ -9,6 +9,8 @@ export {
   setNativeWalletModule,
   signAndPrepareTransfer,
   validateAddressWithNative,
+  setSecureVault,
+  getSecureVault,
 } from "./wallet-service.js";
 export type {
   CreatedWalletResult,

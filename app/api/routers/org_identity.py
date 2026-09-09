@@ -16,6 +16,7 @@ from app.db.models import (
     User,
     UserNfcCredential,
 )
+from app.schemas.digital_passport import DigitalPassportIssueRequest, DigitalPassportPublic
 from app.schemas.org_identity import (
     MemberVerificationPublic,
     MemberVerificationStatusUpdate,
@@ -25,6 +26,13 @@ from app.schemas.org_identity import (
     OrganizationNfcPolicyPublic,
     OrganizationNfcPolicyUpdate,
 )
+from app.services.digital_passport import (
+    explorer_url,
+    issue_passport,
+    resolve_nfc_credential,
+    revoke_passport_for_member,
+)
+from app.services.org_nfc_policy import require_nfc_for_admin_actions
 
 router = APIRouter(prefix="/organizations/{org_id}/identity", tags=["Organization Identity"])
 
@@ -192,6 +200,7 @@ async def verify_organization_member(
     oid = _parse_org_id(org_id)
     uid = _require_auth_user_id(user_id)
     await _require_role(session, oid, uid, OrgRoleEnum.admin)
+    await require_nfc_for_admin_actions(session, org_id=oid, user_id=uid)
 
     target_uid = _parse_user_id(member_user_id)
     q = select(OrganizationMember).where(
@@ -219,6 +228,74 @@ async def verify_organization_member(
     return _member_verification_public(member, user_email=user_email)
 
 
+@router.post(
+    "/members/{member_user_id}/passport",
+    response_model=DigitalPassportPublic,
+    status_code=201,
+)
+async def issue_member_passport_from_identity(
+    org_id: str,
+    member_user_id: str,
+    body: DigitalPassportIssueRequest,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    oid = _parse_org_id(org_id)
+    uid = _require_auth_user_id(user_id)
+    await _require_role(session, oid, uid, OrgRoleEnum.admin)
+    await require_nfc_for_admin_actions(session, org_id=oid, user_id=uid)
+
+    target_uid = _parse_user_id(member_user_id)
+    q = select(OrganizationMember).where(
+        OrganizationMember.org_id == oid,
+        OrganizationMember.user_id == target_uid,
+    )
+    member = (await session.execute(q)).scalar_one_or_none()
+    if member is None:
+        raise HTTPException(status_code=404, detail="Organization member not found")
+
+    nfc_cred = None
+    if body.nfc_credential_id:
+        try:
+            cid = uuid.UUID(body.nfc_credential_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Invalid nfc_credential_id") from exc
+        nfc_cred = await resolve_nfc_credential(session, user_id=target_uid, nfc_credential_id=cid)
+        if nfc_cred is None:
+            raise HTTPException(status_code=404, detail="NFC credential not found")
+
+    try:
+        rec = await issue_passport(
+            session,
+            user_id=target_uid,
+            org_id=oid,
+            wallet_address=body.wallet_address,
+            nfc_credential_id=nfc_cred.id if nfc_cred else None,
+            member=member,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return DigitalPassportPublic(
+        id=str(rec.id),
+        user_id=str(rec.user_id),
+        org_id=str(rec.org_id) if rec.org_id else None,
+        wallet_address=rec.wallet_address,
+        token_id=int(rec.token_id),
+        claim_hash=rec.claim_hash,
+        chain_id=rec.chain_id,
+        contract_address=rec.contract_address,
+        tx_hash=rec.tx_hash,
+        token_uri=rec.token_uri,
+        status=rec.status.value,
+        nfc_credential_id=str(rec.nfc_credential_id) if rec.nfc_credential_id else None,
+        issued_at=rec.issued_at,
+        revoked_at=rec.revoked_at,
+        created_at=rec.created_at,
+        explorer_url=explorer_url(rec.tx_hash),
+    )
+
+
 @router.patch("/members/{member_user_id}/status", response_model=MemberVerificationPublic)
 async def update_member_verification_status(
     org_id: str,
@@ -241,6 +318,8 @@ async def update_member_verification_status(
     if member is None:
         raise HTTPException(status_code=404, detail="Organization member not found")
 
+    await require_nfc_for_admin_actions(session, org_id=oid, user_id=uid)
+
     member.verification_status = body.verification_status
     if body.verification_status == MemberVerificationStatusEnum.verified:
         member.verified_at = datetime.now(timezone.utc)
@@ -248,6 +327,11 @@ async def update_member_verification_status(
     else:
         member.verified_at = None
         member.verified_by_user_id = None
+        if body.verification_status in (
+            MemberVerificationStatusEnum.suspended,
+            MemberVerificationStatusEnum.revoked,
+        ):
+            await revoke_passport_for_member(session, user_id=target_uid, org_id=oid)
 
     await session.flush()
 
@@ -308,6 +392,7 @@ async def update_organization_nfc_policy(
     oid = _parse_org_id(org_id)
     uid = _require_auth_user_id(user_id)
     await _require_role(session, oid, uid, OrgRoleEnum.admin)
+    await require_nfc_for_admin_actions(session, org_id=oid, user_id=uid)
 
     policy = await _get_or_create_policy(session, oid)
     if body.require_nfc_for_admins is not None:

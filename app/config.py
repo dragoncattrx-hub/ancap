@@ -353,7 +353,27 @@ class Settings(BaseSettings):
     acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"
     turnstile_site_key: str = ""
 
-    # Mobile wallet
+    # Digital passport (BSC soulbound)
+    digital_passport_driver: str = "mock"  # mock | bsc
+    digital_passport_contract: str = ""
+    digital_passport_chain_id: str = "bsc"
+    digital_passport_bsc_rpc_url: str = ""
+    digital_passport_minter_private_key: str | None = None
+
+    # Economy desks (insurance/arena) — record_only until ledger rails land
+    economy_desk_settlement_mode: str = "record_only"  # record_only | ledger
+    ff_exponential_growth: bool = True
+    exponential_growth_base_rate: str = "0.08"
+    exponential_growth_max_depth: int = 8
+    exponential_growth_passport_boost: str = "0.25"
+
+    # Auction escrow (BSC operator-anchored)
+    auction_escrow_driver: str = "mock"  # mock | bsc
+    auction_escrow_contract: str = ""
+    auction_escrow_bsc_rpc_url: str = ""
+    auction_escrow_operator_private_key: str | None = None
+    ff_tech_auction: bool = True
+
     mobile_wallet_min_app_version: str = "1.0.0"
     mobile_wallet_maintenance: bool = False
     mobile_wallet_maintenance_message: str | None = None

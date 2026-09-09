@@ -1,5 +1,5 @@
 import { assertAcpAddress } from "./address.js";
-import type { SignedTransaction, TransferRequest } from "./types.js";
+import type { SecureVault, SignedTransaction, TransferRequest } from "./types.js";
 
 export type CreatedWalletResult = {
   address: string;
@@ -27,9 +27,18 @@ export type NativeWalletModule = {
 };
 
 let nativeModule: NativeWalletModule | null | undefined;
+let secureVault: SecureVault | null = null;
 
 export function setNativeWalletModule(mod: NativeWalletModule | null): void {
   nativeModule = mod;
+}
+
+export function setSecureVault(vault: SecureVault | null): void {
+  secureVault = vault;
+}
+
+export function getSecureVault(): SecureVault | null {
+  return secureVault;
 }
 
 function requireNative(): NativeWalletModule {
