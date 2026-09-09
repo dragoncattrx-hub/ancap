@@ -117,6 +117,8 @@ Parallel trust/adoption track:
 - native create/send/sign verification in dev builds
 - real device verification for PIN / biometrics / SecureVault
 - remaining MASVS/device-release verification (repo baseline is closed; real-device/native validation still remains)
+- release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`, and the remaining external evidence now has copy-ready templates in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` and `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`
+- public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`
 - actual device runs, TestFlight/Play Internal uploads, final listing assets/operator/legal completion, and the final v1.0.0 cut (the final runbook is now scaffolded, but the external execution work still remains)
 
 **Truth source:** `MASTER_ROADMAP.md`, `docs/mobile/ROADMAP.md`

@@ -3,4 +3,4 @@
 CLI (and in the future Web) for ACP: keys, signature, transactions.
 
 - **Assembly:** `cargo build --release`
-- Heats: [../docs/ACP_CRYPTO.md](../docs/ACP_CRYPTO.md).
+- Heats: [../../docs/ACP_CRYPTO.md](../../docs/ACP_CRYPTO.md).

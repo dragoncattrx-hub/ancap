@@ -1223,8 +1223,8 @@ async def list_transactions(
 async def get_transaction_details(
     txid: str,
     privacy: bool = Query(default=True),
-    user_id: str = Depends(require_auth),
 ):
+    """Public chain explorer lookup — tx details are on-chain readable without session auth."""
     txid_norm = (txid or "").strip()
     if len(txid_norm) < 16:
         raise HTTPException(status_code=400, detail="txid looks invalid")

@@ -139,7 +139,8 @@ def test_flow1_smoke_golden_path(client, base_vertical_id):
   assert r1j["state"] in ("running", "succeeded", "completed")
 
   after = _get_seller_balance(client, seller_id, currency="VUSD")
-  assert after >= before + 10.0
+  # Listing price is 10 VUSD; platform take can leave the seller with 9.5+.
+  assert after >= before + 9.5
 
 
 def test_duplicate_order_same_key_is_idempotent_smoke(client, base_vertical_id):

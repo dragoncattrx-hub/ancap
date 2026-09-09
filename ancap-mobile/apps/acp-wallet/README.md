@@ -1,6 +1,6 @@
 # ACP Wallet App
 
-React Native shell. **Native iOS/Android projects are not generated yet** — follow Phase 4 in [`../../docs/mobile/ROADMAP.md`](../../docs/mobile/ROADMAP.md).
+React Native shell. **Native iOS/Android projects are not generated yet** — follow Phase 4 in [`../../../docs/mobile/ROADMAP.md`](../../../docs/mobile/ROADMAP.md).
 
 ## Generate native projects
 

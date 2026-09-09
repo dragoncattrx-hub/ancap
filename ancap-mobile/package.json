@@ -27,7 +27,8 @@
   "dependencies": {
     "expo": "~52.0.28",
     "react": "18.3.1",
-    "react-native": "0.76.6"
+    "react-native": "0.76.6",
+    "react-native-nfc-manager": "^3.17.2"
   },
   "devDependencies": {
     "@types/react": "~18.3.12",

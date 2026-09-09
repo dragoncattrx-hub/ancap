@@ -141,7 +141,7 @@ Monorepo for the ANCAP platform, native ACP chain, BSC bridge contracts, and mob
 | [`docs/`](docs/) | Architecture, security, mobile, bridge, and operator runbooks. |
 | [`examples/`](examples/) | Public-safe integration samples (payments, wallet login). |
 | [`schemas/`](schemas/) | Shared JSON/API schemas. |
-| [`Sicret/`](Sicret/) | **Local secrets only** — credentials, chain data, keystores (gitignored, never commit). |
+| `Sicret/` (local, gitignored) | **Local secrets only** — credentials, chain data, keystores (never commit). |
 
 **Status and planning docs (root):** [STATUS.md](STATUS.md) (short truth), [MASTER_ROADMAP.md](MASTER_ROADMAP.md) (execution source of truth), [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md) (supporting snapshot), [ROADMAP.md](ROADMAP.md) (historical).
 

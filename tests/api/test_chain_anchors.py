@@ -37,7 +37,7 @@ class _StubAsyncClient:
     async def __aexit__(self, exc_type, exc, tb):
         return False
 
-    async def post(self, url, json=None, timeout=None):
+    async def post(self, url, json=None, timeout=None, headers=None, **kwargs):
         if self._raise_exc:
             raise self._raise_exc
         assert self._response is not None
