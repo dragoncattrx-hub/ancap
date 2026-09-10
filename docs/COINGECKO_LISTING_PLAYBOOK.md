@@ -4,14 +4,17 @@ Status: **ready to submit for wACP only after liquidity is raised**. Native ACP 
 
 ## Place now (no CoinGecko approval)
 
-These are already usable / self-hosted — see also <https://ancap.cloud/markets>:
+These are already usable / self-hosted — see also <https://ancap.cloud/markets> and <https://ancap.cloud/listings.json>:
 
 | Surface | Status | Link |
 | --- | --- | --- |
 | PancakeSwap trade-by-address | Live | [swap wACP/USDT](https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402) |
+| DexTools | Live | [pair explorer](https://www.dextools.io/app/en/bnb/pair-explorer/0xf391ca2bcbab93afa23326ebf1e35db950841601) |
 | GeckoTerminal | Indexed | [pool](https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601) |
 | BscScan | Live | [token](https://bscscan.com/token/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402) |
+| GoPlus | Live | [token security](https://gopluslabs.io/token-security/56/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402) |
 | ANCAP token list (Uniswap schema) | Self-hosted | <https://ancap.cloud/tokenlist.json> |
+| Placement matrix | Self-hosted | [PUBLIC_PLACEMENT_MATRIX.md](./listings/PUBLIC_PLACEMENT_MATRIX.md) |
 | Trust Wallet Assets | Pack ready | `docs/listings/trustwallet-smartchain-wacp/` |
 | DexScreener | Waiting on volume | Auto after non-dust trades |
 | CoinGecko coin page | Waiting on liquidity + Partners form | This playbook |

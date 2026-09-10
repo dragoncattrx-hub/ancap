@@ -22,6 +22,7 @@ Users buy useful AI execution with ACP, creators publish paid workflows, and eve
 - ${SITE_URL}/wallet/acp - custodial ACP wallet after sign-in.
 - ${SITE_URL}/markets - public wACP market surfaces and official token list.
 - ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (wACP on BSC).
+- ${SITE_URL}/listings.json - machine-readable placement matrix (live / pending / blocked).
 
 ## Machine-readable resources
 - ${SITE_URL}/agent-products.json - workflow, bundle, API, creator, and proof product catalog for AI agents.

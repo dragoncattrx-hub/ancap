@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { SiteLegalFooter } from "@/components/legal/LegalViews";
@@ -10,66 +11,98 @@ import {
   getWacpLogoUrl,
 } from "@/lib/wacpToken";
 
-const POOL = "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601";
-const GATEWAY = "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b";
+type Placement = {
+  id: string;
+  name: string;
+  status: string;
+  fee: string;
+  url: string;
+  how: string;
+};
 
-const LIVE = [
+type ListingsPayload = {
+  official_asset?: { address?: string; pool_wacp_usdt_v2?: string };
+  placements?: Placement[];
+};
+
+const FALLBACK: Placement[] = [
   {
-    title: "DexTools",
-    status: "Live — use this for Coin/DexTools forms",
-    body: "Wrapped ACP (wACP) is already indexed. In promo forms that require CoinGecko or DexTools, search the contract address — not “ANCAP” or “ACP”.",
-    href: `https://www.dextools.io/app/en/bnb/pair-explorer/${POOL.toLowerCase()}`,
-    external: true,
+    id: "dextools",
+    name: "DexTools",
+    status: "live",
+    fee: "free_index_paid_profile",
+    url: "https://www.dextools.io/app/en/bnb/pair-explorer/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+    how: "Auto-indexed — use CA in Coin/DexTools promo forms",
   },
   {
-    title: "PancakeSwap (trade by address)",
-    status: "Live — no approval needed",
-    body: "Import wACP by contract on BSC and trade the wACP/USDT V2 pair. Official default token lists are curated; address import always works.",
-    href: `https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=${WACP_BSC_CONTRACT}`,
-    external: true,
+    id: "pancakeswap",
+    name: "PancakeSwap V2",
+    status: "live",
+    fee: "free",
+    url: `https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=${WACP_BSC_CONTRACT}`,
+    how: "Permissionless trade-by-address",
   },
   {
-    title: "GeckoTerminal",
-    status: "Indexed",
-    body: "CoinGecko’s DEX terminal already tracks Wrapped ACP and the PancakeSwap pool. Full CoinGecko coin page still needs liquidity + Partners form.",
-    href: `https://www.geckoterminal.com/bsc/pools/${POOL.toLowerCase()}`,
-    external: true,
+    id: "geckoterminal",
+    name: "GeckoTerminal",
+    status: "live",
+    fee: "free",
+    url: "https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+    how: "CoinGecko DEX terminal",
   },
   {
-    title: "BscScan",
-    status: "Live",
-    body: "On-chain token page for the official wACP contract.",
-    href: `https://bscscan.com/token/${WACP_BSC_CONTRACT}`,
-    external: true,
+    id: "bscscan",
+    name: "BscScan",
+    status: "live",
+    fee: "free",
+    url: `https://bscscan.com/token/${WACP_BSC_CONTRACT}`,
+    how: "Explorer token page",
   },
   {
-    title: "ANCAP official token list",
-    status: "Self-hosted — import anywhere",
-    body: "Uniswap-compatible JSON. Add this URL in wallets / DEX custom token lists that support Token Lists.",
-    href: "/tokenlist.json",
-    external: false,
+    id: "goplus",
+    name: "GoPlus Security",
+    status: "live",
+    fee: "free",
+    url: `https://gopluslabs.io/token-security/56/${WACP_BSC_CONTRACT}`,
+    how: "Security index; is_in_dex=true",
+  },
+  {
+    id: "ancap_tokenlist",
+    name: "ANCAP token list",
+    status: "live",
+    fee: "free",
+    url: "/tokenlist.json",
+    how: "Self-hosted Uniswap token list",
   },
 ];
 
-const LATER = [
-  {
-    title: "CoinGecko Active Listing",
-    body: "Blocked until pool liquidity/volume is non-dust. Use docs/COINGECKO_LISTING_PLAYBOOK.md — list as wACP, never as ticker ACP.",
-    href: "/legal/market-data",
-  },
-  {
-    title: "DexScreener",
-    body: "Often lags dust pairs. Prefer DexTools (already live). After more liquidity/swaps it usually appears automatically.",
-    href: `https://dexscreener.com/bsc/${POOL}`,
-  },
-  {
-    title: "Trust Wallet Assets",
-    body: "Community PR pack prepared under docs/listings/trustwallet-smartchain-wacp/ — submit to trustwallet/assets when ready.",
-    href: "https://github.com/trustwallet/assets",
-  },
-];
+function badgeFor(status: string): string {
+  if (status === "live") return "badge badge-success";
+  if (status.startsWith("pending") || status.includes("pack")) return "badge";
+  return "badge";
+}
 
 export default function MarketsPage() {
+  const [placements, setPlacements] = useState<Placement[]>(FALLBACK);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/listings.json", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as ListingsPayload;
+        if (Array.isArray(data.placements) && data.placements.length) {
+          setPlacements(data.placements);
+        }
+      } catch {
+        /* keep fallback */
+      }
+    })();
+  }, []);
+
+  const live = placements.filter((p) => p.status === "live");
+  const later = placements.filter((p) => p.status !== "live");
+
   return (
     <div className="relative min-h-screen">
       <Navigation />
@@ -80,28 +113,28 @@ export default function MarketsPage() {
             fontSize: "clamp(1.9rem, 4vw, 2.9rem)",
             fontWeight: 850,
             margin: "10px 0 14px",
-            maxWidth: 820,
+            maxWidth: 900,
           }}
         >
-          Where wACP is already visible
+          Place wACP everywhere that does not need a gatekeeper
         </h1>
-        <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 760, marginBottom: 12 }}>
-          No CoinGecko approval required for these surfaces. Official asset is{" "}
-          <strong>{WACP_SYMBOL}</strong> on BNB Smart Chain — not the unrelated CoinGecko ticker
-          “ACP” (Arena Of Faith). Native ACP stays on the ANCAP chain; sACP lists after mainnet deploy.
+        <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 820, marginBottom: 12 }}>
+          Full internet spam is impossible: CoinGecko, CMC, DexScreener and CEX lists need liquidity or paid
+          profiles. Below is every free surface we can verify or self-host for{" "}
+          <strong>{WACP_SYMBOL}</strong>.
         </p>
         <p
           style={{
             color: "var(--accent-strong)",
             lineHeight: 1.65,
-            maxWidth: 760,
+            maxWidth: 820,
             marginBottom: 28,
             fontSize: "0.95rem",
           }}
         >
-          Forms that ask for a CoinGecko/DexTools coin: paste CA{" "}
-          <code style={{ wordBreak: "break-all" }}>{WACP_BSC_CONTRACT}</code> or search{" "}
-          <strong>wACP</strong> / <strong>Wrapped ACP</strong>. Do not search “ANCAP” or “ACP”.
+          Promo forms that require CoinGecko <em>or</em> DexTools: paste{" "}
+          <code style={{ wordBreak: "break-all" }}>{WACP_BSC_CONTRACT}</code> — search{" "}
+          <strong>wACP</strong>, never “ANCAP” / “ACP”.
         </p>
 
         <div
@@ -126,43 +159,58 @@ export default function MarketsPage() {
               <div className="break-all" style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: 6 }}>
                 {WACP_BSC_CONTRACT}
               </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: 6 }}>
-                Gateway {GATEWAY}
-              </div>
             </div>
             <WacpPublicActions layout="home" />
           </div>
+          <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <a href="/listings.json" className="btn btn-ghost">
+              listings.json
+            </a>
+            <a href="/tokenlist.json" className="btn btn-ghost">
+              tokenlist.json
+            </a>
+            <Link href="/docs/wacp" className="btn btn-ghost">
+              Docs
+            </Link>
+          </div>
         </div>
 
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 14 }}>Live without gatekeepers</h2>
+        <h2 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 14 }}>
+          Live ({live.length})
+        </h2>
         <div className="responsive-grid responsive-grid-2" style={{ gap: 14, marginBottom: 36 }}>
-          {LIVE.map((item) => (
-            <div key={item.title} className="card" style={{ borderRadius: 8, minWidth: 0 }}>
-              <div className="badge badge-success" style={{ marginBottom: 12 }}>
-                {item.status}
+          {live.map((item) => (
+            <div key={item.id} className="card" style={{ borderRadius: 8, minWidth: 0 }}>
+              <div className={badgeFor(item.status)} style={{ marginBottom: 12 }}>
+                {item.status} · {item.fee}
               </div>
-              <h3 style={{ margin: "0 0 10px", fontSize: "1.05rem" }}>{item.title}</h3>
-              <p style={{ margin: "0 0 14px", color: "var(--text-muted)", lineHeight: 1.65 }}>{item.body}</p>
-              {item.external ? (
-                <a href={item.href} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+              <h3 style={{ margin: "0 0 10px", fontSize: "1.05rem" }}>{item.name}</h3>
+              <p style={{ margin: "0 0 14px", color: "var(--text-muted)", lineHeight: 1.65 }}>{item.how}</p>
+              {item.url.startsWith("http") ? (
+                <a href={item.url} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
                   Open
                 </a>
               ) : (
-                <Link href={item.href} className="btn btn-ghost">
-                  Open token list
+                <Link href={item.url} className="btn btn-ghost">
+                  Open
                 </Link>
               )}
             </div>
           ))}
         </div>
 
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 14 }}>Needs liquidity / review</h2>
+        <h2 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 14 }}>
+          Pending / blocked ({later.length})
+        </h2>
         <div className="responsive-grid responsive-grid-2" style={{ gap: 14, marginBottom: 36 }}>
-          {LATER.map((item) => (
-            <div key={item.title} className="card" style={{ borderRadius: 8, minWidth: 0 }}>
-              <h3 style={{ margin: "0 0 10px", fontSize: "1.05rem" }}>{item.title}</h3>
-              <p style={{ margin: "0 0 14px", color: "var(--text-muted)", lineHeight: 1.65 }}>{item.body}</p>
-              <a href={item.href} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+          {later.map((item) => (
+            <div key={item.id} className="card" style={{ borderRadius: 8, minWidth: 0 }}>
+              <div className={badgeFor(item.status)} style={{ marginBottom: 12 }}>
+                {item.status} · {item.fee}
+              </div>
+              <h3 style={{ margin: "0 0 10px", fontSize: "1.05rem" }}>{item.name}</h3>
+              <p style={{ margin: "0 0 14px", color: "var(--text-muted)", lineHeight: 1.65 }}>{item.how}</p>
+              <a href={item.url} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
                 Details
               </a>
             </div>
@@ -170,27 +218,13 @@ export default function MarketsPage() {
         </div>
 
         <div className="card" style={{ borderRadius: 8 }}>
-          <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Import the official list</h2>
-          <p style={{ color: "var(--text-muted)", lineHeight: 1.65 }}>
-            Token list URL (copy into wallet / DEX custom lists):
-          </p>
-          <code style={{ display: "block", wordBreak: "break-all", marginTop: 8 }}>
-            https://ancap.cloud/tokenlist.json
-          </code>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 18 }}>
-            <Link href="/docs/wacp" className="btn btn-ghost">
-              wACP docs
-            </Link>
-            <Link href="/bridge/acp-bsc" className="btn btn-ghost">
-              Bridge
-            </Link>
-            <Link href="/legal/market-data" className="btn btn-ghost">
-              Market data disclosure
-            </Link>
-            <Link href="/docs/wacp/pancakeswap" className="btn btn-ghost">
-              PancakeSwap notes
-            </Link>
-          </div>
+          <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>What unlocks the rest</h2>
+          <ol style={{ color: "var(--text-muted)", lineHeight: 1.75, paddingLeft: 20, margin: 0 }}>
+            <li>Seed real PancakeSwap wACP/USDT liquidity (not dust).</li>
+            <li>Make a few round-trip swaps → DexScreener usually appears.</li>
+            <li>Submit CoinGecko Partners as <strong>wACP</strong> (playbook in repo).</li>
+            <li>Optional paid DexTools/DexScreener profile updates for logo/socials.</li>
+          </ol>
         </div>
       </main>
       <SiteLegalFooter />

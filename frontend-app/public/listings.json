@@ -1,0 +1,118 @@
+{
+  "updated_at": "2026-09-10T13:45:00Z",
+  "project": "ANCAP",
+  "official_asset": {
+    "name": "Wrapped ACP",
+    "symbol": "wACP",
+    "chain": "bsc",
+    "chain_id": 56,
+    "address": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+    "decimals": 18,
+    "pool_wacp_usdt_v2": "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601",
+    "gateway": "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b",
+    "logo": "https://ancap.cloud/wacp-logo.png",
+    "website": "https://ancap.cloud",
+    "docs": "https://ancap.cloud/docs/wacp",
+    "tokenlist": "https://ancap.cloud/tokenlist.json",
+    "markets": "https://ancap.cloud/markets",
+    "note": "Do not confuse with CoinGecko ticker ACP (Arena Of Faith). Native ACP is ANCAP L1; sACP lists after mainnet deploy."
+  },
+  "placements": [
+    {
+      "id": "pancakeswap",
+      "name": "PancakeSwap V2",
+      "status": "live",
+      "fee": "free",
+      "url": "https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "how": "Permissionless trade-by-address"
+    },
+    {
+      "id": "dextools",
+      "name": "DexTools",
+      "status": "live",
+      "fee": "free_index_paid_profile",
+      "url": "https://www.dextools.io/app/en/bnb/pair-explorer/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+      "how": "Auto-indexed from PancakeSwap; Update Info is paid"
+    },
+    {
+      "id": "geckoterminal",
+      "name": "GeckoTerminal",
+      "status": "live",
+      "fee": "free",
+      "url": "https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+      "how": "Auto-indexed DEX terminal (CoinGecko family)"
+    },
+    {
+      "id": "bscscan",
+      "name": "BscScan",
+      "status": "live",
+      "fee": "free",
+      "url": "https://bscscan.com/token/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "how": "On-chain explorer token page"
+    },
+    {
+      "id": "goplus",
+      "name": "GoPlus Security",
+      "status": "live",
+      "fee": "free",
+      "url": "https://gopluslabs.io/token-security/56/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "how": "Security API indexes any BSC token; is_in_dex=true"
+    },
+    {
+      "id": "ancap_tokenlist",
+      "name": "ANCAP Official Token List",
+      "status": "live",
+      "fee": "free",
+      "url": "https://ancap.cloud/tokenlist.json",
+      "how": "Self-hosted Uniswap token-list schema"
+    },
+    {
+      "id": "ancap_markets",
+      "name": "ANCAP Markets Hub",
+      "status": "live",
+      "fee": "free",
+      "url": "https://ancap.cloud/markets",
+      "how": "First-party discovery page"
+    },
+    {
+      "id": "dexscreener",
+      "name": "DexScreener",
+      "status": "pending_volume",
+      "fee": "free_index_paid_profile",
+      "url": "https://dexscreener.com/bsc/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+      "how": "Needs non-dust swaps; API currently returns pairs:null"
+    },
+    {
+      "id": "coingecko",
+      "name": "CoinGecko Active Listing",
+      "status": "blocked_liquidity",
+      "fee": "free_form",
+      "url": "https://www.coingecko.com/en/request-form",
+      "how": "Submit as wACP after meaningful pool depth — docs/COINGECKO_LISTING_PLAYBOOK.md"
+    },
+    {
+      "id": "trustwallet",
+      "name": "Trust Wallet Assets",
+      "status": "pack_ready",
+      "fee": "free_pr",
+      "url": "https://github.com/trustwallet/assets",
+      "how": "Community PR pack in docs/listings/trustwallet-smartchain-wacp/"
+    },
+    {
+      "id": "poocoin",
+      "name": "PooCoin",
+      "status": "auto_if_indexed",
+      "fee": "free",
+      "url": "https://poocoin.app/tokens/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "how": "BSC chart SPA; open by CA"
+    },
+    {
+      "id": "dexview",
+      "name": "DexView",
+      "status": "auto_if_indexed",
+      "fee": "free",
+      "url": "https://www.dexview.com/bsc/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "how": "Open by CA"
+    }
+  ]
+}
