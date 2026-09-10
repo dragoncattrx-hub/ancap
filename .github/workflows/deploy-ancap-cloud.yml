@@ -45,11 +45,12 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          ACCUWEATHER_API_KEY: ${{ secrets.ACCUWEATHER_API_KEY }}
         with:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
-          envs: COINGECKO_API_KEY
+          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           timeout: 600s
           command_timeout: 70m
@@ -86,6 +87,21 @@ jobs:
               echo "== COINGECKO_API_KEY GitHub secret not set; market board stays platform-only"
             fi
 
+            if [ -n "${ACCUWEATHER_API_KEY:-}" ]; then
+              echo "== sync AccuWeather key into host .env (value redacted)"
+              touch .env
+              if grep -q '^ACCUWEATHER_API_KEY=' .env; then
+                sed -i "s|^ACCUWEATHER_API_KEY=.*|ACCUWEATHER_API_KEY=${ACCUWEATHER_API_KEY}|" .env
+              else
+                printf '\nACCUWEATHER_ENABLED=true\nACCUWEATHER_API_KEY=%s\nACCUWEATHER_LANGUAGE=en-us\n' "$ACCUWEATHER_API_KEY" >> .env
+              fi
+              if ! grep -q '^ACCUWEATHER_ENABLED=' .env; then
+                printf 'ACCUWEATHER_ENABLED=true\n' >> .env
+              fi
+            else
+              echo "== ACCUWEATHER_API_KEY GitHub secret not set; Earth widget uses interim feed + AccuWeather link"
+            fi
+
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
@@ -93,7 +109,7 @@ jobs:
               echo "== restart services (reload nginx config + existing images)"
               # Recreate proxy so bind-mounted infra/nginx/default.conf is always live.
               timeout 120 $COMPOSE up -d --force-recreate proxy || true
-              # Force-recreate api so COINGECKO_* from host .env is picked up by compose.
+              # Force-recreate api so COINGECKO_* / ACCUWEATHER_* from host .env is picked up by compose.
               timeout 120 $COMPOSE up -d --force-recreate api || true
               timeout 120 $COMPOSE up -d api frontend acp-node proxy || true
               echo "== wait api healthy"

@@ -1693,6 +1693,15 @@ export const marketData = {
   },
 };
 
+export const weatherApi = {
+  async current(lat: number, lon: number) {
+    return apiFetch(`/weather/current?lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}`);
+  },
+  async status() {
+    return apiFetch("/weather/status");
+  },
+};
+
 export const merchant = {
   async dashboard() {
     return apiFetch("/merchant/dashboard");
@@ -2161,6 +2170,7 @@ export const api = {
   sacpPublic,
   cryptoBenchmark,
   marketData,
+  weatherApi,
   subscriptions,
   organizations,
   webhooks,

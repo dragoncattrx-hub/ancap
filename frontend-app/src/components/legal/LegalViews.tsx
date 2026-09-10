@@ -354,7 +354,7 @@ export function MarketDataDisclosureView() {
       actions={<LegalNavPills current="/legal/market-data" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.md${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.md${n}Body`)}</p>
@@ -364,14 +364,24 @@ export function MarketDataDisclosureView() {
       <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
         <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.marketDataAttributionTitle")}</h2>
         <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.marketDataAttributionBody")}</p>
-        <a
-          className="mt-3 inline-block text-sm text-sky-200 underline decoration-sky-400/40 underline-offset-4"
-          href="https://www.coingecko.com"
-          target="_blank"
-          rel="noreferrer"
-        >
-          coingecko.com
-        </a>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href="https://www.coingecko.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            coingecko.com
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href="https://www.accuweather.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            accuweather.com
+          </a>
+        </div>
       </section>
     </LegalShell>
   );

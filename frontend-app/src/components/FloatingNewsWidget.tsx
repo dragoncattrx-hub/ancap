@@ -3,37 +3,62 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PROJECT_NEWS_RU } from "@/lib/projectNewsRu";
+import {
+  FLOATING_WIDGET_EVENT,
+  emitFloatingWidget,
+  type FloatingWidgetEventDetail,
+} from "@/lib/floatingWidgets";
 
-const STORAGE_KEY = "ancap_news_widget_collapsed_v1";
+const STORAGE_KEY = "ancap_news_widget_collapsed_v2";
 const ROTATE_MS = 4500;
 
 export function FloatingNewsWidget() {
   const [index, setIndex] = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const items = PROJECT_NEWS_RU.slice(0, 8);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const apply = () => setIsMobile(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
     try {
-      setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === "0") setOpen(true);
+      else if (stored === "1") setOpen(false);
+      else setOpen(!mq.matches); // desktop open by default, mobile closed
     } catch {
-      /* ignore */
+      setOpen(!mq.matches);
     }
     setReady(true);
+    return () => mq.removeEventListener("change", apply);
   }, []);
 
   useEffect(() => {
-    if (collapsed || items.length < 2) return;
+    const onPeer = (ev: Event) => {
+      const detail = (ev as CustomEvent<FloatingWidgetEventDetail>).detail;
+      if (!detail || detail.id === "news") return;
+      if (detail.open && isMobile) setOpen(false);
+    };
+    window.addEventListener(FLOATING_WIDGET_EVENT, onPeer as EventListener);
+    return () => window.removeEventListener(FLOATING_WIDGET_EVENT, onPeer as EventListener);
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!open || items.length < 2) return;
     const id = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % items.length);
     }, ROTATE_MS);
     return () => window.clearInterval(id);
-  }, [collapsed, items.length]);
+  }, [open, items.length]);
 
-  const persistCollapsed = (next: boolean) => {
-    setCollapsed(next);
+  const setOpenPersist = (next: boolean) => {
+    setOpen(next);
+    emitFloatingWidget("news", next);
     try {
-      localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+      localStorage.setItem(STORAGE_KEY, next ? "0" : "1");
     } catch {
       /* ignore */
     }
@@ -43,13 +68,13 @@ export function FloatingNewsWidget() {
 
   const current = items[index] ?? items[0];
 
-  if (collapsed) {
+  if (!open) {
     return (
       <div className="pointer-events-none fixed bottom-[max(0.85rem,env(safe-area-inset-bottom))] left-3 z-[90] sm:left-4">
         <button
           type="button"
-          onClick={() => persistCollapsed(false)}
-          className="pointer-events-auto rounded-full border border-white/15 bg-[#071020]/92 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-100 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md hover:border-emerald-300/35"
+          onClick={() => setOpenPersist(true)}
+          className="pointer-events-auto ancap-fab-slide-in rounded-full border border-emerald-400/30 bg-[#071020]/94 px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-100 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md hover:border-emerald-300/45"
           aria-label="Открыть новости ANCAP"
         >
           Новости
@@ -63,7 +88,7 @@ export function FloatingNewsWidget() {
       aria-label="Новости проекта ANCAP"
       className="pointer-events-none fixed bottom-[max(0.85rem,env(safe-area-inset-bottom))] left-3 z-[90] w-[min(18.5rem,calc(100vw-1.5rem))] sm:left-4"
     >
-      <div className="pointer-events-auto overflow-hidden rounded-2xl border border-white/12 bg-[#071020]/94 text-white shadow-[0_18px_50px_rgba(0,0,0,0.48)] backdrop-blur-xl">
+      <div className="pointer-events-auto ancap-panel-rise overflow-hidden rounded-2xl border border-white/12 bg-[#071020]/95 text-white shadow-[0_18px_50px_rgba(0,0,0,0.48)] backdrop-blur-xl">
         <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/90">
@@ -75,11 +100,11 @@ export function FloatingNewsWidget() {
           </div>
           <button
             type="button"
-            onClick={() => persistCollapsed(true)}
+            onClick={() => setOpenPersist(false)}
             className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-white/55 hover:border-white/25 hover:text-white"
             aria-label="Свернуть новости"
           >
-            Свернуть
+            {isMobile ? "Закрыть" : "Свернуть"}
           </button>
         </div>
 

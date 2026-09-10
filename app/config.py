@@ -432,6 +432,11 @@ class Settings(BaseSettings):
     # Set after CoinGecko approves Wrapped ACP listing (see docs/COINGECKO_LISTING_PLAYBOOK.md).
     coingecko_wacp_coin_id: str = ""
 
+    # AccuWeather — Earth widget (https://www.accuweather.com/); never commit real keys
+    accuweather_enabled: bool = True
+    accuweather_api_key: str = ""
+    accuweather_language: str = "en-us"
+
     # LLM cost tracking (ACP per 1M tokens; used to compute real provider cost)
     llm_cost_per_1m_input_tokens: str = "0"
     llm_cost_per_1m_output_tokens: str = "0"

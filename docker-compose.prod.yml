@@ -95,6 +95,10 @@ services:
       COINGECKO_BASE_URL: ${COINGECKO_BASE_URL:-}
       COINGECKO_CACHE_TTL_SECONDS: ${COINGECKO_CACHE_TTL_SECONDS:-60}
       COINGECKO_WACP_COIN_ID: ${COINGECKO_WACP_COIN_ID:-}
+      # AccuWeather Earth widget (https://www.accuweather.com/) — key on host .env only.
+      ACCUWEATHER_ENABLED: ${ACCUWEATHER_ENABLED:-true}
+      ACCUWEATHER_API_KEY: ${ACCUWEATHER_API_KEY:-}
+      ACCUWEATHER_LANGUAGE: ${ACCUWEATHER_LANGUAGE:-en-us}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level
