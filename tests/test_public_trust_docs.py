@@ -77,7 +77,7 @@ def test_public_changelog_records_latest_ancap_docs_followup_contract():
 
 
 def test_whitepaper_marks_unshipped_payment_scanner_and_claim_codes_as_planned_only():
-    whitepaper_text = WHITEPAPER_PAGE_PATH.read_text(encoding="utf-8")
+    whitepaper_text = Path("frontend-app/src/locales/whitepaper.ts").read_text(encoding="utf-8")
 
     assert "planned AI Payment Scanner flows" in whitepaper_text
     assert "that scanner layer is not shipped today" in whitepaper_text

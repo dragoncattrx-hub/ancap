@@ -88,6 +88,7 @@ def test_wallet_credit_ui_and_helpers_surface_settlement_and_method_evidence() -
     helper_text = STRIPE_SETTLEMENT_HELPER.read_text(encoding="utf-8")
     helper_test_text = STRIPE_SETTLEMENT_TEST.read_text(encoding="utf-8")
     page_text = WALLET_CREDITS_PAGE.read_text(encoding="utf-8")
+    desks_text = (REPO_ROOT / "frontend-app" / "src" / "locales" / "desks.ts").read_text(encoding="utf-8")
 
     assert 'label: "webhook"' in helper_text
     assert 'verificationLabel: "webhook delivery confirmed"' in helper_text
@@ -101,11 +102,14 @@ def test_wallet_credit_ui_and_helpers_surface_settlement_and_method_evidence() -
     assert "surfaces saved-card evidence from provider payload" in helper_test_text
     assert "surfaces new-card evidence from provider payload" in helper_test_text
 
-    assert "Settlement signal: {stripeSettlement.label}" in page_text
-    assert "Verification status: {stripeSettlement.verificationLabel}" in page_text
-    assert "Payment method evidence: {stripePaymentMethodEvidence.selectionLabel}" in page_text
-    assert "Save card for the next top-up" in page_text
-    assert "Choose a saved card or enter a new card" in page_text
+    assert 't("creditsPage.settlementSignal")' in page_text
+    assert 't("creditsPage.verificationStatus")' in page_text
+    assert 't("creditsPage.paymentMethodEvidence")' in page_text
+    assert 'settlementSignal: "Settlement signal:"' in desks_text
+    assert 'verificationStatus: "Verification status:"' in desks_text
+    assert 'paymentMethodEvidence: "Payment method evidence:"' in desks_text
+    assert 'saveCard: "Save card for the next top-up"' in desks_text
+    assert 'chooseCard: "Choose a saved card or enter a new card"' in desks_text
 
 
 def test_api_regressions_cover_repo_side_stripe_verification_claims() -> None:
