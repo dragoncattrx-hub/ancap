@@ -15,6 +15,7 @@ import httpx
 from app.config import get_settings
 
 _CACHE: dict[str, Any] = {"at": 0.0, "payload": None}
+_GT_CACHE: dict[str, Any] = {"at": 0.0, "price": None}
 # Top majors by market presence (indicative CoinGecko spot, not settlement).
 _DEFAULT_IDS = ("bitcoin", "ethereum", "tether", "binancecoin", "solana")
 _SYMBOLS = {
@@ -24,6 +25,10 @@ _SYMBOLS = {
     "binancecoin": "BNB",
     "solana": "SOL",
 }
+# Official wACP on BSC — already indexed by GeckoTerminal; CoinGecko coin id assigned later.
+_WACP_BSC = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
+_GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}"
+_GT_POOLS_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}/pools"
 
 
 def _api_key() -> str:
@@ -169,8 +174,55 @@ async def usdt_usd_price() -> Decimal | None:
     return None
 
 
-def platform_indicative_rows(*, vs: str = "usd", usdt_usd: Decimal | None = None) -> list[dict[str, Any]]:
-    """ACP / wACP / sACP indicative USD context (not CoinGecko, not settlement)."""
+async def fetch_wacp_usd_geckoterminal() -> Decimal | None:
+    """DEX spot for official wACP (CoinGecko's GeckoTerminal). Not settlement."""
+    now = time.time()
+    if _GT_CACHE.get("price") is not None and now - float(_GT_CACHE.get("at") or 0) < _ttl():
+        return _to_dec(_GT_CACHE["price"])
+
+    price: Decimal | None = None
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            pools = await client.get(_GT_POOLS_URL, headers={"accept": "application/json"})
+            if pools.status_code < 400:
+                rows = (pools.json() or {}).get("data") or []
+                if rows:
+                    attrs = (rows[0] or {}).get("attributes") or {}
+                    price = _to_dec(attrs.get("base_token_price_usd") or attrs.get("token_price_usd"))
+            if price is None:
+                token = await client.get(_GT_TOKEN_URL, headers={"accept": "application/json"})
+                if token.status_code < 400:
+                    attrs = ((token.json() or {}).get("data") or {}).get("attributes") or {}
+                    price = _to_dec(attrs.get("price_usd"))
+    except Exception:  # noqa: BLE001 — soft fallback to desk rate
+        return None
+
+    if price is not None and price > 0:
+        _GT_CACHE["at"] = now
+        _GT_CACHE["price"] = format(price, "f")
+    return price
+
+
+async def fetch_wacp_usd_coingecko() -> Decimal | None:
+    """Once CoinGecko assigns a coin id, prefer that simple/price feed."""
+    settings = get_settings()
+    coin_id = (getattr(settings, "coingecko_wacp_coin_id", None) or "").strip()
+    if not coin_id or not is_configured():
+        return None
+    data = await fetch_simple_prices(ids=(coin_id,), vs="usd")
+    for row in data.get("prices") or []:
+        if row.get("id") == coin_id and row.get("price"):
+            return _to_dec(row.get("price"))
+    return None
+
+
+def platform_indicative_rows(
+    *,
+    vs: str = "usd",
+    usdt_usd: Decimal | None = None,
+    wacp_usd: Decimal | None = None,
+) -> list[dict[str, Any]]:
+    """ACP / wACP / sACP indicative USD context (not settlement)."""
     if (vs or "usd").lower() != "usd":
         return []
     settings = get_settings()
@@ -178,11 +230,14 @@ def platform_indicative_rows(*, vs: str = "usd", usdt_usd: Decimal | None = None
     if acp_per_usdt <= 0:
         acp_per_usdt = Decimal("1")
     usdt = usdt_usd if usdt_usd is not None else Decimal("1")
-    acp_usd = (usdt / acp_per_usdt).quantize(Decimal("0.00000001"))
+    desk_acp_usd = (usdt / acp_per_usdt).quantize(Decimal("0.00000001"))
+    # Prefer live DEX/CoinGecko wACP spot; native ACP desk remains accounting reference.
+    acp_usd = desk_acp_usd
+    wacp_price = wacp_usd if wacp_usd is not None and wacp_usd > 0 else desk_acp_usd
     vs_u = "USD"
     return [
         {"id": "acp", "symbol": "ACP", "vs_currency": vs_u, "price": format(acp_usd, "f"), "last_updated_at": None},
-        {"id": "wacp", "symbol": "wACP", "vs_currency": vs_u, "price": format(acp_usd, "f"), "last_updated_at": None},
+        {"id": "wacp", "symbol": "wACP", "vs_currency": vs_u, "price": format(wacp_price, "f"), "last_updated_at": None},
         {"id": "sacp", "symbol": "sACP", "vs_currency": vs_u, "price": "1", "last_updated_at": None},
     ]
 
@@ -196,22 +251,34 @@ async def fetch_market_board(*, vs: str = "usd") -> dict[str, Any]:
         if row.get("id") == "tether" and row.get("price"):
             usdt = _to_dec(row.get("price"))
             break
-    platform = platform_indicative_rows(vs=vs_n, usdt_usd=usdt)
+    wacp_usd = await fetch_wacp_usd_coingecko()
+    wacp_source = "coingecko"
+    if wacp_usd is None:
+        wacp_usd = await fetch_wacp_usd_geckoterminal()
+        wacp_source = "geckoterminal" if wacp_usd is not None else "desk"
+    platform = platform_indicative_rows(vs=vs_n, usdt_usd=usdt, wacp_usd=wacp_usd)
     prices = platform + list(cg.get("prices") or [])
     status = str(cg.get("status") or "error")
     if platform and status != "ok":
         status = "partial"
     notes = list(cg.get("notes") or [])
     notes = [
-        "ACP/wACP indicative from desk USDT rate (wACP is 1:1 ACP wrap). sACP soft-peg target ≈ 1 USD.",
+        "ACP desk rate from USDT rail; wACP prefers CoinGecko coin id or GeckoTerminal DEX spot; "
+        "sACP soft-peg target ≈ 1 USD. Not settlement prices.",
+        f"wACP spot source: {wacp_source}. Listing pack: docs/COINGECKO_LISTING_PLAYBOOK.md",
         *notes,
     ]
+    attribution = cg.get("attribution")
+    if wacp_source == "geckoterminal":
+        attribution = (
+            (attribution + " ") if attribution else ""
+        ) + "wACP DEX spot via GeckoTerminal (CoinGecko). See /legal/market-data."
     return {
         **cg,
         "status": status,
         "prices": prices,
         "notes": notes,
-        "attribution": cg.get("attribution")
+        "attribution": attribution
         or "Platform ACP rails + CoinGecko spot context. See /legal/market-data.",
     }
 
@@ -219,3 +286,5 @@ async def fetch_market_board(*, vs: str = "usd") -> dict[str, Any]:
 def clear_cache() -> None:
     _CACHE["at"] = 0.0
     _CACHE["payload"] = None
+    _GT_CACHE["at"] = 0.0
+    _GT_CACHE["price"] = None

@@ -101,6 +101,49 @@ async def test_fetch_market_board_includes_platform(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_wacp_geckoterminal_spot(monkeypatch):
+    coingecko.clear_cache()
+    monkeypatch.setenv("COINGECKO_API_KEY", "")
+    from app.config import get_settings
+
+    get_settings.cache_clear()
+
+    class _Client:
+        def __init__(self, *a, **k):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def get(self, url, params=None, headers=None):
+            if "pools" in url:
+                return _Resp(
+                    200,
+                    {
+                        "data": [
+                            {
+                                "attributes": {
+                                    "base_token_price_usd": "0.00042",
+                                    "token_price_usd": "0.00042",
+                                }
+                            }
+                        ]
+                    },
+                )
+            return _Resp(200, {"data": {"attributes": {"price_usd": None}}})
+
+    monkeypatch.setattr(coingecko.httpx, "AsyncClient", _Client)
+    board = await coingecko.fetch_market_board()
+    wacp = next(p for p in board["prices"] if p["symbol"] == "wACP")
+    assert float(wacp["price"]) == 0.00042
+    assert any("geckoterminal" in n for n in board["notes"])
+    get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
 async def test_fetch_not_configured(monkeypatch):
     coingecko.clear_cache()
     monkeypatch.setenv("COINGECKO_API_KEY", "")

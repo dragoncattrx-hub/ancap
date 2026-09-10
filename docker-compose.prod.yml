@@ -92,6 +92,7 @@ services:
       COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
       COINGECKO_BASE_URL: ${COINGECKO_BASE_URL:-}
       COINGECKO_CACHE_TTL_SECONDS: ${COINGECKO_CACHE_TTL_SECONDS:-60}
+      COINGECKO_WACP_COIN_ID: ${COINGECKO_WACP_COIN_ID:-}
       # wACP / BSC clearing rail (see docs/bridge-spec-v1.md)
       # IMPORTANT: values come from ./Sicret/bridge-bsc/bridge.env via env_file.
       # Do not mirror them here with ${VAR:-default} fallbacks: compose-level

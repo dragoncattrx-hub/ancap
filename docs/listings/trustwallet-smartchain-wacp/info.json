@@ -1,0 +1,18 @@
+{
+  "name": "Wrapped ACP",
+  "website": "https://ancap.cloud",
+  "description": "Official BEP-20 wrap of ACP on BNB Smart Chain. Mint/burn via ANCAP bridge gateway. Distinct from unrelated tickers named ACP on CoinGecko.",
+  "explorer": "https://bscscan.com/token/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+  "type": "BEP20",
+  "symbol": "wACP",
+  "decimals": 18,
+  "status": "active",
+  "id": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+  "links": [
+    { "name": "github", "url": "https://github.com/dragoncattrx-hub/ancap" },
+    { "name": "twitter", "url": "https://x.com/ancap24news" },
+    { "name": "telegram", "url": "https://t.me/ancap24news" },
+    { "name": "docs", "url": "https://ancap.cloud/docs/wacp" },
+    { "name": "coingecko", "url": "https://ancap.cloud/markets" }
+  ]
+}

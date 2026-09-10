@@ -12,6 +12,7 @@ Also:
 - being tradable != being featured on the PancakeSwap home page
 - the PancakeSwap home page is curated; you do **not** automatically get homepage placement just because a pair exists
 - the minimum practical goal is: **wACP contract verified + pair live + liquidity seeded + token metadata submitted**
+- CoinGecko listing (separate from PancakeSwap): see [COINGECKO_LISTING_PLAYBOOK.md](./COINGECKO_LISTING_PLAYBOOK.md) — submit as **wACP**, never as ticker `ACP` (already taken)
 
 ---
 

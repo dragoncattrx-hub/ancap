@@ -37,6 +37,7 @@ export default function WacpDocsOverviewPage() {
                 <li><Link href="/docs/wacp/risks">Risk disclosures</Link></li>
                 <li><Link href="/docs/wacp/contracts">Contracts and official addresses</Link></li>
                 <li><Link href="/docs/wacp/pancakeswap">PancakeSwap listing playbook</Link></li>
+                <li><Link href="/markets">Public markets & token list</Link></li>
               </ul>
             </div>
 
@@ -47,7 +48,7 @@ export default function WacpDocsOverviewPage() {
                 <li>Both public bridge directions are now live: <code>ACP -&gt; BSC</code> mint and <code>BSC -&gt; ACP</code> redeem</li>
                 <li>ACP deposit tx viewer exists at <code>/acp/tx/[txid]</code></li>
                 <li>Public API status endpoints are live at <code>/api/v1/wacp/status</code> and <code>/api/v1/wacp/reserve-proof</code></li>
-                <li>PancakeSwap V2 technical liquidity bootstrap for <code>wACP/USDT</code> is live; liquidity is still staged and metadata/logo review remains external</li>
+                <li>PancakeSwap V2 technical liquidity bootstrap for <code>wACP/USDT</code> is live; GeckoTerminal indexes the pool; official token list at <code>/tokenlist.json</code></li>
               </ul>
             </div>
           </section>

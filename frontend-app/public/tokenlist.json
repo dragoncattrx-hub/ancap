@@ -1,0 +1,28 @@
+{
+  "name": "ANCAP Official",
+  "timestamp": "2026-09-10T12:00:00.000Z",
+  "version": { "major": 1, "minor": 0, "patch": 0 },
+  "logoURI": "https://ancap.cloud/wacp-logo.png",
+  "keywords": ["ancap", "acp", "wacp", "sacp", "bsc"],
+  "tags": {
+    "ancap-official": {
+      "name": "ANCAP Official",
+      "description": "Tokens published by ANCAP. Verify contracts against https://ancap.cloud/docs/wacp/contracts"
+    },
+    "bridge-wrap": {
+      "name": "Bridge wrap",
+      "description": "1:1 wrapped representation of ACP on another chain"
+    }
+  },
+  "tokens": [
+    {
+      "chainId": 56,
+      "address": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+      "name": "Wrapped ACP",
+      "symbol": "wACP",
+      "decimals": 18,
+      "logoURI": "https://ancap.cloud/wacp-logo.png",
+      "tags": ["ancap-official", "bridge-wrap"]
+    }
+  ]
+}

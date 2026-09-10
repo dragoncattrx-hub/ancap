@@ -78,9 +78,14 @@ export function HomeMarketTicker() {
           <h2 id="home-market-ticker-title" className="home-market-ticker__title">
             {t("homePage.marketTickerTitle")}
           </h2>
-          <Link href="/legal/market-data" className="home-market-ticker__legal">
-            {t("homePage.marketTickerLegal")}
-          </Link>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "baseline" }}>
+            <Link href="/legal/market-data" className="home-market-ticker__legal">
+              {t("homePage.marketTickerLegal")}
+            </Link>
+            <Link href="/markets" className="home-market-ticker__legal">
+              Markets
+            </Link>
+          </div>
         </div>
         <div className="home-market-ticker__viewport">
           <div className="home-market-ticker__track">
