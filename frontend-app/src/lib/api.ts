@@ -1664,6 +1664,15 @@ export const wacpPublic = {
   },
 };
 
+export const sacpPublic = {
+  async status() {
+    return apiFetch("/sacp/status");
+  },
+  async reserveProof() {
+    return apiFetch("/sacp/reserve-proof");
+  },
+};
+
 export const merchant = {
   async dashboard() {
     return apiFetch("/merchant/dashboard");
@@ -2129,6 +2138,7 @@ export const api = {
   paymentScanner,
   commerce,
   wacpPublic,
+  sacpPublic,
   subscriptions,
   organizations,
   webhooks,

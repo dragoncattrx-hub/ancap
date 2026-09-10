@@ -14,6 +14,7 @@ def test_catalog_has_hub_and_core_assets():
     assert "acp" in ids
     assert "usdt_trc20" in ids
     assert "wacp_bsc" in ids
+    assert "sacp_bsc" in ids
     assert "metal_gold" in ids
     assert "goods_electronics" in ids
     assert "commodity_oil" in ids

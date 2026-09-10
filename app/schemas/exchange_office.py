@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field, field_validator
 AssetKind = Literal[
     "native",
     "crypto",
+    "stablecoin",
     "metal",
     "goods",
     "commodity",
@@ -24,7 +25,15 @@ AssetKind = Literal[
     "fiat",
 ]
 AssetAvailability = Literal["live", "beta", "planned"]
-QuoteMode = Literal["identity", "fixed", "indicative", "rfq", "bridge_1_1", "market_feed"]
+QuoteMode = Literal[
+    "identity",
+    "fixed",
+    "indicative",
+    "rfq",
+    "bridge_1_1",
+    "stable_peg",
+    "market_feed",
+]
 SettlementRail = Literal[
     "ledger",
     "swap_desk",
@@ -35,6 +44,7 @@ SettlementRail = Literal[
     "otc_space",
     "otc_ip",
     "bridge",
+    "stablecoin",
     "dex_deep_link",
     "fiat_onramp",
     "hub_cross",

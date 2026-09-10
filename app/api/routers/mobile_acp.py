@@ -257,6 +257,9 @@ def _supported_assets() -> list[SmartPaySupportedAsset]:
     assets = [SmartPaySupportedAsset(network="acp", symbol="ACP")]
     wacp_contract = (s.bridge_wacp_contract or "").strip() or None
     assets.append(SmartPaySupportedAsset(network="bsc", symbol="wACP", token_address=wacp_contract))
+    sacp_contract = (getattr(s, "sacp_contract", None) or "").strip() or None
+    if bool(getattr(s, "ff_sacp", True)):
+        assets.append(SmartPaySupportedAsset(network="bsc", symbol="sACP", token_address=sacp_contract))
     assets.append(SmartPaySupportedAsset(network="bsc", symbol="USDT", token_address=None))
     return assets
 
@@ -605,6 +608,14 @@ def _source_asset_for_symbol(symbol: str) -> SmartPayQuoteAsset:
     if normalized == "WACP":
         s = get_settings()
         return SmartPayQuoteAsset(network="bsc", symbol="wACP", token_address=(s.bridge_wacp_contract or "").strip() or None, decimals=18)
+    if normalized in {"SACP", "STABLE ACP"}:
+        s = get_settings()
+        return SmartPayQuoteAsset(
+            network="bsc",
+            symbol="sACP",
+            token_address=(getattr(s, "sacp_contract", None) or "").strip() or None,
+            decimals=18,
+        )
     if normalized == "USDT":
         return SmartPayQuoteAsset(network="bsc", symbol="USDT", token_address=None, decimals=18)
     raise HTTPException(status_code=422, detail=f"Unsupported preferred asset: {symbol}")
@@ -652,6 +663,47 @@ def _build_quote_route(intent: PaymentIntentResponseItem, source_symbol: str) ->
                 SmartPayNetworkFeeItem(network="bsc", asset_symbol="BNB", amount=str(_BSC_NETWORK_FEE_BNB)),
             ],
         )
+    if intent.network == "bsc" and (intent.asset.symbol or "").upper() == "SACP" and source in {"ACP", "SACP"}:
+        if source == "SACP":
+            route = [
+                SmartPayRouteStep(
+                    kind="transfer",
+                    network="bsc",
+                    dex_or_rail=None,
+                    from_asset="sACP",
+                    to_asset="sACP",
+                    estimated_out=intent.amount.value if intent.amount else "0",
+                )
+            ]
+            mode = "direct_send"
+        else:
+            route = [
+                SmartPayRouteStep(
+                    kind="mint",
+                    network="bsc",
+                    dex_or_rail="sacp_rail_v1",
+                    from_asset="ACP",
+                    to_asset="sACP",
+                    estimated_out=intent.amount.value if intent.amount else "0",
+                ),
+                SmartPayRouteStep(
+                    kind="transfer",
+                    network="bsc",
+                    dex_or_rail=None,
+                    from_asset="sACP",
+                    to_asset="sACP",
+                    estimated_out=intent.amount.value if intent.amount else "0",
+                ),
+            ]
+            mode = "mint_then_send"
+        return (
+            mode,
+            route,
+            [
+                SmartPayNetworkFeeItem(network="acp", asset_symbol="ACP", amount=_DEFAULT_MIN_FEE_ACP),
+                SmartPayNetworkFeeItem(network="bsc", asset_symbol="BNB", amount=str(_BSC_NETWORK_FEE_BNB)),
+            ],
+        )
     raise HTTPException(status_code=422, detail="Unsupported route for current Smart Pay scope")
 
 
@@ -668,6 +720,13 @@ def _required_source_amount(intent: PaymentIntentResponseItem, preferred_asset: 
             return _quantize_up(target_amount / Decimal("0.98"), "0.00000001")
         if source == "ACP":
             return _quantize_up(target_amount / _ACP_TO_USDT_RATE, "0.00000001")
+    if intent.network == "bsc" and asset_symbol == "SACP":
+        from app.services import sacp as sacp_svc
+
+        if source == "SACP":
+            return _quantize_up(target_amount, "0.00000001")
+        if source == "ACP":
+            return _quantize_up(sacp_svc.indicative_acp_for_sacp(target_amount), "0.00000001")
     raise HTTPException(status_code=422, detail="Unsupported quote source/target pair")
 
 

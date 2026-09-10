@@ -162,7 +162,7 @@ class SmartPayNetworkFeeItem(BaseModel):
 
 
 class SmartPayRouteStep(BaseModel):
-    kind: Literal["bridge", "swap", "transfer"]
+    kind: Literal["bridge", "swap", "transfer", "mint"]
     network: str
     dex_or_rail: str | None = Field(default=None, serialization_alias="dexOrRail")
     from_asset: str = Field(serialization_alias="fromAsset")
@@ -175,7 +175,7 @@ class SmartPayRouteStep(BaseModel):
 class SmartPayQuoteItem(BaseModel):
     quote_id: str = Field(serialization_alias="quoteId")
     payment_intent_id: str = Field(serialization_alias="paymentIntentId")
-    mode: Literal["direct_send", "swap_then_send"]
+    mode: Literal["direct_send", "swap_then_send", "mint_then_send"]
     expires_at: str = Field(serialization_alias="expiresAt")
     source_asset: SmartPayQuoteAsset = Field(serialization_alias="sourceAsset")
     target_asset: SmartPayQuoteAsset = Field(serialization_alias="targetAsset")

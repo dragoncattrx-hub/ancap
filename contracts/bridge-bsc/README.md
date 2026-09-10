@@ -2,6 +2,29 @@
 
 Custodial clearing rail: operator mints wACP after native ACP deposit proof; users call `requestRelease` to burn wACP and signal ACP payout (off-chain orchestrator).
 
+## sACP (Stable ACP)
+
+USD-targeted commerce stablecoin (ACP-collateralized).
+
+| Artifact | Path |
+|----------|------|
+| Token | `src/SACP.sol` |
+| Gateway | `src/SacpGateway.sol` |
+| Deploy | `script/DeploySacp.s.sol` |
+| Spec | `docs/STABLECOIN_SACP_SPEC.md` |
+
+```bash
+export PRIVATE_KEY=...
+# optional: SACP_MAX_SINGLE_MINT_WEI, SACP_MINT_CAP_PER_DAY_WEI
+forge script script/DeploySacp.s.sol:DeploySacpScript \
+  --rpc-url "$BSC_RPC_URL" \
+  --broadcast -vvv
+```
+
+Then set backend env: `SACP_CONTRACT`, `SACP_GATEWAY_CONTRACT`, `SACP_RESERVE_ACP_ADDRESS`.
+
+Distinct from wACP — do not reuse WACP addresses or BridgeGateway for sACP.
+
 ## Prerequisites
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) **or** Docker image `ghcr.io/foundry-rs/foundry:latest`.

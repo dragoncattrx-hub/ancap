@@ -7,6 +7,7 @@ ANCAP is an ACP-first AI workflow platform. Users, crypto teams, creators, and A
 Key identities:
 - ACP = platform accounting unit (1:1 with itself)
 - wACP = wrapped ACP on BSC
+- sACP = Stable ACP — USD-targeted, ACP-collateralized commerce stablecoin on BSC (`docs/STABLECOIN_SACP_SPEC.md`); distinct from wACP and partner USDC/USDT
 - ACP-crypto/ = Rust chain/wallet source of truth (sibling to this repo)
 - ancap-mobile/ = React Native Expo wallet (sibling or submodule)
 - `app/` = FastAPI backend
@@ -28,7 +29,7 @@ Key identities:
 - **Pycache stale bytecode**: After updating Python code, sometimes old error messages persist. Fix: `find . -path "*/__pycache__/*.pyc" -delete`.
 - **FastAPI route verification**: To check if a route exists without starting the server: `python -c "from app.main import app; print([r.path for r in app.routes if 'keyword' in r.path])"`.
 - **`/internal/frontend-build`**: This is a Next.js route in `frontend-app/src/app/internal/frontend-build/route.ts` — NOT a FastAPI route. It reads `.next/BUILD_ID` or `NEXT_PUBLIC_APP_BUILD_ID` env var.
-- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable), 057 (org NFC identity), 058 (securities + watch fleet + orbital edge), 059 (AETERNA DNA vault + intents + partners).
+- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable), 057 (org NFC identity), 058 (securities + watch fleet + orbital edge), 059 (AETERNA DNA vault + intents + partners), 069 (sACP stablecoin ops + reserve snapshots).
 
 ## Preferences
 

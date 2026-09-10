@@ -188,6 +188,22 @@ Public docs must explain:
 - scam/fake contract warnings;
 - how users verify contracts and transactions.
 
+### Phase 6b - sACP (Stable ACP) foundation
+
+ACP-backed USD-targeted commerce stablecoin (distinct from wACP wrap and partner USDC/USDT):
+- [x] Spec `docs/STABLECOIN_SACP_SPEC.md`
+- [x] BEP-20 source `contracts/bridge-bsc/src/SACP.sol`
+- [x] Gateway `SacpGateway.sol` + `DeploySacp.s.sol` + forge tests
+- [x] Public API `/v1/sacp/status` + `/v1/sacp/reserve-proof`
+- [x] Mint/redeem intents + admin bind + reserve snapshots (`069_sacp_stablecoin`)
+- [x] Exchange catalog asset `sacp_bsc` (`stable_peg`)
+- [x] Smart Pay: sACP supported asset + ACP→sACP route
+- [x] Public docs `/docs/sacp` + compliance checklist `docs/SACP_COMPLIANCE_CHECKLIST.md`
+- [ ] S1 mainnet/testnet broadcast + production env addresses
+- [ ] S2 live chain indexers for supply/reserve (beyond operator snapshots)
+- [ ] S3 merchant checkout UX for currency=SACP
+- [ ] S4 legal sign-off before public mint marketing
+
 ### Phase 7 - Community Contribution Model
 
 Community baseline:

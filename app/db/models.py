@@ -1878,6 +1878,62 @@ class BridgeReserveSnapshot(Base):
     )
 
 
+class SacpOperation(Base):
+    """sACP mint/redeem intents (USD-targeted stablecoin rail).
+
+    Foundation FSM — operator settles on-chain mint/redeem after collateral proof.
+    See docs/STABLECOIN_SACP_SPEC.md.
+    """
+
+    __tablename__ = "sacp_operations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    direction = Column(String(16), nullable=False)  # mint | redeem
+    status = Column(String(40), nullable=False)
+    user_bsc_address = Column(String(66), nullable=True)
+    user_acp_address = Column(String(128), nullable=True)
+    amount_acp_smallest = Column(Numeric(38, 0), nullable=False, default=0)
+    amount_sacp_wei = Column(Numeric(38, 0), nullable=False, default=0)
+    acp_per_usd = Column(Numeric(36, 18), nullable=False)
+    min_collateral_ratio = Column(Numeric(12, 6), nullable=False)
+    acp_tx_hash = Column(String(128), nullable=True)
+    bsc_tx_hash = Column(String(128), nullable=True)
+    collateral_ref_hex = Column(String(66), nullable=True)
+    correlation_id = Column(String(128), nullable=True)
+    notes = Column(JSONB, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_sacp_ops_status", "status"),
+        Index("ix_sacp_ops_user", "user_id"),
+        Index("ix_sacp_ops_created", "created_at"),
+    )
+
+
+class SacpReserveSnapshot(Base):
+    """Point-in-time sACP collateral vs circulating supply."""
+
+    __tablename__ = "sacp_reserve_snapshots"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    snapshot_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    reserve_balance_acp_smallest = Column(Numeric(38, 0), nullable=False, default=0)
+    sacp_total_supply_wei = Column(Numeric(38, 0), nullable=False, default=0)
+    implied_collateral_usd = Column(Numeric(36, 18), nullable=True)
+    required_collateral_usd = Column(Numeric(36, 18), nullable=True)
+    collateral_ratio = Column(Numeric(12, 6), nullable=True)
+    reconciliation_ok = Column(Boolean, nullable=False, default=True)
+    acp_reserve_address = Column(String(128), nullable=True)
+    sacp_contract = Column(String(64), nullable=True)
+    status = Column(String(32), nullable=False, default="pending")
+    reserve_health = Column(String(32), nullable=False, default="pending")
+    notes = Column(JSONB, nullable=False, default=list)
+
+    __table_args__ = (Index("ix_sacp_snapshots_time", "snapshot_at"),)
+
+
 class OrgRoleEnum(str, enum.Enum):
     owner = "owner"
     admin = "admin"

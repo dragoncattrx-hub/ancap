@@ -31,6 +31,7 @@ from app.schemas.exchange_office import (
     SettlementRail,
 )
 from app.services import otc_intake as otc_svc
+from app.services import sacp as sacp_svc
 
 _Q = Decimal("0.00000001")
 _HUB = "acp"
@@ -256,6 +257,29 @@ def build_assets() -> list[ExchangeAssetPublic]:
             metadata={"pair_hint": "wACP/USDT on PancakeSwap"},
         ),
         ExchangeAssetPublic(
+            id="sacp_bsc",
+            symbol="sACP",
+            label="sACP (Stable ACP)",
+            kind="stablecoin",
+            availability="beta" if sacp_svc.is_enabled() and not sacp_svc.is_paused() else "planned",
+            direction="both",
+            rail="stablecoin",
+            quote_mode="stable_peg",
+            unit="sACP",
+            decimals=18,
+            network="bsc",
+            note=(
+                "USD-targeted ACP-collateralized stablecoin. Soft peg — not a guaranteed "
+                "fiat redemption. Distinct from wACP wrap."
+            ),
+            metadata={
+                "peg_target": "USD",
+                "acp_per_usd": _api_str(sacp_svc.acp_per_usd()),
+                "min_collateral_ratio": _api_str(sacp_svc.min_collateral_ratio()),
+                "docs": "/docs/sacp",
+            },
+        ),
+        ExchangeAssetPublic(
             id="usdt_trc20",
             symbol="USDT",
             label="USDT (TRC-20)",
@@ -415,8 +439,8 @@ def catalog() -> ExchangeCatalogPublic:
         handoff_note=otc_svc.handoff_instructions(),
         compliance_note=(
             "Phone exchange office: ACP is the hub. Crypto desks, OTC metals/goods, "
-            "and the wACP bridge settle through supervised rails. Fiat on-ramp is planned. "
-            "Indicative quotes are not final bids."
+            "the wACP bridge, and sACP (USD-targeted stablecoin) settle through supervised rails. "
+            "Fiat on-ramp is planned. Indicative quotes are not final bids."
         ),
     )
 
@@ -431,6 +455,17 @@ def _to_acp(asset: ExchangeAssetPublic, amount: Decimal, *, purity_ppt: int | No
 
     if asset.rail == "bridge" and asset.id == "wacp_bsc":
         return amount, "1 wACP = 1 ACP (bridge floor)", "bridge"
+
+    if asset.rail == "stablecoin" and asset.id == "sacp_bsc":
+        acp = sacp_svc.indicative_acp_for_sacp(amount)
+        return (
+            acp,
+            (
+                f"Indicative {_api_str(acp / amount if amount else Decimal('0'))} ACP per sACP "
+                f"(USD target × min collateral {_api_str(sacp_svc.min_collateral_ratio())})"
+            ),
+            "stablecoin",
+        )
 
     if asset.rail == "otc_metal":
         metal = str(asset.metadata.get("metal") or "")
@@ -488,6 +523,17 @@ def _from_acp(asset: ExchangeAssetPublic, acp_amount: Decimal) -> tuple[Decimal,
 
     if asset.id == "wacp_bsc":
         return acp_amount, "1 ACP = 1 wACP (bridge floor)", "bridge"
+
+    if asset.id == "sacp_bsc":
+        out = sacp_svc.indicative_sacp_for_acp(acp_amount)
+        return (
+            out,
+            (
+                f"Indicative {_api_str(out / acp_amount if acp_amount else Decimal('0'))} sACP per ACP "
+                f"(USD soft peg, min collateral {_api_str(sacp_svc.min_collateral_ratio())})"
+            ),
+            "stablecoin",
+        )
 
     if asset.id in ("usdt_trc20", "usdt_bsc"):
         rate = _acp_to_usdt_smart_pay()

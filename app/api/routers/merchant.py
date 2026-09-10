@@ -89,6 +89,11 @@ async def create_payment_link(
     await enforce_payment_link_plan_limit(session, merchant)
     amount = _parse_amount(body.amount)
     currency = body.currency.strip().upper()
+    if currency not in {"ACP", "SACP", "USDT", "USD"}:
+        raise HTTPException(
+            status_code=400,
+            detail="currency must be one of ACP, SACP, USDT, USD",
+        )
     expires_at = None
     if body.expires_in_hours:
         expires_at = datetime.now(UTC) + timedelta(hours=body.expires_in_hours)
@@ -200,6 +205,11 @@ async def create_invoice(
 
     total = Decimal(0)
     currency = body.line_items[0].currency.strip().upper()
+    if currency not in {"ACP", "SACP", "USDT", "USD"}:
+        raise HTTPException(
+            status_code=400,
+            detail="currency must be one of ACP, SACP, USDT, USD",
+        )
     serialized_items: list[dict] = []
     for item in body.line_items:
         unit = _parse_amount(item.unit_amount)

@@ -353,6 +353,15 @@ class Settings(BaseSettings):
     acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"
     turnstile_site_key: str = ""
 
+    # sACP — Stable ACP (USD-targeted, ACP-collateralized); docs/STABLECOIN_SACP_SPEC.md
+    ff_sacp: bool = True
+    sacp_paused: bool = False
+    sacp_contract: str = ""
+    sacp_gateway_contract: str = ""
+    sacp_reserve_acp_address: str = ""
+    sacp_acp_per_usd: str = "4"
+    sacp_min_collateral_ratio: str = "1.50"
+
     # Digital passport (BSC soulbound)
     digital_passport_driver: str = "mock"  # mock | bsc
     digital_passport_contract: str = ""

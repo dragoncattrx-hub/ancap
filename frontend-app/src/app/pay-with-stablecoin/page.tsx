@@ -32,7 +32,9 @@ export default function PayWithStablecoinPage() {
       <main className="mx-auto max-w-lg px-4 py-10">
         <h1 className="text-2xl font-semibold">Pay with stablecoin</h1>
         <p className="mt-2 text-sm text-white/65">
-          Partner on-ramp integrations are rolling out after compliance review. Join the waitlist for USDC/USDT top-up access.
+          ANCAP is shipping <Link href="/docs/sacp" className="text-emerald-300">sACP (Stable ACP)</Link> — an
+          ACP-collateralized, USD-targeted commerce stablecoin (foundation). Partner USDC/USDT on-ramps remain on
+          a compliance waitlist below.
         </p>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <label className="block text-sm">
