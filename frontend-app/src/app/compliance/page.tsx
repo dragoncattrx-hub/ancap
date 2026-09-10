@@ -34,6 +34,12 @@ export default function CompliancePage() {
           </li>
         </ul>
         <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/legal" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+            Legal center
+          </Link>
+          <Link href="/legal/risk" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+            Risk disclosure
+          </Link>
           <Link href="/compliance/mica" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
             MiCA overview
           </Link>

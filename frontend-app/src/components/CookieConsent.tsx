@@ -66,6 +66,9 @@ export function CookieConsent() {
             </div>
             <p className="max-w-3xl text-sm leading-6 text-white/72">{t("cookies.body")}</p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/50">
+              <Link className="hover:text-emerald-200" href="/legal">
+                {t("legal.hubLink")}
+              </Link>
               <Link className="hover:text-emerald-200" href="/legal/cookies">
                 {t("cookies.policy")}
               </Link>
@@ -75,8 +78,8 @@ export function CookieConsent() {
               <Link className="hover:text-emerald-200" href="/legal/terms">
                 {t("cookies.terms")}
               </Link>
-              <Link className="hover:text-emerald-200" href="/legal/cyber-defense">
-                {t("cookies.cyberDefense")}
+              <Link className="hover:text-emerald-200" href="/legal/risk">
+                {t("legal.riskLink")}
               </Link>
             </div>
 

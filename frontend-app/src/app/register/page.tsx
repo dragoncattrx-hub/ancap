@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [walletMnemonic, setWalletMnemonic] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const [agreedLegal, setAgreedLegal] = useState(false);
   const { register } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -34,6 +35,9 @@ export default function RegisterPage() {
           : "";
       if (TURNSTILE_ENABLED && !turnstileToken) {
         throw new Error("Complete the captcha first");
+      }
+      if (!agreedLegal) {
+        throw new Error("Please accept the User Agreement and Privacy Notice");
       }
       const mnemonic = await register(email, password, displayName, referralCode || undefined, turnstileToken);
       if (mnemonic) {
@@ -157,6 +161,40 @@ export default function RegisterPage() {
               resetSignal={turnstileResetKey}
             />
 
+            <label
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "flex-start",
+                marginBottom: "20px",
+                fontSize: "0.85rem",
+                lineHeight: 1.5,
+                color: "var(--text-muted)",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={agreedLegal}
+                onChange={(e) => setAgreedLegal(e.target.checked)}
+                required
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                {t("legal.authAgreePrefix")}{" "}
+                <a href="/legal/terms" style={{ color: "var(--accent)" }}>
+                  {t("legal.termsLink")}
+                </a>{" "}
+                {t("legal.authAgreeAnd")}{" "}
+                <a href="/legal/privacy" style={{ color: "var(--accent)" }}>
+                  {t("legal.privacyLink")}
+                </a>
+                {t("legal.authAgreeSuffix")}{" "}
+                <a href="/legal/risk" style={{ color: "var(--accent)" }}>
+                  ({t("legal.riskLink")})
+                </a>
+              </span>
+            </label>
+
             {error && (
               <div style={{
                 padding: "12px",
@@ -172,7 +210,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedLegal}
               className="btn btn-primary"
               style={{ width: "100%", marginBottom: "16px" }}
             >

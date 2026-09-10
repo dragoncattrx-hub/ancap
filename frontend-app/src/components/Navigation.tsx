@@ -52,7 +52,7 @@ const secondaryNav: NavItem[] = [
   { label: "Builder", href: "/strategy-builder", i18nKey: "nav.builder" },
   { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
   { label: "ACP Paper", href: "/whitepaper/acp", i18nKey: "nav.acpPaper" },
-  { label: "Legal", href: "/legal/terms", i18nKey: "nav.legal" },
+  { label: "Legal", href: "/legal", i18nKey: "nav.legal" },
   { label: "AI Console", href: "/ai-console", i18nKey: "nav.aiConsole" },
   { label: "Referrals", href: "/referrals", i18nKey: "nav.referrals" },
   { label: "Evolution", href: "/evolution", i18nKey: "nav.evolution" },
@@ -94,7 +94,7 @@ const publicNav: NavItem[] = [
   { label: "Arena", href: "/arena", i18nKey: "nav.arena" },
   { label: "ACP Token and Chain", href: "/whitepaper/acp", i18nKey: "hero.acpToken" },
   { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
-  { label: "Legal", href: "/legal/terms", i18nKey: "nav.legal" },
+  { label: "Legal", href: "/legal", i18nKey: "nav.legal" },
 ];
 
 function cn(...classes: Array<string | false | null | undefined>) {

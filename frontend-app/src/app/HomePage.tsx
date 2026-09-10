@@ -8,6 +8,7 @@ import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { HomeGalaxySection } from "@/components/HomeGalaxySection";
 import { useLanguage } from "@/components/LanguageProvider";
+import { SiteLegalFooter } from "@/components/legal/LegalViews";
 
 const offerDefs = [
   {
@@ -557,22 +558,7 @@ export function HomePage() {
           </section>
         </main>
 
-        <footer
-          style={{
-            padding: "32px 24px",
-            borderTop: "1px solid var(--border)",
-            textAlign: "center",
-            color: "var(--text-muted)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <div className="container">
-            <Link href="/" style={{ color: "var(--text-muted)", textDecoration: "none", fontWeight: 800 }}>
-              ANCAP
-            </Link>
-            <span> - {t("homePage.footer")}</span>
-          </div>
-        </footer>
+        <SiteLegalFooter />
       </div>
     </div>
   );

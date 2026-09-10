@@ -41,23 +41,99 @@ function LegalShell({
   );
 }
 
+function LegalNavPills({ current }: { current?: string }) {
+  const { t } = useLanguage();
+  const items = [
+    { href: "/legal", key: "hubLink" },
+    { href: "/legal/terms", key: "termsLink" },
+    { href: "/legal/privacy", key: "privacyLink" },
+    { href: "/legal/cookies", key: "cookiesLink" },
+    { href: "/legal/risk", key: "riskLink" },
+    { href: "/legal/refunds", key: "refundsLink" },
+    { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
+  ] as const;
+  return (
+    <>
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={
+            current === item.href
+              ? "rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white"
+              : "accent" in item && item.accent
+                ? pillAccent
+                : pill
+          }
+        >
+          {t(`legal.${item.key}`)}
+        </Link>
+      ))}
+    </>
+  );
+}
+
+export function LegalHubView() {
+  const { t } = useLanguage();
+  const cards = [
+    { href: "/legal/terms", title: "termsLink", body: "hubCardTerms" },
+    { href: "/legal/privacy", title: "privacyLink", body: "hubCardPrivacy" },
+    { href: "/legal/cookies", title: "cookiesLink", body: "hubCardCookies" },
+    { href: "/legal/risk", title: "riskLink", body: "hubCardRisk" },
+    { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
+    { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
+    { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
+  ] as const;
+  return (
+    <LegalShell
+      kickerClass="border-emerald-300/20 bg-emerald-400/[0.06]"
+      kicker={t("legal.hubKicker")}
+      title={t("legal.hubTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.hubIntro")}`}
+      actions={<LegalNavPills current="/legal" />}
+    >
+      <section className="mt-6 grid gap-4 md:grid-cols-2">
+        {cards.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/25 hover:bg-white/[0.05]"
+          >
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.${card.title}`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.${card.body}`)}</p>
+          </Link>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.hubContactTitle")}</h2>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.hubContactBody")}</p>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <a className="text-sky-200 underline decoration-sky-400/40 underline-offset-4" href="mailto:legal@ancap.cloud">
+            {t("legal.contactLegal")}
+          </a>
+          <a className="text-sky-200 underline decoration-sky-400/40 underline-offset-4" href="mailto:privacy@ancap.cloud">
+            {t("legal.contactPrivacy")}
+          </a>
+          <a className="text-sky-200 underline decoration-sky-400/40 underline-offset-4" href="mailto:support@ancap.cloud">
+            {t("legal.contactSupport")}
+          </a>
+        </div>
+      </section>
+      <p className="mt-6 text-sm leading-7 text-white/55">{t("legal.hubDisclaimer")}</p>
+    </LegalShell>
+  );
+}
+
 export function TermsView() {
   const { t } = useLanguage();
-  const sections = Array.from({ length: 15 }, (_, i) => i + 1);
+  const sections = Array.from({ length: 18 }, (_, i) => i + 1);
   return (
     <LegalShell
       kickerClass="border-white/10 bg-white/[0.03]"
       kicker={t("legal.termsKicker")}
       title={t("legal.termsTitle")}
       intro={`${t("legal.lastUpdated")} ${t("legal.termsIntro")}`}
-      actions={
-        <>
-          <Link href="/legal/privacy" className={pill}>{t("legal.privacyLink")}</Link>
-          <Link href="/legal/cookies" className={pill}>{t("legal.cookiesLink")}</Link>
-          <Link href="/legal/cyber-defense" className={pillAccent}>{t("legal.cyberLink")}</Link>
-          <Link href="/whitepaper/acp" className={pillAccent}>{t("legal.acpLink")}</Link>
-        </>
-      }
+      actions={<LegalNavPills current="/legal/terms" />}
     >
       <section className="mt-6 grid gap-4">
         {sections.map((n) => (
@@ -79,16 +155,10 @@ export function PrivacyView() {
       kicker={t("legal.privacyKicker")}
       title={t("legal.privacyTitle")}
       intro={`${t("legal.lastUpdated")} ${t("legal.privacyIntro")}`}
-      actions={
-        <>
-          <Link href="/legal/terms" className={pill}>{t("legal.termsLink")}</Link>
-          <Link href="/legal/cookies" className={pill}>{t("legal.cookiesLink")}</Link>
-          <Link href="/legal/cyber-defense" className={pillAccent}>{t("legal.cyberLink")}</Link>
-        </>
-      }
+      actions={<LegalNavPills current="/legal/privacy" />}
     >
       <section className="mt-6 grid gap-4 md:grid-cols-2">
-        {[1, 2, 3, 4, 5, 6].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.p${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.p${n}Body`)}</p>
@@ -122,13 +192,7 @@ export function CookiesLegalView() {
       kicker={t("legal.cookiesKicker")}
       title={t("legal.cookiesTitle")}
       intro={`${t("legal.lastUpdated")} ${t("legal.cookiesIntro")}`}
-      actions={
-        <>
-          <Link href="/legal/privacy" className={pill}>{t("legal.privacyLink")}</Link>
-          <Link href="/legal/terms" className={pill}>{t("legal.termsLink")}</Link>
-          <Link href="/legal/cyber-defense" className={pillAccent}>{t("legal.cyberLink")}</Link>
-        </>
-      }
+      actions={<LegalNavPills current="/legal/cookies" />}
     >
       <section className="mt-6 grid gap-4">
         {cats.map((n) => (
@@ -161,6 +225,50 @@ export function CookiesLegalView() {
   );
 }
 
+export function RiskDisclosureView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.riskKicker")}
+      title={t("legal.riskTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.riskIntro")}`}
+      actions={<LegalNavPills current="/legal/risk" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.r${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.r${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+    </LegalShell>
+  );
+}
+
+export function RefundsView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-white/10 bg-white/[0.03]"
+      kicker={t("legal.refundsKicker")}
+      title={t("legal.refundsTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.refundsIntro")}`}
+      actions={<LegalNavPills current="/legal/refunds" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.f${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.f${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+    </LegalShell>
+  );
+}
+
 export function CyberDefenseView() {
   const { t } = useLanguage();
   return (
@@ -179,8 +287,7 @@ export function CyberDefenseView() {
           >
             {t("legal.openLetter")}
           </a>
-          <Link href="/legal/terms" className={pill}>{t("legal.termsLink")}</Link>
-          <Link href="/legal/privacy" className={pill}>{t("legal.privacyLink")}</Link>
+          <LegalNavPills current="/legal/cyber-defense" />
         </>
       }
     >
@@ -225,5 +332,56 @@ export function CyberDefenseView() {
         </p>
       </section>
     </LegalShell>
+  );
+}
+
+export function SiteLegalFooter() {
+  const { t } = useLanguage();
+  const links = [
+    { href: "/legal", label: "footerLegal" },
+    { href: "/legal/terms", label: "footerTerms" },
+    { href: "/legal/privacy", label: "footerPrivacy" },
+    { href: "/legal/cookies", label: "footerCookies" },
+    { href: "/legal/risk", label: "footerRisk" },
+    { href: "/legal/refunds", label: "footerRefunds" },
+  ] as const;
+  return (
+    <footer
+      style={{
+        padding: "32px 24px",
+        borderTop: "1px solid var(--border)",
+        color: "var(--text-muted)",
+        fontSize: "0.9rem",
+      }}
+    >
+      <div className="container" style={{ textAlign: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 18px", justifyContent: "center", marginBottom: 12 }}>
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} style={{ color: "var(--text-muted)", textDecoration: "none" }}>
+              {t(`legal.${link.label}`)}
+            </Link>
+          ))}
+        </div>
+        <div>
+          <Link href="/" style={{ color: "var(--text-muted)", textDecoration: "none", fontWeight: 800 }}>
+            ANCAP
+          </Link>
+          <span> — {t("homePage.footer")}</span>
+        </div>
+        <div style={{ marginTop: 8, fontSize: "0.8rem" }}>
+          <a href="mailto:legal@ancap.cloud" style={{ color: "var(--text-muted)" }}>
+            legal@ancap.cloud
+          </a>
+          {" · "}
+          <a href="mailto:privacy@ancap.cloud" style={{ color: "var(--text-muted)" }}>
+            privacy@ancap.cloud
+          </a>
+          {" · "}
+          <a href="mailto:support@ancap.cloud" style={{ color: "var(--text-muted)" }}>
+            support@ancap.cloud
+          </a>
+        </div>
+      </div>
+    </footer>
   );
 }
