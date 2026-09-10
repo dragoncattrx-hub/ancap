@@ -849,41 +849,29 @@ def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
 
     anyio.run(setup_sent_payout)
 
-    async def fake_json_rpc(rpc_url, method, params=None):
+    async def fake_json_rpc(rpc_url, method, params=None, *, client=None):
         if method == "getblockcount":
             return {"result": 10}
         if method == "getblockhash":
             height = int((params or {}).get("height") or 0)
             return {"result": f"blockhash-{height}"}
         if method == "getblock":
-            blockhash = str((params or {}).get("blockhash") or "")
-            try:
-                height = int(blockhash.split("-")[-1])
-            except Exception:
-                height = 0
-            txs = []
-            if height == 7:
-                txs = [
-                    {
-                        "txid": "fundingtx",
-                        "vin": [],
-                        "vout": [
-                            {"recipient_address": "acp1qreserve0000000000000000000000000000000", "amount": 1000000000},
-                        ],
-                    }
-                ]
-            elif height == 8:
-                txs = [
-                    {
-                        "txid": payout_txid,
-                        "vin": [{"prev_txid": "fundingtx", "vout": 0}],
+            return {"result": {"tx": []}}
+        if method == "getrawtransaction":
+            return {
+                "result": {
+                    "decoded": {
+                        "confirmations": 5,
                         "vout": [
                             {"recipient_address": payload["user_acp_address"], "amount": 125000000},
-                            {"recipient_address": "acp1qreserve0000000000000000000000000000000", "amount": 875000000},
+                            {
+                                "recipient_address": "acp1qreserve0000000000000000000000000000000",
+                                "amount": 875000000,
+                            },
                         ],
                     }
-                ]
-            return {"result": {"tx": txs}}
+                }
+            }
         raise AssertionError(f"unexpected rpc method: {method}")
 
     original_json_rpc = acp_watcher._json_rpc
@@ -921,9 +909,12 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
     from app.config import get_settings
     get_settings.cache_clear()
 
+    # Unique amount so leftover PENDING_DEPOSIT rows from other tests cannot steal the match.
+    amount_acp = str(500_000 + (uuid.uuid4().int % 90_000))
+    amount_smallest = int(amount_acp) * 100_000_000
     payload = {
         "user_bsc_address": "0x" + ("6" * 40),
-        "amount_acp": "500000",
+        "amount_acp": amount_acp,
     }
     create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
     assert create.status_code == 200, create.text
@@ -932,7 +923,7 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
 
     import app.services.bridge_acp_watcher as acp_watcher
 
-    async def fake_json_rpc(rpc_url, method, params=None):
+    async def fake_json_rpc(rpc_url, method, params=None, *, client=None):
         if method == "getblockcount":
             return {"result": 3}
         if method == "getblockhash":
@@ -953,7 +944,7 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
                         "vout": [
                             {
                                 "recipient_address": "acp1qreserve0000000000000000000000000000000",
-                                "amount": 50000000000000,
+                                "amount": amount_smallest,
                             },
                         ],
                     }
@@ -964,11 +955,16 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
                         "txid": "fundingtx",
                         "vin": [],
                         "vout": [
-                            {"recipient_address": "acp1qsender000000000000000000000000000000", "amount": 50000000000000},
+                            {
+                                "recipient_address": "acp1qsender000000000000000000000000000000",
+                                "amount": amount_smallest,
+                            },
                         ],
                     }
                 ]
             return {"result": {"tx": txs}}
+        if method == "getrawtransaction":
+            return {"result": {"decoded": {"confirmations": 0, "vout": []}}}
         raise AssertionError(f"unexpected rpc method: {method}")
 
     original_json_rpc = acp_watcher._json_rpc

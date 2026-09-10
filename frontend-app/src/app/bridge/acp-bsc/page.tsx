@@ -319,7 +319,19 @@ export default function BridgeAcpBscPage() {
                   {t("bridgePage.signInIntent")}
                 </p>
               ) : (
-              <p className="mt-1 text-xs text-zinc-500">{t("bridgePage.intentHint")}</p>)}
+                <>
+                  <p className="mt-1 text-xs text-zinc-500">{t("bridgePage.intentHint")}</p>
+                  {status?.reserve_acp_address ? (
+                    <div className="mt-3 rounded border border-amber-900/40 bg-amber-950/25 px-3 py-2 text-xs text-amber-100/90">
+                      <div className="font-medium text-amber-50">{t("bridgePage.depositStepTitle")}</div>
+                      <p className="mt-1 text-amber-100/80">{t("bridgePage.depositStepBody")}</p>
+                      <p className="mt-2 break-all font-mono text-[11px] text-amber-50">
+                        {status.reserve_acp_address}
+                      </p>
+                    </div>
+                  ) : null}
+                </>
+              )}
               <div className="mt-4 flex flex-col gap-3">
                 {isAuthenticated ? (
                   <>

@@ -184,10 +184,13 @@ without depending on ABI files inside the API container.
 ### If intent stays in `PENDING_DEPOSIT`
 Check:
 - ACP tx really went to reserve address
-- exact amount matches intent
+- exact amount matches intent (watcher matches `received_units` to `amount_acp_smallest`)
 - confirmations reached the currently deployed ACP policy (`1` in this single-node runtime)
-- ACP watcher tick ran successfully
+- ACP watcher tick ran successfully (incremental `acp_deposit` scan; after deploy catch-up is ~400 blocks/tick from height 1)
 - ACP RPC reachable from API container
+- if deposit txid is known: `POST /v1/bridge/admin/forward/bind-deposit` with operator secret
+
+Intent alone does nothing — user must send the exact ACP amount to the reserve address after creating the intent.
 
 ### If intent stays in `CONFIRMED_ON_ACP`
 Check:

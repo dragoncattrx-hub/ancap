@@ -38,7 +38,10 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Sign in",
     signInIntent: "to register an intent.",
     intentHint:
-      "Registers a row in PENDING_DEPOSIT. On-chain mint is performed by the operator after deposit confirmation.",
+      "Creates PENDING_DEPOSIT. Then send the EXACT ACP amount to the reserve address below. Watcher confirms deposit and operator mints wACP.",
+    depositStepTitle: "Required after intent",
+    depositStepBody:
+      "Send exactly the intent amount of native ACP to the reserve address. Wrong amount will not match. Status stays PENDING_DEPOSIT until the on-chain deposit is detected.",
     bscAddress: "BSC address (0x…)",
     amountAcp: "Amount (ACP)",
     acpPayoutOptional: "ACP payout address (optional)",
@@ -96,7 +99,10 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Войти",
     signInIntent: "чтобы зарегистрировать intent.",
     intentHint:
-      "Создаёт строку в PENDING_DEPOSIT. On-chain mint выполняет оператор после подтверждения депозита.",
+      "Создаёт PENDING_DEPOSIT. Затем отправьте ТОЧНУЮ сумму ACP на резервный адрес ниже. Watcher подтвердит депозит, оператор сминтит wACP.",
+    depositStepTitle: "Обязательно после intent",
+    depositStepBody:
+      "Отправьте ровно сумму intent в native ACP на резервный адрес. Другая сумма не сматчится. Статус останется PENDING_DEPOSIT, пока депозит не найден в цепи.",
     bscAddress: "Адрес BSC (0x…)",
     amountAcp: "Сумма (ACP)",
     acpPayoutOptional: "Адрес выплаты ACP (опционально)",
@@ -154,7 +160,10 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Увійти",
     signInIntent: "щоб зареєструвати intent.",
     intentHint:
-      "Створює рядок у PENDING_DEPOSIT. On-chain mint виконує оператор після підтвердження депозиту.",
+      "Створює PENDING_DEPOSIT. Далі надішліть ТОЧНУ суму ACP на резервну адресу нижче. Watcher підтвердить депозит, оператор зминтить wACP.",
+    depositStepTitle: "Обовʼязково після intent",
+    depositStepBody:
+      "Надішліть рівно суму intent у native ACP на резервну адресу. Інша сума не зматчиться.",
     bscAddress: "Адреса BSC (0x…)",
     amountAcp: "Сума (ACP)",
     acpPayoutOptional: "Адреса виплати ACP (опційно)",
@@ -212,7 +221,10 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Anmelden",
     signInIntent: "um einen Intent zu registrieren.",
     intentHint:
-      "Registriert eine Zeile in PENDING_DEPOSIT. On-Chain-Mint erfolgt durch den Betreiber nach Deposit-Bestätigung.",
+      "Registriert PENDING_DEPOSIT. Senden Sie danach den EXAKTEN ACP-Betrag an die Reserve-Adresse unten.",
+    depositStepTitle: "Pflicht nach Intent",
+    depositStepBody:
+      "Senden Sie genau den Intent-Betrag als natives ACP an die Reserve-Adresse. Andere Beträge matchen nicht.",
     bscAddress: "BSC-Adresse (0x…)",
     amountAcp: "Betrag (ACP)",
     acpPayoutOptional: "ACP-Auszahlungsadresse (optional)",
@@ -269,7 +281,9 @@ export const bridgeByLang: Record<Language, Tree> = {
     intentTitle: "新建意圖（ACP → BSC）",
     signIn: "登入",
     signInIntent: "以註冊意圖。",
-    intentHint: "在 PENDING_DEPOSIT 登錄一列。鏈上鑄造由營運者在確認存款後執行。",
+    intentHint: "建立 PENDING_DEPOSIT。接著將精確 ACP 數量轉入下方儲備地址。",
+    depositStepTitle: "建立意圖後必做",
+    depositStepBody: "請將與意圖完全相同的原生 ACP 轉入儲備地址；金額不符將無法匹配。",
     bscAddress: "BSC 地址（0x…）",
     amountAcp: "金額（ACP）",
     acpPayoutOptional: "ACP 撥款地址（選填）",

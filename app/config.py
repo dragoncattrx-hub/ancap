@@ -347,6 +347,9 @@ class Settings(BaseSettings):
     bridge_reserve_acp_address: str = ""
     acp_hot_keystore_file: str = ""
     bridge_acp_confirmations: int = 30
+    # Incremental ACP deposit scan (avoid full 1..tip walk every tick).
+    bridge_acp_scan_lookback: int = 12
+    bridge_acp_scan_max_blocks: int = 400
     bridge_bsc_confirmations: int = 18
     bridge_operator_secret: str | None = None
     bsc_explorer_base: str = "https://bscscan.com"
