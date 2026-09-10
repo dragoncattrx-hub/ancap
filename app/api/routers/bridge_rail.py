@@ -23,6 +23,7 @@ from app.db.models import (
 from app.db.session import get_db
 from app.schemas.bridge_rail import (
     BridgeAdminForwardBindDepositRequest,
+    BridgeAdminForwardRequeueMintRequest,
     BridgeAdminReverseBindBurnRequest,
     BridgeAdminReverseBindPayoutRequest,
     BridgeAdminReverseMarkDisputedRequest,
@@ -343,9 +344,11 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
 
     cp_acp = None
     cp_bsc = None
+    cp_acp_deposit = None
     try:
         cp_acp = await session.get(BridgeWatcherCheckpoint, "acp")
         cp_bsc = await session.get(BridgeWatcherCheckpoint, "bsc")
+        cp_acp_deposit = await session.get(BridgeWatcherCheckpoint, "acp_deposit")
     except (ProgrammingError, DBAPIError, OSError) as exc:
         logger.warning("bridge_status checkpoints skipped (run alembic upgrade head?): %s", exc)
         await session.rollback()
@@ -380,6 +383,7 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
         counts_by_status=counts,
         checkpoint_acp=int(cp_acp.last_block_height) if cp_acp else None,
         checkpoint_bsc=int(cp_bsc.last_block_height) if cp_bsc else None,
+        checkpoint_acp_deposit=int(cp_acp_deposit.last_block_height) if cp_acp_deposit else None,
         last_reconciliation=last_recon,
     )
 
@@ -710,6 +714,40 @@ async def list_my_intents(
     return out
 
 
+@router.post("/intents/{operation_id}/cancel", response_model=BridgeOperationPublic)
+async def cancel_my_pending_intent(
+    operation_id: str,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    """Cancel an unpaid forward intent stuck in PENDING_DEPOSIT."""
+    s = get_settings()
+    if not s.bridge_rail_enabled:
+        raise HTTPException(status_code=503, detail="Bridge rail is disabled")
+    op = await _get_operation_or_404(session, operation_id)
+    if str(op.user_id) != str(user_id):
+        raise HTTPException(status_code=404, detail="Operation not found")
+    if op.direction != "acp_to_bsc":
+        raise HTTPException(status_code=400, detail="Only forward intents can be cancelled here")
+    if op.status != "PENDING_DEPOSIT":
+        raise HTTPException(status_code=409, detail="Only PENDING_DEPOSIT intents can be cancelled")
+    if op.acp_tx_hash:
+        raise HTTPException(status_code=409, detail="Deposit already bound; cannot cancel")
+    from app.services.bridge_orchestrator import append_transition
+
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="intent_cancelled_by_user",
+            payload_json={},
+        )
+    )
+    await append_transition(session, op, "CANCELLED", metadata={"reason": "user_cancel"})
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
 @router.post("/admin/reconcile", response_model=dict)
 async def admin_reconcile(
     session: AsyncSession = Depends(get_db),
@@ -911,6 +949,46 @@ async def admin_forward_bind_deposit(
         op,
         "CONFIRMED_ON_ACP",
         metadata={"admin": True, "txid": tx_hash, "note": body.note},
+    )
+    await session.flush()
+    await session.refresh(op)
+    return _serialize_operation(op)
+
+
+@router.post("/admin/forward/requeue-mint", response_model=BridgeOperationPublic)
+async def admin_forward_requeue_mint(
+    body: BridgeAdminForwardRequeueMintRequest,
+    session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
+    """Requeue a FAILED forward mint after ACP deposit was already bound."""
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
+    op = await _get_operation_or_404(session, body.operation_id)
+    if op.direction != "acp_to_bsc":
+        raise HTTPException(status_code=400, detail="Operation is not forward rail")
+    if op.status != "FAILED":
+        raise HTTPException(status_code=409, detail="Only FAILED forward operations can be requeued")
+    if not op.acp_tx_hash:
+        raise HTTPException(status_code=409, detail="FAILED op has no ACP deposit tx to remint from")
+    from app.services.bridge_orchestrator import append_transition
+
+    op.bsc_tx_hash_mint = None
+    op.bsc_log_index = None
+    op.deposit_ref_hex = None
+    session.add(
+        BridgeAuditEvent(
+            operation_id=op.id,
+            event_type="admin_forward_requeue_mint",
+            payload_json={"note": body.note, "acp_tx_hash": op.acp_tx_hash},
+        )
+    )
+    await append_transition(
+        session,
+        op,
+        "CONFIRMED_ON_ACP",
+        metadata={"admin": True, "requeued_from": "FAILED", "note": body.note},
     )
     await session.flush()
     await session.refresh(op)

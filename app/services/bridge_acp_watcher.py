@@ -7,6 +7,7 @@ via getrawtransaction on the known payout txid.
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -21,6 +22,10 @@ from app.services.bridge_orchestrator import append_transition
 logger = logging.getLogger(__name__)
 
 _DEPOSIT_SCAN_KEY = "acp_deposit"
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _norm_txid(txid: str) -> str:
@@ -182,32 +187,79 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
 
             matched = 0
             confirmed_payouts = 0
+            expired_pending = 0
             deposit_error: str | None = None
             reverse_error: str | None = None
             scanned_from = 0
             scanned_to = 0
             reserve = (settings.bridge_reserve_acp_address or "").strip()
             lookback = max(0, int(getattr(settings, "bridge_acp_scan_lookback", 12) or 12))
-            max_blocks = max(1, int(getattr(settings, "bridge_acp_scan_max_blocks", 400) or 400))
+            max_blocks = max(1, int(getattr(settings, "bridge_acp_scan_max_blocks", 800) or 800))
+            windows = max(1, int(getattr(settings, "bridge_acp_scan_windows_per_tick", 8) or 8))
             confirmations_needed = int(settings.bridge_acp_confirmations)
+            ttl_hours = max(0, int(getattr(settings, "bridge_pending_deposit_ttl_hours", 72) or 0))
 
             if reserve:
                 try:
+                    if ttl_hours > 0:
+                        cutoff = _utcnow() - timedelta(hours=ttl_hours)
+                        stale = (
+                            await session.execute(
+                                select(BridgeOperation)
+                                .where(
+                                    BridgeOperation.direction == "acp_to_bsc",
+                                    BridgeOperation.status == "PENDING_DEPOSIT",
+                                    BridgeOperation.acp_tx_hash.is_(None),
+                                    BridgeOperation.created_at < cutoff,
+                                )
+                                .order_by(BridgeOperation.created_at.asc())
+                                .limit(100)
+                            )
+                        ).scalars().all()
+                        for op in stale:
+                            session.add(
+                                BridgeAuditEvent(
+                                    operation_id=op.id,
+                                    event_type="pending_deposit_expired",
+                                    payload_json={"ttl_hours": ttl_hours},
+                                )
+                            )
+                            await append_transition(
+                                session,
+                                op,
+                                "CANCELLED",
+                                metadata={"reason": "pending_deposit_ttl_expired", "ttl_hours": ttl_hours},
+                            )
+                            expired_pending += 1
+
                     scan_row = await session.get(BridgeWatcherCheckpoint, _DEPOSIT_SCAN_KEY)
                     if scan_row is None:
                         scan_row = BridgeWatcherCheckpoint(chain_key=_DEPOSIT_SCAN_KEY, last_block_height=0)
                         session.add(scan_row)
-                    prev = int(scan_row.last_block_height or 0)
-                    if prev <= 0:
-                        start = 1
-                    else:
-                        start = max(1, prev - lookback + 1)
-                    end = min(tip, start + max_blocks - 1)
-                    if end < start:
-                        end = tip
-                    scanned_from, scanned_to = start, end
 
-                    txs = await _incoming_to_reserve(client, rpc, reserve, start, end)
+                    txs: list[dict[str, Any]] = []
+                    first_start: int | None = None
+                    last_end = int(scan_row.last_block_height or 0)
+                    for _ in range(windows):
+                        prev = int(scan_row.last_block_height or 0)
+                        if prev <= 0:
+                            start = 1
+                        else:
+                            start = max(1, prev - lookback + 1)
+                        end = min(tip, start + max_blocks - 1)
+                        if end < start:
+                            break
+                        if first_start is None:
+                            first_start = start
+                        chunk = await _incoming_to_reserve(client, rpc, reserve, start, end)
+                        txs.extend(chunk)
+                        scan_row.last_block_height = end
+                        last_end = end
+                        if end >= tip:
+                            break
+                    scanned_from = int(first_start or 0)
+                    scanned_to = int(last_end or 0)
+
                     pending = (
                         await session.execute(
                             select(BridgeOperation)
@@ -229,7 +281,6 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                                 continue
                             if int(tx.get("received_units") or 0) != target_units:
                                 continue
-                            # Confirmations relative to tip (not scan end) for correctness.
                             conf = tip - int(tx.get("block_height") or 0) + 1
                             if conf < confirmations_needed:
                                 continue
@@ -261,9 +312,6 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                             used_txids.add(txid)
                             matched += 1
                             break
-
-                    # Advance deposit watermark only after a successful scan window.
-                    scan_row.last_block_height = end
                 except Exception as exc:
                     deposit_error = f"{type(exc).__name__}: {exc}"
                     logger.warning("acp deposit pickup failed: %s", exc, exc_info=True)
@@ -329,6 +377,7 @@ async def tick_acp_checkpoint(session: AsyncSession) -> dict[str, Any]:
                 "last_block_height": tip,
                 "matched_deposits": matched,
                 "confirmed_payouts": confirmed_payouts,
+                "expired_pending_deposits": expired_pending,
                 "scanned_from": scanned_from,
                 "scanned_to": scanned_to,
             }

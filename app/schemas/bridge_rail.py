@@ -67,6 +67,7 @@ class BridgeStatusResponse(BaseModel):
     counts_by_status: dict[str, int]
     checkpoint_acp: int | None
     checkpoint_bsc: int | None
+    checkpoint_acp_deposit: int | None = None
     last_reconciliation: dict[str, Any] | None = None
 
 
@@ -173,6 +174,11 @@ class BridgeAdminReverseBindPayoutRequest(BaseModel):
 class BridgeAdminForwardBindDepositRequest(BaseModel):
     operation_id: str
     acp_tx_hash: str = Field(..., min_length=3, max_length=128)
+    note: str | None = None
+
+
+class BridgeAdminForwardRequeueMintRequest(BaseModel):
+    operation_id: str
     note: str | None = None
 
 

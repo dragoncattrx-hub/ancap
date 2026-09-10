@@ -879,6 +879,11 @@ export const bridgeRail = {
   async listMyIntents(limit = 50) {
     return apiFetch(`/bridge/intents/me?limit=${encodeURIComponent(String(limit))}`);
   },
+  async cancelIntent(operationId: string) {
+    return apiFetch(`/bridge/intents/${encodeURIComponent(operationId)}/cancel`, {
+      method: "POST",
+    });
+  },
 };
 
 export const stakes = {

@@ -807,6 +807,7 @@ def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
     monkeypatch.setenv("ACP_RPC_URL", "https://acp.example.invalid")
     monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
     monkeypatch.setenv("BRIDGE_ACP_CONFIRMATIONS", "3")
+    monkeypatch.setenv("BRIDGE_PENDING_DEPOSIT_TTL_HOURS", "0")
     from app.config import get_settings
     get_settings.cache_clear()
 
@@ -906,6 +907,7 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
     monkeypatch.setenv("ACP_RPC_URL", "https://acp.example.invalid")
     monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
     monkeypatch.setenv("BRIDGE_ACP_CONFIRMATIONS", "1")
+    monkeypatch.setenv("BRIDGE_PENDING_DEPOSIT_TTL_HOURS", "0")
     from app.config import get_settings
     get_settings.cache_clear()
 
@@ -991,6 +993,29 @@ def test_acp_watcher_matches_forward_deposit(client, monkeypatch):
     op = next(x for x in mine.json() if x["id"] == op_id)
     assert op["status"] == "CONFIRMED_ON_ACP"
     assert op["acp_tx_hash"] == deposit_txid.lower()
+
+
+def test_user_can_cancel_pending_deposit_intent(client, monkeypatch):
+    monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
+    monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
+    from app.config import get_settings
+    get_settings.cache_clear()
+
+    payload = {
+        "user_bsc_address": "0x" + ("a" * 40),
+        "amount_acp": "3",
+    }
+    create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
+    assert create.status_code == 200, create.text
+    op_id = create.json()["id"]
+    assert create.json()["status"] == "PENDING_DEPOSIT"
+
+    cancel = client.post(f"/v1/bridge/intents/{op_id}/cancel")
+    assert cancel.status_code == 200, cancel.text
+    assert cancel.json()["status"] == "CANCELLED"
+
+    again = client.post(f"/v1/bridge/intents/{op_id}/cancel")
+    assert again.status_code == 409, again.text
 
 
 def test_orchestrator_queues_live_mint_from_confirmed_on_acp(client, monkeypatch):

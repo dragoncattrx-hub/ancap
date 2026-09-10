@@ -26,6 +26,7 @@ type BridgeStatus = {
   counts_by_status: Record<string, number>;
   checkpoint_acp: number | null;
   checkpoint_bsc: number | null;
+  checkpoint_acp_deposit?: number | null;
   last_reconciliation: Record<string, unknown> | null;
 };
 
@@ -171,6 +172,19 @@ export default function BridgeAcpBscPage() {
     }
   }
 
+  async function cancelIntent(id: string) {
+    setBusy(true);
+    setError("");
+    try {
+      await bridgeRail.cancelIntent(id);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("bridgePage.cancelFailed"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (authLoading) {
     return (
       <div className="relative min-h-screen text-zinc-100">
@@ -266,6 +280,10 @@ export default function BridgeAcpBscPage() {
                 <div>
                   <dt className="text-zinc-500">{t("bridgePage.acpCheckpoint")}</dt>
                   <dd>{status.checkpoint_acp ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">{t("bridgePage.acpDepositCheckpoint")}</dt>
+                  <dd>{status.checkpoint_acp_deposit ?? "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-zinc-500">{t("bridgePage.bscCheckpoint")}</dt>
@@ -485,6 +503,18 @@ export default function BridgeAcpBscPage() {
                             <a className="text-sky-400 underline" href={bscTxHref} target="_blank" rel="noreferrer">
                               {t("bridgePage.openBscTx")}
                             </a>
+                          </div>
+                        ) : null}
+                        {o.status === "PENDING_DEPOSIT" && o.direction === "acp_to_bsc" && !o.acp_tx_hash ? (
+                          <div className="mt-2">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void cancelIntent(o.id)}
+                              className="rounded border border-amber-800/60 px-2 py-1 text-[11px] text-amber-200 hover:bg-amber-950/40 disabled:opacity-40"
+                            >
+                              {t("bridgePage.cancelPending")}
+                            </button>
                           </div>
                         ) : null}
                       </li>
