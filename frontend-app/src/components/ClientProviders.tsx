@@ -7,6 +7,7 @@ import { AuthProvider } from "./AuthProvider";
 import { WalletProvider } from "./WalletProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { CookieConsent } from "./CookieConsent";
+import { FloatingNewsWidget } from "./FloatingNewsWidget";
 
 function ServiceWorkerRegister() {
   useEffect(() => {
@@ -27,6 +28,7 @@ export function ClientProviders({ children, initialLang }: { children: React.Rea
           <LanguageProvider initialLang={resolvedInitialLang}>
             <ServiceWorkerRegister />
             {children}
+            <FloatingNewsWidget />
             <CookieConsent />
           </LanguageProvider>
         </WalletProvider>
