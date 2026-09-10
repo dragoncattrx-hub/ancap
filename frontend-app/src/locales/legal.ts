@@ -238,6 +238,12 @@ export const legalByLang: Record<Language, Tree> = {
     clarityScope1:
       "This endorsement is a public legal-policy statement of full agreement with the CLARITY Act's market-structure goals. It does not create a warranty, insurance, SLA, government partnership, lobbying engagement, or investment recommendation. Passage of any bill remains a matter for Congress and the President. Until enacted, ANCAP continues to operate under existing applicable law and these Legal center notices.",
     clarityScope2: "References:",
+    footerLegal: "Legal",
+    footerTerms: "Terms",
+    footerPrivacy: "Privacy",
+    footerCookies: "Cookies",
+    footerRisk: "Risks",
+    footerRefunds: "Refunds",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
