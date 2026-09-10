@@ -107,6 +107,8 @@ dig TXT mail._domainkey.ancap.cloud +short
 
 Webmail: https://webmail.ancap.cloud/ (via Apache/Roundcube if installed)
 
+**ANCAP Single Account connect UI:** https://ancap.cloud/mail/connect — IMAP/SMTP wizard for any provider (defaults prefilled for `mail.ancap.cloud`). API: `GET/POST /v1/mail/accounts`, `POST /v1/mail/accounts/test`.
+
 ---
 
 ## Quick Fix: If Port 25 is Permanently Blocked

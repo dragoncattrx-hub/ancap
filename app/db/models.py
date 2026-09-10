@@ -2887,3 +2887,35 @@ class LunarInterestOrder(Base):
     parcel = relationship("LunarParcel", foreign_keys=[parcel_id])
 
     __table_args__ = (Index("ix_lunar_interest_orders_owner_created", "owner_user_id", "created_at"),)
+
+
+# --- User IMAP/SMTP provider accounts (single account) ---
+
+
+class MailProviderAccount(Base):
+    __tablename__ = "mail_provider_accounts"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    display_name = Column(String(160), nullable=True)
+    email_address = Column(String(320), nullable=False)
+    provider_kind = Column(String(32), nullable=False, default="imap_smtp")
+    imap_host = Column(String(255), nullable=False)
+    imap_port = Column(Integer, nullable=False, default=993)
+    imap_username = Column(String(320), nullable=False)
+    imap_password_enc = Column(Text, nullable=False)
+    imap_use_ssl = Column(Boolean, nullable=False, default=True)
+    smtp_host = Column(String(255), nullable=False)
+    smtp_port = Column(Integer, nullable=False, default=587)
+    smtp_username = Column(String(320), nullable=False)
+    smtp_password_enc = Column(Text, nullable=False)
+    smtp_use_tls = Column(Boolean, nullable=False, default=True)
+    smtp_use_ssl = Column(Boolean, nullable=False, default=False)
+    status = Column(String(32), nullable=False, default="connected", index=True)
+    last_verified_at = Column(DateTime(timezone=True), nullable=True)
+    last_error = Column(Text, nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])

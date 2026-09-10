@@ -37,6 +37,7 @@ const primaryNav: NavItem[] = [
   { label: "Marketplace", href: "/marketplace", i18nKey: "nav.marketplace" },
   { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
   { label: "Lunar", href: "/lunar", i18nKey: "nav.lunar" },
+  { label: "Mail", href: "/mail/connect" },
   { label: "Galaxy", href: "/galaxy", i18nKey: "nav.galaxy" },
   { label: "Fauna", href: "/fauna", i18nKey: "nav.fauna" },
   { label: "Tech", href: "/tech", i18nKey: "nav.tech" },
