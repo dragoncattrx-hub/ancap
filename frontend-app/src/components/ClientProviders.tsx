@@ -8,6 +8,7 @@ import { WalletProvider } from "./WalletProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { CookieConsent } from "./CookieConsent";
 import { FloatingNewsWidget } from "./FloatingNewsWidget";
+import { FloatingEarthSupportWidget } from "./FloatingEarthSupportWidget";
 
 function ServiceWorkerRegister() {
   useEffect(() => {
@@ -29,6 +30,7 @@ export function ClientProviders({ children, initialLang }: { children: React.Rea
             <ServiceWorkerRegister />
             {children}
             <FloatingNewsWidget />
+            <FloatingEarthSupportWidget />
             <CookieConsent />
           </LanguageProvider>
         </WalletProvider>

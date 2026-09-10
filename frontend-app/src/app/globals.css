@@ -930,8 +930,61 @@ textarea {
   animation: ancap-news-float 4.4s ease-in-out;
 }
 
+.ancap-earth {
+  position: relative;
+  width: 3.4rem;
+  height: 3.4rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 28%, #7dd3fc 0%, #0284c7 38%, #0c4a6e 72%, #082f49 100%);
+  box-shadow:
+    inset -10px -4px 14px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(125, 211, 252, 0.22),
+    0 0 18px rgba(56, 189, 248, 0.28);
+}
+
+.ancap-earth__map {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  height: 100%;
+  background-image:
+    radial-gradient(ellipse 18% 14% at 18% 42%, rgba(34, 197, 94, 0.78) 0%, transparent 70%),
+    radial-gradient(ellipse 22% 16% at 38% 55%, rgba(22, 163, 74, 0.72) 0%, transparent 68%),
+    radial-gradient(ellipse 14% 20% at 58% 36%, rgba(21, 128, 61, 0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 20% 12% at 78% 58%, rgba(34, 197, 94, 0.65) 0%, transparent 70%),
+    radial-gradient(ellipse 16% 18% at 92% 40%, rgba(22, 163, 74, 0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 18% 14% at 118% 42%, rgba(34, 197, 94, 0.78) 0%, transparent 70%),
+    radial-gradient(ellipse 22% 16% at 138% 55%, rgba(22, 163, 74, 0.72) 0%, transparent 68%),
+    radial-gradient(ellipse 14% 20% at 158% 36%, rgba(21, 128, 61, 0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 20% 12% at 178% 58%, rgba(34, 197, 94, 0.65) 0%, transparent 70%);
+  animation: ancap-earth-spin 18s linear infinite;
+}
+
+.ancap-earth__shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.28) 0%, transparent 42%, transparent 68%, rgba(0, 0, 0, 0.22) 100%);
+  pointer-events: none;
+}
+
+@keyframes ancap-earth-spin {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ancap-news-float {
+    animation: none;
+  }
+
+  .ancap-earth__map {
     animation: none;
   }
 
