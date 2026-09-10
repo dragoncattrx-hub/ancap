@@ -15,6 +15,13 @@ const GATEWAY = "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b";
 
 const LIVE = [
   {
+    title: "DexTools",
+    status: "Live — use this for Coin/DexTools forms",
+    body: "Wrapped ACP (wACP) is already indexed. In promo forms that require CoinGecko or DexTools, search the contract address — not “ANCAP” or “ACP”.",
+    href: `https://www.dextools.io/app/en/bnb/pair-explorer/${POOL.toLowerCase()}`,
+    external: true,
+  },
+  {
     title: "PancakeSwap (trade by address)",
     status: "Live — no approval needed",
     body: "Import wACP by contract on BSC and trade the wACP/USDT V2 pair. Official default token lists are curated; address import always works.",
@@ -52,7 +59,7 @@ const LATER = [
   },
   {
     title: "DexScreener",
-    body: "Auto-indexes after meaningful pool activity. Dust / zero-volume pairs often stay invisible — seed liquidity and make a few swaps.",
+    body: "Often lags dust pairs. Prefer DexTools (already live). After more liquidity/swaps it usually appears automatically.",
     href: `https://dexscreener.com/bsc/${POOL}`,
   },
   {
@@ -78,10 +85,23 @@ export default function MarketsPage() {
         >
           Where wACP is already visible
         </h1>
-        <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 760, marginBottom: 28 }}>
+        <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 760, marginBottom: 12 }}>
           No CoinGecko approval required for these surfaces. Official asset is{" "}
           <strong>{WACP_SYMBOL}</strong> on BNB Smart Chain — not the unrelated CoinGecko ticker
           “ACP” (Arena Of Faith). Native ACP stays on the ANCAP chain; sACP lists after mainnet deploy.
+        </p>
+        <p
+          style={{
+            color: "var(--accent-strong)",
+            lineHeight: 1.65,
+            maxWidth: 760,
+            marginBottom: 28,
+            fontSize: "0.95rem",
+          }}
+        >
+          Forms that ask for a CoinGecko/DexTools coin: paste CA{" "}
+          <code style={{ wordBreak: "break-all" }}>{WACP_BSC_CONTRACT}</code> or search{" "}
+          <strong>wACP</strong> / <strong>Wrapped ACP</strong>. Do not search “ANCAP” or “ACP”.
         </p>
 
         <div
