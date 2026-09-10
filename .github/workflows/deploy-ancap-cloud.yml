@@ -46,11 +46,12 @@ jobs:
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ACCUWEATHER_API_KEY: ${{ secrets.ACCUWEATHER_API_KEY }}
+          INSTANTLY_API_KEY: ${{ secrets.INSTANTLY_API_KEY }}
         with:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
-          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY
+          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           timeout: 600s
           command_timeout: 70m
@@ -100,6 +101,26 @@ jobs:
               fi
             else
               echo "== ACCUWEATHER_API_KEY GitHub secret not set; Earth widget uses interim feed + AccuWeather link"
+            fi
+
+            if [ -n "${INSTANTLY_API_KEY:-}" ]; then
+              echo "== sync Instantly API key into host .env (value redacted)"
+              touch .env
+              if grep -q '^INSTANTLY_API_KEY=' .env; then
+                sed -i "s|^INSTANTLY_API_KEY=.*|INSTANTLY_API_KEY=${INSTANTLY_API_KEY}|" .env
+              else
+                printf '\nINSTANTLY_ENABLED=true\nINSTANTLY_API_KEY=%s\nINSTANTLY_API_BASE=https://api.instantly.ai/api/v2\n' "$INSTANTLY_API_KEY" >> .env
+              fi
+              if ! grep -q '^INSTANTLY_ENABLED=' .env; then
+                printf 'INSTANTLY_ENABLED=true\n' >> .env
+              else
+                sed -i 's|^INSTANTLY_ENABLED=.*|INSTANTLY_ENABLED=true|' .env
+              fi
+              if ! grep -q '^INSTANTLY_API_BASE=' .env; then
+                printf 'INSTANTLY_API_BASE=https://api.instantly.ai/api/v2\n' >> .env
+              fi
+            else
+              echo "== INSTANTLY_API_KEY GitHub secret not set; Instantly sync stays disabled"
             fi
 
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then

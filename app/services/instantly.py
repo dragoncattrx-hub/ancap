@@ -77,9 +77,17 @@ def status_public() -> dict[str, Any]:
         "api_base": _base(),
         "provider_custom_imap_smtp": PROVIDER_CUSTOM_IMAP_SMTP,
         "docs": "https://developer.instantly.ai/",
+        "ancap_docs": "/docs/INSTANTLY_API.md",
+        "endpoints": {
+            "status": "GET /v1/mail/instantly/status",
+            "list_accounts": "GET /v1/mail/instantly/accounts",
+            "create_account": "POST /v1/mail/instantly/accounts",
+            "connect_local": "POST /v1/mail/accounts",
+            "openapi": "https://api.ancap.cloud/docs",
+        },
         "note": (
             "Create a V2 API key in Instantly > Settings > Integrations > API Keys "
-            "with accounts scopes, then set INSTANTLY_ENABLED=true and INSTANTLY_API_KEY."
+            "with accounts scopes, then set GitHub secret INSTANTLY_API_KEY (or host INSTANTLY_* env)."
         ),
     }
 

@@ -10,6 +10,8 @@ class InstantlyStatusPublic(BaseModel):
     api_base: str
     provider_custom_imap_smtp: int = 1
     docs: str = "https://developer.instantly.ai/"
+    ancap_docs: str = "/docs/INSTANTLY_API.md"
+    endpoints: dict[str, str] = Field(default_factory=dict)
     note: str = ""
 
 

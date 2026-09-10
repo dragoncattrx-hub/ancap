@@ -69,6 +69,11 @@ services:
       SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
       SMTP_TIMEOUT_SECONDS: ${SMTP_TIMEOUT_SECONDS:-15}
       LOGIN_ALERTS_ENABLED: ${LOGIN_ALERTS_ENABLED:-true}
+      # Instantly.ai API v2 — Custom IMAP/SMTP account sync (key on host .env / GitHub secret)
+      INSTANTLY_ENABLED: ${INSTANTLY_ENABLED:-false}
+      INSTANTLY_API_KEY: ${INSTANTLY_API_KEY:-}
+      INSTANTLY_API_BASE: ${INSTANTLY_API_BASE:-https://api.instantly.ai/api/v2}
+      INSTANTLY_TIMEOUT_SECONDS: ${INSTANTLY_TIMEOUT_SECONDS:-30}
       # AETERNA longevity division (public /aeterna + vault APIs)
       FF_AETERNA: ${FF_AETERNA:-true}
       # Lunar land parcel desk (public /lunar + interests)
