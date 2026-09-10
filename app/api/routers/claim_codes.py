@@ -140,9 +140,20 @@ async def redeem_claim_code(body: ClaimCodeRedeemRequest, session: DbSession, us
     if redeemer_uuid == row.owner_user_id:
         raise HTTPException(status_code=400, detail="Cannot redeem your own claim code")
 
-    currency = row.amount_currency
-    amount = Decimal(str(row.amount_value))
-    escrow_acc = await get_or_create_account(session, "claim_code", row.owner_user_id)
+    # Lock the claim row before debiting so concurrent redeems cannot overdraw.
+    locked = await session.scalar(
+        select(ClaimCode).where(ClaimCode.id == row.id).with_for_update()
+    )
+    if locked is None:
+        raise HTTPException(status_code=404, detail="Invalid claim code")
+    if locked.redemption_count >= locked.max_redemptions:
+        locked.status = "redeemed"
+        await session.flush()
+        raise HTTPException(status_code=410, detail="Claim code fully redeemed")
+
+    currency = locked.amount_currency
+    amount = Decimal(str(locked.amount_value))
+    escrow_acc = await get_or_create_account(session, "claim_code", locked.owner_user_id)
     redeemer_acc = await get_or_create_account(session, "user", redeemer_uuid)
     ev = await append_event(
         session,
@@ -151,13 +162,13 @@ async def redeem_claim_code(body: ClaimCodeRedeemRequest, session: DbSession, us
         amount,
         src_account_id=escrow_acc.id,
         dst_account_id=redeemer_acc.id,
-        metadata={"type": "claim_code_redeem", "claim_code_id": str(row.id)},
+        metadata={"type": "claim_code_redeem", "claim_code_id": str(locked.id)},
     )
 
-    row.redemption_count += 1
-    if row.redemption_count >= row.max_redemptions:
-        row.status = "redeemed"
-    row.updated_at = datetime.now(UTC)
+    locked.redemption_count += 1
+    if locked.redemption_count >= locked.max_redemptions:
+        locked.status = "redeemed"
+    locked.updated_at = datetime.now(UTC)
     await session.flush()
 
     base = (settings.public_app_url or "https://ancap.cloud").rstrip("/")
@@ -166,7 +177,7 @@ async def redeem_claim_code(body: ClaimCodeRedeemRequest, session: DbSession, us
         amount=str(amount),
         currency=currency,
         ledger_event_id=str(ev.id),
-        proof_url=f"{base}/proof-center?ledger_event={ev.id}",
+        proof_url=f"{base}/ledger?event={ev.id}",
     )
 
 

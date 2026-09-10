@@ -49,4 +49,7 @@ def test_claim_code_create_and_redeem(client):
         json={"code": code},
     )
     assert redeem.status_code == 200, redeem.text
-    assert redeem.json()["status"] == "redeemed"
+    payload = redeem.json()
+    assert payload["status"] == "redeemed"
+    assert "/ledger?event=" in payload["proof_url"]
+    assert payload["ledger_event_id"] in payload["proof_url"]

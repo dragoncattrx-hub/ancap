@@ -43,7 +43,9 @@ _ZERO_DECIMAL_CURRENCIES = {
     "xof",
     "xpf",
 }
-_SUPPORTED_STRIPE_CURRENCIES = ("USD", "EUR")
+# Card top-ups are USD-only until a real FX quote path exists (EUR previously
+# charged the ACP sticker 1:1 as euros).
+_SUPPORTED_STRIPE_CURRENCIES = ("USD",)
 _SUPPORTED_STRIPE_CURRENCY_SET = {code.lower() for code in _SUPPORTED_STRIPE_CURRENCIES}
 
 

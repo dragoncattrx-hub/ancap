@@ -346,6 +346,9 @@ class Settings(BaseSettings):
     bridge_bsc_rpc_url: str = ""
     bridge_wacp_contract: str = ""
     bridge_gateway_contract: str = ""
+    # Public transparency flags (do not hardcode true in API responses).
+    bridge_bsc_contract_verified: bool = True
+    bridge_token_metadata_live: bool = False
     bridge_bsc_private_key: str | None = None
     bridge_reserve_acp_address: str = ""
     acp_hot_keystore_file: str = ""

@@ -264,8 +264,8 @@ async def build_benchmark(session: AsyncSession) -> CryptoBenchmarkResponse:
     ct_observed: dict[str, Any] = {
         "wacp_contract": wacp or None,
         "gateway_contract": gateway or None,
-        "bsc_contract_verified": True if wacp else False,
-        "token_metadata_live": False,
+        "bsc_contract_verified": bool(settings.bridge_bsc_contract_verified and wacp),
+        "token_metadata_live": bool(settings.bridge_token_metadata_live),
         "reconciliation_mismatch": mismatch_alert,
     }
     if wacp and gateway:

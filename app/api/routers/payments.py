@@ -28,7 +28,7 @@ from app.schemas import (
 from app.schemas.common import Money
 from app.services import stripe_payments
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
-from app.services.ledger import append_event, get_or_create_account
+from app.services.ledger import append_event, balance_for_account, get_or_create_account
 from app.services.webhook_dispatcher import emit_payment_refunded
 from app.db.models import LedgerEventTypeEnum
 
@@ -53,13 +53,33 @@ def _serialize_refund_request(row: RefundRequest) -> RefundRequestPublic:
 
 async def _get_owned_captured_payment_intent(session: DbSession, user_id: str, intent_id: str) -> PaymentIntent:
     intent = await _get_owned_payment_intent(session, user_id, intent_id)
-    if intent.intent_type != "workflow_run" or not intent.workflow_run_id:
-        raise HTTPException(status_code=409, detail="Refund requests currently support captured workflow payments only")
+    if intent.intent_type == "workflow_run":
+        if not intent.workflow_run_id:
+            raise HTTPException(status_code=409, detail="Refund requests currently support captured workflow payments only")
+    elif intent.intent_type == "credit_topup":
+        pass
+    else:
+        raise HTTPException(
+            status_code=409,
+            detail="Refund requests currently support captured workflow or credit-top-up payments only",
+        )
     if intent.status != PaymentIntentStatusEnum.captured.value:
         raise HTTPException(status_code=409, detail="Refund requests require a captured payment intent")
     if not intent.capture_ledger_event_id:
         raise HTTPException(status_code=409, detail="Captured payment intent is missing settlement evidence")
     return intent
+
+
+def _refund_money_for_intent(intent: PaymentIntent) -> tuple[str, Decimal]:
+    """Return (currency, amount) to settle on refund approval.
+
+    Workflow refunds restore the charged currency to the user.
+    Credit top-ups credited ACP packages — claw the package credit, not fiat sticker.
+    """
+    if intent.intent_type == "credit_topup":
+        package = _package_for_top_up_intent(intent)
+        return package.credit_amount.currency, Decimal(package.credit_amount.amount)
+    return intent.amount_currency, Decimal(intent.amount_value)
 
 
 @router.post("/payments/refund-request", response_model=RefundRequestPublic, status_code=201)
@@ -85,11 +105,12 @@ async def create_refund_request(
     if duplicate is not None:
         raise HTTPException(status_code=409, detail="Refund request is already pending for this payment intent")
 
+    refund_currency, refund_amount = _refund_money_for_intent(intent)
     row = RefundRequest(
         payment_intent_id=intent.id,
         user_id=UUID(user_id),
-        amount_currency=intent.amount_currency,
-        amount_value=Decimal(intent.amount_value),
+        amount_currency=refund_currency,
+        amount_value=refund_amount,
         reason=body.reason.strip(),
         status=RefundRequestStatusEnum.pending.value,
     )
@@ -165,22 +186,48 @@ async def approve_refund_request(
 
     user_acc = await get_or_create_account(session, "user", UUID(str(row.user_id)))
     platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
-    refund_event = await append_event(
-        session,
-        LedgerEventTypeEnum.refund,
-        row.amount_currency,
-        Decimal(row.amount_value),
-        src_account_id=platform_acc.id,
-        dst_account_id=user_acc.id,
-        metadata={
-            "type": "payment_refund_request_approved",
-            "refund_request_id": str(row.id),
-            "payment_intent_id": str(row.payment_intent_id),
-            "user_id": str(row.user_id),
-            "approved_by": admin_user_id,
-            "admin_notes": body.admin_notes,
-        },
-    )
+    if intent.intent_type == "credit_topup":
+        # Claw back the ACP package that was credited on capture — never mint fiat.
+        balances = await balance_for_account(session, user_acc.id, row.amount_currency)
+        available = balances.get(row.amount_currency) or Decimal(0)
+        if available < Decimal(row.amount_value):
+            raise HTTPException(
+                status_code=402,
+                detail="Insufficient ACP balance to claw back credit top-up refund",
+            )
+        refund_event = await append_event(
+            session,
+            LedgerEventTypeEnum.refund,
+            row.amount_currency,
+            Decimal(row.amount_value),
+            src_account_id=user_acc.id,
+            dst_account_id=platform_acc.id,
+            metadata={
+                "type": "credit_topup_refund_clawback",
+                "refund_request_id": str(row.id),
+                "payment_intent_id": str(row.payment_intent_id),
+                "user_id": str(row.user_id),
+                "approved_by": admin_user_id,
+                "admin_notes": body.admin_notes,
+            },
+        )
+    else:
+        refund_event = await append_event(
+            session,
+            LedgerEventTypeEnum.refund,
+            row.amount_currency,
+            Decimal(row.amount_value),
+            src_account_id=platform_acc.id,
+            dst_account_id=user_acc.id,
+            metadata={
+                "type": "payment_refund_request_approved",
+                "refund_request_id": str(row.id),
+                "payment_intent_id": str(row.payment_intent_id),
+                "user_id": str(row.user_id),
+                "approved_by": admin_user_id,
+                "admin_notes": body.admin_notes,
+            },
+        )
     intent.status = PaymentIntentStatusEnum.refunded.value
     intent.refund_ledger_event_id = refund_event.id
     intent.updated_at = datetime.now(UTC)

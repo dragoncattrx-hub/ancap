@@ -31,6 +31,10 @@ export default function LedgerPage() {
   const [events, setEvents] = useState<LedgerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [highlightEventId, setHighlightEventId] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("event") || "";
+  });
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -43,6 +47,14 @@ export default function LedgerPage() {
       loadData();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!highlightEventId || loading) return;
+    const el = document.getElementById(`ledger-event-${highlightEventId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightEventId, loading, events]);
 
   const loadData = async () => {
     try {
@@ -197,10 +209,17 @@ export default function LedgerPage() {
                   >
                     {events.map((ev) => (
                       <div
+                        id={`ledger-event-${ev.id}`}
                         key={ev.id}
                         style={{
                           padding: "8px 0",
                           borderBottom: "1px solid var(--border)",
+                          background:
+                            highlightEventId && highlightEventId === ev.id
+                              ? "rgba(16, 185, 129, 0.12)"
+                              : undefined,
+                          borderRadius: highlightEventId === ev.id ? "8px" : undefined,
+                          paddingLeft: highlightEventId === ev.id ? "8px" : undefined,
                         }}
                       >
                         <div>

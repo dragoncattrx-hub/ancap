@@ -30,23 +30,35 @@ export default function ReservesPage() {
 
   useEffect(() => {
     void (async () => {
-      try {
-        const [status, proof, scorecard, prices] = await Promise.all([
-          wacpPublic.status(),
-          wacpPublic.reserveProof().catch(() => null),
-          cryptoBenchmark.scorecard().catch(() => null),
-          marketData.prices("usd").catch(() => null),
-        ]);
-        setWacp(status);
-        setReserve(proof);
-        setBenchmark(scorecard);
-        setMarket(prices);
-      } catch (err) {
+      const settled = await Promise.allSettled([
+        wacpPublic.status(),
+        wacpPublic.reserveProof(),
+        cryptoBenchmark.scorecard(),
+        marketData.prices("usd"),
+      ]);
+      const [statusRes, proofRes, scorecardRes, pricesRes] = settled;
+
+      if (statusRes.status === "fulfilled") {
+        setWacp(statusRes.value);
+      } else {
+        setError(statusRes.reason instanceof Error ? statusRes.reason.message : "Bridge status unavailable");
+      }
+
+      if (proofRes.status === "fulfilled") {
+        setReserve(proofRes.value);
+      } else {
         try {
           setReserve(await bridgeRail.reserveSummary());
         } catch {
-          setError(err instanceof Error ? err.message : "Reserve data unavailable");
+          // keep page usable with status/scorecard even if proof fails
         }
+      }
+
+      if (scorecardRes.status === "fulfilled") {
+        setBenchmark(scorecardRes.value);
+      }
+      if (pricesRes.status === "fulfilled") {
+        setMarket(pricesRes.value);
       }
     })();
   }, []);
@@ -117,8 +129,8 @@ export default function ReservesPage() {
               Spot prices via CoinGecko — not ANCAP settlement rates. {market?.attribution || ""}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {rows.map((row) => (
-                <div key={row.symbol || row.price || Math.random()} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+              {rows.map((row, index) => (
+                <div key={row.symbol || `row-${index}`} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                   <div className="text-xs uppercase tracking-wide text-white/45">{row.symbol}</div>
                   <div className="mt-1 text-base font-semibold text-white">
                     {row.price ? `$${row.price}` : "—"} <span className="text-xs font-normal text-white/45">{row.vs_currency || "USD"}</span>

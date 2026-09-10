@@ -354,12 +354,19 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
                 f"Stale reserve snapshot: {stale_alert.get('age_minutes')} min "
                 f"(threshold {stale_alert.get('threshold_minutes')} min)."
             )
+            if reserve_health == "healthy":
+                reserve_health = "degraded"
+                if status == "healthy":
+                    status = "degraded"
         mismatch_alert = await check_reconciliation_mismatch_alert(session)
         if mismatch_alert:
             notes.append(
                 "Reconciliation mismatch on latest snapshot: "
                 f"delta_wacp_wei={mismatch_alert.get('delta_wacp_wei')}."
             )
+            if reserve_health not in {"disabled", "paused", "critical"}:
+                reserve_health = "critical"
+                status = "critical"
     except Exception as exc:
         logger.warning("live_reserve_proof alert checks skipped: %s", exc)
         if hasattr(session, "rollback"):
@@ -532,8 +539,8 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         liquidity_tx_hash=WACP_LIQUIDITY_TX,
         first_swap_buy_tx_hash=WACP_FIRST_SWAP_BUY_TX,
         first_swap_sell_tx_hash=WACP_FIRST_SWAP_SELL_TX,
-        bsc_contract_verified=True,
-        token_metadata_live=False,
+        bsc_contract_verified=bool(s.bridge_bsc_contract_verified and (s.bridge_wacp_contract or "").strip()),
+        token_metadata_live=bool(s.bridge_token_metadata_live),
         docs=_public_docs(),
         counts_by_status=counts,
         notes=notes,

@@ -296,7 +296,7 @@ def test_stripe_intent_idempotency_key_reuse_with_different_payload_conflicts(cl
 
     second = client.post(
         "/v1/payments/stripe/intent",
-        json={"package_slug": "launch-credits", "currency": "EUR"},
+        json={"package_slug": "growth-credits", "currency": "USD"},
         headers=shared_headers,
     )
     assert second.status_code == 409, second.text
@@ -472,7 +472,7 @@ def test_stripe_intent_rejects_unsupported_currency(client):
         headers=headers,
     )
     assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Unsupported Stripe currency. Supported values: USD, EUR"
+    assert response.json()["detail"] == "Unsupported Stripe currency. Supported values: USD"
 
 
 

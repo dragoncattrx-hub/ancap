@@ -75,7 +75,7 @@ type StripeIntentResponse = {
   };
 };
 
-const STRIPE_CURRENCIES = ["USD", "EUR"] as const;
+const STRIPE_CURRENCIES = ["USD"] as const;
 type StripeCurrency = typeof STRIPE_CURRENCIES[number];
 
 function localizeSettlement(signal: StripeSettlementSignal, t: (key: string) => string) {
