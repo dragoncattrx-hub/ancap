@@ -80,3 +80,5 @@ Planned workplace wearables track (not blocking Phase 6): Apple Watch HR fleet R
 Planned orbital infra track (not blocking Phase 6): SpaceX encrypted satellite servers R11 — sealed ANCAP edge payloads via SpaceX; phases X0–X5 (docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md). Foundation: control-plane registry + `FF_ORBITAL_EDGE` (migration `058`).
 
 Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows (1,000,000 ACP), stem-cell organ print (250,000 ACP / organ, wisdom-tooth DPSC fallback, licensed bioreactor partner only). Track: `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`. Foundation: A0 done, A1 API/tables in `059_aeterna` + `FF_AETERNA`; organ-print SKU wired in catalog/intents/frontend.
+
+Planned lunar track (not blocking Phase 6): Lunar land trading R13 — science-tagged parcel registry + ACP interest desk (NASA–IBM LFM themes). Track: `docs/LUNAR_LAND_TRADING_ROADMAP.md`. Foundation: L0/L1 in `070_lunar_land` + `FF_LUNAR_LAND` + `/lunar`.

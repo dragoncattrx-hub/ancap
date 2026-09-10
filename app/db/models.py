@@ -2846,3 +2846,44 @@ class ArenaHouseRound(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     user = relationship("User", foreign_keys=[user_id])
+
+
+# --- R13 Lunar land trading ---
+
+
+class LunarParcel(Base):
+    __tablename__ = "lunar_parcels"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    parcel_code = Column(String(32), nullable=False, unique=True, index=True)
+    name = Column(String(160), nullable=False)
+    region = Column(String(120), nullable=False, index=True)
+    lat_deg = Column(Numeric(10, 6), nullable=False)
+    lon_deg = Column(Numeric(10, 6), nullable=False)
+    area_km2 = Column(Numeric(18, 6), nullable=False)
+    list_price_acp = Column(Numeric(36, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="listed", index=True)
+    source = Column(String(32), nullable=False, default="catalog")
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class LunarInterestOrder(Base):
+    __tablename__ = "lunar_interest_orders"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    parcel_id = Column(UUID(as_uuid=False), ForeignKey("lunar_parcels.id", ondelete="CASCADE"), nullable=False, index=True)
+    kind = Column(String(32), nullable=False)
+    status = Column(String(32), nullable=False, default="open", index=True)
+    budget_acp = Column(Numeric(36, 18), nullable=False)
+    notes = Column(Text, nullable=True)
+    metadata_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])
+    parcel = relationship("LunarParcel", foreign_keys=[parcel_id])
+
+    __table_args__ = (Index("ix_lunar_interest_orders_owner_created", "owner_user_id", "created_at"),)

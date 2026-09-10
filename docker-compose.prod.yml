@@ -71,6 +71,8 @@ services:
       LOGIN_ALERTS_ENABLED: ${LOGIN_ALERTS_ENABLED:-true}
       # AETERNA longevity division (public /aeterna + vault APIs)
       FF_AETERNA: ${FF_AETERNA:-true}
+      # Lunar land parcel desk (public /lunar + interests)
+      FF_LUNAR_LAND: ${FF_LUNAR_LAND:-true}
       LLM_PROVIDER: ${LLM_PROVIDER:-teneta_claude}
       LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.tenetauniversity.com}

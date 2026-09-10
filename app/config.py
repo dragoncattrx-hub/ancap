@@ -324,6 +324,7 @@ class Settings(BaseSettings):
     ff_nl_strategy_compiler: bool = False
     ff_orbital_edge: bool = False
     ff_aeterna: bool = True
+    ff_lunar_land: bool = True
 
     # Participation gates
     participation_gates_enabled: bool = True
@@ -349,7 +350,10 @@ class Settings(BaseSettings):
     bridge_acp_confirmations: int = 30
     # Incremental ACP deposit scan (avoid full 1..tip walk every tick).
     bridge_acp_scan_lookback: int = 12
-    bridge_acp_scan_max_blocks: int = 400
+    bridge_acp_scan_max_blocks: int = 800
+    bridge_acp_scan_windows_per_tick: int = 8
+    # Auto-cancel unpaid forward intents after this many hours (0 disables).
+    bridge_pending_deposit_ttl_hours: int = 72
     bridge_bsc_confirmations: int = 18
     bridge_operator_secret: str | None = None
     bsc_explorer_base: str = "https://bscscan.com"

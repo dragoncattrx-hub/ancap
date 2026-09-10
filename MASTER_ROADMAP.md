@@ -1158,6 +1158,7 @@ Security and ops hardening completed in this audit:
 | R10 | **Apple Watch HR fleet** | 3 watches/employee (distinct bands), continuous heart-rate sync, charge/rotation schedule | Workplace safety + shift presence; see `docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md` |
 | R11 | **SpaceX encrypted sats** | Launch satellites with encrypted ANCAP edge servers via SpaceX rideshare/manifest | Sovereign sealed orbital compute; see docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md |
 | R12 | **AETERNA longevity** | DNA vault + ACP-paid genomic/longevity workflows + licensed partner rails (Sequencing.com import) | Eternal-life division; see `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md` |
+| R13 | **Lunar land trading** | Science-tagged lunar parcel registry + ACP interest desk (NASA–IBM LFM themes) | Speculative registry claims only; see `docs/LUNAR_LAND_TRADING_ROADMAP.md` |
 
 **ACP chain note:** Lean v1.4 packs fee-prioritized mempool txs (up to 512 / 2 MB) on a 5s miner interval. Idle heartbeat (~60s) advances height with emission-only blocks when configured — no PoW energy burn. See `docs/ACP_LEAN_CHAIN.md`.
 
@@ -1237,6 +1238,24 @@ Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid an
 
 **Depends on:** consent/compliance matrix, Workflow Store checkout, org roles.  
 **Does not block:** Phase 6 mobile MVP or R9–R11.
+
+---
+
+## Lunar Land Trading Track (2026-Q4+) — NEW
+
+Execution detail: **`docs/LUNAR_LAND_TRADING_ROADMAP.md`**.
+
+ACP-settled **lunar parcel registry + interest desk**. Science tags follow open lunar observation themes (ice / volcanism / crater) highlighted by the [NASA–IBM Lunar Foundation Model](https://lnkd.in/p/e-SbXYMZ). **Speculative ANCAP registry claims only** — not Outer Space Treaty sovereign title. Distinct from Galaxy `sat-luna` and R11 orbital compute.
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| L0 Spec & brand | `[x]` | `/lunar`, schemas, roadmap hooks |
+| L1 Catalog + interest API | `[x]` | `lunar_parcels` / interests; `FF_LUNAR_LAND`; migration `070` |
+| L2 Checkout UX | `[ ]` | ACP escrow + ownership-proof handoff |
+| L3 LFM enrichment adapter | `[ ]` | Off-host metadata tiles; no model weights on API |
+| L4 Secondary market | `[ ]` | Transfer settled claims |
+
+**Does not block:** Phase 6 mobile MVP or R9–R12.
 
 ---
 
