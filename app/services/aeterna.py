@@ -17,6 +17,7 @@ from app.db.models import (
     OrgRoleEnum,
 )
 from app.schemas.aeterna import (
+    AeternaAgingHallmarkPublic,
     AeternaDnaVaultCreate,
     AeternaDnaVaultPublic,
     AeternaIntentKind,
@@ -36,11 +37,108 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-pigmentation-consult-brief",
     "aeterna-telomere-panel-review",
     "aeterna-disease-risk-navigator",
+    "aeterna-molecular-aging-profile",
     "aeterna-stem-cell-organ-print",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
 ORGAN_PRINT_PRICE_ACP = Decimal("250000")
+MOLECULAR_AGING_SLUG = "aeterna-molecular-aging-profile"
+
+# 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
+# Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
+AETERNA_AGING_HALLMARKS: list[AeternaAgingHallmarkPublic] = [
+    AeternaAgingHallmarkPublic(
+        id="dna_repair",
+        title="DNA repair",
+        gene_pair_hint="repair sensor / effector pair",
+        theme="genomic_instability",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="telomere_maintenance",
+        title="Telomere maintenance",
+        gene_pair_hint="shelterin / telomerase-axis pair",
+        theme="telomere_attrition",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="epigenetic_regulation",
+        title="Epigenetic regulation",
+        gene_pair_hint="writer / eraser pair",
+        theme="epigenetic_alterations",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="proteostasis",
+        title="Proteostasis",
+        gene_pair_hint="chaperone / proteasome pair",
+        theme="loss_of_proteostasis",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="autophagy",
+        title="Autophagy",
+        gene_pair_hint="initiation / clearance pair",
+        theme="disabled_macroautophagy",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="energy_metabolism",
+        title="Energy metabolism",
+        gene_pair_hint="glycolysis / OXPHOS balance pair",
+        theme="deregulated_nutrient_sensing",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="cellular_senescence",
+        title="Cellular senescence",
+        gene_pair_hint="SASP / checkpoint pair",
+        theme="cellular_senescence",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="stem_cell_maintenance",
+        title="Stem-cell maintenance",
+        gene_pair_hint="niche / renewal pair",
+        theme="stem_cell_exhaustion",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="mitochondrial_function",
+        title="Mitochondrial function",
+        gene_pair_hint="biogenesis / quality-control pair",
+        theme="mitochondrial_dysfunction",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="inflammatory_tone",
+        title="Inflammatory tone",
+        gene_pair_hint="pro- / anti-inflammatory pair",
+        theme="chronic_inflammation",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="intercellular_signaling",
+        title="Intercellular signaling",
+        gene_pair_hint="ligand / receptor pair",
+        theme="altered_communication",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="extracellular_matrix",
+        title="Extracellular matrix integrity",
+        gene_pair_hint="matrix build / remodel pair",
+        theme="tissue_integrity",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="circadian_systemic",
+        title="Circadian / systemic regulation",
+        gene_pair_hint="clock / effector pair",
+        theme="systemic_regulation",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="immune_aging",
+        title="Immune aging",
+        gene_pair_hint="innate / adaptive balance pair",
+        theme="immunosenescence",
+    ),
+    AeternaAgingHallmarkPublic(
+        id="nutrient_sensing",
+        title="Nutrient sensing",
+        gene_pair_hint="mTOR / AMPK-axis pair",
+        theme="nutrient_sensing",
+    ),
+]
 
 AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.pigmentation_consult.value: "aeterna-pigmentation-consult-brief",
@@ -50,6 +148,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.dna_sandbox_explore.value: "aeterna-dna-wellness-report",
     AeternaIntentKind.partner_clinic_match.value: "aeterna-longevity-panel-brief",
     AeternaIntentKind.organ_bioprint.value: ORGAN_PRINT_SLUG,
+    AeternaIntentKind.molecular_aging_profile.value: MOLECULAR_AGING_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -64,9 +163,21 @@ ORGAN_PRINT_HANDOFF_META = {
     ),
 }
 
+MOLECULAR_AGING_META = {
+    "panel_axes": 15,
+    "sample_hint": "venous_blood_rna_expression_or_partner_pcr_metadata",
+    "output_style": "per_hallmark_configuration_not_single_bio_age",
+    "sex_aware": True,
+    "inspiration_note": (
+        "Product framing aligned with public research on multi-gene blood RNA aging panels "
+        "(e.g. hallmark-mapped expression profiles) — AETERNA does not claim affiliation with any lab."
+    ),
+}
+
 _COMPLIANCE = (
     "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only. "
-    "No DIY CRISPR/Cas9 protocols, gene synthesis, or unlicensed enhancement procedures."
+    "No DIY CRISPR/Cas9 protocols, gene synthesis, or unlicensed enhancement procedures. "
+    "Molecular aging profiles are educational / partner-prep — not clinical diagnoses."
 )
 
 
@@ -136,17 +247,27 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
     ).scalar_one()
     return AeternaStatusPublic(
         feature_enabled=enabled,
-        tagline="Eternal life rails: DNA vault, ACP workflows, licensed longevity partners.",
+        tagline=(
+            "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
+            "ACP workflows, licensed longevity partners."
+        ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
         partners_verified=int(partners or 0),
         workflow_slugs=list(AETERNA_WORKFLOW_SLUGS),
         sequencing_import_hint=(
-            "Hash exports locally in the browser (1 MB streaming SHA-256), then POST only "
-            "content_sha256 + tiny metadata. Do not upload hg38/CRAM/FASTA to ANCAP — disk is hash-only."
+            "Hash Sequencing.com / VCF exports or partner blood-RNA panel metadata locally "
+            "(streaming SHA-256), then POST only content_sha256 + tiny metadata. "
+            "Do not upload hg38/CRAM/FASTA or raw FASTQ to ANCAP — disk is hash-only."
         ),
         compliance_note=_COMPLIANCE,
         next_gate="Enable FF_AETERNA" if not enabled else "Partner verification queue + licensed checkout UX",
+        aging_hallmarks=list(AETERNA_AGING_HALLMARKS),
+        molecular_aging_note=(
+            "Goal is an individual configuration of aging processes "
+            "(DNA repair, proteostasis, energy metabolism, senescence, …) — "
+            "not one universal \"you are biologically N years old\" score. Sex-aware models preferred."
+        ),
     )
 
 
@@ -222,6 +343,19 @@ async def create_intent_order(
     if body.intent_kind == AeternaIntentKind.organ_bioprint:
         for key, value in ORGAN_PRINT_HANDOFF_META.items():
             meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.molecular_aging_profile:
+        if slug and slug != MOLECULAR_AGING_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="molecular_aging_profile requires workflow_slug aeterna-molecular-aging-profile",
+            )
+        slug = MOLECULAR_AGING_SLUG
+        for key, value in MOLECULAR_AGING_META.items():
+            meta.setdefault(key, value)
+        meta.setdefault(
+            "hallmark_ids",
+            [h.id for h in AETERNA_AGING_HALLMARKS],
+        )
     now = _utcnow()
     row = AeternaIntentOrder(
         org_id=org_id,

@@ -7,11 +7,13 @@
 
 ## Product thesis
 
-People pay ACP for **structured longevity workflows**: upload / link sequenced DNA, explore annotated variants in a sandbox, request AI briefs, and route **licensed clinical partners** for consult intents (pigmentation, telomere panels, disease-risk reports, longevity plans, stem-cell organ bioprint).
+People pay ACP for **structured longevity workflows**: upload / link sequenced DNA or **partner blood-RNA / PCR panel metadata**, explore annotated variants in a sandbox, request AI briefs, and route **licensed clinical partners**.
 
-**Non-goals (v1):** consumer DIY CRISPR/Cas9 kits, wet-lab protocols, gene synthesis, pathogen work, unlicensed enhancement procedures.
+Headline product (2026-09 modernization): **Molecular Aging Profile (15 axes)** — map consented expression-panel metadata onto hallmark themes (DNA repair, telomeres, epigenetics, proteostasis, autophagy, energy metabolism, senescence, stem-cell maintenance, mitochondria, inflammation, signaling, matrix, circadian/systemic, immune aging, nutrient sensing). Goal is an **individual configuration of aging processes**, not one universal “biological age” number; sex-aware framing preferred. Inspired by public research on multi-gene venous-blood RNA aging panels ([science.mail.ru / Gazeta.ru coverage, Sep 2026](https://science.mail.ru/news/56466-rossijskie-uchenyie-rabotayut-nad-testom-kotoryij-otsenivaet-starenie-po-15-genam/)) — **AETERNA claims no lab affiliation**.
 
-**Goals (v1–v2):** DNA vault → consent → paid workflow catalog → partner match → ACP settlement → audit receipt.
+**Non-goals (v1):** consumer DIY CRISPR/Cas9 kits, wet-lab protocols, gene synthesis, pathogen work, unlicensed enhancement procedures, diagnostic claims for home PCR.
+
+**Goals (v1–v2):** DNA / panel vault → consent → paid workflow catalog → partner match → ACP settlement → audit receipt.
 
 ## Compliance gates (must ship with MVP)
 
@@ -86,11 +88,12 @@ GET  /organizations/{org_id}/aeterna/intents
 
 - `aeterna-dna-wellness-report`
 - `aeterna-longevity-panel-brief`
+- `aeterna-molecular-aging-profile` — **15-axis molecular aging brief** (blood-RNA / PCR panel metadata); not a single bio-age score
 - `aeterna-pigmentation-consult-brief`
 - `aeterna-telomere-panel-review`
 - `aeterna-disease-risk-navigator`
 - `aeterna-stem-cell-organ-print` — **250,000 ACP / organ**; autologous stem cells, wisdom-tooth DPSC fallback; licensed biochemical reactor partner only.
 
-Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + longevity panel + disease-risk navigator. Organ print is sold per organ, not inside the pack.
+Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + molecular aging profile + longevity panel. Organ print is sold per organ, not inside the pack.
 
-Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Execution output is a licensed-partner bioreactor handoff brief — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture.
+Intent `molecular_aging_profile` defaults to `aeterna-molecular-aging-profile`. Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Vault source enum includes `venous_blood_rna` for panel hash registration.

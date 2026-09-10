@@ -241,6 +241,33 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         tags=["aeterna", "disease-risk", "clinical"],
     ),
     WorkflowTemplatePublic(
+        slug="aeterna-molecular-aging-profile",
+        title="AETERNA Molecular Aging Profile (15 axes)",
+        category="AETERNA",
+        summary="Map consented blood-RNA / PCR panel metadata onto 15 hallmark axes — configuration of aging, not one bio-age number.",
+        description=(
+            "Builds a partner-ready molecular aging profile across 15 hallmark themes "
+            "(DNA repair, telomeres, epigenetics, proteostasis, autophagy, energy metabolism, "
+            "senescence, stem-cell maintenance, mitochondria, inflammation, signaling, matrix, "
+            "circadian/systemic, immune aging, nutrient sensing). "
+            "Sex-aware framing preferred. Educational / licensed-consult prep only — "
+            "not a diagnostic PCR assay and not a DIY wet-lab kit. "
+            "Inspired by public research on multi-gene venous-blood RNA aging panels."
+        ),
+        price=Money(amount="1000000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=60,
+        preview_items=["15-axis hallmark map", "Sex-aware caveats", "Partner discussion agenda"],
+        output_items=[
+            "Molecular aging profile brief",
+            "Per-hallmark configuration table",
+            "Monitoring / intervention discussion prompts",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "vault_hash_ref", "hallmark_count", "status_timeline"],
+        tags=["aeterna", "longevity", "molecular-aging", "blood-rna", "hallmarks"],
+    ),
+    WorkflowTemplatePublic(
         slug="aeterna-stem-cell-organ-print",
         title="AETERNA Stem-Cell Organ Print",
         category="AETERNA",
@@ -523,24 +550,27 @@ WORKFLOW_BUNDLES: list[WorkflowBundlePublic] = [
         slug="aeterna-longevity-pack",
         title="AETERNA Longevity Pack",
         category="AETERNA",
-        summary="DNA wellness + longevity panel + disease-risk navigator for ACP checkout.",
-        description="Three AETERNA consult-prep workflows for vaulted genomic metadata. Licensed-partner handoff only — no DIY gene editing.",
+        summary="DNA wellness + 15-axis molecular aging profile + longevity panel for ACP checkout.",
+        description=(
+            "Three AETERNA consult-prep workflows for vaulted genomic / blood-RNA panel metadata. "
+            "Emphasizes hallmark configuration over a single bio-age score. Licensed-partner handoff only."
+        ),
         workflow_slugs=[
             "aeterna-dna-wellness-report",
+            "aeterna-molecular-aging-profile",
             "aeterna-longevity-panel-brief",
-            "aeterna-disease-risk-navigator",
         ],
         price=Money(amount="2500000", currency="ACP"),
         accepted_currencies=["ACP", "wACP"],
         discount_percent=17,
-        estimated_time_minutes=145,
+        estimated_time_minutes=155,
         output_items=[
             "DNA wellness report",
+            "Molecular aging profile (15 axes)",
             "Longevity panel brief",
-            "Disease risk navigator",
             "Three proof-backed workflow receipts",
         ],
-        tags=["bundle", "aeterna", "longevity", "dna"],
+        tags=["bundle", "aeterna", "longevity", "dna", "molecular-aging"],
     ),
 
     WorkflowBundlePublic(

@@ -7,8 +7,16 @@ import { Navigation } from "@/components/Navigation";
 import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
 import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
+import { MolecularAgingPanel } from "@/components/aeterna/MolecularAgingPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
+
+type AgingHallmark = {
+  id: string;
+  title: string;
+  gene_pair_hint: string;
+  theme: string;
+};
 
 type AeternaStatus = {
   feature_enabled: boolean;
@@ -21,9 +29,11 @@ type AeternaStatus = {
   sequencing_import_hint: string;
   compliance_note: string;
   next_gate: string;
+  aging_hallmarks?: AgingHallmark[];
+  molecular_aging_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -93,8 +103,14 @@ export default function AeternaPage() {
               {t("aeternaPage.browseWorkflows")}
             </Link>
             <a
-              href="#organ-print"
+              href="#molecular-aging"
               className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.agingCta")}
+            </a>
+            <a
+              href="#organ-print"
+              className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white/90 transition hover:border-white/60"
             >
               {t("aeternaPage.organSkuCta")}
             </a>
@@ -126,6 +142,13 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <GenomeHashVaultPanel />
+        </section>
+
+        <section className="mt-16">
+          <MolecularAgingPanel
+            hallmarks={status?.aging_hallmarks}
+            note={status?.molecular_aging_note}
+          />
         </section>
 
         <section className="mt-16 max-w-2xl">
@@ -183,7 +206,7 @@ export default function AeternaPage() {
             </div>
             <div>
               <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.workflows")}</dt>
-              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 6}</dd>
+              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 7}</dd>
             </div>
           </dl>
           {status && (

@@ -1226,7 +1226,7 @@ Accept **securities (tsennye bumagi)**, **promissory notes (vekselya)**, and **e
 
 Execution detail: **`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`**.
 
-Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere panels, disease-risk, longevity plans), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner), licensed-partner handoff. **No DIY CRISPR / gene synthesis.**
+Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere, disease-risk, longevity), **15-axis molecular aging profile** (blood-RNA / PCR-style hallmarks — configuration of aging, not one bio-age number; sex-aware), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner). **No DIY CRISPR / gene synthesis; no institute affiliation claims.**
 
 | Phase | Status | Deliverables |
 |-------|--------|--------------|

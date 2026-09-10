@@ -43,13 +43,29 @@ class AeternaIntentKind(str, Enum):
     dna_sandbox_explore = "dna_sandbox_explore"
     partner_clinic_match = "partner_clinic_match"
     organ_bioprint = "organ_bioprint"
+    molecular_aging_profile = "molecular_aging_profile"
 
 
 class AeternaDnaSource(str, Enum):
     sequencing_com = "sequencing_com"
     upload = "upload"
     partner_lab = "partner_lab"
+    venous_blood_rna = "venous_blood_rna"
     other = "other"
+
+
+class AeternaAgingHallmarkPublic(BaseModel):
+    """One axis of the AETERNA molecular aging profile (15-mechanism panel).
+
+    Inspired by blood RNA / PCR expression panels that map age-dependent gene
+    activity to hallmarks of aging — not a single \"biological age\" score.
+    Educational / partner-consult framing only.
+    """
+
+    id: str
+    title: str
+    gene_pair_hint: str
+    theme: str
 
 
 class AeternaVaultStatus(str, Enum):
@@ -205,3 +221,8 @@ class AeternaStatusPublic(BaseModel):
     sequencing_import_hint: str
     compliance_note: str
     next_gate: str
+    aging_hallmarks: list[AeternaAgingHallmarkPublic] = Field(default_factory=list)
+    molecular_aging_note: str = (
+        "Molecular aging profile maps 15 hallmark axes from consented blood-RNA / "
+        "panel metadata — individual configuration of aging processes, not one universal bio-age number."
+    )
