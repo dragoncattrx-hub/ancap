@@ -189,6 +189,12 @@ class Settings(BaseSettings):
     smtp_timeout_seconds: int = 15
     login_alerts_enabled: bool = True
 
+    # Instantly.ai API v2 (cold email / Unibox account management)
+    instantly_enabled: bool = False
+    instantly_api_key: str = ""
+    instantly_api_base: str = "https://api.instantly.ai/api/v2"
+    instantly_timeout_seconds: int = 30
+
     # Pagination
     default_page_limit: int = 50
     max_page_limit: int = 200

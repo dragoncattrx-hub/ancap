@@ -20,6 +20,9 @@ type Defaults = {
   smtp_use_ssl: boolean;
   webmail_url: string;
   note: string;
+  instantly_enabled?: boolean;
+  instantly_configured?: boolean;
+  instantly_api_base?: string;
 };
 
 type Connected = {
@@ -31,6 +34,7 @@ type Connected = {
   smtp_port: number;
   status: string;
   last_verified_at?: string | null;
+  instantly_email?: string | null;
 };
 
 const field =
@@ -60,12 +64,19 @@ export default function MailConnectPage() {
   const [smtpTls, setSmtpTls] = useState(true);
   const [smtpSsl, setSmtpSsl] = useState(false);
   const [sameAsImap, setSameAsImap] = useState(true);
+  const [pushInstantly, setPushInstantly] = useState(false);
+  const [firstName, setFirstName] = useState("ANCAP");
+  const [lastName, setLastName] = useState("Mail");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const d = (await fetch(`${getApiUrl()}/mail/accounts/defaults`).then((r) => r.json())) as Defaults;
+        const d = (await fetch(`${getApiUrl()}/mail/accounts/defaults`).then((r) => r.json())) as Defaults & {
+          instantly_configured?: boolean;
+          instantly_enabled?: boolean;
+          instantly_api_base?: string;
+        };
         if (cancelled) return;
         setDefaults(d);
         setImapHost(d.imap_host);
@@ -75,6 +86,7 @@ export default function MailConnectPage() {
         setImapSsl(d.imap_use_ssl);
         setSmtpTls(d.smtp_use_tls);
         setSmtpSsl(d.smtp_use_ssl);
+        if (d.instantly_configured) setPushInstantly(true);
       } catch {
         /* defaults stay local */
       }
@@ -146,6 +158,9 @@ export default function MailConnectPage() {
         smtp_use_tls: smtpTls,
         smtp_use_ssl: smtpSsl,
         verify: true,
+        push_to_instantly: pushInstantly,
+        first_name: firstName || undefined,
+        last_name: lastName || undefined,
       };
       const saved = (await apiFetch("/mail/accounts", {
         method: "POST",
@@ -389,6 +404,34 @@ export default function MailConnectPage() {
                 />
                 SMTP SSL (port 465)
               </label>
+              <label className="flex items-center gap-2 text-sm text-white/70">
+                <input type="checkbox" checked={pushInstantly} onChange={(e) => setPushInstantly(e.target.checked)} />
+                Also register in Instantly.ai (API v2 · Custom IMAP/SMTP)
+              </label>
+              {pushInstantly ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className={label}>
+                    First name
+                    <input className={field} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  </label>
+                  <label className={label}>
+                    Last name
+                    <input className={field} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  </label>
+                  <p className="sm:col-span-2 text-xs leading-5 text-white/45">
+                    Uses Instantly{" "}
+                    <a
+                      className="text-sky-200 underline decoration-sky-400/40"
+                      href="https://api.instantly.ai/api/v2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      api.instantly.ai/api/v2
+                    </a>{" "}
+                    with provider_code=1. Requires server env INSTANTLY_ENABLED + INSTANTLY_API_KEY.
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <button
@@ -441,6 +484,12 @@ export default function MailConnectPage() {
                 <dt className="text-white/40">Status</dt>
                 <dd className="capitalize text-emerald-200">{existing.status}</dd>
               </div>
+              {existing.instantly_email ? (
+                <div>
+                  <dt className="text-white/40">Instantly</dt>
+                  <dd>{existing.instantly_email}</dd>
+                </div>
+              ) : null}
             </dl>
             <div className="mt-6 flex flex-wrap gap-3">
               <button

@@ -38,6 +38,12 @@ class MailImapSmtpConnect(BaseModel):
         default=True,
         description="If true, test IMAP (and SMTP login) before saving.",
     )
+    push_to_instantly: bool = Field(
+        default=False,
+        description="If true and Instantly is configured, also create Custom IMAP/SMTP account via Instantly API v2.",
+    )
+    first_name: str | None = Field(default=None, max_length=80)
+    last_name: str | None = Field(default=None, max_length=80)
 
     @field_validator("email_address", "imap_username", "imap_host", "smtp_host", mode="before")
     @classmethod
@@ -88,6 +94,7 @@ class MailProviderAccountPublic(BaseModel):
     status: MailAccountStatus
     last_verified_at: datetime | None = None
     last_error: str | None = None
+    instantly_email: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -110,5 +117,9 @@ class MailProviderDefaultsPublic(BaseModel):
     webmail_url: str = "https://webmail.ancap.cloud/"
     note: str = (
         "Username is usually the full email address. "
-        "For ancap.cloud mailboxes use IMAP 993 (SSL) and SMTP 587 (STARTTLS) or 465 (SSL)."
+        "For ancap.cloud mailboxes use IMAP 993 (SSL) and SMTP 587 (STARTTLS) or 465 (SSL). "
+        "Optional: push the same credentials to Instantly.ai API v2 as Custom IMAP/SMTP."
     )
+    instantly_enabled: bool = False
+    instantly_configured: bool = False
+    instantly_api_base: str = "https://api.instantly.ai/api/v2"

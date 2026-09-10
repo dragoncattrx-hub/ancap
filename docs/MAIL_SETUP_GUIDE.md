@@ -109,6 +109,17 @@ Webmail: https://webmail.ancap.cloud/ (via Apache/Roundcube if installed)
 
 **ANCAP Single Account connect UI:** https://ancap.cloud/mail/connect — IMAP/SMTP wizard for any provider (defaults prefilled for `mail.ancap.cloud`). API: `GET/POST /v1/mail/accounts`, `POST /v1/mail/accounts/test`.
 
+**Instantly.ai API v2:** base `https://api.instantly.ai/api/v2` ([docs](https://developer.instantly.ai/)). ANCAP can push Custom IMAP/SMTP accounts (`provider_code=1`) when connecting:
+
+```bash
+# Server env
+INSTANTLY_ENABLED=true
+INSTANTLY_API_KEY=your_v2_key   # Settings → Integrations → API Keys (accounts scopes)
+INSTANTLY_API_BASE=https://api.instantly.ai/api/v2
+```
+
+ANCAP endpoints: `GET /v1/mail/instantly/status`, `GET /v1/mail/instantly/accounts`, `POST /v1/mail/instantly/accounts`, or check **Also register in Instantly** on `/mail/connect`.
+
 ---
 
 ## Quick Fix: If Port 25 is Permanently Blocked

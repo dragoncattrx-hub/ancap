@@ -25,6 +25,7 @@ from app.schemas.mail_accounts import (
     MailProviderDefaultsPublic,
     MailProviderKind,
 )
+from app.services import instantly as instantly_svc
 
 
 def _utcnow() -> datetime:
@@ -105,10 +106,16 @@ def _test_smtp(
 
 
 def defaults() -> MailProviderDefaultsPublic:
-    return MailProviderDefaultsPublic()
+    inst = instantly_svc.status_public()
+    return MailProviderDefaultsPublic(
+        instantly_enabled=bool(inst.get("enabled")),
+        instantly_configured=bool(inst.get("configured")),
+        instantly_api_base=str(inst.get("api_base") or "https://api.instantly.ai/api/v2"),
+    )
 
 
 def _public(row: MailProviderAccount) -> MailProviderAccountPublic:
+    meta = row.metadata_json if isinstance(row.metadata_json, dict) else {}
     return MailProviderAccountPublic(
         id=row.id,
         display_name=row.display_name,
@@ -126,6 +133,7 @@ def _public(row: MailProviderAccount) -> MailProviderAccountPublic:
         status=MailAccountStatus(row.status),
         last_verified_at=row.last_verified_at,
         last_error=row.last_error,
+        instantly_email=meta.get("instantly_email"),
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -243,8 +251,52 @@ async def connect_account(
     existing.last_error = None
     existing.updated_at = now
 
+    meta = dict(existing.metadata_json or {}) if isinstance(existing.metadata_json, dict) else {}
+    instantly_note: str | None = None
+    if body.push_to_instantly:
+        if not instantly_svc.configured():
+            raise HTTPException(
+                status_code=503,
+                detail="Instantly not configured (set INSTANTLY_ENABLED and INSTANTLY_API_KEY)",
+            )
+        first = (body.first_name or "").strip()
+        last = (body.last_name or "").strip()
+        if not first and body.display_name:
+            parts = body.display_name.strip().split(None, 1)
+            first = parts[0] if parts else "ANCAP"
+            last = parts[1] if len(parts) > 1 else "Mail"
+        try:
+            created = await instantly_svc.create_custom_imap_account(
+                email=body.email_address,
+                first_name=first or "ANCAP",
+                last_name=last or "Mail",
+                imap_username=body.imap_username,
+                imap_password=body.imap_password,
+                imap_host=body.imap_host,
+                imap_port=body.imap_port,
+                smtp_username=smtp_user,
+                smtp_password=smtp_pass,
+                smtp_host=body.smtp_host,
+                smtp_port=body.smtp_port,
+            )
+            meta["instantly_email"] = body.email_address.strip()
+            meta["instantly_provider_code"] = instantly_svc.PROVIDER_CUSTOM_IMAP_SMTP
+            if isinstance(created, dict):
+                meta["instantly_raw_email"] = created.get("email") or body.email_address.strip()
+            instantly_note = "Also registered in Instantly (Custom IMAP/SMTP)"
+        except HTTPException as exc:
+            existing.last_error = str(exc.detail)
+            meta["instantly_error"] = str(exc.detail)
+            instantly_note = f"ANCAP saved; Instantly failed: {exc.detail}"
+    existing.metadata_json = meta
+
     await session.flush()
-    return _public(existing)
+    public = _public(existing)
+    if instantly_note:
+        # surface via last_error only when Instantly failed; success stays clean
+        if existing.last_error and "Instantly failed" in (instantly_note or ""):
+            pass
+    return public
 
 
 async def delete_account(session: AsyncSession, *, user_id: str) -> None:
