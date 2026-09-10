@@ -1147,6 +1147,7 @@ Security and ops hardening completed in this audit:
 | ID | Track | Deliverable | Why |
 |----|-------|-------------|-----|
 | R1 | **ACP transparency** | Public block explorer (`/explorer` or `explorer.ancap.cloud`) — height, txs, addresses | Trust + auditability for native chain |
+| R1b | **Crypto Benchmark Library** | QOBLIB-style scorecard for ACP/wACP/sACP vs published baselines (`GET /v1/crypto/benchmark`, `/reserves`) | See `docs/CRYPTO_BENCHMARK_LIBRARY.md` |
 | R2 | **Ops monitoring** | Uptime + ACP block-height + container health alerts (Telegram/email) | Catch chain/API regressions early |
 | R3 | **Backups** | Automated nightly Postgres + ACP chain data export off-server | Disaster recovery |
 | R4 | **Mail deliverability** | Provider PTR → `mail.ancap.cloud`; optional SES/SendGrid relay fallback | Fix external delivery reputation |
@@ -1252,8 +1253,10 @@ ACP-settled **lunar parcel registry + interest desk**. Science tags follow open 
 | L0 Spec & brand | `[x]` | `/lunar`, schemas, roadmap hooks |
 | L1 Catalog + interest API | `[x]` | `lunar_parcels` / interests; `FF_LUNAR_LAND`; migration `070` |
 | L2 Checkout UX | `[ ]` | ACP escrow + ownership-proof handoff |
-| L3 LFM enrichment adapter | `[ ]` | Off-host metadata tiles; no model weights on API |
+| L3 LFM enrichment adapter | `[ ]` | Off-host metadata tiles; no model weights on API; gated by `docs/EMBODIED_AI_SECURITY_CONTROLS.md` |
 | L4 Secondary market | `[ ]` | Transfer settled claims |
+
+**Embodied AI security baseline (2026-09-10):** `docs/EMBODIED_AI_SECURITY_CONTROLS.md` · `FF_EMBODIED_ADAPTER=false` · `GET /v1/embodied-ai/security` approved-model register (UnifoLM pending digest). Does not enable robot adapters.
 
 **Does not block:** Phase 6 mobile MVP or R9–R12.
 

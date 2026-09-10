@@ -1678,6 +1678,12 @@ export const sacpPublic = {
   },
 };
 
+export const cryptoBenchmark = {
+  async scorecard() {
+    return apiFetch("/crypto/benchmark");
+  },
+};
+
 export const marketData = {
   async prices(vs = "usd") {
     return apiFetch(`/market/prices?vs=${encodeURIComponent(vs)}`);
@@ -2153,6 +2159,7 @@ export const api = {
   commerce,
   wacpPublic,
   sacpPublic,
+  cryptoBenchmark,
   marketData,
   subscriptions,
   organizations,

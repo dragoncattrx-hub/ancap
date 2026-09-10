@@ -325,6 +325,8 @@ class Settings(BaseSettings):
     ff_orbital_edge: bool = False
     ff_aeterna: bool = True
     ff_lunar_land: bool = True
+    # Embodied / humanoid model adapters (UnifoLM etc.) — off until digest + review
+    ff_embodied_adapter: bool = False
 
     # Participation gates
     participation_gates_enabled: bool = True

@@ -20,6 +20,18 @@ logger = logging.getLogger(__name__)
 
 
 STALE_SNAPSHOT_THRESHOLD_MINUTES = 30
+PUBLIC_SNAPSHOT_FRESH_MINUTES = 60
+
+
+async def latest_reserve_snapshot(session: AsyncSession) -> BridgeReserveSnapshot | None:
+    from sqlalchemy import desc
+
+    row = await session.execute(
+        select(BridgeReserveSnapshot)
+        .order_by(desc(BridgeReserveSnapshot.snapshot_at))
+        .limit(1)
+    )
+    return row.scalar_one_or_none()
 
 
 async def check_stale_snapshots(session: AsyncSession) -> dict | None:
@@ -29,16 +41,9 @@ async def check_stale_snapshots(session: AsyncSession) -> dict | None:
     """
     from sqlalchemy import desc, select as sa_select
 
-    row = await session.execute(
-        sa_select(BridgeReserveSnapshot)
-        .order_by(desc(BridgeReserveSnapshot.snapshot_at))
-        .limit(1)
-    )
-    latest = row.scalar_one_or_none()
+    latest = await latest_reserve_snapshot(session)
     if latest is None:
         return None
-
-    from datetime import timedelta as td
 
     age_minutes = (datetime.now(timezone.utc) - latest.snapshot_at).total_seconds() / 60
     if age_minutes > STALE_SNAPSHOT_THRESHOLD_MINUTES:
@@ -62,12 +67,7 @@ async def check_reconciliation_mismatch_alert(session: AsyncSession) -> dict | N
     """
     from sqlalchemy import desc, select as sa_select
 
-    row = await session.execute(
-        sa_select(BridgeReserveSnapshot)
-        .order_by(desc(BridgeReserveSnapshot.snapshot_at))
-        .limit(1)
-    )
-    latest = row.scalar_one_or_none()
+    latest = await latest_reserve_snapshot(session)
     if latest is None:
         return None
 

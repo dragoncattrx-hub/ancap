@@ -127,13 +127,16 @@ That means bridge UI can link ACP deposit txs immediately, while still allowing 
 
 ### 5. Finish reserve-proof maturity
 Current public reserve proof endpoint is live.
-Reserve maturity is still not complete.
+
+**Shipped (2026-09-10, QOBLIB-style scorecard pass):**
+- [x] Snapshot-backed backing ratio when latest snapshot is fresh (≤ 60 min)
+- [x] Stale-data detection surfaced on public reserve-proof notes
+- [x] Reconciliation mismatch transparency on public reserve-proof + scorecard
+- [x] Public benchmark library: `docs/CRYPTO_BENCHMARK_LIBRARY.md` · `GET /v1/crypto/benchmark` · `/reserves`
 
 Still needed:
-- dedicated reserve snapshot sourcing
-- public backing ratio from real snapshot data
-- stale-data detection
-- operator alerting on mismatch
+- operator alerting on mismatch (beyond public notes)
+- monthly transparency report export from scorecard history
 
 ### 6. Runtime balance helper is available
 A small helper script now exists:

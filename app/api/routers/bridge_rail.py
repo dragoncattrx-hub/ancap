@@ -18,6 +18,7 @@ from app.db.models import (
     BridgeAllowlistAddress,
     BridgeAuditEvent,
     BridgeOperation,
+    BridgeReserveSnapshot,
     BridgeWatcherCheckpoint,
 )
 from app.db.session import get_db
@@ -43,6 +44,12 @@ from app.schemas.bridge_rail import (
     WacpReserveProofResponse,
 )
 from app.services.bridge_decimal import acp_smallest_to_wacp_wei, wacp_wei_to_acp_smallest_floor
+from app.services.bridge_reconciliation import (
+    PUBLIC_SNAPSHOT_FRESH_MINUTES,
+    check_reconciliation_mismatch_alert,
+    check_stale_snapshots,
+    latest_reserve_snapshot,
+)
 from app.services.bridge_reconciliation import (
     check_reconciliation_mismatch_alert,
     check_stale_snapshots,
@@ -302,6 +309,62 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         reserve_health = "pending"
         notes.append("Reserve proof endpoint is live, but ACP reserve balance could not be sourced right now.")
 
+    cp_acp_height = int(cp_acp.last_block_height) if cp_acp else None
+    cp_bsc_height = int(cp_bsc.last_block_height) if cp_bsc else None
+
+    latest_snapshot: BridgeReserveSnapshot | None = None
+    try:
+        latest_snapshot = await latest_reserve_snapshot(session)
+    except Exception as exc:
+        logger.warning("live_reserve_proof snapshot lookup skipped: %s", exc)
+        if hasattr(session, "rollback"):
+            await session.rollback()
+
+    if latest_snapshot is not None:
+        snap_age_minutes = (_utc_now() - latest_snapshot.snapshot_at).total_seconds() / 60.0
+        if snap_age_minutes <= PUBLIC_SNAPSHOT_FRESH_MINUTES:
+            if int(latest_snapshot.reserve_balance_acp_smallest or 0) > 0:
+                reserve_balance_smallest_int = int(latest_snapshot.reserve_balance_acp_smallest)
+            if latest_snapshot.backing_ratio is not None and total_wacp > 0:
+                backing_ratio_dec = Decimal(str(latest_snapshot.backing_ratio))
+                backing_ratio = format(backing_ratio_dec, "f")
+                last_updated_at = latest_snapshot.snapshot_at
+                if backing_ratio_dec >= Decimal("1"):
+                    status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                else:
+                    status = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                notes.append(
+                    f"Backing ratio sourced from fresh reserve snapshot ({round(snap_age_minutes, 1)} min old)."
+                )
+            if latest_snapshot.last_acp_block_height is not None:
+                cp_acp_height = int(latest_snapshot.last_acp_block_height)
+            else:
+                cp_acp_height = int(cp_acp.last_block_height) if cp_acp else None
+            if latest_snapshot.last_bsc_block_number is not None:
+                cp_bsc_height = int(latest_snapshot.last_bsc_block_number)
+            else:
+                cp_bsc_height = int(cp_bsc.last_block_height) if cp_bsc else None
+
+    try:
+        stale_alert = await check_stale_snapshots(session)
+        if stale_alert:
+            notes.append(
+                f"Stale reserve snapshot: {stale_alert.get('age_minutes')} min "
+                f"(threshold {stale_alert.get('threshold_minutes')} min)."
+            )
+        mismatch_alert = await check_reconciliation_mismatch_alert(session)
+        if mismatch_alert:
+            notes.append(
+                "Reconciliation mismatch on latest snapshot: "
+                f"delta_wacp_wei={mismatch_alert.get('delta_wacp_wei')}."
+            )
+    except Exception as exc:
+        logger.warning("live_reserve_proof alert checks skipped: %s", exc)
+        if hasattr(session, "rollback"):
+            await session.rollback()
+
     return WacpReserveProofResponse(
         status=status,
         bridge_enabled=s.bridge_rail_enabled,
@@ -314,8 +377,8 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         operational_buffer_smallest="0",
         backing_ratio=backing_ratio,
         reserve_health=reserve_health,
-        last_acp_block_height=int(cp_acp.last_block_height) if cp_acp else None,
-        last_bsc_block_number=int(cp_bsc.last_block_height) if cp_bsc else None,
+        last_acp_block_height=cp_acp_height,
+        last_bsc_block_number=cp_bsc_height,
         last_updated_at=last_updated_at,
         notes=notes,
     )

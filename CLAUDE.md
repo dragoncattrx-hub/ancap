@@ -82,3 +82,7 @@ Planned orbital infra track (not blocking Phase 6): SpaceX encrypted satellite s
 Planned longevity track (not blocking Phase 6): AETERNA R12 — DNA vault, Sequencing.com-style import, ACP-paid genomic/longevity consult workflows (1,000,000 ACP), stem-cell organ print (250,000 ACP / organ, wisdom-tooth DPSC fallback, licensed bioreactor partner only). Track: `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`. Foundation: A0 done, A1 API/tables in `059_aeterna` + `FF_AETERNA`; organ-print SKU wired in catalog/intents/frontend.
 
 Planned lunar track (not blocking Phase 6): Lunar land trading R13 — science-tagged parcel registry + ACP interest desk (NASA–IBM LFM themes). Track: `docs/LUNAR_LAND_TRADING_ROADMAP.md`. Foundation: L0/L1 in `070_lunar_land` + `FF_LUNAR_LAND` + `/lunar`.
+
+Embodied / humanoid model adapters (Unitree UnifoLM etc.): **off by default** — `FF_EMBODIED_ADAPTER=false`, register at `GET /v1/embodied-ai/security`, policy in `docs/EMBODIED_AI_SECURITY_CONTROLS.md`. Never host weights on the API host; never share process space with ACP/bridge keys.
+
+Crypto Benchmark Library (QOBLIB-style): public scorecard at `GET /v1/crypto/benchmark` + `/reserves`; baselines in `docs/CRYPTO_BENCHMARK_LIBRARY.md`. No “production-ready” claim without measured pass vs published baselines.

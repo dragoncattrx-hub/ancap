@@ -19,6 +19,7 @@ Buyers express **interest / reserve / bid** on selenographic parcels in an ANCAP
 2. Science tags are **indicative** (catalog / future LFM adapter), not geological guarantees.
 3. Distinct from Galaxy whole-body `sat-luna` lots and OTC class `moon`.
 4. Distinct from R11 SpaceX sealed-edge compute nodes.
+5. Any future LFM / embodied enrichment adapter must follow `docs/EMBODIED_AI_SECURITY_CONTROLS.md` (pin+hash, no weights on API host, feature flag).
 
 ## Phased delivery
 

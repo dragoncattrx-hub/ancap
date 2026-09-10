@@ -4,26 +4,42 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
-import { bridgeRail, marketData, wacpPublic } from "@/lib/api";
+import { bridgeRail, cryptoBenchmark, marketData, wacpPublic } from "@/lib/api";
 
 type MarketRow = { symbol?: string; price?: string | null; vs_currency?: string };
+type BenchmarkClass = {
+  id: string;
+  title: string;
+  baseline: string;
+  result: "pass" | "fail" | "pending";
+  notes: string[];
+};
+
+const resultStyles: Record<BenchmarkClass["result"], string> = {
+  pass: "border-emerald-400/30 bg-emerald-400/[0.08] text-emerald-100",
+  fail: "border-rose-400/30 bg-rose-400/[0.08] text-rose-100",
+  pending: "border-amber-400/30 bg-amber-400/[0.08] text-amber-100",
+};
 
 export default function ReservesPage() {
   const [wacp, setWacp] = useState<any>(null);
   const [reserve, setReserve] = useState<any>(null);
+  const [benchmark, setBenchmark] = useState<any>(null);
   const [market, setMarket] = useState<any>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     void (async () => {
       try {
-        const [status, proof, prices] = await Promise.all([
+        const [status, proof, scorecard, prices] = await Promise.all([
           wacpPublic.status(),
           wacpPublic.reserveProof().catch(() => null),
+          cryptoBenchmark.scorecard().catch(() => null),
           marketData.prices("usd").catch(() => null),
         ]);
         setWacp(status);
         setReserve(proof);
+        setBenchmark(scorecard);
         setMarket(prices);
       } catch (err) {
         try {
@@ -36,6 +52,7 @@ export default function ReservesPage() {
   }, []);
 
   const rows: MarketRow[] = Array.isArray(market?.prices) ? market.prices : [];
+  const classes: BenchmarkClass[] = Array.isArray(benchmark?.classes) ? benchmark.classes : [];
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -43,7 +60,7 @@ export default function ReservesPage() {
       <main className="mx-auto max-w-4xl px-4 py-10">
         <h1 className="text-3xl font-semibold">Reserves & bridge transparency</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          Live bridge addresses and reserve health from public ANCAP APIs. Always verify contract addresses on official docs before sending funds.
+          Live bridge addresses and reserve health from public ANCAP APIs. Benchmarks follow a QOBLIB-style rule: claims are only as strong as the published baseline behind them.
         </p>
         <div className="mt-8 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-5 text-sm text-amber-100/90">
           Never send assets to addresses shared only in DMs or unofficial channels. Use{" "}
@@ -57,6 +74,36 @@ export default function ReservesPage() {
           .
         </div>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
+
+        {benchmark ? (
+          <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="text-lg font-semibold">Crypto benchmark scorecard</h2>
+              <span className={`rounded-full border px-3 py-1 text-xs uppercase tracking-wide ${resultStyles[benchmark.overall as BenchmarkClass["result"]] || resultStyles.pending}`}>
+                Overall: {benchmark.overall}
+              </span>
+            </div>
+            <p className="mt-2 text-white/55">{benchmark.summary}</p>
+            <div className="mt-4 grid gap-3">
+              {classes.map((cls) => (
+                <div key={cls.id} className={`rounded-xl border p-4 ${resultStyles[cls.result]}`}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="font-medium">{cls.title}</div>
+                    <div className="text-xs uppercase tracking-wide">{cls.result}</div>
+                  </div>
+                  <p className="mt-2 text-xs text-white/60">Baseline: {cls.baseline}</p>
+                  {cls.notes?.length ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-white/70">
+                      {cls.notes.slice(0, 3).map((note) => (
+                        <li key={note}>{note}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {rows.length > 0 ? (
           <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
