@@ -415,6 +415,12 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_api_base: str = "https://api.stripe.com/v1"
 
+    # CoinGecko market data (indicative only; never commit real keys)
+    coingecko_enabled: bool = True
+    coingecko_api_key: str = ""
+    coingecko_base_url: str = ""  # empty = auto demo/pro host
+    coingecko_cache_ttl_seconds: int = 60
+
     # LLM cost tracking (ACP per 1M tokens; used to compute real provider cost)
     llm_cost_per_1m_input_tokens: str = "0"
     llm_cost_per_1m_output_tokens: str = "0"

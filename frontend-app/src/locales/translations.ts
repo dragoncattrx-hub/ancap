@@ -254,7 +254,10 @@ export const translations: Record<Language, TranslationTree> = {
       ctaProReport: "Buy Pro Risk Report",
       ctaPayLink: "Create Payment Link",
       ctaApi: "Integrate ANCAP API",
-      swaggerApi: "Swagger API"
+      swaggerApi: "Swagger API",
+      marketTickerTitle: "LIVE SPOT TICKER",
+      marketTickerNote: "ACP / wACP / sACP are platform indicative quotes; BTC–SOL via CoinGecko. Not settlement rates and not investment advice.",
+      marketTickerLegal: "Market data disclosure",
     },
     galaxy: {
       kicker: "MILKY WAY → SOL",
@@ -739,7 +742,10 @@ export const translations: Record<Language, TranslationTree> = {
       ctaProReport: "Купить Pro-отчёт о рисках",
       ctaPayLink: "Создать платёжную ссылку",
       ctaApi: "Подключить ANCAP API",
-      swaggerApi: "Swagger API"
+      swaggerApi: "Swagger API",
+      marketTickerTitle: "БЕГУЩАЯ СТРОКА КУРСОВ",
+      marketTickerNote: "ACP / wACP / sACP — ориентировочные курсы платформы; BTC–SOL через CoinGecko. Не settlement и не инвестрекомендация.",
+      marketTickerLegal: "Раскрытие по рыночным данным",
     },
     galaxy: {
       kicker: "МЛЕЧНЫЙ ПУТЬ → СОЛНЦЕ",
@@ -1224,7 +1230,10 @@ export const translations: Record<Language, TranslationTree> = {
       ctaProReport: "Купити Pro-звіт про ризики",
       ctaPayLink: "Створити платіжне посилання",
       ctaApi: "Підключити ANCAP API",
-      swaggerApi: "Swagger API"
+      swaggerApi: "Swagger API",
+      marketTickerTitle: "БІГУЧИЙ РЯДОК КУРСІВ",
+      marketTickerNote: "ACP / wACP / sACP — орієнтовні курси платформи; BTC–SOL через CoinGecko. Не settlement і не інвестрекомендація.",
+      marketTickerLegal: "Розкриття щодо ринкових даних",
     },
     galaxy: {
       kicker: "ЧУМАЦЬКИЙ ШЛЯХ → СОНЦЕ",
@@ -1709,7 +1718,10 @@ export const translations: Record<Language, TranslationTree> = {
       ctaProReport: "Pro-Risikobericht kaufen",
       ctaPayLink: "Zahlungslink erstellen",
       ctaApi: "ANCAP-API integrieren",
-      swaggerApi: "Swagger API"
+      swaggerApi: "Swagger API",
+      marketTickerTitle: "LIVE-KURS-TICKER",
+      marketTickerNote: "ACP / wACP / sACP sind plattforminterne indikative Kurse; BTC–SOL via CoinGecko. Keine Settlement-Kurse, keine Anlageberatung.",
+      marketTickerLegal: "Marktdaten-Hinweis",
     },
     galaxy: {
       kicker: "MILCHSTRASSE → SONNE",
@@ -2194,7 +2206,10 @@ export const translations: Record<Language, TranslationTree> = {
       ctaProReport: "購買 Pro 風險報告",
       ctaPayLink: "建立付款連結",
       ctaApi: "整合 ANCAP API",
-      swaggerApi: "Swagger API"
+      swaggerApi: "Swagger API",
+      marketTickerTitle: "即時行情跑馬燈",
+      marketTickerNote: "ACP / wACP / sACP 為平台參考價；BTC–SOL 來自 CoinGecko。非結算匯率，亦非投資建議。",
+      marketTickerLegal: "市場數據揭露",
     },
     galaxy: {
       kicker: "銀河 → 太陽",

@@ -49,6 +49,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/privacy", key: "privacyLink" },
     { href: "/legal/cookies", key: "cookiesLink" },
     { href: "/legal/risk", key: "riskLink" },
+    { href: "/legal/market-data", key: "marketDataLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
   ] as const;
@@ -80,6 +81,7 @@ export function LegalHubView() {
     { href: "/legal/privacy", title: "privacyLink", body: "hubCardPrivacy" },
     { href: "/legal/cookies", title: "cookiesLink", body: "hubCardCookies" },
     { href: "/legal/risk", title: "riskLink", body: "hubCardRisk" },
+    { href: "/legal/market-data", title: "marketDataLink", body: "hubCardMarketData" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -158,7 +160,7 @@ export function PrivacyView() {
       actions={<LegalNavPills current="/legal/privacy" />}
     >
       <section className="mt-6 grid gap-4 md:grid-cols-2">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.p${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.p${n}Body`)}</p>
@@ -236,12 +238,18 @@ export function RiskDisclosureView() {
       actions={<LegalNavPills current="/legal/risk" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.r${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.r${n}Body`)}</p>
           </article>
         ))}
+        <p className="text-sm leading-7 text-white/55">
+          {t("legal.riskMarketDataMore")}{" "}
+          <Link href="/legal/market-data" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/market-data
+          </Link>
+        </p>
       </section>
     </LegalShell>
   );
@@ -335,6 +343,40 @@ export function CyberDefenseView() {
   );
 }
 
+export function MarketDataDisclosureView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.marketDataKicker")}
+      title={t("legal.marketDataTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.marketDataIntro")}`}
+      actions={<LegalNavPills current="/legal/market-data" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.md${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.md${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.marketDataAttributionTitle")}</h2>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.marketDataAttributionBody")}</p>
+        <a
+          className="mt-3 inline-block text-sm text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          href="https://www.coingecko.com"
+          target="_blank"
+          rel="noreferrer"
+        >
+          coingecko.com
+        </a>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function SiteLegalFooter() {
   const { t } = useLanguage();
   const links = [
@@ -343,6 +385,7 @@ export function SiteLegalFooter() {
     { href: "/legal/privacy", label: "footerPrivacy" },
     { href: "/legal/cookies", label: "footerCookies" },
     { href: "/legal/risk", label: "footerRisk" },
+    { href: "/legal/market-data", label: "footerMarketData" },
     { href: "/legal/refunds", label: "footerRefunds" },
   ] as const;
   return (

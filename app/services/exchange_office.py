@@ -306,7 +306,8 @@ def build_assets() -> list[ExchangeAssetPublic]:
             unit="USDT",
             decimals=18,
             network="bsc",
-            note="Via wACP/USDT DEX deep-link until in-app router lands.",
+            note="Via wACP/USDT DEX deep-link until in-app router lands. Spot context: GET /v1/market/prices (CoinGecko).",
+            metadata={"rate_source_hint": "coingecko_spot_context"},
         ),
         ExchangeAssetPublic(
             id="fiat_usd",

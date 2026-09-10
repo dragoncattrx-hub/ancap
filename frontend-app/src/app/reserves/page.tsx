@@ -4,22 +4,27 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
-import { bridgeRail, wacpPublic } from "@/lib/api";
+import { bridgeRail, marketData, wacpPublic } from "@/lib/api";
+
+type MarketRow = { symbol?: string; price?: string | null; vs_currency?: string };
 
 export default function ReservesPage() {
   const [wacp, setWacp] = useState<any>(null);
   const [reserve, setReserve] = useState<any>(null);
+  const [market, setMarket] = useState<any>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     void (async () => {
       try {
-        const [status, proof] = await Promise.all([
+        const [status, proof, prices] = await Promise.all([
           wacpPublic.status(),
           wacpPublic.reserveProof().catch(() => null),
+          marketData.prices("usd").catch(() => null),
         ]);
         setWacp(status);
         setReserve(proof);
+        setMarket(prices);
       } catch (err) {
         try {
           setReserve(await bridgeRail.reserveSummary());
@@ -29,6 +34,8 @@ export default function ReservesPage() {
       }
     })();
   }, []);
+
+  const rows: MarketRow[] = Array.isArray(market?.prices) ? market.prices : [];
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -50,6 +57,31 @@ export default function ReservesPage() {
           .
         </div>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
+
+        {rows.length > 0 ? (
+          <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="text-lg font-semibold">Indicative market context</h2>
+              <Link href="/legal/market-data" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+                Legal disclosure
+              </Link>
+            </div>
+            <p className="mt-2 text-white/55">
+              Spot prices via CoinGecko — not ANCAP settlement rates. {market?.attribution || ""}
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {rows.map((row) => (
+                <div key={row.symbol || row.price || Math.random()} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                  <div className="text-xs uppercase tracking-wide text-white/45">{row.symbol}</div>
+                  <div className="mt-1 text-base font-semibold text-white">
+                    {row.price ? `$${row.price}` : "—"} <span className="text-xs font-normal text-white/45">{row.vs_currency || "USD"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {wacp ? (
           <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
             <h2 className="text-lg font-semibold">Bridge status</h2>

@@ -1673,6 +1673,15 @@ export const sacpPublic = {
   },
 };
 
+export const marketData = {
+  async prices(vs = "usd") {
+    return apiFetch(`/market/prices?vs=${encodeURIComponent(vs)}`);
+  },
+  async status() {
+    return apiFetch("/market/status");
+  },
+};
+
 export const merchant = {
   async dashboard() {
     return apiFetch("/merchant/dashboard");
@@ -2139,6 +2148,7 @@ export const api = {
   commerce,
   wacpPublic,
   sacpPublic,
+  marketData,
   subscriptions,
   organizations,
   webhooks,

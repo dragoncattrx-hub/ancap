@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { HomeMcpSection } from "@/components/HomeMcpSection";
+import { HomeMarketTicker } from "@/components/HomeMarketTicker";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { HomeGalaxySection } from "@/components/HomeGalaxySection";
@@ -270,6 +271,8 @@ export function HomePage() {
               </div>
             </div>
           </section>
+
+          <HomeMarketTicker />
 
           <HomeGalaxySection />
 

@@ -815,3 +815,110 @@ textarea {
     font-size: 1.25rem !important;
   }
 }
+
+/* Home market marquee (CoinGecko + ACP rails) */
+.home-market-ticker {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: rgba(18, 26, 45, 0.72);
+}
+
+.home-market-ticker__bar {
+  padding: 14px 0 12px;
+  max-width: 100%;
+}
+
+.home-market-ticker__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 0 24px 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-market-ticker__title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.home-market-ticker__legal {
+  font-size: 0.78rem;
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.home-market-ticker__viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+.home-market-ticker__track {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: home-market-marquee 42s linear infinite;
+}
+
+.home-market-ticker__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 0 28px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-market-ticker__item strong {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--accent-strong);
+}
+
+.home-market-ticker__item span {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.home-market-ticker__note {
+  margin: 10px auto 0;
+  padding: 0 24px;
+  max-width: 1200px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+@keyframes home-market-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-market-ticker__track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 12px;
+    justify-content: center;
+  }
+
+  .home-market-ticker__item:nth-child(n + 9) {
+    display: none;
+  }
+}
