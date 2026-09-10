@@ -1,7 +1,11 @@
-const CACHE_NAME = "ancap-v1";
+const CACHE_NAME = "ancap-v2";
 const STATIC_ASSETS = [
   "/",
+  "/wallet",
   "/manifest.json",
+  "/icons/apple-touch-icon.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
 ];
