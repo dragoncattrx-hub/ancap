@@ -43,10 +43,13 @@ jobs:
 
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
         with:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
+          envs: COINGECKO_API_KEY
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           timeout: 600s
           command_timeout: 70m
@@ -68,6 +71,21 @@ jobs:
             done
             git reset --hard origin/master || true
 
+            if [ -n "${COINGECKO_API_KEY:-}" ]; then
+              echo "== sync CoinGecko key into host .env (value redacted)"
+              touch .env
+              if grep -q '^COINGECKO_API_KEY=' .env; then
+                sed -i "s|^COINGECKO_API_KEY=.*|COINGECKO_API_KEY=${COINGECKO_API_KEY}|" .env
+              else
+                printf '\nCOINGECKO_ENABLED=true\nCOINGECKO_API_KEY=%s\n' "$COINGECKO_API_KEY" >> .env
+              fi
+              if ! grep -q '^COINGECKO_ENABLED=' .env; then
+                printf 'COINGECKO_ENABLED=true\n' >> .env
+              fi
+            else
+              echo "== COINGECKO_API_KEY GitHub secret not set; market board stays platform-only"
+            fi
+
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
@@ -75,6 +93,8 @@ jobs:
               echo "== restart services (reload nginx config + existing images)"
               # Recreate proxy so bind-mounted infra/nginx/default.conf is always live.
               timeout 120 $COMPOSE up -d --force-recreate proxy || true
+              # Force-recreate api so COINGECKO_* from host .env is picked up by compose.
+              timeout 120 $COMPOSE up -d --force-recreate api || true
               timeout 120 $COMPOSE up -d api frontend acp-node proxy || true
               echo "== wait api healthy"
               healthy=0
@@ -112,6 +132,8 @@ jobs:
                   exit 1
                   ;;
               esac
+              market_status="$(timeout 15 $COMPOSE exec -T proxy wget -qO- http://127.0.0.1/api/v1/market/status 2>/dev/null || true)"
+              echo "proxy /api/v1/market/status -> ${market_status:-<empty>}"
               timeout 15 $COMPOSE exec -T api sh -c 'curl -sf -o /dev/null -w "treasury %{http_code}\n" http://127.0.0.1:8000/v1/treasury/status' || echo "treasury fail"
               timeout 15 $COMPOSE exec -T api sh -c 'curl -s -X POST "$ACP_RPC_URL" -H "content-type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getblockcount\",\"params\":{}}"' || true
               echo ""
