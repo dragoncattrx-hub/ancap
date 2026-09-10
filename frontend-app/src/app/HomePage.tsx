@@ -258,21 +258,11 @@ export function HomePage() {
                   <h2 style={{ fontSize: "1.35rem", fontWeight: 800, marginBottom: 14 }}>
                     {t("homePage.productMapTitle")}
                   </h2>
-                  <div style={{ display: "grid", gap: 12 }}>
+                  <div className="home-product-map" style={{ display: "grid", gap: 0 }}>
                     {productMapDefs.map(([nameKey, textKey]) => (
-                      <div
-                        key={nameKey}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "96px 1fr",
-                          gap: 12,
-                          alignItems: "start",
-                          padding: "12px 0",
-                          borderTop: "1px solid var(--border)",
-                        }}
-                      >
-                        <strong style={{ color: "var(--accent-strong)" }}>{t(nameKey)}</strong>
-                        <span style={{ color: "var(--text-muted)", lineHeight: 1.55 }}>{t(textKey)}</span>
+                      <div key={nameKey} className="home-product-map-row">
+                        <strong className="home-product-map-label">{t(nameKey)}</strong>
+                        <span className="home-product-map-text">{t(textKey)}</span>
                       </div>
                     ))}
                   </div>
