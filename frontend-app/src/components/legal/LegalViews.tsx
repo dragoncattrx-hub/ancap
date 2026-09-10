@@ -52,6 +52,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/market-data", key: "marketDataLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
+    { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
   return (
     <>
@@ -84,6 +85,7 @@ export function LegalHubView() {
     { href: "/legal/market-data", title: "marketDataLink", body: "hubCardMarketData" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
+    { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
   ] as const;
   return (
@@ -128,7 +130,7 @@ export function LegalHubView() {
 
 export function TermsView() {
   const { t } = useLanguage();
-  const sections = Array.from({ length: 18 }, (_, i) => i + 1);
+  const sections = Array.from({ length: 19 }, (_, i) => i + 1);
   return (
     <LegalShell
       kickerClass="border-white/10 bg-white/[0.03]"
@@ -343,6 +345,89 @@ export function CyberDefenseView() {
   );
 }
 
+export function ClarityActView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.clarityKicker")}
+      title={t("legal.clarityTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.clarityIntro")}`}
+      actions={
+        <>
+          <a
+            href="https://www.congress.gov/bill/119th-congress/house-bill/3633"
+            className="rounded-full border border-amber-400/30 px-5 py-2.5 text-sm font-semibold text-amber-100 transition hover:border-amber-300/60 hover:text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("legal.clarityBillLink")}
+          </a>
+          <a
+            href="https://x.com/BitcoinMagazine/status/2098137780610097201"
+            className="rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/40 hover:text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("legal.clarityNewsLink")}
+          </a>
+          <LegalNavPills current="/legal/clarity-act" />
+        </>
+      }
+    >
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.clarityStatementTitle")}</h2>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.clarityStatement1")}</p>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.clarityStatement2")}</p>
+      </section>
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.clarityP${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.clarityP${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.clarityCommitTitle")}</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <article key={n} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <h3 className="text-base font-semibold">{t(`legal.clarityC${n}Title`)}</h3>
+              <p className="mt-2 text-sm leading-7 text-white/70">{t(`legal.clarityC${n}Body`)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="mt-6 rounded-2xl border border-sky-300/15 bg-sky-400/[0.055] p-5">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.clarityScopeTitle")}</h2>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.clarityScope1")}</p>
+        <p className="mt-3 text-sm leading-7 text-white/70">
+          {t("legal.clarityScope2")}{" "}
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100"
+            href="https://www.congress.gov/bill/119th-congress/house-bill/3633"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            congress.gov — H.R. 3633
+          </a>
+          {" · "}
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100"
+            href="https://x.com/BitcoinMagazine/status/2098137780610097201"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            x.com/BitcoinMagazine
+          </a>
+          .
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function MarketDataDisclosureView() {
   const { t } = useLanguage();
   return (
@@ -397,6 +482,7 @@ export function SiteLegalFooter() {
     { href: "/legal/risk", label: "footerRisk" },
     { href: "/legal/market-data", label: "footerMarketData" },
     { href: "/legal/refunds", label: "footerRefunds" },
+    { href: "/legal/clarity-act", label: "footerClarity" },
   ] as const;
   return (
     <footer

@@ -32,6 +32,22 @@ export default function CompliancePage() {
             </Link>
             .
           </li>
+          <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <strong className="text-white">CLARITY Act — full agreement:</strong> ANCAP states its full agreement with the market-structure goals of the U.S. Digital Asset Market Clarity Act (H.R. 3633), including clearer SEC/CFTC jurisdictional lines. This is a public policy endorsement, not a claim the bill is already law. See{" "}
+            <Link href="/legal/clarity-act" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100">
+              /legal/clarity-act
+            </Link>{" "}
+            and public notice of the{" "}
+            <a
+              href="https://x.com/BitcoinMagazine/status/2098137780610097201"
+              className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              updated text ahead of floor consideration
+            </a>
+            .
+          </li>
         </ul>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/legal" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
@@ -51,6 +67,9 @@ export default function CompliancePage() {
           </Link>
           <Link href="/legal/cyber-defense" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
             Cyber defense
+          </Link>
+          <Link href="/legal/clarity-act" className="rounded-full border border-amber-400/25 px-5 py-2.5 text-sm font-semibold text-amber-100">
+            CLARITY Act
           </Link>
         </div>
       </main>
