@@ -328,7 +328,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Рыночные данные",
     researchRefsLink: "Научные ссылки",
     hubCardResearchRefs:
-      "Сторонние научные инструменты, которые мы цитируем (включая ZEISS Lightfield 4D) — товарные знаки у правообладателей; без аффилиации.",
+      "Сторонние научные источники (ZEISS Lightfield 4D, iXBT Live про квантовый парадокс защиты данных) — товарные знаки у правообладателей; без аффилиации.",
     footerResearchRefs: "Научные ссылки",
     researchRefsKicker: "Сторонние источники",
     researchRefsTitle: "Научные ссылки и цитирование приборов",
