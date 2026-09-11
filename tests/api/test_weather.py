@@ -32,7 +32,7 @@ def test_weather_current_fallback_without_key(client, monkeypatch):
             "realfeel_c": 11.0,
             "weather_text": "Cloudy",
             "weather_icon": 7,
-            "weather_icon_url": "https://www.accuweather.com/images/weathericons/07-s.png",
+            "weather_icon_url": "https://www.awxcdn.com/adc-assets/images/weathericons/7.svg",
             "wind_kmh": 8.0,
             "relative_humidity": 70,
             "observed_at": None,

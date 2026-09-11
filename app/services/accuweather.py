@@ -67,7 +67,10 @@ def _icon_url(icon: Any) -> str | None:
         n = int(icon)
     except (TypeError, ValueError):
         return None
-    return f"https://www.accuweather.com/images/weathericons/{n:02d}-s.png"
+    if n < 1 or n > 44:
+        return None
+    # AccuWeather moved icons to awxcdn; www.accuweather.com/images/weathericons/*.png now 403s.
+    return f"https://www.awxcdn.com/adc-assets/images/weathericons/{n}.svg"
 
 
 def _wmo_text(code: Any) -> str:

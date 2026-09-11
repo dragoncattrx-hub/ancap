@@ -319,7 +319,16 @@ export function FloatingEarthSupportWidget() {
               <div className="mt-2 flex items-center gap-2">
                 {weather?.iconUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={weather.iconUrl} alt="" width={38} height={38} className="h-[38px] w-[38px]" />
+                  <img
+                    src={weather.iconUrl}
+                    alt=""
+                    width={38}
+                    height={38}
+                    className="h-[38px] w-[38px]"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
                 ) : null}
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-baseline gap-x-2">
