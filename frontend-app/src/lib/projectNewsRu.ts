@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "saliva-rx-desk",
+    date: "2026-09-11",
+    title: "Saliva Rx — анализ слюны + персональный Rx",
+    summary:
+      "Новый /saliva-rx: пайплайн слюна → multi-omics → индивидуальный дизайн препарата → лицензированный compounding/synthesis. Не медицина и не гарантия излечения. Юр. заметка: /legal/saliva-rx-notice.",
+    href: "/saliva-rx",
+  },
+  {
     id: "gitlab-cve-2026-85706",
     date: "2026-09-11",
     title: "GitLab CVSS 10 — проверка ANCAP",

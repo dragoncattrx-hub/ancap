@@ -101,6 +101,7 @@ from app.api.routers import (
     cryo_desk,
     literary_auction,
     quantum_sim,
+    saliva_rx,
 )
 
 settings = get_settings()
@@ -294,6 +295,7 @@ ALL_ROUTERS = [
     cryo_desk.router,
     literary_auction.router,
     quantum_sim.router,
+    saliva_rx.router,
 ]
 
 for r in ALL_ROUTERS:

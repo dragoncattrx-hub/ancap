@@ -590,6 +590,12 @@ export const quantumSimDesk = {
   },
 };
 
+export const salivaRxDesk = {
+  async catalog() {
+    return apiFetch("/saliva-rx/catalog");
+  },
+};
+
 export const serviceReviews = {
   async list(params: {
     target_type?: string;

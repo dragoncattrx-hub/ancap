@@ -1,10 +1,6 @@
-﻿GitLab CVSS 10 (CVE-2026-85706) - ANCAP check
+﻿Saliva Rx desk live on ANCAP
 
-Self-managed GitLab: unauthenticated file read if any public project exists. Probes in the wild hours after disclosure.
+Saliva multi-omics -> individualized formulation briefs -> licensed compounding/synthesis partners. ACP intents only. Not a cure warranty. Not medical advice.
 
-ANCAP write path is GitHub + SourceCraft mirror - not self-managed GitLab. No ancap.cloud runtime patch required.
-
-If you run GitLab yourself: upgrade to 19.1.8 / 19.2.6 / 19.3.2 now; hunt POST /api/v4/projects/*/repository/commits/ with file.path; rotate secrets if exposed.
-
-https://ancap.cloud/
-https://thehackernews.com/2026/09/gitlab-cvss-10-file-read-flaw-draws-in.html
+https://ancap.cloud/saliva-rx
+https://ancap.cloud/legal/saliva-rx-notice
