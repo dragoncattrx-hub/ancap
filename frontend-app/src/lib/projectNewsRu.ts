@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "dna-rna-bank",
+    date: "2026-09-11",
+    title: "Цифровой банк ДНК и РНК",
+    summary:
+      "Отдельный сейф /dna-bank: метаданные ДНК/РНК at-rest AES-256-GCM + HKDF-SHA384 (v1). Полные геномы не принимаются.",
+    href: "/dna-bank",
+  },
+  {
     id: "ancap-ai-agency",
     date: "2026-09-11",
     title: "ANCAP AI Agency",

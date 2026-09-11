@@ -2118,6 +2118,33 @@ class DigitalPassportEducationDoc(Base):
     owner = relationship("User", foreign_keys=[owner_user_id])
 
 
+class DnaRnaBankEntry(Base):
+    """Encrypted DNA/RNA bank vault (AES-256-GCM + HKDF-SHA384 v1). Never store full genomes."""
+
+    __tablename__ = "dna_rna_bank_entries"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    molecule = Column(String(16), nullable=False, index=True)
+    entry_type = Column(String(64), nullable=False, index=True)
+    title_hint = Column(String(200), nullable=False)
+    species_hint = Column(String(120), nullable=True)
+    cipher_id = Column(String(80), nullable=False)
+    nonce_b64 = Column(Text, nullable=False)
+    ciphertext_b64 = Column(Text, nullable=False)
+    content_hash = Column(String(120), nullable=False, index=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])
+
+
 class OrganizationNfcPolicy(Base):
     __tablename__ = "organization_nfc_policies"
 

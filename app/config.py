@@ -389,6 +389,9 @@ class Settings(BaseSettings):
     # Optional dedicated master key for education-doc ChaCha20-Poly1305 (v2).
     # Falls back to SECRET_KEY-derived material when empty.
     passport_docs_master_key: str = ""
+    # Optional dedicated master key for DNA/RNA bank AES-256-GCM + HKDF-SHA384 (v1).
+    dna_rna_bank_master_key: str = ""
+    ff_dna_rna_bank: bool = True
 
     # Economy desks (insurance/arena) — record_only until ledger rails land
     economy_desk_settlement_mode: str = "record_only"  # record_only | ledger
