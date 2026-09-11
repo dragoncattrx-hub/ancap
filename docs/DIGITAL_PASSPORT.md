@@ -39,15 +39,28 @@ ChainAnchor mirror (ACP L3)
 | `DIGITAL_PASSPORT_CONTRACT` | Deployed contract address |
 | `DIGITAL_PASSPORT_MINTER_PRIVATE_KEY` | Minter EOA (or reuse bridge key in dev) |
 | `DIGITAL_PASSPORT_BSC_RPC_URL` | Optional override; falls back to `BRIDGE_BSC_RPC_URL` |
+| `PASSPORT_DOCS_MASTER_KEY` | Optional dedicated key for education-doc encryption; else HKDF from `SECRET_KEY` |
 
 API:
 
 - `GET /v1/passports/me`
 - `GET /v1/passports/{id}`
 - `GET /v1/passports/{id}/metadata` (public tokenURI payload)
+- `GET /v1/passports/education/cipher` (public cipher metadata)
+- `GET|POST /v1/passports/{id}/education-docs` (encrypted education vault)
+- `GET|DELETE /v1/passports/{id}/education-docs/{doc_id}`
 - `POST /v1/passports/organizations/{org_id}/issue`
 - `POST /v1/organizations/{org_id}/identity/members/{user_id}/passport`
 - `POST /v1/passports/{id}/revoke`
+
+### Education documents (encrypted at rest)
+
+Off-chain vault for diplomas / certificates / transcripts / degrees / licenses attached to an active passport.
+
+- Cipher: **ChaCha20-Poly1305** with **HKDF-SHA256** (`cipher_id=chacha20poly1305-hkdf-sha256-v2`)
+- Distinct from wallet AES-GCM and mail-account AES-GCM
+- Plaintext fields never leave the API unencrypted in DB; list endpoints return hints + content hash only
+- Web UI: `/passport`
 
 Revoke is triggered automatically when member status → `suspended` or `revoked`.
 
@@ -73,7 +86,8 @@ See [`docs/mobile/BIOHAX_NFC.md`](mobile/BIOHAX_NFC.md).
 
 ## Related
 
-- Migration: `066_digital_passport`
-- Models: `DigitalPassport` in `app/db/models.py`
-- Service: `app/services/digital_passport.py`
+- Migrations: `066_digital_passport`, `072_passport_education_docs`
+- Models: `DigitalPassport`, `DigitalPassportEducationDoc` in `app/db/models.py`
+- Crypto: `app/services/passport_crypto.py`
+- Service: `app/services/digital_passport.py`, `app/services/passport_education.py`
 - Router: `app/api/routers/digital_passport.py`

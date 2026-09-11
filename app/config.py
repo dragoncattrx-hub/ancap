@@ -386,6 +386,9 @@ class Settings(BaseSettings):
     digital_passport_chain_id: str = "bsc"
     digital_passport_bsc_rpc_url: str = ""
     digital_passport_minter_private_key: str | None = None
+    # Optional dedicated master key for education-doc ChaCha20-Poly1305 (v2).
+    # Falls back to SECRET_KEY-derived material when empty.
+    passport_docs_master_key: str = ""
 
     # Economy desks (insurance/arena) — record_only until ledger rails land
     economy_desk_settlement_mode: str = "record_only"  # record_only | ledger

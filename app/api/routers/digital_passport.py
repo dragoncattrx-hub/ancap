@@ -12,7 +12,14 @@ from app.schemas.digital_passport import (
     DigitalPassportIssueRequest,
     DigitalPassportListResponse,
     DigitalPassportPublic,
+    PassportEducationCipherInfo,
+    PassportEducationDocCreate,
+    PassportEducationDocListResponse,
+    PassportEducationDocPublic,
+    PassportEducationDocSummary,
 )
+from app.services import passport_crypto
+from app.services import passport_education as edu_svc
 from app.services.digital_passport import explorer_url, issue_passport, resolve_nfc_credential, revoke_passport
 
 router = APIRouter(prefix="/passports", tags=["Digital Passport"])
@@ -43,6 +50,25 @@ def _passport_public(rec: DigitalPassport) -> DigitalPassportPublic:
         created_at=rec.created_at,
         explorer_url=explorer_url(rec.tx_hash),
     )
+
+
+def _edu_summary(rec) -> PassportEducationDocSummary:
+    return PassportEducationDocSummary(
+        id=str(rec.id),
+        passport_id=str(rec.passport_id),
+        doc_type=rec.doc_type,
+        title_hint=rec.title_hint,
+        institution_hint=rec.institution_hint,
+        cipher_id=rec.cipher_id,
+        content_hash=rec.content_hash,
+        created_at=rec.created_at,
+        updated_at=rec.updated_at,
+    )
+
+
+@router.get("/education/cipher", response_model=PassportEducationCipherInfo)
+async def education_cipher_info():
+    return PassportEducationCipherInfo(**edu_svc.cipher_info())
 
 
 @router.get("/me", response_model=DigitalPassportListResponse)
@@ -100,6 +126,104 @@ async def get_passport_metadata(passport_id: str, session: DbSession):
             {"trait_type": "claim_hash", "value": rec.claim_hash},
         ],
     }
+
+
+@router.get("/{passport_id}/education-docs", response_model=PassportEducationDocListResponse)
+async def list_education_docs(
+    passport_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    uid = _require_auth_user_id(user_id)
+    try:
+        pid = uuid.UUID(passport_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid passport_id") from exc
+    try:
+        rows = await edu_svc.list_docs(session, passport_id=pid, user_id=uid)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return PassportEducationDocListResponse(
+        items=[_edu_summary(r) for r in rows],
+        cipher_id=edu_svc.cipher_info()["cipher_id"],
+    )
+
+
+@router.post(
+    "/{passport_id}/education-docs",
+    response_model=PassportEducationDocPublic,
+    status_code=201,
+)
+async def create_education_doc(
+    passport_id: str,
+    body: PassportEducationDocCreate,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    uid = _require_auth_user_id(user_id)
+    try:
+        pid = uuid.UUID(passport_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid passport_id") from exc
+    try:
+        rec = await edu_svc.add_doc(session, passport_id=pid, user_id=uid, body=body)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    payload = passport_crypto.decrypt_payload(
+        ciphertext_b64=rec.ciphertext_b64,
+        nonce_b64=rec.nonce_b64,
+    )
+    return PassportEducationDocPublic(**_edu_summary(rec).model_dump(), payload=payload)
+
+
+@router.get(
+    "/{passport_id}/education-docs/{doc_id}",
+    response_model=PassportEducationDocPublic,
+)
+async def get_education_doc(
+    passport_id: str,
+    doc_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    uid = _require_auth_user_id(user_id)
+    try:
+        pid = uuid.UUID(passport_id)
+        did = uuid.UUID(doc_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid id") from exc
+    try:
+        rec, payload = await edu_svc.get_doc(
+            session, passport_id=pid, doc_id=did, user_id=uid, decrypt=True
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Failed to decrypt document") from exc
+    return PassportEducationDocPublic(**_edu_summary(rec).model_dump(), payload=payload or {})
+
+
+@router.delete("/{passport_id}/education-docs/{doc_id}", status_code=204)
+async def delete_education_doc(
+    passport_id: str,
+    doc_id: str,
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+):
+    uid = _require_auth_user_id(user_id)
+    try:
+        pid = uuid.UUID(passport_id)
+        did = uuid.UUID(doc_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid id") from exc
+    try:
+        await edu_svc.delete_doc(session, passport_id=pid, doc_id=did, user_id=uid)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return None
 
 
 @router.post(

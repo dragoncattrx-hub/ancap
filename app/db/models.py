@@ -2074,10 +2074,48 @@ class DigitalPassport(Base):
     user = relationship("User", foreign_keys=[user_id])
     org = relationship("Organization", foreign_keys=[org_id])
     nfc_credential = relationship("UserNfcCredential", foreign_keys=[nfc_credential_id])
+    education_docs = relationship(
+        "DigitalPassportEducationDoc",
+        back_populates="passport",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("ix_digital_passports_user_org", "user_id", "org_id"),
     )
+
+
+class DigitalPassportEducationDoc(Base):
+    """Encrypted education credentials attached to a digital passport (ChaCha20-Poly1305 v2)."""
+
+    __tablename__ = "digital_passport_education_docs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    passport_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("digital_passports.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    owner_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    doc_type = Column(String(64), nullable=False, index=True)
+    title_hint = Column(String(200), nullable=False)
+    institution_hint = Column(String(200), nullable=True)
+    cipher_id = Column(String(64), nullable=False)
+    nonce_b64 = Column(Text, nullable=False)
+    ciphertext_b64 = Column(Text, nullable=False)
+    content_hash = Column(String(80), nullable=False, index=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    passport = relationship("DigitalPassport", back_populates="education_docs")
+    owner = relationship("User", foreign_keys=[owner_user_id])
 
 
 class OrganizationNfcPolicy(Base):

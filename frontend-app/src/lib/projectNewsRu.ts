@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "passport-education-docs",
+    date: "2026-09-11",
+    title: "Паспорт: документы об образовании",
+    summary:
+      "Дипломы и сертификаты в Digital Passport — at-rest ChaCha20-Poly1305 (v2). UI /passport, API education-docs.",
+    href: "/passport",
+  },
+  {
     id: "crypto-benchmark",
     date: "2026-09-10",
     title: "Crypto Benchmark Scorecard",

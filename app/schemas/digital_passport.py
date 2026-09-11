@@ -1,8 +1,18 @@
 """Digital passport request/response schemas."""
 from datetime import datetime
-from typing import Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
+
+EducationDocType = Literal[
+    "diploma",
+    "certificate",
+    "transcript",
+    "degree",
+    "course_completion",
+    "license",
+    "other",
+]
 
 
 class DigitalPassportIssueRequest(BaseModel):
@@ -43,3 +53,48 @@ class DigitalPassportPublic(BaseModel):
 
 class DigitalPassportListResponse(BaseModel):
     items: list[DigitalPassportPublic]
+
+
+class PassportEducationDocCreate(BaseModel):
+    doc_type: EducationDocType = "diploma"
+    title: str = Field(..., min_length=1, max_length=200)
+    institution: Optional[str] = Field(None, max_length=200)
+    program: Optional[str] = Field(None, max_length=200)
+    credential_id: Optional[str] = Field(None, max_length=120)
+    issued_on: Optional[str] = Field(None, max_length=32, description="ISO date YYYY-MM-DD")
+    expires_on: Optional[str] = Field(None, max_length=32)
+    country: Optional[str] = Field(None, max_length=80)
+    grade: Optional[str] = Field(None, max_length=80)
+    notes: Optional[str] = Field(None, max_length=2000)
+    extra: Optional[dict[str, Any]] = None
+
+
+class PassportEducationDocSummary(BaseModel):
+    id: str
+    passport_id: str
+    doc_type: str
+    title_hint: str
+    institution_hint: Optional[str] = None
+    cipher_id: str
+    content_hash: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class PassportEducationDocPublic(PassportEducationDocSummary):
+    """Owner-only decrypted view."""
+
+    payload: dict[str, Any]
+
+
+class PassportEducationDocListResponse(BaseModel):
+    items: list[PassportEducationDocSummary]
+    cipher_id: str
+
+
+class PassportEducationCipherInfo(BaseModel):
+    cipher_id: str
+    algorithm: str
+    kdf: str
+    aad: str
+    note: str
