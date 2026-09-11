@@ -8,9 +8,9 @@ $envFile = Join-Path $root ".env.sourcecraft"
 if (-not (Test-Path $envFile)) { throw "Missing $envFile (SOURCECRAFT_TOKEN=...)" }
 
 $token = (Select-String -Path $envFile -Pattern '^SOURCECRAFT_TOKEN=(.+)$').Matches[0].Groups[1].Value.Trim()
-git fetch origin master 2>$null | Out-Null
+cmd /c "git fetch origin master >nul 2>&1"
 $gh = (git rev-parse origin/master).Trim()
-$scLine = git ls-remote "https://x-access-token:${token}@git.sourcecraft.dev/andrew-ptichka/ancap.git" refs/heads/master
+$scLine = cmd /c "git ls-remote https://x-access-token:${token}@git.sourcecraft.dev/andrew-ptichka/ancap.git refs/heads/master"
 $sc = ($scLine -split "\s+")[0]
 
 Write-Host "GitHub      $gh"

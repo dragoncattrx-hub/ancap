@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 import { createPasswordUserSession, seedAuthenticatedPage } from "./support/auth";
+import { dismissOverlays, seedQuietUi } from "./support/ui";
 
 test("golden path UI: seller→listing→buy→grant→run→seller dashboard", async ({ page, request }) => {
   const baseUrl =
@@ -27,14 +28,7 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   });
   const authHeaders = { Authorization: `Bearer ${token}` };
 
-  await page.addInitScript(() => {
-    try {
-      localStorage.setItem(
-        "ancap_cookie_consent_v1",
-        JSON.stringify({ necessary: true, analytics: false, marketing: false, savedAt: new Date().toISOString() }),
-      );
-    } catch {}
-  });
+  await seedQuietUi(page);
 
   // Bootstrap seller agent + strategy + version via API, then exercise listing/buy/run flow through the UI.
   const sellerRes = await request.post(`${apiBase}/agents`, {
@@ -98,22 +92,27 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   if (!sellerFunding.ok()) throw new Error(`seller funding failed: ${sellerFunding.status()} ${await sellerFunding.text()}`);
 
   await page.goto(`${baseUrl}/strategies/${strategyId}`);
+  await dismissOverlays(page);
   await expect(page.getByRole("heading", { name: new RegExp(strategyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(/1 total/i)).toBeVisible({ timeout: 15000 });
 
-  // Publish as listing
+  // Prefer the header CTA (sets latest version_id); fall back to per-version button.
+  const publishAsListing = page.getByRole("button", { name: /^publish as listing$/i });
   const publishListingBtn = page.getByRole("button", { name: /^publish listing$/i }).first();
-  await expect(publishListingBtn).toBeVisible({ timeout: 15000 });
-  await publishListingBtn.click({ force: true });
-  await expect(page.getByRole("heading", { name: /publish/i })).toBeVisible({ timeout: 15000 });
-  const publishModal = page.locator("div.card", { has: page.getByRole("heading", { name: /publish/i }) });
-  // Fill labeled fields so the flow stays stable as the modal evolves.
-  await publishModal.getByLabel(/price/i).fill("10");
+  const openBtn = (await publishAsListing.count()) ? publishAsListing : publishListingBtn;
+  await expect(openBtn).toBeVisible({ timeout: 15000 });
+  await openBtn.scrollIntoViewIfNeeded();
+  await dismissOverlays(page);
+  await openBtn.click();
+  await expect(page.getByRole("heading", { name: /^publish listing$/i })).toBeVisible({ timeout: 15000 });
+  const publishModal = page.locator("div.card", { has: page.getByRole("heading", { name: /^publish listing$/i }) });
+  await publishModal.getByLabel(/^price$/i).fill("10");
   await publishModal.getByLabel(/^currency$/i).fill("USD");
   const publishBtn = publishModal.getByRole("button", { name: /^publish$/i });
   await expect(publishBtn).toBeEnabled({ timeout: 15000 });
   await Promise.all([
     page.waitForURL(/\/listings/, { timeout: 20000 }),
-    publishBtn.click({ force: true }),
+    publishBtn.click(),
   ]);
 
   const listingCard = page.locator('a.card[href^="/listings/"]', {
