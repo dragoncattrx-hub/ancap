@@ -16,12 +16,9 @@ export async function seedQuietUi(page: Page) {
   });
 }
 
+/** Close open menus without navigating away from the current page. */
 export async function dismissOverlays(page: Page) {
   await page.keyboard.press("Escape").catch(() => undefined);
-  // Close any open nav mega-menus by clicking the brand/home area if present.
-  const brand = page.getByRole("link", { name: /^ancap$/i }).first();
-  if (await brand.count()) {
-    await brand.click({ force: true }).catch(() => undefined);
-  }
+  await page.mouse.move(0, 0).catch(() => undefined);
   await page.keyboard.press("Escape").catch(() => undefined);
 }
