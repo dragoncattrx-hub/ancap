@@ -19,6 +19,15 @@ Distinct from:
 | Wallet / mail credentials | AES-GCM (other KDF info) |
 | DNA/RNA bank | AES-256-GCM + HKDF-SHA384 v1 |
 
+## Interoperability boundary (not a DeFi silo)
+
+Cipher **namespaces are intentional isolation**, not a product silo against Aave/Maker-style protocols.
+
+- DNA/RNA and passport vaults hold **private application data**. They are not collateral adapters and do not share master keys with lending markets.
+- Cross-surface / DeFi interoperability happens via **explicit export envelopes**: decrypt locally → emit a redacted attestation or hash receipt → consume that receipt in a workflow or on-chain call. Cipher choice at rest does not need to match the DeFi protocol’s AEAD.
+- Performance variance (AES-GCM vs ChaCha20) stays inside the vault path; hot DeFi UX is unaffected because markets never decrypt vault blobs.
+- Goal: **security domains stay separate; interchange is typed and deliberate**, not ambient key reuse.
+
 ## Env
 
 | Env | Purpose |

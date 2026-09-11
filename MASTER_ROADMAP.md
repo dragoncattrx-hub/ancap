@@ -871,6 +871,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-XO8 | Exponential network growth levers | [x] `/growth/exponential` + compound quote — `(1+r)^depth × passport boost` |
 | P5-XO9 | ANCAP AI Agency (AI-sector ads) | [x] Home `#agency` promo block + `/agency` vertical (campaign packs, Telegram/X/email rails, ACP settle) |
 | P5-XO10 | Digital DNA/RNA bank | [x] `/dna-bank` + API `/v1/dna-rna-bank/*`, migration `073`, AES-256-GCM + HKDF-SHA384 (v1); no full genomes |
+| P5-XO11 | Legal entertainment worldwide desk | [x] `/entertainment` — licensed venues/festivals/lotteries/resorts by region + Arena on-platform; no grey books |
 | P5-XO9 | AuctionEscrow + TECH auction | [x] Foundry `contracts/auction-escrow` + `/tech-auction/*` + UI `/tech` — `docs/TECH_AUCTION_ESCROW.md` |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |

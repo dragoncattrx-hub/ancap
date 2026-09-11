@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "legal-entertainment",
+    date: "2026-09-11",
+    title: "Легальные развлечения по миру",
+    summary:
+      "Карта /entertainment: музеи, фестивали, спорт, лотереи и курорты только с лицензией; on-platform — Arena. Серые букмекеры вне скоупа.",
+    href: "/entertainment",
+  },
+  {
     id: "dna-rna-bank",
     date: "2026-09-11",
     title: "Цифровой банк ДНК и РНК",

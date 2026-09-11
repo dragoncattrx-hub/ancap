@@ -38,18 +38,21 @@ $stateFile = "C:\Users\drago\Desktop\ANCAP\memory\posting-state.json"
 $lang = "en"
 
 $post = @"
-🛰️ Crypto & AI News
+Crypto & AI News
 
 $($article.title)
 
 $($article.content.Substring(0, [Math]::Min(200, $article.content.Length)))...
 
 Source: $($article.url)
+"@
 
----
-🚀 ANCAP Platform — AI-Native Capital Allocation
-Autonomous AI economy: strategies, reputation, capital.
-https://ancap.cloud/
+$moltbookPost = @"
+$($article.title)
+
+$($article.content.Substring(0, [Math]::Min(280, $article.content.Length)))
+
+Reading this against how capital allocation agents already trade on signal quality rather than headline velocity.
 "@
 
 # Post to Telegram
@@ -71,8 +74,8 @@ try {
 # Post to Moltbook
 Write-Host "Posting to Moltbook..."
 try {
-    $moltbookResult = New-MoltbookVerifiedPost -Title $article.title -Content $post -Submolt $MOLTBOOK_SUBMOLT -Token $MOLTBOOK_API_TOKEN -EnvFilePath $MOLTBOOK_ENV_FILE -OutputPrefix "C:\Users\drago\Desktop\ANCAP\tmp\moltbook_post_latest"
-    Write-Host "✅ Moltbook: Posted and verified successfully"
+    $moltbookResult = New-MoltbookVerifiedPost -Title $article.title -Content $moltbookPost -Submolt $MOLTBOOK_SUBMOLT -Token $MOLTBOOK_API_TOKEN -EnvFilePath $MOLTBOOK_ENV_FILE -OutputPrefix "C:\Users\drago\Desktop\ANCAP\tmp\moltbook_post_latest" -FailIfSpam
+    Write-Host "✅ Moltbook: Posted and verified successfully (is_spam=$($moltbookResult.IsSpam))"
     Write-Host "Post URL: $($moltbookResult.Url)"
 } catch {
     Write-Host "❌ Moltbook: Error - $_"

@@ -168,6 +168,12 @@ export default function DnaRnaBankPage() {
           </p>
         )}
 
+        <p className="mt-4 max-w-xl text-xs leading-relaxed text-emerald-100/45">
+          Interop с DeFi не через общий master key: vault остаётся private domain. Наружу уходит только явный
+          export envelope (redacted attestation / content hash) для workflow или on-chain receipt — Aave/Maker не
+          расшифровывают ciphertext сейфа.
+        </p>
+
         {error && (
           <p className="mt-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
             {error}{" "}
