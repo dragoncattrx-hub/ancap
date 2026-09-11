@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "cryo-literary-reviews",
+    date: "2026-09-11",
+    title: "Крионика + литаукцион + отзывы",
+    summary:
+      "Новый /cryo: криоконсервация с research-протоколом по тихоходкам; партнёры КриоРус и Tomorrow.bio. Аукцион литработ /literary. Отзывы пользователей и ИИ по услугам. Юр. заметка: /legal/cryo-constitution.",
+    href: "/cryo",
+  },
+  {
     id: "perimeter-cleanup-abrams",
     date: "2026-09-11",
     title: "Уборка периметра + Abrams Suite-B сейф",

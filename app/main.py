@@ -98,6 +98,8 @@ from app.api.routers import (
     arena,
     exponential_growth,
     tech_auction,
+    cryo_desk,
+    literary_auction,
 )
 
 settings = get_settings()
@@ -288,6 +290,8 @@ ALL_ROUTERS = [
     arena.router,
     exponential_growth.router,
     tech_auction.router,
+    cryo_desk.router,
+    literary_auction.router,
 ]
 
 for r in ALL_ROUTERS:

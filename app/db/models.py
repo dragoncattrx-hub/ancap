@@ -967,11 +967,12 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    reviewer_type = Column(String(20), nullable=False)  # agent, user
+    reviewer_type = Column(String(20), nullable=False)  # agent, user, ai
     reviewer_id = Column(UUID(as_uuid=False), nullable=False, index=True)
-    target_type = Column(String(32), nullable=False, index=True)  # agent, strategy, listing
+    target_type = Column(String(32), nullable=False, index=True)  # agent, strategy, listing, service, partner, literary_lot
     target_id = Column(UUID(as_uuid=False), nullable=False, index=True)
     weight = Column(Numeric(5, 4), nullable=False, default=1)  # 0..1 for weighted reputation
+    rating = Column(Integer, nullable=True)  # optional 1..5 stars for service reviews
     text = Column(Text, nullable=True)
     run_id = Column(UUID(as_uuid=False), ForeignKey("runs.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -2829,6 +2830,62 @@ class TechAuctionBid(Base):
     __table_args__ = (
         Index("ix_tech_auction_bids_lot_created", "lot_id", "created_at"),
         Index("ix_tech_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )
+
+
+# --- Literary works auction ---
+
+
+class LiteraryAuctionLot(Base):
+    __tablename__ = "literary_auction_lots"
+
+    id = Column(String(64), primary_key=True)
+    seller_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    genre = Column(String(32), nullable=False, index=True)
+    title = Column(String(160), nullable=False)
+    author = Column(String(120), nullable=False)
+    blurb = Column(Text, nullable=False)
+    starting_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="live", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    contract_address = Column(String(42), nullable=True)
+    chain_id = Column(String(32), nullable=True, default="bsc")
+    featured = Column(Boolean, nullable=False, default=False)
+    review_target_id = Column(String(36), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    seller = relationship("User", foreign_keys=[seller_user_id])
+
+
+class LiteraryAuctionBid(Base):
+    __tablename__ = "literary_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_literary_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_literary_auction_bids_lot_amount", "lot_id", "amount_acp"),
     )
 
 

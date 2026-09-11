@@ -550,6 +550,82 @@ export const techAuction = {
   },
 };
 
+export const literaryAuction = {
+  async catalog() {
+    return apiFetch("/literary-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/literary-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async list(data: {
+    genre: string;
+    title: string;
+    author: string;
+    blurb: string;
+    starting_acp: string;
+    rights_acknowledged: boolean;
+  }) {
+    return apiFetch("/literary-auction/lots", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async placeBid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/literary-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const cryoDesk = {
+  async catalog() {
+    return apiFetch("/cryo/catalog");
+  },
+};
+
+export const serviceReviews = {
+  async list(params: {
+    target_type?: string;
+    target_id?: string;
+    reviewer_type?: string;
+    limit?: number;
+  }) {
+    const q = new URLSearchParams();
+    if (params.target_type) q.set("target_type", params.target_type);
+    if (params.target_id) q.set("target_id", params.target_id);
+    if (params.reviewer_type) q.set("reviewer_type", params.reviewer_type);
+    if (params.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return apiFetch(`/reviews${suffix}`);
+  },
+  async create(data: {
+    reviewer_type: string;
+    reviewer_id: string;
+    target_type: string;
+    target_id: string;
+    rating?: number;
+    text?: string;
+    weight?: number;
+  }) {
+    return apiFetch("/reviews", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async createAi(data: {
+    target_type: string;
+    target_id: string;
+    rating?: number;
+    focus?: string;
+  }) {
+    return apiFetch("/reviews/ai", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const perimeterCleanupDesk = {
   async cipher() {
     return apiFetch("/perimeter-cleanup/cipher");

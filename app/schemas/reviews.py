@@ -1,18 +1,32 @@
 """Review and Dispute schemas."""
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
 
 
+_REVIEWER = "^(agent|user|ai)$"
+_TARGET = "^(agent|strategy|listing|service|partner|literary_lot)$"
+
+
 class ReviewCreateRequest(BaseModel):
-    reviewer_type: str = Field(..., pattern="^(agent|user)$")
+    reviewer_type: str = Field(..., pattern=_REVIEWER)
     reviewer_id: str = Field(...)
-    target_type: str = Field(..., pattern="^(agent|strategy|listing)$")
+    target_type: str = Field(..., pattern=_TARGET)
     target_id: str = Field(...)
     weight: float = Field(1.0, ge=0, le=1)
+    rating: Optional[int] = Field(None, ge=1, le=5)
     text: Optional[str] = Field(None, max_length=2000)
     run_id: Optional[str] = None
+
+
+class AiReviewCreateRequest(BaseModel):
+    """Platform AI reviewer note for a service / partner / listing target."""
+
+    target_type: str = Field(..., pattern=_TARGET)
+    target_id: str = Field(...)
+    rating: int = Field(4, ge=1, le=5)
+    focus: Optional[str] = Field(None, max_length=240)
 
 
 class ReviewPublic(BaseModel):
@@ -22,6 +36,7 @@ class ReviewPublic(BaseModel):
     target_type: str
     target_id: str
     weight: float
+    rating: Optional[int] = None
     text: Optional[str] = None
     run_id: Optional[str] = None
     created_at: datetime

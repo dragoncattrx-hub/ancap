@@ -54,6 +54,29 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Canonical ZEISS links",
     researchRefsLinksBody:
       "Use these public ZEISS URLs. Prefer the product page if a deep link changes; the technology note describes instant volume acquisition for high-speed and gentle imaging.",
+    cryoLink: "Cryonics & constitutions",
+    hubCardCryo:
+      "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
+    footerCryo: "Cryonics",
+    cryoKicker: "Legal / longevity",
+    cryoTitle: "Cryopreservation, partners, and constitutional limits",
+    cryoIntro:
+      "How ANCAP frames cryonics intents, licensed partners, and tardigrade-inspired research protocols under applicable constitutions and health law as of 11 September 2026.",
+    cryo1Title: "1. Platform role",
+    cryo1Body:
+      "ANCAP provides ACP-settled intents, briefs, and partner handoff tooling. ANCAP does not operate cryonics storage facilities, clinical labs, or emergency SST teams. Physical cryopreservation is performed only by licensed partners under their own contracts and local law.",
+    cryo2Title: "2. Partners — КриоРус (KrioRus) and Tomorrow.bio",
+    cryo2Body:
+      "Verified partner listings currently include КриоРус (KrioRus, RU) and Tomorrow.bio (EU). Partner websites and agreements govern medical eligibility, consent, standby, and storage. Listing on ancap.cloud is not a warranty of clinical outcome or regulatory approval in every country.",
+    cryo3Title: "3. Tardigrade (тихоходки) blood / cryptobiosis",
+    cryo3Body:
+      "References to tardigrade blood or cryptobiosis are research-inspired protocol metadata for partner discussion. They are not an approved human transfusion product, drug, or DIY medical protocol. Do not attempt self-administration.",
+    cryo4Title: "4. Constitutions and supreme law (notice date)",
+    cryo4Body:
+      "Services are offered subject to the constitutions and supreme laws of the jurisdictions where users and licensed partners operate, as in force on 11 September 2026 — including the Constitution of the Russian Federation, the Basic Law (Grundgesetz) of the Federal Republic of Germany, the Constitution of Ukraine, and applicable EU and U.S. constitutional / fundamental-rights frameworks. Where a constitution or statute prohibits a cryonics activity, that prohibition controls; ANCAP will not facilitate unlawful acts.",
+    cryo5Title: "5. Not medical advice; user reviews",
+    cryo5Body:
+      "Catalog copy and AI/user reviews are informational. They are not medical, legal, or investment advice. Mandatory consumer and patient rights that cannot be waived remain unaffected.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardCyber: "Public policy endorsement of collective cyber defense.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -326,6 +349,29 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Канонические ссылки ZEISS",
     researchRefsLinksBody:
       "Используйте публичные URL ZEISS. Если deep link изменится, начинайте с product page; technology note описывает instant volume acquisition.",
+    cryoLink: "Крионика и конституции",
+    hubCardCryo:
+      "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
+    footerCryo: "Крионика",
+    cryoKicker: "Право / longevity",
+    cryoTitle: "Криоконсервация, партнёры и конституционные пределы",
+    cryoIntro:
+      "Как ANCAP оформляет крио-интенты, лицензированных партнёров и протоколы по тихоходкам в рамках действующих конституций и санитарного права на 11 сентября 2026.",
+    cryo1Title: "1. Роль платформы",
+    cryo1Body:
+      "ANCAP даёт ACP-расчёты интентов, брифы и handoff партнёрам. ANCAP не эксплуатирует криохранилища, клинические лаборатории и SST-команды. Физическую криоконсервацию выполняют только лицензированные партнёры по своим договорам и местному праву.",
+    cryo2Title: "2. Партнёры — КриоРус и Tomorrow.bio",
+    cryo2Body:
+      "В каталоге: КриоРус (RU) и Tomorrow.bio (EU). Медобследования, согласие, standby и хранение — по правилам партнёра. Листинг на ancap.cloud не гарантирует клинический исход и разрешения во всех странах.",
+    cryo3Title: "3. Кровь тихоходок / криптобиоз",
+    cryo3Body:
+      "Упоминания крови тихоходок и криптобиоза — research-метаданные для обсуждения с партнёром. Это не разрешённый продукт для трансфузии человеку и не DIY-протокол. Самолечение запрещено.",
+    cryo4Title: "4. Конституции и высшее право (дата уведомления)",
+    cryo4Body:
+      "Услуги предлагаются с учётом конституций и высшего права юрисдикций пользователей и партнёров по состоянию на 11 сентября 2026 — включая Конституцию РФ, Основной закон ФРГ (Grundgesetz), Конституцию Украины и применимые рамки ЕС и США. Если конституция или закон запрещают крионику, запрет имеет приоритет; ANCAP не содействует незаконным действиям.",
+    cryo5Title: "5. Не медицинский совет; отзывы",
+    cryo5Body:
+      "Каталог и отзывы пользователей/ИИ носят информационный характер. Это не медицинский, юридический или инвестиционный совет. Неотчуждаемые права потребителя/пациента сохраняются.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardCyber: "Публичная поддержка коллективной киберзащиты.",
     hubCardClarity: "Полное согласие с U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -593,6 +639,29 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Canonical ZEISS links",
     researchRefsLinksBody:
       "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+    cryoLink: "Cryonics & constitutions",
+    hubCardCryo:
+      "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
+    footerCryo: "Cryonics",
+    cryoKicker: "Legal / longevity",
+    cryoTitle: "Cryopreservation, partners, and constitutional limits",
+    cryoIntro:
+      "How ANCAP frames cryonics intents, licensed partners, and tardigrade-inspired research protocols under applicable constitutions and health law as of 11 September 2026.",
+    cryo1Title: "1. Platform role",
+    cryo1Body:
+      "ANCAP provides ACP-settled intents and partner handoff tooling. ANCAP does not operate cryonics facilities. Physical cryopreservation is performed only by licensed partners.",
+    cryo2Title: "2. Partners — KrioRus and Tomorrow.bio",
+    cryo2Body:
+      "Partner listings include КриоРус (KrioRus, RU) and Tomorrow.bio (EU). Partner contracts govern eligibility and storage. Listing is not a warranty of clinical outcome.",
+    cryo3Title: "3. Tardigrade blood / cryptobiosis",
+    cryo3Body:
+      "Tardigrade references are research-inspired metadata — not an approved human transfusion product or DIY protocol.",
+    cryo4Title: "4. Constitutions (notice date)",
+    cryo4Body:
+      "Subject to constitutions and supreme law where users and partners operate, as of 11 September 2026 (including RF, German Basic Law, Ukraine, EU/US frameworks). Unlawful cryonics activity is not facilitated.",
+    cryo5Title: "5. Not medical advice",
+    cryo5Body:
+      "Catalog copy and AI/user reviews are informational only. Mandatory consumer/patient rights remain unaffected.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardCyber: "Публічна підтримка колективного кіберзахисту.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -865,6 +934,29 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Canonical ZEISS links",
     researchRefsLinksBody:
       "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+    cryoLink: "Kryonik & Verfassungen",
+    hubCardCryo:
+      "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
+    footerCryo: "Kryonik",
+    cryoKicker: "Recht / Longevity",
+    cryoTitle: "Kryokonservierung, Partner und Verfassungsgrenzen",
+    cryoIntro:
+      "Wie ANCAP Kryonik-Intents, lizenzierte Partner und tardigradeninspirierte Research-Protokolle unter geltenden Verfassungen und Gesundheitsrecht zum 11. September 2026 einordnet.",
+    cryo1Title: "1. Plattformrolle",
+    cryo1Body:
+      "ANCAP bietet ACP-abgerechnete Intents und Partner-Handoff. ANCAP betreibt keine Kryoanlagen. Physische Kryokonservierung nur durch lizenzierte Partner.",
+    cryo2Title: "2. Partner — KrioRus und Tomorrow.bio",
+    cryo2Body:
+      "Partnerlisten umfassen КриоРус (KrioRus, RU) und Tomorrow.bio (EU). Partnerverträge regeln Eignung und Lagerung. Listing ist keine Erfolgsgarantie.",
+    cryo3Title: "3. Tardigradenblut / Kryptobiose",
+    cryo3Body:
+      "Tardigraden-Bezüge sind Research-Metadaten — kein zugelassenes Transfusionsprodukt und kein DIY-Protokoll.",
+    cryo4Title: "4. Verfassungen (Stand)",
+    cryo4Body:
+      "Unterliegt Verfassungen und Höchstrangrecht der Nutzer-/Partnerjurisdiktionen zum 11. September 2026 (u. a. RF, Grundgesetz, Ukraine, EU/US). Rechtswidrige Kryonik wird nicht unterstützt.",
+    cryo5Title: "5. Keine medizinische Beratung",
+    cryo5Body:
+      "Katalog und Nutzer-/KI-Reviews sind informativ. Zwingende Verbraucher-/Patientenrechte bleiben unberührt.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardCyber: "Öffentliche Unterstützung kollektiver Cyberabwehr.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -1136,6 +1228,29 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Canonical ZEISS links",
     researchRefsLinksBody:
       "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+    cryoLink: "冷凍與憲法",
+    hubCardCryo:
+      "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",
+    footerCryo: "冷凍",
+    cryoKicker: "法律 / 長壽",
+    cryoTitle: "冷凍保存、夥伴與憲法界限",
+    cryoIntro:
+      "ANCAP 如何在 2026 年 9 月 11 日有效之憲法與衛生法下，呈現冷凍意圖、授權夥伴與緩步類動物啟發之研究協議。",
+    cryo1Title: "1. 平台角色",
+    cryo1Body:
+      "ANCAP 提供 ACP 結算意圖與夥伴交接工具。ANCAP 不營運冷凍設施。實體冷凍僅由授權夥伴執行。",
+    cryo2Title: "2. 夥伴 — KrioRus 與 Tomorrow.bio",
+    cryo2Body:
+      "夥伴清單含 КриоРус（KrioRus，RU）與 Tomorrow.bio（EU）。資格與儲存由夥伴合約規範。上架非臨床結果保證。",
+    cryo3Title: "3. 緩步類動物血液／隱生",
+    cryo3Body:
+      "緩步類動物相關內容為研究元資料——非核准人體輸血產品，亦非 DIY 協議。",
+    cryo4Title: "4. 憲法（公告日）",
+    cryo4Body:
+      "受使用者與夥伴管轄區憲法與最高法拘束（截至 2026 年 9 月 11 日，含俄、德基本法、烏克蘭、歐盟／美國框架）。不法冷凍活動不予協助。",
+    cryo5Title: "5. 非醫療建議",
+    cryo5Body:
+      "目錄與使用者／AI 評論僅供資訊參考。強制消費者／患者權利不受影響。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardCyber: "公開支持集體網路防禦。",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
