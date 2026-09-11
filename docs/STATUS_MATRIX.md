@@ -125,21 +125,19 @@ Parallel trust/adoption track:
 
 ### C. Monetization depth
 
-**Status:** active major remaining area
+**Status:** depth in progress — **not a work-stop blocker** (ACP-first loop live)
 
 **Already true:**
 - first ACP-first workflow monetization loop exists in baseline form
 - creator/developer monetization surfaces exist in baseline form
+- creator earnings dashboard, API monetization depth, referrals, marketplace discovery, refunds — baseline done in `MASTER_ROADMAP.md` 4.2–4.8
+- Exchange ticket auth-settle + `/buy-acp` crypto-first path (2026-09-11)
 - repo automated Stripe webhook→ledger E2E verified: `docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md` (`pytest tests/api/test_payments.py -q` → 33 passed on 2026-07-02)
 - dated verification packet: `docs/stripe-verification-2026-07-02.md`
 
-**Still remaining:**
+**Still remaining (operator / optional depth):**
 - Stripe live dashboard / saved-card operator verification (Run B in verification packet still open)
-- creator earnings dashboard improvements
-- deeper API monetization reporting and spend controls
-- referral commission auto-payout ✅ baseline done (ledger reward issuance + optional on-chain payout jobs + jobs-tick execution)
-- marketplace search/filter/discovery depth ✅ baseline done
-- refund / dispute / chargeback flows ✅ baseline done (refund request model/API, user run-detail submission/status, admin approve/reject review queue)
+- further conversion polish / LTV levers (Priority 7 deferred)
 
 **Truth source:** `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md`
 
