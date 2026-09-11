@@ -869,6 +869,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-XO6 | ACP Insurance desk (universal parametric cover) | [x] `/insurance/*` + UI `/insurance` — `docs/ECONOMY_INSURANCE_ARENA.md` (record-only settlement; claim expiry + rate limits) |
 | P5-XO7 | ACP Arena prediction + house games | [x] `/arena/*` + UI `/arena` — commit-reveal house games (`/house/commit` → `/house/reveal`) |
 | P5-XO8 | Exponential network growth levers | [x] `/growth/exponential` + compound quote — `(1+r)^depth × passport boost` |
+| P5-XO9 | ANCAP AI Agency (AI-sector ads) | [x] Home `#agency` promo block + `/agency` vertical (campaign packs, Telegram/X/email rails, ACP settle) |
 | P5-XO9 | AuctionEscrow + TECH auction | [x] Foundry `contracts/auction-escrow` + `/tech-auction/*` + UI `/tech` — `docs/TECH_AUCTION_ESCROW.md` |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |

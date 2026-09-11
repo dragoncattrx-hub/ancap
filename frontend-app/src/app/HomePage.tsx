@@ -8,6 +8,7 @@ import { HomeMarketTicker } from "@/components/HomeMarketTicker";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { HomeGalaxySection } from "@/components/HomeGalaxySection";
+import { HomeAgencySection } from "@/components/HomeAgencySection";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SiteLegalFooter } from "@/components/legal/LegalViews";
 
@@ -66,6 +67,7 @@ const productRoutes = [
   { titleKey: "homePage.routeAcpWallet", href: "/wallet/acp", textKey: "homePage.route6Text" },
   { titleKey: "homePage.routeSellerDashboard", href: "/dashboard/seller", textKey: "homePage.route7Text" },
   { titleKey: "homePage.routeGalaxy", href: "/galaxy", textKey: "homePage.galaxyCta" },
+  { titleKey: "agencyPage.nav", href: "/agency", textKey: "agencyPage.homeLead" },
 ];
 
 const socialLinks = [
@@ -273,6 +275,8 @@ export function HomePage() {
           </section>
 
           <HomeMarketTicker />
+
+          <HomeAgencySection />
 
           <HomeGalaxySection />
 
