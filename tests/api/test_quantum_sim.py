@@ -12,3 +12,8 @@ def test_quantum_sim_catalog(client):
     assert "ixbt.com" in body["research_ref"]["url"]
     layers = {m["id"] for m in body["mesh_layers"]}
     assert {"satellite", "bts", "repeater"} <= layers
+    principles = body.get("principles") or []
+    assert len(principles) >= 8
+    ids = {p["id"] for p in principles}
+    assert {"P1", "P3", "P5", "P8"} <= ids
+    assert "0 + 0" in principles[2]["title"] or "superadditivity" in principles[2]["title"].lower()

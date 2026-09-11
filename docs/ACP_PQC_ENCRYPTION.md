@@ -92,6 +92,12 @@ authentication.
 - HQC remains a future backup candidate, not a deployed dependency: NIST
   selected it for standardization, but the final standard is expected later.
 
+## Related literacy
+
+Multi-path / private-capacity principles for `/quantum-sim` (Zhu–Wang superadditivity
+as publicly reported via iXBT Live — no affiliation):  
+[QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md](QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md).
+
 ## Next gates
 
 1. Independent design and implementation review.

@@ -25,11 +25,19 @@ class QuantumSimResearchRefPublic(BaseModel):
     note: str
 
 
+class QuantumSimPrinciplePublic(BaseModel):
+    id: str
+    title: str
+    body: str
+
+
 class QuantumSimCatalogPublic(BaseModel):
     title: str
     tagline: str
     compliance_note: str
     research_ref: QuantumSimResearchRefPublic
+    principles: list[QuantumSimPrinciplePublic] = Field(default_factory=list)
+    principles_doc: str = "docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md"
     legal_href: str = "/legal/research-refs"
     services: list[QuantumSimServicePublic]
     mesh_layers: list[QuantumSimMeshLayerPublic] = Field(default_factory=list)

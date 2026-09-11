@@ -16,13 +16,16 @@ type Service = {
 };
 
 type MeshLayer = { id: string; label: string; role: string };
+type Principle = { id: string; title: string; body: string };
 
 type Catalog = {
   title: string;
   tagline: string;
   compliance_note: string;
   legal_href: string;
+  principles_doc?: string;
   research_ref: { id: string; title: string; url: string; note: string };
+  principles?: Principle[];
   services: Service[];
   mesh_layers: MeshLayer[];
 };
@@ -81,6 +84,26 @@ export default function QuantumSimPage() {
             </a>
             <p className="mt-2 text-sm text-slate-500">{catalog.research_ref.note}</p>
           </aside>
+        ) : null}
+
+        {(catalog?.principles || []).length ? (
+          <section className="mt-10">
+            <h2 className="text-xl text-white">Principles (P1–P8)</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Engineering literacy for multi-path secrecy — not a QKD warranty.
+              {catalog?.principles_doc ? ` Repo: ${catalog.principles_doc}` : null}
+            </p>
+            <ul className="mt-4 space-y-4">
+              {catalog!.principles!.map((p) => (
+                <li key={p.id} className="border-t border-white/10 pt-3">
+                  <h3 className="text-base text-emerald-200/90">
+                    {p.id} — {p.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-300">{p.body}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
         ) : null}
 
         {error ? <p className="mt-4 text-sm text-rose-400">{error}</p> : null}
