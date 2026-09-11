@@ -154,3 +154,9 @@ ACP-crypto/target-lean/
 .env.mail*
 .env.mail-support
 
+
+.env.instantly
+
+
+.env.sourcecraft
+.env.moltbook

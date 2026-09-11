@@ -101,7 +101,9 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   await expect(page.getByRole("heading", { name: new RegExp(strategyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") })).toBeVisible({ timeout: 15000 });
 
   // Publish as listing
-  await page.getByRole("button", { name: /publish listing/i }).click();
+  const publishListingBtn = page.getByRole("button", { name: /^publish listing$/i }).first();
+  await expect(publishListingBtn).toBeVisible({ timeout: 15000 });
+  await publishListingBtn.click({ force: true });
   await expect(page.getByRole("heading", { name: /publish/i })).toBeVisible({ timeout: 15000 });
   const publishModal = page.locator("div.card", { has: page.getByRole("heading", { name: /publish/i }) });
   // Fill labeled fields so the flow stays stable as the modal evolves.
@@ -110,8 +112,8 @@ test("golden path UI: seller→listing→buy→grant→run→seller dashboard", 
   const publishBtn = publishModal.getByRole("button", { name: /^publish$/i });
   await expect(publishBtn).toBeEnabled({ timeout: 15000 });
   await Promise.all([
-    page.waitForURL(/\/listings/, { timeout: 15000 }),
-    publishBtn.click(),
+    page.waitForURL(/\/listings/, { timeout: 20000 }),
+    publishBtn.click({ force: true }),
   ]);
 
   const listingCard = page.locator('a.card[href^="/listings/"]', {

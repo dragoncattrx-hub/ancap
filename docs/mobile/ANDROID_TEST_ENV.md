@@ -14,6 +14,10 @@
 
 ```powershell
 powershell -NoProfile -File ancap-mobile/scripts/start-android-test-env.ps1
+# hung / high-CPU qemu: soft restart
+powershell -NoProfile -File ancap-mobile/scripts/start-android-test-env.ps1 -Restart
+# factory reset AVD data if still broken
+powershell -NoProfile -File ancap-mobile/scripts/start-android-test-env.ps1 -WipeData
 cd ancap-mobile/apps/acp-wallet-expo
 npx expo run:android
 ```

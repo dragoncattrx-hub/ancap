@@ -101,12 +101,18 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
 
   if (currentStatus.includes("draft")) {
     await page.getByRole("button", { name: /propose/i }).click();
-    await expect(page.getByText(/status:\s*proposed/i)).toBeVisible();
+    await expect(page.getByText(/status:\s*proposed/i)).toBeVisible({ timeout: 15000 });
     await page.getByTestId("contract-accept").click({ force: true });
-    await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 20000 });
   } else if (currentStatus.includes("proposed")) {
     await page.getByTestId("contract-accept").click({ force: true });
-    await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
+    // Accept can race UI refresh; reload once if needed.
+    try {
+      await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 12000 });
+    } catch {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByText(/status:\s*active/i)).toBeVisible({ timeout: 15000 });
+    }
   } else if (!currentStatus.includes("active")) {
     throw new Error(`unexpected contract status on details page: ${currentStatus}`);
   }

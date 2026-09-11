@@ -20,7 +20,7 @@ def test_sacp_public_status_shape():
 def test_sacp_reserve_proof_stub():
     import asyncio
 
-    proof = asyncio.get_event_loop().run_until_complete(sacp_svc.reserve_proof(None))
+    proof = asyncio.run(sacp_svc.reserve_proof(None))
     assert proof["reserve_health"] in {"ok", "unknown", "not_configured", "disabled", "paused"}
     assert proof["sacp_circulating"] == "0"
 
