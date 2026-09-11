@@ -48,21 +48,21 @@
 
 - Primary device evidence file: **pending** (`docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`)
 - Device matrix summary:
-  - Android emulator: **pending**
+  - Android emulator: **ready** — AVD `Pixel_10_Pro` / `emulator-5554` (2026-09-11); `ancap-mobile/scripts/start-android-test-env.ps1`
   - Android physical primary phone: **pending**
   - Android secondary OEM phone: **pending**
   - iOS simulator: **pending** (blocked on P1-7 macOS packaging)
   - iOS physical iPhone: **pending**
-- Native create/send/sign/broadcast verdict: **pending real runtime**
-- PIN / biometrics / SecureVault verdict: **pending real hardware**
-- Remaining device blockers: real Android Expo runtime, iOS native packaging, MASVS L1 on-device verification
+- Native create/send/sign/broadcast verdict: **pending Expo run on emulator**
+- PIN / biometrics / SecureVault verdict: **pending real hardware** (emulator covers non-biometric smoke)
+- Remaining device blockers: physical Android + iOS packaging; **local emulator test env is ready** (`docs/mobile/ANDROID_TEST_ENV.md`)
 
 ## Internal distribution evidence
 
 ### Play Console Internal testing
 
 - Upload status: **pending**
-- Blocking issues: device verification + signed release artifact
+- Blocking issues: signed release AAB + Play Console credentials (local emulator test env is **not** a blocker)
 
 ### TestFlight
 

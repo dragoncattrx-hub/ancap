@@ -59,17 +59,23 @@ Key identities:
 ## Current Phase
 
 Phase 6 — ACP Mobile Wallet MVP (in progress). Active items:
-- `[ ]` PIN + biometrics (`expo-local-authentication`)
-- `[ ]` SecureVault wiring (walletd fallback until native FFI ready)
-- `[ ]` i18n EN/RU/UK/DE (`i18next`)
-- `[ ]` MASVS L1 checklist
+- `[~]` PIN + biometrics (`expo-local-authentication`) — code wired; physical-device sign-off open
+- `[~]` SecureVault wiring (walletd fallback until native FFI ready) — code wired; physical sign-off open
+- `[x]` i18n EN/RU/UK/DE (`i18next`)
+- `[~]` MASVS L1 checklist — repo baseline closed; physical sign-off open
 - `[x]` Exchange office foundation — ACP-hub multi-asset catalog/quote/tickets + Expo Exchange tab (`docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md`); ticket settle + auto rails next
 - `[x]` OTC commodities rail (oil/gas/uranium/timber/sand/stone/ores) + Markets AI prediction workflows (`/ai/workflows`)
 - `[ ]` React Flow strategy canvas (Phase 7, after builder API stable)
 
-Blocked (needs Android native build):
-- Create wallet via native FFI → run `build-android-native.ps1`
-- Send + sign via native FFI
+Local Android test env (**blocker cleared 2026-09-11**):
+- AVD `Pixel_10_Pro` + `ancap-mobile/scripts/start-android-test-env.ps1`
+- Docs: `docs/mobile/ANDROID_TEST_ENV.md`
+- Do **not** report “no device / no test environment” as a work-stop blocker
+
+Still open (operator follow-up, not freeze):
+- Create/send/sign smoke on emulator via `npx expo run:android`
+- Play Internal / TestFlight uploads
+- iOS native build (`build-ios-native.ps1` on macOS)
 
 Phase 7 CI: Playwright smoke in CI (needs separate job with backend service).
 

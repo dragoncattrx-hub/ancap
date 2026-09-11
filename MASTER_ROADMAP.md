@@ -18,7 +18,7 @@ Completed in the `2026-07-01` hardening deploy:
 - **CI fail-closed**: `deploy-ancap-cloud.yml` and `system-jobs-tick.yml` now exit non-zero when required secrets are missing; `docs-ci.yml` triggers on `master` as well as `main`
 - **Stripe repo E2E**: `docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md` (`pytest tests/api/test_payments.py -q` → 33 passed); packet `docs/stripe-verification-2026-07-02.md`
 - **Smart Pay**: shared OCR/receipt heuristics (`app/services/payment_text_parse.py`), web `/payment-scanner` OCR mode, mobile `ocr` parse source, execution `routePlan` for non-custodial signing steps
-- **Mobile release evidence**: `docs/mobile/release-evidence-v1.0.0-rc1.md` (repo-verified slice; device/store gates still open)
+- **Mobile release evidence**: `docs/mobile/release-evidence-v1.0.0-rc1.md` (repo-verified slice); **local Android test env unblocked** (`docs/mobile/ANDROID_TEST_ENV.md`, AVD `Pixel_10_Pro`); store uploads remain operator follow-up
 > Owner: ARDO
 > Rule: execute top-to-bottom by priority. Everything must be either DONE, in progress, intentionally deferred, or replaced by a better approved plan.
 > Source of truth: this is the only execution-priority roadmap. `PRODUCTION_ROADMAP.md`, `ROADMAP.md`, `ROADMAP-MONETIZATION.md`, and `docs/mobile/ROADMAP.md` are supporting or historical documents and must not override this file.
@@ -877,18 +877,18 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P5.5 | Biohax NFC + org identity + digital passport | [~] backend + `066_digital_passport` + `072_passport_education_docs` (ChaCha20-Poly1305 edu vault), soulbound BSC contract (`contracts/digital-passport/`), API `/v1/passports/*` + education-docs, web `/passport`, mobile Passport tab + NFC backend sync; admin web UI + DESFire still open — see `docs/DIGITAL_PASSPORT.md`, `docs/mobile/BIOHAX_NFC.md` |
-| P6-3 | Device matrix (iOS + Android) | [~] matrix/checklist doc added in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready verification-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |
-| P6-4 | TestFlight + Play Internal | [~] release-readiness checklist added in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |
+| P6-3 | Device matrix (iOS + Android) | [~] Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |
+| P6-4 | TestFlight + Play Internal | [~] local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |
 | P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
-| P6-6 | Production v1.0.0 | [~] final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
+| P6-6 | Production v1.0.0 | [~] Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |
 
 ### 5.2 Native-build-dependent items
 
 | ID | Task | Status / blocker |
 |----|------|------------------|
 | P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host with Android SDK/NDK installed, emitting `arm64-v8a`, `armeabi-v7a`, and `x86_64` `libacp_mobile_ffi.so` artifacts into `ancap-mobile/modules/expo-acp-core/android/src/main/jniLibs` |
-| P4-3 | Create wallet via FFI | [~] Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but runtime/device verification is still pending and iOS still depends on P1-7 |
-| P4-11 | Send + preview + sign | [~] Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
+| P4-3 | Create wallet via FFI | [~] Android native artifacts + host assemble OK; **local emulator online** (`Pixel_10_Pro`) — run Expo against it; iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] Android native artifacts + host assemble OK; **local emulator online** for runtime verification; iOS still depends on P1-7 |
 | P1-7 | iOS Swift UniFFI link | [~] Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode and verify packaged artifacts |
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)

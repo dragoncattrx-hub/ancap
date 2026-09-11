@@ -8,14 +8,14 @@
 Current truth:
 
 - The wallet repo already has the Expo app shell, API clients, security baseline, i18n, and most wallet UX.
-- The remaining gap is **not** feature ideation; it is **native-build and real-device verification**.
-- These runs have **not** been executed yet from this repo state.
+- **Local Android test environment is available** — AVD `Pixel_10_Pro` + `ancap-mobile/scripts/start-android-test-env.ps1` (see `docs/mobile/ANDROID_TEST_ENV.md`). Do not treat “no device / no test env” as a blocker.
+- Remaining release gates: physical-phone biometrics/MASVS, iOS/macOS packaging, Play/TestFlight uploads.
 
 ## Current blockers before full matrix execution
 
-1. **Android runtime verification** — `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host and emits `libacp_mobile_ffi.so` artifacts for `arm64-v8a`, `armeabi-v7a`, and `x86_64`, but Expo dev-client verification on emulator + physical Android devices is still pending.
+1. **Android physical + MASVS on-device** — emulator path is unblocked; physical Pixel-class + OEM phones still needed for biometrics truth.
 2. **iOS native packaging** — `ancap-mobile/scripts/build-ios-native.ps1` still requires macOS + Xcode for real packaging/verification.
-3. **Native signing path** — create/send/sign closure still depends on dev-client/runtime verification of the emitted Android artifacts plus the iOS native artifacts above.
+3. **Store uploads** — Play Internal / TestFlight are operator follow-ups, not a local coding stop.
 
 ## Required test surfaces
 
@@ -35,7 +35,7 @@ Current truth:
 
 | Platform | Device / class | OS target | Build type | Native core status | Required scenarios | Status | Notes |
 |---|---|---|---|---|---|---|---|
-| Android | Emulator (API 34+) | Android 14+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | import, receive, activity, Smart Pay beta, lock timer | [ ] | Use current `jniLibs` output and verify the dev client boots cleanly |
+| Android | Emulator (API 34+) | Android 14+ | Expo dev client | `.so` artifacts emitted; **AVD `Pixel_10_Pro` online** via `start-android-test-env.ps1` | import, receive, activity, Smart Pay beta, lock timer | [~] | Local test env ready 2026-09-11 — continue Expo `run:android` |
 | Android | Physical phone (Pixel-class) | Android 14+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | create, import, PIN, biometrics, send/sign/broadcast, background/resume | [ ] | Required for biometrics + secure storage truth |
 | Android | Secondary OEM phone | Android 13+ | Expo dev client | `.so` artifacts emitted on current Windows host; runtime verification pending | same as primary phone + manufacturer-specific storage behavior | [ ] | Catch OEM keystore quirks |
 | iOS | Simulator | iOS 17+ | Expo dev client | Pending macOS/Xcode packaging | import, receive, activity, layout sanity | [ ] | Useful for UI/regression, not enough for biometrics truth |

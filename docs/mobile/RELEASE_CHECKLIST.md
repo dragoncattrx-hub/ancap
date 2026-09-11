@@ -93,14 +93,12 @@ Do **not** mark P6-6 done until all of the following are true:
 
 ## Current blockers snapshot
 
-As of 2026-05-28, the main blockers are still external-execution gates, not missing repo planning. The remaining work should now land in two explicit artifacts rather than freeform notes:
+As of 2026-09-11:
+
+- **Cleared:** no local test environment / no Android device access — use `ancap-mobile/scripts/start-android-test-env.ps1` (`Pixel_10_Pro`). Details: `docs/mobile/ANDROID_TEST_ENV.md`.
+- **Still open (not a coding freeze):** Play Internal / TestFlight uploads, physical-phone biometrics/MASVS, iOS macOS packaging.
+
+Evidence packets:
 
 - per-device/runtime results in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`
 - final release/build/upload evidence in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`
-
-As of 2026-05-28, the main blockers are still external-execution gates, not missing repo planning:
-
-1. Android Expo dev-client/runtime verification on emulator + physical devices
-2. macOS/Xcode iOS packaging host
-3. physical device verification time
-4. final store-submission assets and operator/legal completion
