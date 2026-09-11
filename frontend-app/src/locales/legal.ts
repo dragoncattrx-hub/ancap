@@ -30,7 +30,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Market data",
     researchRefsLink: "Research references",
     hubCardResearchRefs:
-      "Third-party scientific instruments we cite (including ZEISS Lightfield 4D) — trademarks stay with their owners; no affiliation.",
+      "Third-party scientific instruments and quantum-info journalism we cite (ZEISS Lightfield 4D, iXBT Live) — trademarks stay with their owners; no affiliation.",
     footerResearchRefs: "Research refs",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -51,9 +51,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr5Title: "5. Not medical or clinical advice",
     rr5Body:
       "Instrument citations do not create medical, diagnostic, or clinical advice. AETERNA and DNA/RNA bank features remain research/workflow tooling with their own compliance notes. Always verify partner licenses and local law before any clinical use.",
-    researchRefsLinksTitle: "Canonical ZEISS links",
+    rr6Title: "6. Quantum information / data-protection research (iXBT Live)",
+    rr6Body:
+      "ANCAP cites the public iXBT Live article “0 + 0 > 0: ИИ помог доказать невозможный квантовый парадокс в защите данных” (superadditivity of private capacity; AI-assisted discovery with Lean 4 verification) as educational context for the quantum-link digital SIM desk. The article is third-party journalism; ANCAP is not affiliated with iXBT. Citation does not imply ownership of QKD hardware or a guaranteed private capacity on any ANCAP channel.",
+    researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use these public ZEISS URLs. Prefer the product page if a deep link changes; the technology note describes instant volume acquisition for high-speed and gentle imaging.",
+      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes and the iXBT quantum-info article are cited for literacy only.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
@@ -346,9 +349,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr5Title: "5. Не медицинский совет",
     rr5Body:
       "Цитирование приборов не является медицинским, диагностическим или клиническим советом. AETERNA и DNA/RNA bank остаются research/workflow tooling со своими compliance notes. Перед клиническим использованием проверяйте лицензии партнёров и местное право.",
-    researchRefsLinksTitle: "Канонические ссылки ZEISS",
+    rr6Title: "6. Квантовая информация / защита данных (iXBT Live)",
+    rr6Body:
+      "ANCAP цитирует публичную статью iXBT Live «0 + 0 > 0: ИИ помог доказать невозможный квантовый парадокс в защите данных» (супераддитивность приватной пропускной способности; поиск конфигурации с ИИ и проверка в Lean 4) как образовательный контекст для стола цифровой SIM с квантовой связью. Статья — сторонняя журналистика; ANCAP не аффилирован с iXBT. Цитата не означает владение QKD-железом и не гарантирует приватную ёмкость каналов ANCAP.",
+    researchRefsLinksTitle: "Канонические research-ссылки",
     researchRefsLinksBody:
-      "Используйте публичные URL ZEISS. Если deep link изменится, начинайте с product page; technology note описывает instant volume acquisition.",
+      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS и iXBT цитируются для грамотности, не как warranty продукта.",
     cryoLink: "Крионика и конституции",
     hubCardCryo:
       "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
@@ -636,9 +642,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr5Title: "5. Not medical or clinical advice",
     rr5Body:
       "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
-    researchRefsLinksTitle: "Canonical ZEISS links",
+    rr6Title: "6. Quantum information / data-protection research (iXBT Live)",
+    rr6Body:
+      "ANCAP cites the public iXBT Live article on an ‘impossible’ quantum paradox in data protection (private-capacity superadditivity; AI + Lean 4) as literacy for the quantum-link digital SIM desk. No affiliation with iXBT; no QKD warranty.",
+    researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+      "Use public publisher URLs. Prefer the source page if a deep link changes.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
@@ -931,9 +940,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr5Title: "5. Not medical or clinical advice",
     rr5Body:
       "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
-    researchRefsLinksTitle: "Canonical ZEISS links",
+    rr6Title: "6. Quanteninformation / Datenschutzforschung (iXBT Live)",
+    rr6Body:
+      "ANCAP zitiert den öffentlichen iXBT-Live-Artikel zum „unmöglichen“ Quantenparadoxon im Datenschutz als Bildungsrahmen für den Quantum-Link-SIM-Desk. Keine Affiliation mit iXBT; keine QKD-Garantie.",
+    researchRefsLinksTitle: "Kanonische Research-Links",
     researchRefsLinksBody:
-      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen.",
     cryoLink: "Kryonik & Verfassungen",
     hubCardCryo:
       "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
@@ -1204,7 +1216,7 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardMarketData: "ANCAP 如何使用 CoinGecko 等第三方報價——僅供參考。",
     footerMarketData: "市場數據",
     researchRefsLink: "研究引用",
-    hubCardResearchRefs: "我們引用的第三方科學儀器（含 ZEISS Lightfield 4D）——商標歸權利人，無隸屬關係。",
+    hubCardResearchRefs: "我們引用的第三方科學儀器與量子資訊報導（含 ZEISS Lightfield 4D、iXBT Live）——商標歸權利人，無隸屬關係。",
     footerResearchRefs: "研究引用",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -1225,9 +1237,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr5Title: "5. Not medical or clinical advice",
     rr5Body:
       "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
-    researchRefsLinksTitle: "Canonical ZEISS links",
+    rr6Title: "6. 量子資訊／資料保護研究（iXBT Live）",
+    rr6Body:
+      "ANCAP 引用 iXBT Live 關於資料保護中「不可能」量子悖論之公開文章，作為量子連線數位 SIM 服務台之教育脈絡。與 iXBT 無隸屬；不保證 QKD。",
+    researchRefsLinksTitle: "正規研究連結",
     researchRefsLinksBody:
-      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
+      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。",
     cryoLink: "冷凍與憲法",
     hubCardCryo:
       "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",

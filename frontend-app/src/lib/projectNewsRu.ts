@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "quantum-sim-ixbt",
+    date: "2026-09-11",
+    title: "Цифровая SIM + квантовая связь",
+    summary:
+      "Новый /quantum-sim: eSIM-интенты, PQC/квантово-готовые каналы и глобальный low-ping mesh (спутники, БС, ретрансляторы). Research-цитата iXBT Live про квантовый парадокс в защите данных — /legal/research-refs.",
+    href: "/quantum-sim",
+  },
+  {
     id: "cryo-literary-reviews",
     date: "2026-09-11",
     title: "Крионика + литаукцион + отзывы",

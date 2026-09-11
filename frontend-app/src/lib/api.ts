@@ -584,6 +584,12 @@ export const cryoDesk = {
   },
 };
 
+export const quantumSimDesk = {
+  async catalog() {
+    return apiFetch("/quantum-sim/catalog");
+  },
+};
+
 export const serviceReviews = {
   async list(params: {
     target_type?: string;

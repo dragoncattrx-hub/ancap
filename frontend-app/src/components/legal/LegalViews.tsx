@@ -485,6 +485,8 @@ const ZEISS_LIGHTFIELD_PRODUCT =
 const ZEISS_LIGHTFIELD_TECH_NOTE = "https://guide.microscopy.zeiss.com/content/hbrXqJoB8mu68yTAwSxe";
 const ZEISS_LIGHTFIELD_FLYER =
   "https://asset-downloads.zeiss.com/catalogs/download/mic/1d2cd060-fbd3-4c97-b9b8-64673c416b7a/EN_product-flyer_LSM-Lightfield-4D.pdf";
+const IXBT_QUANTUM_PARADOX =
+  "https://www.ixbt.com/live/science/0-0-0-ii-pomog-dokazat-nevozmozhnyy-kvantovyy-paradoks-v-zaschite-dannyh.html";
 
 export function ResearchRefsDisclosureView() {
   const { t } = useLanguage();
@@ -497,7 +499,7 @@ export function ResearchRefsDisclosureView() {
       actions={<LegalNavPills current="/legal/research-refs" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5].map((n) => (
+        {[1, 2, 3, 4, 5, 6].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.rr${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.rr${n}Body`)}</p>
@@ -531,6 +533,14 @@ export function ResearchRefsDisclosureView() {
             rel="noopener noreferrer"
           >
             Product flyer (PDF)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={IXBT_QUANTUM_PARADOX}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            iXBT Live — 0 + 0 &gt; 0 quantum paradox in data protection
           </a>
         </div>
       </section>

@@ -1,9 +1,9 @@
 import { ResearchRefsDisclosureView } from "@/components/legal/LegalViews";
 
 export const metadata = {
-  title: "ANCAP Research References — ZEISS Lightfield 4D",
+  title: "ANCAP Research References — ZEISS & quantum-info cites",
   description:
-    "Third-party scientific instrument citations used on ANCAP, including ZEISS LSM Lightfield 4D technology note links. No affiliation implied.",
+    "Third-party scientific citations used on ANCAP, including ZEISS LSM Lightfield 4D and iXBT Live quantum data-protection journalism. No affiliation implied.",
 };
 
 export default function LegalResearchRefsPage() {

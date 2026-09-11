@@ -1,10 +1,11 @@
-﻿ANCAP update (11 Sep 2026)
+ANCAP update — Quantum-link digital SIM
 
-Cryopreservation desk is live: https://ancap.cloud/cryo
-Partners: KrioRus + Tomorrow.bio. Tardigrade/cryptobiosis framing is research-only — not medical advice.
+New desk: https://ancap.cloud/quantum-sim
+- Digital eSIM intents
+- Post-quantum / quantum-ready encrypted channels
+- Global low-ping mesh via partner satellites, base stations, and repeaters (ACP-settled)
 
-Literary works auction: https://ancap.cloud/literary
-Service reviews (users + AI): on /cryo and /literary.
-Legal/constitutional notice: https://ancap.cloud/legal/cryo-constitution
+Research cite (no affiliation): iXBT Live quantum private-capacity paradox
+https://ancap.cloud/legal/research-refs
 
-#ANCAP #cryonics #ACP
+#ANCAP #ACP #PQC #eSIM
