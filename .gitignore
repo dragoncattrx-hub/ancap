@@ -149,3 +149,8 @@ ACP-crypto/target-lean/
 .env.x
 .env.twitter
 
+
+# Mailbox credentials (local only)
+.env.mail*
+.env.mail-support
+
