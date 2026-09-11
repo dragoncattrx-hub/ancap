@@ -18,6 +18,7 @@ CoverageClass = Literal[
     "cyber_incident",
     "livestock",
     "space_payload",
+    "perimeter_cleanup",
     "custom",
 ]
 

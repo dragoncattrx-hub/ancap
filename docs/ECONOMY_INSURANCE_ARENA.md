@@ -14,7 +14,7 @@
 - Spec: RFC `economy/insurance` in `docs/rfc/service-catalog.md`
 - API: `/v1/insurance/catalog`, `/quote`, `/policies`, `/policies/{id}/claims`, `/pools/{id}`
 - UI: `/insurance`
-- Coverage classes: wallet, bridge, cargo, real estate, commodities, health/travel stipend, NFC, cyber, fauna, space, custom
+- Coverage classes: wallet, bridge, cargo, real estate, commodities, health/travel stipend, NFC, cyber, fauna, space, **perimeter cleanup**, custom
 - Migration: `067_insurance_arena`
 - **Not a licensed insurer** — parametric desk prototype
 

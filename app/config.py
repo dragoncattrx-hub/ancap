@@ -392,6 +392,9 @@ class Settings(BaseSettings):
     # Optional dedicated master key for DNA/RNA bank AES-256-GCM + HKDF-SHA384 (v1).
     dna_rna_bank_master_key: str = ""
     ff_dna_rna_bank: bool = True
+    # Optional dedicated master key for perimeter Abrams Suite-B vault (AES-256-GCM + HKDF-SHA384).
+    perimeter_cleanup_master_key: str = ""
+    ff_perimeter_cleanup: bool = True
 
     # Economy desks (insurance/arena) — record_only until ledger rails land
     economy_desk_settlement_mode: str = "record_only"  # record_only | ledger

@@ -550,6 +550,37 @@ export const techAuction = {
   },
 };
 
+export const perimeterCleanupDesk = {
+  async cipher() {
+    return apiFetch("/perimeter-cleanup/cipher");
+  },
+  async catalog() {
+    return apiFetch("/perimeter-cleanup/catalog");
+  },
+  async listJobs() {
+    return apiFetch("/perimeter-cleanup/jobs");
+  },
+  async createJob(data: {
+    service_id: string;
+    contamination: string;
+    site_label: string;
+    perimeter_meters?: string;
+    address_or_coords?: string;
+    contact_hint?: string;
+    schedule_window?: string;
+    notes?: string;
+    survey_json?: Record<string, unknown>;
+  }) {
+    return apiFetch("/perimeter-cleanup/jobs", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async getJob(jobId: string) {
+    return apiFetch(`/perimeter-cleanup/jobs/${encodeURIComponent(jobId)}`);
+  },
+};
+
 export const insuranceDesk = {
   async catalog() {
     return apiFetch("/insurance/catalog");

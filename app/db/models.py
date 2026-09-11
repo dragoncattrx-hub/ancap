@@ -2145,6 +2145,33 @@ class DnaRnaBankEntry(Base):
     owner = relationship("User", foreign_keys=[owner_user_id])
 
 
+class PerimeterCleanupJob(Base):
+    """Encrypted perimeter cleanup job brief (AES-256-GCM Abrams Suite-B v1)."""
+
+    __tablename__ = "perimeter_cleanup_jobs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    service_id = Column(String(64), nullable=False, index=True)
+    contamination = Column(String(32), nullable=False, index=True)
+    site_label_hint = Column(String(200), nullable=False)
+    status = Column(String(32), nullable=False, default="draft", index=True)
+    cipher_id = Column(String(80), nullable=False)
+    nonce_b64 = Column(Text, nullable=False)
+    ciphertext_b64 = Column(Text, nullable=False)
+    content_hash = Column(String(120), nullable=False, index=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner = relationship("User", foreign_keys=[owner_user_id])
+
+
 class OrganizationNfcPolicy(Base):
     __tablename__ = "organization_nfc_policies"
 

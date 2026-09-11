@@ -146,6 +146,17 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         "asset_ref_types": ["space_auction_lot", "ownership_certificate"],
     },
     {
+        "coverage_class": "perimeter_cleanup",
+        "label": "Perimeter cleanup / decontamination",
+        "description": "Parametric cover for licensed perimeter cleanup jobs (all contamination classes) booked via /perimeter.",
+        "pool_id": "pool-perimeter",
+        "min": "500",
+        "max": "2000000",
+        "premium_bps": 120,
+        "term_days": 90,
+        "asset_ref_types": ["perimeter_cleanup_job"],
+    },
+    {
         "coverage_class": "custom",
         "label": "Custom everything desk",
         "description": "Catch-all parametric cover — underwriter review required before claim pay.",
