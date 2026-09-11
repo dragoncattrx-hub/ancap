@@ -95,14 +95,14 @@ def test_release_closure_status_is_in_sync_across_master_mobile_and_status_matri
     mobile = MOBILE_ROADMAP.read_text(encoding="utf-8")
     status_matrix = STATUS_MATRIX.read_text(encoding="utf-8")
 
-    assert "| P6-3 | Device matrix (iOS + Android) | [~] matrix/checklist doc added in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready verification-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |" in master
-    assert "| P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready run-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |" in mobile
-    assert "| P6-4 | TestFlight + Play Internal | [~] release-readiness checklist added in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |" in master
-    assert "| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |" in mobile
+    assert "| P6-3 | Device matrix (iOS + Android) | [~] Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |" in master
+    assert "| P6-3 | Device matrix (iOS + Android) | [~] | Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |" in mobile
+    assert "| P6-4 | TestFlight + Play Internal | [~] local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |" in master
+    assert "| P6-4 | TestFlight + Play Internal | [~] | local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |" in mobile
     assert "| P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in master
     assert "| P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in mobile
-    assert "| P6-6 | Production v1.0.0 | [~] final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |" in master
-    assert "| P6-6 | Production v1.0.0 | [~] | final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |" in mobile
+    assert "| P6-6 | Production v1.0.0 | [~] Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |" in master
+    assert "| P6-6 | Production v1.0.0 | [~] | Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |" in mobile
     assert "release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`, and the remaining external evidence now has copy-ready templates in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` and `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`" in status_matrix
     assert "public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`" in status_matrix
 

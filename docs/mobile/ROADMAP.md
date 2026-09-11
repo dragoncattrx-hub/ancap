@@ -156,10 +156,10 @@ Each employee receives **3 Apple Watches** with distinct bands. One is active on
 |----|------|--------|
 | P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` across the mobile packages; latest consolidated snapshot: 56 tests across 5 packages |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
-| P6-3 | Device matrix (iOS + Android) | [~] | execution matrix/checklist now lives in `docs/mobile/DEVICE_MATRIX.md`, with a copy-ready run-results template in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`; real device runs still pending |
-| P6-4 | TestFlight + Play Internal | [~] | release-readiness checklist now lives in `docs/mobile/RELEASE_CHECKLIST.md`, with a copy-ready release packet template in `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`; real uploads still pending |
+| P6-3 | Device matrix (iOS + Android) | [~] | Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |
+| P6-4 | TestFlight + Play Internal | [~] | local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |
 | P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
-| P6-6 | Production v1.0.0 | [~] | final release gate is now scaffolded in `docs/mobile/RELEASE_RUNBOOK.md`; real native/device/store execution still pending |
+| P6-6 | Production v1.0.0 | [~] | Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |
 
 ---
 
