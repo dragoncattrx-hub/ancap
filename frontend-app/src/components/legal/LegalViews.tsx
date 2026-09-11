@@ -491,6 +491,10 @@ const DAEWOONG_INC_RUSSIA =
   "https://incrussia.ru/news/v-ssha-odobrili-zayavku-na-patent-dlya-omolozheniya-kletok/";
 const DAEWOONG_KOREA_HERALD = "https://www.koreaherald.com/article/10854319";
 const DAEWOONG_KOREA_IT_TIMES = "https://www.koreaittimes.com/news/articleView.html?idxno=156490";
+const CHALMERS_NAUKA_TV =
+  "https://naukatv.ru/news/najden_sposob_uskoreniya_kvantovykh_vychislenij_v_1000_raz";
+const CHALMERS_PRL = "https://doi.org/10.1103/tnb8-3m8m";
+const CHALMERS_RECORD = "https://research.chalmers.se/en/publication/553484";
 
 export function ResearchRefsDisclosureView() {
   const { t } = useLanguage();
@@ -503,7 +507,7 @@ export function ResearchRefsDisclosureView() {
       actions={<LegalNavPills current="/legal/research-refs" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.rr${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.rr${n}Body`)}</p>
@@ -575,6 +579,42 @@ export function ResearchRefsDisclosureView() {
             className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
           >
             AETERNA — partial reprogramming consult
+          </Link>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={CHALMERS_NAUKA_TV}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Nauka TV — ~1000× fewer Floquet periods for bosonic-code operations (10 Sep 2026)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={CHALMERS_PRL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            PRL — Single-Period Floquet Control of Bosonic Codes (DOI 10.1103/tnb8-3m8m)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={CHALMERS_RECORD}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Chalmers research record — Huang, Du, Guo
+          </a>
+          <Link
+            href="/tech"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            TECH stack — Floquet bosonic codes
+          </Link>
+          <Link
+            href="/quantum-sim"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            Quantum SIM — compute literacy
           </Link>
         </div>
       </section>

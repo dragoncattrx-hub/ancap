@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "chalmers-floquet-bosonic",
+    date: "2026-09-11",
+    title: "Стек: Floquet / бозонные коды (~1000× меньше циклов)",
+    summary:
+      "В технологический стек /tech добавлены single-period Floquet + quantum lattice gates для бозонных кодов (Huang–Du–Guo, PRL 2026; сюжет «Науки» 10.09.2026). Literacy, не квантовый компьютер ANCAP. Юр. раскрытие: /legal/research-refs §8.",
+    href: "/tech",
+  },
+  {
     id: "aeterna-mrna-reprogramming",
     date: "2026-09-11",
     title: "AETERNA: частичное перепрограммирование клеток (мРНК / LNP)",

@@ -36,8 +36,11 @@ class QuantumSimCatalogPublic(BaseModel):
     tagline: str
     compliance_note: str
     research_ref: QuantumSimResearchRefPublic
+    research_refs: list[QuantumSimResearchRefPublic] = Field(default_factory=list)
     principles: list[QuantumSimPrinciplePublic] = Field(default_factory=list)
     principles_doc: str = "docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md"
+    compute_stack_doc: str = "docs/CHALMERS_FLOQUET_BOSONIC_CODES.md"
     legal_href: str = "/legal/research-refs"
     services: list[QuantumSimServicePublic]
     mesh_layers: list[QuantumSimMeshLayerPublic] = Field(default_factory=list)
+    compute_stack: list[QuantumSimMeshLayerPublic] = Field(default_factory=list)

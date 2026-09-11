@@ -10,6 +10,10 @@ def test_tech_auction_catalog_and_bid(client):
     assert body["currency"] == "ACP"
     assert len(body["lots"]) >= 3
     assert len(body["technologies"]) >= 3
+    stack_ids = {t["id"] for t in body["technologies"]}
+    assert "stack-floquet-bosonic" in stack_ids
+    assert any(lot["id"] == "tech-floquet-bosonic" for lot in body["lots"])
+    assert any(lot["category"] == "quantum_compute" for lot in body["lots"])
     lot_id = body["lots"][0]["id"]
     min_next = body["lots"][0]["min_next_acp"]
 

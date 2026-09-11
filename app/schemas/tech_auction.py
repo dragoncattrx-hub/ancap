@@ -15,6 +15,7 @@ TechCategory = Literal[
     "longevity",
     "search_p2p",
     "wallet_sdk",
+    "quantum_compute",
     "other",
 ]
 TechLotStatus = Literal["live", "sold", "withdrawn"]

@@ -43,6 +43,12 @@ _TECH_STACK: tuple[dict[str, Any], ...] = (
     {"id": "stack-searx", "label": "SearXNG + Hypersearch agents", "layer": "search"},
     {"id": "stack-orbital", "label": "Orbital edge sealed payloads", "layer": "infra"},
     {"id": "stack-aeterna", "label": "AETERNA longevity intents", "layer": "longevity"},
+    {
+        "id": "stack-floquet-bosonic",
+        "label": "Single-period Floquet bosonic codes (quantum lattice gates)",
+        "layer": "quantum_compute",
+        "cite": "PRL 10.1103/tnb8-3m8m · Chalmers / Tianjin · Nauka TV 10 Sep 2026",
+    },
 )
 
 _SEED: tuple[dict[str, Any], ...] = (
@@ -108,6 +114,19 @@ _SEED: tuple[dict[str, Any], ...] = (
         "blurb": "ACP-priced longevity consult workflows (licensed partners only).",
         "starting_acp": "100000",
         "featured": False,
+    },
+    {
+        "id": "tech-floquet-bosonic",
+        "category": "quantum_compute",
+        "title": "Floquet bosonic-code / quantum-lattice-gate consult",
+        "stack": "Bosonic codes in microwave resonators + single-period Floquet + quantum lattice gates",
+        "blurb": (
+            "Literacy license for partner-ready briefs on ~1000× fewer Floquet periods "
+            "(one control cycle vs thousands) for bosonic codes on superconducting circuits. "
+            "Cites Huang–Du–Guo PRL (2026). Theoretical; not an ANCAP quantum computer."
+        ),
+        "starting_acp": "75000",
+        "featured": True,
     },
 )
 
@@ -290,7 +309,7 @@ async def catalog(session: AsyncSession, *, user_id: str | None = None) -> TechA
     featured = [lot for lot in lots if lot.featured]
     return TechAuctionCatalogPublic(
         title="ANCAP TECH Auction",
-        tagline="License ANCAP technologies — AI, identity, escrow, orbital — settled in ACP.",
+        tagline="License ANCAP technologies — AI, identity, escrow, orbital, quantum-compute literacy — settled in ACP.",
         compliance_note=_COMPLIANCE,
         lots=lots,
         featured=featured,
@@ -318,6 +337,7 @@ async def list_tech(
         "longevity",
         "search_p2p",
         "wallet_sdk",
+        "quantum_compute",
         "other",
     )
     if body.category not in allowed:

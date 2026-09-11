@@ -10,6 +10,10 @@ def test_quantum_sim_catalog(client):
     assert any(s["id"] == "qsim-esim" for s in body["services"])
     assert any(s["id"] == "qsim-global-mesh" for s in body["services"])
     assert "ixbt.com" in body["research_ref"]["url"]
+    extra = body.get("research_refs") or []
+    assert any("naukatv.ru" in (r.get("url") or "") for r in extra)
+    compute = {c["id"] for c in (body.get("compute_stack") or [])}
+    assert {"bosonic-codes", "single-period-floquet", "quantum-lattice-gates"} <= compute
     layers = {m["id"] for m in body["mesh_layers"]}
     assert {"satellite", "bts", "repeater"} <= layers
     principles = body.get("principles") or []

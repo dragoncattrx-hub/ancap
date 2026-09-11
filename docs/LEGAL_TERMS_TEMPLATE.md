@@ -46,7 +46,7 @@ Publish formal company name, registered office, registration number, and tax ide
 - Prohibited conduct
 - Intellectual property
 - Privacy, cookies, and data rights
-- Third-party research citations (ZEISS Lightfield 4D; Daewoong eTurna USPTO notice of allowance journalism as of 11 September 2026; iXBT Live quantum-info)
+- Third-party research citations (ZEISS Lightfield 4D; Daewoong eTurna USPTO notice of allowance journalism as of 11 September 2026; Chalmers Floquet bosonic-code PRL; iXBT Live quantum-info)
 - Disclaimers and liability cap (EUR 100 floor / 3-month fees)
 - Suspension, changes, risk acknowledgement
 - Governing law / disputes / mandatory consumer rights

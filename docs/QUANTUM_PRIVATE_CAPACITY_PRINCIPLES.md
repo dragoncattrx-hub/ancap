@@ -63,9 +63,11 @@ Superiority of the environment over the receiver on an **isolated** hop does not
 
 | Surface | Role |
 |---------|------|
-| `/quantum-sim` | Digital eSIM + PQC channel + global low-ping mesh intents |
-| `/legal/research-refs` | Public citation + no-affiliation notice |
+| `/quantum-sim` | Digital eSIM + PQC channel + global low-ping mesh intents; **compute-stack literacy** (Floquet bosonic codes) |
+| `/tech` | TECH auction stack row `stack-floquet-bosonic` |
+| `/legal/research-refs` | Public citation + no-affiliation notice (§6 iXBT, §8 Chalmers PRL) |
 | `docs/ACP_PQC_ENCRYPTION.md` | Concrete ML-KEM / X-Wing envelope (classical+PQ hybrid) |
+| `docs/CHALMERS_FLOQUET_BOSONIC_CODES.md` | Huang–Du–Guo single-period Floquet / lattice-gate literacy |
 | Orbital / Galaxy desks | Partner capacity legs, not ANCAP-owned QKD constellation |
 
 ## Disclaimer

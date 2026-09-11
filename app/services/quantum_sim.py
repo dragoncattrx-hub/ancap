@@ -6,6 +6,9 @@ pathways documented for licensed carriers. Not a regulated telecom license by it
 
 Principles (literacy): docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md — mapped from the
 public iXBT Live write-up of Zhu–Wang private-capacity superadditivity (no affiliation).
+
+Compute-stack literacy: docs/CHALMERS_FLOQUET_BOSONIC_CODES.md — Huang–Du–Guo PRL
+single-period Floquet / quantum lattice gates for bosonic codes (no affiliation; not ANCAP hardware).
 """
 from __future__ import annotations
 
@@ -100,6 +103,41 @@ PRINCIPLES: tuple[dict[str, str], ...] = (
     },
 )
 
+CHALMERS_FLOQUET_REF = {
+    "id": "chalmers-floquet-bosonic-2026",
+    "title": "Nauka TV / PRL — single-period Floquet control of bosonic codes (~1000× fewer drive cycles)",
+    "url": "https://naukatv.ru/news/najden_sposob_uskoreniya_kvantovykh_vychislenij_v_1000_raz",
+    "note": (
+        "Public journalism (10 Sep 2026) of Huang–Du–Guo, Phys. Rev. Lett. 137, 10.1103/tnb8-3m8m. "
+        "Bosonic codes in microwave fields; quantum lattice gates in one Floquet period instead of thousands. "
+        "Theoretical; planned check on Chalmers 100-qubit superconducting platform. "
+        "ANCAP is not affiliated and does not operate that hardware."
+    ),
+}
+
+COMPUTE_STACK: tuple[dict[str, str], ...] = (
+    {
+        "id": "bosonic-codes",
+        "label": "Bosonic quantum codes (microwave / resonator fields, not lone transmons)",
+        "role": "error-protected encoding",
+    },
+    {
+        "id": "quantum-lattice-gates",
+        "label": "Quantum lattice gates (universal bosonic primitive set)",
+        "role": "control",
+    },
+    {
+        "id": "single-period-floquet",
+        "label": "Single-period Floquet synthesis (one drive cycle vs ~thousands)",
+        "role": "speed / infidelity window",
+    },
+    {
+        "id": "superconducting-cv",
+        "label": "Superconducting continuous-variable circuits (Josephson nonlinearity)",
+        "role": "platform literacy",
+    },
+)
+
 
 def catalog() -> dict[str, Any]:
     return {
@@ -118,9 +156,12 @@ def catalog() -> dict[str, Any]:
             "Principles P1–P8 are research literacy, not a lab certification."
         ),
         "research_ref": RESEARCH_REF,
+        "research_refs": [RESEARCH_REF, CHALMERS_FLOQUET_REF],
         "principles": list(PRINCIPLES),
         "principles_doc": "docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md",
+        "compute_stack_doc": "docs/CHALMERS_FLOQUET_BOSONIC_CODES.md",
         "legal_href": "/legal/research-refs",
+        "compute_stack": list(COMPUTE_STACK),
         "services": [
             {
                 "id": "qsim-esim",

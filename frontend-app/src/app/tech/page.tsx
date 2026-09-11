@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -28,7 +29,7 @@ type Catalog = {
   compliance_note: string;
   lots: Lot[];
   featured: Lot[];
-  technologies: Array<{ id: string; label: string; layer: string }>;
+  technologies: Array<{ id: string; label: string; layer: string; cite?: string }>;
 };
 
 function formatAcp(value: string) {
@@ -101,12 +102,22 @@ export default function TechAuctionPage() {
           {catalog?.tagline || t("techPage.taglineFallback")}
         </p>
         <p className="mt-4 text-sm text-slate-500">{catalog?.compliance_note}</p>
+        <p className="mt-3 text-sm">
+          <Link href="/legal/research-refs" className="text-cyan-200 underline">
+            Research refs / legal
+          </Link>
+          {" · "}
+          <Link href="/quantum-sim" className="text-cyan-200 underline">
+            Quantum SIM + compute literacy
+          </Link>
+        </p>
 
         {catalog?.technologies?.length ? (
           <div className="mt-8 grid gap-2 sm:grid-cols-2">
             {catalog.technologies.map((tech) => (
               <div key={tech.id} className="border-b border-white/10 py-2 text-sm text-slate-300">
                 <span className="text-cyan-300/90">{tech.layer}</span> · {tech.label}
+                {tech.cite ? <p className="mt-1 text-xs text-slate-500">{tech.cite}</p> : null}
               </div>
             ))}
           </div>

@@ -30,7 +30,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Market data",
     researchRefsLink: "Research references",
     hubCardResearchRefs:
-      "Third-party scientific instruments, mRNA/LNP patent journalism, and quantum-info cites (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance, iXBT Live) — trademarks stay with their owners; no affiliation.",
+      "Third-party scientific instruments, mRNA/LNP patent journalism, Floquet bosonic-code PRL, and quantum-info cites (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance, Chalmers Huang–Du–Guo, iXBT Live) — trademarks stay with their owners; no affiliation.",
     footerResearchRefs: "Research refs",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -57,9 +57,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr7Title: "7. Daewoong / eTurna mRNA LNP (USPTO notice of allowance)",
     rr7Body:
       "As of 11 September 2026, ANCAP cites public journalism that Daewoong Pharmaceutical received a USPTO notice of allowance (announced 27 August 2026) for ionizable-lipid structures used in the eTurna lipid-nanoparticle (LNP) platform to deliver mRNA encoding partial cellular-reprogramming factors (Epigenetic Reprogramming of Aging / ERA; assets acquired from Turn Biotechnologies). The cited application title is “Lipid Structures and Compositions Comprising the Same.” A notice of allowance is not a fully issued U.S. patent and is not FDA/EMA marketing authorization. Reported work remains preclinical (human dermal fibroblasts / aged-tissue assays in the patent specification). ANCAP is not affiliated with Daewoong Pharmaceutical, Turn Biotechnologies, HanAll Biopharma, or eTurna. Citation is educational context for AETERNA licensed-partner consult workflows only. ANCAP does not host patent PDFs, lipid recipes, mRNA sequences, LNP formulation steps, or any wet-lab protocol.",
+    rr8Title: "8. Chalmers Floquet bosonic codes / quantum lattice gates (PRL 2026)",
+    rr8Body:
+      "As of 11 September 2026, ANCAP cites public journalism (Nauka TV, 10 September 2026) of the theoretical Physical Review Letters paper “Single-Period Floquet Control of Bosonic Codes with Quantum Lattice Gates” (Huang, Du, Guo; DOI 10.1103/tnb8-3m8m). Reported idea: encode in microwave/resonator bosonic codes and implement quantum lattice gates in one Floquet drive period instead of thousands of adiabatic cycles (~1000× fewer periods on that axis). Work is theoretical; authors discuss a future check on Chalmers’ developing 100-qubit superconducting platform. ANCAP is not affiliated with Chalmers University of Technology, Tianjin University, APS/PRL, or Nauka TV. Citation is literacy for the /tech stack and /quantum-sim compute layer — not a claim that ANCAP operates a quantum computer, not a speed SLA, and not an error-correction warranty.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, and the iXBT quantum-info article are cited for literacy only.",
+      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, Chalmers/PRL Floquet bosonic-code coverage, and the iXBT quantum-info article are cited for literacy only.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
@@ -358,9 +361,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr7Title: "7. Daewoong / eTurna мРНК LNP (USPTO notice of allowance)",
     rr7Body:
       "По состоянию на 11 сентября 2026 ANCAP цитирует публичную журналистику: Daewoong Pharmaceutical получила notice of allowance USPTO (анонс 27 августа 2026) на структуры ионизируемых липидов платформы eTurna (LNP) для доставки мРНК с факторами частичного клеточного перепрограммирования (ERA; активы Turn Biotechnologies). Цитируемое название заявки — «Lipid Structures and Compositions Comprising the Same». Notice of allowance — не выданный патент США и не регистрация лекарства (FDA/EMA). Работы доклинические. ANCAP не аффилирован с Daewoong, Turn Biotechnologies, HanAll Biopharma и eTurna. Цитата — образовательный контекст для consult-workflow AETERNA. ANCAP не хостит PDF патентов, рецепты липидов, последовательности мРНК, шаги формулирования LNP и любые wet-lab протоколы.",
+    rr8Title: "8. Floquet / бозонные коды Чалмерса (PRL 2026)",
+    rr8Body:
+      "По состоянию на 11 сентября 2026 ANCAP цитирует публичную журналистику («Наука», 10 сентября 2026) теоретической статьи Physical Review Letters «Single-Period Floquet Control of Bosonic Codes with Quantum Lattice Gates» (Huang, Du, Guo; DOI 10.1103/tnb8-3m8m). Идея: кодировать информацию в микроволновых/резонаторных бозонных кодах и выполнять quantum lattice gates за один период Флоке вместо тысяч адиабатических циклов (~1000× меньше периодов на этой оси). Работа теоретическая; авторы обсуждают проверку на разрабатываемом 100-кубитном сверхпроводящем компьютере Чалмерса. ANCAP не аффилирован с Chalmers, Tianjin University, APS/PRL и телеканалом «Наука». Цитата — literacy для стека /tech и compute-слоя /quantum-sim: не заявление, что ANCAP эксплуатирует квантовый компьютер, не SLA по скорости и не гарантия коррекции ошибок.",
     researchRefsLinksTitle: "Канонические research-ссылки",
     researchRefsLinksBody:
-      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance и iXBT цитируются для грамотности, не как warranty продукта.",
+      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance, Floquet/бозонные коды Чалмерса и iXBT цитируются для грамотности, не как warranty продукта.",
     cryoLink: "Крионика и конституции",
     hubCardCryo:
       "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
@@ -654,9 +660,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr7Title: "7. Daewoong / eTurna mRNA LNP (USPTO notice of allowance)",
     rr7Body:
       "As of 11 September 2026, ANCAP cites public journalism that Daewoong Pharmaceutical received a USPTO notice of allowance (27 August 2026) for ionizable lipids in the eTurna LNP platform. Allowance ≠ issued patent ≠ approved drug. Preclinical only. No affiliation; no lipid recipes or wet-lab protocols on ANCAP hosts.",
+    rr8Title: "8. Chalmers Floquet bosonic codes / quantum lattice gates (PRL 2026)",
+    rr8Body:
+      "As of 11 September 2026, ANCAP cites Nauka TV (10 Sep 2026) coverage of Huang–Du–Guo PRL (DOI 10.1103/tnb8-3m8m): bosonic codes + quantum lattice gates in one Floquet period instead of thousands. Theoretical; not ANCAP hardware. No affiliation with Chalmers / Tianjin / APS.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, and iXBT.",
+      "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, Chalmers Floquet bosonic codes, and iXBT.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
@@ -955,9 +964,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr7Title: "7. Daewoong / eTurna-mRNA-LNP (USPTO Notice of Allowance)",
     rr7Body:
       "Stand 11. September 2026 zitiert ANCAP öffentliche Berichte, wonach Daewoong Pharmaceutical eine USPTO-Notice of Allowance (27. August 2026) für ionisierbare Lipide der eTurna-LNP-Plattform erhalten hat. Allowance ≠ erteiltes Patent ≠ zugelassenes Arzneimittel. Präklinisch. Keine Affiliation; keine Lipidrezepte oder Nasslabor-Protokolle auf ANCAP-Hosts.",
+    rr8Title: "8. Chalmers-Floquet / bosonische Codes (PRL 2026)",
+    rr8Body:
+      "Stand 11. September 2026 zitiert ANCAP Nauka-TV-Berichterstattung (10. Sep. 2026) zu Huang–Du–Guo, PRL DOI 10.1103/tnb8-3m8m: bosonische Codes und Quantum Lattice Gates in einer Floquet-Periode statt Tausender. Theorie; keine ANCAP-Hardware. Keine Affiliation mit Chalmers / Tianjin / APS.",
     researchRefsLinksTitle: "Kanonische Research-Links",
     researchRefsLinksBody:
-      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance und iXBT nur zur Literacy.",
+      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance, Chalmers-Floquet-bosonische Codes und iXBT nur zur Literacy.",
     cryoLink: "Kryonik & Verfassungen",
     hubCardCryo:
       "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
@@ -1255,9 +1267,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr7Title: "7. Daewoong／eTurna mRNA LNP（USPTO notice of allowance）",
     rr7Body:
       "截至 2026 年 9 月 11 日，ANCAP 引用公開報導：Daewoong Pharmaceutical 於 2026 年 8 月 27 日就 eTurna LNP 平台之可離子化脂質獲得 USPTO notice of allowance。Allowance 並非已核發專利，亦非藥品核准。工作仍屬臨床前。無關聯；ANCAP 主機不托管脂質配方或濕實驗協議。",
+    rr8Title: "8. Chalmers Floquet 玻色碼／量子晶格閘（PRL 2026）",
+    rr8Body:
+      "截至 2026 年 9 月 11 日，ANCAP 引用 Nauka TV（2026 年 9 月 10 日）對 Huang–Du–Guo PRL（DOI 10.1103/tnb8-3m8m）之報導：以微波／共振器玻色碼編碼，並在單一 Floquet 週期（而非數千週期）實作 quantum lattice gates。屬理論工作，非 ANCAP 硬體。與 Chalmers／天津大學／APS 無關聯。",
     researchRefsLinksTitle: "正規研究連結",
     researchRefsLinksBody:
-      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance 與 iXBT，僅供素養。",
+      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance、Chalmers Floquet 玻色碼與 iXBT，僅供素養。",
     cryoLink: "冷凍與憲法",
     hubCardCryo:
       "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",

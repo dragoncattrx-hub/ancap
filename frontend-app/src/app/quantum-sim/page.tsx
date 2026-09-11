@@ -17,6 +17,8 @@ type Service = {
 
 type MeshLayer = { id: string; label: string; role: string };
 type Principle = { id: string; title: string; body: string };
+type ResearchRef = { id: string; title: string; url: string; note: string };
+type ComputeLayer = { id: string; label: string; role: string };
 
 type Catalog = {
   title: string;
@@ -24,10 +26,13 @@ type Catalog = {
   compliance_note: string;
   legal_href: string;
   principles_doc?: string;
-  research_ref: { id: string; title: string; url: string; note: string };
+  compute_stack_doc?: string;
+  research_ref: ResearchRef;
+  research_refs?: ResearchRef[];
   principles?: Principle[];
   services: Service[];
   mesh_layers: MeshLayer[];
+  compute_stack?: ComputeLayer[];
 };
 
 export default function QuantumSimPage() {
@@ -73,17 +78,41 @@ export default function QuantumSimPage() {
 
         {catalog?.research_ref ? (
           <aside className="mt-8 border-t border-white/10 pt-5">
-            <h2 className="text-lg text-white">Science cite</h2>
-            <a
-              href={catalog.research_ref.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 block text-emerald-200 underline"
-            >
-              {catalog.research_ref.title}
-            </a>
-            <p className="mt-2 text-sm text-slate-500">{catalog.research_ref.note}</p>
+            <h2 className="text-lg text-white">Science cites</h2>
+            {(catalog.research_refs && catalog.research_refs.length > 0
+              ? catalog.research_refs
+              : [catalog.research_ref]
+            ).map((ref) => (
+              <div key={ref.id} className="mt-4">
+                <a
+                  href={ref.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-emerald-200 underline"
+                >
+                  {ref.title}
+                </a>
+                <p className="mt-2 text-sm text-slate-500">{ref.note}</p>
+              </div>
+            ))}
           </aside>
+        ) : null}
+
+        {(catalog?.compute_stack || []).length ? (
+          <section className="mt-10">
+            <h2 className="text-xl text-white">Compute stack (literacy)</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Bosonic-code control cited from Chalmers / PRL — not hardware ANCAP operates.
+              {catalog?.compute_stack_doc ? ` Repo: ${catalog.compute_stack_doc}` : null}
+            </p>
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              {catalog!.compute_stack!.map((m) => (
+                <li key={m.id} className="border-b border-white/5 py-2">
+                  <span className="text-emerald-300/90">{m.role}</span> · {m.label}
+                </li>
+              ))}
+            </ul>
+          </section>
         ) : null}
 
         {(catalog?.principles || []).length ? (
