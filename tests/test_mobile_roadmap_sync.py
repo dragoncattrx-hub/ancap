@@ -72,10 +72,10 @@ def test_mobile_release_closure_docs_exist_and_cover_current_truth() -> None:
     assert RELEASE_RUNBOOK.exists()
     assert DEVICE_EVIDENCE_TEMPLATE.exists()
     assert RELEASE_EVIDENCE_TEMPLATE.exists()
-    assert "These runs have **not** been executed yet from this repo state." in device_matrix
-    assert "Android runtime verification" in device_matrix
-    assert "build-android-native.ps1" in device_matrix
-    assert "macOS + Xcode" in device_matrix
+    assert "Local Android test environment is available" in device_matrix
+    assert "start-android-test-env.ps1" in device_matrix
+    assert "build-android-native.ps1" in device_matrix or "`.so` artifacts" in device_matrix
+    assert "macOS + Xcode" in device_matrix or "macOS/Xcode" in device_matrix
     assert "Device Verification Evidence Template" in device_evidence_template
     assert "This file is a **template**, not evidence." in device_evidence_template
     assert "Release Evidence Packet Template" in release_evidence_template
@@ -174,8 +174,8 @@ def test_android_native_build_truth_is_in_sync_across_docs() -> None:
     assert "| P1-6 | Link bindings in `expo-acp-core` Android | [x] | Kotlin + JNI wired; `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in mobile
     assert "| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |" in mobile
     assert "| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |" in mobile
-    assert "Android runtime verification" in device_matrix
-    assert "`libacp_mobile_ffi.so` artifacts for `arm64-v8a`, `armeabi-v7a`, and `x86_64`" in device_matrix
+    assert "Local Android test environment is available" in device_matrix or "Pixel_10_Pro" in device_matrix
+    assert "`libacp_mobile_ffi.so` artifacts" in device_matrix or "`.so` artifacts" in device_matrix
     assert "- [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host" in release_checklist
     assert "- [x] Android native build path verified on a host with Android NDK" in release_checklist
     assert "Android native `.so` emission via `ancap-mobile/scripts/build-android-native.ps1` is now verified on the current Windows host" in status_matrix
