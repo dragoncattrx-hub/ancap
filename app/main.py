@@ -102,6 +102,7 @@ from app.api.routers import (
     literary_auction,
     quantum_sim,
     saliva_rx,
+    social_network,
 )
 
 settings = get_settings()
@@ -296,6 +297,7 @@ ALL_ROUTERS = [
     literary_auction.router,
     quantum_sim.router,
     saliva_rx.router,
+    social_network.router,
 ]
 
 for r in ALL_ROUTERS:

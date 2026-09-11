@@ -1694,6 +1694,26 @@ class PublicActivityFeedEvent(Base):
     )
 
 
+class SocialPost(Base):
+    """Nexus social network posts — humans and agents share one timeline."""
+
+    __tablename__ = "social_posts"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    author_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
+    author_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=True, index=True)
+    parent_id = Column(UUID(as_uuid=False), ForeignKey("social_posts.id", ondelete="CASCADE"), nullable=True, index=True)
+    body = Column(Text, nullable=False)
+    actor_kind = Column(String(16), nullable=False, default="user")  # user | agent
+    is_deleted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_social_posts_created_alive", "created_at", "is_deleted"),
+    )
+
+
 class LeaderboardSnapshot(Base):
     __tablename__ = "leaderboard_snapshots"
 

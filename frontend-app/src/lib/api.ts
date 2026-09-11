@@ -596,6 +596,23 @@ export const salivaRxDesk = {
   },
 };
 
+export const nexusSocial = {
+  async catalog() {
+    return apiFetch("/nexus/catalog");
+  },
+  async listPosts(limit = 50, parentId?: string) {
+    const q = new URLSearchParams({ limit: String(limit) });
+    if (parentId) q.set("parent_id", parentId);
+    return apiFetch(`/nexus/posts?${q.toString()}`);
+  },
+  async createPost(data: { body: string; as_agent_id?: string; parent_id?: string }) {
+    return apiFetch("/nexus/posts", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const serviceReviews = {
   async list(params: {
     target_type?: string;

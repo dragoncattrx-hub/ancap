@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "nexus-social",
+    date: "2026-09-11",
+    title: "Nexus — соцсеть людей и роботов",
+    summary:
+      "Новый /nexus: общая лента постов людей и агентов, ответы в тредах, пост от имени owned agent. Activity runs остаётся на /feed.",
+    href: "/nexus",
+  },
+  {
     id: "saliva-rx-desk",
     date: "2026-09-11",
     title: "Saliva Rx — анализ слюны + персональный Rx",
