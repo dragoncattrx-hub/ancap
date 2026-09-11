@@ -656,6 +656,10 @@ Exit criteria: satisfied - local, origin, and public Cloudflare-routed responses
 
 ## Priority 4 -- Monetization depth
 
+**Not a work-stop blocker.** First ACP-first revenue loop is live (paid workflows, marketplace, subscriptions, paid API, claim codes, merchant pay). Remaining work is depth + conversion friction — not “monetization missing.”
+
+ACP acquisition path (2026-09-11): `/buy-acp` leads with USDT swap desk + bridge + credits invoice; Stripe remains optional. Mobile Exchange auth-settle links USDT→ACP tickets to the swap desk rail.
+
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 
 Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet credits UI are now implemented and passing repo checks. **Repo automated webhook→ledger E2E is closed** (`docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md`, `pytest tests/api/test_payments.py -q`). Remaining blocker before full done: live Stripe Dashboard checkout + saved-card operator verification (`docs/stripe-verification-2026-07-02.md` Run B).
@@ -861,7 +865,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P4-8 | PIN + biometrics | [~] wired, real device verification pending |
 | P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
-| P5-XO | Exchange office foundation (ACP hub, all↔all quotes, tickets, Exchange tab) | [x] see `docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md` — catalog/quote/tickets API + Expo Exchange tab; ticket auth settle + auto rails still open |
+| P5-XO | Exchange office foundation (ACP hub, all↔all quotes, tickets, Exchange tab) | [x] see `docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md` — catalog/quote/tickets + **auth-settle/sync/admin-complete**; USDT→ACP opens linked swap desk order; Expo open-ticket+settle wired |
 | P5-XO2 | OTC commodities + Markets AI workflows | [x] oil/gas/uranium/timber/sand/stone/ores desk rail; Markets category workflows + Markets Intel Pack on `/ai/workflows` |
 | P5-XO3 | Banknote/coin authenticity + numismatic ACP value (iPhone) | [x] see `docs/mobile/NUMISMATIC_AUTHENTICITY.md` — `/mobile/numismatic/*` + Expo Auth tab; educational prototype only |
 | P5-XO4 | Real estate / antiques / space OTC + ACP ownership certificates | [x] see `docs/mobile/TITLE_OWNERSHIP_RAILS.md` — RE sale/rental, antiques, space objects; `/ownership-proofs/*` crypto register contracts |

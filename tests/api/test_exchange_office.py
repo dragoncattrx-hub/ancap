@@ -1,9 +1,25 @@
 """ACP-hub exchange office foundation tests."""
 
 from decimal import Decimal
+from uuid import uuid4
 
 from app.services.exchange_office import build_pairs, catalog, quote
 from app.schemas.exchange_office import ExchangeQuoteRequest
+
+
+def _register_user(client, label: str):
+    email = f"{label}_{uuid4().hex[:12]}@test.com"
+    password = "password123"
+    res = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": label},
+        headers={"Authorization": ""},
+    )
+    assert res.status_code in (200, 201), res.text
+    token = res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    user = client.get("/v1/users/me", headers=headers).json()
+    return user, headers
 
 
 def test_catalog_has_hub_and_core_assets():
@@ -77,3 +93,50 @@ def test_quote_cross_metal_to_usdt():
     assert len(q.legs) == 2
     assert Decimal(q.acp_hub_amount) == Decimal("250")
     assert Decimal(q.to_amount) > 0
+
+
+def test_exchange_ticket_auth_settle_opens_swap_order(client):
+    _user, headers = _register_user(client, "xo_settle")
+    q = client.post(
+        "/v1/mobile/exchange/quote",
+        json={"from_asset": "usdt_trc20", "to_asset": "acp", "from_amount": "25"},
+    )
+    assert q.status_code == 200, q.text
+    quote_id = q.json()["quote_id"]
+    payout = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+
+    ticket = client.post(
+        "/v1/mobile/exchange/tickets",
+        headers={**headers, "Idempotency-Key": f"xo-{quote_id}"},
+        json={"quote_id": quote_id, "payout_acp_address": payout},
+    )
+    assert ticket.status_code == 201, ticket.text
+    body = ticket.json()
+    assert body["status"] == "awaiting_user"
+    assert body["rail"] == "swap_desk"
+
+    settle = client.post(
+        f"/v1/mobile/exchange/tickets/{body['id']}/auth-settle",
+        headers=headers,
+        json={},
+    )
+    assert settle.status_code == 200, settle.text
+    settled = settle.json()
+    assert settled["status"] == "settling"
+    assert settled["rail_ref_type"] == "swap_order"
+    assert settled["rail_ref_id"]
+
+    sync = client.post(
+        f"/v1/mobile/exchange/tickets/{body['id']}/sync",
+        headers=headers,
+    )
+    assert sync.status_code == 200, sync.text
+    assert sync.json()["status"] == "settling"
+
+    settle2 = client.post(
+        f"/v1/mobile/exchange/tickets/{body['id']}/auth-settle",
+        headers=headers,
+        json={},
+    )
+    assert settle2.status_code == 200, settle2.text
+    assert settle2.json()["rail_ref_id"] == settled["rail_ref_id"]

@@ -491,6 +491,10 @@ export type ExchangeTicketCreateInput = {
   goods_description?: string | null;
 };
 
+export type ExchangeTicketAuthSettleInput = {
+  tron_txid?: string | null;
+};
+
 export type ExchangeTicket = {
   id: string;
   user_id?: string | null;

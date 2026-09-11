@@ -10,17 +10,20 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db, require_auth
+from app.api.deps import get_db, require_auth, require_platform_admin
 from app.config import get_settings
 from app.db.models import AcpExchangeTicket, AcpOtcIntakeOrder
 from app.schemas.exchange_office import (
     ExchangeCatalogPublic,
     ExchangeQuotePublic,
     ExchangeQuoteRequest,
+    ExchangeTicketAdminCompleteRequest,
+    ExchangeTicketAuthSettleRequest,
     ExchangeTicketCreateRequest,
     ExchangeTicketPublic,
 )
 from app.services import exchange_office as xo_svc
+from app.services import exchange_ticket_settle as settle_svc
 from app.services import otc_intake as otc_svc
 
 router = APIRouter(tags=["Mobile Exchange Office"])
@@ -368,3 +371,55 @@ async def cancel_exchange_ticket(
     row.updated_at = datetime.now(timezone.utc)
     await session.flush()
     return _ticket_public(row)
+
+
+@router.post("/mobile/exchange/tickets/{ticket_id}/auth-settle", response_model=ExchangeTicketPublic)
+async def auth_settle_exchange_ticket(
+    ticket_id: str,
+    body: ExchangeTicketAuthSettleRequest = ExchangeTicketAuthSettleRequest(),
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    """Open/link the settlement rail (swap desk order, bridge handoff, OTC review)."""
+    _enabled()
+    row = await session.get(AcpExchangeTicket, ticket_id)
+    if row is None or str(row.user_id) != str(user_id):
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    updated = await settle_svc.auth_settle_ticket(
+        session,
+        row,
+        user_id=user_id,
+        tron_txid=body.tron_txid,
+    )
+    return _ticket_public(updated)
+
+
+@router.post("/mobile/exchange/tickets/{ticket_id}/sync", response_model=ExchangeTicketPublic)
+async def sync_exchange_ticket(
+    ticket_id: str,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    """Refresh ticket status from the linked swap/OTC rail."""
+    _enabled()
+    row = await session.get(AcpExchangeTicket, ticket_id)
+    if row is None or str(row.user_id) != str(user_id):
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    updated = await settle_svc.sync_ticket_from_rail(session, row, user_id=user_id)
+    return _ticket_public(updated)
+
+
+@router.post("/mobile/exchange/tickets/{ticket_id}/complete", response_model=ExchangeTicketPublic)
+async def admin_complete_exchange_ticket(
+    ticket_id: str,
+    body: ExchangeTicketAdminCompleteRequest = ExchangeTicketAdminCompleteRequest(),
+    _admin: str = Depends(require_platform_admin),
+    session: AsyncSession = Depends(get_db),
+):
+    """Platform admin marks a supervised ticket settled (desk/OTC/manual rails)."""
+    _enabled()
+    row = await session.get(AcpExchangeTicket, ticket_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    updated = await settle_svc.admin_complete_ticket(session, row, note=body.note)
+    return _ticket_public(updated)

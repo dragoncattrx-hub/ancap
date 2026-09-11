@@ -39,6 +39,9 @@ Settlement still uses existing rails; this layer unifies catalog, quotes, and ti
 | GET | `/mobile/exchange/tickets` | user |
 | GET | `/mobile/exchange/tickets/{id}` | user |
 | POST | `/mobile/exchange/tickets/{id}/cancel` | user |
+| POST | `/mobile/exchange/tickets/{id}/auth-settle` | user — opens/links swap desk / OTC / bridge handoff |
+| POST | `/mobile/exchange/tickets/{id}/sync` | user — pull linked rail status |
+| POST | `/mobile/exchange/tickets/{id}/complete` | platform admin — desk mark settled |
 
 Creating an OTC metal/goods ticket also opens an `acp_otc_intake_orders` row and links `rail_ref_*`.
 
@@ -52,22 +55,23 @@ Creating an OTC metal/goods ticket also opens an `acp_otc_intake_orders` row and
 
 ## Mobile (Expo)
 
-- Tab **Exchange** (`app/(tabs)/exchange.tsx`) — catalog chips, amount, purity/goods estimate, quote
-- Client: `@ancap/acp-api-client` `getExchangeCatalog` / `quoteExchange` / ticket methods
-- Ticket open + auth session wiring is the next slice (ANCAP login on device)
+- Tab **Exchange** (`app/(tabs)/exchange.tsx`) — catalog chips, amount, purity/goods estimate, quote, **open ticket + auth-settle**, sync
+- Client: `@ancap/acp-api-client` catalog/quote/ticket + `authSettleExchangeTicket` / `syncExchangeTicket`
+- USDT TRC-20 → ACP auth-settle opens a linked `acp_swap_orders` row (`rail_ref_type=swap_order`); swap completion auto-closes the ticket
 
 ## Out of this foundation
 
-- Automated Tron deposit watcher / ACP payout hot-wallet
+- Automated Tron deposit watcher / ACP payout hot-wallet (still desk-assisted after deposit)
 - Live metal market feed / DEX router signing
-- Operator UI for ticket → rail completion
+- Full operator UI beyond admin `POST .../complete`
 - Fiat partner on-ramp execute
-- Full in-app bridge intent create from Exchange tab
+- Full in-app bridge intent create from Exchange tab (handoff text + sync only)
 
 ## Files
 
 - `app/schemas/exchange_office.py`
 - `app/services/exchange_office.py`
+- `app/services/exchange_ticket_settle.py`
 - `app/api/routers/exchange_office.py`
 - `app/db/models.py` → `AcpExchangeTicket`
 - `alembic/versions/062_exchange_office.py`

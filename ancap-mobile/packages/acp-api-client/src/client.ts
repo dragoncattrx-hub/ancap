@@ -244,6 +244,24 @@ export class AcpApiClient {
     });
   }
 
+  authSettleExchangeTicket(
+    ticketId: string,
+    body: { tron_txid?: string | null } = {}
+  ): Promise<ExchangeTicket> {
+    const enc = encodeURIComponent(ticketId);
+    return this.request<ExchangeTicket>(`/mobile/exchange/tickets/${enc}/auth-settle`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  syncExchangeTicket(ticketId: string): Promise<ExchangeTicket> {
+    const enc = encodeURIComponent(ticketId);
+    return this.request<ExchangeTicket>(`/mobile/exchange/tickets/${enc}/sync`, {
+      method: "POST",
+    });
+  }
+
   getNumismaticCatalog(): Promise<NumismaticCatalog> {
     return this.request<NumismaticCatalog>("/mobile/numismatic/catalog");
   }

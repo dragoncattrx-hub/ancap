@@ -1469,6 +1469,13 @@ async def complete_swap_order(
     order.payout_txid = transfer.txid
     order.updated_at = datetime.now(timezone.utc)
     await session.flush()
+    try:
+        from app.services import exchange_ticket_settle as settle_svc
+
+        await settle_svc.mark_tickets_for_completed_swap(session, swap_order_id=str(order.id))
+    except Exception:
+        # Ticket sync must not block swap completion.
+        pass
     return AcpSwapCompleteResponse(order=_to_public_order(_swap_row_to_dict(order)), transfer=transfer)
 
 

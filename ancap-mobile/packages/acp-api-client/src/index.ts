@@ -56,6 +56,7 @@ export type {
   ExchangeSettlementRail,
   ExchangeTicket,
   ExchangeTicketCreateInput,
+  ExchangeTicketAuthSettleInput,
   ExchangeTicketStatus,
   NumismaticAuthInput,
   NumismaticAuthResult,

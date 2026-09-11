@@ -11,9 +11,10 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import type { ExchangeAsset, ExchangeCatalog, ExchangeQuote } from "@ancap/acp-api-client";
+import type { ExchangeAsset, ExchangeCatalog, ExchangeQuote, ExchangeTicket } from "@ancap/acp-api-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi } from "@/lib/api";
+import { loadVaultAddress } from "@/lib/vault";
 
 const HUB = "acp";
 
@@ -27,8 +28,10 @@ export default function ExchangeScreen() {
   const [purity, setPurity] = useState("999");
   const [goodsEstimate, setGoodsEstimate] = useState("");
   const [quote, setQuote] = useState<ExchangeQuote | null>(null);
+  const [ticket, setTicket] = useState<ExchangeTicket | null>(null);
   const [error, setError] = useState("");
   const [quoting, setQuoting] = useState(false);
+  const [settling, setSettling] = useState(false);
 
   const assets = catalog?.assets ?? [];
   const fromMeta = useMemo(
@@ -67,12 +70,14 @@ export default function ExchangeScreen() {
     setFromAsset(toAsset);
     setToAsset(fromAsset);
     setQuote(null);
+    setTicket(null);
   };
 
   const onQuote = async () => {
     setQuoting(true);
     setError("");
     setQuote(null);
+    setTicket(null);
     try {
       const api = getApi();
       const body: {
@@ -102,6 +107,48 @@ export default function ExchangeScreen() {
     }
   };
 
+  const onOpenAndSettle = async () => {
+    if (!quote) return;
+    setSettling(true);
+    setError("");
+    try {
+      const address = await loadVaultAddress();
+      if (!address) {
+        setError(t("exchange.needAddress"));
+        return;
+      }
+      const api = getApi();
+      const opened = await api.createExchangeTicket(
+        {
+          quote_id: quote.quote_id,
+          payout_acp_address: address,
+        },
+        `xo-${quote.quote_id}`
+      );
+      const settled = await api.authSettleExchangeTicket(opened.id);
+      setTicket(settled);
+    } catch (e) {
+      setError(safeErrorMessage(e, t("exchange.ticketFailed")));
+    } finally {
+      setSettling(false);
+    }
+  };
+
+  const onSyncTicket = async () => {
+    if (!ticket) return;
+    setSettling(true);
+    setError("");
+    try {
+      const api = getApi();
+      const synced = await api.syncExchangeTicket(ticket.id);
+      setTicket(synced);
+    } catch (e) {
+      setError(safeErrorMessage(e, t("exchange.ticketFailed")));
+    } finally {
+      setSettling(false);
+    }
+  };
+
   const pickAsset = (side: "from" | "to", asset: ExchangeAsset) => {
     if (side === "from") {
       setFromAsset(asset.id);
@@ -111,6 +158,7 @@ export default function ExchangeScreen() {
       if (asset.id === fromAsset) setFromAsset(asset.id === HUB ? "usdt_trc20" : HUB);
     }
     setQuote(null);
+    setTicket(null);
   };
 
   const AssetChip = ({
@@ -238,6 +286,29 @@ export default function ExchangeScreen() {
           <Text style={styles.quoteNote}>{quote.rate_note}</Text>
           <Text style={styles.quoteNext}>{quote.next_step}</Text>
           <Text style={styles.quoteHint}>{t("exchange.ticketHint")}</Text>
+          <Pressable style={styles.secondaryBtn} onPress={() => void onOpenAndSettle()} disabled={settling}>
+            {settling ? (
+              <ActivityIndicator color="#6ee7b7" />
+            ) : (
+              <Text style={styles.secondaryBtnText}>{t("exchange.openTicket")}</Text>
+            )}
+          </Pressable>
+        </View>
+      ) : null}
+
+      {ticket ? (
+        <View style={styles.quoteBox}>
+          <Text style={styles.quoteTitle}>
+            {t("exchange.ticketOpened")}: {ticket.status}
+          </Text>
+          <Text style={styles.quoteMeta}>
+            {ticket.id.slice(0, 8)}… · {ticket.rail}
+            {ticket.rail_ref_id ? ` · ref ${ticket.rail_ref_id.slice(0, 8)}…` : ""}
+          </Text>
+          <Text style={styles.quoteNext}>{ticket.next_step}</Text>
+          <Pressable style={styles.secondaryBtn} onPress={() => void onSyncTicket()} disabled={settling}>
+            <Text style={styles.secondaryBtnText}>{t("exchange.syncTicket")}</Text>
+          </Pressable>
         </View>
       ) : null}
 
@@ -343,6 +414,19 @@ const styles = StyleSheet.create({
     color: "#0a0f1a",
     fontWeight: "800",
     fontSize: 16,
+  },
+  secondaryBtn: {
+    marginTop: 14,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#6ee7b7",
+  },
+  secondaryBtnText: {
+    color: "#6ee7b7",
+    fontWeight: "800",
+    fontSize: 15,
   },
   quoteBox: {
     marginTop: 20,

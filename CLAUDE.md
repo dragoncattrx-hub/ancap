@@ -63,9 +63,11 @@ Phase 6 — ACP Mobile Wallet MVP (in progress). Active items:
 - `[~]` SecureVault wiring (walletd fallback until native FFI ready) — code wired; physical sign-off open
 - `[x]` i18n EN/RU/UK/DE (`i18next`)
 - `[~]` MASVS L1 checklist — repo baseline closed; physical sign-off open
-- `[x]` Exchange office foundation — ACP-hub multi-asset catalog/quote/tickets + Expo Exchange tab (`docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md`); ticket settle + auto rails next
+- `[x]` Exchange office foundation — ACP-hub multi-asset catalog/quote/tickets + Expo Exchange tab (`docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md`); **ticket auth-settle/sync + USDT→ACP swap link shipped**; full auto deposit watcher still desk-assisted
 - `[x]` OTC commodities rail (oil/gas/uranium/timber/sand/stone/ores) + Markets AI prediction workflows (`/ai/workflows`)
 - `[ ]` React Flow strategy canvas (Phase 7, after builder API stable)
+
+**Monetization:** not a work-stop blocker. ACP-first loop live; `/buy-acp` crypto-first; Stripe 4.1 = operator live verification only.
 
 Local Android test env (**blocker cleared 2026-09-11**):
 - AVD `Pixel_10_Pro` + `ancap-mobile/scripts/start-android-test-env.ps1`

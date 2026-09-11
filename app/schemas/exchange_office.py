@@ -167,6 +167,18 @@ class ExchangeTicketCreateRequest(BaseModel):
         return s
 
 
+class ExchangeTicketAuthSettleRequest(BaseModel):
+    tron_txid: str | None = Field(
+        default=None,
+        max_length=128,
+        description="Optional USDT TRC-20 deposit txid when settling swap_desk.",
+    )
+
+
+class ExchangeTicketAdminCompleteRequest(BaseModel):
+    note: str | None = Field(default=None, max_length=500)
+
+
 class ExchangeTicketPublic(BaseModel):
     id: str
     user_id: str | None = None
