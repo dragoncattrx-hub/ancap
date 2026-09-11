@@ -144,3 +144,8 @@ ancap-mobile/modules/expo-acp-core/ios/native/
 !.env.example
 
 ACP-crypto/target-lean/
+
+# X/Twitter API (local only)
+.env.x
+.env.twitter
+
