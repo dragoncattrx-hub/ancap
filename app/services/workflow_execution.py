@@ -286,6 +286,34 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "organ_unit_price_acp", "status_timeline"],
         tags=["aeterna", "organ-print", "stem-cells", "bioreactor"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-mrna-reprogramming-brief",
+        title="AETERNA Partial Reprogramming Consult (mRNA / LNP literacy)",
+        category="AETERNA",
+        summary=(
+            "Licensed-partner consult brief on partial cellular reprogramming via mRNA in lipid nanoparticles — "
+            "public patent-literacy only, 1,000,000 ACP."
+        ),
+        description=(
+            "Builds a partner-ready discussion brief on partial epigenetic reprogramming: "
+            "deliver mRNA instructions so aged cells regain some youthful functions without becoming stem cells. "
+            "Cites public USPTO notice-of-allowance journalism (Daewoong eTurna ionizable lipids, Aug 2026) "
+            "as educational context. Not an approved drug, not an issued-patent warranty, and not a wet-lab kit. "
+            "ANCAP does not provide lipid recipes, mRNA sequences, LNP formulation steps, or DIY enhancement protocols."
+        ),
+        price=Money(amount="1000000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=["Partial vs full reprogramming framing", "Delivery literacy (mRNA in LNP)", "Partner consult agenda"],
+        output_items=[
+            "Partial-reprogramming consult brief",
+            "Public-citation caveats (allowance ≠ grant ≠ drug approval)",
+            "Licensed-partner handoff checklist",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "status_timeline"],
+        tags=["aeterna", "longevity", "mrna", "lnp", "reprogramming", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1245,6 +1273,34 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "ANCAP settles ACP and issues a partner handoff brief. "
                     "Printing occurs only in a licensed biochemical reactor operated by a verified partner — not a home kit."
+                ),
+            }
+        if template.slug == "aeterna-mrna-reprogramming-brief":
+            deliverable["intent"] = str(payload.get("intent_kind") or "partial_reprogramming_consult")
+            deliverable["compliance"] = (
+                "Educational / licensed-consult prep only. Not a diagnosis and not an approved therapy. "
+                "No lipid recipes, mRNA sequences, LNP formulation steps, CRISPR guide design, "
+                "gene synthesis, or DIY enhancement protocols."
+            )
+            deliverable["reprogramming"] = {
+                "mode": "partial_keep_cell_identity",
+                "delivery_literacy": "mrna_in_lipid_nanoparticle",
+                "price_acp": "1000000",
+                "citation": {
+                    "kind": "uspto_notice_of_allowance_journalism",
+                    "announced": "2026-08-27",
+                    "legal_as_of": "2026-09-11",
+                    "title": "Lipid Structures and Compositions Comprising the Same",
+                    "platform": "eTurna LNP (Turn Biotechnologies assets; Daewoong Pharmaceutical)",
+                    "sources": [
+                        "https://incrussia.ru/news/v-ssha-odobrili-zayavku-na-patent-dlya-omolozheniya-kletok/",
+                        "https://www.koreaherald.com/article/10854319",
+                    ],
+                    "affiliation": False,
+                },
+                "note": (
+                    "A notice of allowance is not a fully issued U.S. patent and is not marketing authorization. "
+                    "Reported work remains preclinical. ANCAP is not affiliated with Daewoong, Turn Bio, or eTurna."
                 ),
             }
         execution_summary = {

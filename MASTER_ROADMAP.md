@@ -878,6 +878,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-XO13 | Perimeter cleanup (all contamination) | [x] `/perimeter` + `/v1/perimeter-cleanup/*`, migration `074`, Abrams Suite-B AES-256-GCM + HKDF-SHA384; insurance `perimeter_cleanup` |
 | P5-XO11 | Legal entertainment worldwide desk | [x] `/entertainment` — licensed venues/festivals/lotteries/resorts by region + Arena on-platform; no grey books |
 | P5-XO12 | ZEISS Lightfield 4D research citation | [x] `/legal/research-refs` + AETERNA imaging refs; tech note link; no affiliation / no PDF host |
+| P5-XO14 | Daewoong eTurna mRNA LNP USPTO citation | [x] `/legal/research-refs` §7 + `/aeterna` consult `aeterna-mrna-reprogramming-brief`; notice of allowance literacy as of 11 Sep 2026; no affiliation / no lipid recipes |
 | P5-XO9 | AuctionEscrow + TECH auction | [x] Foundry `contracts/auction-escrow` + `/tech-auction/*` + UI `/tech` — `docs/TECH_AUCTION_ESCROW.md` |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
@@ -1235,14 +1236,14 @@ Accept **securities (tsennye bumagi)**, **promissory notes (vekselya)**, and **e
 
 Execution detail: **`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`**.
 
-Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere, disease-risk, longevity), **15-axis molecular aging profile** (blood-RNA / PCR-style hallmarks — configuration of aging, not one bio-age number; sex-aware), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner). **No DIY CRISPR / gene synthesis; no institute affiliation claims.**
+Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere, disease-risk, longevity), **15-axis molecular aging profile** (blood-RNA / PCR-style hallmarks — configuration of aging, not one bio-age number; sex-aware), **partial mRNA-reprogramming consult** (eTurna/USPTO notice-of-allowance literacy as of 11 Sep 2026; 1,000,000 ACP), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner). **No DIY CRISPR / gene synthesis / LNP recipes; no institute affiliation claims.**
 
 | Phase | Status | Deliverables |
 |-------|--------|--------------|
 | A0 Spec & brand | `[x]` | Schemas, `/aeterna` landing + hero, Workflow Store category |
 | A1 Vault + intent API | `[~]` | `aeterna_dna_vault` / orders / partners; `FF_AETERNA`; migration `059` |
 | A2 Checkout UX | `[ ]` | Category filter, org desk, longevity bundle UX |
-| A3 Sandbox viz | `[~]` | Helix + hash vault + homepage promo + organ-print SKU; variant browser still open |
+| A3 Sandbox viz | `[~]` | Helix + hash vault + homepage promo + organ-print SKU + mRNA-reprogramming consult citation; variant browser still open |
 | A4 Partner network | `[ ]` | Verified clinics, ACP escrow until consult delivered |
 | A5 Economy | `[ ]` | Vertical `AETERNA` + creator-listed genomic workflows |
 

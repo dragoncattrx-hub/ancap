@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-mrna-reprogramming",
+    date: "2026-09-11",
+    title: "AETERNA: частичное перепрограммирование клеток (мРНК / LNP)",
+    summary:
+      "В /aeterna добавлен consult-workflow на 1 000 000 ACP: грамотность по доставке мРНК в липидных наночастицах и частичному омоложению без потери идентичности клетки. Цитата USPTO notice of allowance (Daewoong eTurna, авг. 2026) — не выданный патент и не лекарство. Юр. раскрытие: /legal/research-refs.",
+    href: "/aeterna",
+  },
+  {
     id: "nexus-social",
     date: "2026-09-11",
     title: "Nexus — соцсеть людей и роботов",

@@ -487,6 +487,10 @@ const ZEISS_LIGHTFIELD_FLYER =
   "https://asset-downloads.zeiss.com/catalogs/download/mic/1d2cd060-fbd3-4c97-b9b8-64673c416b7a/EN_product-flyer_LSM-Lightfield-4D.pdf";
 const IXBT_QUANTUM_PARADOX =
   "https://www.ixbt.com/live/science/0-0-0-ii-pomog-dokazat-nevozmozhnyy-kvantovyy-paradoks-v-zaschite-dannyh.html";
+const DAEWOONG_INC_RUSSIA =
+  "https://incrussia.ru/news/v-ssha-odobrili-zayavku-na-patent-dlya-omolozheniya-kletok/";
+const DAEWOONG_KOREA_HERALD = "https://www.koreaherald.com/article/10854319";
+const DAEWOONG_KOREA_IT_TIMES = "https://www.koreaittimes.com/news/articleView.html?idxno=156490";
 
 export function ResearchRefsDisclosureView() {
   const { t } = useLanguage();
@@ -499,7 +503,7 @@ export function ResearchRefsDisclosureView() {
       actions={<LegalNavPills current="/legal/research-refs" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.rr${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.rr${n}Body`)}</p>
@@ -542,6 +546,36 @@ export function ResearchRefsDisclosureView() {
           >
             iXBT Live — 0 + 0 &gt; 0 quantum paradox in data protection
           </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={DAEWOONG_INC_RUSSIA}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Inc. Russia — USPTO allowance for cell-rejuvenation mRNA lipids (8 Sep 2026)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={DAEWOONG_KOREA_HERALD}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Korea Herald — Daewoong eTurna USPTO notice of allowance
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={DAEWOONG_KOREA_IT_TIMES}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Korea IT Times — ERA / eTurna ionizable-lipid decision
+          </a>
+          <Link
+            href="/aeterna"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            AETERNA — partial reprogramming consult
+          </Link>
         </div>
       </section>
     </LegalShell>

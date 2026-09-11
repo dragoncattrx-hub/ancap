@@ -58,7 +58,9 @@ def test_advanced_track_schema_smoke():
     assert vault.format_hint == "vcf"
     assert AeternaIntentKind.pigmentation_consult.value == "pigmentation_consult"
     assert AeternaIntentKind.organ_bioprint.value == "organ_bioprint"
+    assert AeternaIntentKind.partial_reprogramming_consult.value == "partial_reprogramming_consult"
     assert AeternaStatusPublic.model_fields["division"]
+    assert AeternaStatusPublic.model_fields["reprogramming_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -66,8 +68,9 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-dna-wellness-report" in slugs
     assert "aeterna-pigmentation-consult-brief" in slugs
     assert "aeterna-stem-cell-organ-print" in slugs
+    assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 6
+    assert len(aeterna) >= 8
     for tpl in aeterna:
         assert tpl.price.currency == "ACP"
         if tpl.slug == "aeterna-stem-cell-organ-print":
@@ -133,7 +136,7 @@ def test_organ_print_execution_is_partner_handoff_only():
 
 
 def test_aeterna_longevity_pack_and_intent_slug_map():
-    from app.services.aeterna import AETERNA_INTENT_DEFAULT_SLUGS, ORGAN_PRINT_SLUG
+    from app.services.aeterna import AETERNA_INTENT_DEFAULT_SLUGS, MRNA_REPROGRAMMING_SLUG, ORGAN_PRINT_SLUG
     from app.services.workflow_execution import WORKFLOW_BUNDLES
 
     pack = next(x for x in WORKFLOW_BUNDLES if x.slug == "aeterna-longevity-pack")
@@ -141,6 +144,7 @@ def test_aeterna_longevity_pack_and_intent_slug_map():
     assert "aeterna-dna-wellness-report" in pack.workflow_slugs
     assert ORGAN_PRINT_SLUG not in pack.workflow_slugs
     assert AETERNA_INTENT_DEFAULT_SLUGS["organ_bioprint"] == ORGAN_PRINT_SLUG
+    assert AETERNA_INTENT_DEFAULT_SLUGS["partial_reprogramming_consult"] == MRNA_REPROGRAMMING_SLUG
 
 
 def test_organ_bioprint_intent_defaults_slug_and_rejects_low_budget(client):
@@ -172,6 +176,53 @@ def test_organ_bioprint_intent_defaults_slug_and_rejects_low_budget(client):
     assert payload["workflow_slug"] == ORGAN_PRINT_SLUG
     assert payload["metadata_json"]["manufacturing_mode"] == "licensed_partner_bioreactor"
     assert payload["metadata_json"]["fallback_cell_source"] == "wisdom_tooth_dental_pulp_stem_cells_dpsc"
+
+
+def test_mrna_reprogramming_execution_is_consult_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-mrna-reprogramming-brief")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "partial_reprogramming_consult"})
+    reprogramming = out["deliverable"]["reprogramming"]
+    assert reprogramming["mode"] == "partial_keep_cell_identity"
+    assert reprogramming["price_acp"] == "1000000"
+    assert reprogramming["citation"]["affiliation"] is False
+    assert out["deliverable"]["partner_handoff"]["required"] is True
+    blob = str(out).lower()
+    for forbidden in ("ionizable lipid recipe", "molar ratio", "incubate at", "guide rna", "pcr primer"):
+        assert forbidden not in blob
+
+
+def test_partial_reprogramming_intent_defaults_slug_and_rejects_low_budget(client):
+    from app.services.aeterna import MRNA_REPROGRAMMING_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "partial_reprogramming_consult", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    wrong_slug = client.post(
+        "/v1/aeterna/intents",
+        json={
+            "intent_kind": "partial_reprogramming_consult",
+            "budget_acp": "1000000",
+            "workflow_slug": "aeterna-dna-wellness-report",
+        },
+    )
+    assert wrong_slug.status_code == 400, wrong_slug.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "partial_reprogramming_consult", "budget_acp": "1000000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["intent_kind"] == "partial_reprogramming_consult"
+    assert payload["workflow_slug"] == MRNA_REPROGRAMMING_SLUG
+    assert payload["metadata_json"]["mode"] == "licensed_partner_consult_only"
+    assert payload["metadata_json"]["goal"] == "partial_reprogramming_keep_cell_identity"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

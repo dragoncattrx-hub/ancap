@@ -8,6 +8,7 @@ import { DnaNanobotScissors } from "@/components/DnaNanobotScissors";
 import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
 import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
 import { MolecularAgingPanel } from "@/components/aeterna/MolecularAgingPanel";
+import { MrnaReprogrammingPanel } from "@/components/aeterna/MrnaReprogrammingPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -31,9 +32,10 @@ type AeternaStatus = {
   next_gate: string;
   aging_hallmarks?: AgingHallmark[];
   molecular_aging_note?: string;
+  reprogramming_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -109,6 +111,12 @@ export default function AeternaPage() {
               {t("aeternaPage.agingCta")}
             </a>
             <a
+              href="#mrna-reprogramming"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.mrnaCta")}
+            </a>
+            <a
               href="#organ-print"
               className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white/90 transition hover:border-white/60"
             >
@@ -149,6 +157,10 @@ export default function AeternaPage() {
             hallmarks={status?.aging_hallmarks}
             note={status?.molecular_aging_note}
           />
+        </section>
+
+        <section className="mt-16">
+          <MrnaReprogrammingPanel note={status?.reprogramming_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">
@@ -238,7 +250,7 @@ export default function AeternaPage() {
             </div>
             <div>
               <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.workflows")}</dt>
-              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 7}</dd>
+              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 8}</dd>
             </div>
           </dl>
           {status && (

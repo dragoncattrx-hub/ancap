@@ -44,6 +44,7 @@ class AeternaIntentKind(str, Enum):
     partner_clinic_match = "partner_clinic_match"
     organ_bioprint = "organ_bioprint"
     molecular_aging_profile = "molecular_aging_profile"
+    partial_reprogramming_consult = "partial_reprogramming_consult"
 
 
 class AeternaDnaSource(str, Enum):
@@ -225,4 +226,10 @@ class AeternaStatusPublic(BaseModel):
     molecular_aging_note: str = (
         "Molecular aging profile maps 15 hallmark axes from consented blood-RNA / "
         "panel metadata — individual configuration of aging processes, not one universal bio-age number."
+    )
+    reprogramming_note: str = (
+        "Public USPTO notice of allowance (announced 27 August 2026) for ionizable lipids "
+        "in the eTurna LNP mRNA-delivery platform is educational context for licensed-partner "
+        "partial-reprogramming consults — not an issued drug, not a wet-lab recipe, and not "
+        "an ANCAP affiliation with Daewoong Pharmaceutical or Turn Biotechnologies."
     )

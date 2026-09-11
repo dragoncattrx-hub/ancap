@@ -30,7 +30,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Market data",
     researchRefsLink: "Research references",
     hubCardResearchRefs:
-      "Third-party scientific instruments and quantum-info journalism we cite (ZEISS Lightfield 4D, iXBT Live) — trademarks stay with their owners; no affiliation.",
+      "Third-party scientific instruments, mRNA/LNP patent journalism, and quantum-info cites (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance, iXBT Live) — trademarks stay with their owners; no affiliation.",
     footerResearchRefs: "Research refs",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -54,9 +54,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr6Title: "6. Quantum information / data-protection research (iXBT Live)",
     rr6Body:
       "ANCAP cites the public iXBT Live article “0 + 0 > 0: ИИ помог доказать невозможный квантовый парадокс в защите данных” (superadditivity of private capacity; AI-assisted discovery with Lean 4 verification) as educational context for the quantum-link digital SIM desk. ANCAP engineering principles P1–P8 (private vs ordinary capacity; classical 0+0=0; quantum 0+0>0; joint non-separable decode; linear/quadratic scale separation; AI propose / machines verify; multi-path mesh) live on /quantum-sim and in docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md. The article is third-party journalism; ANCAP is not affiliated with iXBT. Citation does not imply ownership of QKD hardware or a guaranteed private capacity on any ANCAP channel.",
+    rr7Title: "7. Daewoong / eTurna mRNA LNP (USPTO notice of allowance)",
+    rr7Body:
+      "As of 11 September 2026, ANCAP cites public journalism that Daewoong Pharmaceutical received a USPTO notice of allowance (announced 27 August 2026) for ionizable-lipid structures used in the eTurna lipid-nanoparticle (LNP) platform to deliver mRNA encoding partial cellular-reprogramming factors (Epigenetic Reprogramming of Aging / ERA; assets acquired from Turn Biotechnologies). The cited application title is “Lipid Structures and Compositions Comprising the Same.” A notice of allowance is not a fully issued U.S. patent and is not FDA/EMA marketing authorization. Reported work remains preclinical (human dermal fibroblasts / aged-tissue assays in the patent specification). ANCAP is not affiliated with Daewoong Pharmaceutical, Turn Biotechnologies, HanAll Biopharma, or eTurna. Citation is educational context for AETERNA licensed-partner consult workflows only. ANCAP does not host patent PDFs, lipid recipes, mRNA sequences, LNP formulation steps, or any wet-lab protocol.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes and the iXBT quantum-info article are cited for literacy only.",
+      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, and the iXBT quantum-info article are cited for literacy only.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
@@ -328,7 +331,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Рыночные данные",
     researchRefsLink: "Научные ссылки",
     hubCardResearchRefs:
-      "Сторонние научные источники (ZEISS Lightfield 4D, iXBT Live про квантовый парадокс защиты данных) — товарные знаки у правообладателей; без аффилиации.",
+      "Сторонние научные источники (ZEISS Lightfield 4D, USPTO notice of allowance Daewoong eTurna по мРНК/LNP, iXBT Live про квантовый парадокс защиты данных) — товарные знаки у правообладателей; без аффилиации.",
     footerResearchRefs: "Научные ссылки",
     researchRefsKicker: "Сторонние источники",
     researchRefsTitle: "Научные ссылки и цитирование приборов",
@@ -352,9 +355,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr6Title: "6. Квантовая информация / защита данных (iXBT Live)",
     rr6Body:
       "ANCAP цитирует публичную статью iXBT Live «0 + 0 > 0: ИИ помог доказать невозможный квантовый парадокс в защите данных» (супераддитивность приватной пропускной способности; поиск конфигурации с ИИ и проверка в Lean 4) как образовательный контекст для стола цифровой SIM. Принципы P1–P8 (приватная vs обычная ёмкость; классическое 0+0=0; квантовое 0+0>0; совместное неизмеримое декодирование; линейный/квадратичный масштаб; ИИ предлагает / машины проверяют; multi-path mesh) — на /quantum-sim и в docs/QUANTUM_PRIVATE_CAPACITY_PRINCIPLES.md. Статья — сторонняя журналистика; ANCAP не аффилирован с iXBT. Цитата не означает владение QKD-железом и не гарантирует приватную ёмкость каналов ANCAP.",
+    rr7Title: "7. Daewoong / eTurna мРНК LNP (USPTO notice of allowance)",
+    rr7Body:
+      "По состоянию на 11 сентября 2026 ANCAP цитирует публичную журналистику: Daewoong Pharmaceutical получила notice of allowance USPTO (анонс 27 августа 2026) на структуры ионизируемых липидов платформы eTurna (LNP) для доставки мРНК с факторами частичного клеточного перепрограммирования (ERA; активы Turn Biotechnologies). Цитируемое название заявки — «Lipid Structures and Compositions Comprising the Same». Notice of allowance — не выданный патент США и не регистрация лекарства (FDA/EMA). Работы доклинические. ANCAP не аффилирован с Daewoong, Turn Biotechnologies, HanAll Biopharma и eTurna. Цитата — образовательный контекст для consult-workflow AETERNA. ANCAP не хостит PDF патентов, рецепты липидов, последовательности мРНК, шаги формулирования LNP и любые wet-lab протоколы.",
     researchRefsLinksTitle: "Канонические research-ссылки",
     researchRefsLinksBody:
-      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS и iXBT цитируются для грамотности, не как warranty продукта.",
+      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance и iXBT цитируются для грамотности, не как warranty продукта.",
     cryoLink: "Крионика и конституции",
     hubCardCryo:
       "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
@@ -621,7 +627,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Ринкові дані",
     researchRefsLink: "Наукові посилання",
     hubCardResearchRefs:
-      "Сторонні наукові інструменти, які ми цитуємо (включно з ZEISS Lightfield 4D) — без афіліації.",
+      "Сторонні наукові інструменти та патентна журналістика, які ми цитуємо (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance) — без афіліації.",
     footerResearchRefs: "Наукові посилання",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -645,9 +651,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr6Title: "6. Quantum information / data-protection research (iXBT Live)",
     rr6Body:
       "ANCAP cites the public iXBT Live article on an ‘impossible’ quantum paradox in data protection (private-capacity superadditivity; AI + Lean 4) as literacy for the quantum-link digital SIM desk. No affiliation with iXBT; no QKD warranty.",
+    rr7Title: "7. Daewoong / eTurna mRNA LNP (USPTO notice of allowance)",
+    rr7Body:
+      "As of 11 September 2026, ANCAP cites public journalism that Daewoong Pharmaceutical received a USPTO notice of allowance (27 August 2026) for ionizable lipids in the eTurna LNP platform. Allowance ≠ issued patent ≠ approved drug. Preclinical only. No affiliation; no lipid recipes or wet-lab protocols on ANCAP hosts.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use public publisher URLs. Prefer the source page if a deep link changes.",
+      "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, and iXBT.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
@@ -919,7 +928,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Marktdaten",
     researchRefsLink: "Forschungsreferenzen",
     hubCardResearchRefs:
-      "Drittanbieter-Wissenschaftsinstrumente, die wir zitieren (inkl. ZEISS Lightfield 4D) — ohne Affiliation.",
+      "Drittanbieter-Wissenschaftsinstrumente und Patent-Journalismus, die wir zitieren (ZEISS Lightfield 4D, Daewoong eTurna USPTO-Allowance) — ohne Affiliation.",
     footerResearchRefs: "Forschungsrefs",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -943,9 +952,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr6Title: "6. Quanteninformation / Datenschutzforschung (iXBT Live)",
     rr6Body:
       "ANCAP zitiert den öffentlichen iXBT-Live-Artikel zum „unmöglichen“ Quantenparadoxon im Datenschutz als Bildungsrahmen für den Quantum-Link-SIM-Desk. Keine Affiliation mit iXBT; keine QKD-Garantie.",
+    rr7Title: "7. Daewoong / eTurna-mRNA-LNP (USPTO Notice of Allowance)",
+    rr7Body:
+      "Stand 11. September 2026 zitiert ANCAP öffentliche Berichte, wonach Daewoong Pharmaceutical eine USPTO-Notice of Allowance (27. August 2026) für ionisierbare Lipide der eTurna-LNP-Plattform erhalten hat. Allowance ≠ erteiltes Patent ≠ zugelassenes Arzneimittel. Präklinisch. Keine Affiliation; keine Lipidrezepte oder Nasslabor-Protokolle auf ANCAP-Hosts.",
     researchRefsLinksTitle: "Kanonische Research-Links",
     researchRefsLinksBody:
-      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen.",
+      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance und iXBT nur zur Literacy.",
     cryoLink: "Kryonik & Verfassungen",
     hubCardCryo:
       "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
@@ -1216,7 +1228,7 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardMarketData: "ANCAP 如何使用 CoinGecko 等第三方報價——僅供參考。",
     footerMarketData: "市場數據",
     researchRefsLink: "研究引用",
-    hubCardResearchRefs: "我們引用的第三方科學儀器與量子資訊報導（含 ZEISS Lightfield 4D、iXBT Live）——商標歸權利人，無隸屬關係。",
+    hubCardResearchRefs: "我們引用的第三方科學儀器、mRNA／LNP 專利報導與量子資訊報導（含 ZEISS Lightfield 4D、Daewoong eTurna USPTO allowance、iXBT Live）——商標歸權利人，無隸屬關係。",
     footerResearchRefs: "研究引用",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -1240,9 +1252,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr6Title: "6. 量子資訊／資料保護研究（iXBT Live）",
     rr6Body:
       "ANCAP 引用 iXBT Live 關於資料保護中「不可能」量子悖論之公開文章，作為量子連線數位 SIM 服務台之教育脈絡。與 iXBT 無隸屬；不保證 QKD。",
+    rr7Title: "7. Daewoong／eTurna mRNA LNP（USPTO notice of allowance）",
+    rr7Body:
+      "截至 2026 年 9 月 11 日，ANCAP 引用公開報導：Daewoong Pharmaceutical 於 2026 年 8 月 27 日就 eTurna LNP 平台之可離子化脂質獲得 USPTO notice of allowance。Allowance 並非已核發專利，亦非藥品核准。工作仍屬臨床前。無關聯；ANCAP 主機不托管脂質配方或濕實驗協議。",
     researchRefsLinksTitle: "正規研究連結",
     researchRefsLinksBody:
-      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。",
+      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance 與 iXBT，僅供素養。",
     cryoLink: "冷凍與憲法",
     hubCardCryo:
       "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",

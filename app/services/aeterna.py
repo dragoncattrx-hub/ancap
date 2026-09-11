@@ -39,11 +39,13 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-disease-risk-navigator",
     "aeterna-molecular-aging-profile",
     "aeterna-stem-cell-organ-print",
+    "aeterna-mrna-reprogramming-brief",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
 ORGAN_PRINT_PRICE_ACP = Decimal("250000")
 MOLECULAR_AGING_SLUG = "aeterna-molecular-aging-profile"
+MRNA_REPROGRAMMING_SLUG = "aeterna-mrna-reprogramming-brief"
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -149,6 +151,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.partner_clinic_match.value: "aeterna-longevity-panel-brief",
     AeternaIntentKind.organ_bioprint.value: ORGAN_PRINT_SLUG,
     AeternaIntentKind.molecular_aging_profile.value: MOLECULAR_AGING_SLUG,
+    AeternaIntentKind.partial_reprogramming_consult.value: MRNA_REPROGRAMMING_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -174,10 +177,32 @@ MOLECULAR_AGING_META = {
     ),
 }
 
+MRNA_REPROGRAMMING_META = {
+    "mode": "licensed_partner_consult_only",
+    "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
+    "goal": "partial_reprogramming_keep_cell_identity",
+    "not": [
+        "issued_us_patent_until_grant_issues",
+        "approved_drug",
+        "full_pluripotent_reset",
+        "lipid_recipe",
+        "mrna_sequence",
+        "wet_lab_protocol",
+    ],
+    "citation_note": (
+        "Public journalism (Inc. Russia 8 Sep 2026; Daewoong / USPTO notice of allowance "
+        "announced 27 Aug 2026) on ionizable lipids for the eTurna LNP platform. "
+        "ANCAP is not affiliated with Daewoong Pharmaceutical, Turn Biotechnologies, "
+        "HanAll Biopharma, or eTurna."
+    ),
+}
+
 _COMPLIANCE = (
     "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only. "
-    "No DIY CRISPR/Cas9 protocols, gene synthesis, or unlicensed enhancement procedures. "
-    "Molecular aging profiles are educational / partner-prep — not clinical diagnoses."
+    "No DIY CRISPR/Cas9 protocols, gene synthesis, LNP formulation recipes, mRNA sequences, "
+    "or unlicensed enhancement procedures. "
+    "Molecular aging profiles and partial-reprogramming briefs are educational / partner-prep — "
+    "not clinical diagnoses and not approved anti-aging drugs."
 )
 
 
@@ -249,7 +274,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         feature_enabled=enabled,
         tagline=(
             "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
-            "ACP workflows, licensed longevity partners."
+            "partial mRNA-reprogramming consults, ACP workflows, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -267,6 +292,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Goal is an individual configuration of aging processes "
             "(DNA repair, proteostasis, energy metabolism, senescence, …) — "
             "not one universal \"you are biologically N years old\" score. Sex-aware models preferred."
+        ),
+        reprogramming_note=(
+            "Partial reprogramming = restore some youthful cell functions without erasing identity. "
+            "eTurna-style LNP mRNA delivery is cited as public patent-literacy only "
+            "(USPTO notice of allowance, Aug 2026) — not a therapy ANCAP sells or compounds."
         ),
     )
 
@@ -356,6 +386,20 @@ async def create_intent_order(
             "hallmark_ids",
             [h.id for h in AETERNA_AGING_HALLMARKS],
         )
+    if body.intent_kind == AeternaIntentKind.partial_reprogramming_consult:
+        if slug and slug != MRNA_REPROGRAMMING_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="partial_reprogramming_consult requires workflow_slug aeterna-mrna-reprogramming-brief",
+            )
+        slug = MRNA_REPROGRAMMING_SLUG
+        if body.budget_acp < Decimal("1000000"):
+            raise HTTPException(
+                status_code=400,
+                detail="partial_reprogramming_consult budget_acp must be at least 1000000 ACP",
+            )
+        for key, value in MRNA_REPROGRAMMING_META.items():
+            meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(
         org_id=org_id,

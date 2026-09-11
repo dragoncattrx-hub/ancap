@@ -11,9 +11,11 @@ People pay ACP for **structured longevity workflows**: upload / link sequenced D
 
 Headline product (2026-09 modernization): **Molecular Aging Profile (15 axes)** — map consented expression-panel metadata onto hallmark themes (DNA repair, telomeres, epigenetics, proteostasis, autophagy, energy metabolism, senescence, stem-cell maintenance, mitochondria, inflammation, signaling, matrix, circadian/systemic, immune aging, nutrient sensing). Goal is an **individual configuration of aging processes**, not one universal “biological age” number; sex-aware framing preferred. Inspired by public research on multi-gene venous-blood RNA aging panels ([science.mail.ru / Gazeta.ru coverage, Sep 2026](https://science.mail.ru/news/56466-rossijskie-uchenyie-rabotayut-nad-testom-kotoryij-otsenivaet-starenie-po-15-genam/)) — **AETERNA claims no lab affiliation**.
 
-**Non-goals (v1):** consumer DIY CRISPR/Cas9 kits, wet-lab protocols, gene synthesis, pathogen work, unlicensed enhancement procedures, diagnostic claims for home PCR.
+**Non-goals (v1):** consumer DIY CRISPR/Cas9 kits, wet-lab protocols, gene synthesis, pathogen work, unlicensed enhancement procedures, diagnostic claims for home PCR, **LNP formulation recipes / mRNA sequences**.
 
 **Goals (v1–v2):** DNA / panel vault → consent → paid workflow catalog → partner match → ACP settlement → audit receipt.
+
+**2026-09-11 literacy add-on:** **Partial cellular reprogramming consult** (`aeterna-mrna-reprogramming-brief`, 1,000,000 ACP) — public USPTO notice-of-allowance journalism (Daewoong **eTurna** ionizable lipids for mRNA in LNPs; announced 27 Aug 2026; RU coverage 8 Sep 2026). Goal in coverage: restore some youthful cell functions **without** erasing cell identity. **Allowance ≠ issued patent ≠ approved drug.** ANCAP is not affiliated. See `docs/DAEWOONG_ETURNA_LNP.md` and `/legal/research-refs` §7.
 
 ## Compliance gates (must ship with MVP)
 
@@ -54,6 +56,7 @@ Headline product (2026-09 modernization): **Molecular Aging Profile (15 axes)** 
 - `[x]` Procedural DNA helix on `/aeterna` (rotate + swap base pairs) — no PDB/genome blob on server.
 - `[x]` Client streaming SHA-256 vault registration (hash + ≤8KB metadata only).
 - `[x]` Homepage AETERNA promo; consult workflows **1,000,000 ACP**; stem-cell organ print **250,000 ACP** per organ (pack 2,500,000 ACP).
+- `[x]` Partial mRNA-reprogramming consult (`aeterna-mrna-reprogramming-brief`) + USPTO eTurna citation (legal as of 11 Sep 2026).
 - `[ ]` Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
 - No edit simulation that implies real wet-lab editing capability.
 
@@ -93,7 +96,8 @@ GET  /organizations/{org_id}/aeterna/intents
 - `aeterna-telomere-panel-review`
 - `aeterna-disease-risk-navigator`
 - `aeterna-stem-cell-organ-print` — **250,000 ACP / organ**; autologous stem cells, wisdom-tooth DPSC fallback; licensed biochemical reactor partner only.
+- `aeterna-mrna-reprogramming-brief` — **1,000,000 ACP**; partial reprogramming consult (mRNA-in-LNP literacy); USPTO eTurna notice-of-allowance citation only.
 
-Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + molecular aging profile + longevity panel. Organ print is sold per organ, not inside the pack.
+Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + molecular aging profile + longevity panel. Organ print is sold per organ, not inside the pack. The mRNA-reprogramming consult is sold separately.
 
-Intent `molecular_aging_profile` defaults to `aeterna-molecular-aging-profile`. Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Vault source enum includes `venous_blood_rna` for panel hash registration.
+Intent `molecular_aging_profile` defaults to `aeterna-molecular-aging-profile`. Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Intent `partial_reprogramming_consult` defaults to `aeterna-mrna-reprogramming-brief` and requires `budget_acp >= 1000000`. Vault source enum includes `venous_blood_rna` for panel hash registration.

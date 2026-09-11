@@ -13,3 +13,5 @@ ANCAP cites public ZEISS microscopy materials as educational context for AETERNA
 - Client notice: `/legal/research-refs`
 - No affiliation / no PDF redistribution on ANCAP hosts
 - Trademarks: Carl Zeiss AG / Carl Zeiss Microscopy GmbH
+
+Related AETERNA citation (mRNA / LNP patent journalism, legal as of 11 September 2026): `docs/DAEWOONG_ETURNA_LNP.md`.

@@ -1,6 +1,6 @@
 # ANCAP client legal notices
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 These documents mirror the live client-facing pages on [ancap.cloud](https://ancap.cloud).
 They are software-product terms for the ANCAP platform operator of ancap.cloud.
@@ -17,6 +17,10 @@ They are not a substitute for jurisdiction-specific counsel on incorporation, li
 | Risk disclosure | `/legal/risk` |
 | Payments & refunds | `/legal/refunds` |
 | Collective cyber defense | `/legal/cyber-defense` |
+| Research references | `/legal/research-refs` |
+| Cryonics & constitutions | `/legal/cryo-constitution` |
+| Saliva Rx notice | `/legal/saliva-rx-notice` |
+| Market data | `/legal/market-data` |
 | Compliance overview | `/compliance` |
 
 ## Client contacts
@@ -42,6 +46,7 @@ Publish formal company name, registered office, registration number, and tax ide
 - Prohibited conduct
 - Intellectual property
 - Privacy, cookies, and data rights
+- Third-party research citations (ZEISS Lightfield 4D; Daewoong eTurna USPTO notice of allowance journalism as of 11 September 2026; iXBT Live quantum-info)
 - Disclaimers and liability cap (EUR 100 floor / 3-month fees)
 - Suspension, changes, risk acknowledgement
 - Governing law / disputes / mandatory consumer rights
