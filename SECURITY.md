@@ -54,3 +54,7 @@ Out of scope unless there is a concrete exploitable path:
 Never commit real secrets to the repository. If you discover one, stop and rotate/revoke it first.
 
 Operator follow-through checklist: [docs/SECRET_ROTATION_RUNBOOK.md](docs/SECRET_ROTATION_RUNBOOK.md)
+
+## External dependency advisories (operator)
+
+- **2026-09-11 — GitLab CVE-2026-85706 (CVSS 10):** self-managed GitLab path traversal / unauthenticated file read when a public project exists. **ANCAP stack (GitHub + SourceCraft) is not affected.** Operator note: [docs/GITLAB_CVE_2026_85706.md](docs/GITLAB_CVE_2026_85706.md).

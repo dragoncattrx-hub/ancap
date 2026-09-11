@@ -1,11 +1,10 @@
-ANCAP update — Quantum-link digital SIM
+﻿GitLab CVSS 10 (CVE-2026-85706) - ANCAP check
 
-New desk: https://ancap.cloud/quantum-sim
-- Digital eSIM intents
-- Post-quantum / quantum-ready encrypted channels
-- Global low-ping mesh via partner satellites, base stations, and repeaters (ACP-settled)
+Self-managed GitLab: unauthenticated file read if any public project exists. Probes in the wild hours after disclosure.
 
-Research cite (no affiliation): iXBT Live quantum private-capacity paradox
-https://ancap.cloud/legal/research-refs
+ANCAP write path is GitHub + SourceCraft mirror - not self-managed GitLab. No ancap.cloud runtime patch required.
 
-#ANCAP #ACP #PQC #eSIM
+If you run GitLab yourself: upgrade to 19.1.8 / 19.2.6 / 19.3.2 now; hunt POST /api/v4/projects/*/repository/commits/ with file.path; rotate secrets if exposed.
+
+https://ancap.cloud/
+https://thehackernews.com/2026/09/gitlab-cvss-10-file-read-flaw-draws-in.html

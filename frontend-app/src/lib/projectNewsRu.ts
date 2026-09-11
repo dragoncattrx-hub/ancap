@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "gitlab-cve-2026-85706",
+    date: "2026-09-11",
+    title: "GitLab CVSS 10 — проверка ANCAP",
+    summary:
+      "CVE-2026-85706: неаутентифицированное чтение файлов на self-managed GitLab при наличии public project. Стек ANCAP (GitHub + SourceCraft) не затронут. Операторская заметка: docs/GITLAB_CVE_2026_85706.md.",
+    href: "https://thehackernews.com/2026/09/gitlab-cvss-10-file-read-flaw-draws-in.html",
+  },
+  {
     id: "quantum-principles-p1-p8",
     date: "2026-09-11",
     title: "Принципы квантовой приватной ёмкости P1–P8",
