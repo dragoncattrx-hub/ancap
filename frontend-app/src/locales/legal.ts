@@ -4,7 +4,7 @@ type Tree = { [key: string]: string | Tree };
 
 export const legalByLang: Record<Language, Tree> = {
   en: {
-    lastUpdated: "Last updated: 10 September 2026.",
+    lastUpdated: "Last updated: 11 September 2026.",
     privacyLink: "Privacy Notice",
     cookiesLink: "Cookie Policy",
     termsLink: "User Agreement",
@@ -28,6 +28,32 @@ export const legalByLang: Record<Language, Tree> = {
     marketDataLink: "Market data",
     hubCardMarketData: "How ANCAP uses CoinGecko prices and AccuWeather conditions — indicative only.",
     footerMarketData: "Market data",
+    researchRefsLink: "Research references",
+    hubCardResearchRefs:
+      "Third-party scientific instruments we cite (including ZEISS Lightfield 4D) — trademarks stay with their owners; no affiliation.",
+    footerResearchRefs: "Research refs",
+    researchRefsKicker: "Third-party science",
+    researchRefsTitle: "Research references and instrument citations",
+    researchRefsIntro:
+      "How ANCAP cites public third-party scientific instruments and technology notes. Downloads and trademarks remain with their owners.",
+    rr1Title: "1. Purpose",
+    rr1Body:
+      "ANCAP may cite public product pages and technology notes as educational context for longevity, imaging, and AETERNA research workflows. Citations help users understand imaging modalities that partners may use. They are not an endorsement, distribution, or resale of third-party hardware.",
+    rr2Title: "2. ZEISS Lightfield 4D",
+    rr2Body:
+      "ANCAP references ZEISS LSM Lightfield 4D — instant volumetric light-field microscopy for high-speed, gentle imaging of living samples — as public technical context. The ZEISS product page and technology note (Instant volume acquisition for high-speed and gentle imaging) are linked from this Legal center and from AETERNA. Gated thank-you or download pages after a ZEISS form are served by ZEISS under ZEISS terms.",
+    rr3Title: "3. No affiliation or trademark license",
+    rr3Body:
+      "ZEISS, Carl Zeiss, Lightfield 4D, LSM, ZEN, and related marks are trademarks of Carl Zeiss AG, Carl Zeiss Microscopy GmbH, or their affiliates. ANCAP is not affiliated with, sponsored by, or endorsed by ZEISS. Nothing on ancap.cloud grants a trademark license or implies a commercial partnership unless a separate written agreement says otherwise.",
+    rr4Title: "4. Downloads and hosting",
+    rr4Body:
+      "ANCAP does not host or redistribute ZEISS proprietary PDFs. We link to ZEISS-controlled URLs (product page, technology note guide, and official flyer assets). If a download requires registration on a ZEISS thank-you page, that processing is governed by ZEISS privacy and terms — not by ANCAP.",
+    rr5Title: "5. Not medical or clinical advice",
+    rr5Body:
+      "Instrument citations do not create medical, diagnostic, or clinical advice. AETERNA and DNA/RNA bank features remain research/workflow tooling with their own compliance notes. Always verify partner licenses and local law before any clinical use.",
+    researchRefsLinksTitle: "Canonical ZEISS links",
+    researchRefsLinksBody:
+      "Use these public ZEISS URLs. Prefer the product page if a deep link changes; the technology note describes instant volume acquisition for high-speed and gentle imaging.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardCyber: "Public policy endorsement of collective cyber defense.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -250,7 +276,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   ru: {
-    lastUpdated: "Обновлено: 10 сентября 2026.",
+    lastUpdated: "Обновлено: 11 сентября 2026.",
     privacyLink: "Уведомление о конфиденциальности",
     cookiesLink: "Политика cookie",
     termsLink: "Пользовательское соглашение",
@@ -274,6 +300,32 @@ export const legalByLang: Record<Language, Tree> = {
     marketDataLink: "Рыночные данные",
     hubCardMarketData: "Как ANCAP использует цены CoinGecko и погоду AccuWeather — только ориентировочно.",
     footerMarketData: "Рыночные данные",
+    researchRefsLink: "Научные ссылки",
+    hubCardResearchRefs:
+      "Сторонние научные инструменты, которые мы цитируем (включая ZEISS Lightfield 4D) — товарные знаки у правообладателей; без аффилиации.",
+    footerResearchRefs: "Научные ссылки",
+    researchRefsKicker: "Сторонние источники",
+    researchRefsTitle: "Научные ссылки и цитирование приборов",
+    researchRefsIntro:
+      "Как ANCAP ссылается на публичные страницы и technology notes сторонних научных приборов. Загрузки и товарные знаки остаются у их владельцев.",
+    rr1Title: "1. Цель",
+    rr1Body:
+      "ANCAP может цитировать публичные product pages и technology notes как образовательный контекст для longevity, imaging и workflow AETERNA. Это не endorsement, дистрибуция и не перепродажа чужого железа.",
+    rr2Title: "2. ZEISS Lightfield 4D",
+    rr2Body:
+      "ANCAP ссылается на ZEISS LSM Lightfield 4D — мгновенную volumetric light-field микроскопию для быстрой и бережной съёмки живых образцов — как на публичный технический контекст. Product page и technology note (Instant volume acquisition for high-speed and gentle imaging) доступны из Legal center и AETERNA. Thank-you / gated download после формы ZEISS обслуживает ZEISS по своим правилам.",
+    rr3Title: "3. Без аффилиации и лицензии на товарный знак",
+    rr3Body:
+      "ZEISS, Carl Zeiss, Lightfield 4D, LSM, ZEN и связанные знаки — товарные знаки Carl Zeiss AG, Carl Zeiss Microscopy GmbH или аффилиатов. ANCAP не аффилирован с ZEISS и не спонсируется ZEISS, если отдельный письменный договор не говорит иное.",
+    rr4Title: "4. Загрузки и хостинг",
+    rr4Body:
+      "ANCAP не хостит и не перераспространяет проприетарные PDF ZEISS. Мы даём ссылки на URL под контролем ZEISS. Если скачивание требует регистрации на thank-you странице ZEISS, обработка данных идёт по политике ZEISS, не ANCAP.",
+    rr5Title: "5. Не медицинский совет",
+    rr5Body:
+      "Цитирование приборов не является медицинским, диагностическим или клиническим советом. AETERNA и DNA/RNA bank остаются research/workflow tooling со своими compliance notes. Перед клиническим использованием проверяйте лицензии партнёров и местное право.",
+    researchRefsLinksTitle: "Канонические ссылки ZEISS",
+    researchRefsLinksBody:
+      "Используйте публичные URL ZEISS. Если deep link изменится, начинайте с product page; technology note описывает instant volume acquisition.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardCyber: "Публичная поддержка коллективной киберзащиты.",
     hubCardClarity: "Полное согласие с U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -491,7 +543,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   uk: {
-    lastUpdated: "Оновлено: 10 вересня 2026.",
+    lastUpdated: "Оновлено: 11 вересня 2026.",
     privacyLink: "Повідомлення про конфіденційність",
     cookiesLink: "Політика cookie",
     termsLink: "Угода користувача",
@@ -515,6 +567,32 @@ export const legalByLang: Record<Language, Tree> = {
     marketDataLink: "Ринкові дані",
     hubCardMarketData: "Як ANCAP використовує CoinGecko та інші цінові стрічки — лише орієнтовно.",
     footerMarketData: "Ринкові дані",
+    researchRefsLink: "Наукові посилання",
+    hubCardResearchRefs:
+      "Сторонні наукові інструменти, які ми цитуємо (включно з ZEISS Lightfield 4D) — без афіліації.",
+    footerResearchRefs: "Наукові посилання",
+    researchRefsKicker: "Third-party science",
+    researchRefsTitle: "Research references and instrument citations",
+    researchRefsIntro:
+      "How ANCAP cites public third-party scientific instruments and technology notes. Downloads and trademarks remain with their owners.",
+    rr1Title: "1. Purpose",
+    rr1Body:
+      "ANCAP may cite public product pages and technology notes as educational context for longevity, imaging, and AETERNA research workflows. Citations are not an endorsement or resale of third-party hardware.",
+    rr2Title: "2. ZEISS Lightfield 4D",
+    rr2Body:
+      "ANCAP references ZEISS LSM Lightfield 4D as public technical context. Product page and technology note links are on this Legal center and AETERNA. Gated thank-you downloads are served by ZEISS under ZEISS terms.",
+    rr3Title: "3. No affiliation or trademark license",
+    rr3Body:
+      "ZEISS, Carl Zeiss, Lightfield 4D, LSM, ZEN, and related marks are trademarks of Carl Zeiss AG / Carl Zeiss Microscopy GmbH or affiliates. ANCAP is not affiliated with or endorsed by ZEISS unless a separate written agreement says otherwise.",
+    rr4Title: "4. Downloads and hosting",
+    rr4Body:
+      "ANCAP does not host or redistribute ZEISS proprietary PDFs. We link to ZEISS-controlled URLs only.",
+    rr5Title: "5. Not medical or clinical advice",
+    rr5Body:
+      "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
+    researchRefsLinksTitle: "Canonical ZEISS links",
+    researchRefsLinksBody:
+      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardCyber: "Публічна підтримка колективного кіберзахисту.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -737,7 +815,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   de: {
-    lastUpdated: "Zuletzt aktualisiert: 10. September 2026.",
+    lastUpdated: "Zuletzt aktualisiert: 11. September 2026.",
     privacyLink: "Datenschutzhinweis",
     cookiesLink: "Cookie-Richtlinie",
     termsLink: "Nutzungsvereinbarung",
@@ -761,6 +839,32 @@ export const legalByLang: Record<Language, Tree> = {
     marketDataLink: "Marktdaten",
     hubCardMarketData: "Wie ANCAP CoinGecko und andere Kursfeeds nutzt — nur indikativ.",
     footerMarketData: "Marktdaten",
+    researchRefsLink: "Forschungsreferenzen",
+    hubCardResearchRefs:
+      "Drittanbieter-Wissenschaftsinstrumente, die wir zitieren (inkl. ZEISS Lightfield 4D) — ohne Affiliation.",
+    footerResearchRefs: "Forschungsrefs",
+    researchRefsKicker: "Third-party science",
+    researchRefsTitle: "Research references and instrument citations",
+    researchRefsIntro:
+      "How ANCAP cites public third-party scientific instruments and technology notes. Downloads and trademarks remain with their owners.",
+    rr1Title: "1. Purpose",
+    rr1Body:
+      "ANCAP may cite public product pages and technology notes as educational context for longevity, imaging, and AETERNA research workflows. Citations are not an endorsement or resale of third-party hardware.",
+    rr2Title: "2. ZEISS Lightfield 4D",
+    rr2Body:
+      "ANCAP references ZEISS LSM Lightfield 4D as public technical context. Product page and technology note links are on this Legal center and AETERNA. Gated thank-you downloads are served by ZEISS under ZEISS terms.",
+    rr3Title: "3. No affiliation or trademark license",
+    rr3Body:
+      "ZEISS, Carl Zeiss, Lightfield 4D, LSM, ZEN, and related marks are trademarks of Carl Zeiss AG / Carl Zeiss Microscopy GmbH or affiliates. ANCAP is not affiliated with or endorsed by ZEISS unless a separate written agreement says otherwise.",
+    rr4Title: "4. Downloads and hosting",
+    rr4Body:
+      "ANCAP does not host or redistribute ZEISS proprietary PDFs. We link to ZEISS-controlled URLs only.",
+    rr5Title: "5. Not medical or clinical advice",
+    rr5Body:
+      "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
+    researchRefsLinksTitle: "Canonical ZEISS links",
+    researchRefsLinksBody:
+      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardCyber: "Öffentliche Unterstützung kollektiver Cyberabwehr.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
@@ -983,7 +1087,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: " zu.",
   },
   "zh-Hant": {
-    lastUpdated: "最後更新：2026 年 9 月 10 日。",
+    lastUpdated: "最後更新：2026 年 9 月 11 日。",
     privacyLink: "隱私權聲明",
     cookiesLink: "Cookie 政策",
     termsLink: "使用者協議",
@@ -1007,6 +1111,31 @@ export const legalByLang: Record<Language, Tree> = {
     marketDataLink: "市場數據",
     hubCardMarketData: "ANCAP 如何使用 CoinGecko 等第三方報價——僅供參考。",
     footerMarketData: "市場數據",
+    researchRefsLink: "研究引用",
+    hubCardResearchRefs: "我們引用的第三方科學儀器（含 ZEISS Lightfield 4D）——商標歸權利人，無隸屬關係。",
+    footerResearchRefs: "研究引用",
+    researchRefsKicker: "Third-party science",
+    researchRefsTitle: "Research references and instrument citations",
+    researchRefsIntro:
+      "How ANCAP cites public third-party scientific instruments and technology notes. Downloads and trademarks remain with their owners.",
+    rr1Title: "1. Purpose",
+    rr1Body:
+      "ANCAP may cite public product pages and technology notes as educational context for longevity, imaging, and AETERNA research workflows. Citations are not an endorsement or resale of third-party hardware.",
+    rr2Title: "2. ZEISS Lightfield 4D",
+    rr2Body:
+      "ANCAP references ZEISS LSM Lightfield 4D as public technical context. Product page and technology note links are on this Legal center and AETERNA. Gated thank-you downloads are served by ZEISS under ZEISS terms.",
+    rr3Title: "3. No affiliation or trademark license",
+    rr3Body:
+      "ZEISS, Carl Zeiss, Lightfield 4D, LSM, ZEN, and related marks are trademarks of Carl Zeiss AG / Carl Zeiss Microscopy GmbH or affiliates. ANCAP is not affiliated with or endorsed by ZEISS unless a separate written agreement says otherwise.",
+    rr4Title: "4. Downloads and hosting",
+    rr4Body:
+      "ANCAP does not host or redistribute ZEISS proprietary PDFs. We link to ZEISS-controlled URLs only.",
+    rr5Title: "5. Not medical or clinical advice",
+    rr5Body:
+      "Instrument citations do not create medical or clinical advice. Verify partner licenses and local law before any clinical use.",
+    researchRefsLinksTitle: "Canonical ZEISS links",
+    researchRefsLinksBody:
+      "Use public ZEISS URLs. Prefer the product page if a deep link changes.",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardCyber: "公開支持集體網路防禦。",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",

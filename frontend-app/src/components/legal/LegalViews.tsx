@@ -50,6 +50,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/cookies", key: "cookiesLink" },
     { href: "/legal/risk", key: "riskLink" },
     { href: "/legal/market-data", key: "marketDataLink" },
+    { href: "/legal/research-refs", key: "researchRefsLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
@@ -83,6 +84,7 @@ export function LegalHubView() {
     { href: "/legal/cookies", title: "cookiesLink", body: "hubCardCookies" },
     { href: "/legal/risk", title: "riskLink", body: "hubCardRisk" },
     { href: "/legal/market-data", title: "marketDataLink", body: "hubCardMarketData" },
+    { href: "/legal/research-refs", title: "researchRefsLink", body: "hubCardResearchRefs" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
@@ -250,6 +252,10 @@ export function RiskDisclosureView() {
           {t("legal.riskMarketDataMore")}{" "}
           <Link href="/legal/market-data" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
             /legal/market-data
+          </Link>
+          {" · "}
+          <Link href="/legal/research-refs" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/research-refs
           </Link>
         </p>
       </section>
@@ -441,7 +447,7 @@ export function MarketDataDisclosureView() {
       <section className="mt-6 grid gap-4">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.md${n}Title`)}</h2>
+            <h2 className="mt-0 text-xl font-semibold tracking-[-0.02em]">{t(`legal.md${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.md${n}Body`)}</p>
           </article>
         ))}
@@ -472,6 +478,64 @@ export function MarketDataDisclosureView() {
   );
 }
 
+const ZEISS_LIGHTFIELD_PRODUCT =
+  "https://www.zeiss.com/microscopy/en/products/light-microscopes/confocal-microscopes/lightfield-4d.html";
+const ZEISS_LIGHTFIELD_TECH_NOTE = "https://guide.microscopy.zeiss.com/content/hbrXqJoB8mu68yTAwSxe";
+const ZEISS_LIGHTFIELD_FLYER =
+  "https://asset-downloads.zeiss.com/catalogs/download/mic/1d2cd060-fbd3-4c97-b9b8-64673c416b7a/EN_product-flyer_LSM-Lightfield-4D.pdf";
+
+export function ResearchRefsDisclosureView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-teal-300/20 bg-teal-400/[0.06]"
+      kicker={t("legal.researchRefsKicker")}
+      title={t("legal.researchRefsTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.researchRefsIntro")}`}
+      actions={<LegalNavPills current="/legal/research-refs" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.rr${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.rr${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">{t("legal.researchRefsLinksTitle")}</h2>
+        <p className="mt-3 text-sm leading-7 text-white/70">{t("legal.researchRefsLinksBody")}</p>
+        <div className="mt-4 flex flex-col gap-3 text-sm">
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={ZEISS_LIGHTFIELD_PRODUCT}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ZEISS LSM Lightfield 4D — product page
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={ZEISS_LIGHTFIELD_TECH_NOTE}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Technology note — Instant volume acquisition for high-speed and gentle imaging
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={ZEISS_LIGHTFIELD_FLYER}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Product flyer (PDF)
+          </a>
+        </div>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function SiteLegalFooter() {
   const { t } = useLanguage();
   const links = [
@@ -481,6 +545,7 @@ export function SiteLegalFooter() {
     { href: "/legal/cookies", label: "footerCookies" },
     { href: "/legal/risk", label: "footerRisk" },
     { href: "/legal/market-data", label: "footerMarketData" },
+    { href: "/legal/research-refs", label: "footerResearchRefs" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/clarity-act", label: "footerClarity" },
   ] as const;

@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "zeiss-lightfield-4d",
+    date: "2026-09-11",
+    title: "ZEISS Lightfield 4D — научная ссылка",
+    summary:
+      "В проект добавлена публичная ссылка на ZEISS LSM Lightfield 4D technology note. Юридическое раскрытие: /legal/research-refs (без аффилиации, PDF не хостим).",
+    href: "/legal/research-refs",
+  },
+  {
     id: "legal-entertainment",
     date: "2026-09-11",
     title: "Легальные развлечения по миру",

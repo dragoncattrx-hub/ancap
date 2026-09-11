@@ -186,6 +186,38 @@ export default function AeternaPage() {
         </section>
 
         <section className="mt-14 border-t border-white/10 pt-10">
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Imaging reference</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
+            For high-speed gentle volumetric imaging of living samples, ANCAP cites the public ZEISS LSM Lightfield 4D
+            technology note as educational context — not an affiliation.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <a
+              href="https://www.zeiss.com/microscopy/en/products/light-microscopes/confocal-microscopes/lightfield-4d.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-white/15 px-4 py-2 text-white/80 transition hover:border-white/35 hover:text-white"
+            >
+              ZEISS Lightfield 4D
+            </a>
+            <a
+              href="https://guide.microscopy.zeiss.com/content/hbrXqJoB8mu68yTAwSxe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-white/15 px-4 py-2 text-white/80 transition hover:border-white/35 hover:text-white"
+            >
+              Technology note
+            </a>
+            <Link
+              href="/legal/research-refs"
+              className="rounded-md border border-teal-300/25 px-4 py-2 text-teal-100/90 transition hover:border-teal-200/50"
+            >
+              Legal citation notice
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-14 border-t border-white/10 pt-10">
           <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.statusTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
             {t("aeternaPage.taglineFallback")}
