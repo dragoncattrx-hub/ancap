@@ -31,4 +31,4 @@ if (-not $ready) { throw "Emulator did not become ready in time. Check Android S
 Write-Host "Android test environment READY:"
 & $adb devices -l
 Write-Host "Next: cd ancap-mobile/apps/acp-wallet-expo ; npx expo run:android"
-Write-Host "Store uploads (Play/TestFlight) remain operator follow-up — not a local runtime blocker."
+Write-Host "Store uploads (Play/TestFlight) remain operator follow-up - not a local runtime blocker."
