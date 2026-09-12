@@ -95,8 +95,8 @@ def test_secret_rotation_runbook_exists_and_is_linked_from_security_docs():
 
 
 def test_status_and_roadmap_keep_manual_secret_rotation_tail_explicit():
-    status_text = STATUS_MATRIX.read_text(encoding="utf-8")
-    roadmap_text = MASTER_ROADMAP.read_text(encoding="utf-8")
+    status_text = STATUS_MATRIX.read_text(encoding="utf-8-sig")
+    roadmap_text = MASTER_ROADMAP.read_text(encoding="utf-8-sig")
 
     assert "upstream revoke/rotation" in status_text
     assert "docs/SECRET_ROTATION_RUNBOOK.md" in status_text
