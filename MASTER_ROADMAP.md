@@ -1,7 +1,7 @@
 ﻿# ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-07-02
+> Created: 2026-05-23 | Last updated: 2026-09-12
 
 ## Hardening + deploy wave (2026-07-01)
 
@@ -38,12 +38,16 @@ Ship ANCAP as a production ACP-first AI workflow platform:
 - hardened CI/CD and security automation
 - operational stability for real-money flows
 
-## Current top-line truth (2026-05-25)
+## Current top-line truth (2026-09-12)
 
-The biggest remaining tails are:
-1. security / CI / prod-hardening
-2. finishing the ACP mobile wallet to a real device-ready release state
-3. deepening monetization after the first ACP-first revenue loop
+**Work-stop blockers: none.**
+
+Active remaining work (not blockers):
+1. ACP mobile wallet — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available (`docs/mobile/ANDROID_TEST_ENV.md`).
+2. Open-source follow-through — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI; project-board auth. Phase 1 community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are **in the repo root** and on the public GitHub repo.
+3. Monetization depth — optional conversion/LTV. The first ACP-first revenue loop is **live**. Stripe 4.1 is operator live verification only.
+
+Theodore / progress bots: do **not** report missing `README.md`. Do **not** report “monetization after the first ACP cycle” as a blocker.
 
 Important: some older roadmap documents still read as more complete than the repo-wide execution truth. When there is any conflict, trust this file.
 
@@ -59,7 +63,7 @@ Important: some older roadmap documents still read as more complete than the rep
 
 ## Open Source & GitHub Transparency
 
-Status: [~] Active execution track. The public GitHub repo already exists, but the project still needs the full GitHub-first foundation, clearer public-safe scope boundaries, stronger repo governance, and a cleaner split between publishable components and sensitive operational infrastructure.
+Status: [~] Active execution track. Phase 1 community files are done (`README.md` exists — this is **not** a missing-README blocker). Remaining: GitHub org naming/ownership, later public-repo split, and `ancap-docs` Discussions/project-board admin follow-up. The public GitHub repo already exists.
 
 Goal:
 - increase trust in ACP / wACP;
@@ -76,13 +80,14 @@ Reference detail: `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md`
 
 ### Phase 1 - GitHub Public Foundation
 
-Execution targets:
-- create a public GitHub org (`ANCAP` or `ancap-network`) when ownership/naming is finalized;
-- keep the main project repo public-safe and contributor-ready;
-- add `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`;
-- add public docs for architecture, roadmap, API, ACP/wACP, and trust/security boundaries;
-- add GitHub issue templates and a PR template;
-- enable GitHub secret scanning, push protection, Dependabot, CodeQL, and branch protection.
+Community-file slice: **done**. `README.md` is present in the repo root and on `https://github.com/dragoncattrx-hub/ancap`. Do not report “absence of README.md”.
+
+- [ ] create a public GitHub org (`ANCAP` or `ancap-network`) when ownership/naming is finalized (operator follow-up, not a README gap)
+- [x] keep the main project repo public-safe and contributor-ready
+- [x] `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md` in the repo root
+- [x] add public docs for architecture, roadmap, API, ACP/wACP, and trust/security boundaries
+- [x] add GitHub issue templates and a PR template
+- [x] enable GitHub secret scanning, push protection, Dependabot, CodeQL, and branch protection
 
 ### Phase 2 - Open Source Scope
 
@@ -235,12 +240,13 @@ Publish and maintain:
 ### Immediate execution queue - Open Source Preparation
 
 Sprint 1 - Open Source Preparation
-- [~] Create GitHub organization (blocked pending final ownership/name decision plus GitHub org-admin access; `ANCAP` is already taken by an unrelated user profile and current auth cannot inspect/create org state without `admin:org` scope)
+- [~] Create GitHub organization (operator follow-up pending final ownership/name decision plus GitHub org-admin access; `ANCAP` is already taken by an unrelated user profile and current auth cannot inspect/create org state without `admin:org` scope)
 - [~] Create public `ancap-docs` (public repo now exists at `https://github.com/dragoncattrx-hub/ancap-docs`; the exported docs bundle has been pushed as the first seed commit, `Docs CI` already passed on `main`, repo settings/labels/milestones were applied live from the checked-in seeds, and default-branch protection is now live with required PRs, 1 approval, stale-review dismissal, CODEOWNERS review, conversation resolution, and required status check `Docs CI / docs-bundle`. The in-repo prep still matters: export uses a docs-focused root README, includes public-safe GitHub issue/PR templates plus a baseline CODEOWNERS review-routing seed, carries a dedicated contributor-intake seed plus matching machine-readable metadata so issue/PR lanes and security-report routing stay explicit outside the raw template files, ships an exported repo-bootstrap checklist plus reusable contributor-intake/label/Discussions/milestone/project-board/repo-settings/update-cadence/CI/Dependabot seeds for the first public repo creation/push/settings/labels/Discussions/release-tracking/update-rhythm setup, now also carries a dedicated initial-issues seed plus matching machine-readable metadata so the first public starter backlog can be recreated from checked-in truth instead of chat memory instead of living only in chat memory, which means the prep now effectively covers reusable contributor-intake/label/Discussions/milestone/project-board/initial-issues/repo-settings/update-cadence/CI/Dependabot seeds across the full launch surface, and carries copy-ready pinned-topic text plus monthly-update/release-note/trust-change starter templates, ships a bootstrap-seed README plus machine-readable `.github/bootstrap/*.json` seeds for contributor-intake/labels/milestones/Discussions/project-board/initial-issues/repo-settings/update-cadence/CI metadata so launch setup can be scripted instead of retyped, exports a copy-ready `.github/workflows/docs-ci.yml` plus `docs/ANCAP_DOCS_CI_SEED.md` with the default `Docs CI / docs-bundle` required-check context, exports the matching `.github/bootstrap/ancap-docs-ci-workflow.yml` template referenced by that CI seed so workflow bootstrap does not point at a source-only file, exports a docs-repo-specific `.github/dependabot.yml` plus `docs/ANCAP_DOCS_DEPENDABOT_SEED.md` and `.github/bootstrap/ancap-docs-dependabot.yml` so the public docs repo does not inherit monorepo-only dependency ecosystems by accident, adds `scripts/bootstrap_ancap_docs_repo.py` so public repo creation, repo settings/labels/milestones, live repo verification, and the branch-protection payload can be applied or audited from those checked-in seeds with `gh` instead of launch-day retyping, now also offers `--verify-live --verify-live-community` so seeded labels, milestones, Discussions categories, seeded discussion-topic presence, seeded discussion-topic body alignment, pinned-discussion presence, and seeded starter-issue routing can be checked live against those seeds instead of only via launch notes, and that community verification now emits the operator-facing follow-up detail that was still missing before: unexpected live category names (`General`, `Polls`), per-category description drift, the live URLs/category placement for each seeded bootstrap topic, per-topic body/seed alignment, the explicit project-board auth failure under the current token, and copy-ready reroute commands when an existing seeded starter issue drifts away from its checked-in body summary or milestone/label routing. That same live-verification path now also supports `--format markdown`, turning the current Discussions/project-board drift into a copy-ready operator checklist instead of only text/JSON diagnostics when someone needs to finish the remaining admin follow-up by hand, and now also supports `--output <path>` so that markdown/JSON/text handoff artifacts can be written directly as UTF-8 files instead of depending on shell redirection defaults on Windows. `scripts/generate_ancap_docs_live_followup.py` now wraps the paired current-run handoff generation into one repeatable command (`python scripts/generate_ancap_docs_live_followup.py --repo <owner>/ancap-docs`), writing the default artifact pair `tmp/ancap-docs-live-follow-up-YYYY-MM-DD.md` plus `tmp/ancap-docs-live-follow-up-YYYY-MM-DD.json` so the operator checklist and machine-readable snapshot stay together instead of living only in shell scrollback. By default that wrapper now also refreshes the stable alias pair `tmp/ancap-docs-live-follow-up-latest.md` plus `tmp/ancap-docs-live-follow-up-latest.json`, which gives cron/CI/reporting follow-through a fixed latest verified handoff path without reconstructing the date suffix; `--no-write-latest-alias` is available when a caller intentionally wants dated artifacts without touching the stable aliases, and the wrapper now also refuses `--date-label latest` while latest-alias writes stay enabled so the dated outputs cannot silently collapse onto those stable alias paths. It now also treats `--basename` and `--date-label` as filename components only instead of path fragments, rejecting values like `nested/path` or `..` up front so callers cannot silently escape the chosen `--output-dir`. Those saved markdown/JSON artifacts now also embed artifact metadata (`artifactMetadata` in JSON plus an `Artifact metadata` appendix in markdown) with the generator/bootstrap source paths, UTC generation time, generator repo HEAD provenance, dated artifact paths, and optional latest-alias paths so downstream cron/CI/reporting consumers can inspect the file itself instead of inferring context from filenames or shell scrollback. That wrapper now also keeps successful refreshes concise by default and only echoes the underlying helper stdout/stderr when a generation step fails unless `--verbose-child-output` is set, so routine artifact refreshes do not spam the terminal while still leaving the full checklist/payload in the saved files, and `--fail-on-not-ok` now turns the same saved-artifact path into an exit-code-2 cron/CI drift alarm whenever the generated JSON summary reports `ok=false`. That generated checklist now also includes a dedicated `Discussion UI targets` section with the live Discussions landing URL plus the exact seeded category names/descriptions and the tracked cleanup issue `#5`, plus a `Project board seed targets` section with the checked-in board name/scope/fields/views/notes, copy-ready `gh project create/edit/link` command skeletons, seeded field-create commands, manual board-seeding steps, the current GitHub auth login/token-source/scopes when detectable, the exact `gh auth refresh -h github.com -s read:project` command when project auth is the blocker, and `gh issue edit` commands for starter-issue body-summary or milestone/label rerouting when drift is detected, so the remaining category/project-board/backlog-routing cleanup can be executed from one handoff artifact instead of cross-opening the seed docs. When the live repo/discussion/category ids and checked-in seed bodies are already known, that same Discussions automation map now also emits copy-ready `gh api graphql --raw-field "query=..."` commands for the automatable `createDiscussion` / `updateDiscussion` portion, leaving only the pin/category-lifecycle remainder as explicit UI-only follow-up instead of forcing maintainers to rebuild GraphQL payloads by hand. The helper dry-run output now also prints copy-ready `gh issue create` commands for the seeded starter backlog from `docs/ANCAP_DOCS_INITIAL_ISSUES_SEED.md` / `.github/bootstrap/ancap-docs-initial-issues.json`, so maintainers can open the first public docs queue from checked-in truth instead of manually retyping titles/labels/milestones. Those seeded issues have now also been exercised against the live public repo: `#5` (`Align Discussions categories and pin seeded bootstrap topics`) remains `OPEN` because the Discussions/category/pinning cleanup is still genuinely unfinished, while `#6`, `#7`, and `#8` are now `CLOSED` because their trust-doc / integration-index / wording-sync deliverables are already live and match the current exported source of truth. Current honest live state is better specified now: the three seeded bootstrap topics already exist live at `/discussions/2`, `/discussions/3`, and `/discussions/4`, their bodies match the checked-in seed copy, but they are still unpinned and still sit under GitHub's default `Announcements` wording while the repo also still carries the extra default `General`/`Polls` categories. The helper now documents the real API boundary: GitHub's public GraphQL surface does expose `createDiscussion` / `updateDiscussion` for future missing-topic, topic-body, or category-reassignment automation, but it still does not expose the full category-description/category-set/pinning admin flow needed to close the current seeded-surface drift end-to-end, so that cleanup still needs GitHub UI work or a future owner-capable automation path driven from the checked-in seeds. It rewrites out-of-bundle links to source-monorepo GitHub URLs, validates the standalone docs bundle for broken relative links, drift-guards the exported docs-repo Dependabot file against its bootstrap template inside the public bundle while leaving the source monorepo's broader Dependabot config untouched, and now tolerates GitHub Actions version-only bumps between `.github/workflows/docs-ci.yml` and `.github/bootstrap/ancap-docs-ci-workflow.yml` while still hard-failing structural workflow drift; backend CI now runs the docs export/public-trust regression slice when those inputs change. Remaining gaps on this item: final org ownership decision/migration, aligning live Discussions categories and pinned bootstrap topics with the checked-in seed, and live project-board seeding under the eventual owner once project-capable auth exists.)
 - [x] Add README.md
 - [x] Add LICENSE
 - [x] Add SECURITY.md
 - [x] Add CONTRIBUTING.md
+- [x] Add CODE_OF_CONDUCT.md
 - [x] Add public roadmap
 - [x] Add architecture overview
 - [x] Add ACP / wACP docs
@@ -662,7 +668,7 @@ ACP acquisition path (2026-09-11): `/buy-acp` leads with USDT swap desk + bridge
 
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 
-Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet credits UI are now implemented and passing repo checks. **Repo automated webhook→ledger E2E is closed** (`docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md`, `pytest tests/api/test_payments.py -q`). Remaining blocker before full done: live Stripe Dashboard checkout + saved-card operator verification (`docs/stripe-verification-2026-07-02.md` Run B).
+Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet credits UI are now implemented and passing repo checks. **Repo automated webhook→ledger E2E is closed** (`docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md`, `pytest tests/api/test_payments.py -q`). Remaining operator follow-up before marking 4.1 fully done (not a work-stop blocker; ACP-first loop is live): live Stripe Dashboard checkout + saved-card operator verification (`docs/stripe-verification-2026-07-02.md` Run B).
 
 ACP checkout is stable. New users must acquire ACP on exchange -- huge friction.
 
@@ -1163,7 +1169,7 @@ Security and ops hardening completed in this audit:
 | R3 | **Backups** | Automated nightly Postgres + ACP chain data export off-server | Disaster recovery |
 | R4 | **Mail deliverability** | Provider PTR → `mail.ancap.cloud`; optional SES/SendGrid relay fallback | Fix external delivery reputation |
 | R5 | **Mobile release** | EAS production build, store listings, MASVS sign-off | Close device-ready wallet tail |
-| R6 | **Monetization depth** | Workflow subscriptions, partner API tiers, creator payout UX | Revenue after first ACP loop |
+| R6 | **Monetization depth** | Workflow subscriptions, partner API tiers, creator payout UX | Optional depth after live ACP-first loop (not a work-stop blocker) |
 | R7 | **CI/CD deploy** | GitHub Actions → SSH deploy to tunnel host (replace manual scripts) | Faster, repeatable releases |
 | R8 | **ACP Lean chain** | Fee-packed mining, 5s cadence, hybrid PQC signatures, experimental X-Wing draft-10 envelopes, throttled heartbeat | `docs/ACP_LEAN_CHAIN.md` + `docs/ACP_PQC_ENCRYPTION.md` — security/speed/energy |
 | R9 | **Securities intake** | Accept securities, promissory notes (векселя), and shares (акции) into org treasury / collateral rails | Expand capital layer beyond ACP cash; see `docs/SECURITIES_INTAKE_ROADMAP.md` |

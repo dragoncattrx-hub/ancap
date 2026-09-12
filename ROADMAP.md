@@ -14,12 +14,7 @@ ANCAP roadmap and architectural solutions. Vision — [docs/VISION.md](docs/VISI
 
 This document was becoming too optimistic when read as a live delivery tracker. The architecture direction here is still useful, but the project is **not** finished end-to-end in the execution sense.
 
-Current repo-wide truth is:
-- core platform capability is largely built
-- the biggest remaining tails are **security / CI / prod-hardening**
-- the ACP mobile wallet still needs **native build closure, device verification, and release work**
-- monetization now needs **depth** rather than another thesis document
-- monetization depth → see `docs/ANCAP_COMMERCE_ROADMAP.md`
+Current repo-wide truth is in `MASTER_ROADMAP.md` (updated 2026-09-12): **work-stop blockers: none.** Historical reading of this file still listed security/CI, mobile, and monetization depth as remaining tails; security baseline closed 2026-07-01, the first ACP-first loop is live, and root `README.md` exists.
 
 For delivery order, blockers, and true remaining work, use `MASTER_ROADMAP.md`.
 

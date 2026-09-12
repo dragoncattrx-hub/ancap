@@ -69,6 +69,8 @@ Phase 6 — ACP Mobile Wallet MVP (in progress). Active items:
 
 **Monetization:** not a work-stop blocker. ACP-first loop live; `/buy-acp` crypto-first; Stripe 4.1 = operator live verification only.
 
+**Public repo Phase 1:** root `README.md` exists. Theodore / progress bots must not report missing README or “monetization after first ACP cycle” as blockers.
+
 Local Android test env (**blocker cleared 2026-09-11**):
 - AVD `Pixel_10_Pro` + `ancap-mobile/scripts/start-android-test-env.ps1`
 - Docs: `docs/mobile/ANDROID_TEST_ENV.md`

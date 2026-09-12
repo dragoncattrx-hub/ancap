@@ -33,4 +33,4 @@ npx expo run:android
 - Physical-phone biometrics / MASVS on-device sign-off
 - iOS packaging (macOS/Xcode, P1-7)
 
-Theodore / progress bots: **do not** report device/test-env as a blocker. Report store/physical/iOS only as follow-ups.
+Theodore / progress bots: **do not** report device/test-env as a blocker. **Do not** report missing `README.md` (root file exists). **Do not** report “monetization after the first ACP cycle” as a blocker. Report store/physical/iOS only as follow-ups.

@@ -1,6 +1,6 @@
 # ANCAP Status Matrix
 
-> Status: active summary | Updated: 2026-07-02
+> Status: active summary | Updated: 2026-09-12
 > Primary source of truth: `MASTER_ROADMAP.md`
 > Purpose: remove confusion between roadmap/status documents and provide one compact view of what is done, what is partial, and what is next.
 
@@ -23,13 +23,17 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-07-02, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `5e13b3f` after the 2026-07-01 hardening deploy).
+As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `5e13b3f` after the 2026-07-01 hardening deploy). **Work-stop blockers: none.**
 
-The core platform is largely built, but the biggest remaining tails are:
+The core platform is largely built. Active remaining work (not blockers):
 
-1. **security / CI / prod-hardening**
-2. **ACP mobile wallet completion to real device-ready release**
-3. **monetization depth after the first ACP-first revenue loop**
+1. **ACP mobile wallet completion to real device-ready release** (local Android test env available)
+2. **Open-source follow-through** (GitHub org / `ancap-docs` admin UI). Root `README.md` exists — not a missing-README blocker.
+3. **Monetization depth** as optional conversion/LTV after a **live** ACP-first loop — not a freeze. Stripe 4.1 is operator verification only.
+
+Security / CI / prod-hardening baseline closed 2026-07-01; external upstream key revoke audit remains operator-open.
+
+Theodore / progress bots: do **not** report missing `README.md`. Do **not** report “monetization after the first ACP cycle” as a blocker.
 
 Parallel trust/adoption track:
 - **GitHub-first open-source transparency** — public-safe code/docs/protocol surfaces should become easier to audit and integrate, while private keys, bridge signer operations, hot-wallet logic, deploy secrets, and sensitive infra stay closed.
@@ -151,11 +155,11 @@ This is the practical reading of the current queue from `MASTER_ROADMAP.md`:
 2. **Priority 1:** CI/CD honesty — **baseline closed** (fail-closed deploy/tick; docs-ci on `master`)
 3. **Priority 2:** domain model gaps and skipped tests
 4. **Priority 3:** auth/cookie/CORS/security-header hardening follow-through (now baseline closed in repo/runtime/public headers)
-5. **Priority 4:** monetization depth
+5. **Priority 4:** monetization depth (optional; ACP-first loop live — not a work-stop blocker)
 6. **Priority 5:** mobile wallet completion
 7. **Priority 6:** architecture/release hygiene
 
-Note: although mobile and monetization are major tails, the immediate execution order still starts with security/CI/prod-hardening.
+Note: security/CI/prod-hardening baseline is closed. Mobile is the main remaining product tail. Monetization after the first ACP cycle is **not** a work-stop blocker.
 
 ---
 

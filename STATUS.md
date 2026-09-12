@@ -1,16 +1,22 @@
 # ANCAP Status
 
-> Updated: 2026-07-02
+> Updated: 2026-09-12
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
 
 ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
-The three biggest remaining tails are:
-1. **security / CI / prod-hardening** — 2026-07-01 wave closed repo/server/deploy baseline; see `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`; external upstream key revoke audit still operator-open
-2. **ACP mobile wallet completion to a real device-ready release**
-3. **monetization depth after the first ACP-first revenue loop** (Stripe live webhook E2E still unverified)
+**Work-stop blockers: none.**
+
+Active remaining work (not blockers):
+1. **ACP mobile wallet** — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available.
+2. **Open-source follow-through** — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI. Phase 1 community files including root `README.md` are **present**. Do not report “absence of README.md”.
+3. **Monetization depth** — optional conversion/LTV after a **live** ACP-first loop. Stripe 4.1 is operator live verification only. Do **not** report “monetization after the first ACP cycle” as a blocker.
+
+Security / CI / prod-hardening baseline closed in the **2026-07-01** wave (`docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`); external upstream key revoke audit remains operator-open, not a freeze.
+
+Theodore / progress bots: do **not** report missing `README.md`. Do **not** report monetization after the first ACP cycle as a work-stop blocker.
 
 **2026-07-01 hardening:** see `MASTER_ROADMAP.md` § Hardening + deploy wave and `docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md` for deploy/CI/security closure evidence.
 

@@ -4,6 +4,30 @@ from pathlib import Path
 STATUS_PATH = Path("STATUS.md")
 
 
+def test_status_docs_clear_false_readme_and_monetization_blockers():
+    status_text = STATUS_PATH.read_text(encoding="utf-8")
+    roadmap_text = Path("MASTER_ROADMAP.md").read_text(encoding="utf-8")
+    status_matrix = Path("docs/STATUS_MATRIX.md").read_text(encoding="utf-8")
+
+    assert Path("README.md").is_file()
+    assert Path("LICENSE").is_file()
+    assert Path("CONTRIBUTING.md").is_file()
+    assert Path("SECURITY.md").is_file()
+    assert Path("CODE_OF_CONDUCT.md").is_file()
+
+    assert "Work-stop blockers: none" in status_text
+    assert "Work-stop blockers: none" in roadmap_text
+    assert "Work-stop blockers: none" in status_matrix
+    assert "add `README.md`, `LICENSE`" not in roadmap_text
+    assert "[x] `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md` in the repo root" in roadmap_text
+    assert "do **not** report missing `README.md`" in status_text
+    assert "do **not** report missing `README.md`" in roadmap_text
+    assert "Do **not** report “monetization after the first ACP cycle” as a blocker" in status_text
+    assert "Do **not** report “monetization after the first ACP cycle” as a blocker" in roadmap_text
+    assert "monetization depth after the first ACP-first revenue loop" not in status_text
+    assert "deepening monetization after the first ACP-first revenue loop" not in roadmap_text
+
+
 def test_status_summary_keeps_ancap_docs_live_followup_truth_explicit():
     status_text = STATUS_PATH.read_text(encoding="utf-8")
 

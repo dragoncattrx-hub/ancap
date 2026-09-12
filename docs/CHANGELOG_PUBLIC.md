@@ -4,6 +4,12 @@ Curated public-facing changelog for major ANCAP repository milestones.
 
 For exhaustive implementation detail, see [LOG.md](../LOG.md).
 
+## 2026-09-12 — false work-stop blockers cleared in status docs
+
+- Phase 1 GitHub community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are recorded as present; progress bots must not report missing README
+- First ACP-first revenue loop remains live; monetization depth is optional follow-through, not a work-stop blocker
+- Compact status surfaces (`STATUS.md`, `docs/STATUS_MATRIX.md`, `MASTER_ROADMAP.md`) now say **work-stop blockers: none**
+
 ## 2026-06-01 — ancap-docs live follow-up truth surfaced
 
 - refreshed the checked-in status surfaces so they now explicitly reflect the live `dragoncattrx-hub/ancap-docs` repo state instead of stopping at launch-day notes

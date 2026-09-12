@@ -90,12 +90,14 @@ Current repo default: Apache-2.0.
 
 ## GitHub baseline
 
-Repository baseline should include:
+These community files are **already in the repo root** (Phase 1 file slice done; do not report missing `README.md`):
 - `README.md`
 - `LICENSE`
 - `CONTRIBUTING.md`
 - `SECURITY.md`
 - `CODE_OF_CONDUCT.md`
+
+Also keep enabled:
 - issue templates
 - PR template
 - CodeQL

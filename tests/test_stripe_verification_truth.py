@@ -26,7 +26,7 @@ def test_readme_roadmap_and_status_keep_stripe_manual_closure_explicit() -> None
 
     assert "### 4.1 Stripe / fiat payment gateway [HIGH]" in roadmap_text
     assert "Status: [~]" in roadmap_text
-    assert "Remaining blocker before full done: live Stripe Dashboard checkout + saved-card operator verification" in roadmap_text
+    assert "Remaining operator follow-up before marking 4.1 fully done (not a work-stop blocker; ACP-first loop is live): live Stripe Dashboard checkout + saved-card operator verification" in roadmap_text
     assert "Settlement signal" in roadmap_text
     assert "Verification status" in roadmap_text
     assert "Payment method evidence" in roadmap_text
