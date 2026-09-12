@@ -22,6 +22,7 @@ TOKEN_PATTERNS: tuple[tuple[bytes, str], ...] = (
     (b"sk" + b"-ant-", "Anthropic API key pattern"),
     (b"sk_" + b"live_", "Stripe live secret key pattern"),
     (b"pk_" + b"live_", "Stripe live publishable key pattern"),
+    (b"rk_" + b"live_", "Stripe live restricted key pattern"),
     (b"wh" + b"sec_", "Stripe webhook secret pattern"),
     (b"gh" + b"p_", "GitHub personal access token pattern"),
     (b"gh" + b"s_", "GitHub server token pattern"),

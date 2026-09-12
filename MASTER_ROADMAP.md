@@ -329,7 +329,7 @@ Action (in order):
    - prefer the JSON artifact (or the derived markdown worksheet) for evidence handoff; failed findings use redacted finding previews on purpose so scan logs do not become a second leak surface
    - if you still want a raw grep fallback for ad-hoc inspection:
      \\\bash
-     grep -rn "sk-aw-\|sk-prod-\|sk-proj-\|sk-svcacct-\|sk-ant-\|sk_live_\|pk_live_\|whsec_\|ghp_\|ghs_\|gho_\|github_pat_\|ghu_\|ghr_" . \
+     grep -rn "sk-aw-\|sk-prod-\|sk-proj-\|sk-svcacct-\|sk-ant-\|sk_live_\|pk_live_\|rk_live_\|whsec_\|ghp_\|ghs_\|gho_\|github_pat_\|ghu_\|ghr_" . \
        --include="*.py" --include="*.json*" --include="*.yml" \
        --include="*.yaml" --include="*.ts" --include="*.tsx" 2>/dev/null
      \\

@@ -15,7 +15,17 @@ test.describe("ANCAP Frontend - UI smoke", () => {
   });
 
   test("public routes return success", async ({ page }) => {
-    for (const path of ["/", "/projects", "/whitepaper", "/login", "/register"]) {
+    for (const path of [
+      "/",
+      "/projects",
+      "/whitepaper",
+      "/login",
+      "/register",
+      "/legal",
+      "/legal/welcome-grant",
+      "/legal/vet-regen",
+      "/aeterna",
+    ]) {
       const response = await page.goto(path, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${path} status`).toBe(200);
       await expect(page.locator("body")).toBeVisible();

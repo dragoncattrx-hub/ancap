@@ -23,7 +23,7 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `5e13b3f` after the 2026-07-01 hardening deploy). **Work-stop blockers: none.**
+As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `57099a0`: Stripe live adapter configured, welcome grant, vet-regen rails). **Work-stop blockers: none.**
 
 The core platform is largely built. Active remaining work (not blockers):
 
@@ -140,7 +140,7 @@ Parallel trust/adoption track:
 - dated verification packet: `docs/stripe-verification-2026-07-02.md`
 
 **Still remaining (operator / optional depth):**
-- Stripe live dashboard / saved-card operator verification (Run B in verification packet still open)
+- Stripe live dashboard / saved-card operator verification (Run B). Live secrets are in GitHub and `GET /v1/payments/stripe/status` reports `configured: true` as of 12 Sep 2026.
 - further conversion polish / LTV levers (Priority 7 deferred)
 
 **Truth source:** `MASTER_ROADMAP.md`, `ROADMAP-MONETIZATION.md`

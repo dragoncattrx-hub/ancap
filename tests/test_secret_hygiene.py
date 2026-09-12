@@ -221,6 +221,9 @@ def test_secret_hygiene_scan_script_exists_and_passes_with_current_repo_truth():
     assert "OpenAI project API key pattern" in script_text
     assert "OpenAI service account API key pattern" in script_text
     assert "Anthropic API key pattern" in script_text
+    assert "Stripe live secret key pattern" in script_text
+    assert "Stripe live publishable key pattern" in script_text
+    assert "Stripe live restricted key pattern" in script_text
     assert "GitHub personal access token pattern" in script_text
     assert "GitHub fine-grained personal access token pattern" in script_text
     assert "GitHub user-to-server token pattern" in script_text
@@ -906,6 +909,39 @@ def test_secret_hygiene_scan_detects_openai_and_anthropic_key_prefixes(tmp_path:
     assert f"{project_prefix}example123" not in result.stderr
     assert f"{service_prefix}example456" not in result.stderr
     assert f"{anthropic_prefix}example789" not in result.stderr
+
+
+def test_secret_hygiene_scan_detects_stripe_live_restricted_key_prefix(tmp_path: Path):
+    script_copy = tmp_path / "scripts" / "check_secret_hygiene.py"
+    script_copy.parent.mkdir(parents=True)
+    script_copy.write_text(SECRET_HYGIENE_CHECK.read_text(encoding="utf-8"), encoding="utf-8")
+
+    restricted_prefix = "rk_" + "live_"
+
+    tracked_file = tmp_path / "README.md"
+    tracked_file.write_text(f"token {restricted_prefix}example123\n", encoding="utf-8")
+
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "branch", "-m", "master"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "README.md", "scripts/check_secret_hygiene.py"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    result = subprocess.run(
+        [sys.executable, str(script_copy)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    restricted_redacted = restricted_prefix + "<redacted>"
+
+    assert result.returncode == 1
+    assert "Stripe live restricted key pattern" in result.stderr
+    assert restricted_redacted in result.stderr
+    assert f"{restricted_prefix}example123" not in result.stderr
 
 
 def test_secret_hygiene_scan_can_flag_recent_commit_history_even_after_cleanup(tmp_path: Path):
