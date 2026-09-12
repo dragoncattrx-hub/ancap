@@ -22,6 +22,24 @@ type Service = {
   small_operator?: boolean;
 };
 
+type BlastAttempt = {
+  role: string;
+  aead: string;
+  aad: string;
+  opened: boolean;
+  error?: string | null;
+};
+
+type BlastProof = {
+  subject: string;
+  proof_status: string;
+  procedure: string[];
+  namespaces?: { fingerprints_distinct?: boolean };
+  captured_brief?: { kind?: string; content_hash?: string; ciphertext_sha384?: string };
+  attempts: BlastAttempt[];
+  note?: string;
+};
+
 type Job = {
   id: string;
   service_id: string;
@@ -49,11 +67,13 @@ export default function PerimeterPage() {
   const [compliance, setCompliance] = useState("");
   const [accessNote, setAccessNote] = useState("");
   const [marketNote, setMarketNote] = useState("");
+  const [blast, setBlast] = useState<BlastProof | null>(null);
+  const [jobProofs, setJobProofs] = useState<Record<string, BlastProof>>({});
 
   const refresh = useCallback(async () => {
     setError("");
     try {
-      const [c, cat, list] = await Promise.all([
+      const [c, cat, list, proof] = await Promise.all([
         perimeterCleanupDesk.cipher() as Promise<CipherInfo>,
         perimeterCleanupDesk.catalog() as Promise<{
           services: Service[];
@@ -65,12 +85,14 @@ export default function PerimeterPage() {
         perimeterCleanupDesk.listJobs().catch(() => ({ items: [] as Job[] })) as Promise<{
           items: Job[];
         }>,
+        perimeterCleanupDesk.blastRadius().catch(() => null) as Promise<BlastProof | null>,
       ]);
       setCipher(c);
       setServices(cat.services || []);
       setCompliance(cat.compliance_note || "");
       setAccessNote(cat.accessibility_note || "");
       setMarketNote(cat.market_structure_note || "");
+      setBlast(proof);
       if (cat.services?.[0]) {
         setServiceId((prev) => prev || cat.services[0].id);
       }
@@ -109,6 +131,20 @@ export default function PerimeterPage() {
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Create failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onBlast = async (id: string) => {
+    setBusy(true);
+    setError("");
+    try {
+      const proof = (await perimeterCleanupDesk.jobBlastRadius(id)) as BlastProof;
+      setJobProofs((prev) => ({ ...prev, [id]: proof }));
+      setInfo(`Blast-radius ${proof.proof_status} for job ${id.slice(0, 8)}…`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Blast-radius failed");
     } finally {
       setBusy(false);
     }
@@ -154,6 +190,37 @@ export default function PerimeterPage() {
         ) : null}
         {marketNote ? (
           <p className="mt-2 text-sm leading-6 text-amber-200/75">{marketNote}</p>
+        ) : null}
+
+        {blast ? (
+          <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
+              Blast-radius proof
+            </h2>
+            <p className="mt-2 text-sm text-emerald-200/90">
+              Status: {blast.proof_status}
+              {blast.namespaces?.fingerprints_distinct ? " · fingerprints distinct" : ""}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-white/50">{blast.note}</p>
+            <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs leading-5 text-white/55">
+              {(blast.procedure || []).map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+            <ul className="mt-3 space-y-1 text-xs text-white/60">
+              {(blast.attempts || []).map((a) => (
+                <li key={a.role}>
+                  {a.role}: {a.opened ? "OPENED" : "failed"}
+                  {a.error ? ` (${a.error})` : ""}
+                </li>
+              ))}
+            </ul>
+            {blast.captured_brief?.content_hash ? (
+              <p className="mt-2 break-all text-[11px] text-white/40">
+                canary {blast.captured_brief.content_hash}
+              </p>
+            ) : null}
+          </section>
         ) : null}
 
         {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
@@ -265,11 +332,27 @@ export default function PerimeterPage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-2 text-sm text-emerald-300 underline"
+                  className="mt-2 mr-3 text-sm text-emerald-300 underline"
                   onClick={() => void onDecrypt(j.id)}
                 >
                   Расшифровать
                 </button>
+                <button
+                  type="button"
+                  className="mt-2 text-sm text-emerald-300 underline"
+                  onClick={() => void onBlast(j.id)}
+                >
+                  Blast-radius
+                </button>
+                {jobProofs[j.id] ? (
+                  <p className="mt-2 text-xs text-amber-200/80">
+                    Compartment {jobProofs[j.id].proof_status}
+                    {" · "}
+                    {jobProofs[j.id].attempts.filter((a) => a.role !== "control_perimeter" && a.opened).length === 0
+                      ? "foreign namespaces did not open this brief"
+                      : "FOREIGN KEY OPENED — compartment failed"}
+                  </p>
+                ) : null}
                 {j.payload ? (
                   <pre className="mt-2 overflow-x-auto rounded-lg bg-black/40 p-2 text-[11px] text-white/70">
                     {JSON.stringify(j.payload, null, 2)}

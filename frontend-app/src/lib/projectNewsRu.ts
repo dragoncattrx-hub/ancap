@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "perimeter-blast-radius-proof",
+    date: "2026-09-12",
+    title: "Периметр: blast-radius proof против ключей DNA и паспорта",
+    summary:
+      "GET /perimeter-cleanup/blast-radius — живой failed-decrypt тест: снимок SHA-384 отпечатков ключей DNA/passport/perimeter на хосте, попытка открыть canary-бриф чужими namespace. Владелец своей заявки может повторить проверку без публикации plaintext. Разделение отсеков измеряется, не предполагается.",
+    href: "/perimeter",
+  },
+  {
     id: "perimeter-small-operator-access",
     date: "2026-09-12",
     title: "Периметр: малый SKU и прозрачность без DeFi-обёртки",

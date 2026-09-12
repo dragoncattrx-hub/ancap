@@ -99,8 +99,10 @@ def cipher_info() -> dict[str, str]:
         "note": (
             "Abrams Suite-B style at-rest vault (v1): AES-256-GCM + HKDF-SHA384. "
             "Public algorithms in the same class as Abrams Type-1 radio stacks; "
-            "not classified Type 1 keying. Distinct key namespace from DNA/passport vaults."
+            "not classified Type 1 keying. Distinct key namespace from DNA/passport vaults. "
+            "Blast-radius proof: GET /perimeter-cleanup/blast-radius."
         ),
+        "blast_radius_href": "/perimeter-cleanup/blast-radius",
     }
 
 
@@ -127,6 +129,7 @@ def catalog() -> dict[str, Any]:
             "passport vaults, and per-job content hashes — not on-chain lending reserves."
         ),
         "not_rwa_yield": True,
+        "blast_radius_href": "/perimeter-cleanup/blast-radius",
         "services": [
             {
                 **item,

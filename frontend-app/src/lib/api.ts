@@ -696,6 +696,12 @@ export const perimeterCleanupDesk = {
   async getJob(jobId: string) {
     return apiFetch(`/perimeter-cleanup/jobs/${encodeURIComponent(jobId)}`);
   },
+  async blastRadius() {
+    return apiFetch("/perimeter-cleanup/blast-radius");
+  },
+  async jobBlastRadius(jobId: string) {
+    return apiFetch(`/perimeter-cleanup/jobs/${encodeURIComponent(jobId)}/blast-radius`);
+  },
 };
 
 export const insuranceDesk = {

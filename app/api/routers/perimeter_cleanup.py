@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.deps import DbSession, require_auth
 from app.config import get_settings
 from app.schemas.perimeter_cleanup import (
+    PerimeterBlastRadiusProof,
     PerimeterCatalogPublic,
     PerimeterCipherInfo,
     PerimeterJobCreate,
@@ -16,6 +17,7 @@ from app.schemas.perimeter_cleanup import (
     PerimeterJobSummary,
     PerimeterServicePublic,
 )
+from app.services import perimeter_blast_radius
 from app.services import perimeter_cleanup as desk_svc
 from app.services import perimeter_crypto
 
@@ -59,8 +61,16 @@ async def perimeter_catalog():
         accessibility_note=raw.get("accessibility_note", ""),
         market_structure_note=raw.get("market_structure_note", ""),
         not_rwa_yield=bool(raw.get("not_rwa_yield", True)),
+        blast_radius_href=raw.get("blast_radius_href", "/perimeter-cleanup/blast-radius"),
         services=[PerimeterServicePublic(**s) for s in raw["services"]],
     )
+
+
+@router.get("/blast-radius", response_model=PerimeterBlastRadiusProof)
+async def perimeter_blast_radius_canary():
+    """Live failed-decryption test: DNA/passport keys vs a published perimeter canary."""
+    _require_feature()
+    return PerimeterBlastRadiusProof(**perimeter_blast_radius.run_canary_proof())
 
 
 @router.get("/jobs", response_model=PerimeterJobListResponse)
@@ -115,3 +125,30 @@ async def get_perimeter_job(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Failed to decrypt job") from exc
     return PerimeterJobPublic(**_summary(rec).model_dump(), payload=payload or {})
+
+
+@router.get("/jobs/{job_id}/blast-radius", response_model=PerimeterBlastRadiusProof)
+async def perimeter_job_blast_radius(
+    job_id: str,
+    session: DbSession,
+    user_id: str = Depends(require_auth),
+):
+    """Replay the failed-decryption test against this owner's captured brief."""
+    _require_feature()
+    try:
+        jid = uuid.UUID(job_id)
+        uid = uuid.UUID(user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid id") from exc
+    try:
+        rec, _ = await desk_svc.get_job(session, job_id=jid, user_id=uid, decrypt=False)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return PerimeterBlastRadiusProof(
+        **perimeter_blast_radius.run_captured_brief_proof(
+            ciphertext_b64=rec.ciphertext_b64,
+            nonce_b64=rec.nonce_b64,
+            content_hash=rec.content_hash,
+            cipher_id=rec.cipher_id,
+        )
+    )

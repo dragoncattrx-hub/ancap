@@ -39,6 +39,7 @@ class PerimeterCatalogPublic(BaseModel):
     accessibility_note: str = ""
     market_structure_note: str = ""
     not_rwa_yield: bool = True
+    blast_radius_href: str = "/perimeter-cleanup/blast-radius"
     services: list[PerimeterServicePublic]
 
 
@@ -47,6 +48,34 @@ class PerimeterCipherInfo(BaseModel):
     algorithm: str
     kdf: str
     aad: str
+    note: str
+    blast_radius_href: str = "/perimeter-cleanup/blast-radius"
+
+
+class PerimeterBlastAttempt(BaseModel):
+    role: str
+    aead: str
+    aad: str
+    opened: bool
+    error: str | None = None
+
+
+class PerimeterBlastCapturedBrief(BaseModel):
+    kind: str
+    cipher_id: str
+    content_hash: str
+    ciphertext_sha384: str
+    nonce_sha384: str
+    plaintext_sha384: str | None = None
+
+
+class PerimeterBlastRadiusProof(BaseModel):
+    subject: str
+    proof_status: str
+    procedure: list[str]
+    namespaces: dict[str, Any]
+    captured_brief: PerimeterBlastCapturedBrief
+    attempts: list[PerimeterBlastAttempt]
     note: str
 
 

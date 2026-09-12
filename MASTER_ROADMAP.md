@@ -885,7 +885,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-XO8 | Exponential network growth levers | [x] `/growth/exponential` + compound quote — `(1+r)^depth × passport boost` |
 | P5-XO9 | ANCAP AI Agency (AI-sector ads) | [x] Home `#agency` promo block + `/agency` vertical (campaign packs, Telegram/X/email rails, ACP settle) |
 | P5-XO10 | Digital DNA/RNA bank | [x] `/dna-bank` + API `/v1/dna-rna-bank/*`, migration `073`, AES-256-GCM + HKDF-SHA384 (v1); no full genomes |
-| P5-XO13 | Perimeter cleanup (all contamination) | [x] `/perimeter` + `/v1/perimeter-cleanup/*`, migration `074`, Abrams Suite-B AES-256-GCM + HKDF-SHA384; small-site operator SKU; not an Aave/Maker/RWA yield wrap; insurance `perimeter_cleanup` |
+| P5-XO13 | Perimeter cleanup (all contamination) | [x] `/perimeter` + `/v1/perimeter-cleanup/*`, migration `074`, Abrams Suite-B AES-256-GCM + HKDF-SHA384; small-site operator SKU; blast-radius failed-decrypt proof vs DNA/passport keys; not an Aave/Maker/RWA yield wrap; insurance `perimeter_cleanup` |
 | P5-XO11 | Legal entertainment worldwide desk | [x] `/entertainment` — licensed venues/festivals/lotteries/resorts by region + Arena on-platform; no grey books |
 | P5-XO12 | ZEISS Lightfield 4D research citation | [x] `/legal/research-refs` + AETERNA imaging refs; tech note link; no affiliation / no PDF host |
 | P5-XO14 | Daewoong eTurna mRNA LNP USPTO citation | [x] `/legal/research-refs` §7 + `/aeterna` consult `aeterna-mrna-reprogramming-brief`; notice of allowance literacy as of 11 Sep 2026; no affiliation / no lipid recipes |

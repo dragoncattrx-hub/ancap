@@ -78,3 +78,58 @@ def test_catalog_helper_lists_full_sweep():
     ids = {s["id"] for s in raw["services"]}
     assert "perimeter-full-sweep" in ids
     assert "perimeter-micro-site" in ids
+
+
+def test_blast_radius_canary_holds():
+    from app.services.perimeter_blast_radius import run_canary_proof
+
+    proof = run_canary_proof()
+    assert proof["proof_status"] == "held"
+    assert proof["namespaces"]["fingerprints_distinct"] is True
+    foreign = [a for a in proof["attempts"] if a["role"] != "control_perimeter"]
+    assert all(a["opened"] is False for a in foreign)
+    control = next(a for a in proof["attempts"] if a["role"] == "control_perimeter")
+    assert control["opened"] is True
+    assert proof["captured_brief"]["content_hash"].startswith("sha384:")
+
+
+def test_blast_radius_fails_if_dna_key_collides(monkeypatch):
+    from app.services import dna_rna_crypto, perimeter_crypto
+    from app.services.perimeter_blast_radius import run_canary_proof
+
+    monkeypatch.setattr(dna_rna_crypto, "derive_bank_key", perimeter_crypto.derive_vault_key)
+    proof = run_canary_proof()
+    assert proof["proof_status"] == "failed"
+    dna_peri = next(a for a in proof["attempts"] if a["role"] == "dna_key_perimeter_aad")
+    assert dna_peri["opened"] is True
+
+
+def test_blast_radius_http_and_owner_job(client):
+    public = client.get("/v1/perimeter-cleanup/blast-radius")
+    assert public.status_code == 200, public.text
+    body = public.json()
+    assert body["proof_status"] == "held"
+    assert body["subject"] == "canary"
+    assert any("Snapshot SHA-384" in step for step in body["procedure"])
+    assert len(body["attempts"]) == 5
+
+    headers = _register_user(client, "blast")
+    create = client.post(
+        "/v1/perimeter-cleanup/jobs",
+        headers=headers,
+        json={
+            "service_id": "perimeter-micro-site",
+            "contamination": "industrial",
+            "site_label": "captured brief gate",
+        },
+    )
+    assert create.status_code == 201, create.text
+    job_id = create.json()["id"]
+    proof = client.get(f"/v1/perimeter-cleanup/jobs/{job_id}/blast-radius", headers=headers)
+    assert proof.status_code == 200, proof.text
+    captured = proof.json()
+    assert captured["subject"] == "captured_owner_brief"
+    assert captured["proof_status"] == "held"
+    assert captured["captured_brief"]["kind"] == "owner_job"
+    assert "plaintext_sha384" not in captured["captured_brief"] or captured["captured_brief"].get("plaintext_sha384") in (None, "")
+
