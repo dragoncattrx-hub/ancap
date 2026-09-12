@@ -40,12 +40,18 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-molecular-aging-profile",
     "aeterna-stem-cell-organ-print",
     "aeterna-mrna-reprogramming-brief",
+    "aeterna-vet-cat-cryo-restore",
+    "aeterna-vet-regen-pod",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
 ORGAN_PRINT_PRICE_ACP = Decimal("250000")
 MOLECULAR_AGING_SLUG = "aeterna-molecular-aging-profile"
 MRNA_REPROGRAMMING_SLUG = "aeterna-mrna-reprogramming-brief"
+VET_CAT_CRYO_SLUG = "aeterna-vet-cat-cryo-restore"
+VET_CAT_CRYO_PRICE_ACP = Decimal("75000")
+VET_REGEN_POD_SLUG = "aeterna-vet-regen-pod"
+VET_REGEN_POD_PRICE_ACP = Decimal("180000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -152,6 +158,8 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.organ_bioprint.value: ORGAN_PRINT_SLUG,
     AeternaIntentKind.molecular_aging_profile.value: MOLECULAR_AGING_SLUG,
     AeternaIntentKind.partial_reprogramming_consult.value: MRNA_REPROGRAMMING_SLUG,
+    AeternaIntentKind.vet_feline_cryo_restore.value: VET_CAT_CRYO_SLUG,
+    AeternaIntentKind.vet_canine_regen_pod.value: VET_REGEN_POD_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -174,6 +182,31 @@ MOLECULAR_AGING_META = {
     "inspiration_note": (
         "Product framing aligned with public research on multi-gene blood RNA aging panels "
         "(e.g. hallmark-mapped expression profiles) — AETERNA does not claim affiliation with any lab."
+    ),
+}
+
+VET_CAT_CRYO_META = {
+    "mode": "licensed_veterinary_partner",
+    "species": "felis_catus",
+    "unit": "tissue_bank_intake",
+    "price_acp": "75000",
+    "architecture": "controlled_rate_freezer_plus_ln2_cryochamber",
+    "note": (
+        "Conceptual feline tissue cryoconservator-restorer rail. ANCAP settles ACP and issues a "
+        "licensed-veterinary-partner intake brief. Not a marketed medical device, not a return-to-life "
+        "warranty, and not a DIY cryo protocol."
+    ),
+}
+
+VET_REGEN_POD_META = {
+    "mode": "licensed_veterinary_partner",
+    "species": "canis_familiaris",
+    "unit": "organ_pathway",
+    "price_acp": "180000",
+    "architecture": "vet_regen_pod_organ_bank_bioprint_robot_assist",
+    "note": (
+        "Conceptual canine VET REGEN POD organ-transplant and regeneration chamber. ANCAP settles ACP "
+        "and matches a licensed veterinary partner. Infographic survival or speed figures are not product claims."
     ),
 }
 
@@ -201,8 +234,9 @@ _COMPLIANCE = (
     "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only. "
     "No DIY CRISPR/Cas9 protocols, gene synthesis, LNP formulation recipes, mRNA sequences, "
     "or unlicensed enhancement procedures. "
-    "Molecular aging profiles and partial-reprogramming briefs are educational / partner-prep — "
-    "not clinical diagnoses and not approved anti-aging drugs."
+    "Molecular aging profiles, partial-reprogramming briefs, and veterinary organ rails "
+    "are educational / partner-prep — not clinical or veterinary diagnoses, not approved "
+    "anti-aging drugs, and not marketed medical devices."
 )
 
 
@@ -274,7 +308,8 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         feature_enabled=enabled,
         tagline=(
             "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
-            "partial mRNA-reprogramming consults, ACP workflows, licensed longevity partners."
+            "partial mRNA-reprogramming consults, stem-cell organ print, "
+            "veterinary tissue-cryo / VET REGEN POD partner rails, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -297,6 +332,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Partial reprogramming = restore some youthful cell functions without erasing identity. "
             "eTurna-style LNP mRNA delivery is cited as public patent-literacy only "
             "(USPTO notice of allowance, Aug 2026) — not a therapy ANCAP sells or compounds."
+        ),
+        vet_regen_note=(
+            "Feline cryoconservator-restorer and canine VET REGEN POD listings are licensed-veterinary "
+            "partner intakes. Infographics are conceptual architecture — not a marketed device and not "
+            "a survival-rate or return-to-life claim."
         ),
     )
 
@@ -399,6 +439,34 @@ async def create_intent_order(
                 detail="partial_reprogramming_consult budget_acp must be at least 1000000 ACP",
             )
         for key, value in MRNA_REPROGRAMMING_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.vet_feline_cryo_restore:
+        if slug and slug != VET_CAT_CRYO_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="vet_feline_cryo_restore requires workflow_slug aeterna-vet-cat-cryo-restore",
+            )
+        slug = VET_CAT_CRYO_SLUG
+        if body.budget_acp < VET_CAT_CRYO_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="vet_feline_cryo_restore budget_acp must be at least 75000 ACP",
+            )
+        for key, value in VET_CAT_CRYO_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.vet_canine_regen_pod:
+        if slug and slug != VET_REGEN_POD_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="vet_canine_regen_pod requires workflow_slug aeterna-vet-regen-pod",
+            )
+        slug = VET_REGEN_POD_SLUG
+        if body.budget_acp < VET_REGEN_POD_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="vet_canine_regen_pod budget_acp must be at least 180000 ACP",
+            )
+        for key, value in VET_REGEN_POD_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

@@ -45,6 +45,8 @@ class AeternaIntentKind(str, Enum):
     organ_bioprint = "organ_bioprint"
     molecular_aging_profile = "molecular_aging_profile"
     partial_reprogramming_consult = "partial_reprogramming_consult"
+    vet_feline_cryo_restore = "vet_feline_cryo_restore"
+    vet_canine_regen_pod = "vet_canine_regen_pod"
 
 
 class AeternaDnaSource(str, Enum):
@@ -232,4 +234,9 @@ class AeternaStatusPublic(BaseModel):
         "in the eTurna LNP mRNA-delivery platform is educational context for licensed-partner "
         "partial-reprogramming consults — not an issued drug, not a wet-lab recipe, and not "
         "an ANCAP affiliation with Daewoong Pharmaceutical or Turn Biotechnologies."
+    )
+    vet_regen_note: str = (
+        "Veterinary organ rails (feline tissue cryoconservator-restorer and canine VET REGEN POD) "
+        "are licensed-partner consult / intake briefs. Infographics are conceptual architecture, "
+        "not a marketed veterinary device, not a survival-rate claim, and not a return-to-life warranty."
     )

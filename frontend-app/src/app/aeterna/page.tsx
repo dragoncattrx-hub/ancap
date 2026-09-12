@@ -9,6 +9,7 @@ import { DnaHelixSandbox } from "@/components/aeterna/DnaHelixSandbox";
 import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel";
 import { MolecularAgingPanel } from "@/components/aeterna/MolecularAgingPanel";
 import { MrnaReprogrammingPanel } from "@/components/aeterna/MrnaReprogrammingPanel";
+import { VetRegenPanel } from "@/components/aeterna/VetRegenPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -33,9 +34,10 @@ type AeternaStatus = {
   aging_hallmarks?: AgingHallmark[];
   molecular_aging_note?: string;
   reprogramming_note?: string;
+  vet_regen_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -122,6 +124,12 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.organSkuCta")}
             </a>
+            <a
+              href="#vet-regen"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.organRailCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -163,6 +171,10 @@ export default function AeternaPage() {
           <MrnaReprogrammingPanel note={status?.reprogramming_note} />
         </section>
 
+        <section className="mt-16">
+          <VetRegenPanel note={status?.vet_regen_note} />
+        </section>
+
         <section className="mt-16 max-w-2xl">
           <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.payTitle")}</h2>
           <p className="mt-3 text-sm leading-7 text-white/65">
@@ -198,11 +210,8 @@ export default function AeternaPage() {
         </section>
 
         <section className="mt-14 border-t border-white/10 pt-10">
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">Imaging reference</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
-            For high-speed gentle volumetric imaging of living samples, ANCAP cites the public ZEISS LSM Lightfield 4D
-            technology note as educational context — not an affiliation.
-          </p>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t("aeternaPage.imagingTitle")}</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">{t("aeternaPage.imagingLead")}</p>
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <a
               href="https://www.zeiss.com/microscopy/en/products/light-microscopes/confocal-microscopes/lightfield-4d.html"
@@ -218,13 +227,13 @@ export default function AeternaPage() {
               rel="noopener noreferrer"
               className="rounded-md border border-white/15 px-4 py-2 text-white/80 transition hover:border-white/35 hover:text-white"
             >
-              Technology note
+              {t("aeternaPage.imagingTechNote")}
             </a>
             <Link
               href="/legal/research-refs"
               className="rounded-md border border-teal-300/25 px-4 py-2 text-teal-100/90 transition hover:border-teal-200/50"
             >
-              Legal citation notice
+              {t("aeternaPage.imagingNoteCta")}
             </Link>
           </div>
         </section>

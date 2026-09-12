@@ -59,8 +59,11 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.pigmentation_consult.value == "pigmentation_consult"
     assert AeternaIntentKind.organ_bioprint.value == "organ_bioprint"
     assert AeternaIntentKind.partial_reprogramming_consult.value == "partial_reprogramming_consult"
+    assert AeternaIntentKind.vet_feline_cryo_restore.value == "vet_feline_cryo_restore"
+    assert AeternaIntentKind.vet_canine_regen_pod.value == "vet_canine_regen_pod"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
+    assert AeternaStatusPublic.model_fields["vet_regen_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -70,13 +73,18 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 8
+    assert len(aeterna) >= 10
+    priced = {
+        "aeterna-stem-cell-organ-print": "250000",
+        "aeterna-vet-cat-cryo-restore": "75000",
+        "aeterna-vet-regen-pod": "180000",
+    }
     for tpl in aeterna:
         assert tpl.price.currency == "ACP"
-        if tpl.slug == "aeterna-stem-cell-organ-print":
-            assert tpl.price.amount == "250000"
-        else:
-            assert tpl.price.amount == "1000000"
+        expected = priced.get(tpl.slug, "1000000")
+        assert tpl.price.amount == expected
+    assert "aeterna-vet-cat-cryo-restore" in slugs
+    assert "aeterna-vet-regen-pod" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -223,6 +231,62 @@ def test_partial_reprogramming_intent_defaults_slug_and_rejects_low_budget(clien
     assert payload["workflow_slug"] == MRNA_REPROGRAMMING_SLUG
     assert payload["metadata_json"]["mode"] == "licensed_partner_consult_only"
     assert payload["metadata_json"]["goal"] == "partial_reprogramming_keep_cell_identity"
+
+
+def test_vet_regen_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    cat = find_workflow_template("aeterna-vet-cat-cryo-restore")
+    assert cat is not None
+    cat_out = execute_workflow_template(cat, {"intent_kind": "vet_feline_cryo_restore"})
+    assert cat_out["deliverable"]["veterinary"]["species"] == "felis_catus"
+    assert cat_out["deliverable"]["veterinary"]["price_acp"] == "75000"
+    assert cat_out["deliverable"]["partner_handoff"]["required"] is True
+
+    dog = find_workflow_template("aeterna-vet-regen-pod")
+    assert dog is not None
+    dog_out = execute_workflow_template(dog, {"intent_kind": "vet_canine_regen_pod"})
+    assert dog_out["deliverable"]["veterinary"]["species"] == "canis_familiaris"
+    assert dog_out["deliverable"]["veterinary"]["price_acp"] == "180000"
+    blob = (str(cat_out) + str(dog_out)).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at", "ionizable lipid recipe"):
+        assert forbidden not in blob
+    assert "licensed_veterinary_partner" in blob
+    assert "return-to-life warranty" in blob or "not a return-to-life" in blob
+
+
+def test_vet_regen_intents_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import VET_CAT_CRYO_SLUG, VET_REGEN_POD_SLUG
+
+    too_low_cat = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vet_feline_cryo_restore", "budget_acp": "1000"},
+    )
+    assert too_low_cat.status_code == 400, too_low_cat.text
+
+    created_cat = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vet_feline_cryo_restore", "budget_acp": "75000"},
+    )
+    assert created_cat.status_code == 201, created_cat.text
+    cat_payload = created_cat.json()
+    assert cat_payload["workflow_slug"] == VET_CAT_CRYO_SLUG
+    assert cat_payload["metadata_json"]["species"] == "felis_catus"
+
+    too_low_dog = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vet_canine_regen_pod", "budget_acp": "1000"},
+    )
+    assert too_low_dog.status_code == 400, too_low_dog.text
+
+    created_dog = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vet_canine_regen_pod", "budget_acp": "180000"},
+    )
+    assert created_dog.status_code == 201, created_dog.text
+    dog_payload = created_dog.json()
+    assert dog_payload["workflow_slug"] == VET_REGEN_POD_SLUG
+    assert dog_payload["metadata_json"]["architecture"] == "vet_regen_pod_organ_bank_bioprint_robot_assist"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

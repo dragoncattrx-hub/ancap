@@ -375,7 +375,49 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     preview_items: ["Cell-source intake", "Bioreactor partner match", "Per-organ ACP quote"],
     output_items: ["Organ-print intake brief", "Cell-source plan", "Licensed bioreactor handoff", "Proof receipt"],
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "organ_unit_price_acp", "status_timeline"],
-    tags: ["aeterna", "organ-print", "stem-cells", "bioreactor"],
+        tags: ["aeterna", "organ-print", "stem-cells", "bioreactor"],
+  },
+  {
+    slug: "aeterna-vet-cat-cryo-restore",
+    title: "AETERNA Feline Tissue Cryoconservator-Restorer",
+    category: "AETERNA",
+    summary:
+      "Licensed-veterinary-partner intake for a feline tissue cryoconservator-restorer (controlled-rate freeze, LN2 store, thaw/restore) — 75,000 ACP.",
+    description:
+      "Settles 75,000 ACP and issues a licensed-veterinary-partner brief for cat tissue banking. Conceptual architecture only. ANCAP does not manufacture the chamber, does not practice veterinary medicine, and does not claim return-to-life. No home cryo kit.",
+    price: { amount: "75000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 60,
+    preview_items: ["Species/tissue intake", "Veterinary partner match", "Cryo-path consent pack"],
+    output_items: [
+      "Feline cryo-restore intake brief",
+      "Licensed veterinary handoff",
+      "Non-claim checklist (no resurrection / no survival %)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
+    tags: ["aeterna", "veterinary", "feline", "cryo", "tissue-bank"],
+  },
+  {
+    slug: "aeterna-vet-regen-pod",
+    title: "AETERNA Canine VET REGEN POD",
+    category: "AETERNA",
+    summary:
+      "Licensed-veterinary-partner organ-transplant and regeneration chamber pathway for dogs (VET REGEN POD) — 180,000 ACP.",
+    description:
+      "Settles 180,000 ACP and issues a licensed-veterinary-partner brief for a canine organ pathway. Infographics illustrate intended partner architecture. ANCAP does not operate VET REGEN POD hardware and does not quote survival percentages. Licensed veterinarian only.",
+    price: { amount: "180000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 75,
+    preview_items: ["Canine organ pathway intake", "Chamber partner match", "Immunocompatibility pack"],
+    output_items: [
+      "VET REGEN POD intake brief",
+      "Licensed veterinary handoff",
+      "Non-claim checklist (no survival-rate or speed warranty)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
+    tags: ["aeterna", "veterinary", "canine", "organ-print", "regen-pod"],
   },
 ];
 

@@ -672,6 +672,8 @@ Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet cre
 
 ACP checkout is stable. New users must acquire ACP on exchange -- huge friction.
 
+Production Stripe secrets are **not** in GitHub yet. Until an operator adds `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET`, card top-up stays fail-closed (`503`). Deploy syncs those secrets into the host `.env`. Public truth: `GET /v1/payments/stripe/status` and `GET /v1/system/health/full` → `checks.stripe.configured`. Webhook URL: `https://ancap.cloud/api/v1/webhooks/stripe`.
+
 Implemented surfaces:
 - `POST /v1/payments/stripe/intent` -- create Stripe-backed top-up PaymentIntent and return client session data
 - `GET /v1/payments/stripe/intents/{intent_id}` -- poll owned Stripe top-up intent status / credited state, including Stripe-provider sync fallback when webhook delivery is delayed
@@ -1245,14 +1247,14 @@ Accept **securities (tsennye bumagi)**, **promissory notes (vekselya)**, and **e
 
 Execution detail: **`docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md`**.
 
-Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere, disease-risk, longevity), **15-axis molecular aging profile** (blood-RNA / PCR-style hallmarks — configuration of aging, not one bio-age number; sex-aware), **partial mRNA-reprogramming consult** (eTurna/USPTO notice-of-allowance literacy as of 11 Sep 2026; 1,000,000 ACP), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner). **No DIY CRISPR / gene synthesis / LNP recipes; no institute affiliation claims.**
+Division **AETERNA**: DNA vault (incl. Sequencing.com-style import), ACP-paid analysis/consult workflows (pigmentation, telomere, disease-risk, longevity), **15-axis molecular aging profile** (blood-RNA / PCR-style hallmarks — configuration of aging, not one bio-age number; sex-aware), **partial mRNA-reprogramming consult** (eTurna/USPTO notice-of-allowance literacy as of 11 Sep 2026; 1,000,000 ACP), stem-cell organ bioprint at **250,000 ACP** per organ (wisdom-tooth DPSC fallback; licensed bioreactor partner), **veterinary organ rails** as of 12 Sep 2026 (feline tissue cryoconservator-restorer 75,000 ACP; canine VET REGEN POD 180,000 ACP — conceptual partner architecture, licensed veterinarian only, no resurrection / survival-rate claims; `/legal/vet-regen`). **No DIY CRISPR / gene synthesis / LNP recipes; no institute affiliation claims.**
 
 | Phase | Status | Deliverables |
 |-------|--------|--------------|
 | A0 Spec & brand | `[x]` | Schemas, `/aeterna` landing + hero, Workflow Store category |
 | A1 Vault + intent API | `[~]` | `aeterna_dna_vault` / orders / partners; `FF_AETERNA`; migration `059` |
 | A2 Checkout UX | `[ ]` | Category filter, org desk, longevity bundle UX |
-| A3 Sandbox viz | `[~]` | Helix + hash vault + homepage promo + organ-print SKU + mRNA-reprogramming consult citation; variant browser still open |
+| A3 Sandbox viz | `[~]` | Helix + hash vault + homepage promo + organ-print SKU + mRNA-reprogramming consult citation + veterinary organ rails (cat cryo / VET REGEN POD); variant browser still open |
 | A4 Partner network | `[ ]` | Verified clinics, ACP escrow until consult delivered |
 | A5 Economy | `[ ]` | Vertical `AETERNA` + creator-listed genomic workflows |
 

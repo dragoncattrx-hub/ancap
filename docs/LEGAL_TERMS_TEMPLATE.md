@@ -19,6 +19,7 @@ They are not a substitute for jurisdiction-specific counsel on incorporation, li
 | Collective cyber defense | `/legal/cyber-defense` |
 | Research references | `/legal/research-refs` |
 | Cryonics & constitutions | `/legal/cryo-constitution` |
+| Veterinary organ rails | `/legal/vet-regen` |
 | Saliva Rx notice | `/legal/saliva-rx-notice` |
 | Market data | `/legal/market-data` |
 | Compliance overview | `/compliance` |

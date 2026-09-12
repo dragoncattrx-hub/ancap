@@ -14,6 +14,8 @@ SERVICE_IDS: dict[str, str] = {
     "cryo-neuro": "a1000001-0000-4000-8000-000000000002",
     "cryo-tardigrade-protocol": "a1000001-0000-4000-8000-000000000003",
     "cryo-standby": "a1000001-0000-4000-8000-000000000004",
+    "cryo-vet-feline-tissue": "a1000001-0000-4000-8000-000000000005",
+    "cryo-vet-canine-regen": "a1000001-0000-4000-8000-000000000006",
 }
 
 PARTNER_IDS: dict[str, str] = {
@@ -27,11 +29,14 @@ def catalog() -> dict[str, Any]:
         "title": "Cryopreservation desk",
         "tagline": "ACP-settled cryonics intents with tardigrade-inspired research protocols — licensed partners only.",
         "compliance_note": (
-            "ANCAP does not operate cryonics facilities. Services are intents / briefs settled in ACP "
-            "and handed to verified partners. Tardigrade (тихоходки) blood / cryptobiosis references are "
-            "research-inspired protocol metadata — not an approved human transfusion product. "
-            "Not medical advice. Subject to partner jurisdiction health law and constitutional limits "
-            "as of the legal notice date."
+            "ANCAP does not operate cryonics facilities or veterinary operating chambers. "
+            "Services are intents / briefs settled in ACP and handed to verified partners. "
+            "Tardigrade (тихоходки) blood / cryptobiosis references are research-inspired protocol "
+            "metadata — not an approved human transfusion product. Veterinary tissue-cryo and "
+            "VET REGEN POD listings are conceptual partner rails for licensed veterinarians — "
+            "not marketed medical devices and not a resurrection or survival-rate claim. "
+            "Not medical or veterinary advice. Subject to partner jurisdiction health, veterinary, "
+            "and constitutional limits as of the legal notice date."
         ),
         "services": [
             {
@@ -64,6 +69,26 @@ def catalog() -> dict[str, Any]:
                 "label": "SST / standby coordination",
                 "price_from_acp": "18000",
                 "blurb": "Standby / rapid response coordination fee settled in ACP with partner roster.",
+            },
+            {
+                "id": "cryo-vet-feline-tissue",
+                "review_target_id": SERVICE_IDS["cryo-vet-feline-tissue"],
+                "label": "Feline tissue cryoconservator-restorer intent",
+                "price_from_acp": "75000",
+                "blurb": (
+                    "Licensed-veterinary-partner intake for cat tissue banking (controlled-rate freeze, "
+                    "LN2 store, planned thaw). Conceptual architecture — not a return-to-life warranty."
+                ),
+            },
+            {
+                "id": "cryo-vet-canine-regen",
+                "review_target_id": SERVICE_IDS["cryo-vet-canine-regen"],
+                "label": "Canine VET REGEN POD organ-pathway intent",
+                "price_from_acp": "180000",
+                "blurb": (
+                    "Licensed-veterinary-partner organ transplant / regeneration chamber pathway for dogs. "
+                    "Infographic speed or survival figures are not product claims."
+                ),
             },
         ],
         "partners": [

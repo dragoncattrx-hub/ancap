@@ -8,7 +8,13 @@ def test_cryo_catalog(client):
     assert r.status_code == 200, r.text
     body = r.json()
     assert "tardigrade" in body["compliance_note"].lower() or "тихоход" in body["compliance_note"].lower()
-    assert len(body["services"]) >= 3
+    assert len(body["services"]) >= 5
+    ids = {s["id"] for s in body["services"]}
+    assert "cryo-vet-feline-tissue" in ids
+    assert "cryo-vet-canine-regen" in ids
+    blob = str(body).lower()
+    assert "return to life" not in blob
+    assert "98%" not in blob
     names = {p["name"].lower() for p in body["partners"]}
     assert any("kriorus" in n or "криорус" in n for n in names)
     assert any("tomorrow" in n for n in names)

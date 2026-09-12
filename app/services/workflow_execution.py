@@ -314,6 +314,64 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "status_timeline"],
         tags=["aeterna", "longevity", "mrna", "lnp", "reprogramming", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-vet-cat-cryo-restore",
+        title="AETERNA Feline Tissue Cryoconservator-Restorer",
+        category="AETERNA",
+        summary=(
+            "Licensed-veterinary-partner intake for a feline tissue cryoconservator-restorer "
+            "(controlled-rate freeze, LN2 store, thaw/restore) — 75,000 ACP."
+        ),
+        description=(
+            "Settles 75,000 ACP and issues a licensed-veterinary-partner brief for cat tissue banking: "
+            "harvest of a small sample (skin, cartilage, fat, muscle, or stem-cell niche), controlled-rate "
+            "freezing to about −150…−196 °C with cryoprotectant protocols, liquid-nitrogen storage, then "
+            "planned thaw and partner-clinic return of tissue. Conceptual architecture only — ANCAP does not "
+            "manufacture the chamber, does not practice veterinary medicine, and does not claim return-to-life "
+            "or a survival-rate warranty. No wet-lab protocol, CRISPR design, or home cryo kit."
+        ),
+        price=Money(amount="75000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=60,
+        preview_items=["Species/tissue intake", "Veterinary partner match", "Cryo-path consent pack"],
+        output_items=[
+            "Feline cryo-restore intake brief",
+            "Licensed veterinary handoff",
+            "Non-claim checklist (no resurrection / no survival %)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
+        tags=["aeterna", "veterinary", "feline", "cryo", "tissue-bank"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-vet-regen-pod",
+        title="AETERNA Canine VET REGEN POD",
+        category="AETERNA",
+        summary=(
+            "Licensed-veterinary-partner organ-transplant and regeneration chamber pathway for dogs "
+            "(VET REGEN POD) — 180,000 ACP."
+        ),
+        description=(
+            "Settles 180,000 ACP and issues a licensed-veterinary-partner brief for a canine organ pathway: "
+            "organ bank at cryogenic temperature, 3D tissue bioprint assist, robot-assisted placement, "
+            "stem-cell / growth-factor stimulation, and post-op monitoring inside a sealed veterinary chamber. "
+            "Infographics illustrate intended partner architecture. ANCAP does not operate VET REGEN POD hardware, "
+            "does not quote survival percentages or regeneration speed, and does not sell a home kit. "
+            "Physical procedures occur only under a licensed veterinarian."
+        ),
+        price=Money(amount="180000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=75,
+        preview_items=["Canine organ pathway intake", "Chamber partner match", "Immunocompatibility pack"],
+        output_items=[
+            "VET REGEN POD intake brief",
+            "Licensed veterinary handoff",
+            "Non-claim checklist (no resurrection / no survival %)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
+        tags=["aeterna", "veterinary", "canine", "organ-print", "regen-pod"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1301,6 +1359,40 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "A notice of allowance is not a fully issued U.S. patent and is not marketing authorization. "
                     "Reported work remains preclinical. ANCAP is not affiliated with Daewoong, Turn Bio, or eTurna."
+                ),
+            }
+        if template.slug == "aeterna-vet-cat-cryo-restore":
+            deliverable["intent"] = str(payload.get("intent_kind") or "vet_feline_cryo_restore")
+            deliverable["compliance"] = (
+                "Licensed-veterinary-partner tissue-bank intake only. Not a diagnosis, not a marketed "
+                "veterinary device, and not a return-to-life warranty. No CRISPR, gene synthesis, "
+                "or DIY cryoprotectant protocol."
+            )
+            deliverable["veterinary"] = {
+                "mode": "licensed_veterinary_partner",
+                "species": "felis_catus",
+                "architecture": "controlled_rate_freezer_plus_ln2_cryochamber",
+                "price_acp": "75000",
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical cryopreservation "
+                    "and any reimplantation occur only in a licensed veterinary clinic."
+                ),
+            }
+        if template.slug == "aeterna-vet-regen-pod":
+            deliverable["intent"] = str(payload.get("intent_kind") or "vet_canine_regen_pod")
+            deliverable["compliance"] = (
+                "Licensed-veterinary-partner organ-pathway intake only. Not a diagnosis and not a "
+                "marketed chamber. Infographic survival or speed figures are not product claims. "
+                "No CRISPR, gene synthesis, or DIY bioreactor protocol."
+            )
+            deliverable["veterinary"] = {
+                "mode": "licensed_veterinary_partner",
+                "species": "canis_familiaris",
+                "architecture": "vet_regen_pod_organ_bank_bioprint_robot_assist",
+                "price_acp": "180000",
+                "note": (
+                    "ANCAP settles ACP and matches a licensed veterinary partner. ANCAP does not operate "
+                    "VET REGEN POD hardware."
                 ),
             }
         execution_summary = {

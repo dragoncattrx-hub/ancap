@@ -69,12 +69,12 @@ export const legalByLang: Record<Language, Tree> = {
       "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, Chalmers/PRL Floquet bosonic-code coverage, the iXBT quantum-info article, and 2026 IT-gazelle / startup-market journalism are cited for literacy only.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
-      "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
+      "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, veterinary tissue-cryo / VET REGEN POD rails, and constitutional jurisdiction notes as of this notice date.",
     footerCryo: "Cryonics",
     cryoKicker: "Legal / longevity",
     cryoTitle: "Cryopreservation, partners, and constitutional limits",
     cryoIntro:
-      "How ANCAP frames cryonics intents, licensed partners, and tardigrade-inspired research protocols under applicable constitutions and health law as of 11 September 2026.",
+      "How ANCAP frames cryonics intents, licensed partners, tardigrade-inspired research protocols, and veterinary tissue / organ rails under applicable constitutions and health law as of 12 September 2026.",
     cryo1Title: "1. Platform role",
     cryo1Body:
       "ANCAP provides ACP-settled intents, briefs, and partner handoff tooling. ANCAP does not operate cryonics storage facilities, clinical labs, or emergency SST teams. Physical cryopreservation is performed only by licensed partners under their own contracts and local law.",
@@ -90,6 +90,50 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Title: "5. Not medical advice; user reviews",
     cryo5Body:
       "Catalog copy and AI/user reviews are informational. They are not medical, legal, or investment advice. Mandatory consumer and patient rights that cannot be waived remain unaffected.",
+    cryo6Title: "6. Veterinary tissue cryopreservation (feline)",
+    cryo6Body:
+      "The feline tissue cryoconservator-restorer listing is a licensed-veterinary-partner intake brief. ANCAP does not manufacture the chamber, does not practice veterinary medicine, and does not claim that frozen tissue will restore life, regenerate an organ, or succeed at any stated survival rate. Harvest, freeze, store, thaw, and any reimplantation occur only under a licensed veterinarian and applicable animal-health law.",
+    cryo7Title: "7. Veterinary organ regeneration chamber (canine / VET REGEN POD)",
+    cryo7Body:
+      "VET REGEN POD is the name of a conceptual canine organ-transplant and regeneration chamber illustrated for partner literacy. Infographic figures (including any survival percentage or “faster than natural regeneration” claim) are not ANCAP product claims, not clinical evidence, and not a warranty. Physical procedures occur only in a licensed veterinary operating environment. See /legal/vet-regen.",
+    vetRegenLink: "Veterinary organ rails",
+    hubCardVetRegen:
+      "Feline tissue cryoconservator-restorer and canine VET REGEN POD: conceptual partner architecture, licensed veterinarians only, no resurrection or survival-rate warranty.",
+    footerVetRegen: "Vet regen",
+    vetRegenKicker: "Legal / veterinary",
+    vetRegenTitle: "Veterinary organ rails — cryoconservator and VET REGEN POD",
+    vetRegenIntro:
+      "How ANCAP frames companion-animal tissue banking and organ-regeneration partner rails as of 12 September 2026. These pages sell ACP-settled consult and intake briefs, not hardware and not veterinary treatment.",
+    vr1Title: "1. Platform role",
+    vr1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching for AETERNA veterinary organ rails. ANCAP does not operate veterinary clinics, does not manufacture cryochambers or VET REGEN POD hardware, does not issue veterinary medicinal products, and does not perform surgery on animals.",
+    vr2Title: "2. Not a marketed medical device",
+    vr2Body:
+      "Infographics of the feline cryoconservator-restorer and the canine VET REGEN POD are conceptual architecture for partner discussion. They are not an EU MDR / IVDR device brochure, not an FDA 510(k) or New Animal Drug Application, not an EAEU registered veterinary device, and not a CE-marked product sold by ANCAP. Listing a workflow does not create a device placing-on-the-market.",
+    vr3Title: "3. Forbidden outcome claims",
+    vr3Body:
+      "ANCAP does not claim return to life, resurrection, immortality, a numeric survival rate (including any “up to 98%” figure that may appear on an illustration), or regeneration “2–5× faster than natural.” Tissue cryopreservation can preserve some cells under partner protocols; whole-organ vitrification, bioprint, transplant, and functional recovery remain uncertain and partner-dependent. Do not treat illustrations as clinical evidence.",
+    vr4Title: "4. Licensed veterinarians only",
+    vr4Body:
+      "Harvest, anesthesia, transplant, immunomodulation, stem-cell stimulation, and aftercare are veterinary acts. They may be performed only by a person licensed to practice veterinary medicine in the relevant jurisdiction (for example a DVM / veterinarian under applicable practice acts). Owners must not attempt home cryo, DIY bioreactors, or unlicensed cell culture.",
+    vr5Title: "5. Animal-health and welfare law (notice date)",
+    vr5Body:
+      "Services are offered subject to animal-health and welfare law where the owner and the licensed partner operate, as in force on 12 September 2026 — including the Russian Federation law on veterinary medicine, EU Veterinary Medicinal Products Regulation (EU) 2019/6, Directive 2010/63/EU where research animals are involved, U.S. state veterinary practice acts and FDA Center for Veterinary Medicine rules, German TierSchG / TAppV, and corresponding Ukrainian veterinary legislation. Where a statute prohibits an activity, that prohibition controls.",
+    vr6Title: "6. Not veterinary, medical, or pharmacological advice",
+    vr6Body:
+      "Catalog copy, infographics, workflow outputs, and reviews are informational. They are not a diagnosis, prescription, treatment plan, or guarantee for any animal. Mandatory consumer and animal-owner rights that cannot be waived remain unaffected.",
+    vr7Title: "7. Pet health data",
+    vr7Body:
+      "If you submit identifiers or clinical history about an animal, treat them as sensitive. Do not upload regulated veterinary records without a lawful basis. ANCAP vaults remain hash-first: do not upload raw genomic blobs. Partner clinics process clinical data under their own privacy notices.",
+    vr8Title: "8. Relationship to human organ print",
+    vr8Body:
+      "Human stem-cell organ print (250,000 ACP per organ) remains a separate licensed-bioreactor handoff. Veterinary rails (75,000 ACP feline cryo intake; 180,000 ACP canine VET REGEN POD pathway) do not authorize human clinical use of the illustrated chambers and do not change AETERNA’s ban on DIY CRISPR, gene synthesis, or LNP recipes.",
+    vr9Title: "9. Payments",
+    vr9Body:
+      "ACP paid for these workflows buys a consult / intake brief and partner match — not title to hardware, not a guaranteed surgical slot, and not a refundable clinical outcome. Refunds follow /legal/refunds.",
+    vr10Title: "10. Contact",
+    vr10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#vet-regen and /cryo. Related notices: /legal/cryo-constitution, /legal/terms, /legal/risk.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
       "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
@@ -140,6 +184,9 @@ export const legalByLang: Record<Language, Tree> = {
     t18Body: "Questions about these Terms: legal@ancap.cloud. Support: support@ancap.cloud. Nothing in these Terms excludes or limits rights that cannot be waived under the mandatory consumer, data-protection, or other laws of your country of residence.",
     t19Title: "19. CLARITY Act — full agreement",
     t19Body: "ANCAP states its full agreement with the purpose and market-structure goals of the U.S. Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633): clearer classification of digital assets, clearer SEC and CFTC jurisdictional lines, and lawful digital-asset commerce. This is a public legal-policy endorsement, not lobbying registration and not a claim that the bill is already enacted law. See the CLARITY Act page for the full statement.",
+    t20Title: "20. Longevity, organ-print, and veterinary rails",
+    t20Body:
+      "AETERNA and cryo-desk workflows sell analysis, consult briefs, and licensed-partner handoffs. They are not medical or veterinary treatment, not marketed medical devices, and not a promise that organs will print, tissues will revive, or animals or humans will be restored to life. Human organ print and veterinary chambers (including VET REGEN POD illustrations) are partner-clinic rails only. You must not use ANCAP to obtain wet-lab protocols, CRISPR designs, gene synthesis, LNP recipes, or unlicensed procedures on humans or animals. See /legal/vet-regen, /legal/cryo-constitution, and /legal/research-refs.",
     privacyKicker: "Privacy notice",
     privacyTitle: "How ANCAP handles client data",
     privacyIntro: "This Privacy Notice explains how the ANCAP platform operator of ancap.cloud processes personal data for accounts, wallets, paid workflows, API usage, proof receipts, support, security, and analytics preferences.",
@@ -198,6 +245,9 @@ export const legalByLang: Record<Language, Tree> = {
     r6Body: "Rules for crypto-assets, AI, data, and payments differ by country and can change. You are responsible for your own tax and compliance obligations. Geo or KYC restrictions may apply to some payment methods. ANCAP's public full agreement with the CLARITY Act's market-structure goals does not replace your local rules, turn ACP into a security offering, or guarantee any legislative outcome.",
     r7Title: "7. Third-party market and weather data",
     r7Body: "Spot prices, charts, or FX context shown on ANCAP may come from third-party providers such as CoinGecko. Local weather and time context on the Earth widget may come from AccuWeather (https://www.accuweather.com/) via ANCAP's backend, using approximate IP-derived coordinates. Those figures are indicative only: they are not a settlement price, oracle guarantee, offer to buy or sell, investment advice, or an official weather warning. Desk quotes, bridge conversions, and ACP accounting units can differ from external market screens.",
+    r8Title: "8. Longevity, organ-print, and veterinary outcome risk",
+    r8Body:
+      "AETERNA organ-print and veterinary rails (feline tissue cryo, canine VET REGEN POD) can fail, be delayed, or be refused by a licensed partner. Illustrations are conceptual. No survival rate, regeneration speed, or return-to-life outcome is promised. Paying ACP does not create a clinical or veterinary duty of care owed by ANCAP.",
     riskMarketDataMore: "Full market-data disclosure:",
     p9Title: "9. Third-party market and weather providers",
     p9Body: "To show indicative crypto and FX context, ANCAP may call third-party market-data APIs (currently CoinGecko). To show local weather on the Earth / Support widget, ANCAP may call AccuWeather APIs with approximate latitude/longitude derived from IP geolocation (or interim numeric feeds with AccuWeather attribution if the AccuWeather key is not configured). Those requests use ANCAP server credentials where applicable and typically do not send your account password. Provider logs may include technical metadata (including approximate location) under their own privacy terms. We do not sell your personal data to market-data or weather vendors.",
@@ -351,6 +401,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Risks",
     footerRefunds: "Refunds",
     footerWelcomeGrant: "Welcome grant",
+    footerVetRegen: "Vet regen",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -422,12 +473,12 @@ export const legalByLang: Record<Language, Tree> = {
       "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance, Floquet/бозонные коды Чалмерса, iXBT и рыночная журналистика IT-газелей 2026 цитируются для грамотности, не как warranty продукта.",
     cryoLink: "Крионика и конституции",
     hubCardCryo:
-      "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
+      "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, ветеринарные рейлы тканей / VET REGEN POD, конституционные пределы на дату уведомления.",
     footerCryo: "Крионика",
     cryoKicker: "Право / longevity",
     cryoTitle: "Криоконсервация, партнёры и конституционные пределы",
     cryoIntro:
-      "Как ANCAP оформляет крио-интенты, лицензированных партнёров и протоколы по тихоходкам в рамках действующих конституций и санитарного права на 11 сентября 2026.",
+      "Как ANCAP оформляет крио-интенты, лицензированных партнёров, протоколы по тихоходкам и ветеринарные рейлы тканей/органов в рамках действующих конституций и санитарного права на 12 сентября 2026.",
     cryo1Title: "1. Роль платформы",
     cryo1Body:
       "ANCAP даёт ACP-расчёты интентов, брифы и handoff партнёрам. ANCAP не эксплуатирует криохранилища, клинические лаборатории и SST-команды. Физическую криоконсервацию выполняют только лицензированные партнёры по своим договорам и местному праву.",
@@ -443,6 +494,50 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Title: "5. Не медицинский совет; отзывы",
     cryo5Body:
       "Каталог и отзывы пользователей/ИИ носят информационный характер. Это не медицинский, юридический или инвестиционный совет. Неотчуждаемые права потребителя/пациента сохраняются.",
+    cryo6Title: "6. Ветеринарная криоконсервация тканей (кошки)",
+    cryo6Body:
+      "Листинг криоконсерватора-восстановителя тканей кошки — бриф приёма лицензированного вет-партнёра. ANCAP не производит камеру, не занимается ветеринарной практикой и не утверждает, что замороженная ткань вернёт жизнь, вырастит орган или даст любой заявленный процент выживаемости. Забор, заморозка, хранение, размораживание и любая реимплантация — только у лицензированного ветеринарного врача и по применимому законодательству об охране здоровья животных.",
+    cryo7Title: "7. Камера регенерации органов (собаки / VET REGEN POD)",
+    cryo7Body:
+      "VET REGEN POD — имя концептуальной камеры пересадки органов и регенерации собаки, показанной для literacy партнёра. Цифры на инфографике (включая любой процент выживаемости или «быстрее естественной регенерации») не являются заявлениями продукта ANCAP, не клинические доказательства и не гарантия. Физические процедуры — только в лицензированной ветеринарной операционной. См. /legal/vet-regen.",
+    vetRegenLink: "Ветеринарные рейлы органов",
+    hubCardVetRegen:
+      "Криоконсерватор тканей кошки и камера VET REGEN POD для собаки: концептуальная архитектура партнёра, только лицензированный ветеринар, без гарантии воскрешения или процента выживаемости.",
+    footerVetRegen: "Вет-реген",
+    vetRegenKicker: "Право / ветеринария",
+    vetRegenTitle: "Ветеринарные рейлы органов — криоконсерватор и VET REGEN POD",
+    vetRegenIntro:
+      "Как ANCAP оформляет банкирование тканей и регенерацию органов животных-компаньонов на 12 сентября 2026. Эти страницы продают ACP-брифы консультации и приёма, а не оборудование и не ветеринарное лечение.",
+    vr1Title: "1. Роль платформы",
+    vr1Body:
+      "ANCAP даёт расчёт в ACP, брифы и подбор лицензированного партнёра для ветеринарных рейлов AETERNA. ANCAP не ведёт ветклиники, не производит криокамеры и оборудование VET REGEN POD, не выпускает ветеринарные лекарственные средства и не оперирует животных.",
+    vr2Title: "2. Это не выведенное на рынок медизделие",
+    vr2Body:
+      "Инфографики криоконсерватора тканей кошки и камеры VET REGEN POD — концептуальная архитектура для обсуждения с партнёром. Это не брошюра изделия по EU MDR/IVDR, не FDA 510(k) и не NADA, не зарегистрированное ветеринарное изделие ЕАЭС и не CE-маркированный продукт ANCAP. Листинг workflow не означает выпуск изделия в обращение.",
+    vr3Title: "3. Запрещённые заявления об исходе",
+    vr3Body:
+      "ANCAP не заявляет возвращение к жизни, воскрешение, бессмертие, числовой процент выживаемости (включая любые «до 98%» на иллюстрации) и регенерацию «в 2–5 раз быстрее естественной». Криоконсервация тканей может сохранить часть клеток по протоколам партнёра; витрификация целого органа, биопечать, пересадка и восстановление функции остаются неопределёнными. Не воспринимайте иллюстрации как клинические доказательства.",
+    vr4Title: "4. Только лицензированные ветеринары",
+    vr4Body:
+      "Забор, анестезия, пересадка, иммуномодуляция, стимуляция стволовыми клетками и послеоперационный уход — акты ветеринарной практики. Их может выполнять только лицо, имеющее право заниматься ветеринарией в соответствующей юрисдикции. Владелец не вправе устраивать домашнее крио, DIY-биореактор или нелицензированную культуру клеток.",
+    vr5Title: "5. Право охраны здоровья животных (дата уведомления)",
+    vr5Body:
+      "Услуги предлагаются с учётом законодательства об охране здоровья и благополучии животных в юрисдикциях владельца и партнёра по состоянию на 12 сентября 2026 — включая законодательство РФ о ветеринарии, Регламент ЕС (EU) 2019/6 о ветеринарных лекарственных средствах, Директиву 2010/63/EU при работе с лабораторными животными, акты штатов США о ветеринарной практике и правила FDA CVM, германские TierSchG / TAppV и соответствующее украинское ветеринарное законодательство. Если закон запрещает деятельность, запрет имеет приоритет.",
+    vr6Title: "6. Не ветеринарный, медицинский и не фармакологический совет",
+    vr6Body:
+      "Каталог, инфографики, выводы workflow и отзывы носят информационный характер. Это не диагноз, не рецепт, не план лечения и не гарантия для любого животного. Неотчуждаемые права потребителя и владельца животного сохраняются.",
+    vr7Title: "7. Данные о здоровье питомца",
+    vr7Body:
+      "Идентификаторы и клиническая история животного считайте чувствительными. Не загружайте регулируемые ветзаписи без правового основания. Хранилища ANCAP — hash-first: не загружайте сырые геномные блобы. Клиники-партнёры обрабатывают клинические данные по своим privacy-уведомлениям.",
+    vr8Title: "8. Связь с печатью человеческого органа",
+    vr8Body:
+      "Печать органа человека (250 000 ACP за орган) остаётся отдельным handoff лицензированного биореактора. Ветеринарные рейлы (75 000 ACP крио кошки; 180 000 ACP путь VET REGEN POD для собаки) не разрешают клиническое применение иллюстрированных камер к человеку и не отменяют запрет AETERNA на DIY CRISPR, синтез генов и рецепты LNP.",
+    vr9Title: "9. Платежи",
+    vr9Body:
+      "ACP за эти workflow оплачивает бриф консультации/приёма и подбор партнёра — не право собственности на оборудование, не гарантированный слот операции и не возвращаемый клинический исход. Возвраты — по /legal/refunds.",
+    vr10Title: "10. Контакты",
+    vr10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#vet-regen и /cryo. Связанные страницы: /legal/cryo-constitution, /legal/terms, /legal/risk.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
       "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
@@ -493,6 +588,9 @@ export const legalByLang: Record<Language, Tree> = {
     t18Body: "Вопросы по Условиям: legal@ancap.cloud. Поддержка: support@ancap.cloud. Ничто в Условиях не ограничивает права, от которых нельзя отказаться по обязательному праву вашей страны проживания.",
     t19Title: "19. CLARITY Act — полное согласие",
     t19Body: "ANCAP заявляет полное согласие с целями и рыночной структурой U.S. Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633): более ясная классификация цифровых активов, более чёткие границы полномочий SEC и CFTC и законная торговля цифровыми активами. Это публичное юридико-политическое одобрение, а не регистрация лоббиста и не утверждение, что законопроект уже стал законом. Полный текст — на странице CLARITY Act.",
+    t20Title: "20. Рейлы долголетия, печати органов и ветеринарии",
+    t20Body:
+      "Workflow AETERNA и крио-стола продают анализ, брифы и передачу лицензированным партнёрам. Это не медицинское и не ветеринарное лечение, не выведенные на рынок медизделия и не обещание, что органы напечатаются, ткани оживут или человек/животное будут возвращены к жизни. Печать человеческого органа и ветеринарные камеры (включая иллюстрации VET REGEN POD) — только рейлы клиник-партнёров. Нельзя использовать ANCAP, чтобы получить wet-lab протоколы, CRISPR-дизайн, синтез генов, рецепты LNP или нелицензированные процедуры над людьми или животными. См. /legal/vet-regen, /legal/cryo-constitution и /legal/research-refs.",
     privacyKicker: "Уведомление о конфиденциальности",
     privacyTitle: "Как ANCAP обрабатывает данные клиентов",
     privacyIntro: "Это Уведомление объясняет, как оператор платформы ANCAP на ancap.cloud обрабатывает персональные данные аккаунтов, кошельков, платных workflow, API, proof-квитанций, поддержки, безопасности и аналитики.",
@@ -551,6 +649,9 @@ export const legalByLang: Record<Language, Tree> = {
     r6Body: "Правила по криптоактивам, ИИ, данным и платежам различаются по странам. Налоги и комплаенс — ваша ответственность. Для части методов оплаты возможны geo/KYC ограничения. Публичное полное согласие ANCAP с целями CLARITY Act не заменяет ваши местные правила, не делает ACP предложением ценных бумаг и не гарантирует исход голосования.",
     r7Title: "7. Сторонние рыночные и погодные данные",
     r7Body: "Спотовые цены, графики или FX-контекст на ANCAP могут поступать от сторонних провайдеров, в том числе CoinGecko. Локальная погода и время во виджете Earth могут поступать от AccuWeather (https://www.accuweather.com/) через backend ANCAP по приблизительным координатам IP. Это только ориентиры: не цена расчёта, не оракул-гарантия, не оферта купли/продажи, не инвестиционный совет и не официальное метеопредупреждение. Котировки desk, конверсии моста и учётные единицы ACP могут отличаться от внешних экранов.",
+    r8Title: "8. Риск исхода долголетия, печати органов и ветеринарии",
+    r8Body:
+      "Рейлы AETERNA (печать органа, крио тканей кошки, VET REGEN POD для собаки) могут не состояться, задержаться или быть отклонены лицензированным партнёром. Иллюстрации концептуальны. Процент выживаемости, скорость регенерации и возвращение к жизни не обещаются. Оплата ACP не создаёт у ANCAP клинической или ветеринарной обязанности заботы.",
     riskMarketDataMore: "Полное раскрытие по рыночным данным:",
     p9Title: "9. Провайдеры рыночных и погодных данных",
     p9Body: "Чтобы показывать ориентировочный крипто- и FX-контекст, ANCAP может вызывать сторонние API (сейчас CoinGecko). Для погоды во виджете Earth / Support ANCAP может вызывать AccuWeather API с приблизительными lat/lon из IP-геолокации (или временный числовой фид с атрибуцией AccuWeather, если ключ не настроен). Запросы идут с серверными ключами ANCAP где применимо и обычно не передают ваш пароль. У провайдера могут оставаться технические логи (включая приблизительное местоположение) по их политике. Мы не продаём ваши персональные данные вендорам рыночных или погодных данных.",
@@ -699,6 +800,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Риски",
     footerRefunds: "Возвраты",
     footerWelcomeGrant: "Грант 100 ACP",
+    footerVetRegen: "Вет-реген",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -768,34 +870,78 @@ export const legalByLang: Record<Language, Tree> = {
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
       "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, Chalmers Floquet bosonic codes, iXBT, and 2026 IT-gazelle / startup-market journalism.",
-    cryoLink: "Cryonics & constitutions",
+    cryoLink: "Кріоніка та конституції",
     hubCardCryo:
-      "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
-    footerCryo: "Cryonics",
-    cryoKicker: "Legal / longevity",
-    cryoTitle: "Cryopreservation, partners, and constitutional limits",
+      "Стіл кріоконсервації, research-протоколи за тихоходками, партнери КріоРус і Tomorrow.bio, ветеринарні рейли тканин / VET REGEN POD, конституційні межі на дату повідомлення.",
+    footerCryo: "Кріоніка",
+    cryoKicker: "Право / longevity",
+    cryoTitle: "Кріоконсервація, партнери та конституційні межі",
     cryoIntro:
-      "How ANCAP frames cryonics intents, licensed partners, and tardigrade-inspired research protocols under applicable constitutions and health law as of 11 September 2026.",
-    cryo1Title: "1. Platform role",
+      "Як ANCAP оформлює кріо-інтенти, ліцензованих партнерів, протоколи за тихоходками та ветеринарні рейли тканин/органів у межах чинних конституцій і санітарного права на 12 вересня 2026.",
+    cryo1Title: "1. Роль платформи",
     cryo1Body:
-      "ANCAP provides ACP-settled intents and partner handoff tooling. ANCAP does not operate cryonics facilities. Physical cryopreservation is performed only by licensed partners.",
-    cryo2Title: "2. Partners — KrioRus and Tomorrow.bio",
+      "ANCAP надає ACP-розрахунки інтентів і handoff партнерам. ANCAP не експлуатує кріосховища. Фізичну кріоконсервацію виконують лише ліцензовані партнери.",
+    cryo2Title: "2. Партнери — КріоРус і Tomorrow.bio",
     cryo2Body:
-      "Partner listings include КриоРус (KrioRus, RU) and Tomorrow.bio (EU). Partner contracts govern eligibility and storage. Listing is not a warranty of clinical outcome.",
-    cryo3Title: "3. Tardigrade blood / cryptobiosis",
+      "У каталозі: КріоРус (RU) і Tomorrow.bio (EU). Придатність і зберігання — за договорами партнера. Лістинг не гарантує клінічний результат.",
+    cryo3Title: "3. Кров тихоходок / криптобіоз",
     cryo3Body:
-      "Tardigrade references are research-inspired metadata — not an approved human transfusion product or DIY protocol.",
-    cryo4Title: "4. Constitutions (notice date)",
+      "Згадки тихоходок — research-метадані, не дозволений продукт для трансфузії людині і не DIY-протокол.",
+    cryo4Title: "4. Конституції (дата повідомлення)",
     cryo4Body:
-      "Subject to constitutions and supreme law where users and partners operate, as of 11 September 2026 (including RF, German Basic Law, Ukraine, EU/US frameworks). Unlawful cryonics activity is not facilitated.",
-    cryo5Title: "5. Not medical advice",
+      "Послуги пропонуються з урахуванням конституцій і вищого права юрисдикцій користувачів і партнерів станом на 12 вересня 2026 (зокрема Конституція РФ, Основний закон ФРН, Конституція України, рамки ЄС/США). Незаконна кріоніка не супроводжується.",
+    cryo5Title: "5. Не медична порада",
     cryo5Body:
-      "Catalog copy and AI/user reviews are informational only. Mandatory consumer/patient rights remain unaffected.",
+      "Каталог і відгуки користувачів/ШІ мають інформаційний характер. Обов’язкові права споживача/пацієнта зберігаються.",
+    cryo6Title: "6. Ветеринарна кріоконсервація тканин (кіт)",
+    cryo6Body:
+      "Лістинг кріоконсерватора-відновлювача тканин кота — бриф прийому ліцензованого вет-партнера. ANCAP не виробляє камеру, не займається ветеринарною практикою і не стверджує, що заморожена тканина поверне життя чи дасть будь-який заявлений відсоток виживаності. Забір, заморозка, зберігання, розморожування і будь-яка реімплантація — лише в ліцензованого ветеринарного лікаря.",
+    cryo7Title: "7. Камера регенерації органів (собака / VET REGEN POD)",
+    cryo7Body:
+      "VET REGEN POD — назва концептуальної камери пересадки органів і регенерації собаки. Цифри на інфографіці не є заявами продукту ANCAP. Фізичні процедури — лише в ліцензованій ветеринарній операційній. Див. /legal/vet-regen.",
+    vetRegenLink: "Ветеринарні рейли органів",
+    hubCardVetRegen:
+      "Кріоконсерватор тканин кота і камера VET REGEN POD для собаки: концептуальна архітектура партнера, лише ліцензований ветеринар, без гарантії воскресіння чи відсотка виживаності.",
+    footerVetRegen: "Вет-реген",
+    vetRegenKicker: "Право / ветеринарія",
+    vetRegenTitle: "Ветеринарні рейли органів — кріоконсерватор і VET REGEN POD",
+    vetRegenIntro:
+      "Як ANCAP оформлює банкування тканин і регенерацію органів тварин-компаньйонів на 12 вересня 2026. Ці сторінки продають ACP-брифи консультації та прийому, а не обладнання і не ветеринарне лікування.",
+    vr1Title: "1. Роль платформи",
+    vr1Body:
+      "ANCAP дає розрахунок в ACP, брифи та підбір ліцензованого партнера. ANCAP не веде ветклініки, не виробляє кріокамери й обладнання VET REGEN POD і не оперує тварин.",
+    vr2Title: "2. Це не виведений на ринок медичний виріб",
+    vr2Body:
+      "Інфографіки — концептуальна архітектура. Це не брошура виробу за EU MDR, не FDA 510(k)/NADA, не зареєстрований ветеринарний виріб і не CE-маркований продукт ANCAP.",
+    vr3Title: "3. Заборонені заяви про результат",
+    vr3Body:
+      "ANCAP не заявляє повернення до життя, воскресіння, безсмертя, числовий відсоток виживаності (зокрема будь-які «до 98%» на ілюстрації) і регенерацію «у 2–5 разів швидше за природну». Не сприймайте ілюстрації як клінічні докази.",
+    vr4Title: "4. Лише ліцензовані ветеринари",
+    vr4Body:
+      "Забір, анестезія, пересадка, імуномодуляція та післяопераційний догляд — акти ветеринарної практики. Власник не має права влаштовувати домашнє кріо чи DIY-біореактор.",
+    vr5Title: "5. Право охорони здоров’я тварин (дата повідомлення)",
+    vr5Body:
+      "Послуги пропонуються з урахуванням законодавства про охорону здоров’я та добробут тварин станом на 12 вересня 2026 — зокрема законодавство РФ про ветеринарію, Регламент ЄС (EU) 2019/6, Директива 2010/63/EU, акти штатів США та FDA CVM, німецькі TierSchG / TAppV і відповідне українське ветеринарне законодавство.",
+    vr6Title: "6. Не ветеринарна, медична й не фармакологічна порада",
+    vr6Body:
+      "Каталог, інфографіки, висновки workflow і відгуки мають інформаційний характер. Це не діагноз, не рецепт і не гарантія для будь-якої тварини.",
+    vr7Title: "7. Дані про здоров’я улюбленця",
+    vr7Body:
+      "Ідентифікатори та клінічна історія тварини вважайте чутливими. Не завантажуйте регульовані ветзаписи без правової підстави. Сховища ANCAP — hash-first.",
+    vr8Title: "8. Зв’язок із друком людського органа",
+    vr8Body:
+      "Друк органа людини (250 000 ACP за орган) залишається окремим handoff ліцензованого біореактора. Ветеринарні рейли не дозволяють клінічне застосування ілюстрованих камер до людини.",
+    vr9Title: "9. Платежі",
+    vr9Body:
+      "ACP за ці workflow оплачує бриф консультації/прийому і підбір партнера — не право власності на обладнання і не гарантований клінічний результат. Повернення — за /legal/refunds.",
+    vr10Title: "10. Контакти",
+    vr10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#vet-regen і /cryo.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
       "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
     hubCardCyber: "Публічна підтримка колективного кіберзахисту.",
-    hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
+    hubCardClarity: "Повна згода з U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging та нотатки щодо on-ramp / bridge.",
     hubContactTitle: "Контакти для клієнтів",
     hubContactBody: "Юридичні повідомлення: legal@ancap.cloud. Запити щодо даних: privacy@ancap.cloud. Підтримка: support@ancap.cloud. Ми прагнемо підтвердити privacy-запити протягом 30 днів, якщо закон вимагає відповіді.",
@@ -839,8 +985,11 @@ export const legalByLang: Record<Language, Tree> = {
     t17Body: "Умови регулюються правом, застосовним до оператора ANCAP на ancap.cloud. Перед позовом напишіть на legal@ancap.cloud.",
     t18Title: "18. Контакти та обов’язкові права",
     t18Body: "Питання щодо Умов: legal@ancap.cloud. Підтримка: support@ancap.cloud. Обов’язкові права споживача зберігаються.",
-    t19Title: "19. CLARITY Act — full agreement",
-    t19Body: "ANCAP states its full agreement with the Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633). This is a public policy endorsement, not a claim the bill is already law. See the CLARITY Act page.",
+    t19Title: "19. CLARITY Act — повна згода",
+    t19Body: "ANCAP заявляє повну згоду з цілями Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633). Це публічне політичне схвалення, а не твердження, що законопроєкт уже став законом. Повний текст — на сторінці CLARITY Act.",
+    t20Title: "20. Рейли довголіття, друку органів і ветеринарії",
+    t20Body:
+      "Workflow AETERNA і кріо-стола продають аналіз, брифи та передачу ліцензованим партнерам. Це не медичне і не ветеринарне лікування, не виведені на ринок медичні вироби і не обіцянка, що органи надрукуються чи тканини оживуть. Не можна використовувати ANCAP, щоб отримати wet-lab протоколи, CRISPR-дизайн, синтез генів, рецепти LNP або неліцензовані процедури над людьми чи тваринами. Див. /legal/vet-regen.",
     privacyKicker: "Повідомлення про конфіденційність",
     privacyTitle: "Як ANCAP обробляє дані клієнтів",
     privacyIntro: "Це Повідомлення пояснює обробку персональних даних оператором ANCAP на ancap.cloud.",
@@ -899,6 +1048,9 @@ export const legalByLang: Record<Language, Tree> = {
     r6Body: "Правила відрізняються за країнами. Податки — ваша відповідальність. ANCAP full agreement with CLARITY goals does not replace your local rules.",
     r7Title: "7. Сторонні ринкові дані",
     r7Body: "Спотові ціни або FX-контекст на ANCAP можуть надходити від CoinGecko. Це лише орієнтири, не ціна розрахунку і не інвестиційна порада.",
+    r8Title: "8. Ризик результату довголіття, друку органів і ветеринарії",
+    r8Body:
+      "Рейли AETERNA (друк органа, кріо тканин кота, VET REGEN POD для собаки) можуть не відбутися або бути відхилені партнером. Ілюстрації концептуальні. Відсоток виживаності та повернення до життя не обіцяються.",
     riskMarketDataMore: "Повне розкриття щодо ринкових даних:",
     p9Title: "9. Провайдери ринкових даних",
     p9Body: "ANCAP може викликати CoinGecko API для орієнтовних котирувань. Запити йдуть із серверними ключами і зазвичай без вашого пароля.",
@@ -1053,6 +1205,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Ризики",
     footerRefunds: "Повернення",
     footerWelcomeGrant: "Грант 100 ACP",
+    footerVetRegen: "Вет-реген",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -1123,7 +1276,7 @@ export const legalByLang: Record<Language, Tree> = {
       "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance, Chalmers-Floquet-bosonische Codes, iXBT und IT-Gazellen-Journalismus 2026 nur zur Literacy.",
     cryoLink: "Kryonik & Verfassungen",
     hubCardCryo:
-      "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
+      "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, veterinärmedizinische Gewebe-/VET-REGEN-POD-Schienen, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
     footerCryo: "Kryonik",
     cryoKicker: "Recht / Longevity",
     cryoTitle: "Kryokonservierung, Partner und Verfassungsgrenzen",
@@ -1144,11 +1297,55 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Title: "5. Keine medizinische Beratung",
     cryo5Body:
       "Katalog und Nutzer-/KI-Reviews sind informativ. Zwingende Verbraucher-/Patientenrechte bleiben unberührt.",
+    cryo6Title: "6. Veterinäre Gewebekryokonservierung (Katze)",
+    cryo6Body:
+      "Der feline Gewebe-Kryokonservator/-restorer ist ein Intake-Briefing für lizenzierte Veterinärpartner. ANCAP stellt die Kammer nicht her, praktiziert keine Veterinärmedizin und behauptet nicht, dass gefrorenes Gewebe Leben zurückbringt oder eine Überlebensquote erreicht. Entnahme, Einfrieren, Lager, Auftauen und etwaige Reimplantation nur durch einen approbierten Tierarzt.",
+    cryo7Title: "7. Veterinäre Organregenerationskammer (Hund / VET REGEN POD)",
+    cryo7Body:
+      "VET REGEN POD ist der Name einer konzeptionellen caninen Organtransplantations- und Regenerationskammer. Infografik-Zahlen (einschließlich Überlebensprozente oder „schneller als natürliche Regeneration“) sind keine ANCAP-Produktaussagen. Körperliche Eingriffe nur in einer lizenzierten Veterinär-OP. Siehe /legal/vet-regen.",
+    vetRegenLink: "Veterinär-Organschienen",
+    hubCardVetRegen:
+      "Feliner Gewebe-Kryokonservator und canine VET REGEN POD: konzeptionelle Partnerarchitektur, nur approbierte Tierärzte, keine Auferstehungs- oder Überlebensgarantie.",
+    footerVetRegen: "Vet-Regen",
+    vetRegenKicker: "Recht / Veterinär",
+    vetRegenTitle: "Veterinär-Organschienen — Kryokonservator und VET REGEN POD",
+    vetRegenIntro:
+      "Wie ANCAP Gewebebanken und Organregeneration für Haustiere zum 12. September 2026 einordnet. Diese Seiten verkaufen ACP-Konsultations- und Intake-Briefings, keine Hardware und keine Tierarztbehandlung.",
+    vr1Title: "1. Plattformrolle",
+    vr1Body:
+      "ANCAP bietet ACP-Abrechnung, Briefings und Partner-Matching. ANCAP betreibt keine Tierkliniken, stellt keine Kryokammern oder VET-REGEN-POD-Hardware her und operiert keine Tiere.",
+    vr2Title: "2. Kein in Verkehr gebrachtes Medizinprodukt",
+    vr2Body:
+      "Infografiken sind konzeptionelle Architektur. Keine EU-MDR-Broschüre, kein FDA-510(k)/NADA, kein CE-Produkt von ANCAP. Ein Workflow-Listing ist kein Inverkehrbringen eines Geräts.",
+    vr3Title: "3. Verbotene Ergebnisaussagen",
+    vr3Body:
+      "ANCAP behauptet keine Rückkehr ins Leben, Auferstehung, Unsterblichkeit, numerische Überlebensquote (einschließlich „bis zu 98 %“ auf einer Illustration) und keine Regeneration „2–5× schneller als natürlich“. Illustrationen sind keine klinische Evidenz.",
+    vr4Title: "4. Nur approbierte Tierärzte",
+    vr4Body:
+      "Entnahme, Narkose, Transplantation, Immunmodulation und Nachsorge sind veterinärmedizinische Handlungen. Heim-Kryo, DIY-Bioreaktoren und unlizenzierte Zellkultur sind untersagt.",
+    vr5Title: "5. Tiergesundheits- und Tierschutzrecht (Stand)",
+    vr5Body:
+      "Leistungen unterliegen dem am 12. September 2026 geltenden Tiergesundheits- und Tierschutzrecht — einschließlich russischem Veterinärrecht, VO (EU) 2019/6, Richtlinie 2010/63/EU soweit Forschungstiere betroffen sind, US-State Veterinary Practice Acts und FDA-CVM, deutschem TierSchG / TAppV sowie entsprechendem ukrainischem Veterinärrecht.",
+    vr6Title: "6. Keine veterinär-, medizin- oder pharmakologische Beratung",
+    vr6Body:
+      "Katalog, Infografiken, Workflow-Ausgaben und Reviews sind informativ. Keine Diagnose, kein Rezept, kein Behandlungsplan, keine Garantie für irgendein Tier.",
+    vr7Title: "7. Gesundheitsdaten des Tiers",
+    vr7Body:
+      "Kennungen und klinische Historie eines Tiers sind sensibel. Keine regulierten Veterinärakten ohne Rechtsgrund hochladen. ANCAP-Vaults bleiben hash-first.",
+    vr8Title: "8. Verhältnis zum menschlichen Organdruck",
+    vr8Body:
+      "Menschlicher Stammzell-Organdruck (250.000 ACP je Organ) bleibt ein separates Bioreaktor-Handoff. Veterinärschienen (75.000 ACP feliner Kryo; 180.000 ACP canine VET REGEN POD) autorisieren keine humane Kliniknutzung der illustrierten Kammern.",
+    vr9Title: "9. Zahlungen",
+    vr9Body:
+      "ACP kauft ein Konsultations-/Intake-Briefing und Partner-Matching — kein Hardware-Eigentum und kein garantiertes klinisches Ergebnis. Erstattungen gemäß /legal/refunds.",
+    vr10Title: "10. Kontakt",
+    vr10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#vet-regen und /cryo.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
       "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
     hubCardCyber: "Öffentliche Unterstützung kollektiver Cyberabwehr.",
-    hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
+    hubCardClarity: "Volle Zustimmung zum U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-sichere Botschaften und On-Ramp-/Bridge-Hinweise.",
     hubContactTitle: "Kundenkontakte",
     hubContactBody: "Rechtliches: legal@ancap.cloud. Datenschutz: privacy@ancap.cloud. Support: support@ancap.cloud. Datenschutzanfragen bestätigen wir nach Möglichkeit innerhalb von 30 Tagen.",
@@ -1194,6 +1391,9 @@ export const legalByLang: Record<Language, Tree> = {
     t18Body: "Fragen: legal@ancap.cloud. Support: support@ancap.cloud. Zwingende Verbraucherrechte bleiben unberührt.",
     t19Title: "19. CLARITY Act — volle Zustimmung",
     t19Body: "ANCAP erklärt die volle Zustimmung zu den Zielen des Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633). Öffentliche Politikstellungnahme, kein Anspruch auf bereits erlassenes Gesetz. Siehe CLARITY-Act-Seite.",
+    t20Title: "20. Longevity-, Organdruck- und Veterinärschienen",
+    t20Body:
+      "AETERNA- und Kryo-Workflows verkaufen Analysen, Briefings und lizenzierte Partner-Übergaben. Sie sind keine medizinische oder veterinärmedizinische Behandlung, keine in Verkehr gebrachten Medizinprodukte und kein Versprechen, dass Organe gedruckt oder Gewebe wiederbelebt werden. ANCAP darf nicht genutzt werden, um Nasslabor-Protokolle, CRISPR-Designs, Gensynthese, LNP-Rezepte oder unlizenzierte Eingriffe an Mensch oder Tier zu erhalten. Siehe /legal/vet-regen.",
     privacyKicker: "Datenschutzhinweis",
     privacyTitle: "Wie ANCAP Kundendaten verarbeitet",
     privacyIntro: "Dieser Hinweis erklärt die Verarbeitung personenbezogener Daten durch den ANCAP-Betreiber von ancap.cloud.",
@@ -1252,6 +1452,9 @@ export const legalByLang: Record<Language, Tree> = {
     r6Body: "Regeln unterscheiden sich nach Land. Steuern liegen bei Ihnen. ANCAPs volle Zustimmung zu CLARITY ersetzt lokale Regeln nicht.",
     r7Title: "7. Drittanbieter-Marktdaten",
     r7Body: "Spotpreise auf ANCAP können von CoinGecko stammen und sind nur indikativ — kein Settlement-Preis und keine Anlageberatung.",
+    r8Title: "8. Ergebnisrisiko Longevity, Organdruck und Veterinär",
+    r8Body:
+      "AETERNA-Schienen (Organdruck, feliner Kryo, canine VET REGEN POD) können scheitern oder vom Partner abgelehnt werden. Illustrationen sind konzeptionell. Keine Überlebensquote und keine Rückkehr ins Leben wird versprochen.",
     riskMarketDataMore: "Vollständige Marktdaten-Offenlegung:",
     p9Title: "9. Marktdaten-Anbieter",
     p9Body: "ANCAP kann CoinGecko-APIs für indikative Kurse nutzen. Anfragen verwenden Server-Credentials.",
@@ -1406,6 +1609,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Risiken",
     footerRefunds: "Erstattungen",
     footerWelcomeGrant: "Willkommenszuschuss",
+    footerVetRegen: "Vet-Regen",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -1475,7 +1679,7 @@ export const legalByLang: Record<Language, Tree> = {
       "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance、Chalmers Floquet 玻色碼、iXBT 與 2026 IT 瞪羚／新創市場報導，僅供素養。",
     cryoLink: "冷凍與憲法",
     hubCardCryo:
-      "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",
+      "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio、獸醫組織冷凍／VET REGEN POD 軌道，以及截至本公告日之憲法管轄說明。",
     footerCryo: "冷凍",
     cryoKicker: "法律 / 長壽",
     cryoTitle: "冷凍保存、夥伴與憲法界限",
@@ -1496,11 +1700,55 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Title: "5. 非醫療建議",
     cryo5Body:
       "目錄與使用者／AI 評論僅供資訊參考。強制消費者／患者權利不受影響。",
+    cryo6Title: "6. 獸醫組織冷凍保存（貓）",
+    cryo6Body:
+      "貓組織冷凍保存／復原器上架為持照獸醫夥伴收件簡報。ANCAP 不製造艙體、不從事獸醫診療，亦不主張冷凍組織能起死回生或達成任何存活率。取樣、冷凍、儲存、解凍與任何再植入僅能由持照獸醫師執行。",
+    cryo7Title: "7. 獸醫器官再生艙（犬／VET REGEN POD）",
+    cryo7Body:
+      "VET REGEN POD 為犬用器官移植與再生艙之概念名稱。資訊圖數字（含存活率或「快於自然再生」）非 ANCAP 產品主張。實體處置僅能在持照獸醫手術環境進行。見 /legal/vet-regen。",
+    vetRegenLink: "獸醫器官軌道",
+    hubCardVetRegen:
+      "貓組織冷凍保存／復原器與犬用 VET REGEN POD：夥伴概念架構，僅限持照獸醫師，無起死回生或存活率保證。",
+    footerVetRegen: "獸醫再生",
+    vetRegenKicker: "法律 / 獸醫",
+    vetRegenTitle: "獸醫器官軌道 — 冷凍保存器與 VET REGEN POD",
+    vetRegenIntro:
+      "ANCAP 如何於 2026 年 9 月 12 日說明伴侶動物組織庫與器官再生夥伴軌道。這些頁面出售 ACP 諮詢／收件簡報，非硬體、亦非獸醫治療。",
+    vr1Title: "1. 平台角色",
+    vr1Body:
+      "ANCAP 提供 ACP 結算、簡報與持照夥伴配對。ANCAP 不經營獸醫診所、不製造冷凍艙或 VET REGEN POD 硬體，亦不對動物施行手術。",
+    vr2Title: "2. 非已上市醫療器材",
+    vr2Body:
+      "資訊圖為概念架構。非歐盟 MDR 型錄、非 FDA 510(k)／NADA、非 ANCAP 的 CE 產品。工作流程上架不構成器材上市。",
+    vr3Title: "3. 禁止的結果主張",
+    vr3Body:
+      "ANCAP 不主張起死回生、復活、永生、數字存活率（含插圖上任何「最高 98%」），亦不主張「比自然快 2–5 倍」的再生。插圖不是臨床證據。",
+    vr4Title: "4. 僅限持照獸醫師",
+    vr4Body:
+      "取樣、麻醉、移植、免疫調節與術後照護屬獸醫行為。禁止家用冷凍、DIY 生物反應器或未授權細胞培養。",
+    vr5Title: "5. 動物衛生與福利法（公告日）",
+    vr5Body:
+      "服務受 2026 年 9 月 12 日有效之動物衛生與福利法拘束——包括俄羅斯獸醫法、歐盟獸藥規章 (EU) 2019/6、涉及研究動物時之指令 2010/63/EU、美國各州獸醫執業法與 FDA CVM、德國 TierSchG／TAppV，以及相應烏克蘭獸醫法規。",
+    vr6Title: "6. 非獸醫、醫療或藥理建議",
+    vr6Body:
+      "目錄、資訊圖、工作流程輸出與評論僅供資訊。非診斷、處方、治療計畫，亦非對任何動物的保證。",
+    vr7Title: "7. 寵物健康資料",
+    vr7Body:
+      "動物識別資料與病史視為敏感。無合法依據請勿上傳受規管獸醫紀錄。ANCAP 庫採雜湊優先。",
+    vr8Title: "8. 與人類器官列印之關係",
+    vr8Body:
+      "人類幹細胞器官列印（每器官 250,000 ACP）仍為獨立持照生物反應器交接。獸醫軌道（貓冷凍 75,000 ACP；犬 VET REGEN POD 180,000 ACP）不授權將圖示艙體用於人體臨床。",
+    vr9Title: "9. 付款",
+    vr9Body:
+      "為此類工作流程支付的 ACP 購買諮詢／收件簡報與夥伴配對——非硬體所有權，亦非可保證的臨床結果。退款依 /legal/refunds。",
+    vr10Title: "10. 聯絡",
+    vr10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#vet-regen 與 /cryo。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
       "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
     hubCardCyber: "公開支持集體網路防禦。",
-    hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
+    hubCardClarity: "完全同意美國 Digital Asset Market Clarity Act（CLARITY Act）。",
     hubCardCompliance: "MiCA 安全表述與 on-ramp／橋接風險說明。",
     hubContactTitle: "客戶聯絡",
     hubContactBody: "法律：legal@ancap.cloud。隱私：privacy@ancap.cloud。支援：support@ancap.cloud。在適用法律要求時，我們力求於 30 天內確認隱私請求。",
@@ -1544,8 +1792,11 @@ export const legalByLang: Record<Language, Tree> = {
     t17Body: "本條款受適用於 ancap.cloud ANCAP 營運者之法律拘束。提起主張前請先聯絡 legal@ancap.cloud。",
     t18Title: "18. 聯絡與強制權利",
     t18Body: "條款問題：legal@ancap.cloud。支援：support@ancap.cloud。不可拋棄之強制權利不受影響。",
-    t19Title: "19. CLARITY Act — full agreement",
-    t19Body: "ANCAP states its full agreement with the Digital Asset Market Clarity Act (CLARITY Act / H.R. 3633). Public policy endorsement only; see the CLARITY Act page.",
+    t19Title: "19. CLARITY Act — 完全同意",
+    t19Body: "ANCAP 聲明完全同意 Digital Asset Market Clarity Act（CLARITY Act / H.R. 3633）之目標。此為公共政策背書，並非主張該法案已成為法律。全文見 CLARITY Act 頁。",
+    t20Title: "20. 長壽、器官列印與獸醫軌道",
+    t20Body:
+      "AETERNA 與冷凍服務台工作流程出售分析、簡報與持照夥伴交接。非醫療或獸醫治療、非已上市醫療器材，亦不保證器官列印或組織復活。不得利用 ANCAP 取得濕實驗協議、CRISPR 設計、基因合成、LNP 配方或對人或動物的未授權處置。見 /legal/vet-regen。",
     privacyKicker: "隱私權聲明",
     privacyTitle: "ANCAP 如何處理客戶資料",
     privacyIntro: "本聲明說明 ancap.cloud 之 ANCAP 平台營運者如何處理個人資料。",
@@ -1604,6 +1855,9 @@ export const legalByLang: Record<Language, Tree> = {
     r6Body: "各國規則不同。稅務由您自行負責。ANCAP full agreement with CLARITY goals does not replace your local rules.",
     r7Title: "7. 第三方市場數據",
     r7Body: "ANCAP 上顯示的現貨價格可能來自 CoinGecko，僅供參考，非結算價亦非投資建議。",
+    r8Title: "8. 長壽、器官列印與獸醫結果風險",
+    r8Body:
+      "AETERNA 軌道（器官列印、貓組織冷凍、犬用 VET REGEN POD）可能失敗或被夥伴拒絕。插圖為概念。不承諾存活率或起死回生。",
     riskMarketDataMore: "完整市場數據揭露：",
     p9Title: "9. 市場數據供應商",
     p9Body: "ANCAP 可能呼叫 CoinGecko API 顯示參考行情；請求使用伺服器憑證。",
@@ -1758,6 +2012,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "風險",
     footerRefunds: "退款",
     footerWelcomeGrant: "註冊贈與額度",
+    footerVetRegen: "獸醫再生",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",
