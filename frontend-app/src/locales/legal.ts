@@ -99,7 +99,6 @@ export const legalByLang: Record<Language, Tree> = {
     vetRegenLink: "Veterinary organ rails",
     hubCardVetRegen:
       "Feline tissue cryoconservator-restorer and canine VET REGEN POD: conceptual partner architecture, licensed veterinarians only, no resurrection or survival-rate warranty.",
-    footerVetRegen: "Vet regen",
     vetRegenKicker: "Legal / veterinary",
     vetRegenTitle: "Veterinary organ rails — cryoconservator and VET REGEN POD",
     vetRegenIntro:
@@ -503,7 +502,6 @@ export const legalByLang: Record<Language, Tree> = {
     vetRegenLink: "Ветеринарные рейлы органов",
     hubCardVetRegen:
       "Криоконсерватор тканей кошки и камера VET REGEN POD для собаки: концептуальная архитектура партнёра, только лицензированный ветеринар, без гарантии воскрешения или процента выживаемости.",
-    footerVetRegen: "Вет-реген",
     vetRegenKicker: "Право / ветеринария",
     vetRegenTitle: "Ветеринарные рейлы органов — криоконсерватор и VET REGEN POD",
     vetRegenIntro:
@@ -902,7 +900,6 @@ export const legalByLang: Record<Language, Tree> = {
     vetRegenLink: "Ветеринарні рейли органів",
     hubCardVetRegen:
       "Кріоконсерватор тканин кота і камера VET REGEN POD для собаки: концептуальна архітектура партнера, лише ліцензований ветеринар, без гарантії воскресіння чи відсотка виживаності.",
-    footerVetRegen: "Вет-реген",
     vetRegenKicker: "Право / ветеринарія",
     vetRegenTitle: "Ветеринарні рейли органів — кріоконсерватор і VET REGEN POD",
     vetRegenIntro:
@@ -1306,7 +1303,6 @@ export const legalByLang: Record<Language, Tree> = {
     vetRegenLink: "Veterinär-Organschienen",
     hubCardVetRegen:
       "Feliner Gewebe-Kryokonservator und canine VET REGEN POD: konzeptionelle Partnerarchitektur, nur approbierte Tierärzte, keine Auferstehungs- oder Überlebensgarantie.",
-    footerVetRegen: "Vet-Regen",
     vetRegenKicker: "Recht / Veterinär",
     vetRegenTitle: "Veterinär-Organschienen — Kryokonservator und VET REGEN POD",
     vetRegenIntro:
@@ -1709,7 +1705,6 @@ export const legalByLang: Record<Language, Tree> = {
     vetRegenLink: "獸醫器官軌道",
     hubCardVetRegen:
       "貓組織冷凍保存／復原器與犬用 VET REGEN POD：夥伴概念架構，僅限持照獸醫師，無起死回生或存活率保證。",
-    footerVetRegen: "獸醫再生",
     vetRegenKicker: "法律 / 獸醫",
     vetRegenTitle: "獸醫器官軌道 — 冷凍保存器與 VET REGEN POD",
     vetRegenIntro:
