@@ -376,6 +376,9 @@ export function HomePage() {
                     <Link href="/aeterna#synthetic-blood-mamba" className="btn btn-ghost">
                       {t("aeternaPage.sbmCta")}
                     </Link>
+                    <Link href="/aeterna#adhd-support" className="btn btn-ghost">
+                      {t("aeternaPage.adhdCta")}
+                    </Link>
                 </div>
               </div>
               <div

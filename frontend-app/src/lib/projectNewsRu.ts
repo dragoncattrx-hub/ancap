@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-adhd-support",
+    date: "2026-09-13",
+    title: "AETERNA: поддержка при СДВГ — партнёрский бриф",
+    summary:
+      "На /aeterna — бриф для лицензированного клинициста (детская психиатрия / неврология) по поддержке при СДВГ за 42 000 ACP. Инфографика про фокус, планирование и «путь к миллиарду» — мотивационная грамотность, не обещание диагноза, рецепта, стимуляторов или финансового результата. Юр. текст: /legal/adhd-support.",
+    href: "/aeterna#adhd-support",
+  },
+  {
     id: "aeterna-synthetic-blood-mamba",
     date: "2026-09-12",
     title: "AETERNA: архитектура синтетической крови с компонентом Чёрной Мамбы",

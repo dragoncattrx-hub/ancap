@@ -690,6 +690,40 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
         tags=["aeterna", "synthetic-blood", "black-mamba", "hboC", "pfc", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-adhd-support",
+        title="AETERNA ADHD / СДВГ Support Brief",
+        category="AETERNA",
+        summary=(
+            "Licensed clinician partner brief for ADHD / СДВГ support literacy "
+            "(attention, planning, emotion, school adaptation) — 42,000 ACP."
+        ),
+        description=(
+            "Settles 42,000 ACP and issues a licensed-partner brief covering ADHD / СДВГ support "
+            "literacy: attention and task completion, planning and impulse control, emotion regulation, "
+            "peer skills, self-esteem, and comorbid-risk literacy. Infographic 'path to a billion' steps "
+            "are motivational architecture, not a guaranteed academic or financial outcome. ANCAP does "
+            "not diagnose ADHD, does not prescribe stimulants or other drugs, does not compound "
+            "medications, and does not claim CE/FDA drug status. Clinical care occurs only under a "
+            "licensed clinician after screening; caregivers retain decision rights with that clinician."
+        ),
+        price=Money(amount="42000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=[
+            "Support theme map (attention / planning / emotion / school)",
+            "Licensed clinician partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "ADHD / СДВГ support intake brief",
+            "Licensed clinician handoff",
+            "Non-claim checklist (no diagnosis / no prescription / no stimulant recipe / no billionaire promise)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "adhd", "sdvg", "clinician", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1920,6 +1954,31 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Physical manufacture occurs only "
                     "under a licensed bioreactor. Infographic stages and controlled-dose callouts are "
                     "architecture literacy, not a product claim or dosing guide."
+                ),
+            }
+        if template.slug == "aeterna-adhd-support":
+            deliverable["intent"] = str(payload.get("intent_kind") or "adhd_support_brief")
+            deliverable["compliance"] = (
+                "Licensed clinician partner only. Not a diagnosis, not a prescription, not stimulant "
+                "compounding, not a CE/FDA drug, and not a guaranteed academic or financial outcome. "
+                "Infographic billionaire-path steps are motivational literacy, not a promise."
+            )
+            deliverable["adhd_support"] = {
+                "mode": "licensed_clinician_partner",
+                "architecture": "adhd_support_partner_literacy",
+                "price_acp": "42000",
+                "themes_literacy": [
+                    "attention_and_task_completion",
+                    "planning_and_impulse_control",
+                    "emotion_regulation",
+                    "peer_and_team_skills",
+                    "self_esteem",
+                    "comorbid_risk_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
+                    "under a licensed clinician. Infographic steps are motivational literacy, not a "
+                    "product claim."
                 ),
             }
         execution_summary = {

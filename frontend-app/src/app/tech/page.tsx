@@ -115,7 +115,11 @@ export default function TechAuctionPage() {
             AETERNA synthetic blood / Black Mamba
           </Link>
           {" · "}
-          <Link href="/legal/synthetic-blood-mamba" className="text-cyan-200 underline">
+          <Link href="/aeterna#adhd-support" className="text-cyan-200 underline">
+            ADHD / СДВГ support
+          </Link>
+          {" · "}
+          <Link href="/legal/adhd-support" className="text-cyan-200 underline">
             Legal
           </Link>
         </p>

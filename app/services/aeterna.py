@@ -52,6 +52,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-m-receptor-subscription",
     "aeterna-oxygen-carrier",
     "aeterna-synthetic-blood-mamba",
+    "aeterna-adhd-support",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -84,6 +85,8 @@ OXYGEN_CARRIER_SLUG = "aeterna-oxygen-carrier"
 OXYGEN_CARRIER_PRICE_ACP = Decimal("92000")
 SYNTHETIC_BLOOD_MAMBA_SLUG = "aeterna-synthetic-blood-mamba"
 SYNTHETIC_BLOOD_MAMBA_PRICE_ACP = Decimal("98000")
+ADHD_SUPPORT_SLUG = "aeterna-adhd-support"
+ADHD_SUPPORT_PRICE_ACP = Decimal("42000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -202,6 +205,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.m_receptor_subscription.value: M_RECEPTOR_SLUG,
     AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
+    AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -438,6 +442,29 @@ SYNTHETIC_BLOOD_MAMBA_META = {
     ),
 }
 
+ADHD_SUPPORT_META = {
+    "mode": "licensed_clinician_partner",
+    "unit": "support_brief",
+    "price_acp": "42000",
+    "architecture": "adhd_support_partner_literacy",
+    "themes_literacy": [
+        "attention_and_task_completion",
+        "planning_and_impulse_control",
+        "emotion_regulation",
+        "peer_and_team_skills",
+        "self_esteem",
+        "comorbid_risk_literacy",
+    ],
+    "note": (
+        "Conceptual ADHD / СДВГ support brief. ANCAP settles ACP and issues a licensed clinician / "
+        "child-psychiatry or neurology partner handoff covering attention, planning, emotion, and "
+        "school-adaptation literacy. Not a diagnosis, not a prescription, not stimulant compounding, "
+        "not a CE/FDA drug, and not a guaranteed academic or financial outcome. Infographic "
+        "'billionaire path' steps are motivational literacy, not a promise. Partner screening required; "
+        "caregivers retain clinical decision rights with the licensed clinician."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -541,7 +568,8 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, "
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
             "M-receptor delivery subscription, artificial oxygen-carrier brief, "
-            "synthetic-blood / Black Mamba peptide architecture brief, licensed longevity partners."
+            "synthetic-blood / Black Mamba peptide architecture brief, ADHD / СДВГ support brief, "
+            "licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -618,6 +646,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Synthetic-blood / Black Mamba peptide architecture listings are licensed bioreactor / "
             "transfusion-medicine partner intakes. Infographics are conceptual — not a blood product, "
             "not venom compounding, not a toxin SOP, and not a CE/FDA therapeutic."
+        ),
+        adhd_support_note=(
+            "ADHD / СДВГ support listings are licensed clinician partner intakes for attention, planning, "
+            "emotion, and school-adaptation literacy. Infographics are motivational — not a diagnosis, "
+            "not a prescription, not stimulant compounding, and not a guaranteed financial outcome."
         ),
     )
 
@@ -888,6 +921,20 @@ async def create_intent_order(
                 detail="synthetic_blood_mamba_brief budget_acp must be at least 98000 ACP",
             )
         for key, value in SYNTHETIC_BLOOD_MAMBA_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.adhd_support_brief:
+        if slug and slug != ADHD_SUPPORT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="adhd_support_brief requires workflow_slug aeterna-adhd-support",
+            )
+        slug = ADHD_SUPPORT_SLUG
+        if body.budget_acp < ADHD_SUPPORT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="adhd_support_brief budget_acp must be at least 42000 ACP",
+            )
+        for key, value in ADHD_SUPPORT_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

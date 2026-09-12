@@ -57,6 +57,7 @@ class AeternaIntentKind(str, Enum):
     m_receptor_subscription = "m_receptor_subscription"
     oxygen_carrier_brief = "oxygen_carrier_brief"
     synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
+    adhd_support_brief = "adhd_support_brief"
 
 
 class AeternaDnaSource(str, Enum):
@@ -303,4 +304,10 @@ class AeternaStatusPublic(BaseModel):
         "transfusion-medicine partner brief. Infographics are conceptual literacy — not a blood product, "
         "not compounding of venom peptides, hemoglobin or PFC, not a CE/FDA therapeutic, and not a "
         "toxin or manufacturing SOP."
+    )
+    adhd_support_note: str = (
+        "The ADHD / СДВГ support rail is a licensed clinician partner brief for attention, planning, "
+        "emotion, and school-adaptation literacy. Infographics are motivational architecture — not a "
+        "diagnosis, not a prescription, not stimulant compounding, and not a guaranteed academic or "
+        "financial outcome."
     )

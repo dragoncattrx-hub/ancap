@@ -509,6 +509,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Legal notices: legal@ancap.cloud. Product: /aeterna#synthetic-blood-mamba. Related notices: /legal/oxygen-carrier, /legal/terms, /legal/risk.",
     footerSyntheticBloodMamba: "Synthetic blood / Black Mamba",
 
+    adhdSupportLink: "ADHD / СДВГ support",
+    hubCardAdhdSupport:
+      "Licensed clinician brief for ADHD support literacy. Not a diagnosis, not a prescription, not stimulant compounding, not a guaranteed academic or financial outcome.",
+    adhdSupportKicker: "Legal / clinician / ADHD support literacy",
+    adhdSupportTitle: "ADHD / СДВГ support — licensed clinician partner rail",
+    adhdSupportIntro:
+      "How ANCAP frames the ADHD support SKU as of 13 September 2026. These pages sell ACP-settled consult briefs, not diagnoses, prescriptions, stimulants, or a guaranteed path to wealth.",
+    adhd1Title: "1. Platform role",
+    adhd1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not diagnose ADHD, prescribe medication, compound stimulants, or practice child psychiatry or neurology.",
+    adhd2Title: "2. Not a diagnosis or treatment",
+    adhd2Body:
+      "The infographic is motivational and educational literacy. It is not a clinical guideline, not a CE/FDA drug brochure, and not treatment sold by ANCAP.",
+    adhd3Title: "3. Forbidden outcome claims",
+    adhd3Body:
+      "ANCAP does not guarantee calm behavior, school grades, career success, entrepreneurship, or becoming a billionaire. The 'path to a billion' stairs are motivational literacy only.",
+    adhd4Title: "4. Licensed clinicians only",
+    adhd4Body:
+      "Any assessment, therapy, or medication decision is a licensed clinician act after screening. Users must not treat these pages as a substitute for professional care.",
+    adhd5Title: "5. Infographic literacy, not a protocol",
+    adhd5Body:
+      "Focus, planning, emotional control, relationships, self-esteem, and risk-reduction icons are support literacy. ANCAP does not publish stimulant dosing or therapy SOPs.",
+    adhd6Title: "6. Not medical advice",
+    adhd6Body:
+      "Catalog copy is informational. It is not a diagnosis, prescription, or treatment plan.",
+    adhd7Title: "7. Health and child data",
+    adhd7Body:
+      "Treat identifiers and clinical history as sensitive. Do not upload records without a lawful basis and caregiver consent where required.",
+    adhd8Title: "8. Relationship to other rails",
+    adhd8Body:
+      "Longevity and bioreactor rails remain separate. This SKU does not authorize compounding or unlicensed practice of medicine.",
+    adhd9Title: "9. Payments",
+    adhd9Body:
+      "ACP buys a consult brief and partner match at 42,000 ACP — not a diagnosis, not a stimulant course, and not a refundable academic or financial outcome. Refunds follow /legal/refunds.",
+    adhd10Title: "10. Contact",
+    adhd10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#adhd-support. Related notices: /legal/terms, /legal/risk.",
+    footerAdhdSupport: "ADHD / СДВГ support",
+
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -1309,6 +1348,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#synthetic-blood-mamba. Связанные тексты: /legal/oxygen-carrier, /legal/terms, /legal/risk.",
     footerSyntheticBloodMamba: "Синтетическая кровь / Чёрная Мамба",
 
+    adhdSupportLink: "Поддержка при СДВГ",
+    hubCardAdhdSupport:
+      "Бриф лицензированного клинициста по поддержке при СДВГ. Не диагноз, не рецепт, не компаундинг стимуляторов, не гарантированный учебный или финансовый результат.",
+    adhdSupportKicker: "Право / клиницист / грамотность поддержки при СДВГ",
+    adhdSupportTitle: "Поддержка при СДВГ — рейл лицензированного клинициста",
+    adhdSupportIntro:
+      "Как ANCAP формулирует SKU поддержки при СДВГ на 13 сентября 2026. Эти страницы продают брифы в ACP, а не диагнозы, рецепты, стимуляторы и не путь к богатству.",
+    adhd1Title: "1. Роль платформы",
+    adhd1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор лицензированного партнёра. ANCAP не ставит диагноз СДВГ, не выписывает лекарства, не компаундит стимуляторы и не практикует детскую психиатрию или неврологию.",
+    adhd2Title: "2. Не диагноз и не лечение",
+    adhd2Body:
+      "Инфографика — мотивационная и образовательная грамотность. Это не клиническое руководство, не брошюра CE/FDA и не лечение от ANCAP.",
+    adhd3Title: "3. Запрещённые обещания результата",
+    adhd3Body:
+      "ANCAP не гарантирует спокойствие, оценки, карьеру, предпринимательство или статус миллиардера. Лестница «к миллиарду» — только мотивационная грамотность.",
+    adhd4Title: "4. Только лицензированные клиницисты",
+    adhd4Body:
+      "Любая оценка, терапия или решение о лекарствах — акт лицензированного клинициста после скрининга. Эти страницы не заменяют профессиональную помощь.",
+    adhd5Title: "5. Грамотность инфографики, не протокол",
+    adhd5Body:
+      "Фокус, планирование, эмоции, отношения, самооценка и снижение рисков — грамотность поддержки. ANCAP не публикует дозировки стимуляторов и SOP терапии.",
+    adhd6Title: "6. Не медицинский совет",
+    adhd6Body:
+      "Тексты каталога информационные. Это не диагноз, не рецепт и не план лечения.",
+    adhd7Title: "7. Данные о здоровье и детях",
+    adhd7Body:
+      "Идентификаторы и клиническая история — чувствительные данные. Не загружайте записи без законного основания и согласия опекуна, где оно требуется.",
+    adhd8Title: "8. Связь с другими рейлами",
+    adhd8Body:
+      "Рейлы долголетия и биореактора остаются отдельными. Этот SKU не разрешает компаундинг и нелицензированную врачебную практику.",
+    adhd9Title: "9. Платежи",
+    adhd9Body:
+      "ACP покупает бриф и подбор партнёра за 42 000 ACP — не диагноз, не курс стимуляторов и не возвращаемый учебный или финансовый результат. Возвраты: /legal/refunds.",
+    adhd10Title: "10. Контакты",
+    adhd10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#adhd-support. Связанные тексты: /legal/terms, /legal/risk.",
+    footerAdhdSupport: "Поддержка при СДВГ",
+
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -2087,6 +2165,45 @@ export const legalByLang: Record<Language, Tree> = {
     sbm10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#synthetic-blood-mamba.",
     footerSyntheticBloodMamba: "Синтетична кров / Чорна Мамба",
+
+    adhdSupportLink: "Підтримка при СДУГ",
+    hubCardAdhdSupport:
+      "Бриф ліцензованого клініциста щодо підтримки при СДУГ. Не діагноз, не рецепт, не компаундинг стимуляторів, не гарантований навчальний чи фінансовий результат.",
+    adhdSupportKicker: "Право / клініцист / грамотність підтримки при СДУГ",
+    adhdSupportTitle: "Підтримка при СДУГ — рейл ліцензованого клініциста",
+    adhdSupportIntro:
+      "Як ANCAP формулює SKU підтримки при СДУГ станом на 13 вересня 2026. Ці сторінки продають брифи в ACP, а не діагнози, рецепти чи шлях до багатства.",
+    adhd1Title: "1. Роль платформи",
+    adhd1Body:
+      "ANCAP забезпечує розрахунок в ACP, брифи та підбір ліцензованого партнера. ANCAP не ставить діагноз СДУГ і не практикує дитячу психіатрію чи неврологію.",
+    adhd2Title: "2. Не діагноз і не лікування",
+    adhd2Body:
+      "Інфографіка — мотиваційна грамотність. Це не клінічна настанова і не лікування від ANCAP.",
+    adhd3Title: "3. Заборонені обіцянки результату",
+    adhd3Body:
+      "ANCAP не гарантує спокій, оцінки, кар'єру чи статус мільярдера. Сходи «до мільярда» — лише мотиваційна грамотність.",
+    adhd4Title: "4. Лише ліцензовані клініцисти",
+    adhd4Body:
+      "Будь-яка оцінка, терапія чи рішення про ліки — акт ліцензованого клініциста після скринінгу.",
+    adhd5Title: "5. Грамотність інфографіки, не протокол",
+    adhd5Body:
+      "Фокус, планування, емоції, стосунки, самооцінка й ризики — грамотність підтримки. ANCAP не публікує SOP терапії.",
+    adhd6Title: "6. Не медична порада",
+    adhd6Body:
+      "Тексти каталогу інформаційні. Це не діагноз, не рецепт і не план лікування.",
+    adhd7Title: "7. Дані про здоров'я та дітей",
+    adhd7Body:
+      "Ідентифікатори й клінічна історія — чутливі. Не завантажуйте записи без законної підстави.",
+    adhd8Title: "8. Зв'язок з іншими рейлами",
+    adhd8Body:
+      "Рейли довголіття залишаються окремими. Цей SKU не дозволяє компаундинг.",
+    adhd9Title: "9. Платежі",
+    adhd9Body:
+      "ACP купує бриф і підбір партнера за 42 000 ACP. Повернення: /legal/refunds.",
+    adhd10Title: "10. Контакти",
+    adhd10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#adhd-support.",
+    footerAdhdSupport: "Підтримка при СДУГ",
 
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
@@ -2872,6 +2989,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#synthetic-blood-mamba.",
     footerSyntheticBloodMamba: "Synthetisches Blut / Black Mamba",
 
+    adhdSupportLink: "ADHS-Unterstützung",
+    hubCardAdhdSupport:
+      "Partnerbrief eines lizenzierten Klinikers zur ADHS-Unterstützung. Keine Diagnose, kein Rezept, kein Stimulanzien-Compounding, kein garantiertes Schul- oder Finanzergebnis.",
+    adhdSupportKicker: "Recht / Kliniker / ADHS-Unterstützungsliteralität",
+    adhdSupportTitle: "ADHS-Unterstützung — lizenzierte Kliniker-Schiene",
+    adhdSupportIntro:
+      "Wie ANCAP die ADHS-Unterstützungs-SKU zum 13. September 2026 rahmt. Diese Seiten verkaufen ACP-Briefs, keine Diagnosen, Rezepte, Stimulanzien oder einen garantierten Reichtumspfad.",
+    adhd1Title: "1. Plattformrolle",
+    adhd1Body:
+      "ANCAP bietet ACP-Abrechnung, Briefs und Partner-Matching. ANCAP diagnostiziert kein ADHS, verschreibt nicht und praktiziert keine Kinderpsychiatrie oder Neurologie.",
+    adhd2Title: "2. Keine Diagnose, keine Behandlung",
+    adhd2Body:
+      "Die Infografik ist Motivations- und Bildungsliteralität. Kein klinischer Leitfaden und keine Behandlung von ANCAP.",
+    adhd3Title: "3. Verbotene Ergebnisversprechen",
+    adhd3Body:
+      "ANCAP garantiert keine Ruhe, Noten, Karriere oder Milliardärsstatus. Die „Milliardärs“-Treppe ist nur Motivationsliteralität.",
+    adhd4Title: "4. Nur lizenzierte Kliniker",
+    adhd4Body:
+      "Jede Beurteilung, Therapie oder Medikamentenentscheidung ist eine Handlung eines lizenzierten Klinikers nach Screening.",
+    adhd5Title: "5. Infografik-Literalität, kein Protokoll",
+    adhd5Body:
+      "Fokus, Planung, Emotionen, Beziehungen, Selbstwert und Risiken sind Unterstützungsliteralität. ANCAP veröffentlicht keine Stimulanzien-Dosierung oder Therapie-SOPs.",
+    adhd6Title: "6. Keine medizinische Beratung",
+    adhd6Body:
+      "Katalogtexte sind informativ. Keine Diagnose, kein Rezept, kein Behandlungsplan.",
+    adhd7Title: "7. Gesundheits- und Kinderdaten",
+    adhd7Body:
+      "Kennungen und klinische Historie sind sensibel. Keine Uploads ohne Rechtsgrundlage.",
+    adhd8Title: "8. Verhältnis zu anderen Schienen",
+    adhd8Body:
+      "Longevity-Schienen bleiben getrennt. Diese SKU autorisiert kein Compounding.",
+    adhd9Title: "9. Zahlungen",
+    adhd9Body:
+      "ACP kauft Brief und Partner-Match für 42.000 ACP. Rückerstattungen: /legal/refunds.",
+    adhd10Title: "10. Kontakt",
+    adhd10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#adhd-support.",
+    footerAdhdSupport: "ADHS-Unterstützung",
+
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -3653,6 +3809,45 @@ export const legalByLang: Record<Language, Tree> = {
     sbm10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#synthetic-blood-mamba。",
     footerSyntheticBloodMamba: "合成血／黑曼巴",
+
+    adhdSupportLink: "ADHD／注意力不足過動支援",
+    hubCardAdhdSupport:
+      "持照臨床醫師 ADHD 支援素養簡報。非診斷、非處方、非興奮劑配製、非保證學業或財務結果。",
+    adhdSupportKicker: "法律／臨床醫師／ADHD 支援素養",
+    adhdSupportTitle: "ADHD 支援 — 持照臨床醫師夥伴軌道",
+    adhdSupportIntro:
+      "ANCAP 於 2026 年 9 月 13 日對 ADHD 支援 SKU 的表述。這些頁面販售 ACP 結算簡報，而非診斷、處方、興奮劑或致富保證。",
+    adhd1Title: "1. 平台角色",
+    adhd1Body:
+      "ANCAP 提供 ACP 結算、簡報與持照夥伴媒合。ANCAP 不診斷 ADHD、不開方、不配製興奮劑，亦不執業兒童精神醫學或神經科。",
+    adhd2Title: "2. 非診斷、非治療",
+    adhd2Body:
+      "資訊圖為動機與教育素養。非臨床指引，亦非 ANCAP 販售之治療。",
+    adhd3Title: "3. 禁止結果宣稱",
+    adhd3Body:
+      "ANCAP 不保證安靜行為、成績、職涯、創業或成為億萬富翁。「通往十億」階梯僅為動機素養。",
+    adhd4Title: "4. 僅持照臨床醫師",
+    adhd4Body:
+      "任何評估、治療或用藥決定均為持照臨床醫師於篩檢後之行為。這些頁面不可取代專業照護。",
+    adhd5Title: "5. 資訊圖素養，非協議",
+    adhd5Body:
+      "專注、規劃、情緒、關係、自尊與風險圖示為支援素養。ANCAP 不公開興奮劑劑量或治療 SOP。",
+    adhd6Title: "6. 非醫療建議",
+    adhd6Body:
+      "目錄文案僅供資訊。非診斷、非處方、非治療計畫。",
+    adhd7Title: "7. 健康與兒童資料",
+    adhd7Body:
+      "識別碼與臨床病史屬敏感資料。無合法基礎請勿上傳紀錄。",
+    adhd8Title: "8. 與其他軌道之關係",
+    adhd8Body:
+      "長壽軌道仍為獨立。此 SKU 不授權配製或未持照執業。",
+    adhd9Title: "9. 付款",
+    adhd9Body:
+      "ACP 以 42,000 ACP 購買簡報與夥伴媒合。退款依 /legal/refunds。",
+    adhd10Title: "10. 聯絡",
+    adhd10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#adhd-support。",
+    footerAdhdSupport: "ADHD 支援",
 
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",

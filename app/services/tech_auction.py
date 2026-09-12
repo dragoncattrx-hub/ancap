@@ -56,6 +56,12 @@ _TECH_STACK: tuple[dict[str, Any], ...] = (
         "cite": "Partner brief literacy · /aeterna#synthetic-blood-mamba · /legal/synthetic-blood-mamba",
     },
     {
+        "id": "stack-aeterna-adhd-support",
+        "label": "AETERNA ADHD / СДВГ clinician support brief",
+        "layer": "longevity",
+        "cite": "Partner brief literacy · /aeterna#adhd-support · /legal/adhd-support",
+    },
+    {
         "id": "stack-floquet-bosonic",
         "label": "Single-period Floquet bosonic codes (quantum lattice gates)",
         "layer": "quantum_compute",
@@ -150,6 +156,19 @@ _SEED: tuple[dict[str, Any], ...] = (
             "compounding, not a toxin SOP, not a CE/FDA therapeutic."
         ),
         "starting_acp": "98000",
+        "featured": True,
+    },
+    {
+        "id": "tech-aeterna-adhd-support",
+        "category": "longevity",
+        "title": "AETERNA ADHD / СДВГ support brief license",
+        "stack": "Licensed clinician / child psychiatry–neurology partner handoff",
+        "blurb": (
+            "License the AETERNA ADHD support partner-brief rail (42,000 ACP SKU). Motivational literacy "
+            "only — not a diagnosis, not a prescription, not stimulant compounding, not a guaranteed "
+            "academic or financial outcome."
+        ),
+        "starting_acp": "42000",
         "featured": True,
     },
     {

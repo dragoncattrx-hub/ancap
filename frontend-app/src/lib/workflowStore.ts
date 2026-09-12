@@ -649,6 +649,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
     tags: ["aeterna", "synthetic-blood", "black-mamba", "hboc", "pfc", "consult"],
   },
+  {
+    slug: "aeterna-adhd-support",
+    title: "AETERNA ADHD / СДВГ Support Brief",
+    category: "AETERNA",
+    summary:
+      "Licensed clinician / child psychiatry–neurology partner brief for ADHD support literacy — 42,000 ACP.",
+    description:
+      "Settles 42,000 ACP and issues a licensed-partner brief. Not a diagnosis, not a prescription, not stimulant compounding, not a CE/FDA drug, and not a guaranteed academic or financial outcome. Motivational literacy only.",
+    price: { amount: "42000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 40,
+    preview_items: [
+      "Support literacy map (focus / planning / emotion / relationships)",
+      "Licensed clinician partner match",
+      "Non-claim protocol pack",
+    ],
+    output_items: [
+      "ADHD / СДВГ support intake brief",
+      "Licensed clinician handoff",
+      "Non-claim checklist (no diagnosis / no stimulant recipe / no guaranteed billionaire path)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "adhd", "sdvg", "clinician", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [
