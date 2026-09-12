@@ -51,6 +51,9 @@ class AeternaIntentKind(str, Enum):
     microwave_body_contouring = "microwave_body_contouring"
     biofusion_micromanipulation = "biofusion_micromanipulation"
     dpsc_biomaterial = "dpsc_biomaterial"
+    vascular_care_plus = "vascular_care_plus"
+    vascular_care = "vascular_care"
+    transdermal_pistol = "transdermal_pistol"
 
 
 class AeternaDnaSource(str, Enum):
@@ -264,4 +267,19 @@ class AeternaStatusPublic(BaseModel):
         "Wisdom-tooth dental pulp stem cell (DPSC) biomaterial is a licensed bioreactor-partner intake to "
         "expand autologous DPSC into a tissue construct. It is not a full organ print (that SKU remains "
         "250,000 ACP), not an FDA/CE cell therapy, and not a home culture kit."
+    )
+    vascular_care_plus_note: str = (
+        "Vascular Care+ (anhydrous N2+O2 flow plus light-wave applicator) is a licensed phlebology / "
+        "vascular / aesthetic partner session-protocol brief. Infographics are conceptual architecture — "
+        "not a marketed medical device, not a thrombosis treatment, and not a guaranteed varicose-vein cure."
+    )
+    vascular_care_note: str = (
+        "Vascular Care (ultrasound / radiofrequency / thermal applicator) is a licensed phlebology / "
+        "vascular / aesthetic partner session-protocol brief. Infographics are conceptual architecture — "
+        "not a marketed medical device, not surgery, and not a guaranteed vein-diameter or oedema claim."
+    )
+    transdermal_pistol_note: str = (
+        "Needle-free transdermal pistol (aerosol + carrier gas) is a licensed clinic partner session-protocol "
+        "brief. Infographics are conceptual architecture — not a prescription dispenser, not compounding, "
+        "not a home injection kit, and not a guaranteed drug-delivery or fat-reduction claim."
     )

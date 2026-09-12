@@ -46,6 +46,9 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-microwave-body-contouring",
     "aeterna-biofusion-micromanipulation",
     "aeterna-dpsc-biomaterial",
+    "aeterna-vascular-care-plus",
+    "aeterna-vascular-care",
+    "aeterna-transdermal-pistol",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -64,6 +67,12 @@ BIOFUSION_SLUG = "aeterna-biofusion-micromanipulation"
 BIOFUSION_PRICE_ACP = Decimal("88000")
 DPSC_BIOMATERIAL_SLUG = "aeterna-dpsc-biomaterial"
 DPSC_BIOMATERIAL_PRICE_ACP = Decimal("65000")
+VASCULAR_PLUS_SLUG = "aeterna-vascular-care-plus"
+VASCULAR_PLUS_PRICE_ACP = Decimal("54000")
+VASCULAR_CARE_SLUG = "aeterna-vascular-care"
+VASCULAR_CARE_PRICE_ACP = Decimal("58000")
+TRANSDERMAL_SLUG = "aeterna-transdermal-pistol"
+TRANSDERMAL_PRICE_ACP = Decimal("46000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -176,6 +185,9 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.microwave_body_contouring.value: MICROWAVE_BODY_SLUG,
     AeternaIntentKind.biofusion_micromanipulation.value: BIOFUSION_SLUG,
     AeternaIntentKind.dpsc_biomaterial.value: DPSC_BIOMATERIAL_SLUG,
+    AeternaIntentKind.vascular_care_plus.value: VASCULAR_PLUS_SLUG,
+    AeternaIntentKind.vascular_care.value: VASCULAR_CARE_SLUG,
+    AeternaIntentKind.transdermal_pistol.value: TRANSDERMAL_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -297,6 +309,60 @@ DPSC_BIOMATERIAL_META = {
     ),
 }
 
+VASCULAR_PLUS_META = {
+    "mode": "licensed_phlebology_aesthetic_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "54000",
+    "architecture": "anhydrous_n2_o2_lightwave_applicator",
+    "gas": {
+        "mix": "N2+O2",
+        "class": "medical_grade_architecture_literacy",
+    },
+    "note": (
+        "Conceptual Vascular Care+ rail: controlled anhydrous nitrogen-oxygen flow plus light-wave "
+        "applicator. ANCAP settles ACP and issues a licensed phlebology / vascular / aesthetic-partner brief. "
+        "Not a marketed medical device, not a CE/FDA product sold by ANCAP, not a thrombosis or pulmonary-embolism "
+        "treatment, and not a guaranteed varicose-vein, oedema, or diabetic-angiopathy result. Infographic "
+        "before/after copy is protocol literacy. Partner screening required (DVT, implants, pregnancy, open wounds)."
+    ),
+}
+
+VASCULAR_CARE_META = {
+    "mode": "licensed_phlebology_aesthetic_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "58000",
+    "architecture": "ultrasound_rf_thermal_applicator",
+    "modalities": {
+        "ultrasound": "blood_flow_literacy",
+        "radiofrequency": "wall_tone_literacy",
+        "thermal": "tissue_comfort_literacy",
+    },
+    "note": (
+        "Conceptual Vascular Care rail: ultrasound / radiofrequency / thermal applicator. ANCAP settles ACP "
+        "and issues a licensed phlebology / vascular / aesthetic-partner brief. Not a marketed medical device, "
+        "not surgery, not a CE/FDA product sold by ANCAP, and not a guaranteed vein-diameter, oedema, or "
+        "pain-score claim. Infographic before/after copy is protocol literacy. Partner screening required."
+    ),
+}
+
+TRANSDERMAL_META = {
+    "mode": "licensed_clinic_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "46000",
+    "architecture": "needle_free_transdermal_pistol",
+    "delivery": {
+        "route": "aerosol_plus_carrier_gas",
+        "gases_literacy": "CO2_N2_O2_or_mix",
+    },
+    "note": (
+        "Conceptual needle-free transdermal pistol (aerosol of actives plus carrier gas). ANCAP settles ACP "
+        "and issues a licensed clinic-partner brief. Not a prescription dispenser, not compounding, not a "
+        "home injection or mesotherapy kit, not a CE/FDA device sold by ANCAP, and not a guaranteed "
+        "transdermal dose, varicose, fat-reduction, or cosmetic result. Partner screening and lawful "
+        "substance lists required."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -397,7 +463,9 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
             "partial mRNA-reprogramming consults, stem-cell organ print, "
             "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, microwave body contouring, "
-            "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, licensed longevity partners."
+            "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, "
+            "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
+            "licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -444,6 +512,21 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         dpsc_biomaterial_note=(
             "Wisdom-tooth DPSC biomaterial listings expand autologous dental pulp stem cells in a licensed "
             "bioreactor. They are not a full organ print and not a marketed cell therapy."
+        ),
+        vascular_care_plus_note=(
+            "Vascular Care+ listings are licensed phlebology / vascular / aesthetic partner intakes for an "
+            "anhydrous N2+O2 plus light-wave applicator. Infographics are conceptual architecture — not a "
+            "marketed device, not a thrombosis treatment, and not a guaranteed varicose-vein claim."
+        ),
+        vascular_care_note=(
+            "Vascular Care listings are licensed phlebology / vascular / aesthetic partner intakes for an "
+            "ultrasound / radiofrequency / thermal applicator. Infographics are conceptual architecture — not "
+            "a marketed device, not surgery, and not a guaranteed vein-diameter claim."
+        ),
+        transdermal_pistol_note=(
+            "Needle-free transdermal pistol listings are licensed clinic-partner intakes for aerosol plus "
+            "carrier-gas delivery. Infographics are conceptual architecture — not a prescription dispenser, "
+            "not compounding, and not a guaranteed dose or cosmetic result."
         ),
     )
 
@@ -630,6 +713,48 @@ async def create_intent_order(
                 detail="dpsc_biomaterial budget_acp must be at least 65000 ACP",
             )
         for key, value in DPSC_BIOMATERIAL_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.vascular_care_plus:
+        if slug and slug != VASCULAR_PLUS_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="vascular_care_plus requires workflow_slug aeterna-vascular-care-plus",
+            )
+        slug = VASCULAR_PLUS_SLUG
+        if body.budget_acp < VASCULAR_PLUS_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="vascular_care_plus budget_acp must be at least 54000 ACP",
+            )
+        for key, value in VASCULAR_PLUS_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.vascular_care:
+        if slug and slug != VASCULAR_CARE_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="vascular_care requires workflow_slug aeterna-vascular-care",
+            )
+        slug = VASCULAR_CARE_SLUG
+        if body.budget_acp < VASCULAR_CARE_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="vascular_care budget_acp must be at least 58000 ACP",
+            )
+        for key, value in VASCULAR_CARE_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.transdermal_pistol:
+        if slug and slug != TRANSDERMAL_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="transdermal_pistol requires workflow_slug aeterna-transdermal-pistol",
+            )
+        slug = TRANSDERMAL_SLUG
+        if body.budget_acp < TRANSDERMAL_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="transdermal_pistol budget_acp must be at least 46000 ACP",
+            )
+        for key, value in TRANSDERMAL_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

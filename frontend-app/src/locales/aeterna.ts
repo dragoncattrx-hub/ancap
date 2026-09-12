@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, or wisdom-tooth DPSC biomaterial at 65,000 ACP.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, or a needle-free transdermal pistol at 46,000 ACP.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -51,6 +51,16 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent13Title: "Wisdom-tooth DPSC biomaterial",
     intent13Body:
       "Licensed-bioreactor expansion of autologous dental pulp stem cells from a wisdom tooth into a biomaterial construct. 65,000 ACP. Not a full organ (that remains 250,000 ACP) and not an approved cell therapy.",
+    intent14Title: "Vascular Care+ (gas + light-wave)",
+    intent14Body:
+      "Licensed phlebology/aesthetic brief for an anhydrous N2+O2 flow plus light-wave applicator. 54,000 ACP. Not a thrombosis treatment, not a CE/FDA device, and not a guaranteed varicose-vein claim.",
+    intent15Title: "Vascular Care (ultrasound / RF / heat)",
+    intent15Body:
+      "Licensed phlebology/aesthetic brief for ultrasound, radiofrequency, and thermal applicators. 58,000 ACP. Not surgery and not a guaranteed vein-diameter or oedema result.",
+    intent16Title: "Needle-free transdermal pistol",
+    intent16Body:
+      "Licensed clinic brief for aerosol actives plus carrier gas across epithelium. 46,000 ACP. Not a prescription dispenser, not compounding, and not a guaranteed dose or cosmetic result.",
+
     agingKicker: "Blood RNA · 15 hallmarks · sex-aware",
     agingTitle: "Molecular aging profile",
     agingLead:
@@ -143,6 +153,64 @@ export const aeternaByLang: Record<Language, Tree> = {
     dpscStep3Body: "A biomaterial sheet or scaffold, not a finished organ.",
     dpscStep4Title: "Organ path",
     dpscStep4Body: "Full organ print stays a separate 250,000 ACP SKU if the partner pathway allows it.",
+    vplusCta: "Open Vascular Care+ intake",
+    vplusKicker: "Phlebology · N2+O2 · light-wave · licensed clinic",
+    vplusTitle: "Vascular Care+",
+    vplusPrice: "54,000 ACP",
+    vplusLead:
+      "A conceptual cart with controlled anhydrous nitrogen-oxygen flow and a light-wave handpiece. Infographic rails cover vessel tone, oedema, and varicose literacy — AETERNA does not treat thrombosis, does not sell medical gas, and does not promise a vein result. Sessions are licensed-partner protocol briefs.",
+    vplusDisclaimer:
+      "The infographic is conceptual partner architecture (Vascular Care+). ANCAP does not manufacture the cart, does not practice vascular medicine, and does not claim CE/FDA device status. Before/after photos and diabetic-angiopathy copy are protocol literacy, not product claims. DVT and pulmonary embolism remain emergencies.",
+    vplusLegalCta: "Vascular Care+ legal notice",
+    vplusAlt:
+      "Infographic of a Vascular Care+ session: anhydrous N2+O2 cylinder, light-wave applicator on the calf, console showing vessel dilation, and before/after vein diagrams. Conceptual architecture for licensed phlebology partners.",
+    vplusStep1Title: "Gas + light",
+    vplusStep1Body: "Controlled N2+O2 flow and a light-wave applicator are architecture notes, not a certified gas system ANCAP sells.",
+    vplusStep2Title: "Tone",
+    vplusStep2Body: "Vessel dilation / spasm literacy. Not a guaranteed blood-flow result.",
+    vplusStep3Title: "Screen",
+    vplusStep3Body: "Partner protocols must screen for DVT, implants, pregnancy, and open wounds.",
+    vplusStep4Title: "Handoff",
+    vplusStep4Body: "ACP buys a consult brief and a licensed clinic match — not hardware title.",
+    vusCta: "Open Vascular Care intake",
+    vusKicker: "Phlebology · ultrasound · RF · thermal · licensed clinic",
+    vusTitle: "Vascular Care",
+    vusPrice: "58,000 ACP",
+    vusLead:
+      "A conceptual cart combining ultrasound, radiofrequency, and thermal applicators for venous-tone literacy. AETERNA does not operate a vein clinic, does not perform surgery, and does not promise a diameter, oedema, or pain-score change.",
+    vusDisclaimer:
+      "The infographic is conceptual partner architecture (Vascular Care). ANCAP does not manufacture the cart and does not claim CE/FDA device status. Before/after photos are protocol literacy, not a product claim.",
+    vusLegalCta: "Vascular Care legal notice",
+    vusAlt:
+      "Infographic of a Vascular Care session: ultrasound / RF / thermal handpiece on the calf, console, and before/after vein diagrams. Conceptual architecture for licensed phlebology partners.",
+    vusStep1Title: "Ultrasound",
+    vusStep1Body: "Blood-flow literacy. Not a diagnostic duplex exam sold by ANCAP.",
+    vusStep2Title: "Radiofrequency",
+    vusStep2Body: "Wall-tone literacy. Not endovenous ablation and not a guaranteed closure.",
+    vusStep3Title: "Heat",
+    vusStep3Body: "Thermal comfort notes. Partner screening for burns and implants.",
+    vusStep4Title: "Handoff",
+    vusStep4Body: "ACP buys a consult brief and a licensed clinic match — not hardware title.",
+    tdpCta: "Open transdermal pistol intake",
+    tdpKicker: "Needle-free · aerosol + gas · licensed clinic",
+    tdpTitle: "Needle-free transdermal pistol",
+    tdpPrice: "46,000 ACP",
+    tdpLead:
+      "A conceptual handpiece that aerosolises actives with a carrier gas to cross epithelium. Infographic rails cover veins, cosmetics, joints, and rehab literacy — AETERNA does not compound drugs, does not dispense prescriptions, and does not promise a dose or cosmetic result.",
+    tdpDisclaimer:
+      "The infographic is conceptual partner architecture. ANCAP does not manufacture the pistol, does not sell injectables, and does not claim CE/FDA device status. No home mesotherapy kit.",
+    tdpLegalCta: "Transdermal legal notice",
+    tdpAlt:
+      "Infographic of a needle-free transdermal pistol: aerosol nozzle, epithelium cross-section, and clinic console. Conceptual architecture for licensed clinic partners.",
+    tdpStep1Title: "Aerosol",
+    tdpStep1Body: "Actives plus carrier gas as architecture literacy, not a certified spray system.",
+    tdpStep2Title: "Epithelium",
+    tdpStep2Body: "Microchannel literacy. Not a guaranteed transdermal dose.",
+    tdpStep3Title: "Lawful list",
+    tdpStep3Body: "Partner clinicians choose substances under local pharmacy and practice acts.",
+    tdpStep4Title: "Handoff",
+    tdpStep4Body: "ACP buys a consult brief and a licensed clinic match — not a drug product.",
+
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
     vetTitle: "Grow and restore organs for companion animals",
     vetLead:
@@ -213,7 +281,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, осведомлённость о Cas9 и расчёты в блокчейне",
     heroTitle: "Рейлы долголетия: молекулярный профиль старения по 15 осям, а не одна цифра «биологического возраста».",
     heroLead:
-      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак, бриф световой камеры Vinci за 48 000 ACP или микроволновый контур тела за 52 000 ACP, камеру BioFusion за 88 000 ACP или биоматериал DPSC за 65 000 ACP.",
+      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак, бриф световой камеры Vinci за 48 000 ACP или микроволновый контур тела за 52 000 ACP, камеру BioFusion за 88 000 ACP, биоматериал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP или безыгольный трансдермальный пистолет за 46 000 ACP.",
     openSandbox: "Открыть ДНК-песочницу",
     browseWorkflows: "Смотреть workflow AETERNA",
     demoKicker: "Публичное демо · нанороботы + химические ножницы",
@@ -222,7 +290,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Интерактивная двойная спираль: вращайте, меняйте пары A/T/G/C. Только обучение; ANCAP не хранит полные референсные геномы.",
     payTitle: "За что можно заплатить",
     payLead:
-      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP; микроволновый контур тела — 52 000 ACP; биоматериал DPSC — 65 000 ACP; камера BioFusion — 88 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий, липосакция, клиника ЭКО и не ветеринарная операционная.",
+      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP; микроволновый контур тела — 52 000 ACP; биоматериал DPSC — 65 000 ACP; камера BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безыгольный трансдермальный пистолет — 46 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий, липосакция, клиника ЭКО, венная клиника и не ветеринарная операционная.",
     intent1Title: "Молекулярный профиль старения (15 осей)",
     intent1Body:
       "Карта репарации ДНК, протеостаза, энергообмена, клеточного старения и других осей по метаданным панели / blood-RNA — индивидуальная конфигурация процессов, а не одна цифра возраста.",
@@ -258,6 +326,16 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent13Title: "Биоматериал из DPSC зуба мудрости",
     intent13Body:
       "Лицензированный биореактор: стволовые клетки пульпы зуба мудрости в конструкцию биоматериала. 65 000 ACP. Не полный орган (он остаётся 250 000 ACP) и не одобренная клеточная терапия.",
+    intent14Title: "Vascular Care+ (газ + световая волна)",
+    intent14Body:
+      "Бриф для лицензированного флебологического / эстетического партнёра: безвредный поток N2+O2 и световая волна. 54 000 ACP. Не лечение тромбоза, не изделие CE/FDA и не гарантированный результат по варикозу.",
+    intent15Title: "Vascular Care (УЗ / РЧ / тепло)",
+    intent15Body:
+      "Бриф для лицензированного флебологического / эстетического партнёра: ультразвук, радиочастота и тепло. 58 000 ACP. Не хирургия и не гарантированный диаметр вены или отёк.",
+    intent16Title: "Безыгольный трансдермальный пистолет",
+    intent16Body:
+      "Бриф для лицензированной клиники: аэрозоль активов плюс газ-носитель через эпителий. 46 000 ACP. Не рецептурный дозатор, не компаундинг и не гарантированная доза или косметический результат.",
+
     agingKicker: "РНК крови · 15 механизмов · с учётом пола",
     agingTitle: "Молекулярный профиль старения",
     agingLead:
@@ -350,6 +428,64 @@ export const aeternaByLang: Record<Language, Tree> = {
     dpscStep3Body: "Лист или скаффолд биоматериала, не готовый орган.",
     dpscStep4Title: "Путь органа",
     dpscStep4Body: "Полная печать органа — отдельный SKU 250 000 ACP, если путь партнёра это допускает.",
+    vplusCta: "Открыть приём Vascular Care+",
+    vplusKicker: "Флебология · N2+O2 · световая волна · лицензированная клиника",
+    vplusTitle: "Vascular Care+",
+    vplusPrice: "54 000 ACP",
+    vplusLead:
+      "Концептуальная стойка с контролируемым потоком азота-кислорода и световой насадкой. Инфографика описывает тонус сосудов, отёк и варикоз как грамотность протокола — AETERNA не лечит тромбоз, не продаёт медицинский газ и не обещает результат по венам.",
+    vplusDisclaimer:
+      "Инфографика — концептуальная архитектура партнёра (Vascular Care+). ANCAP не производит стойку, не занимается сосудистой медициной и не заявляет статус CE/FDA. «До/после» и диабетическая ангиопатия на рисунке — грамотность протокола. ТГВ и ТЭЛА остаются неотложными состояниями.",
+    vplusLegalCta: "Юридическое уведомление (Vascular Care+)",
+    vplusAlt:
+      "Инфографика сеанса Vascular Care+: баллон N2+O2, световая насадка на голени, консоль расширения сосудов и схема до/после. Концептуальная архитектура для лицензированных флебологических партнёров.",
+    vplusStep1Title: "Газ + свет",
+    vplusStep1Body: "Поток N2+O2 и световая насадка — заметки архитектуры, не сертифицированная газовая система ANCAP.",
+    vplusStep2Title: "Тонус",
+    vplusStep2Body: "Грамотность расширения / спазма. Не гарантированный кровоток.",
+    vplusStep3Title: "Скрининг",
+    vplusStep3Body: "Протоколы партнёра должны исключать ТГВ, импланты, беременность и открытые раны.",
+    vplusStep4Title: "Передача",
+    vplusStep4Body: "ACP покупает бриф и подбор лицензированной клиники — не право на оборудование.",
+    vusCta: "Открыть приём Vascular Care",
+    vusKicker: "Флебология · УЗ · РЧ · тепло · лицензированная клиника",
+    vusTitle: "Vascular Care",
+    vusPrice: "58 000 ACP",
+    vusLead:
+      "Концептуальная стойка с ультразвуком, радиочастотой и теплом. AETERNA не ведёт венную клинику, не оперирует и не обещает изменение диаметра, отёка или боли.",
+    vusDisclaimer:
+      "Инфографика — концептуальная архитектура партнёра (Vascular Care). ANCAP не производит стойку и не заявляет статус CE/FDA. «До/после» — грамотность протокола.",
+    vusLegalCta: "Юридическое уведомление (Vascular Care)",
+    vusAlt:
+      "Инфографика сеанса Vascular Care: УЗ / РЧ / тепловая насадка на голени, консоль и схема до/после. Концептуальная архитектура для лицензированных флебологических партнёров.",
+    vusStep1Title: "Ультразвук",
+    vusStep1Body: "Грамотность кровотока. Не диагностический дуплекс, продаваемый ANCAP.",
+    vusStep2Title: "Радиочастота",
+    vusStep2Body: "Грамотность тонуса стенки. Не эндовенозная абляция и не гарантированное закрытие.",
+    vusStep3Title: "Тепло",
+    vusStep3Body: "Заметки теплового комфорта. Скрининг ожогов и имплантов у партнёра.",
+    vusStep4Title: "Передача",
+    vusStep4Body: "ACP покупает бриф и подбор лицензированной клиники — не право на оборудование.",
+    tdpCta: "Открыть приём трансдермального пистолета",
+    tdpKicker: "Без иглы · аэрозоль + газ · лицензированная клиника",
+    tdpTitle: "Безыгольный трансдермальный пистолет",
+    tdpPrice: "46 000 ACP",
+    tdpLead:
+      "Концептуальная насадка: аэрозоль активов с газом-носителем через эпителий. Инфографика описывает вены, косметику, суставы и реабилитацию как грамотность — AETERNA не компаундирует лекарства, не отпускает рецепты и не обещает дозу или косметический результат.",
+    tdpDisclaimer:
+      "Инфографика — концептуальная архитектура партнёра. ANCAP не производит пистолет, не продаёт инъекционные препараты и не заявляет статус CE/FDA. Нет домашнего набора мезотерапии.",
+    tdpLegalCta: "Юридическое уведомление (трансдермальный пистолет)",
+    tdpAlt:
+      "Инфографика безыгольного трансдермального пистолета: аэрозольное сопло, срез эпителия и консоль клиники. Концептуальная архитектура для лицензированных клинических партнёров.",
+    tdpStep1Title: "Аэрозоль",
+    tdpStep1Body: "Активы плюс газ-носитель — грамотность архитектуры, не сертифицированный спрей.",
+    tdpStep2Title: "Эпителий",
+    tdpStep2Body: "Грамотность микроканалов. Не гарантированная трансдермальная доза.",
+    tdpStep3Title: "Законный список",
+    tdpStep3Body: "Клиницист партнёра выбирает вещества по местным нормам фармации и практики.",
+    tdpStep4Title: "Передача",
+    tdpStep4Body: "ACP покупает бриф и подбор лицензированной клиники — не лекарственный продукт.",
+
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
     vetTitle: "Выращивание и восстановление органов для животных-компаньонов",
     vetLead:
@@ -419,7 +555,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, обізнаність про Cas9 і розрахунки в блокчейні",
     heroTitle: "Рейли довголіття: молекулярний профіль старіння за 15 осями, а не одна цифра біовіку.",
     heroLead:
-      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак, бриф світлової камери Vinci за 48 000 ACP або мікрохвильовий контур тіла за 52 000 ACP, камеру BioFusion за 88 000 ACP або біоматеріал DPSC за 65 000 ACP.",
+      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак, бриф світлової камери Vinci за 48 000 ACP або мікрохвильовий контур тіла за 52 000 ACP, камеру BioFusion за 88 000 ACP, біоматеріал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP або безголкову трансдермальну насадку за 46 000 ACP.",
     openSandbox: "Відкрити ДНК-пісочницю",
     browseWorkflows: "Дивитися workflow AETERNA",
     demoKicker: "Публічне демо · нанороботи + хімічні ножиці",
@@ -427,7 +563,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Інтерактивна подвійна спіраль. Лише навчання.",
     payTitle: "За що можна заплатити",
     payLead:
-      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP; мікрохвильовий контур тіла — 52 000 ACP; біоматеріал DPSC — 65 000 ACP; BioFusion — 88 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій, не ліпосакція, не клініка ЕКЗ і не ветеринарна операційна.",
+      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP; мікрохвильовий контур тіла — 52 000 ACP; біоматеріал DPSC — 65 000 ACP; BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безголкова трансдермальна насадка — 46 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій, не ліпосакція, не клініка ЕКЗ і не ветеринарна операційна.",
     intent1Title: "Молекулярний профіль старіння (15 осей)",
     intent1Body: "Конфігурація процесів старіння з метаданих панелі — не одна цифра віку.",
     intent2Title: "Панель теломер",
@@ -460,6 +596,16 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent13Title: "Біоматеріал з DPSC зуба мудрості",
     intent13Body:
       "Ліцензований біореактор: стовбурові клітини пульпи зуба мудрості. 65 000 ACP. Не повний орган (250 000 ACP) і не схвалена клітинна терапія.",
+    intent14Title: "Vascular Care+ (газ + світлова хвиля)",
+    intent14Body:
+      "Бриф для ліцензованого флебологічного / естетичного партнера: потік N2+O2 і світлова хвиля. 54 000 ACP. Не лікування тромбозу, не виріб CE/FDA і не гарантований результат щодо варикозу.",
+    intent15Title: "Vascular Care (УЗ / РФ / тепло)",
+    intent15Body:
+      "Бриф для ліцензованого флебологічного / естетичного партнера: ультразвук, радіочастота і тепло. 58 000 ACP. Не хірургія і не гарантований діаметр вени.",
+    intent16Title: "Безголкова трансдермальна пістолет-насадка",
+    intent16Body:
+      "Бриф для ліцензованої клініки: аерозоль активів плюс газ-носій крізь епітелій. 46 000 ACP. Не рецептурний дозатор і не гарантована доза.",
+
     agingKicker: "РНК крові · 15 механізмів · з урахуванням статі",
     agingTitle: "Молекулярний профіль старіння",
     agingLead: "Мета — індивідуальна конфігурація процесів старіння, а не універсальна цифра біовіку.",
@@ -547,6 +693,61 @@ export const aeternaByLang: Record<Language, Tree> = {
     dpscStep3Body: "Скафолд біоматеріалу, не готовий орган.",
     dpscStep4Title: "Шлях органа",
     dpscStep4Body: "Повний друк органа — окремий SKU 250 000 ACP.",
+    vplusCta: "Відкрити прийом Vascular Care+",
+    vplusKicker: "Флебологія · N2+O2 · світлова хвиля · ліцензована клініка",
+    vplusTitle: "Vascular Care+",
+    vplusPrice: "54 000 ACP",
+    vplusLead:
+      "Концептуальна стійка з контрольованим потоком азоту-кисню і світловою насадкою. AETERNA не лікує тромбоз і не обіцяє результат щодо вен.",
+    vplusDisclaimer:
+      "Інфографіка — концептуальна архітектура партнера. ANCAP не виробляє стійку і не заявляє статус CE/FDA. ТГВ і ТЕЛА лишаються невідкладними станами.",
+    vplusLegalCta: "Юридичне повідомлення (Vascular Care+)",
+    vplusAlt: "Інфографіка сеансу Vascular Care+: балон N2+O2 і світлова насадка. Концептуальна архітектура.",
+    vplusStep1Title: "Газ + світло",
+    vplusStep1Body: "Потік N2+O2 і світлова насадка — нотатки архітектури.",
+    vplusStep2Title: "Тонус",
+    vplusStep2Body: "Грамотність розширення / спазму. Не гарантований кровотік.",
+    vplusStep3Title: "Скринінг",
+    vplusStep3Body: "Протоколи партнера мають виключати ТГВ, імпланти, вагітність.",
+    vplusStep4Title: "Передача",
+    vplusStep4Body: "ACP купує бриф і підбір ліцензованої клініки.",
+    vusCta: "Відкрити прийом Vascular Care",
+    vusKicker: "Флебологія · УЗ · РФ · тепло · ліцензована клініка",
+    vusTitle: "Vascular Care",
+    vusPrice: "58 000 ACP",
+    vusLead:
+      "Концептуальна стійка з ультразвуком, радіочастотою і теплом. AETERNA не оперує і не обіцяє зміну діаметра вени.",
+    vusDisclaimer:
+      "Інфографіка — концептуальна архітектура партнера. ANCAP не виробляє стійку і не заявляє статус CE/FDA.",
+    vusLegalCta: "Юридичне повідомлення (Vascular Care)",
+    vusAlt: "Інфографіка сеансу Vascular Care: УЗ / РФ / теплова насадка. Концептуальна архітектура.",
+    vusStep1Title: "Ультразвук",
+    vusStep1Body: "Грамотність кровотоку. Не діагностичний дуплекс ANCAP.",
+    vusStep2Title: "Радіочастота",
+    vusStep2Body: "Грамотність тонусу стінки. Не ендовенозна абляція.",
+    vusStep3Title: "Тепло",
+    vusStep3Body: "Нотатки теплового комфорту. Скринінг опіків та імплантів.",
+    vusStep4Title: "Передача",
+    vusStep4Body: "ACP купує бриф і підбір ліцензованої клініки.",
+    tdpCta: "Відкрити прийом трансдермального пістолета",
+    tdpKicker: "Без голки · аерозоль + газ · ліцензована клініка",
+    tdpTitle: "Безголкова трансдермальна насадка",
+    tdpPrice: "46 000 ACP",
+    tdpLead:
+      "Концептуальна насадка: аерозоль активів із газом-носієм. AETERNA не компаундує ліки і не обіцяє дозу.",
+    tdpDisclaimer:
+      "Інфографіка — концептуальна архітектура. ANCAP не виробляє пістолет і не заявляє статус CE/FDA.",
+    tdpLegalCta: "Юридичне повідомлення (трансдермальний пістолет)",
+    tdpAlt: "Інфографіка безголкової трансдермальної насадки. Концептуальна архітектура.",
+    tdpStep1Title: "Аерозоль",
+    tdpStep1Body: "Активи плюс газ-носій — грамотність архітектури.",
+    tdpStep2Title: "Епітелій",
+    tdpStep2Body: "Грамотність мікроканалів. Не гарантована доза.",
+    tdpStep3Title: "Законний список",
+    tdpStep3Body: "Клініцист партнера обирає речовини за місцевими нормами.",
+    tdpStep4Title: "Передача",
+    tdpStep4Body: "ACP купує бриф і підбір ліцензованої клініки.",
+
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
     vetTitle: "Вирощування і відновлення органів для тварин-компаньйонів",
     vetLead:
@@ -616,7 +817,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9-Bewusstsein und Blockchain-Abrechnung",
     heroTitle: "Longevity-Schienen: molekulares Alterungsprofil über 15 Achsen — keine einzelne Bio-Age-Zahl.",
     heroLead:
-      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen, ein Vinci-Lichtkammer-Briefing für 48.000 ACP oder Mikrowellen-Body-Contouring für 52.000 ACP, BioFusion für 88.000 ACP oder DPSC-Biomaterial für 65.000 ACP.",
+      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen, ein Vinci-Lichtkammer-Briefing für 48.000 ACP oder Mikrowellen-Body-Contouring für 52.000 ACP, BioFusion für 88.000 ACP, DPSC-Biomaterial für 65.000 ACP, Vascular Care+ für 54.000 ACP, Vascular Care für 58.000 ACP oder eine nadelfreie transdermale Pistole für 46.000 ACP.",
     openSandbox: "DNA-Sandbox öffnen",
     browseWorkflows: "AETERNA-Workflows ansehen",
     demoKicker: "Öffentliche Demo · Nanobots + chemische Scheren",
@@ -624,7 +825,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Interaktive Doppelhelix — nur Bildung.",
     payTitle: "Wofür Sie zahlen können",
     payLead:
-      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP; Mikrowellen-Body-Contouring 52.000 ACP; DPSC-Biomaterial 65.000 ACP; BioFusion 88.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium, keine Liposuktion, keine IVF-Klinik und keine Veterinär-OP.",
+      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP; Mikrowellen-Body-Contouring 52.000 ACP; DPSC-Biomaterial 65.000 ACP; BioFusion 88.000 ACP; Vascular Care+ 54.000 ACP; Vascular Care 58.000 ACP; nadelfreie transdermale Pistole 46.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium, keine Liposuktion, keine IVF-Klinik und keine Veterinär-OP.",
     intent1Title: "Molekulares Alterungsprofil (15 Achsen)",
     intent1Body: "Hallmark-Karte aus Panel-/Blut-RNA-Metadaten — Konfiguration, keine Bio-Age-Zahl.",
     intent2Title: "Telomer-Panel",
@@ -657,6 +858,16 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent13Title: "DPSC-Biomaterial aus Weisheitszähnen",
     intent13Body:
       "Lizenzierter Bioreaktor: Zahnpulpa-Stammzellen. 65.000 ACP. Kein volles Organ (250.000 ACP) und keine zugelassene Zelltherapie.",
+    intent14Title: "Vascular Care+ (Gas + Lichtwelle)",
+    intent14Body:
+      "Lizenzierte Phlebologie-/Ästhetik-Kurzakte für wasserfreien N2+O2-Strom plus Lichtwellen-Applikator. 54.000 ACP. Keine Thrombosebehandlung, kein CE/FDA-Gerät, kein garantiertes Krampfader-Ergebnis.",
+    intent15Title: "Vascular Care (Ultraschall / RF / Wärme)",
+    intent15Body:
+      "Lizenzierte Phlebologie-/Ästhetik-Kurzakte für Ultraschall, Radiofrequenz und Wärme. 58.000 ACP. Keine Chirurgie und kein garantierter Venendurchmesser.",
+    intent16Title: "Nadelfreie transdermale Pistole",
+    intent16Body:
+      "Lizenzierte Klinik-Kurzakte für Aerosol plus Trägergas. 46.000 ACP. Kein Rezeptspender, kein Compounding, keine garantierte Dosis.",
+
     agingKicker: "Blut-RNA · 15 Mechanismen · geschlechtssensitiv",
     agingTitle: "Molekulares Alterungsprofil",
     agingLead: "Individuelle Konfiguration von Alterungsprozessen, keine universelle Bio-Age-Zahl.",
@@ -744,6 +955,61 @@ export const aeternaByLang: Record<Language, Tree> = {
     dpscStep3Body: "Biomaterial-Scaffold, kein fertiges Organ.",
     dpscStep4Title: "Organpfad",
     dpscStep4Body: "Voller Organdruck bleibt ein separates 250.000-ACP-SKU.",
+    vplusCta: "Vascular-Care+-Aufnahme öffnen",
+    vplusKicker: "Phlebologie · N2+O2 · Lichtwelle · lizenzierte Klinik",
+    vplusTitle: "Vascular Care+",
+    vplusPrice: "54.000 ACP",
+    vplusLead:
+      "Konzeptwagen mit kontrolliertem Stickstoff-Sauerstoff-Strom und Lichtwellen-Handstück. AETERNA behandelt keine Thrombose und verspricht kein Venenergebnis.",
+    vplusDisclaimer:
+      "Die Infografik ist konzeptionelle Partnerarchitektur. ANCAP stellt den Wagen nicht her und beansprucht keinen CE/FDA-Status. TVT und Lungenembolie bleiben Notfälle.",
+    vplusLegalCta: "Rechtshinweis Vascular Care+",
+    vplusAlt: "Infografik einer Vascular-Care+-Sitzung: N2+O2-Zylinder und Lichtwellen-Applikator. Konzeptarchitektur.",
+    vplusStep1Title: "Gas + Licht",
+    vplusStep1Body: "N2+O2-Strom und Lichtwelle sind Architekturhinweise, kein zertifiziertes Gassystem.",
+    vplusStep2Title: "Tonus",
+    vplusStep2Body: "Dilatation-/Spasmus-Literacy. Kein garantierter Blutfluss.",
+    vplusStep3Title: "Screening",
+    vplusStep3Body: "Partnerprotokolle müssen TVT, Implantate und Schwangerschaft prüfen.",
+    vplusStep4Title: "Übergabe",
+    vplusStep4Body: "ACP kauft eine Kurzakte und eine lizenzierte Klinikzuordnung.",
+    vusCta: "Vascular-Care-Aufnahme öffnen",
+    vusKicker: "Phlebologie · Ultraschall · RF · Wärme · lizenzierte Klinik",
+    vusTitle: "Vascular Care",
+    vusPrice: "58.000 ACP",
+    vusLead:
+      "Konzeptwagen mit Ultraschall, Radiofrequenz und Wärme. AETERNA operiert nicht und verspricht keinen Venendurchmesser.",
+    vusDisclaimer:
+      "Die Infografik ist konzeptionelle Partnerarchitektur. ANCAP stellt den Wagen nicht her und beansprucht keinen CE/FDA-Status.",
+    vusLegalCta: "Rechtshinweis Vascular Care",
+    vusAlt: "Infografik einer Vascular-Care-Sitzung: US/RF/Wärme-Handstück. Konzeptarchitektur.",
+    vusStep1Title: "Ultraschall",
+    vusStep1Body: "Blutfluss-Literacy. Keine Duplex-Diagnostik von ANCAP.",
+    vusStep2Title: "Radiofrequenz",
+    vusStep2Body: "Wandtonus-Literacy. Keine endovenöse Ablation.",
+    vusStep3Title: "Wärme",
+    vusStep3Body: "Wärmekomfort-Hinweise. Screening auf Verbrennungen und Implantate.",
+    vusStep4Title: "Übergabe",
+    vusStep4Body: "ACP kauft eine Kurzakte und eine lizenzierte Klinikzuordnung.",
+    tdpCta: "Transdermale-Pistolen-Aufnahme öffnen",
+    tdpKicker: "Nadelfrei · Aerosol + Gas · lizenzierte Klinik",
+    tdpTitle: "Nadelfreie transdermale Pistole",
+    tdpPrice: "46.000 ACP",
+    tdpLead:
+      "Konzepthandstück: Aerosol plus Trägergas. AETERNA stellt keine Arzneimittel her und verspricht keine Dosis.",
+    tdpDisclaimer:
+      "Die Infografik ist konzeptionelle Partnerarchitektur. ANCAP stellt die Pistole nicht her und beansprucht keinen CE/FDA-Status.",
+    tdpLegalCta: "Rechtshinweis transdermale Pistole",
+    tdpAlt: "Infografik einer nadelfreien transdermalen Pistole. Konzeptarchitektur.",
+    tdpStep1Title: "Aerosol",
+    tdpStep1Body: "Wirkstoffe plus Trägergas als Architektur-Literacy.",
+    tdpStep2Title: "Epithel",
+    tdpStep2Body: "Mikrokanal-Literacy. Keine garantierte transdermale Dosis.",
+    tdpStep3Title: "Zulässige Liste",
+    tdpStep3Body: "Partnerärzte wählen Stoffe nach lokalem Arzneimittel- und Berufsrecht.",
+    tdpStep4Title: "Übergabe",
+    tdpStep4Body: "ACP kauft eine Kurzakte und eine lizenzierte Klinikzuordnung.",
+
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
     vetTitle: "Organzüchtung und -wiederherstellung für Haustiere",
     vetLead:
@@ -813,7 +1079,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA、Cas9 認知與區塊鏈結算",
     heroTitle: "長壽軌道：15 軸分子衰老剖面，而非單一生物年齡數字。",
     heroLead:
-      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道、以 48,000 ACP 開啟 Vinci 光艙簡報，或以 52,000 ACP 開啟微波身體輪廓、以 88,000 ACP 開啟 BioFusion，或以 65,000 ACP 開啟 DPSC 生物材料。",
+      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道、以 48,000 ACP 開啟 Vinci 光艙簡報，或以 52,000 ACP 開啟微波身體輪廓、以 88,000 ACP 開啟 BioFusion、以 65,000 ACP 開啟 DPSC 生物材料、以 54,000 ACP 開啟 Vascular Care+、以 58,000 ACP 開啟 Vascular Care，或以 46,000 ACP 開啟無針經皮手槍。",
     openSandbox: "開啟 DNA 沙盒",
     browseWorkflows: "瀏覽 AETERNA 工作流程",
     demoKicker: "公開示範 · 奈米機器人 + 化學剪刀",
@@ -821,7 +1087,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "互動雙螺旋僅供教育。",
     payTitle: "可付費項目",
     payLead:
-      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP；微波身體輪廓 52,000 ACP；DPSC 生物材料 65,000 ACP；BioFusion 88,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床、非抽脂、非生殖診所，亦非獸醫手術套件。",
+      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP；微波身體輪廓 52,000 ACP；DPSC 生物材料 65,000 ACP；BioFusion 88,000 ACP；Vascular Care+ 54,000 ACP；Vascular Care 58,000 ACP；無針經皮手槍 46,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床、非抽脂、非生殖診所，亦非獸醫手術套件。",
     intent1Title: "分子衰老剖面（15 軸）",
     intent1Body: "以血液 RNA／面板中繼資料對應衰老機制——是配置，不是單一生物年齡。",
     intent2Title: "端粒面板",
@@ -854,6 +1120,16 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent13Title: "智齒 DPSC 生物材料",
     intent13Body:
       "持照生物反應器：智齒牙髓幹細胞。65,000 ACP。非完整器官（仍為 250,000 ACP），亦非已核准細胞治療。",
+    intent14Title: "Vascular Care+（氣體＋光波）",
+    intent14Body:
+      "持照靜脈／美學夥伴簡報：無水 N2+O2 氣流加光波探頭。54,000 ACP。非血栓治療、非 CE/FDA 器材、非靜脈曲張保證。",
+    intent15Title: "Vascular Care（超音波／射頻／熱）",
+    intent15Body:
+      "持照靜脈／美學夥伴簡報：超音波、射頻與熱探頭。58,000 ACP。非手術、非保證管徑結果。",
+    intent16Title: "無針經皮手槍",
+    intent16Body:
+      "持照診所簡報：氣霧活性物加載氣穿過上皮。46,000 ACP。非處方配藥、非保證劑量或美容結果。",
+
     agingKicker: "血液 RNA · 15 機制 · 性別敏感",
     agingTitle: "分子衰老剖面",
     agingLead: "目標是個別衰老過程配置，而非通用生物年齡數字。",
@@ -941,6 +1217,61 @@ export const aeternaByLang: Record<Language, Tree> = {
     dpscStep3Body: "生物材料支架，非完成器官。",
     dpscStep4Title: "器官路徑",
     dpscStep4Body: "完整器官列印仍為獨立 250,000 ACP SKU。",
+    vplusCta: "開啟 Vascular Care+ 收件",
+    vplusKicker: "靜脈學 · N2+O2 · 光波 · 持照診所",
+    vplusTitle: "Vascular Care+",
+    vplusPrice: "54,000 ACP",
+    vplusLead:
+      "概念推車：受控氮氧氣流與光波探頭。AETERNA 不治療血栓，不承諾靜脈結果。",
+    vplusDisclaimer:
+      "資訊圖為夥伴概念架構。ANCAP 不製造推車、不主張 CE/FDA。深靜脈血栓與肺栓塞仍屬急症。",
+    vplusLegalCta: "Vascular Care+ 法律聲明",
+    vplusAlt: "Vascular Care+ 資訊圖：N2+O2 鋼瓶與光波探頭。持照靜脈夥伴的概念架構。",
+    vplusStep1Title: "氣體＋光",
+    vplusStep1Body: "N2+O2 氣流與光波為架構說明，非 ANCAP 認證氣體系統。",
+    vplusStep2Title: "張力",
+    vplusStep2Body: "擴張／痙攣素養。非保證血流結果。",
+    vplusStep3Title: "篩檢",
+    vplusStep3Body: "夥伴流程須排除深靜脈血栓、植入物與妊娠。",
+    vplusStep4Title: "交接",
+    vplusStep4Body: "ACP 購買諮詢簡報與持照診所配對。",
+    vusCta: "開啟 Vascular Care 收件",
+    vusKicker: "靜脈學 · 超音波 · 射頻 · 熱 · 持照診所",
+    vusTitle: "Vascular Care",
+    vusPrice: "58,000 ACP",
+    vusLead:
+      "概念推車：超音波、射頻與熱探頭。AETERNA 不手術、不承諾管徑改變。",
+    vusDisclaimer:
+      "資訊圖為夥伴概念架構。ANCAP 不製造推車、不主張 CE/FDA。",
+    vusLegalCta: "Vascular Care 法律聲明",
+    vusAlt: "Vascular Care 資訊圖：超音波／射頻／熱探頭。概念架構。",
+    vusStep1Title: "超音波",
+    vusStep1Body: "血流素養。非 ANCAP 銷售的雙功檢查。",
+    vusStep2Title: "射頻",
+    vusStep2Body: "管壁張力素養。非靜脈內消融。",
+    vusStep3Title: "熱",
+    vusStep3Body: "熱舒適說明。夥伴須篩檢灼傷與植入物。",
+    vusStep4Title: "交接",
+    vusStep4Body: "ACP 購買諮詢簡報與持照診所配對。",
+    tdpCta: "開啟經皮手槍收件",
+    tdpKicker: "無針 · 氣霧＋氣體 · 持照診所",
+    tdpTitle: "無針經皮手槍",
+    tdpPrice: "46,000 ACP",
+    tdpLead:
+      "概念手持：氣霧活性物加載氣。AETERNA 不調劑、不承諾劑量。",
+    tdpDisclaimer:
+      "資訊圖為概念架構。ANCAP 不製造手槍、不主張 CE/FDA。",
+    tdpLegalCta: "經皮手槍法律聲明",
+    tdpAlt: "無針經皮手槍資訊圖。概念架構。",
+    tdpStep1Title: "氣霧",
+    tdpStep1Body: "活性物加載氣為架構素養。",
+    tdpStep2Title: "上皮",
+    tdpStep2Body: "微通道素養。非保證經皮劑量。",
+    tdpStep3Title: "合法清單",
+    tdpStep3Body: "夥伴醫師依當地藥事與執業法規選擇物質。",
+    tdpStep4Title: "交接",
+    tdpStep4Body: "ACP 購買諮詢簡報與持照診所配對。",
+
     vetKicker: "獸醫 · 持照診所 · 概念架構",
     vetTitle: "伴侶動物器官培養與復原",
     vetLead:

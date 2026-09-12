@@ -57,6 +57,9 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/body-contouring", key: "bodyContouringLink" },
     { href: "/legal/biofusion", key: "biofusionLink" },
     { href: "/legal/dpsc", key: "dpscLink" },
+    { href: "/legal/vascular-care-plus", key: "vascularPlusLink" },
+    { href: "/legal/vascular-care", key: "vascularLink" },
+    { href: "/legal/transdermal", key: "transdermalLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -99,6 +102,9 @@ export function LegalHubView() {
     { href: "/legal/body-contouring", title: "bodyContouringLink", body: "hubCardBodyContouring" },
     { href: "/legal/biofusion", title: "biofusionLink", body: "hubCardBiofusion" },
     { href: "/legal/dpsc", title: "dpscLink", body: "hubCardDpsc" },
+    { href: "/legal/vascular-care-plus", title: "vascularPlusLink", body: "hubCardVascularPlus" },
+    { href: "/legal/vascular-care", title: "vascularLink", body: "hubCardVascular" },
+    { href: "/legal/transdermal", title: "transdermalLink", body: "hubCardTransdermal" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -950,6 +956,96 @@ export function DpscLegalView() {
   );
 }
 
+export function VascularCarePlusLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.vascularPlusKicker")}
+      title={t("legal.vascularPlusTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.vascularPlusIntro")}`}
+      actions={<LegalNavPills current="/legal/vascular-care-plus" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.vp${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.vp${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#vascular-care-plus" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#vascular-care-plus
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function VascularCareLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.vascularKicker")}
+      title={t("legal.vascularTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.vascularIntro")}`}
+      actions={<LegalNavPills current="/legal/vascular-care" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.vu${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.vu${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#vascular-care" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#vascular-care
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function TransdermalLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.transdermalKicker")}
+      title={t("legal.transdermalTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.transdermalIntro")}`}
+      actions={<LegalNavPills current="/legal/transdermal" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.td${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.td${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#transdermal" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#transdermal
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function WelcomeGrantView() {
   const { t } = useLanguage();
   return (
@@ -1006,6 +1102,9 @@ export function SiteLegalFooter() {
     { href: "/legal/body-contouring", label: "footerBodyContouring" },
     { href: "/legal/biofusion", label: "footerBiofusion" },
     { href: "/legal/dpsc", label: "footerDpsc" },
+    { href: "/legal/vascular-care-plus", label: "footerVascularPlus" },
+    { href: "/legal/vascular-care", label: "footerVascular" },
+    { href: "/legal/transdermal", label: "footerTransdermal" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/humanitarian", label: "footerHumanitarian" },

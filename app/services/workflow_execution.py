@@ -495,6 +495,93 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "cell_source", "status_timeline"],
         tags=["aeterna", "dpsc", "wisdom-tooth", "biomaterial", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-vascular-care-plus",
+        title="AETERNA Vascular Care+",
+        category="AETERNA",
+        summary=(
+            "Licensed phlebology/aesthetic-partner intake for Vascular Care+ "
+            "(anhydrous N2+O2 flow plus light-wave applicator) — 54,000 ACP."
+        ),
+        description=(
+            "Settles 54,000 ACP and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
+            "for a conceptual Vascular Care+ cart: controlled anhydrous nitrogen-oxygen flow plus a light-wave "
+            "handpiece. Infographic copy about vessel dilation, oedema, varicose veins, or diabetic angiopathy "
+            "is protocol literacy, not a guaranteed clinical result. ANCAP does not manufacture the cart, does "
+            "not sell medical gases, does not treat thrombosis / DVT / pulmonary embolism, and does not claim "
+            "CE/FDA device status. Physical sessions occur only under a licensed clinician after screening. "
+            "No home gas-applicator recipe."
+        ),
+        price=Money(amount="54000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=["Contraindication / DVT intake", "Phlebology partner match", "Session-protocol literacy pack"],
+        output_items=[
+            "Vascular Care+ intake brief",
+            "Licensed clinic handoff",
+            "Non-claim checklist (no thrombosis treatment / no guaranteed varicose cure / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "gas", "status_timeline"],
+        tags=["aeterna", "vascular", "phlebology", "gas-light", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-vascular-care",
+        title="AETERNA Vascular Care",
+        category="AETERNA",
+        summary=(
+            "Licensed phlebology/aesthetic-partner intake for Vascular Care "
+            "(ultrasound / radiofrequency / thermal applicator) — 58,000 ACP."
+        ),
+        description=(
+            "Settles 58,000 ACP and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
+            "for a conceptual Vascular Care cart combining ultrasound, radiofrequency, and thermal applicators. "
+            "Infographic copy about vessel tone, oedema, or varicose diameter is protocol literacy, not a "
+            "guaranteed result. Not surgery, not a marketed medical device, and not a CE/FDA product sold by "
+            "ANCAP. Physical sessions occur only under a licensed clinician after screening. No home RF/US recipe."
+        ),
+        price=Money(amount="58000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=["Contraindication intake", "Phlebology partner match", "Session-protocol literacy pack"],
+        output_items=[
+            "Vascular Care intake brief",
+            "Licensed clinic handoff",
+            "Non-claim checklist (no surgery / no guaranteed vein result / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "modalities", "status_timeline"],
+        tags=["aeterna", "vascular", "phlebology", "ultrasound", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-transdermal-pistol",
+        title="AETERNA Needle-Free Transdermal Pistol",
+        category="AETERNA",
+        summary=(
+            "Licensed clinic-partner intake for a needle-free transdermal pistol "
+            "(aerosol actives plus carrier gas) — 46,000 ACP."
+        ),
+        description=(
+            "Settles 46,000 ACP and issues a licensed clinic-partner brief for a conceptual needle-free "
+            "transdermal pistol: aerosol of actives plus carrier gas (CO2 / N2 / O2 literacy) across epithelium. "
+            "Infographic copy about varicose veins, fat reduction, cosmetics, or joints is protocol literacy, "
+            "not a guaranteed dose or outcome. ANCAP does not compound drugs, does not dispense prescriptions, "
+            "does not sell the pistol, and does not claim CE/FDA device status. Physical sessions occur only "
+            "under a licensed clinician with a lawful substance list. No home injection or mesotherapy kit."
+        ),
+        price=Money(amount="46000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=["Contraindication / substance-list intake", "Clinic partner match", "Non-claim protocol pack"],
+        output_items=[
+            "Transdermal pistol intake brief",
+            "Licensed clinic handoff",
+            "Non-claim checklist (no prescription / no compounding / no guaranteed dose / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "delivery", "status_timeline"],
+        tags=["aeterna", "transdermal", "needle-free", "aesthetic", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1600,6 +1687,62 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "ANCAP settles ACP and issues a partner handoff brief. Cell expansion occurs only in a "
                     "licensed biochemical reactor. This SKU is a biomaterial construct, not a 250,000 ACP organ."
+                ),
+            }
+        if template.slug == "aeterna-vascular-care-plus":
+            deliverable["intent"] = str(payload.get("intent_kind") or "vascular_care_plus")
+            deliverable["compliance"] = (
+                "Licensed phlebology / vascular / aesthetic partner intake only. Not a diagnosis, not a marketed "
+                "medical device, not a thrombosis treatment, and not a guaranteed varicose-vein claim. "
+                "No home gas-applicator recipe, CRISPR, or gene synthesis."
+            )
+            deliverable["vascular_care_plus"] = {
+                "mode": "licensed_phlebology_aesthetic_partner",
+                "architecture": "anhydrous_n2_o2_lightwave_applicator",
+                "price_acp": "54000",
+                "gas": {"mix": "N2+O2", "class": "medical_grade_architecture_literacy"},
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical sessions occur only under "
+                    "a licensed clinician. Infographic before/after or angiopathy copy is protocol literacy, "
+                    "not a product claim. DVT / PE remain medical emergencies."
+                ),
+            }
+        if template.slug == "aeterna-vascular-care":
+            deliverable["intent"] = str(payload.get("intent_kind") or "vascular_care")
+            deliverable["compliance"] = (
+                "Licensed phlebology / vascular / aesthetic partner intake only. Not a diagnosis, not a marketed "
+                "medical device, not surgery, and not a guaranteed vein-diameter claim. "
+                "No home RF/US recipe, CRISPR, or gene synthesis."
+            )
+            deliverable["vascular_care"] = {
+                "mode": "licensed_phlebology_aesthetic_partner",
+                "architecture": "ultrasound_rf_thermal_applicator",
+                "price_acp": "58000",
+                "modalities": {
+                    "ultrasound": "blood_flow_literacy",
+                    "radiofrequency": "wall_tone_literacy",
+                    "thermal": "tissue_comfort_literacy",
+                },
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical sessions occur only under "
+                    "a licensed clinician. Infographic before/after copy is protocol literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-transdermal-pistol":
+            deliverable["intent"] = str(payload.get("intent_kind") or "transdermal_pistol")
+            deliverable["compliance"] = (
+                "Licensed clinic-partner intake only. Not a diagnosis, not a prescription dispenser, not "
+                "compounding, and not a guaranteed transdermal dose. No home injection kit, CRISPR, or gene synthesis."
+            )
+            deliverable["transdermal_pistol"] = {
+                "mode": "licensed_clinic_partner",
+                "architecture": "needle_free_transdermal_pistol",
+                "price_acp": "46000",
+                "delivery": {"route": "aerosol_plus_carrier_gas", "gases_literacy": "CO2_N2_O2_or_mix"},
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical sessions occur only under "
+                    "a licensed clinician with a lawful substance list. Infographic cosmetic or fat-reduction "
+                    "copy is protocol literacy, not a product claim."
                 ),
             }
         execution_summary = {

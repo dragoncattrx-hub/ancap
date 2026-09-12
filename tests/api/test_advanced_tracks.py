@@ -65,6 +65,9 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.microwave_body_contouring.value == "microwave_body_contouring"
     assert AeternaIntentKind.biofusion_micromanipulation.value == "biofusion_micromanipulation"
     assert AeternaIntentKind.dpsc_biomaterial.value == "dpsc_biomaterial"
+    assert AeternaIntentKind.vascular_care_plus.value == "vascular_care_plus"
+    assert AeternaIntentKind.vascular_care.value == "vascular_care"
+    assert AeternaIntentKind.transdermal_pistol.value == "transdermal_pistol"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -72,6 +75,9 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["microwave_body_note"]
     assert AeternaStatusPublic.model_fields["biofusion_note"]
     assert AeternaStatusPublic.model_fields["dpsc_biomaterial_note"]
+    assert AeternaStatusPublic.model_fields["vascular_care_plus_note"]
+    assert AeternaStatusPublic.model_fields["vascular_care_note"]
+    assert AeternaStatusPublic.model_fields["transdermal_pistol_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -81,13 +87,16 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 14
+    assert len(aeterna) >= 17
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
         "aeterna-vet-regen-pod": "180000",
         "aeterna-vinci-light-chamber": "48000",
         "aeterna-microwave-body-contouring": "52000",
+        "aeterna-transdermal-pistol": "46000",
+        "aeterna-vascular-care-plus": "54000",
+        "aeterna-vascular-care": "58000",
         "aeterna-dpsc-biomaterial": "65000",
         "aeterna-biofusion-micromanipulation": "88000",
     }
@@ -101,6 +110,9 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-microwave-body-contouring" in slugs
     assert "aeterna-biofusion-micromanipulation" in slugs
     assert "aeterna-dpsc-biomaterial" in slugs
+    assert "aeterna-vascular-care-plus" in slugs
+    assert "aeterna-vascular-care" in slugs
+    assert "aeterna-transdermal-pistol" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -449,6 +461,111 @@ def test_dpsc_biomaterial_intent_default_slug_and_reject_low_budget(client):
     payload = created.json()
     assert payload["workflow_slug"] == DPSC_BIOMATERIAL_SLUG
     assert payload["metadata_json"]["architecture"] == "wisdom_tooth_dpsc_expansion"
+
+
+def test_vascular_care_plus_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-vascular-care-plus")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "vascular_care_plus"})
+    vc = out["deliverable"]["vascular_care_plus"]
+    assert vc["price_acp"] == "54000"
+    assert vc["gas"]["mix"] == "N2+O2"
+    assert out["deliverable"]["partner_handoff"]["required"] is True
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at", "ionizable lipid recipe"):
+        assert forbidden not in blob
+    assert "licensed_phlebology_aesthetic_partner" in blob
+    assert "thrombosis" in blob
+
+
+def test_vascular_care_plus_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import VASCULAR_PLUS_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vascular_care_plus", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vascular_care_plus", "budget_acp": "54000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == VASCULAR_PLUS_SLUG
+    assert payload["metadata_json"]["architecture"] == "anhydrous_n2_o2_lightwave_applicator"
+
+
+def test_vascular_care_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-vascular-care")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "vascular_care"})
+    vc = out["deliverable"]["vascular_care"]
+    assert vc["price_acp"] == "58000"
+    assert vc["modalities"]["ultrasound"] == "blood_flow_literacy"
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at"):
+        assert forbidden not in blob
+    assert "licensed_phlebology_aesthetic_partner" in blob
+
+
+def test_vascular_care_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import VASCULAR_CARE_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vascular_care", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "vascular_care", "budget_acp": "58000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == VASCULAR_CARE_SLUG
+    assert payload["metadata_json"]["architecture"] == "ultrasound_rf_thermal_applicator"
+
+
+def test_transdermal_pistol_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-transdermal-pistol")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "transdermal_pistol"})
+    td = out["deliverable"]["transdermal_pistol"]
+    assert td["price_acp"] == "46000"
+    assert td["delivery"]["route"] == "aerosol_plus_carrier_gas"
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at"):
+        assert forbidden not in blob
+    assert "licensed_clinic_partner" in blob
+    assert "compounding" in blob
+
+
+def test_transdermal_pistol_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import TRANSDERMAL_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "transdermal_pistol", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "transdermal_pistol", "budget_acp": "46000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == TRANSDERMAL_SLUG
+    assert payload["metadata_json"]["architecture"] == "needle_free_transdermal_pistol"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

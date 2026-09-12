@@ -503,6 +503,69 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "cell_source", "status_timeline"],
     tags: ["aeterna", "dpsc", "wisdom-tooth", "biomaterial", "consult"],
   },
+  {
+    slug: "aeterna-vascular-care-plus",
+    title: "AETERNA Vascular Care+",
+    category: "AETERNA",
+    summary:
+      "Licensed phlebology/aesthetic-partner intake for Vascular Care+ (anhydrous N2+O2 flow plus light-wave applicator) — 54,000 ACP.",
+    description:
+      "Settles 54,000 ACP and issues a licensed clinic brief. Not a marketed medical device, not a thrombosis treatment, not a guaranteed varicose-vein claim.",
+    price: { amount: "54000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 45,
+    preview_items: ["Contraindication / DVT intake", "Phlebology partner match", "Session-protocol literacy pack"],
+    output_items: [
+      "Vascular Care+ intake brief",
+      "Licensed clinic handoff",
+      "Non-claim checklist (no thrombosis treatment / no guaranteed varicose cure / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "gas", "status_timeline"],
+    tags: ["aeterna", "vascular", "phlebology", "gas-light", "consult"],
+  },
+  {
+    slug: "aeterna-vascular-care",
+    title: "AETERNA Vascular Care",
+    category: "AETERNA",
+    summary:
+      "Licensed phlebology/aesthetic-partner intake for Vascular Care (ultrasound / radiofrequency / thermal applicator) — 58,000 ACP.",
+    description:
+      "Settles 58,000 ACP and issues a licensed clinic brief. Not surgery, not a CE/FDA device, not a guaranteed vein-diameter claim.",
+    price: { amount: "58000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 45,
+    preview_items: ["Contraindication intake", "Phlebology partner match", "Session-protocol literacy pack"],
+    output_items: [
+      "Vascular Care intake brief",
+      "Licensed clinic handoff",
+      "Non-claim checklist (no surgery / no guaranteed vein result / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "modalities", "status_timeline"],
+    tags: ["aeterna", "vascular", "phlebology", "ultrasound", "consult"],
+  },
+  {
+    slug: "aeterna-transdermal-pistol",
+    title: "AETERNA Needle-Free Transdermal Pistol",
+    category: "AETERNA",
+    summary:
+      "Licensed clinic-partner intake for a needle-free transdermal pistol (aerosol actives plus carrier gas) — 46,000 ACP.",
+    description:
+      "Settles 46,000 ACP and issues a licensed clinic brief. Not a prescription dispenser, not compounding, not a guaranteed dose or cosmetic result.",
+    price: { amount: "46000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 40,
+    preview_items: ["Contraindication / substance-list intake", "Clinic partner match", "Non-claim protocol pack"],
+    output_items: [
+      "Transdermal pistol intake brief",
+      "Licensed clinic handoff",
+      "Non-claim checklist (no prescription / no compounding / no guaranteed dose / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "delivery", "status_timeline"],
+    tags: ["aeterna", "transdermal", "needle-free", "aesthetic", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

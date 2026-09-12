@@ -14,6 +14,9 @@ import { VinciLightPanel } from "@/components/aeterna/VinciLightPanel";
 import { MicrowaveBodyPanel } from "@/components/aeterna/MicrowaveBodyPanel";
 import { BioFusionPanel } from "@/components/aeterna/BioFusionPanel";
 import { DpscBiomaterialPanel } from "@/components/aeterna/DpscBiomaterialPanel";
+import { VascularCarePlusPanel } from "@/components/aeterna/VascularCarePlusPanel";
+import { VascularCarePanel } from "@/components/aeterna/VascularCarePanel";
+import { TransdermalPistolPanel } from "@/components/aeterna/TransdermalPistolPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -43,9 +46,12 @@ type AeternaStatus = {
   microwave_body_note?: string;
   biofusion_note?: string;
   dpsc_biomaterial_note?: string;
+  vascular_care_plus_note?: string;
+  vascular_care_note?: string;
+  transdermal_pistol_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -162,6 +168,24 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.dpscCta")}
             </a>
+            <a
+              href="#vascular-care-plus"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.vplusCta")}
+            </a>
+            <a
+              href="#vascular-care"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.vusCta")}
+            </a>
+            <a
+              href="#transdermal"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.tdpCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -221,6 +245,18 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <DpscBiomaterialPanel note={status?.dpsc_biomaterial_note} />
+        </section>
+
+        <section className="mt-16">
+          <VascularCarePlusPanel note={status?.vascular_care_plus_note} />
+        </section>
+
+        <section className="mt-16">
+          <VascularCarePanel note={status?.vascular_care_note} />
+        </section>
+
+        <section className="mt-16">
+          <TransdermalPistolPanel note={status?.transdermal_pistol_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

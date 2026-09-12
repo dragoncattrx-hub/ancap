@@ -358,6 +358,15 @@ export function HomePage() {
                     <Link href="/aeterna#dpsc-biomaterial" className="btn btn-ghost">
                       {t("aeternaPage.dpscCta")}
                     </Link>
+                    <Link href="/aeterna#vascular-care-plus" className="btn btn-ghost">
+                      {t("aeternaPage.vplusCta")}
+                    </Link>
+                    <Link href="/aeterna#vascular-care" className="btn btn-ghost">
+                      {t("aeternaPage.vusCta")}
+                    </Link>
+                    <Link href="/aeterna#transdermal" className="btn btn-ghost">
+                      {t("aeternaPage.tdpCta")}
+                    </Link>
                 </div>
               </div>
               <div
