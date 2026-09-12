@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-m-receptor-subscription",
+    date: "2026-09-12",
+    title: "AETERNA: подписка на доставку к M-рецепторам",
+    summary:
+      "На /aeterna — подписка на мультимодальную доставку и нейромодуляцию M-рецепторов: трансдермальный пластырь, ионофорез, ингалятор/небулайзер и стимуляция блуждающего нерва. 12 000 ACP / месяц, 32 000 / квартал, 108 000 / год. Это не компаундинг скополамина, не изделие CE/FDA, не лечение Паркинсона, астмы, ХОБЛ, аритмии или внутриглазного давления. Юр. текст: /legal/m-receptor.",
+    href: "/aeterna#m-receptor",
+  },
+  {
     id: "aeterna-vascular-transdermal",
     date: "2026-09-12",
     title: "AETERNA: Vascular Care и трансдермальный пистолет",

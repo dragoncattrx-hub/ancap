@@ -54,6 +54,7 @@ class AeternaIntentKind(str, Enum):
     vascular_care_plus = "vascular_care_plus"
     vascular_care = "vascular_care"
     transdermal_pistol = "transdermal_pistol"
+    m_receptor_subscription = "m_receptor_subscription"
 
 
 class AeternaDnaSource(str, Enum):
@@ -282,4 +283,10 @@ class AeternaStatusPublic(BaseModel):
         "Needle-free transdermal pistol (aerosol + carrier gas) is a licensed clinic partner session-protocol "
         "brief. Infographics are conceptual architecture — not a prescription dispenser, not compounding, "
         "not a home injection kit, and not a guaranteed drug-delivery or fat-reduction claim."
+    )
+    m_receptor_note: str = (
+        "The M-receptor delivery and neuromodulation rail is a licensed-clinic subscription: transdermal patch, "
+        "iontophoresis, inhaler/nebulizer, and vagus-adjacent stimulation as architecture literacy. Infographics "
+        "are conceptual — not a marketed device, not compounding of scopolamine or any muscarinic agonist/"
+        "antagonist, and not a treatment claim for Parkinson, asthma, COPD, or arrhythmia."
     )

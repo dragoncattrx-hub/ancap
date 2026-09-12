@@ -24,6 +24,10 @@ class WorkflowTemplatePublic(BaseModel):
     receipt_items: list[str] = Field(default_factory=list)
     status: str = "active"
     tags: list[str] = Field(default_factory=list)
+    billing: str = "one_shot"
+    subscription_price_monthly: Optional[Money] = None
+    subscription_price_quarterly: Optional[Money] = None
+    subscription_price_annual: Optional[Money] = None
     # Phase 4: AI system card for governance workflows
     ai_system_card: Optional[dict[str, Any]] = Field(
         default=None,

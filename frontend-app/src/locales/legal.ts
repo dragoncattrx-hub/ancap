@@ -396,6 +396,43 @@ export const legalByLang: Record<Language, Tree> = {
     td10Title: "10. Contact",
     td10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#transdermal. Related notices: /legal/vascular-care-plus, /legal/vascular-care, /legal/terms, /legal/risk.",
+    mReceptorLink: "M-receptor subscription",
+    hubCardMReceptor:
+      "Licensed-clinic subscription for patch, iontophoresis, inhaler, and vagus-adjacent neuromodulation. Not compounding, not a CE/FDA device, not a treatment claim.",
+    mReceptorKicker: "Legal / clinic / subscription",
+    mReceptorTitle: "M-receptor delivery subscription — licensed clinic partner rail",
+    mReceptorIntro:
+      "How ANCAP frames the M-receptor multimodal subscription as of 12 September 2026. These pages sell ACP-settled period retainers, not hardware, not drug cartridges, and not a home kit.",
+    mr1Title: "1. Platform role",
+    mr1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture modules, does not compound or dispense muscarinic agonists or antagonists (including scopolamine), and does not operate a neurology, pulmonology, cardiology, GI, or ophthalmology clinic.",
+    mr2Title: "2. Not a marketed medical device",
+    mr2Body:
+      "The infographic is conceptual architecture. It is not an EU MDR or FDA brochure and not a CE-marked patch, iontophoresis wrist, inhaler, or vagus stimulator sold by ANCAP.",
+    mr3Title: "3. Forbidden outcome claims",
+    mr3Body:
+      "ANCAP does not claim treatment of Parkinson disease, asthma, COPD, bronchospasm, arrhythmia, bradycardia, glaucoma, intraocular pressure, GI motility, or cognitive improvement.",
+    mr4Title: "4. Licensed clinicians only",
+    mr4Body:
+      "Patch, iontophoresis, inhalation, and neuromodulation sessions are clinical. Users must not build home iontophoresis, nebulizer-drug, or vagus-stimulator kits from these pages.",
+    mr5Title: "5. Lawful substances and M1–M5 literacy",
+    mr5Body:
+      "M1–M5 tables on the infographic are receptor literacy, not a dosing guide. Partner protocols must use only substances lawful in the clinic's jurisdiction. ANCAP does not publish compound recipes.",
+    mr6Title: "6. Not medical advice",
+    mr6Body:
+      "Catalog copy is informational. It is not a diagnosis, prescription, or treatment plan.",
+    mr7Title: "7. Health data",
+    mr7Body:
+      "Treat identifiers and clinical history as sensitive. Do not upload records without a lawful basis.",
+    mr8Title: "8. Relationship to other rails",
+    mr8Body:
+      "The transdermal pistol, Vascular Care rails, and microwave contouring remain separate. This subscription does not authorize compounding or unlicensed devices.",
+    mr9Title: "9. Payments",
+    mr9Body:
+      "ACP buys a licensed-clinic period retainer (12,000 monthly / 32,000 quarterly / 108,000 annual) and a partner match — not hardware title, not a drug cartridge, and not a refundable clinical outcome. Refunds follow /legal/refunds.",
+    mr10Title: "10. Contact",
+    mr10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#m-receptor. Related notices: /legal/transdermal, /legal/terms, /legal/risk.",
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -716,6 +753,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascularPlus: "Vascular Care+",
     footerVascular: "Vascular Care",
     footerTransdermal: "Transdermal",
+    footerMReceptor: "M-receptor",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -1094,6 +1132,39 @@ export const legalByLang: Record<Language, Tree> = {
     td9Body: "ACP покупает бриф и подбор партнёра — не лекарственный продукт. Возвраты — /legal/refunds.",
     td10Title: "10. Контакты",
     td10Body: "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#transdermal.",
+    mReceptorLink: "Подписка на M-рецепторы",
+    hubCardMReceptor:
+      "Подписка лицензированной клиники: пластырь, ионофорез, ингалятор и нейромодуляция блуждающего нерва. Не компаундинг, не изделие CE/FDA, не заявление о лечении.",
+    mReceptorKicker: "Право / клиника / подписка",
+    mReceptorTitle: "Доставка к M-рецепторам по подписке — рейл лицензированной клиники",
+    mReceptorIntro:
+      "Как ANCAP описывает мультимодальную подписку на M-рецепторы на 12 сентября 2026. Эти страницы продают ACP-ретейнер периода, не железо, не картридж с препаратом и не домашний набор.",
+    mr1Title: "1. Роль платформы",
+    mr1Body:
+      "ANCAP даёт расчёт ACP, брифы и подбор лицензированного партнёра. ANCAP не производит модули, не компаундирует мускариновые агонисты/антагонисты (включая скополамин) и не ведёт неврологическую, пульмонологическую, кардиологическую, гастроэнтерологическую или офтальмологическую клинику.",
+    mr2Title: "2. Не продаваемое медицинское изделие",
+    mr2Body:
+      "Инфографика — концептуальная архитектура. Это не брошюра EU MDR / FDA и не изделие CE.",
+    mr3Title: "3. Запрещённые заявления о результате",
+    mr3Body:
+      "ANCAP не заявляет лечение болезни Паркинсона, астмы, ХОБЛ, бронхоспазма, аритмии, брадикардии, глаукомы, внутриглазного давления, моторики ЖКТ или улучшения памяти.",
+    mr4Title: "4. Только лицензированные клиницисты",
+    mr4Body:
+      "Пластырь, ионофорез, ингаляция и нейромодуляция — клинические акты. Не собирайте домашние наборы по этим страницам.",
+    mr5Title: "5. Законные вещества и грамотность M1–M5",
+    mr5Body:
+      "Таблица M1–M5 на инфографике — грамотность рецепторов, не гид по дозировке. ANCAP не публикует рецепты смесей.",
+    mr6Title: "6. Не медицинская рекомендация",
+    mr6Body: "Каталог — информация. Это не диагноз, рецепт и не план лечения.",
+    mr7Title: "7. Данные о здоровье",
+    mr7Body: "Идентификаторы считайте чувствительными. Не загружайте записи без правового основания.",
+    mr8Title: "8. Связь с другими рейлами",
+    mr8Body: "Трансдермальный пистолет и рейлы Vascular Care остаются отдельными. Эта подписка не разрешает компаундинг.",
+    mr9Title: "9. Платежи",
+    mr9Body:
+      "ACP покупает ретейнер периода лицензированной клиники (12 000 / месяц, 32 000 / квартал, 108 000 / год) и подбор партнёра — не право собственности на железо. Возвраты — /legal/refunds.",
+    mr10Title: "10. Контакты",
+    mr10Body: "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#m-receptor.",
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -1409,6 +1480,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascularPlus: "Vascular Care+",
     footerVascular: "Vascular Care",
     footerTransdermal: "Трансдермальный",
+    footerMReceptor: "M-рецепторы",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -1775,6 +1847,36 @@ export const legalByLang: Record<Language, Tree> = {
     td9Body: "ACP купує бриф і підбір партнера.",
     td10Title: "10. Контакти",
     td10Body: "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#transdermal.",
+    mReceptorLink: "Підписка на M-рецептори",
+    hubCardMReceptor:
+      "Підписка ліцензованої клініки: пластир, іонофорез, інгалятор і нейромодуляція блукаючого нерва. Не компаундинг і не виріб CE/FDA.",
+    mReceptorKicker: "Право / клініка / підписка",
+    mReceptorTitle: "Доставка до M-рецепторів за підпискою — рейл ліцензованої клініки",
+    mReceptorIntro:
+      "Як ANCAP описує мультимодальну підписку на M-рецептори станом на 12 вересня 2026. Ці сторінки продають ACP-ретейнер періоду, не залізо і не домашній набір.",
+    mr1Title: "1. Роль платформи",
+    mr1Body:
+      "ANCAP дає розрахунок ACP, брифи та підбір ліцензованого партнера. ANCAP не виробляє модулі і не компаундує мускаринові агоністи/антагоністи.",
+    mr2Title: "2. Не продаваний медичний виріб",
+    mr2Body: "Інфографіка — концептуальна архітектура. Це не брошура EU MDR / FDA.",
+    mr3Title: "3. Заборонені заяви про результат",
+    mr3Body:
+      "ANCAP не заявляє лікування Паркінсона, астми, ХОЗЛ, аритмії, глаукоми чи внутрішньоочного тиску.",
+    mr4Title: "4. Лише ліцензовані клініцисти",
+    mr4Body: "Пластир, іонофорез, інгаляція та нейромодуляція — клінічні акти. Не збирайте домашні набори.",
+    mr5Title: "5. Законні речовини та грамотність M1–M5",
+    mr5Body: "Таблиця M1–M5 — грамотність рецепторів, не гід з дозування. ANCAP не публікує рецепти сумішей.",
+    mr6Title: "6. Не медична рекомендація",
+    mr6Body: "Каталог — інформація.",
+    mr7Title: "7. Дані про здоров'я",
+    mr7Body: "Ідентифікатори вважайте чутливими.",
+    mr8Title: "8. Зв'язок з іншими рейлами",
+    mr8Body: "Трансдермальний пістолет і Vascular Care лишаються окремими.",
+    mr9Title: "9. Платежі",
+    mr9Body:
+      "ACP купує ретейнер періоду (12 000 / місяць, 32 000 / квартал, 108 000 / рік) і підбір партнера.",
+    mr10Title: "10. Контакти",
+    mr10Body: "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#m-receptor.",
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
@@ -2096,6 +2198,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascularPlus: "Vascular Care+",
     footerVascular: "Vascular Care",
     footerTransdermal: "Трансдермальний",
+    footerMReceptor: "M-рецептори",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -2461,6 +2564,36 @@ export const legalByLang: Record<Language, Tree> = {
     td9Body: "ACP kauft eine Kurzakte und Partnerzuordnung.",
     td10Title: "10. Kontakt",
     td10Body: "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#transdermal.",
+    mReceptorLink: "M-Rezeptor-Abo",
+    hubCardMReceptor:
+      "Lizenziertes Klinik-Abo für Pflaster, Iontophorese, Inhalator und vagusnahe Neuromodulation. Kein Compounding, kein CE/FDA-Gerät, keine Therapiebehauptung.",
+    mReceptorKicker: "Recht / Klinik / Abo",
+    mReceptorTitle: "M-Rezeptor-Lieferung im Abo — lizenzierte Klinikschiene",
+    mReceptorIntro:
+      "Wie ANCAP das multimodale M-Rezeptor-Abo zum 12. September 2026 rahmt. Diese Seiten verkaufen ACP-Perioden-Retainer, kein Hardware-Eigentum und kein Heimkit.",
+    mr1Title: "1. Plattformrolle",
+    mr1Body:
+      "ANCAP bietet ACP-Settlement, Kurzakten und lizenzierte Partnerzuordnung. ANCAP fertigt keine Module und compoundiert keine muskarinischen Agonisten/Antagonisten.",
+    mr2Title: "2. Kein vermarktetes Medizinprodukt",
+    mr2Body: "Die Infografik ist Konzeptarchitektur, keine EU-MDR-/FDA-Broschüre.",
+    mr3Title: "3. Verbotene Ergebnisaussagen",
+    mr3Body:
+      "ANCAP behauptet keine Behandlung von Parkinson, Asthma, COPD, Arrhythmie, Glaukom oder intraokularem Druck.",
+    mr4Title: "4. Nur lizenzierte Kliniker",
+    mr4Body: "Pflaster, Iontophorese, Inhalation und Neuromodulation sind klinische Akte. Keine Heimkits aus diesen Seiten bauen.",
+    mr5Title: "5. Zulässige Stoffe und M1–M5-Literacy",
+    mr5Body: "Die M1–M5-Tabelle ist Rezeptor-Literacy, kein Dosierleitfaden. ANCAP veröffentlicht keine Rezepturen.",
+    mr6Title: "6. Keine medizinische Beratung",
+    mr6Body: "Katalogtexte sind Information.",
+    mr7Title: "7. Gesundheitsdaten",
+    mr7Body: "Kennungen als sensibel behandeln.",
+    mr8Title: "8. Verhältnis zu anderen Schienen",
+    mr8Body: "Die transdermale Pistole und Vascular Care bleiben getrennt.",
+    mr9Title: "9. Zahlungen",
+    mr9Body:
+      "ACP kauft einen Perioden-Retainer (12.000 / Monat, 32.000 / Quartal, 108.000 / Jahr) und eine Partnerzuordnung.",
+    mr10Title: "10. Kontakt",
+    mr10Body: "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#m-receptor.",
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -2782,6 +2915,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascularPlus: "Vascular Care+",
     footerVascular: "Vascular Care",
     footerTransdermal: "Transdermal",
+    footerMReceptor: "M-Rezeptor",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -3145,6 +3279,36 @@ export const legalByLang: Record<Language, Tree> = {
     td9Body: "ACP 購買簡報與夥伴配對。",
     td10Title: "10. 聯絡",
     td10Body: "法律通知：legal@ancap.cloud。產品：/aeterna#transdermal。",
+    mReceptorLink: "M 受體訂閱",
+    hubCardMReceptor:
+      "持照診所訂閱：貼片、離子導入、吸入器與迷走神經鄰近神經調節。非調劑、非 CE/FDA 器材、非治療主張。",
+    mReceptorKicker: "法律／診所／訂閱",
+    mReceptorTitle: "M 受體遞送訂閱——持照診所軌道",
+    mReceptorIntro:
+      "ANCAP 於 2026 年 9 月 12 日如何描述多模組 M 受體訂閱。這些頁面出售 ACP 期間保留金，非硬體所有權，亦非家用套件。",
+    mr1Title: "1. 平台角色",
+    mr1Body:
+      "ANCAP 提供 ACP 結算、簡報與持照夥伴配對。ANCAP 不製造模組，亦不調劑毒蕈鹼促效／拮抗劑。",
+    mr2Title: "2. 非上市醫療器材",
+    mr2Body: "資訊圖為概念架構，非 EU MDR／FDA 型錄。",
+    mr3Title: "3. 禁止結果主張",
+    mr3Body:
+      "ANCAP 不主張治療帕金森、氣喘、COPD、心律不整、青光眼或眼壓。",
+    mr4Title: "4. 僅持照臨床人員",
+    mr4Body: "貼片、離子導入、吸入與神經調節屬臨床行為。請勿依本頁自製家用套件。",
+    mr5Title: "5. 合法物質與 M1–M5 素養",
+    mr5Body: "資訊圖 M1–M5 表為受體素養，非劑量指引。ANCAP 不公布配方。",
+    mr6Title: "6. 非醫療建議",
+    mr6Body: "目錄為資訊。",
+    mr7Title: "7. 健康資料",
+    mr7Body: "識別資料視為敏感。",
+    mr8Title: "8. 與其他軌道關係",
+    mr8Body: "經皮手槍與 Vascular Care 軌道仍為獨立。",
+    mr9Title: "9. 付款",
+    mr9Body:
+      "ACP 購買期間保留金（每月 12,000／季繳 32,000／年繳 108,000）與夥伴配對。",
+    mr10Title: "10. 聯絡",
+    mr10Body: "法律通知：legal@ancap.cloud。產品：/aeterna#m-receptor。",
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
@@ -3466,6 +3630,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascularPlus: "Vascular Care+",
     footerVascular: "Vascular Care",
     footerTransdermal: "經皮手槍",
+    footerMReceptor: "M 受體",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",

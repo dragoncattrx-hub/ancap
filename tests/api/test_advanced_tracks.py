@@ -68,6 +68,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.vascular_care_plus.value == "vascular_care_plus"
     assert AeternaIntentKind.vascular_care.value == "vascular_care"
     assert AeternaIntentKind.transdermal_pistol.value == "transdermal_pistol"
+    assert AeternaIntentKind.m_receptor_subscription.value == "m_receptor_subscription"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -78,6 +79,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["vascular_care_plus_note"]
     assert AeternaStatusPublic.model_fields["vascular_care_note"]
     assert AeternaStatusPublic.model_fields["transdermal_pistol_note"]
+    assert AeternaStatusPublic.model_fields["m_receptor_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -87,7 +89,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 17
+    assert len(aeterna) >= 18
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -95,6 +97,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-vinci-light-chamber": "48000",
         "aeterna-microwave-body-contouring": "52000",
         "aeterna-transdermal-pistol": "46000",
+        "aeterna-m-receptor-subscription": "12000",
         "aeterna-vascular-care-plus": "54000",
         "aeterna-vascular-care": "58000",
         "aeterna-dpsc-biomaterial": "65000",
@@ -113,6 +116,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-vascular-care-plus" in slugs
     assert "aeterna-vascular-care" in slugs
     assert "aeterna-transdermal-pistol" in slugs
+    assert "aeterna-m-receptor-subscription" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -566,6 +570,50 @@ def test_transdermal_pistol_intent_default_slug_and_reject_low_budget(client):
     payload = created.json()
     assert payload["workflow_slug"] == TRANSDERMAL_SLUG
     assert payload["metadata_json"]["architecture"] == "needle_free_transdermal_pistol"
+
+
+def test_m_receptor_subscription_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-m-receptor-subscription")
+    assert tpl is not None
+    assert tpl.billing == "subscription"
+    assert tpl.subscription_price_monthly is not None
+    assert tpl.subscription_price_monthly.amount == "12000"
+    assert tpl.subscription_price_quarterly is not None
+    assert tpl.subscription_price_quarterly.amount == "32000"
+    assert tpl.subscription_price_annual is not None
+    assert tpl.subscription_price_annual.amount == "108000"
+    out = execute_workflow_template(tpl, {"intent_kind": "m_receptor_subscription"})
+    mr = out["deliverable"]["m_receptor_subscription"]
+    assert mr["billing"] == "subscription"
+    assert mr["price_acp_monthly"] == "12000"
+    assert mr["architecture"] == "m_receptor_multimodal_delivery"
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at"):
+        assert forbidden not in blob
+    assert "licensed_clinic" in blob
+    assert "compounding" in blob
+
+
+def test_m_receptor_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import M_RECEPTOR_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "m_receptor_subscription", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "m_receptor_subscription", "budget_acp": "12000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == M_RECEPTOR_SLUG
+    assert payload["metadata_json"]["architecture"] == "m_receptor_multimodal_delivery"
+    assert payload["metadata_json"]["billing"] == "subscription"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

@@ -114,6 +114,23 @@ export default async function WorkflowRunTemplatePage({
                 <div className="mt-1 text-base font-medium text-white/90">{workflow.estimated_time_minutes} min</div>
               </div>
             </div>
+            {workflow.billing === "subscription" ? (
+              <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 text-sm text-white/75">
+                <div className="text-xs uppercase tracking-[0.18em] text-emerald-200/80">Subscription</div>
+                <ul className="mt-2 space-y-1 font-mono text-xs text-emerald-100/90">
+                  {workflow.subscription_price_monthly ? (
+                    <li>Monthly {workflow.subscription_price_monthly.amount} {workflow.subscription_price_monthly.currency}</li>
+                  ) : null}
+                  {workflow.subscription_price_quarterly ? (
+                    <li>Quarterly {workflow.subscription_price_quarterly.amount} {workflow.subscription_price_quarterly.currency}</li>
+                  ) : null}
+                  {workflow.subscription_price_annual ? (
+                    <li>Annual {workflow.subscription_price_annual.amount} {workflow.subscription_price_annual.currency}</li>
+                  ) : null}
+                </ul>
+                <p className="mt-2 text-xs leading-5 text-white/50">First period settles with this run. Renewal is a licensed-clinic retainer — not hardware title.</p>
+              </div>
+            ) : null}
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-black/15 p-4">
               <div className="text-sm font-semibold">Receipt / proof will include</div>

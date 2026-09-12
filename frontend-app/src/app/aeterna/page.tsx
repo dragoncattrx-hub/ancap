@@ -17,6 +17,7 @@ import { DpscBiomaterialPanel } from "@/components/aeterna/DpscBiomaterialPanel"
 import { VascularCarePlusPanel } from "@/components/aeterna/VascularCarePlusPanel";
 import { VascularCarePanel } from "@/components/aeterna/VascularCarePanel";
 import { TransdermalPistolPanel } from "@/components/aeterna/TransdermalPistolPanel";
+import { MReceptorPanel } from "@/components/aeterna/MReceptorPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -49,9 +50,10 @@ type AeternaStatus = {
   vascular_care_plus_note?: string;
   vascular_care_note?: string;
   transdermal_pistol_note?: string;
+  m_receptor_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -186,6 +188,12 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.tdpCta")}
             </a>
+            <a
+              href="#m-receptor"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.mrCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -257,6 +265,10 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <TransdermalPistolPanel note={status?.transdermal_pistol_note} />
+        </section>
+
+        <section className="mt-16">
+          <MReceptorPanel note={status?.m_receptor_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

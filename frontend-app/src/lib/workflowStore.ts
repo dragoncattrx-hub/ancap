@@ -12,6 +12,10 @@ export type WorkflowTemplate = {
   receipt_items: string[];
   status?: string;
   tags: string[];
+  billing?: string;
+  subscription_price_monthly?: { amount: string; currency: string } | null;
+  subscription_price_quarterly?: { amount: string; currency: string } | null;
+  subscription_price_annual?: { amount: string; currency: string } | null;
 };
 
 export type WorkflowBundle = {
@@ -565,6 +569,35 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     ],
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "delivery", "status_timeline"],
     tags: ["aeterna", "transdermal", "needle-free", "aesthetic", "consult"],
+  },
+  {
+    slug: "aeterna-m-receptor-subscription",
+    title: "AETERNA M-Receptor Delivery Subscription",
+    category: "AETERNA",
+    summary:
+      "Licensed-clinic subscription for multimodal M-receptor delivery and neuromodulation literacy (patch, iontophoresis, inhaler, vagus-adjacent stimulation) — 12,000 ACP / month.",
+    description:
+      "Settles the first subscription period and issues a licensed-clinic partner brief. Not compounding, not a CE/FDA device, not a treatment claim.",
+    price: { amount: "12000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 35,
+    preview_items: [
+      "Contraindication / lawful-substance intake",
+      "Module match (patch / iontophoresis / inhaler / neuromodulation)",
+      "Subscription period pack",
+    ],
+    output_items: [
+      "M-receptor subscription intake brief",
+      "Licensed clinic handoff",
+      "Non-claim checklist (no compounding / no scopolamine recipe / no treatment claim / no device CE-FDA)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "billing", "modules", "status_timeline"],
+    tags: ["aeterna", "m-receptor", "subscription", "neuromodulation", "consult"],
+    billing: "subscription",
+    subscription_price_monthly: { amount: "12000", currency: "ACP" },
+    subscription_price_quarterly: { amount: "32000", currency: "ACP" },
+    subscription_price_annual: { amount: "108000", currency: "ACP" },
   },
 ];
 

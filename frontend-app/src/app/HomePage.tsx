@@ -367,6 +367,9 @@ export function HomePage() {
                     <Link href="/aeterna#transdermal" className="btn btn-ghost">
                       {t("aeternaPage.tdpCta")}
                     </Link>
+                    <Link href="/aeterna#m-receptor" className="btn btn-ghost">
+                      {t("aeternaPage.mrCta")}
+                    </Link>
                 </div>
               </div>
               <div

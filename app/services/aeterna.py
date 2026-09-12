@@ -49,6 +49,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-vascular-care-plus",
     "aeterna-vascular-care",
     "aeterna-transdermal-pistol",
+    "aeterna-m-receptor-subscription",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -73,6 +74,10 @@ VASCULAR_CARE_SLUG = "aeterna-vascular-care"
 VASCULAR_CARE_PRICE_ACP = Decimal("58000")
 TRANSDERMAL_SLUG = "aeterna-transdermal-pistol"
 TRANSDERMAL_PRICE_ACP = Decimal("46000")
+M_RECEPTOR_SLUG = "aeterna-m-receptor-subscription"
+M_RECEPTOR_PRICE_ACP = Decimal("12000")
+M_RECEPTOR_QUARTERLY_ACP = Decimal("32000")
+M_RECEPTOR_ANNUAL_ACP = Decimal("108000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -188,6 +193,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.vascular_care_plus.value: VASCULAR_PLUS_SLUG,
     AeternaIntentKind.vascular_care.value: VASCULAR_CARE_SLUG,
     AeternaIntentKind.transdermal_pistol.value: TRANSDERMAL_SLUG,
+    AeternaIntentKind.m_receptor_subscription.value: M_RECEPTOR_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -363,6 +369,30 @@ TRANSDERMAL_META = {
     ),
 }
 
+M_RECEPTOR_META = {
+    "mode": "licensed_clinic_subscription",
+    "unit": "monthly_protocol_retainer",
+    "billing": "subscription",
+    "price_acp_monthly": "12000",
+    "price_acp_quarterly": "32000",
+    "price_acp_annual": "108000",
+    "architecture": "m_receptor_multimodal_delivery",
+    "modules": {
+        "transdermal_patch": "licensed_clinic_literacy",
+        "iontophoresis": "licensed_clinic_literacy",
+        "inhaler_nebulizer": "licensed_clinic_literacy",
+        "neurostimulation": "vagus_adjacent_literacy",
+    },
+    "note": (
+        "Conceptual M-receptor delivery and neuromodulation subscription. ANCAP settles ACP per billing "
+        "period and issues a licensed-clinic partner brief covering patch, iontophoresis, inhaler/nebulizer, "
+        "and vagus-adjacent stimulation as architecture literacy. Not a marketed medical device, not "
+        "compounding of scopolamine or any muscarinic agonist/antagonist, not a CE/FDA product sold by ANCAP, "
+        "and not a treatment claim for Parkinson, asthma, COPD, arrhythmia, or intraocular pressure. "
+        "M1–M5 receptor table on the infographic is literacy, not a dosing guide. Partner screening required."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -465,7 +495,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, microwave body contouring, "
             "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, "
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
-            "licensed longevity partners."
+            "M-receptor delivery subscription, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -527,6 +557,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Needle-free transdermal pistol listings are licensed clinic-partner intakes for aerosol plus "
             "carrier-gas delivery. Infographics are conceptual architecture — not a prescription dispenser, "
             "not compounding, and not a guaranteed dose or cosmetic result."
+        ),
+        m_receptor_note=(
+            "M-receptor listings are licensed-clinic subscriptions for multimodal delivery and neuromodulation "
+            "literacy (patch, iontophoresis, inhaler, vagus-adjacent stimulation). Infographics are conceptual "
+            "architecture — not compounding, not a CE/FDA device, and not a treatment claim."
         ),
     )
 
@@ -755,6 +790,20 @@ async def create_intent_order(
                 detail="transdermal_pistol budget_acp must be at least 46000 ACP",
             )
         for key, value in TRANSDERMAL_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.m_receptor_subscription:
+        if slug and slug != M_RECEPTOR_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="m_receptor_subscription requires workflow_slug aeterna-m-receptor-subscription",
+            )
+        slug = M_RECEPTOR_SLUG
+        if body.budget_acp < M_RECEPTOR_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="m_receptor_subscription budget_acp must be at least 12000 ACP per month",
+            )
+        for key, value in M_RECEPTOR_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

@@ -582,6 +582,45 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "delivery", "status_timeline"],
         tags=["aeterna", "transdermal", "needle-free", "aesthetic", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-m-receptor-subscription",
+        title="AETERNA M-Receptor Delivery Subscription",
+        category="AETERNA",
+        summary=(
+            "Licensed-clinic subscription for multimodal M-receptor delivery and neuromodulation literacy "
+            "(patch, iontophoresis, inhaler, vagus-adjacent stimulation) — 12,000 ACP / month."
+        ),
+        description=(
+            "Settles the first subscription period (12,000 ACP monthly; 32,000 quarterly; 108,000 annual) "
+            "and issues a licensed-clinic partner brief for a conceptual multimodal system: transdermal patch, "
+            "iontophoretic wrist module, inhaler/nebulizer, and vagus-adjacent neurostimulation. Infographic "
+            "M1–M5 tables and scopolamine callouts are receptor literacy, not a dosing guide and not compounding. "
+            "ANCAP does not manufacture the cart, does not compound or dispense muscarinic agonists/antagonists, "
+            "and does not claim CE/FDA device status or treatment of Parkinson, asthma, COPD, arrhythmia, or "
+            "intraocular pressure. Physical modules are used only under a licensed clinician after screening. "
+            "Renewal is a subscription retainer — not hardware title and not a guaranteed clinical outcome."
+        ),
+        price=Money(amount="12000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=35,
+        preview_items=[
+            "Contraindication / lawful-substance intake",
+            "Module match (patch / iontophoresis / inhaler / neuromodulation)",
+            "Subscription period pack",
+        ],
+        output_items=[
+            "M-receptor subscription intake brief",
+            "Licensed clinic handoff",
+            "Non-claim checklist (no compounding / no scopolamine recipe / no treatment claim / no device CE-FDA)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "billing", "modules", "status_timeline"],
+        tags=["aeterna", "m-receptor", "subscription", "neuromodulation", "consult"],
+        billing="subscription",
+        subscription_price_monthly=Money(amount="12000", currency="ACP"),
+        subscription_price_quarterly=Money(amount="32000", currency="ACP"),
+        subscription_price_annual=Money(amount="108000", currency="ACP"),
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1743,6 +1782,32 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Physical sessions occur only under "
                     "a licensed clinician with a lawful substance list. Infographic cosmetic or fat-reduction "
                     "copy is protocol literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-m-receptor-subscription":
+            deliverable["intent"] = str(payload.get("intent_kind") or "m_receptor_subscription")
+            deliverable["compliance"] = (
+                "Licensed clinic subscription only. Not a diagnosis, not compounding, not a scopolamine or "
+                "muscarinic-drug recipe, and not a treatment claim. No home iontophoresis, inhaler, or vagus "
+                "stimulator kit, CRISPR, or gene synthesis."
+            )
+            deliverable["m_receptor_subscription"] = {
+                "mode": "licensed_clinic_subscription",
+                "architecture": "m_receptor_multimodal_delivery",
+                "billing": "subscription",
+                "price_acp_monthly": "12000",
+                "price_acp_quarterly": "32000",
+                "price_acp_annual": "108000",
+                "modules": {
+                    "transdermal_patch": "licensed_clinic_literacy",
+                    "iontophoresis": "licensed_clinic_literacy",
+                    "inhaler_nebulizer": "licensed_clinic_literacy",
+                    "neurostimulation": "vagus_adjacent_literacy",
+                },
+                "note": (
+                    "ANCAP settles the subscription period in ACP and issues a partner handoff brief. "
+                    "Physical modules occur only under a licensed clinician. Infographic M1–M5 and "
+                    "scopolamine copy is receptor literacy, not a product claim."
                 ),
             }
         execution_summary = {
