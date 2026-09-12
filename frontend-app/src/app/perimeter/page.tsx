@@ -258,6 +258,7 @@ export default function PerimeterPage() {
                 src="/perimeter/security-watch.jpg"
                 alt="Инфографика системы охраны периметра: камеры, датчики, лазерные барьеры, пульт SOC. Концептуальная архитектура для лицензированных партнёров."
                 fill
+                unoptimized
                 className="object-contain"
                 sizes="(max-width: 1024px) 100vw, 48rem"
               />
