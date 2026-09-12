@@ -19,6 +19,7 @@ type Service = {
   description: string;
   price_from_acp: string;
   unit: string;
+  small_operator?: boolean;
 };
 
 type Job = {
@@ -46,6 +47,8 @@ export default function PerimeterPage() {
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [compliance, setCompliance] = useState("");
+  const [accessNote, setAccessNote] = useState("");
+  const [marketNote, setMarketNote] = useState("");
 
   const refresh = useCallback(async () => {
     setError("");
@@ -55,6 +58,9 @@ export default function PerimeterPage() {
         perimeterCleanupDesk.catalog() as Promise<{
           services: Service[];
           compliance_note: string;
+          accessibility_note?: string;
+          market_structure_note?: string;
+          not_rwa_yield?: boolean;
         }>,
         perimeterCleanupDesk.listJobs().catch(() => ({ items: [] as Job[] })) as Promise<{
           items: Job[];
@@ -63,6 +69,8 @@ export default function PerimeterPage() {
       setCipher(c);
       setServices(cat.services || []);
       setCompliance(cat.compliance_note || "");
+      setAccessNote(cat.accessibility_note || "");
+      setMarketNote(cat.market_structure_note || "");
       if (cat.services?.[0]) {
         setServiceId((prev) => prev || cat.services[0].id);
       }
@@ -137,7 +145,15 @@ export default function PerimeterPage() {
         {cipher ? (
           <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/55">
             {cipher.algorithm} · {cipher.kdf} · <code>{cipher.cipher_id}</code>
+            {" — "}каталог открыт без входа; ключи не вводятся в форму.
           </p>
+        ) : null}
+
+        {accessNote ? (
+          <p className="mt-3 text-sm leading-6 text-white/60">{accessNote}</p>
+        ) : null}
+        {marketNote ? (
+          <p className="mt-2 text-sm leading-6 text-amber-200/75">{marketNote}</p>
         ) : null}
 
         {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
@@ -163,6 +179,11 @@ export default function PerimeterPage() {
                     from {Number(s.price_from_acp).toLocaleString()} ACP / {s.unit}
                   </span>
                 </div>
+                {s.small_operator ? (
+                  <p className="mt-1 text-[11px] uppercase tracking-wide text-emerald-200/80">
+                    Small operator SKU
+                  </p>
+                ) : null}
                 <p className="mt-1 text-sm text-white/60">{s.description}</p>
               </button>
             ))}
@@ -240,6 +261,7 @@ export default function PerimeterPage() {
                 </div>
                 <p className="mt-1 text-xs text-white/45">
                   {j.contamination} · {j.cipher_id}
+                  {j.content_hash ? ` · ${j.content_hash}` : ""}
                 </p>
                 <button
                   type="button"

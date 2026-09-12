@@ -28,9 +28,15 @@ def test_perimeter_catalog_and_cipher(client):
 
     cat = client.get("/v1/perimeter-cleanup/catalog")
     assert cat.status_code == 200, cat.text
-    services = cat.json()["services"]
+    body = cat.json()
+    services = body["services"]
     assert any(s["id"] == "perimeter-full-sweep" for s in services)
     assert any(s["contamination"] == "mixed_all" for s in services)
+    assert any(s["id"] == "perimeter-micro-site" and s.get("small_operator") is True for s in services)
+    assert body.get("not_rwa_yield") is True
+    note = (body.get("accessibility_note") + " " + body.get("market_structure_note")).lower()
+    assert "key ceremony" in note or "login" in note
+    assert "aave" in note or "rwa" in note
 
 
 def test_perimeter_crypto_roundtrip():
@@ -71,3 +77,4 @@ def test_catalog_helper_lists_full_sweep():
     raw = catalog()
     ids = {s["id"] for s in raw["services"]}
     assert "perimeter-full-sweep" in ids
+    assert "perimeter-micro-site" in ids

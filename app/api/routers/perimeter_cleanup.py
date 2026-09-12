@@ -56,6 +56,9 @@ async def perimeter_catalog():
         tagline=raw["tagline"],
         cipher=raw["cipher"],
         compliance_note=raw["compliance_note"],
+        accessibility_note=raw.get("accessibility_note", ""),
+        market_structure_note=raw.get("market_structure_note", ""),
+        not_rwa_yield=bool(raw.get("not_rwa_yield", True)),
         services=[PerimeterServicePublic(**s) for s in raw["services"]],
     )
 

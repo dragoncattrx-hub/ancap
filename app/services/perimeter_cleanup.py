@@ -74,6 +74,19 @@ _SERVICES: tuple[dict[str, Any], ...] = (
         "price_from_acp": "1200",
         "unit": "zone",
     },
+    {
+        "id": "perimeter-micro-site",
+        "label": "Small-site perimeter (operators)",
+        "contamination": "industrial",
+        "description": (
+            "Короткий выезд на малый периметр (двор, ворота, складская площадка). "
+            "Для небольших операторов: тот же at-rest сейф, без отдельной key-ceremony. "
+            "Лицензия подрядчика всё равно нужна, если класс загрязнения это требует."
+        ),
+        "price_from_acp": "400",
+        "unit": "small site",
+        "small_operator": True,
+    },
 )
 
 
@@ -101,10 +114,24 @@ def catalog() -> dict[str, Any]:
             "ANCAP stores encrypted job briefs only — we do not perform unlicensed hazmat ourselves. "
             "Radiological items are survey/protocol notes, not waste custody."
         ),
+        "accessibility_note": (
+            "Catalog and cipher metadata are public without login. AES-256-GCM + HKDF-SHA384 "
+            "run at rest on the operator host: the client submits a form, not a key ceremony. "
+            "Creating a job still requires an account so briefs stay owner-scoped. "
+            "A SHA-384 content hash is shown without decrypting notes."
+        ),
+        "market_structure_note": (
+            "This desk is a licensed field-service rail settled in ACP. It is not an Aave pool, "
+            "not a Maker vault, not a tokenized RWA, and not a DeFi yield wrapper around cleanup jobs. "
+            "Transparency here means public cipher parameters, a key namespace distinct from DNA and "
+            "passport vaults, and per-job content hashes — not on-chain lending reserves."
+        ),
+        "not_rwa_yield": True,
         "services": [
             {
                 **item,
                 "licensed_operator_required": True,
+                "small_operator": bool(item.get("small_operator", False)),
             }
             for item in _SERVICES
         ],

@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "perimeter-small-operator-access",
+    date: "2026-09-12",
+    title: "Периметр: малый SKU и прозрачность без DeFi-обёртки",
+    summary:
+      "На /perimeter добавлен small-site тариф от 400 ACP для небольших площадок. Шифрование AES-256-GCM остаётся at-rest на хосте оператора (форма, не key-ceremony). Каталог публичный. Это не пул Aave, не Maker vault и не RWA-yield вокруг уборки — хеш SHA-384 заявки виден без расшифровки заметок.",
+    href: "/perimeter",
+  },
+  {
     id: "humanitarian-red-cross-desk",
     date: "2026-09-12",
     title: "Гуманитарный стол: еда, вода, одежда, медпрепараты, подъёмная работа",

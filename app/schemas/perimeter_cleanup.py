@@ -28,6 +28,7 @@ class PerimeterServicePublic(BaseModel):
     price_from_acp: str
     unit: str
     licensed_operator_required: bool = True
+    small_operator: bool = False
 
 
 class PerimeterCatalogPublic(BaseModel):
@@ -35,6 +36,9 @@ class PerimeterCatalogPublic(BaseModel):
     tagline: str
     cipher: dict[str, str]
     compliance_note: str
+    accessibility_note: str = ""
+    market_structure_note: str = ""
+    not_rwa_yield: bool = True
     services: list[PerimeterServicePublic]
 
 
