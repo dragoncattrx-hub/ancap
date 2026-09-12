@@ -40,6 +40,16 @@ def test_ramp_waitlist_signup(client):
     assert body["status"] in {"registered", "already_registered"}
 
 
+def test_stripe_adapter_status_public(client):
+    response = client.get("/v1/payments/stripe/status", headers={"Authorization": ""})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["configured"] is False
+    assert body["webhook_secret_present"] is False
+    assert "USD" in body["currencies"]
+    assert body["webhook_path"] == "/v1/webhooks/stripe"
+
+
 def test_stripe_verification_readiness_requires_admin(client, monkeypatch):
     user, headers = _register_user(client, "stripe_admin_probe")
     monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", user["id"])

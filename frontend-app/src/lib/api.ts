@@ -1665,6 +1665,9 @@ export const payments = {
   async getStripeIntent(intentId: string) {
     return apiFetch(`/payments/stripe/intents/${encodeURIComponent(intentId)}`);
   },
+  async getStripeStatus() {
+    return apiFetch("/payments/stripe/status");
+  },
   async listMethods() {
     return apiFetch("/payments/methods");
   },

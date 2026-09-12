@@ -34,6 +34,14 @@ class StripeIntentCreateResponse(BaseModel):
     stripe: StripeIntentSessionPublic
 
 
+class StripeAdapterStatusPublic(BaseModel):
+    configured: bool
+    webhook_secret_present: bool
+    currencies: list[str]
+    webhook_path: str = "/v1/webhooks/stripe"
+    public_webhook_url: str = "https://ancap.cloud/api/v1/webhooks/stripe"
+
+
 class PaymentMethodCardPublic(BaseModel):
     brand: Optional[str] = None
     last4: Optional[str] = None

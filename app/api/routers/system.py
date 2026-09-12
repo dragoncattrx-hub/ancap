@@ -37,6 +37,7 @@ from app.jobs.reputation_tick import reputation_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.schemas import DecisionLogPublic
 from app.services.cache import redis_ping
+from app.services.stripe_payments import SUPPORTED_STRIPE_CURRENCIES, stripe_is_configured
 from app.services.graph_enforcement_preview import build_graph_enforcement_preview
 from app.services.ledger import check_ledger_invariant, is_ledger_invariant_halted, set_ledger_invariant_halted
 
@@ -266,6 +267,12 @@ async def health_full(session: DbSession):
         "enabled": settings.bridge_rail_enabled,
         "paused": settings.bridge_rail_paused,
         "dry_run": settings.bridge_dry_run,
+    }
+    checks["stripe"] = {
+        "ok": True,
+        "configured": stripe_is_configured(),
+        "webhook_secret_present": bool((settings.stripe_webhook_secret or "").strip()),
+        "currencies": list(SUPPORTED_STRIPE_CURRENCIES),
     }
 
     status = "ok" if all(bool(item.get("ok")) for item in checks.values()) else "degraded"

@@ -14,7 +14,7 @@ This runbook does **not** replace the repo tests. It covers the manual verificat
 
 Already true in repo:
 - Stripe intent create / poll / webhook / saved-method surfaces exist;
-- unsupported currencies fail closed (`USD`, `EUR` only);
+- unsupported currencies fail closed (`USD` only until a real FX quote exists);
 - unconfigured Stripe env fails closed with `503`;
 - webhook events are signature-verified and deduplicated;
 - polling can sync a succeeded Stripe PaymentIntent into captured ANCAP credits if webhook delivery is delayed.
@@ -32,6 +32,12 @@ Important: **poll fallback is not enough to close the roadmap item**. If `GET /v
    - `STRIPE_PUBLISHABLE_KEY`
    - `STRIPE_WEBHOOK_SECRET`
    - optional `STRIPE_API_BASE`
+
+   Production path: put the three values in GitHub repo secrets with those names. Deploy (`Deploy ancap.cloud`) writes them into the host `.env` and recreates `api`. Webhook endpoint to register in Stripe Dashboard / CLI:
+
+   `https://ancap.cloud/api/v1/webhooks/stripe`
+
+   Events: `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`.
 2. Database migrations are current:
    - `docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head`
 3. Target stack is healthy:
@@ -59,7 +65,7 @@ Expected behavior before paying:
   - ANCAP `item.id`
   - `stripe.payment_intent_id`
   - `stripe.client_secret`
-  - supported currency (`USD` or `EUR`)
+  - supported currency (`USD` only until a real FX quote exists)
 
 Useful surfaces:
 - UI: `/wallet/credits`

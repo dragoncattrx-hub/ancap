@@ -55,6 +55,7 @@ describe('API Client', () => {
     expect(payments).toBeDefined();
     expect(payments.createStripeIntent).toBeDefined();
     expect(payments.getStripeIntent).toBeDefined();
+    expect(payments.getStripeStatus).toBeDefined();
     expect(payments.listMethods).toBeDefined();
     expect(payments.removeMethod).toBeDefined();
     expect(payments.createRefundRequest).toBeDefined();

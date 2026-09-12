@@ -110,7 +110,7 @@ def test_public_health_full_does_not_schedule_external_probe_refresh(client, mon
     assert health.status_code == 200, health.text
     payload = health.json()
     assert payload["status"] in {"ok", "degraded"}
-    assert payload["checks"].keys() >= {"database", "redis", "llm", "mail", "bridge"}
+    assert payload["checks"].keys() >= {"database", "redis", "llm", "mail", "bridge", "stripe"}
     assert llm_schedule_calls == []
     assert acp_schedule_calls == []
 

@@ -45,8 +45,9 @@ _ZERO_DECIMAL_CURRENCIES = {
 }
 # Card top-ups are USD-only until a real FX quote path exists (EUR previously
 # charged the ACP sticker 1:1 as euros).
-_SUPPORTED_STRIPE_CURRENCIES = ("USD",)
-_SUPPORTED_STRIPE_CURRENCY_SET = {code.lower() for code in _SUPPORTED_STRIPE_CURRENCIES}
+SUPPORTED_STRIPE_CURRENCIES = ("USD",)
+_SUPPORTED_STRIPE_CURRENCIES = SUPPORTED_STRIPE_CURRENCIES
+_SUPPORTED_STRIPE_CURRENCY_SET = {code.lower() for code in SUPPORTED_STRIPE_CURRENCIES}
 
 
 def stripe_is_configured() -> bool:

@@ -148,6 +148,7 @@ export default function WalletCreditsPage() {
   const [stripeSaveMethod, setStripeSaveMethod] = useState(true);
   const [stripeProcessing, setStripeProcessing] = useState(false);
   const [stripeRemovingMethodId, setStripeRemovingMethodId] = useState("");
+  const [stripeConfigured, setStripeConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const stripeCardMountRef = useRef<HTMLDivElement | null>(null);
@@ -222,9 +223,15 @@ export default function WalletCreditsPage() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    void loadStripeMethods();
-  }, [isAuthenticated, loadStripeMethods]);
+    void (async () => {
+      try {
+        const status = (await payments.getStripeStatus()) as { configured?: boolean };
+        setStripeConfigured(Boolean(status.configured));
+      } catch {
+        setStripeConfigured(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!stripeIntent || stripeSelectedMethodId || !stripePanelOpen) {
@@ -532,6 +539,14 @@ export default function WalletCreditsPage() {
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 12 }}>
                   {t("creditsPage.stripeAdapterNote").replace("{currencies}", STRIPE_CURRENCIES.join(", "))}
                 </div>
+                {stripeConfigured === false && (
+                  <div
+                    className="card"
+                    style={{ marginBottom: 12, borderColor: "rgba(251, 191, 36, 0.35)", color: "var(--text-muted)", fontSize: "0.9rem" }}
+                  >
+                    {t("creditsPage.stripeNotConfigured")}
+                  </div>
+                )}
 
                 {topUpIntent && (
                   <div className="card" style={{ marginBottom: 12, borderColor: topUpIntent.credited ? "rgba(0, 255, 153, 0.35)" : "var(--border)" }}>
@@ -789,7 +804,7 @@ export default function WalletCreditsPage() {
                           className="btn btn-ghost"
                           style={{ width: "100%" }}
                           onClick={() => void openStripeCheckout(creditPackage)}
-                          disabled={stripeLoadingSlug === creditPackage.slug}
+                          disabled={stripeConfigured === false || stripeLoadingSlug === creditPackage.slug}
                         >
                           {stripeLoadingSlug === creditPackage.slug ? t("creditsPage.preparingStripeBtn") : t("creditsPage.payWithStripe")}
                         </button>

@@ -21,6 +21,7 @@ from app.schemas import (
     RefundRequestsResponse,
     StripeIntentCreateRequest,
     StripeIntentCreateResponse,
+    StripeAdapterStatusPublic,
     StripeWebhookAck,
     WorkflowCreditTopUpIntentConfirmRequest,
     WorkflowCreditTopUpIntentResponse,
@@ -612,6 +613,17 @@ async def stripe_webhook(
         processed=handled,
         event_id=event_id,
         event_type=event_type,
+    )
+
+
+@router.get("/payments/stripe/status", response_model=StripeAdapterStatusPublic)
+async def stripe_adapter_status():
+    """Public adapter status. Booleans only — no secrets."""
+    settings = get_settings()
+    return StripeAdapterStatusPublic(
+        configured=stripe_payments.stripe_is_configured(),
+        webhook_secret_present=bool((settings.stripe_webhook_secret or "").strip()),
+        currencies=list(stripe_payments.SUPPORTED_STRIPE_CURRENCIES),
     )
 
 

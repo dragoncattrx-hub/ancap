@@ -71,7 +71,9 @@ def test_health_full_public_shape(client):
     assert r.status_code == 200
     payload = r.json()
     assert payload["status"] in {"ok", "degraded"}
-    assert payload["checks"].keys() >= {"database", "redis", "llm", "mail", "bridge"}
+    assert payload["checks"].keys() >= {"database", "redis", "llm", "mail", "bridge", "stripe"}
+    assert payload["checks"]["stripe"]["ok"] is True
+    assert payload["checks"]["stripe"]["configured"] is False
     assert "acp_rpc" not in payload["checks"]
     assert "acp_rpc_url" not in r.text
 

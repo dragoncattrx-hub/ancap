@@ -69,6 +69,8 @@ const creditsEn: Tree = {
   loadingPackages: "Loading packages...",
   stripeAdapterNote:
     "Stripe is the fiat adapter layer. Current supported checkout currencies: {currencies}. ACP/manual invoices stay available separately.",
+  stripeNotConfigured:
+    "Card top-up is not live yet: Stripe keys are not configured on this host. Use ACP / manual invoice, or ask an operator to set STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, and STRIPE_WEBHOOK_SECRET.",
   payToCredit: "Pay {payAmount} {payCurrency} to credit {creditAmount} {creditCurrency}.",
   paymentReference: "payment reference",
   credited: "Credited",
@@ -446,6 +448,8 @@ export const creditsByLang: Record<Language, Tree> = {
     loadingPackages: "Загрузка пакетов...",
     stripeAdapterNote:
       "Stripe — слой фиат-адаптера. Поддерживаемые валюты оформления: {currencies}. Счета ACP/вручную остаются отдельно.",
+    stripeNotConfigured:
+      "Пополнение картой ещё не включено: ключи Stripe на этом хосте не заданы. Используйте ACP / ручной счёт или попросите оператора задать STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY и STRIPE_WEBHOOK_SECRET.",
     payToCredit: "Оплатите {payAmount} {payCurrency}, чтобы зачислить {creditAmount} {creditCurrency}.",
     paymentReference: "платёжная ссылка",
     credited: "Зачислено",
@@ -536,6 +540,8 @@ export const creditsByLang: Record<Language, Tree> = {
     loadingPackages: "Завантаження пакетів...",
     stripeAdapterNote:
       "Stripe — шар фіат-адаптера. Підтримувані валюти оформлення: {currencies}. Рахунки ACP/вручну залишаються окремо.",
+    stripeNotConfigured:
+      "Поповнення карткою ще не увімкнено: ключі Stripe на цьому хості не задані. Використайте ACP / ручний рахунок або попросіть оператора задати STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY і STRIPE_WEBHOOK_SECRET.",
     payToCredit: "Сплатіть {payAmount} {payCurrency}, щоб зарахувати {creditAmount} {creditCurrency}.",
     paymentReference: "платіжне посилання",
     credited: "Зараховано",
@@ -626,6 +632,8 @@ export const creditsByLang: Record<Language, Tree> = {
     loadingPackages: "Pakete werden geladen...",
     stripeAdapterNote:
       "Stripe ist die Fiat-Adaptersicht. Aktuell unterstützte Checkout-Währungen: {currencies}. ACP-/manuelle Rechnungen bleiben separat verfügbar.",
+    stripeNotConfigured:
+      "Kartentop-up ist noch nicht live: Stripe-Schlüssel fehlen auf diesem Host. Nutzen Sie ACP / manuelle Rechnung oder lassen Sie STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY und STRIPE_WEBHOOK_SECRET setzen.",
     payToCredit: "Zahlen Sie {payAmount} {payCurrency}, um {creditAmount} {creditCurrency} gutzuschreiben.",
     paymentReference: "Zahlungsreferenz",
     credited: "Gutgeschrieben",
@@ -715,6 +723,8 @@ export const creditsByLang: Record<Language, Tree> = {
     loadingSavedCards: "正在載入已存卡片...",
     loadingPackages: "正在載入方案...",
     stripeAdapterNote: "Stripe 是法幣適配層。目前支援的結帳幣別：{currencies}。ACP／手動發票另行提供。",
+    stripeNotConfigured:
+      "尚未開啟信用卡儲值：此主機未設定 Stripe 金鑰。請使用 ACP／手動發票，或請營運者設定 STRIPE_SECRET_KEY、STRIPE_PUBLISHABLE_KEY 與 STRIPE_WEBHOOK_SECRET。",
     payToCredit: "支付 {payAmount} {payCurrency} 以入帳 {creditAmount} {creditCurrency}。",
     paymentReference: "付款參考",
     credited: "已入帳",
