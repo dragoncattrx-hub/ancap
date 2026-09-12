@@ -19,7 +19,11 @@ class CryoPartnerPublic(BaseModel):
     jurisdiction: str
     website: str
     blurb: str
-    verified: bool = True
+    verified: bool = False
+    listing_kind: str = "desk_handoff"
+    clinical_endorsement: bool = False
+    ethics_note: str = ""
+    regulatory_note: str = ""
 
 
 class CryoCatalogPublic(BaseModel):

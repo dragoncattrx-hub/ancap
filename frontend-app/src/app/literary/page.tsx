@@ -21,6 +21,11 @@ type Lot = {
   contract_hash: string;
   tx_hash?: string | null;
   review_target_id?: string | null;
+  genre_median_acp?: string | null;
+  fair_band_low_acp?: string | null;
+  fair_band_high_acp?: string | null;
+  premium_vs_start_bps?: number;
+  speculation_flag?: "none" | "elevated" | "blocked";
 };
 
 type Catalog = {
@@ -30,6 +35,13 @@ type Catalog = {
   lots: Lot[];
   featured: Lot[];
   genres: Array<{ id: string; label: string }>;
+  price_integrity?: {
+    min_increment_acp: string;
+    min_increment_bps: number;
+    max_start_multiple: string;
+    max_genre_comp_multiple: string;
+    note: string;
+  };
 };
 
 function formatAcp(value: string) {
@@ -95,6 +107,9 @@ export default function LiteraryAuctionPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-slate-300">{catalog?.tagline}</p>
         <p className="mt-4 text-sm text-slate-500">{catalog?.compliance_note}</p>
+        {catalog?.price_integrity?.note ? (
+          <p className="mt-2 text-sm text-amber-100/70">{catalog.price_integrity.note}</p>
+        ) : null}
         <p className="mt-3 text-sm">
           <Link href="/cryo" className="text-amber-200 underline">
             Cryopreservation desk
@@ -134,7 +149,20 @@ export default function LiteraryAuctionPage() {
               <p className="mt-2 text-slate-300">{lot.blurb}</p>
               <p className="mt-3 text-sm text-slate-400">
                 {formatAcp(lot.current_acp)} · next {formatAcp(lot.min_next_acp)} · {lot.bid_count} bids
+                {lot.genre_median_acp
+                  ? ` · genre median ${formatAcp(lot.genre_median_acp)}`
+                  : ""}
+                {lot.fair_band_low_acp && lot.fair_band_high_acp
+                  ? ` · fair band ${formatAcp(lot.fair_band_low_acp)}–${formatAcp(lot.fair_band_high_acp)}`
+                  : ""}
               </p>
+              {lot.speculation_flag && lot.speculation_flag !== "none" ? (
+                <p className="mt-1 text-xs uppercase tracking-wide text-rose-300/80">
+                  {lot.speculation_flag === "blocked"
+                    ? "Pump cap — further bids fail closed"
+                    : "Elevated premium vs start / genre comparable"}
+                </p>
+              ) : null}
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"

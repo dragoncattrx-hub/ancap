@@ -19,6 +19,18 @@ LitGenre = Literal[
 ]
 LitLotStatus = Literal["live", "sold", "withdrawn"]
 LitSettlement = Literal["acp_escrow_smart_contract"]
+LitSpeculationFlag = Literal["none", "elevated", "blocked"]
+
+
+class LiteraryPriceIntegrityPublic(BaseModel):
+    min_increment_acp: str = "10"
+    min_increment_bps: int = 200
+    max_start_multiple: str = "12"
+    max_genre_comp_multiple: str = "4"
+    note: str = (
+        "Nascent literary-license desk: published genre median is a comparable, not a NAV. "
+        "Bids above 12× start or 4× the genre median fail closed. Not a securities book."
+    )
 
 
 class LiteraryAuctionLotPublic(BaseModel):
@@ -39,6 +51,11 @@ class LiteraryAuctionLotPublic(BaseModel):
     contract_address: str | None = None
     review_target_id: str | None = None
     listed_by_user: bool = False
+    genre_median_acp: str | None = None
+    fair_band_low_acp: str | None = None
+    fair_band_high_acp: str | None = None
+    premium_vs_start_bps: int = 0
+    speculation_flag: LitSpeculationFlag = "none"
 
 
 class LiteraryAuctionCatalogPublic(BaseModel):
@@ -49,6 +66,7 @@ class LiteraryAuctionCatalogPublic(BaseModel):
     lots: list[LiteraryAuctionLotPublic]
     featured: list[LiteraryAuctionLotPublic] = Field(default_factory=list)
     genres: list[dict]
+    price_integrity: LiteraryPriceIntegrityPublic = Field(default_factory=LiteraryPriceIntegrityPublic)
 
 
 class LiteraryAuctionBidCreate(BaseModel):

@@ -18,6 +18,9 @@ def test_cryo_catalog(client):
     names = {p["name"].lower() for p in body["partners"]}
     assert any("kriorus" in n or "криорус" in n for n in names)
     assert any("tomorrow" in n for n in names)
+    assert all(p.get("clinical_endorsement") is False for p in body["partners"])
+    assert all(p.get("ethics_note") for p in body["partners"])
+    assert "rwa" in body["compliance_note"].lower() or "yield" in body["compliance_note"].lower()
 
 
 def test_literary_auction_catalog_and_bid(client):
@@ -39,6 +42,29 @@ def test_literary_auction_catalog_and_bid(client):
     data = bid.json()
     assert data["status"] == "winning"
     assert data["tx_hash"]
+
+
+def test_literary_auction_rejects_pump_over_genre_comparable(client):
+    catalog = client.get("/v1/literary-auction/catalog")
+    assert catalog.status_code == 200, catalog.text
+    body = catalog.json()
+    integrity = body["price_integrity"]
+    assert integrity["max_start_multiple"] == "12"
+    assert integrity["max_genre_comp_multiple"] == "4"
+    lot = next(item for item in body["lots"] if item["id"] == "lit-ancap-genesis")
+    assert lot["genre_median_acp"]
+    assert lot["speculation_flag"] in ("none", "elevated", "blocked")
+
+    _, headers, _ = _register_and_login(client, "Lit Pumper")
+    median = float(lot["genre_median_acp"])
+    too_high = str(int(median * 4) + 1)
+    bid = client.post(
+        f"/v1/literary-auction/lots/{lot['id']}/bids",
+        headers=headers,
+        json={"amount_acp": too_high},
+    )
+    assert bid.status_code == 400, bid.text
+    assert "comparable" in bid.json()["detail"].lower() or "median" in bid.json()["detail"].lower()
 
 
 def test_service_and_ai_reviews(client):

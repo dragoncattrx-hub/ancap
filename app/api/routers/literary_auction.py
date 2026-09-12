@@ -56,7 +56,7 @@ async def literary_place_bid(
 ):
     await enforce_rate_limit(
         key=build_rate_limit_key(scope="literary_auction:bid", ip=get_request_ip(request), subject=user_id),
-        limit=60,
+        limit=12,
         window_seconds=60,
     )
     return await svc.place_bid(

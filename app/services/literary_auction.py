@@ -18,6 +18,7 @@ from app.schemas.literary_auction import (
     LiteraryAuctionCatalogPublic,
     LiteraryAuctionListCreate,
     LiteraryAuctionLotPublic,
+    LiteraryPriceIntegrityPublic,
     LitGenre,
 )
 from app.services.auction_escrow import anchor_bid, anchor_create_lot
@@ -26,11 +27,22 @@ from app.services.auction_lock import lock_auction_lot, normalize_lot_id
 _Q = Decimal("0.00000001")
 _MIN_INCREMENT = Decimal("10")
 _INCREMENT_BPS = Decimal("200")  # 2%
+_MIN_STARTING = Decimal("50")
+_MAX_STARTING = Decimal("1000000")
+_MAX_START_MULTIPLE = Decimal("12")
+_MAX_COMP_MULTIPLE = Decimal("4")
+_ELEVATED_START_MULTIPLE = Decimal("3")
+_ELEVATED_COMP_MULTIPLE = Decimal("2")
+_FAIR_BAND_LOW = Decimal("0.5")
+_FAIR_BAND_HIGH = Decimal("1.5")
 
 _COMPLIANCE = (
     "Literary lots license original works / publication rights settled in ACP through AuctionEscrow "
-    "anchors. Not a securities offering. Sellers must hold rights they claim. ANCAP does not host "
-    "full manuscripts by default — listing blurbs only unless a separate vault agreement applies."
+    "anchors. Not a securities offering and not a NAV. Sellers must hold rights they claim. "
+    "Nascent-market sentiment can swing perceived value; the desk publishes a genre comparable "
+    "median, flags elevated premiums, and fail-closes bids above 12× start or 4× that median. "
+    "ANCAP does not host full manuscripts by default — listing blurbs only unless a separate vault "
+    "agreement applies."
 )
 
 _GENRES: tuple[dict[str, str], ...] = (
@@ -118,6 +130,52 @@ def _api_str(value: Decimal) -> str:
 def _min_next(current: Decimal) -> Decimal:
     step = max(_MIN_INCREMENT, (current * _INCREMENT_BPS / Decimal(10000)).quantize(_Q, rounding=ROUND_HALF_UP))
     return (current + step).quantize(_Q, rounding=ROUND_HALF_UP)
+
+
+def _median(values: list[Decimal]) -> Decimal | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    n = len(ordered)
+    if n % 2 == 1:
+        return ordered[n // 2]
+    return ((ordered[n // 2 - 1] + ordered[n // 2]) / Decimal(2)).quantize(_Q, rounding=ROUND_HALF_UP)
+
+
+def _current_for(lot: dict[str, Any], high: dict[str, tuple[Decimal, int]]) -> tuple[Decimal, Decimal, int]:
+    starting = Decimal(str(lot["starting_acp"]))
+    info = high.get(str(lot["id"]))
+    current = starting
+    count = 0
+    if info:
+        current = max(starting, info[0])
+        count = info[1]
+    return starting, current, count
+
+
+def _genre_medians(lots: list[dict[str, Any]], high: dict[str, tuple[Decimal, int]]) -> dict[str, Decimal]:
+    buckets: dict[str, list[Decimal]] = {}
+    for lot in lots:
+        _starting, current, _count = _current_for(lot, high)
+        buckets.setdefault(str(lot["genre"]), []).append(current)
+    out: dict[str, Decimal] = {}
+    for genre, values in buckets.items():
+        median = _median(values)
+        if median is not None:
+            out[genre] = median
+    return out
+
+
+def _speculation_flag(current: Decimal, starting: Decimal, median: Decimal | None) -> str:
+    if starting > 0 and current > starting * _MAX_START_MULTIPLE:
+        return "blocked"
+    if median is not None and current > median * _MAX_COMP_MULTIPLE:
+        return "blocked"
+    if starting > 0 and current > starting * _ELEVATED_START_MULTIPLE:
+        return "elevated"
+    if median is not None and current > median * _ELEVATED_COMP_MULTIPLE:
+        return "elevated"
+    return "none"
 
 
 def contract_hash_for(lot: dict[str, Any]) -> str:
@@ -220,14 +278,21 @@ async def _high_bids(session: AsyncSession) -> dict[str, tuple[Decimal, int]]:
     return out
 
 
-def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, int]]) -> LiteraryAuctionLotPublic:
-    starting = Decimal(str(lot["starting_acp"]))
-    info = high.get(str(lot["id"]))
-    current = starting
-    count = 0
-    if info:
-        current = max(starting, info[0])
-        count = info[1]
+def _lot_public(
+    lot: dict[str, Any],
+    high: dict[str, tuple[Decimal, int]],
+    medians: dict[str, Decimal] | None = None,
+) -> LiteraryAuctionLotPublic:
+    starting, current, count = _current_for(lot, high)
+    median = (medians or {}).get(str(lot["genre"]))
+    premium_bps = 0
+    if starting > 0:
+        premium_bps = int(((current / starting) - Decimal(1)) * Decimal(10000))
+    fair_low = None
+    fair_high = None
+    if median is not None:
+        fair_low = (median * _FAIR_BAND_LOW).quantize(_Q, rounding=ROUND_HALF_UP)
+        fair_high = (median * _FAIR_BAND_HIGH).quantize(_Q, rounding=ROUND_HALF_UP)
     review_id = lot.get("review_target_id") or None
     return LiteraryAuctionLotPublic(
         id=str(lot["id"]),
@@ -246,12 +311,19 @@ def _lot_public(lot: dict[str, Any], high: dict[str, tuple[Decimal, int]]) -> Li
         contract_address=lot.get("contract_address"),
         review_target_id=str(review_id) if review_id else None,
         listed_by_user=bool(lot.get("listed_by_user")),
+        genre_median_acp=_api_str(median) if median is not None else None,
+        fair_band_low_acp=_api_str(fair_low) if fair_low is not None else None,
+        fair_band_high_acp=_api_str(fair_high) if fair_high is not None else None,
+        premium_vs_start_bps=max(0, premium_bps),
+        speculation_flag=_speculation_flag(current, starting, median),  # type: ignore[arg-type]
     )
 
 
 async def catalog(session: AsyncSession) -> LiteraryAuctionCatalogPublic:
     high = await _high_bids(session)
-    lots = [_lot_public(lot, high) for lot in await _all_lot_defs(session)]
+    defs = await _all_lot_defs(session)
+    medians = _genre_medians(defs, high)
+    lots = [_lot_public(lot, high, medians) for lot in defs]
     featured = [lot for lot in lots if lot.featured]
     return LiteraryAuctionCatalogPublic(
         title="Literary Auction",
@@ -260,13 +332,15 @@ async def catalog(session: AsyncSession) -> LiteraryAuctionCatalogPublic:
         lots=lots,
         featured=featured,
         genres=list(_GENRES),
+        price_integrity=LiteraryPriceIntegrityPublic(),
     )
 
 
 async def get_lot(session: AsyncSession, lot_id: str) -> LiteraryAuctionLotPublic:
     lot = await _find_lot_def(session, lot_id)
     high = await _high_bids(session)
-    return _lot_public(lot, high)
+    medians = _genre_medians(await _all_lot_defs(session), high)
+    return _lot_public(lot, high, medians)
 
 
 async def list_work(
@@ -290,6 +364,11 @@ async def list_work(
     author = _clean_text(body.author, "author", min_len=2, max_len=120)
     blurb = _clean_text(body.blurb, "blurb", min_len=8, max_len=800)
     starting = _dec(body.starting_acp, "starting_acp")
+    if starting < _MIN_STARTING or starting > _MAX_STARTING:
+        raise HTTPException(
+            status_code=400,
+            detail=f"starting_acp must be between {_api_str(_MIN_STARTING)} and {_api_str(_MAX_STARTING)} ACP",
+        )
     lot_id = str(uuid.uuid4())
     review_target_id = str(uuid.uuid4())
     payload = {
@@ -350,6 +429,20 @@ async def place_bid(
             status_code=400,
             detail=f"Bid must be at least {_api_str(minimum)} ACP",
         )
+    start_cap = (floor * _MAX_START_MULTIPLE).quantize(_Q, rounding=ROUND_HALF_UP)
+    if amount > start_cap:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Bid exceeds {_MAX_START_MULTIPLE}× starting-price anti-pump cap ({_api_str(start_cap)} ACP)",
+        )
+    if public.genre_median_acp:
+        median = Decimal(public.genre_median_acp)
+        comp_cap = (median * _MAX_COMP_MULTIPLE).quantize(_Q, rounding=ROUND_HALF_UP)
+        if amount > comp_cap:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Bid exceeds {_MAX_COMP_MULTIPLE}× genre comparable median ({_api_str(comp_cap)} ACP)",
+            )
 
     await session.execute(
         update(LiteraryAuctionBid)

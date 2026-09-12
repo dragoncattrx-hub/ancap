@@ -692,7 +692,7 @@ export function CryoConstitutionView() {
       actions={<LegalNavPills current="/legal/cryo-constitution" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.cryo${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.cryo${n}Body`)}</p>

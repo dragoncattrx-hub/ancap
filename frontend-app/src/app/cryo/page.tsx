@@ -22,7 +22,11 @@ type Partner = {
   jurisdiction: string;
   website: string;
   blurb: string;
-  verified: boolean;
+  verified?: boolean;
+  listing_kind?: string;
+  clinical_endorsement?: boolean;
+  ethics_note?: string;
+  regulatory_note?: string;
 };
 
 type Catalog = {
@@ -116,6 +120,13 @@ export default function CryoPage() {
                 <span className="text-sm text-slate-400">{p.jurisdiction}</span>
               </div>
               <p className="mt-2 text-slate-300">{p.blurb}</p>
+              {p.clinical_endorsement === false ? (
+                <p className="mt-2 text-xs uppercase tracking-wide text-amber-200/70">
+                  Desk listing — not a clinical endorsement
+                </p>
+              ) : null}
+              {p.ethics_note ? <p className="mt-2 text-sm text-slate-400">{p.ethics_note}</p> : null}
+              {p.regulatory_note ? <p className="mt-1 text-sm text-slate-500">{p.regulatory_note}</p> : null}
               <div className="mt-3 flex flex-wrap gap-3 text-sm">
                 <a
                   href={p.website}

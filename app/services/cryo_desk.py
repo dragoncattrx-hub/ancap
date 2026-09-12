@@ -30,13 +30,14 @@ def catalog() -> dict[str, Any]:
         "tagline": "ACP-settled cryonics intents with tardigrade-inspired research protocols — licensed partners only.",
         "compliance_note": (
             "ANCAP does not operate cryonics facilities or veterinary operating chambers. "
-            "Services are intents / briefs settled in ACP and handed to verified partners. "
-            "Tardigrade (тихоходки) blood / cryptobiosis references are research-inspired protocol "
-            "metadata — not an approved human transfusion product. Veterinary tissue-cryo and "
-            "VET REGEN POD listings are conceptual partner rails for licensed veterinarians — "
-            "not marketed medical devices and not a resurrection or survival-rate claim. "
-            "Not medical or veterinary advice. Subject to partner jurisdiction health, veterinary, "
-            "and constitutional limits as of the legal notice date."
+            "Services are intents / briefs settled in ACP and handed to desk-listed partners. "
+            "A desk listing is not a clinical, ethical, or regulatory audit and is not an RWA "
+            "or DeFi yield wrapper around revival. Tardigrade (тихоходки) blood / cryptobiosis "
+            "references are research-inspired protocol metadata — not an approved human transfusion "
+            "product. Veterinary tissue-cryo and VET REGEN POD listings are conceptual partner rails "
+            "for licensed veterinarians — not marketed medical devices and not a resurrection or "
+            "survival-rate claim. Not medical or veterinary advice. Subject to partner jurisdiction "
+            "health, veterinary, and constitutional limits as of the legal notice date."
         ),
         "services": [
             {
@@ -99,7 +100,18 @@ def catalog() -> dict[str, Any]:
                 "jurisdiction": "RU",
                 "website": "https://kriorus.ru/",
                 "blurb": "Российский партнёр по крионике. Handoff после ACP-intent и согласия.",
-                "verified": True,
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "clinical_endorsement": False,
+                "ethics_note": (
+                    "Public reporting has questioned some cryonics providers' methods and ethics. "
+                    "ANCAP does not audit KrioRus clinical practice and does not treat a desk listing "
+                    "as an ethics clearance."
+                ),
+                "regulatory_note": (
+                    "Partner contracts and Russian / local health law govern eligibility, consent, "
+                    "and storage. Listing is not a warranty of revival or of approval in every country."
+                ),
             },
             {
                 "id": "tomorrow-bio",
@@ -107,8 +119,19 @@ def catalog() -> dict[str, Any]:
                 "name": "Tomorrow.bio",
                 "jurisdiction": "EU",
                 "website": "https://www.tomorrow.bio/",
-                "blurb": "European human cryopreservation non-profit / provider. Partner desk listing.",
-                "verified": True,
+                "blurb": "European human cryopreservation provider. Desk listing only — early-stage efficacy.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "clinical_endorsement": False,
+                "ethics_note": (
+                    "Tomorrow.bio is early-stage on long-horizon efficacy. ANCAP does not claim proven "
+                    "revival, life-extension yield, or a DeFi/RWA wrap of a future person."
+                ),
+                "regulatory_note": (
+                    "EU partner contracts and applicable health / funeral / tissue rules govern the "
+                    "handoff. Desk listing is not CE-marking, not a medical-device placing-on-the-market, "
+                    "and not a MiCA crypto-asset offer."
+                ),
             },
         ],
         "legal_href": "/legal/cryo-constitution",

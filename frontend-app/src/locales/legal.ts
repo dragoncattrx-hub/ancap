@@ -80,7 +80,7 @@ export const legalByLang: Record<Language, Tree> = {
       "ANCAP provides ACP-settled intents, briefs, and partner handoff tooling. ANCAP does not operate cryonics storage facilities, clinical labs, or emergency SST teams. Physical cryopreservation is performed only by licensed partners under their own contracts and local law.",
     cryo2Title: "2. Partners — КриоРус (KrioRus) and Tomorrow.bio",
     cryo2Body:
-      "Verified partner listings currently include КриоРус (KrioRus, RU) and Tomorrow.bio (EU). Partner websites and agreements govern medical eligibility, consent, standby, and storage. Listing on ancap.cloud is not a warranty of clinical outcome or regulatory approval in every country.",
+      "Desk listings currently include КриоРус (KrioRus, RU) and Tomorrow.bio (EU). A listing is a licensed-partner handoff rail, not a clinical, ethical, or regulatory audit. Partner websites and agreements govern eligibility, consent, standby, and storage. Public reporting has questioned some cryonics providers’ methods and ethics; Tomorrow.bio remains early-stage on long-horizon efficacy. ANCAP does not endorse revival, wrap cryonics as an RWA yield product, or treat a desk listing as proof of life extension.",
     cryo3Title: "3. Tardigrade (тихоходки) blood / cryptobiosis",
     cryo3Body:
       "References to tardigrade blood or cryptobiosis are research-inspired protocol metadata for partner discussion. They are not an approved human transfusion product, drug, or DIY medical protocol. Do not attempt self-administration.",
@@ -96,6 +96,9 @@ export const legalByLang: Record<Language, Tree> = {
     cryo7Title: "7. Veterinary organ regeneration chamber (canine / VET REGEN POD)",
     cryo7Body:
       "VET REGEN POD is the name of a conceptual canine organ-transplant and regeneration chamber illustrated for partner literacy. Infographic figures (including any survival percentage or “faster than natural regeneration” claim) are not ANCAP product claims, not clinical evidence, and not a warranty. Physical procedures occur only in a licensed veterinary operating environment. See /legal/vet-regen.",
+    cryo8Title: "8. Scrutiny, speculation, and what ACP pays",
+    cryo8Body:
+      "Cryonics partners remain under public and regulatory scrutiny; listing them does not clear that record. ACP on this desk pays a consult/intake brief and a handoff, not a tokenized person, not a DeFi yield on revival, and not a security. Companion literary-license auctions are a separate nascent IP desk: published genre medians are comparables, not NAV, and pump bids fail closed. See /literary and /legal/risk.",
     vetRegenLink: "Veterinary organ rails",
     hubCardVetRegen:
       "Feline tissue cryoconservator-restorer and canine VET REGEN POD: conceptual partner architecture, licensed veterinarians only, no resurrection or survival-rate warranty.",
@@ -483,7 +486,7 @@ export const legalByLang: Record<Language, Tree> = {
       "ANCAP даёт ACP-расчёты интентов, брифы и handoff партнёрам. ANCAP не эксплуатирует криохранилища, клинические лаборатории и SST-команды. Физическую криоконсервацию выполняют только лицензированные партнёры по своим договорам и местному праву.",
     cryo2Title: "2. Партнёры — КриоРус и Tomorrow.bio",
     cryo2Body:
-      "В каталоге: КриоРус (RU) и Tomorrow.bio (EU). Медобследования, согласие, standby и хранение — по правилам партнёра. Листинг на ancap.cloud не гарантирует клинический исход и разрешения во всех странах.",
+      "В каталоге-столе: КриоРус (RU) и Tomorrow.bio (EU). Листинг — рейл передачи лицензированному партнёру, не клинический, этический или регуляторный аудит. Пригодность, согласие, standby и хранение — по договорам партнёра. Публичная критика методов и этики части провайдеров крионики существует; Tomorrow.bio на длинном горизонте эффективности остаётся early-stage. ANCAP не подтверждает оживление, не оборачивает крионику как RWA-доходность и не считает листинг стола доказательством продления жизни.",
     cryo3Title: "3. Кровь тихоходок / криптобиоз",
     cryo3Body:
       "Упоминания крови тихоходок и криптобиоза — research-метаданные для обсуждения с партнёром. Это не разрешённый продукт для трансфузии человеку и не DIY-протокол. Самолечение запрещено.",
@@ -499,6 +502,9 @@ export const legalByLang: Record<Language, Tree> = {
     cryo7Title: "7. Камера регенерации органов (собаки / VET REGEN POD)",
     cryo7Body:
       "VET REGEN POD — имя концептуальной камеры пересадки органов и регенерации собаки, показанной для literacy партнёра. Цифры на инфографике (включая любой процент выживаемости или «быстрее естественной регенерации») не являются заявлениями продукта ANCAP, не клинические доказательства и не гарантия. Физические процедуры — только в лицензированной ветеринарной операционной. См. /legal/vet-regen.",
+    cryo8Title: "8. Критика партнёров, спекуляция и что оплачивает ACP",
+    cryo8Body:
+      "Партнёры по крионике остаются под общественной и регуляторной критикой; листинг это не «очистка» досье. ACP на этом столе оплачивает бриф консультации/приёма и передачу, не токенизированного человека, не DeFi-доходность на оживление и не ценную бумагу. Аукцион литературных лицензий — отдельный тонкий IP-стол: медиана жанра — comparable, не NAV; pump-ставки fail-closed. См. /literary и /legal/risk.",
     vetRegenLink: "Ветеринарные рейлы органов",
     hubCardVetRegen:
       "Криоконсерватор тканей кошки и камера VET REGEN POD для собаки: концептуальная архитектура партнёра, только лицензированный ветеринар, без гарантии воскрешения или процента выживаемости.",
@@ -881,7 +887,7 @@ export const legalByLang: Record<Language, Tree> = {
       "ANCAP надає ACP-розрахунки інтентів і handoff партнерам. ANCAP не експлуатує кріосховища. Фізичну кріоконсервацію виконують лише ліцензовані партнери.",
     cryo2Title: "2. Партнери — КріоРус і Tomorrow.bio",
     cryo2Body:
-      "У каталозі: КріоРус (RU) і Tomorrow.bio (EU). Придатність і зберігання — за договорами партнера. Лістинг не гарантує клінічний результат.",
+      "У каталозі-столі: КріоРус (RU) і Tomorrow.bio (EU). Лістинг — рейл передачі ліцензованому партнеру, не клінічний, етичний чи регуляторний аудит. Придатність і зберігання — за договорами партнера. Публічна критика методів частини провайдерів кріоніки існує; Tomorrow.bio на довгому горизонті ефективності залишається early-stage. Лістинг не є доказом оживлення.",
     cryo3Title: "3. Кров тихоходок / криптобіоз",
     cryo3Body:
       "Згадки тихоходок — research-метадані, не дозволений продукт для трансфузії людині і не DIY-протокол.",
@@ -897,6 +903,9 @@ export const legalByLang: Record<Language, Tree> = {
     cryo7Title: "7. Камера регенерації органів (собака / VET REGEN POD)",
     cryo7Body:
       "VET REGEN POD — назва концептуальної камери пересадки органів і регенерації собаки. Цифри на інфографіці не є заявами продукту ANCAP. Фізичні процедури — лише в ліцензованій ветеринарній операційній. Див. /legal/vet-regen.",
+    cryo8Title: "8. Критика партнерів, спекуляція і що оплачує ACP",
+    cryo8Body:
+      "Партнери з кріоніки лишаються під публічною і регуляторною критикою. ACP на цьому столі оплачує бриф консультації/прийому і передачу, не токенізовану людину і не DeFi-дохідність на оживлення. Аукціон літературних ліцензій — окремий тонкий IP-стіл з медіаною жанру як comparable і fail-closed pump-ставками. Див. /literary і /legal/risk.",
     vetRegenLink: "Ветеринарні рейли органів",
     hubCardVetRegen:
       "Кріоконсерватор тканин кота і камера VET REGEN POD для собаки: концептуальна архітектура партнера, лише ліцензований ветеринар, без гарантії воскресіння чи відсотка виживаності.",
@@ -1284,7 +1293,7 @@ export const legalByLang: Record<Language, Tree> = {
       "ANCAP bietet ACP-abgerechnete Intents und Partner-Handoff. ANCAP betreibt keine Kryoanlagen. Physische Kryokonservierung nur durch lizenzierte Partner.",
     cryo2Title: "2. Partner — KrioRus und Tomorrow.bio",
     cryo2Body:
-      "Partnerlisten umfassen КриоРус (KrioRus, RU) und Tomorrow.bio (EU). Partnerverträge regeln Eignung und Lagerung. Listing ist keine Erfolgsgarantie.",
+      "Desk-Listings umfassen KrioRus (RU) und Tomorrow.bio (EU). Ein Listing ist eine Partner-Übergabe, kein klinisches, ethisches oder regulatorisches Audit. Öffentliche Kritik an Methoden mancher Kryonik-Anbieter besteht; Tomorrow.bio ist bei Langzeit-Wirksamkeit early-stage. ANCAP bestätigt keine Wiederbelebung und wrappt Kryonik nicht als RWA-Rendite.",
     cryo3Title: "3. Tardigradenblut / Kryptobiose",
     cryo3Body:
       "Tardigraden-Bezüge sind Research-Metadaten — kein zugelassenes Transfusionsprodukt und kein DIY-Protokoll.",
@@ -1300,6 +1309,9 @@ export const legalByLang: Record<Language, Tree> = {
     cryo7Title: "7. Veterinäre Organregenerationskammer (Hund / VET REGEN POD)",
     cryo7Body:
       "VET REGEN POD ist der Name einer konzeptionellen caninen Organtransplantations- und Regenerationskammer. Infografik-Zahlen (einschließlich Überlebensprozente oder „schneller als natürliche Regeneration“) sind keine ANCAP-Produktaussagen. Körperliche Eingriffe nur in einer lizenzierten Veterinär-OP. Siehe /legal/vet-regen.",
+    cryo8Title: "8. Prüfung, Spekulation und wofür ACP zahlt",
+    cryo8Body:
+      "Kryonik-Partner stehen weiter unter öffentlicher und regulatorischer Kritik; Listing räumt das nicht. ACP auf diesem Desk zahlt ein Konsultations-/Intake-Briefing und eine Übergabe, keine tokenisierte Person und keine DeFi-Rendite auf Wiederbelebung. Literaturlizenz-Auktionen sind ein separates dünnes IP-Desk: Genre-Median ist comparable, kein NAV; Pump-Gebote fail-closed. Siehe /literary und /legal/risk.",
     vetRegenLink: "Veterinär-Organschienen",
     hubCardVetRegen:
       "Feliner Gewebe-Kryokonservator und canine VET REGEN POD: konzeptionelle Partnerarchitektur, nur approbierte Tierärzte, keine Auferstehungs- oder Überlebensgarantie.",
@@ -1686,7 +1698,7 @@ export const legalByLang: Record<Language, Tree> = {
       "ANCAP 提供 ACP 結算意圖與夥伴交接工具。ANCAP 不營運冷凍設施。實體冷凍僅由授權夥伴執行。",
     cryo2Title: "2. 夥伴 — KrioRus 與 Tomorrow.bio",
     cryo2Body:
-      "夥伴清單含 КриоРус（KrioRus，RU）與 Tomorrow.bio（EU）。資格與儲存由夥伴合約規範。上架非臨床結果保證。",
+      "服務台清單含 КриоРус（KrioRus，RU）與 Tomorrow.bio（EU）。上架為持照夥伴交接軌道，非臨床、倫理或監管審計。部分冷凍保存業者之方法與倫理曾受公開質疑；Tomorrow.bio 於長期效力仍屬早期。ANCAP 不背書復活，不以 RWA 收益包裝冷凍保存。",
     cryo3Title: "3. 緩步類動物血液／隱生",
     cryo3Body:
       "緩步類動物相關內容為研究元資料——非核准人體輸血產品，亦非 DIY 協議。",
@@ -1702,6 +1714,9 @@ export const legalByLang: Record<Language, Tree> = {
     cryo7Title: "7. 獸醫器官再生艙（犬／VET REGEN POD）",
     cryo7Body:
       "VET REGEN POD 為犬用器官移植與再生艙之概念名稱。資訊圖數字（含存活率或「快於自然再生」）非 ANCAP 產品主張。實體處置僅能在持照獸醫手術環境進行。見 /legal/vet-regen。",
+    cryo8Title: "8. 審查、投機與 ACP 所付者",
+    cryo8Body:
+      "冷凍保存夥伴仍受公眾與監管檢視；上架並非洗白。此服務台之 ACP 支付諮詢／收件簡報與交接，非代幣化之人、亦非復活之 DeFi 收益。文學授權拍賣為另一淺薄 IP 桌：類型中位數為 comparable 而非 NAV，炒作出價 fail-closed。見 /literary 與 /legal/risk。",
     vetRegenLink: "獸醫器官軌道",
     hubCardVetRegen:
       "貓組織冷凍保存／復原器與犬用 VET REGEN POD：夥伴概念架構，僅限持照獸醫師，無起死回生或存活率保證。",
