@@ -672,7 +672,7 @@ Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet cre
 
 ACP checkout is stable. New users must acquire ACP on exchange -- huge friction.
 
-Production Stripe secrets are **not** in GitHub yet. Until an operator adds `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET`, card top-up stays fail-closed (`503`). Deploy syncs those secrets into the host `.env`. Public truth: `GET /v1/payments/stripe/status` and `GET /v1/system/health/full` → `checks.stripe.configured`. Webhook URL: `https://ancap.cloud/api/v1/webhooks/stripe`.
+Production Stripe secrets are in GitHub (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`) as of 12 September 2026 (live mode). Deploy syncs them into the host `.env`. Public truth: `GET /v1/payments/stripe/status` → `configured`. Webhook: `https://ancap.cloud/api/v1/webhooks/stripe` (`payment_intent.succeeded|payment_failed|canceled`). Item 4.1 stays `[~]` until a live Dashboard checkout + saved-card Run B is recorded.
 
 Implemented surfaces:
 - `POST /v1/payments/stripe/intent` -- create Stripe-backed top-up PaymentIntent and return client session data

@@ -129,32 +129,19 @@ jobs:
             if [ -n "${STRIPE_SECRET_KEY:-}" ] && [ -n "${STRIPE_PUBLISHABLE_KEY:-}" ]; then
               echo "== sync Stripe adapter keys into host .env (values redacted)"
               touch .env
-              python - <<'PY'
-import os
-from pathlib import Path
-path = Path(".env")
-text = path.read_text() if path.exists() else ""
-updates = {
-    "STRIPE_SECRET_KEY": os.environ.get("STRIPE_SECRET_KEY", ""),
-    "STRIPE_PUBLISHABLE_KEY": os.environ.get("STRIPE_PUBLISHABLE_KEY", ""),
-    "STRIPE_WEBHOOK_SECRET": os.environ.get("STRIPE_WEBHOOK_SECRET", ""),
-    "STRIPE_API_BASE": os.environ.get("STRIPE_API_BASE") or "https://api.stripe.com/v1",
-}
-lines = text.splitlines()
-seen = set()
-out = []
-for line in lines:
-    key = line.split("=", 1)[0] if "=" in line and not line.lstrip().startswith("#") else None
-    if key in updates and updates[key]:
-        out.append(f"{key}={updates[key]}")
-        seen.add(key)
-    else:
-        out.append(line)
-for key, value in updates.items():
-    if key not in seen and value:
-        out.append(f"{key}={value}")
-path.write_text("\n".join(out).rstrip() + "\n")
-PY
+              for var in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY STRIPE_WEBHOOK_SECRET; do
+                eval "val=\${$var:-}"
+                if [ -n "$val" ]; then
+                  if grep -q "^${var}=" .env; then
+                    sed -i "s|^${var}=.*|${var}=${val}|" .env
+                  else
+                    printf '%s=%s\n' "$var" "$val" >> .env
+                  fi
+                fi
+              done
+              if ! grep -q '^STRIPE_API_BASE=' .env; then
+                printf 'STRIPE_API_BASE=https://api.stripe.com/v1\n' >> .env
+              fi
             else
               echo "== Stripe GitHub secrets incomplete; card top-up stays fail-closed (503)"
             fi
