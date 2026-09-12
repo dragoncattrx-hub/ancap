@@ -352,6 +352,12 @@ export function HomePage() {
                     <Link href="/aeterna#microwave-body" className="btn btn-ghost">
                       {t("aeternaPage.mwCta")}
                     </Link>
+                    <Link href="/aeterna#biofusion" className="btn btn-ghost">
+                      {t("aeternaPage.bfCta")}
+                    </Link>
+                    <Link href="/aeterna#dpsc-biomaterial" className="btn btn-ghost">
+                      {t("aeternaPage.dpscCta")}
+                    </Link>
                 </div>
               </div>
               <div

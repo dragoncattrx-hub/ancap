@@ -12,6 +12,8 @@ import { MrnaReprogrammingPanel } from "@/components/aeterna/MrnaReprogrammingPa
 import { VetRegenPanel } from "@/components/aeterna/VetRegenPanel";
 import { VinciLightPanel } from "@/components/aeterna/VinciLightPanel";
 import { MicrowaveBodyPanel } from "@/components/aeterna/MicrowaveBodyPanel";
+import { BioFusionPanel } from "@/components/aeterna/BioFusionPanel";
+import { DpscBiomaterialPanel } from "@/components/aeterna/DpscBiomaterialPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -39,9 +41,11 @@ type AeternaStatus = {
   vet_regen_note?: string;
   vinci_light_note?: string;
   microwave_body_note?: string;
+  biofusion_note?: string;
+  dpsc_biomaterial_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -146,6 +150,18 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.mwCta")}
             </a>
+            <a
+              href="#biofusion"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.bfCta")}
+            </a>
+            <a
+              href="#dpsc-biomaterial"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.dpscCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -197,6 +213,14 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <MicrowaveBodyPanel note={status?.microwave_body_note} />
+        </section>
+
+        <section className="mt-16">
+          <BioFusionPanel note={status?.biofusion_note} />
+        </section>
+
+        <section className="mt-16">
+          <DpscBiomaterialPanel note={status?.dpsc_biomaterial_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

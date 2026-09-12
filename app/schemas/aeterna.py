@@ -49,6 +49,8 @@ class AeternaIntentKind(str, Enum):
     vet_canine_regen_pod = "vet_canine_regen_pod"
     vinci_light_chamber = "vinci_light_chamber"
     microwave_body_contouring = "microwave_body_contouring"
+    biofusion_micromanipulation = "biofusion_micromanipulation"
+    dpsc_biomaterial = "dpsc_biomaterial"
 
 
 class AeternaDnaSource(str, Enum):
@@ -251,4 +253,15 @@ class AeternaStatusPublic(BaseModel):
         "Microwave body contouring (2.45 / 5.8 GHz ISM, contact-cooled applicator) is a licensed aesthetic / "
         "dermatology partner session-protocol brief. Infographics are conceptual architecture — not a marketed "
         "medical device, not liposuction, and not a guaranteed fat-loss or body-contour claim."
+    )
+    biofusion_note: str = (
+        "The BioFusion micromanipulation chamber is a licensed-partner consult and session-protocol brief "
+        "for IVF/ICSI, plant pollination, embryo observation literacy, and microorganism handling in a "
+        "controlled lab. Infographics are conceptual architecture — not a marketed medical device, not a "
+        "fertility clinic, not a guaranteed pregnancy or embryo, and not a gene-editing or pathogen kit."
+    )
+    dpsc_biomaterial_note: str = (
+        "Wisdom-tooth dental pulp stem cell (DPSC) biomaterial is a licensed bioreactor-partner intake to "
+        "expand autologous DPSC into a tissue construct. It is not a full organ print (that SKU remains "
+        "250,000 ACP), not an FDA/CE cell therapy, and not a home culture kit."
     )

@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-biofusion-dpsc",
+    date: "2026-09-12",
+    title: "AETERNA: камера BioFusion и биоматериал из DPSC",
+    summary:
+      "На /aeterna — партнёрский бриф камеры микроманипуляций BioFusion за 88 000 ACP (ЭКО/ICSI, опыление растений, наблюдение эмбриона, работа с микроорганизмами в BSL-лабе) и отдельный рейл биоматериала из стволовых клеток пульпы зуба мудрости за 65 000 ACP. Это не клиника ЭКО, не гарантированная беременность, не полноразмерный орган (печать органа остаётся 250 000 ACP) и не набор для дома. Юр. тексты: /legal/biofusion и /legal/dpsc.",
+    href: "/aeterna#biofusion",
+  },
+  {
     id: "aeterna-microwave-body-contouring",
     date: "2026-09-12",
     title: "AETERNA: микроволновой контур тела",

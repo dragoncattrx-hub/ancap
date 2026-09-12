@@ -63,11 +63,15 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.vet_canine_regen_pod.value == "vet_canine_regen_pod"
     assert AeternaIntentKind.vinci_light_chamber.value == "vinci_light_chamber"
     assert AeternaIntentKind.microwave_body_contouring.value == "microwave_body_contouring"
+    assert AeternaIntentKind.biofusion_micromanipulation.value == "biofusion_micromanipulation"
+    assert AeternaIntentKind.dpsc_biomaterial.value == "dpsc_biomaterial"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
     assert AeternaStatusPublic.model_fields["vinci_light_note"]
     assert AeternaStatusPublic.model_fields["microwave_body_note"]
+    assert AeternaStatusPublic.model_fields["biofusion_note"]
+    assert AeternaStatusPublic.model_fields["dpsc_biomaterial_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -77,13 +81,15 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 12
+    assert len(aeterna) >= 14
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
         "aeterna-vet-regen-pod": "180000",
         "aeterna-vinci-light-chamber": "48000",
         "aeterna-microwave-body-contouring": "52000",
+        "aeterna-dpsc-biomaterial": "65000",
+        "aeterna-biofusion-micromanipulation": "88000",
     }
     for tpl in aeterna:
         assert tpl.price.currency == "ACP"
@@ -93,6 +99,8 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-vet-regen-pod" in slugs
     assert "aeterna-vinci-light-chamber" in slugs
     assert "aeterna-microwave-body-contouring" in slugs
+    assert "aeterna-biofusion-micromanipulation" in slugs
+    assert "aeterna-dpsc-biomaterial" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -370,6 +378,77 @@ def test_microwave_body_intent_default_slug_and_reject_low_budget(client):
     assert payload["workflow_slug"] == MICROWAVE_BODY_SLUG
     assert payload["metadata_json"]["architecture"] == "contact_cooled_microwave_applicator"
     assert payload["metadata_json"]["bands"]["ism_5800"] == "5.8GHz"
+
+
+def test_biofusion_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-biofusion-micromanipulation")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "biofusion_micromanipulation"})
+    bf = out["deliverable"]["biofusion_micromanipulation"]
+    assert bf["price_acp"] == "88000"
+    assert bf["rails"]["ivf_icsi"] == "licensed_assisted_reproduction_clinic"
+    assert out["deliverable"]["partner_handoff"]["required"] is True
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at", "ionizable lipid recipe"):
+        assert forbidden not in blob
+    assert "licensed_art_agri_bsl_partner" in blob
+    assert "pregnancy" in blob
+
+
+def test_biofusion_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import BIOFUSION_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "biofusion_micromanipulation", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "biofusion_micromanipulation", "budget_acp": "88000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == BIOFUSION_SLUG
+    assert payload["metadata_json"]["architecture"] == "biofusion_micromanipulation_chamber"
+
+
+def test_dpsc_biomaterial_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-dpsc-biomaterial")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "dpsc_biomaterial"})
+    dpsc = out["deliverable"]["dpsc_biomaterial"]
+    assert dpsc["price_acp"] == "65000"
+    assert dpsc["cell_source"] == "wisdom_tooth_dental_pulp_stem_cells_dpsc"
+    assert dpsc["related_organ_print_slug"] == "aeterna-stem-cell-organ-print"
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at"):
+        assert forbidden not in blob
+    assert "licensed_bioreactor_partner" in blob
+
+
+def test_dpsc_biomaterial_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import DPSC_BIOMATERIAL_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "dpsc_biomaterial", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "dpsc_biomaterial", "budget_acp": "65000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == DPSC_BIOMATERIAL_SLUG
+    assert payload["metadata_json"]["architecture"] == "wisdom_tooth_dpsc_expansion"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

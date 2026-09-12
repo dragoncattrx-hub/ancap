@@ -44,6 +44,8 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-vet-regen-pod",
     "aeterna-vinci-light-chamber",
     "aeterna-microwave-body-contouring",
+    "aeterna-biofusion-micromanipulation",
+    "aeterna-dpsc-biomaterial",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -58,6 +60,10 @@ VINCI_LIGHT_SLUG = "aeterna-vinci-light-chamber"
 VINCI_LIGHT_PRICE_ACP = Decimal("48000")
 MICROWAVE_BODY_SLUG = "aeterna-microwave-body-contouring"
 MICROWAVE_BODY_PRICE_ACP = Decimal("52000")
+BIOFUSION_SLUG = "aeterna-biofusion-micromanipulation"
+BIOFUSION_PRICE_ACP = Decimal("88000")
+DPSC_BIOMATERIAL_SLUG = "aeterna-dpsc-biomaterial"
+DPSC_BIOMATERIAL_PRICE_ACP = Decimal("65000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -168,6 +174,8 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.vet_canine_regen_pod.value: VET_REGEN_POD_SLUG,
     AeternaIntentKind.vinci_light_chamber.value: VINCI_LIGHT_SLUG,
     AeternaIntentKind.microwave_body_contouring.value: MICROWAVE_BODY_SLUG,
+    AeternaIntentKind.biofusion_micromanipulation.value: BIOFUSION_SLUG,
+    AeternaIntentKind.dpsc_biomaterial.value: DPSC_BIOMATERIAL_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -252,6 +260,40 @@ MICROWAVE_BODY_META = {
         "and issues a licensed aesthetic or dermatology-partner brief. Not a marketed medical device, not "
         "liposuction, not a weight-loss program, and not a guaranteed adipocyte-clearance or contour result. "
         "Partner screening required (implants, pacemakers, pregnancy, metal, thermal injury history)."
+    ),
+}
+
+BIOFUSION_META = {
+    "mode": "licensed_art_agri_bsl_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "88000",
+    "architecture": "biofusion_micromanipulation_chamber",
+    "rails": {
+        "ivf_icsi": "licensed_assisted_reproduction_clinic",
+        "plant_pollination": "licensed_agricultural_research_partner",
+        "embryo_observation": "clinic_protocol_literacy",
+        "microorganism_handling": "licensed_bsl_lab",
+    },
+    "note": (
+        "Conceptual BioFusion micromanipulation chamber (temperature / pH / gas / HEPA-UV architecture). "
+        "ANCAP settles ACP and issues a licensed-partner brief. Not a marketed medical device, not a "
+        "fertility clinic operated by ANCAP, not a guaranteed pregnancy or viable embryo, not a gene-editing "
+        "or pathogen recipe, and not a home ICSI / plant-hybridization kit. Infographic 'genetic manipulations' "
+        "copy is partner-lab literacy, not a product."
+    ),
+}
+
+DPSC_BIOMATERIAL_META = {
+    "mode": "licensed_bioreactor_partner",
+    "unit": "biomaterial_construct",
+    "price_acp": "65000",
+    "architecture": "wisdom_tooth_dpsc_expansion",
+    "cell_source": "wisdom_tooth_dental_pulp_stem_cells_dpsc",
+    "related_organ_print_slug": ORGAN_PRINT_SLUG,
+    "note": (
+        "Licensed-partner expansion of autologous wisdom-tooth DPSC into a biomaterial construct. "
+        "ANCAP settles ACP and issues a bioreactor handoff. Not a full organ (see aeterna-stem-cell-organ-print "
+        "at 250,000 ACP), not an FDA/CE cell therapy, and not a home culture kit."
     ),
 }
 
@@ -354,7 +396,8 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         tagline=(
             "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
             "partial mRNA-reprogramming consults, stem-cell organ print, "
-            "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, licensed longevity partners."
+            "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, microwave body contouring, "
+            "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -392,6 +435,15 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Microwave body-contouring listings are licensed aesthetic / dermatology partner intakes "
             "for a contact-cooled 2.45 / 5.8 GHz applicator. Infographics are conceptual architecture — "
             "not a marketed device, not liposuction, and not a guaranteed fat-loss claim."
+        ),
+        biofusion_note=(
+            "BioFusion micromanipulation listings are licensed ART / agricultural / BSL-lab partner intakes. "
+            "Infographics are conceptual architecture — not a fertility clinic, not a guaranteed embryo or "
+            "pregnancy, and not a gene-editing or pathogen kit."
+        ),
+        dpsc_biomaterial_note=(
+            "Wisdom-tooth DPSC biomaterial listings expand autologous dental pulp stem cells in a licensed "
+            "bioreactor. They are not a full organ print and not a marketed cell therapy."
         ),
     )
 
@@ -550,6 +602,34 @@ async def create_intent_order(
                 detail="microwave_body_contouring budget_acp must be at least 52000 ACP",
             )
         for key, value in MICROWAVE_BODY_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.biofusion_micromanipulation:
+        if slug and slug != BIOFUSION_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="biofusion_micromanipulation requires workflow_slug aeterna-biofusion-micromanipulation",
+            )
+        slug = BIOFUSION_SLUG
+        if body.budget_acp < BIOFUSION_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="biofusion_micromanipulation budget_acp must be at least 88000 ACP",
+            )
+        for key, value in BIOFUSION_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.dpsc_biomaterial:
+        if slug and slug != DPSC_BIOMATERIAL_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="dpsc_biomaterial requires workflow_slug aeterna-dpsc-biomaterial",
+            )
+        slug = DPSC_BIOMATERIAL_SLUG
+        if body.budget_acp < DPSC_BIOMATERIAL_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="dpsc_biomaterial budget_acp must be at least 65000 ACP",
+            )
+        for key, value in DPSC_BIOMATERIAL_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

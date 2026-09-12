@@ -55,6 +55,8 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/vet-regen", key: "vetRegenLink" },
     { href: "/legal/light-chamber", key: "lightChamberLink" },
     { href: "/legal/body-contouring", key: "bodyContouringLink" },
+    { href: "/legal/biofusion", key: "biofusionLink" },
+    { href: "/legal/dpsc", key: "dpscLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -95,6 +97,8 @@ export function LegalHubView() {
     { href: "/legal/vet-regen", title: "vetRegenLink", body: "hubCardVetRegen" },
     { href: "/legal/light-chamber", title: "lightChamberLink", body: "hubCardLightChamber" },
     { href: "/legal/body-contouring", title: "bodyContouringLink", body: "hubCardBodyContouring" },
+    { href: "/legal/biofusion", title: "biofusionLink", body: "hubCardBiofusion" },
+    { href: "/legal/dpsc", title: "dpscLink", body: "hubCardDpsc" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -882,6 +886,70 @@ export function BodyContouringLegalView() {
   );
 }
 
+export function BiofusionLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.biofusionKicker")}
+      title={t("legal.biofusionTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.biofusionIntro")}`}
+      actions={<LegalNavPills current="/legal/biofusion" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.bf${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.bf${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#biofusion" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#biofusion
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function DpscLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.dpscKicker")}
+      title={t("legal.dpscTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.dpscIntro")}`}
+      actions={<LegalNavPills current="/legal/dpsc" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.dp${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.dp${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#dpsc-biomaterial" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#dpsc-biomaterial
+          </Link>
+          {" · "}
+          <Link href="/aeterna#organ-print" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#organ-print
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function WelcomeGrantView() {
   const { t } = useLanguage();
   return (
@@ -936,6 +1004,8 @@ export function SiteLegalFooter() {
     { href: "/legal/vet-regen", label: "footerVetRegen" },
     { href: "/legal/light-chamber", label: "footerLightChamber" },
     { href: "/legal/body-contouring", label: "footerBodyContouring" },
+    { href: "/legal/biofusion", label: "footerBiofusion" },
+    { href: "/legal/dpsc", label: "footerDpsc" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/humanitarian", label: "footerHumanitarian" },

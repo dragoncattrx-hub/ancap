@@ -461,6 +461,48 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
     tags: ["aeterna", "body-contouring", "microwave", "aesthetic", "consult"],
   },
+  {
+    slug: "aeterna-biofusion-micromanipulation",
+    title: "AETERNA BioFusion Micromanipulation Chamber",
+    category: "AETERNA",
+    summary:
+      "Licensed-partner intake for a BioFusion micromanipulation chamber (IVF/ICSI, plant pollination, embryo observation, microorganism handling) — 88,000 ACP.",
+    description:
+      "Settles 88,000 ACP and issues a licensed-partner brief. ANCAP does not operate a fertility clinic, does not create embryos, and does not sell gene-editing or home ICSI recipes. Infographic architecture only.",
+    price: { amount: "88000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 55,
+    preview_items: ["Contraindication / jurisdiction intake", "ART or BSL partner match", "Non-claim protocol pack"],
+    output_items: [
+      "BioFusion micromanipulation intake brief",
+      "Licensed lab / clinic handoff",
+      "Non-claim checklist (no pregnancy / no embryo / no gene-edit / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "rails", "status_timeline"],
+    tags: ["aeterna", "biofusion", "micromanipulation", "ivf", "consult"],
+  },
+  {
+    slug: "aeterna-dpsc-biomaterial",
+    title: "AETERNA Wisdom-Tooth DPSC Biomaterial",
+    category: "AETERNA",
+    summary:
+      "Licensed-bioreactor intake to expand autologous wisdom-tooth dental pulp stem cells (DPSC) into a biomaterial construct — 65,000 ACP.",
+    description:
+      "Settles 65,000 ACP and issues a licensed bioreactor brief. Not a full organ print (250,000 ACP), not an FDA/CE cell therapy, not a home culture kit.",
+    price: { amount: "65000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 50,
+    preview_items: ["Dental / DPSC intake", "Bioreactor partner match", "Construct-goal consent pack"],
+    output_items: [
+      "DPSC biomaterial intake brief",
+      "Licensed bioreactor handoff",
+      "Non-claim checklist (not a full organ / not a cell-therapy approval)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "cell_source", "status_timeline"],
+    tags: ["aeterna", "dpsc", "wisdom-tooth", "biomaterial", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

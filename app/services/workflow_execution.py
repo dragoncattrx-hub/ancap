@@ -274,8 +274,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         summary="Licensed-partner organ bioprint from autologous stem cells — wisdom-tooth DPSC fallback — 250,000 ACP per organ.",
         description=(
             "Settles 250,000 ACP per organ and issues a licensed-partner bioreactor handoff. "
-            "Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. "
-            "Printing occurs only in a licensed biochemical reactor operated by a verified partner. "
+        "Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. "
+        "A dedicated DPSC biomaterial SKU (aeterna-dpsc-biomaterial, 65,000 ACP) expands DPSC into a construct; "
+        "this organ-print SKU remains 250,000 ACP per organ. "
+        "Printing occurs only in a licensed biochemical reactor operated by a verified partner. "
             "Not a home kit — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture."
         ),
         price=Money(amount="250000", currency="ACP"),
@@ -432,6 +434,66 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         ],
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
         tags=["aeterna", "body-contouring", "microwave", "aesthetic", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-biofusion-micromanipulation",
+        title="AETERNA BioFusion Micromanipulation Chamber",
+        category="AETERNA",
+        summary=(
+            "Licensed-partner intake for a BioFusion micromanipulation chamber "
+            "(IVF/ICSI, plant pollination, embryo observation, microorganism handling) — 88,000 ACP."
+        ),
+        description=(
+            "Settles 88,000 ACP and issues a licensed-partner brief for a conceptual BioFusion chamber: "
+            "temperature / pH / gas control, HEPA-UV enclosure, and sub-micron micromanipulators as architecture "
+            "literacy. Rails: licensed assisted-reproduction clinic (IVF/ICSI), licensed agricultural research "
+            "(plant pollination / hybridization), embryo-development observation as clinic protocol literacy, "
+            "and licensed BSL-lab microorganism handling. ANCAP does not operate a fertility clinic, does not "
+            "create or store embryos, does not guarantee pregnancy or a viable zygote, does not manufacture the "
+            "cart, and does not sell gene-editing, CRISPR, pathogen, or home ICSI recipes. Infographic "
+            "'genetic manipulations' copy is partner-lab literacy, not a product."
+        ),
+        price=Money(amount="88000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=55,
+        preview_items=["Contraindication / jurisdiction intake", "ART or BSL partner match", "Non-claim protocol pack"],
+        output_items=[
+            "BioFusion micromanipulation intake brief",
+            "Licensed lab / clinic handoff",
+            "Non-claim checklist (no pregnancy / no embryo / no gene-edit / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "rails", "status_timeline"],
+        tags=["aeterna", "biofusion", "micromanipulation", "ivf", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-dpsc-biomaterial",
+        title="AETERNA Wisdom-Tooth DPSC Biomaterial",
+        category="AETERNA",
+        summary=(
+            "Licensed-bioreactor intake to expand autologous wisdom-tooth dental pulp stem cells (DPSC) "
+            "into a biomaterial construct — 65,000 ACP."
+        ),
+        description=(
+            "Settles 65,000 ACP and issues a licensed biochemical-reactor partner brief to harvest / receive "
+            "wisdom-tooth dental pulp stem cells and expand them into a biomaterial construct (scaffold or "
+            "tissue sheet). This is not a full organ print — that remains aeterna-stem-cell-organ-print at "
+            "250,000 ACP per organ, where DPSC is the fallback cell source. ANCAP does not culture cells, "
+            "does not practice dentistry or regenerative medicine, and does not claim an FDA/CE cell therapy "
+            "or a guaranteed organ. No home culture kit, CRISPR design, or gene synthesis."
+        ),
+        price=Money(amount="65000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=["Dental / DPSC intake", "Bioreactor partner match", "Construct-goal consent pack"],
+        output_items=[
+            "DPSC biomaterial intake brief",
+            "Licensed bioreactor handoff",
+            "Non-claim checklist (not a full organ / not a cell-therapy approval)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "cell_source", "status_timeline"],
+        tags=["aeterna", "dpsc", "wisdom-tooth", "biomaterial", "consult"],
     ),
 
     WorkflowTemplatePublic(
@@ -1498,6 +1560,46 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Physical microwave sessions occur "
                     "only under a licensed clinician. Infographic adipocyte-blebbing or lymphatic-clearance "
                     "copy is public protocol literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-biofusion-micromanipulation":
+            deliverable["intent"] = str(payload.get("intent_kind") or "biofusion_micromanipulation")
+            deliverable["compliance"] = (
+                "Licensed ART / agricultural / BSL-lab partner intake only. Not a diagnosis, not a marketed "
+                "medical device, not a fertility clinic, and not a guaranteed pregnancy or embryo. "
+                "No home ICSI recipe, CRISPR, gene synthesis, or pathogen protocol."
+            )
+            deliverable["biofusion_micromanipulation"] = {
+                "mode": "licensed_art_agri_bsl_partner",
+                "architecture": "biofusion_micromanipulation_chamber",
+                "price_acp": "88000",
+                "rails": {
+                    "ivf_icsi": "licensed_assisted_reproduction_clinic",
+                    "plant_pollination": "licensed_agricultural_research_partner",
+                    "embryo_observation": "clinic_protocol_literacy",
+                    "microorganism_handling": "licensed_bsl_lab",
+                },
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical micromanipulation occurs "
+                    "only under a licensed clinician or BSL-lab operator. Infographic genetic-manipulation copy "
+                    "is protocol literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-dpsc-biomaterial":
+            deliverable["intent"] = str(payload.get("intent_kind") or "dpsc_biomaterial")
+            deliverable["compliance"] = (
+                "Licensed bioreactor-partner intake only. Not a diagnosis, not a full organ print, and not an "
+                "FDA/CE cell therapy. No home culture kit, CRISPR, or gene synthesis."
+            )
+            deliverable["dpsc_biomaterial"] = {
+                "mode": "licensed_bioreactor_partner",
+                "architecture": "wisdom_tooth_dpsc_expansion",
+                "price_acp": "65000",
+                "cell_source": "wisdom_tooth_dental_pulp_stem_cells_dpsc",
+                "related_organ_print_slug": "aeterna-stem-cell-organ-print",
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Cell expansion occurs only in a "
+                    "licensed biochemical reactor. This SKU is a biomaterial construct, not a 250,000 ACP organ."
                 ),
             }
         execution_summary = {

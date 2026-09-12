@@ -211,6 +211,80 @@ export const legalByLang: Record<Language, Tree> = {
     bc10Title: "10. Contact",
     bc10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#microwave-body. Related notices: /legal/terms, /legal/risk, /legal/research-refs.",
+    biofusionLink: "BioFusion chamber",
+    hubCardBiofusion:
+      "Micromanipulation chamber: licensed ART / agricultural / BSL-lab partner only. Not a fertility clinic, not a guaranteed embryo or pregnancy, not a gene-editing kit.",
+    biofusionKicker: "Legal / lab",
+    biofusionTitle: "BioFusion micromanipulation chamber — licensed lab partner rail",
+    biofusionIntro:
+      "How ANCAP frames the BioFusion micromanipulation chamber as of 12 September 2026. These pages sell ACP-settled consult and session-protocol briefs, not hardware, not IVF treatment, and not a gene-editing service.",
+    bf1Title: "1. Platform role",
+    bf1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching for the AETERNA BioFusion chamber. ANCAP does not operate fertility clinics, agricultural stations, or BSL labs; does not manufacture the cart; does not create, freeze, or transfer embryos; and does not administer ICSI.",
+    bf2Title: "2. Not a marketed medical device",
+    bf2Body:
+      "The infographic is conceptual architecture for partner discussion. It is not an EU MDR or FDA device brochure, not a CE-marked IVF workstation sold by ANCAP, and not a reconstructed BioFusion product. Listing a workflow does not place a device on the market.",
+    bf3Title: "3. Forbidden outcome claims",
+    bf3Body:
+      "ANCAP does not claim a guaranteed pregnancy, live birth, viable zygote, plant hybrid, or microorganism strain. IVF/ICSI, plant pollination, embryo observation, and synthetic-biology callouts are protocol literacy. Infographic 'genetic manipulations' copy is not a CRISPR, gene-synthesis, or pathogen recipe.",
+    bf4Title: "4. Licensed operators only",
+    bf4Body:
+      "Assisted reproduction is a clinical act under the relevant jurisdiction. Plant hybridization and microorganism handling are laboratory acts. They may be performed only by licensed ART clinicians, licensed agricultural researchers, or licensed BSL-lab operators. Users must not build home ICSI rigs, UV cabinets, or DIY micromanipulators from these pages.",
+    bf5Title: "5. Screening and law",
+    bf5Body:
+      "Partner protocols must follow local ART, embryo-research, GMO, and biosafety rules, including consent, gamete provenance, and prohibited genetic modification. Temperature, pH, O2, HEPA/UV, and 0.1 µm callouts are architecture notes, not a validated sterile system ANCAP certifies.",
+    bf6Title: "6. Not medical advice",
+    bf6Body:
+      "Catalog copy, infographics, workflow outputs, and reviews are informational. They are not a diagnosis, fertility plan, or treatment.",
+    bf7Title: "7. Health and genetic data",
+    bf7Body:
+      "If you submit identifiers, gamete history, or clinical notes, treat them as sensitive. Do not upload medical records without a lawful basis. Partner clinics process clinical data under their own privacy notices. ANCAP vaults remain hash-first.",
+    bf8Title: "8. Relationship to other AETERNA rails",
+    bf8Body:
+      "Organ print, DPSC biomaterial, mRNA-reprogramming consults, veterinary rails, the Vinci light chamber, and microwave body contouring remain separate. BioFusion does not authorize DIY CRISPR, LNP recipes, unlicensed IVF hardware, or pathogen work, and does not change AETERNA’s ban on diagnostic claims.",
+    bf9Title: "9. Payments",
+    bf9Body:
+      "ACP paid for this workflow buys a consult / session-protocol brief and partner match — not title to hardware, not a guaranteed clinic slot, and not a refundable clinical outcome. Refunds follow /legal/refunds.",
+    bf10Title: "10. Contact",
+    bf10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#biofusion. Related notices: /legal/dpsc, /legal/terms, /legal/risk.",
+    dpscLink: "DPSC biomaterial",
+    hubCardDpsc:
+      "Wisdom-tooth dental pulp stem cells expanded into a biomaterial construct: licensed bioreactor only, not a full organ, not an FDA/CE cell therapy.",
+    dpscKicker: "Legal / bioreactor",
+    dpscTitle: "Wisdom-tooth DPSC biomaterial — licensed bioreactor rail",
+    dpscIntro:
+      "How ANCAP frames autologous wisdom-tooth dental pulp stem cell (DPSC) biomaterial as of 12 September 2026. These pages sell ACP-settled consult briefs, not cell therapy and not a home culture kit.",
+    dp1Title: "1. Platform role",
+    dp1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-bioreactor matching. ANCAP does not extract teeth, culture cells, print tissue, or practice dentistry or regenerative medicine.",
+    dp2Title: "2. Not a marketed cell therapy",
+    dp2Body:
+      "This SKU is not an FDA BLA, not an EMA ATMP, not a CE-marked cell product, and not a guaranteed organ. Listing a workflow does not place a therapy on the market.",
+    dp3Title: "3. Forbidden outcome claims",
+    dp3Body:
+      "ANCAP does not claim a finished organ, a numeric regeneration rate, or that DPSC will become any named tissue. Full organ print remains a separate 250,000 ACP SKU.",
+    dp4Title: "4. Licensed labs only",
+    dp4Body:
+      "Cell expansion and biomaterial fabrication are laboratory acts. They may be performed only by a licensed biochemical reactor / cell-processing partner. Users must not culture DPSC at home from these pages.",
+    dp5Title: "5. Consent and source",
+    dp5Body:
+      "Partner protocols must document autologous provenance, dental consent, and infection screening. Wisdom-tooth harvest is a clinical act under a licensed dentist or oral surgeon.",
+    dp6Title: "6. Not medical advice",
+    dp6Body:
+      "Catalog copy and workflow outputs are informational. They are not a diagnosis, graft plan, or treatment.",
+    dp7Title: "7. Health data",
+    dp7Body:
+      "Treat dental and cellular identifiers as sensitive. Do not upload records without a lawful basis. Partner labs use their own privacy notices.",
+    dp8Title: "8. Relationship to organ print",
+    dp8Body:
+      "DPSC is also the fallback cell source for aeterna-stem-cell-organ-print (250,000 ACP / organ). Buying this 65,000 ACP biomaterial SKU does not include an organ. BioFusion, light chamber, and other AETERNA rails remain separate.",
+    dp9Title: "9. Payments",
+    dp9Body:
+      "ACP paid for this workflow buys a consult brief and partner match — not title to cells, hardware, or a guaranteed construct. Refunds follow /legal/refunds.",
+    dp10Title: "10. Contact",
+    dp10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#dpsc-biomaterial and /aeterna#organ-print. Related notices: /legal/biofusion, /legal/terms, /legal/risk.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
       "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
@@ -525,6 +599,8 @@ export const legalByLang: Record<Language, Tree> = {
     footerVetRegen: "Vet regen",
     footerLightChamber: "Light chamber",
     footerBodyContouring: "Body contouring",
+    footerBiofusion: "BioFusion",
+    footerDpsc: "DPSC biomaterial",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -738,6 +814,80 @@ export const legalByLang: Record<Language, Tree> = {
     bc10Title: "10. Контакты",
     bc10Body:
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#microwave-body. Связанные страницы: /legal/terms, /legal/risk, /legal/research-refs.",
+    biofusionLink: "Камера BioFusion",
+    hubCardBiofusion:
+      "Камера микроманипуляций: только лицензированный ART / агро / BSL-партнёр. Не клиника ЭКО, не гарантированный эмбрион или беременность, не набор для редактирования генов.",
+    biofusionKicker: "Право / лаборатория",
+    biofusionTitle: "Камера микроманипуляций BioFusion — рейл лицензированного лабораторного партнёра",
+    biofusionIntro:
+      "Как ANCAP описывает камеру BioFusion по состоянию на 12 сентября 2026. Эти страницы продают брифы консультации за ACP, не оборудование, не лечение ЭКО и не услугу редактирования генов.",
+    bf1Title: "1. Роль платформы",
+    bf1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор лицензированного партнёра. ANCAP не ведёт клиники ЭКО, агростанции и BSL-лаборатории, не производит стойку, не создаёт и не переносит эмбрионы и не выполняет ICSI.",
+    bf2Title: "2. Не изделие на рынке",
+    bf2Body:
+      "Инфографика — концептуальная архитектура. Это не брошюра EU MDR / FDA, не CE-маркированная станция ЭКО, продаваемая ANCAP. Листинг workflow не выводит изделие на рынок.",
+    bf3Title: "3. Запрещённые заявления о результате",
+    bf3Body:
+      "ANCAP не заявляет гарантированную беременность, живорождение, жизнеспособную зиготу, гибрид растения или штамм микроорганизма. «Генетические манипуляции» на рисунке — не CRISPR, не синтез генов и не рецепт патогена.",
+    bf4Title: "4. Только лицензированные операторы",
+    bf4Body:
+      "ВРТ — клинический акт. Гибридизация растений и работа с микроорганизмами — лабораторные акты. Пользователи не должны собирать домашние установки ICSI или микроманипуляторы по этим страницам.",
+    bf5Title: "5. Скрининг и закон",
+    bf5Body:
+      "Протоколы партнёра должны соблюдать местные нормы ВРТ, исследований эмбрионов, ГМО и биобезопасности, включая согласие и происхождение гамет. Температура, pH, O2, HEPA/UV и 0,1 мкм — заметки архитектуры, не сертифицированная ANCAP стерильная система.",
+    bf6Title: "6. Не медицинская рекомендация",
+    bf6Body:
+      "Каталог и инфографика — информация. Это не диагноз, план фертильности и не лечение.",
+    bf7Title: "7. Данные о здоровье и генетике",
+    bf7Body:
+      "Идентификаторы, историю гамет и клинические заметки считайте чувствительными. Не загружайте медкарты без правового основания. Хранилища ANCAP остаются hash-first.",
+    bf8Title: "8. Связь с другими рейлами AETERNA",
+    bf8Body:
+      "Печать органов, биоматериал DPSC, мРНК-консультации, ветеринарные рейлы, световая камера Vinci и микроволновый контур остаются отдельными. BioFusion не разрешает DIY CRISPR, рецепты LNP, нелицензированное ЭКО-оборудование или работу с патогенами.",
+    bf9Title: "9. Платежи",
+    bf9Body:
+      "ACP покупает бриф консультации / протокола сеанса и подбор партнёра — не право на оборудование и не возмещаемый клинический результат. Возвраты — /legal/refunds.",
+    bf10Title: "10. Контакты",
+    bf10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#biofusion. Связанные страницы: /legal/dpsc, /legal/terms, /legal/risk.",
+    dpscLink: "Биоматериал DPSC",
+    hubCardDpsc:
+      "Стволовые клетки пульпы зуба мудрости в конструкцию биоматериала: только лицензированный биореактор, не полный орган, не клеточная терапия FDA/CE.",
+    dpscKicker: "Право / биореактор",
+    dpscTitle: "Биоматериал DPSC зуба мудрости — рейл лицензированного биореактора",
+    dpscIntro:
+      "Как ANCAP описывает аутологичный биоматериал DPSC зуба мудрости по состоянию на 12 сентября 2026. Эти страницы продают брифы за ACP, не клеточную терапию и не домашний набор.",
+    dp1Title: "1. Роль платформы",
+    dp1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор лицензированного биореактора. ANCAP не удаляет зубы, не культивирует клетки, не печатает ткань и не занимается стоматологией или регенеративной медициной.",
+    dp2Title: "2. Не клеточная терапия на рынке",
+    dp2Body:
+      "Этот SKU не FDA BLA, не EMA ATMP, не CE-маркированный клеточный продукт и не гарантированный орган.",
+    dp3Title: "3. Запрещённые заявления о результате",
+    dp3Body:
+      "ANCAP не заявляет готовый орган, числовую скорость регенерации или что DPSC станут названной тканью. Полная печать органа остаётся отдельным SKU 250 000 ACP.",
+    dp4Title: "4. Только лицензированные лаборатории",
+    dp4Body:
+      "Наращивание клеток и изготовление биоматериала — лабораторные акты. Пользователи не должны культивировать DPSC дома по этим страницам.",
+    dp5Title: "5. Согласие и источник",
+    dp5Body:
+      "Протоколы партнёра должны фиксировать аутологичное происхождение, стоматологическое согласие и скрининг инфекций. Забор зуба мудрости — клинический акт лицензированного стоматолога.",
+    dp6Title: "6. Не медицинская рекомендация",
+    dp6Body:
+      "Каталог и выходы workflow — информация. Это не диагноз, план трансплантата и не лечение.",
+    dp7Title: "7. Данные о здоровье",
+    dp7Body:
+      "Стоматологические и клеточные идентификаторы считайте чувствительными. Не загружайте записи без правового основания.",
+    dp8Title: "8. Связь с печатью органа",
+    dp8Body:
+      "DPSC также запасной источник клеток для aeterna-stem-cell-organ-print (250 000 ACP / орган). Покупка этого SKU 65 000 ACP не включает орган.",
+    dp9Title: "9. Платежи",
+    dp9Body:
+      "ACP покупает бриф и подбор партнёра — не право на клетки, оборудование или гарантированную конструкцию. Возвраты — /legal/refunds.",
+    dp10Title: "10. Контакты",
+    dp10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#dpsc-biomaterial и /aeterna#organ-print. Связанные страницы: /legal/biofusion, /legal/terms, /legal/risk.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
       "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
@@ -1047,6 +1197,8 @@ export const legalByLang: Record<Language, Tree> = {
     footerVetRegen: "Вет-реген",
     footerLightChamber: "Световая камера",
     footerBodyContouring: "Контур тела",
+    footerBiofusion: "BioFusion",
+    footerDpsc: "Биоматериал DPSC",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -1260,6 +1412,80 @@ export const legalByLang: Record<Language, Tree> = {
     bc10Title: "10. Контакти",
     bc10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#microwave-body.",
+    biofusionLink: "Камера BioFusion",
+    hubCardBiofusion:
+      "Камера микроманипуляций: лише ліцензований ART / агро / BSL-партнер. Не клініка ЕКЗ, не гарантований ембріон чи вагітність, не набір для редагування генів.",
+    biofusionKicker: "Право / лабораторія",
+    biofusionTitle: "Камера мікроманіпуляцій BioFusion — рейл ліцензованого лабораторного партнера",
+    biofusionIntro:
+      "Як ANCAP описує камеру BioFusion станом на 12 вересня 2026. Ці сторінки продають бриф консультації за ACP, не обладнання, не лікування ЕКЗ і не послугу редагування генів.",
+    bf1Title: "1. Роль платформи",
+    bf1Body:
+      "ANCAP забезпечує розрахунок в ACP, брифи і підбір ліцензованого партнера. ANCAP не веде клініки ЕКЗ і не виконує ICSI.",
+    bf2Title: "2. Не виріб на ринку",
+    bf2Body:
+      "Інфографіка — концептуальна архітектура, не брошура виробу EU MDR / FDA.",
+    bf3Title: "3. Заборонені заяви про результат",
+    bf3Body:
+      "ANCAP не заявляє гарантовану вагітність. «Генетичні маніпуляції» — не CRISPR і не рецепт патогена.",
+    bf4Title: "4. Лише ліцензовані оператори",
+    bf4Body:
+      "ДРТ — клінічний акт. Користувачі не повинні збирати домашні установки ICSI.",
+    bf5Title: "5. Скринінг і закон",
+    bf5Body:
+      "Протоколи партнера мають дотримуватися місцевих норм ДРТ, ГМО і біобезпеки.",
+    bf6Title: "6. Не медична рекомендація",
+    bf6Body:
+      "Каталог і інфографіка — інформація. Це не діагноз і не лікування.",
+    bf7Title: "7. Дані про здоров’я і генетику",
+    bf7Body:
+      "Ідентифікатори вважайте чутливими. Не завантажуйте медкарти без правової підстави.",
+    bf8Title: "8. Зв’язок з іншими рейлами AETERNA",
+    bf8Body:
+      "Друк органів, біоматеріал DPSC та інші рейли лишаються окремими. BioFusion не дозволяє DIY CRISPR.",
+    bf9Title: "9. Платежі",
+    bf9Body:
+      "ACP купує бриф і підбір партнера. Повернення — /legal/refunds.",
+    bf10Title: "10. Контакти",
+    bf10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#biofusion.",
+    dpscLink: "Біоматеріал DPSC",
+    hubCardDpsc:
+      "Стовбурові клітини пульпи зуба мудрості: лише ліцензований біореактор, не повний орган.",
+    dpscKicker: "Право / біореактор",
+    dpscTitle: "Біоматеріал DPSC зуба мудрости — рейл лицензированного биореактора",
+    dpscIntro:
+      "Як ANCAP описує аутологічний біоматеріал DPSC станом на 12 вересня 2026.",
+    dp1Title: "1. Роль платформи",
+    dp1Body:
+      "ANCAP забезпечує розрахунок в ACP і підбір біореактора. ANCAP не видаляє зуби і не культивує клітини.",
+    dp2Title: "2. Не клітинна терапія на ринку",
+    dp2Body:
+      "Цей SKU не FDA BLA, не EMA ATMP і не гарантований орган.",
+    dp3Title: "3. Заборонені заяви про результат",
+    dp3Body:
+      "ANCAP не заявляє готовий орган. Повний друк органа лишається окремим SKU 250 000 ACP.",
+    dp4Title: "4. Лише ліцензовані лабораторії",
+    dp4Body:
+      "Користувачі не повинні культивувати DPSC вдома.",
+    dp5Title: "5. Згода і джерело",
+    dp5Body:
+      "Протоколи партнера мають фіксувати аутологічне походження і стоматологічну згоду.",
+    dp6Title: "6. Не медична рекомендація",
+    dp6Body:
+      "Каталог — інформація. Це не діагноз і не лікування.",
+    dp7Title: "7. Данные о здоровье",
+    dp7Body:
+      "Ідентифікатори вважайте чутливими.",
+    dp8Title: "8. Зв’язок із друком органа",
+    dp8Body:
+      "DPSC також запасне джерело для друку органа (250 000 ACP). Купівля цього SKU не включає орган.",
+    dp9Title: "9. Платежі",
+    dp9Body:
+      "ACP купує бриф і підбір партнера. Повернення — /legal/refunds.",
+    dp10Title: "10. Контакти",
+    dp10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#dpsc-biomaterial.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
       "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
@@ -1575,6 +1801,8 @@ export const legalByLang: Record<Language, Tree> = {
     footerVetRegen: "Вет-реген",
     footerLightChamber: "Світлова камера",
     footerBodyContouring: "Контур тіла",
+    footerBiofusion: "BioFusion",
+    footerDpsc: "Біоматеріал DPSC",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -1787,6 +2015,80 @@ export const legalByLang: Record<Language, Tree> = {
     bc10Title: "10. Kontakt",
     bc10Body:
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#microwave-body.",
+    biofusionLink: "BioFusion-Kammer",
+    hubCardBiofusion:
+      "Mikromanipulationskammer: nur lizenzierter ART-/Agrar-/BSL-Partner. Keine Kinderwunschklinik, kein garantierter Embryo, kein Gen-Editier-Kit.",
+    biofusionKicker: "Recht / Labor",
+    biofusionTitle: "BioFusion-Mikromanipulationskammer — lizenzierte Laborpartnerschiene",
+    biofusionIntro:
+      "Wie ANCAP die BioFusion-Kammer zum 12. September 2026 rahmt. Diese Seiten verkaufen ACP-Briefings, keine Hardware und keine IVF-Behandlung.",
+    bf1Title: "1. Plattformrolle",
+    bf1Body:
+      "ANCAP stellt ACP-Abrechnung und Partner-Matching bereit. ANCAP betreibt keine Kinderwunschkliniken, stellt den Wagen nicht her und führt kein ICSI durch.",
+    bf2Title: "2. Kein vermarktetes Medizinprodukt",
+    bf2Body:
+      "Die Infografik ist konzeptionelle Architektur, keine EU-MDR-/FDA-Gerätebroschüre.",
+    bf3Title: "3. Verbotene Ergebnisbehauptungen",
+    bf3Body:
+      "ANCAP behauptet keine garantierte Schwangerschaft. „Genetische Manipulationen“ sind keine CRISPR- oder Pathogenrezepte.",
+    bf4Title: "4. Nur lizenzierte Betreiber",
+    bf4Body:
+      "Reproduktionsmedizin und BSL-Arbeit sind lizenzpflichtig. Keine Heim-ICSI-Rigs aus diesen Seiten.",
+    bf5Title: "5. Screening und Recht",
+    bf5Body:
+      "Partnerprotokolle müssen ART-, Embryo-, GMO- und Biosafety-Recht einhalten.",
+    bf6Title: "6. Keine medizinische Beratung",
+    bf6Body:
+      "Katalog und Infografiken sind informativ, keine Diagnose.",
+    bf7Title: "7. Gesundheits- und Genetikdaten",
+    bf7Body:
+      "Identifikatoren sind sensibel. Keine Krankenakten ohne Rechtsgrundlage.",
+    bf8Title: "8. Verhältnis zu anderen AETERNA-Schienen",
+    bf8Body:
+      "Organdruck, DPSC-Biomaterial und andere Schienen bleiben getrennt. BioFusion erlaubt kein DIY-CRISPR.",
+    bf9Title: "9. Zahlungen",
+    bf9Body:
+      "ACP kauft ein Briefing und Partner-Matching. Erstattungen: /legal/refunds.",
+    bf10Title: "10. Kontakt",
+    bf10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#biofusion.",
+    dpscLink: "DPSC-Biomaterial",
+    hubCardDpsc:
+      "Weisheitszahn-DPSC zu einem Biomaterial-Konstrukt: nur lizenzierter Bioreaktor, kein volles Organ.",
+    dpscKicker: "Recht / Bioreaktor",
+    dpscTitle: "Weisheitszahn-DPSC-Biomaterial — lizenzierte Bioreaktorschiene",
+    dpscIntro:
+      "Wie ANCAP autologes DPSC-Biomaterial zum 12. September 2026 rahmt.",
+    dp1Title: "1. Plattformrolle",
+    dp1Body:
+      "ANCAP rechnet ACP ab und matcht Bioreaktoren. ANCAP zieht keine Zähne und kultiviert keine Zellen.",
+    dp2Title: "2. Keine vermarktete Zelltherapie",
+    dp2Body:
+      "Kein FDA BLA, kein EMA ATMP, kein garantiertes Organ.",
+    dp3Title: "3. Verbotene Ergebnisbehauptungen",
+    dp3Body:
+      "ANCAP behauptet kein fertiges Organ. Voller Organdruck bleibt 250.000 ACP.",
+    dp4Title: "4. Nur lizenzierte Labore",
+    dp4Body:
+      "Keine Heimkultur von DPSC aus diesen Seiten.",
+    dp5Title: "5. Einwilligung und Quelle",
+    dp5Body:
+      "Autologe Herkunft und zahnärztliche Einwilligung sind Pflicht.",
+    dp6Title: "6. Keine medizinische Beratung",
+    dp6Body:
+      "Katalogtexte sind informativ.",
+    dp7Title: "7. Gesundheitsdaten",
+    dp7Body:
+      "Dentale und zelluläre Identifikatoren sind sensibel.",
+    dp8Title: "8. Verhältnis zum Organdruck",
+    dp8Body:
+      "DPSC ist auch Fallback für den 250.000-ACP-Organdruck. Dieses 65.000-ACP-SKU enthält kein Organ.",
+    dp9Title: "9. Zahlungen",
+    dp9Body:
+      "ACP kauft ein Briefing. Erstattungen: /legal/refunds.",
+    dp10Title: "10. Kontakt",
+    dp10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#dpsc-biomaterial.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
       "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
@@ -2102,6 +2404,8 @@ export const legalByLang: Record<Language, Tree> = {
     footerVetRegen: "Vet-Regen",
     footerLightChamber: "Lichtkammer",
     footerBodyContouring: "Body-Contouring",
+    footerBiofusion: "BioFusion",
+    footerDpsc: "DPSC-Biomaterial",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -2313,6 +2617,80 @@ export const legalByLang: Record<Language, Tree> = {
     bc10Title: "10. 聯絡",
     bc10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#microwave-body。",
+    biofusionLink: "BioFusion 艙",
+    hubCardBiofusion:
+      "微操作艙：僅持照 ART／農業／BSL 夥伴。非生殖診所、非保證胚胎或妊娠、非基因編輯套件。",
+    biofusionKicker: "法律／實驗室",
+    biofusionTitle: "BioFusion 微操作艙——持照實驗室夥伴軌道",
+    biofusionIntro:
+      "ANCAP 截至 2026 年 9 月 12 日如何表述 BioFusion 艙。這些頁面出售 ACP 諮詢簡報，不是硬體，也不是 IVF 治療。",
+    bf1Title: "1. 平台角色",
+    bf1Body:
+      "ANCAP 提供 ACP 結算與夥伴配對。ANCAP 不經營生殖診所、不製造推車、不執行 ICSI。",
+    bf2Title: "2. 非上市醫療器材",
+    bf2Body:
+      "資訊圖為概念架構，非 EU MDR／FDA 器材型錄。",
+    bf3Title: "3. 禁止的結果主張",
+    bf3Body:
+      "ANCAP 不主張保證妊娠。「基因操作」非 CRISPR 或病原體配方。",
+    bf4Title: "4. 僅限持照操作者",
+    bf4Body:
+      "輔助生殖與 BSL 作業須持照。不得依這些頁面自製家用 ICSI。",
+    bf5Title: "5. 篩檢與法律",
+    bf5Body:
+      "夥伴流程須遵守當地 ART、胚胎、GMO 與生物安全法規。",
+    bf6Title: "6. 非醫療建議",
+    bf6Body:
+      "型錄與資訊圖僅供資訊，非診斷。",
+    bf7Title: "7. 健康與基因資料",
+    bf7Body:
+      "識別資料屬敏感。無合法基礎請勿上傳病歷。",
+    bf8Title: "8. 與其他 AETERNA 軌道的關係",
+    bf8Body:
+      "器官列印、DPSC 生物材料與其他軌道仍分開。BioFusion 不授權 DIY CRISPR。",
+    bf9Title: "9. 付款",
+    bf9Body:
+      "ACP 購買簡報與夥伴配對。退款見 /legal/refunds。",
+    bf10Title: "10. 聯絡",
+    bf10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#biofusion。",
+    dpscLink: "DPSC 生物材料",
+    hubCardDpsc:
+      "智齒牙髓幹細胞擴增為生物材料：僅持照生物反應器，非完整器官。",
+    dpscKicker: "法律／生物反應器",
+    dpscTitle: "智齒 DPSC 生物材料——持照生物反應器軌道",
+    dpscIntro:
+      "ANCAP 截至 2026 年 9 月 12 日如何表述自體 DPSC 生物材料。",
+    dp1Title: "1. 平台角色",
+    dp1Body:
+      "ANCAP 提供 ACP 結算與生物反應器配對。ANCAP 不拔牙、不培養細胞。",
+    dp2Title: "2. 非上市細胞治療",
+    dp2Body:
+      "非 FDA BLA、非 EMA ATMP、非保證器官。",
+    dp3Title: "3. 禁止的結果主張",
+    dp3Body:
+      "ANCAP 不主張完成器官。完整器官列印仍為 250,000 ACP。",
+    dp4Title: "4. 僅限持照實驗室",
+    dp4Body:
+      "不得依這些頁面在家培養 DPSC。",
+    dp5Title: "5. 同意與來源",
+    dp5Body:
+      "須記錄自體來源與牙科同意。",
+    dp6Title: "6. 非醫療建議",
+    dp6Body:
+      "型錄僅供資訊。",
+    dp7Title: "7. 健康資料",
+    dp7Body:
+      "牙科與細胞識別資料屬敏感。",
+    dp8Title: "8. 與器官列印的關係",
+    dp8Body:
+      "DPSC 亦為 250,000 ACP 器官列印的備援來源。此 65,000 ACP SKU 不含器官。",
+    dp9Title: "9. 付款",
+    dp9Body:
+      "ACP 購買簡報。退款見 /legal/refunds。",
+    dp10Title: "10. 聯絡",
+    dp10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#dpsc-biomaterial。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
       "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
@@ -2628,6 +3006,8 @@ export const legalByLang: Record<Language, Tree> = {
     footerVetRegen: "獸醫再生",
     footerLightChamber: "光艙",
     footerBodyContouring: "身體輪廓",
+    footerBiofusion: "BioFusion",
+    footerDpsc: "DPSC 生物材料",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",
