@@ -19,6 +19,7 @@ import { VascularCarePanel } from "@/components/aeterna/VascularCarePanel";
 import { TransdermalPistolPanel } from "@/components/aeterna/TransdermalPistolPanel";
 import { MReceptorPanel } from "@/components/aeterna/MReceptorPanel";
 import { OxygenCarrierPanel } from "@/components/aeterna/OxygenCarrierPanel";
+import { SyntheticBloodMambaPanel } from "@/components/aeterna/SyntheticBloodMambaPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -53,9 +54,10 @@ type AeternaStatus = {
   transdermal_pistol_note?: string;
   m_receptor_note?: string;
   oxygen_carrier_note?: string;
+  synthetic_blood_mamba_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -202,6 +204,12 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.oxCta")}
             </a>
+            <a
+              href="#synthetic-blood-mamba"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.sbmCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -281,6 +289,10 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <OxygenCarrierPanel note={status?.oxygen_carrier_note} />
+        </section>
+
+        <section className="mt-16">
+          <SyntheticBloodMambaPanel note={status?.synthetic_blood_mamba_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

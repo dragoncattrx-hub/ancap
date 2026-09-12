@@ -655,6 +655,41 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
         tags=["aeterna", "oxygen-carrier", "hboC", "pfc", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-synthetic-blood-mamba",
+        title="AETERNA Synthetic Blood / Black Mamba Architecture",
+        category="AETERNA",
+        summary=(
+            "Licensed bioreactor / transfusion-medicine partner brief for synthetic-blood architecture "
+            "with modified Black Mamba peptide literacy — 98,000 ACP."
+        ),
+        description=(
+            "Settles 98,000 ACP and issues a licensed-partner brief for a conceptual multi-layer particle: "
+            "oxygen-carrier core (hemoglobin or PFC), lipid shell, polymer mesh, modified Black Mamba "
+            "peptide literacy, delivery vesicle, and immune-management sensors. Infographic stages and "
+            "'controlled dose' callouts are architecture literacy, not a manufacturing SOP and not a toxin "
+            "or dosing recipe. ANCAP does not produce blood substitutes, does not compound venom peptides, "
+            "hemoglobin or perfluorocarbon emulsions, and does not claim CE/FDA therapeutic status. Physical "
+            "manufacture and any clinical use occur only under a licensed bioreactor / transfusion-medicine "
+            "partner after screening."
+        ),
+        price=Money(amount="98000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=[
+            "Layer map (core / shell / mesh / peptide literacy)",
+            "Licensed bioreactor partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Synthetic-blood / Black Mamba architecture intake brief",
+            "Licensed bioreactor handoff",
+            "Non-claim checklist (no blood product / no venom or HBOC-PFC recipe / no CE-FDA / no toxin SOP)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "synthetic-blood", "black-mamba", "hboC", "pfc", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1860,6 +1895,31 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Physical manufacture occurs only "
                     "under a licensed bioreactor. Infographic QC and fill copy is architecture literacy, "
                     "not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-synthetic-blood-mamba":
+            deliverable["intent"] = str(payload.get("intent_kind") or "synthetic_blood_mamba_brief")
+            deliverable["compliance"] = (
+                "Licensed bioreactor / transfusion-medicine partner only. Not a blood product, not compounding "
+                "of venom peptides, hemoglobin or perfluorocarbon, not a CE/FDA therapeutic, not a toxin "
+                "recipe, and not a manufacturing SOP. No home emulsion or venom kit, CRISPR, or gene synthesis."
+            )
+            deliverable["synthetic_blood_mamba"] = {
+                "mode": "licensed_bioreactor_partner",
+                "architecture": "hboc_pfc_black_mamba_peptide_architecture",
+                "price_acp": "98000",
+                "layers_literacy": [
+                    "oxygen_carrier_core",
+                    "lipid_shell",
+                    "polymer_mesh",
+                    "modified_black_mamba_peptides",
+                    "delivery_vesicle",
+                    "immune_management_sensors",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical manufacture occurs only "
+                    "under a licensed bioreactor. Infographic stages and controlled-dose callouts are "
+                    "architecture literacy, not a product claim or dosing guide."
                 ),
             }
         execution_summary = {

@@ -70,6 +70,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.transdermal_pistol.value == "transdermal_pistol"
     assert AeternaIntentKind.m_receptor_subscription.value == "m_receptor_subscription"
     assert AeternaIntentKind.oxygen_carrier_brief.value == "oxygen_carrier_brief"
+    assert AeternaIntentKind.synthetic_blood_mamba_brief.value == "synthetic_blood_mamba_brief"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -82,6 +83,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["transdermal_pistol_note"]
     assert AeternaStatusPublic.model_fields["m_receptor_note"]
     assert AeternaStatusPublic.model_fields["oxygen_carrier_note"]
+    assert AeternaStatusPublic.model_fields["synthetic_blood_mamba_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -91,7 +93,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 19
+    assert len(aeterna) >= 20
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -101,6 +103,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-transdermal-pistol": "46000",
         "aeterna-m-receptor-subscription": "12000",
         "aeterna-oxygen-carrier": "92000",
+        "aeterna-synthetic-blood-mamba": "98000",
         "aeterna-vascular-care-plus": "54000",
         "aeterna-vascular-care": "58000",
         "aeterna-dpsc-biomaterial": "65000",
@@ -121,6 +124,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-transdermal-pistol" in slugs
     assert "aeterna-m-receptor-subscription" in slugs
     assert "aeterna-oxygen-carrier" in slugs
+    assert "aeterna-synthetic-blood-mamba" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -653,6 +657,41 @@ def test_oxygen_carrier_intent_default_slug_and_reject_low_budget(client):
     payload = created.json()
     assert payload["workflow_slug"] == OXYGEN_CARRIER_SLUG
     assert payload["metadata_json"]["architecture"] == "hboC_or_pfc_oxygen_carrier"
+
+
+def test_synthetic_blood_mamba_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-synthetic-blood-mamba")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "synthetic_blood_mamba_brief"})
+    sb = out["deliverable"]["synthetic_blood_mamba"]
+    assert sb["price_acp"] == "98000"
+    assert sb["architecture"] == "hboc_pfc_black_mamba_peptide_architecture"
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at", "venom extraction"):
+        assert forbidden not in blob
+    assert "licensed_bioreactor" in blob
+    assert "toxin" in blob or "venom" in blob
+
+
+def test_synthetic_blood_mamba_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import SYNTHETIC_BLOOD_MAMBA_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "synthetic_blood_mamba_brief", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "synthetic_blood_mamba_brief", "budget_acp": "98000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == SYNTHETIC_BLOOD_MAMBA_SLUG
+    assert payload["metadata_json"]["architecture"] == "hboc_pfc_black_mamba_peptide_architecture"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

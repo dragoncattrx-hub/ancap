@@ -56,6 +56,7 @@ class AeternaIntentKind(str, Enum):
     transdermal_pistol = "transdermal_pistol"
     m_receptor_subscription = "m_receptor_subscription"
     oxygen_carrier_brief = "oxygen_carrier_brief"
+    synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
 
 
 class AeternaDnaSource(str, Enum):
@@ -296,4 +297,10 @@ class AeternaStatusPublic(BaseModel):
         "for hemoglobin-vesicle or perfluorocarbon-emulsion architecture literacy. Infographics are conceptual "
         "— not a blood product, not compounding of hemoglobin or PFC, not a CE/FDA oxygen therapeutic, and "
         "not a manufacturing SOP."
+    )
+    synthetic_blood_mamba_note: str = (
+        "The synthetic-blood / Black Mamba peptide architecture rail is a licensed bioreactor / "
+        "transfusion-medicine partner brief. Infographics are conceptual literacy — not a blood product, "
+        "not compounding of venom peptides, hemoglobin or PFC, not a CE/FDA therapeutic, and not a "
+        "toxin or manufacturing SOP."
     )

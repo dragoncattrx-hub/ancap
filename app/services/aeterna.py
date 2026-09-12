@@ -51,6 +51,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-transdermal-pistol",
     "aeterna-m-receptor-subscription",
     "aeterna-oxygen-carrier",
+    "aeterna-synthetic-blood-mamba",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -81,6 +82,8 @@ M_RECEPTOR_QUARTERLY_ACP = Decimal("32000")
 M_RECEPTOR_ANNUAL_ACP = Decimal("108000")
 OXYGEN_CARRIER_SLUG = "aeterna-oxygen-carrier"
 OXYGEN_CARRIER_PRICE_ACP = Decimal("92000")
+SYNTHETIC_BLOOD_MAMBA_SLUG = "aeterna-synthetic-blood-mamba"
+SYNTHETIC_BLOOD_MAMBA_PRICE_ACP = Decimal("98000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -198,6 +201,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.transdermal_pistol.value: TRANSDERMAL_SLUG,
     AeternaIntentKind.m_receptor_subscription.value: M_RECEPTOR_SLUG,
     AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
+    AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -412,6 +416,28 @@ OXYGEN_CARRIER_META = {
     ),
 }
 
+SYNTHETIC_BLOOD_MAMBA_META = {
+    "mode": "licensed_bioreactor_partner",
+    "unit": "architecture_brief",
+    "price_acp": "98000",
+    "architecture": "hboc_pfc_black_mamba_peptide_architecture",
+    "layers_literacy": [
+        "oxygen_carrier_core",
+        "lipid_shell",
+        "polymer_mesh",
+        "modified_black_mamba_peptides",
+        "delivery_vesicle",
+        "immune_management_sensors",
+    ],
+    "note": (
+        "Conceptual synthetic-blood architecture brief with modified Black Mamba peptide literacy. "
+        "ANCAP settles ACP and issues a licensed bioreactor / transfusion-medicine partner handoff. "
+        "Not a blood product, not compounding of venom peptides, hemoglobin or PFC, not a CE/FDA "
+        "therapeutic, not a toxin recipe, and not a manufacturing SOP. Infographic stages and "
+        "'controlled dose' callouts are architecture literacy, not a dosing guide. Partner screening required."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -514,7 +540,8 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, microwave body contouring, "
             "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, "
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
-            "M-receptor delivery subscription, artificial oxygen-carrier brief, licensed longevity partners."
+            "M-receptor delivery subscription, artificial oxygen-carrier brief, "
+            "synthetic-blood / Black Mamba peptide architecture brief, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -586,6 +613,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Oxygen-carrier listings are licensed bioreactor / transfusion-medicine partner intakes for "
             "hemoglobin-vesicle or PFC-emulsion architecture literacy. Infographics are conceptual — not a "
             "blood product, not compounding, and not a CE/FDA oxygen therapeutic."
+        ),
+        synthetic_blood_mamba_note=(
+            "Synthetic-blood / Black Mamba peptide architecture listings are licensed bioreactor / "
+            "transfusion-medicine partner intakes. Infographics are conceptual — not a blood product, "
+            "not venom compounding, not a toxin SOP, and not a CE/FDA therapeutic."
         ),
     )
 
@@ -842,6 +874,20 @@ async def create_intent_order(
                 detail="oxygen_carrier_brief budget_acp must be at least 92000 ACP",
             )
         for key, value in OXYGEN_CARRIER_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.synthetic_blood_mamba_brief:
+        if slug and slug != SYNTHETIC_BLOOD_MAMBA_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="synthetic_blood_mamba_brief requires workflow_slug aeterna-synthetic-blood-mamba",
+            )
+        slug = SYNTHETIC_BLOOD_MAMBA_SLUG
+        if body.budget_acp < SYNTHETIC_BLOOD_MAMBA_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="synthetic_blood_mamba_brief budget_acp must be at least 98000 ACP",
+            )
+        for key, value in SYNTHETIC_BLOOD_MAMBA_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

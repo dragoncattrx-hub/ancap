@@ -624,6 +624,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
     tags: ["aeterna", "oxygen-carrier", "hboc", "pfc", "consult"],
   },
+  {
+    slug: "aeterna-synthetic-blood-mamba",
+    title: "AETERNA Synthetic Blood / Black Mamba Architecture",
+    category: "AETERNA",
+    summary:
+      "Licensed bioreactor / transfusion-medicine partner brief for synthetic-blood architecture with modified Black Mamba peptide literacy — 98,000 ACP.",
+    description:
+      "Settles 98,000 ACP and issues a licensed-partner brief. Not a blood product, not compounding of venom peptides, hemoglobin or PFC, not a CE/FDA therapeutic, not a toxin or manufacturing SOP.",
+    price: { amount: "98000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 50,
+    preview_items: [
+      "Layer map (core / shell / mesh / peptide literacy)",
+      "Licensed bioreactor partner match",
+      "Non-claim protocol pack",
+    ],
+    output_items: [
+      "Synthetic-blood / Black Mamba architecture intake brief",
+      "Licensed bioreactor handoff",
+      "Non-claim checklist (no blood product / no venom or HBOC-PFC recipe / no CE-FDA / no toxin SOP)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "synthetic-blood", "black-mamba", "hboc", "pfc", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

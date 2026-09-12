@@ -470,6 +470,44 @@ export const legalByLang: Record<Language, Tree> = {
     ox10Title: "10. Contact",
     ox10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#oxygen-carrier. Related notices: /legal/dpsc, /legal/terms, /legal/risk.",
+    syntheticBloodMambaLink: "Synthetic blood / Black Mamba",
+    hubCardSyntheticBloodMamba:
+      "Licensed bioreactor brief for synthetic-blood architecture with modified Black Mamba peptide literacy. Not a blood product, not venom compounding, not a CE/FDA therapeutic.",
+    syntheticBloodMambaKicker: "Legal / bioreactor / peptide literacy",
+    syntheticBloodMambaTitle: "Synthetic blood / Black Mamba — licensed bioreactor partner rail",
+    syntheticBloodMambaIntro:
+      "How ANCAP frames the synthetic-blood / Black Mamba architecture SKU as of 12 September 2026. These pages sell ACP-settled consult briefs, not blood products, not venom peptides, and not a home kit.",
+    sbm1Title: "1. Platform role",
+    sbm1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture hemoglobin vesicles, PFC emulsions, or venom peptides, and does not operate a transfusion or toxin lab.",
+    sbm2Title: "2. Not a blood product",
+    sbm2Body:
+      "The infographic is conceptual architecture. It is not an EU MDR or FDA brochure and not a CE-marked oxygen therapeutic or synthetic blood sold by ANCAP.",
+    sbm3Title: "3. Forbidden outcome claims",
+    sbm3Body:
+      "ANCAP does not claim to replace transfusion, treat trauma, ischemia, or anemia, or to guarantee vasodilation, anticoagulation, neuroprotection, regeneration, or longevity.",
+    sbm4Title: "4. Licensed partners only",
+    sbm4Body:
+      "Any physical manufacture or clinical use is a licensed bioreactor / transfusion-medicine act. Users must not build home emulsions, hemoglobin kits, or venom-peptide preparations from these pages.",
+    sbm5Title: "5. Infographic literacy, not an SOP",
+    sbm5Body:
+      "Core, shell, polymer mesh, Black Mamba peptide icons, delivery stages, and 'controlled dose' callouts are architecture literacy. ANCAP does not publish toxin, peptide-modification, HBOC, PFC, or sterile-fill recipes.",
+    sbm6Title: "6. Not medical advice",
+    sbm6Body:
+      "Catalog copy is informational. It is not a diagnosis, prescription, or treatment plan.",
+    sbm7Title: "7. Health data",
+    sbm7Body:
+      "Treat identifiers and clinical history as sensitive. Do not upload records without a lawful basis.",
+    sbm8Title: "8. Relationship to other rails",
+    sbm8Body:
+      "The artificial oxygen-carrier SKU (92,000 ACP) remains separate. This architecture brief does not authorize compounding or unlicensed manufacture.",
+    sbm9Title: "9. Payments",
+    sbm9Body:
+      "ACP buys a consult brief and partner match at 98,000 ACP — not a blood unit, not a peptide lot, and not a refundable transfusion outcome. Refunds follow /legal/refunds.",
+    sbm10Title: "10. Contact",
+    sbm10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#synthetic-blood-mamba. Related notices: /legal/oxygen-carrier, /legal/terms, /legal/risk.",
+    footerSyntheticBloodMamba: "Synthetic blood / Black Mamba",
 
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
@@ -1232,6 +1270,44 @@ export const legalByLang: Record<Language, Tree> = {
     ox9Body: "ACP покупает бриф и подбор партнёра за 92 000 ACP — не единицу крови. Возвраты — /legal/refunds.",
     ox10Title: "10. Контакты",
     ox10Body: "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#oxygen-carrier.",
+    syntheticBloodMambaLink: "Синтетическая кровь / Чёрная Мамба",
+    hubCardSyntheticBloodMamba:
+      "Партнёрский бриф биореактора: архитектура синтетической крови с грамотностью модифицированных пептидов Чёрной Мамбы. Не кровезаменитель, не компаундинг яда, не изделие CE/FDA.",
+    syntheticBloodMambaKicker: "Право / биореактор / пептидная грамотность",
+    syntheticBloodMambaTitle: "Синтетическая кровь / Чёрная Мамба — рейл лицензированного биореактора",
+    syntheticBloodMambaIntro:
+      "Как ANCAP описывает SKU архитектуры синтетической крови / Чёрной Мамбы на 12 сентября 2026. Эти страницы продают ACP-брифы, не кровь, не пептиды яда и не домашний набор.",
+    sbm1Title: "1. Роль платформы",
+    sbm1Body:
+      "ANCAP даёт расчёт в ACP, брифы и подбор лицензированного партнёра. ANCAP не производит гемоглобиновые везикулы, эмульсии PFC или пептиды яда и не ведёт трансфузионную или токсин-лабораторию.",
+    sbm2Title: "2. Не кровепродукт",
+    sbm2Body:
+      "Инфографика — концептуальная архитектура. Это не брошюра EU MDR/FDA и не CE-маркированный кислородный терапевтик или синтетическая кровь от ANCAP.",
+    sbm3Title: "3. Запрещённые обещания результата",
+    sbm3Body:
+      "ANCAP не обещает заменить трансфузию, лечить травму, ишемию или анемию и не гарантирует вазодилатацию, антикоагуляцию, нейропротекцию, регенерацию или долголетие.",
+    sbm4Title: "4. Только лицензированные партнёры",
+    sbm4Body:
+      "Любое физическое производство или клиническое применение — акт лицензированного биореактора / трансфузиологии. Нельзя собирать домашние эмульсии, наборы гемоглобина или препараты пептидов яда по этим страницам.",
+    sbm5Title: "5. Грамотность инфографики, не SOP",
+    sbm5Body:
+      "Ядро, оболочка, полимерная сетка, иконки пептидов Чёрной Мамбы, этапы доставки и пометки «контролируемые дозы» — грамотность архитектуры. ANCAP не публикует рецепты токсинов, модификации пептидов, HBOC, PFC или стерильного розлива.",
+    sbm6Title: "6. Не медицинская консультация",
+    sbm6Body:
+      "Каталог — информационный. Это не диагноз, не рецепт и не план лечения.",
+    sbm7Title: "7. Данные о здоровье",
+    sbm7Body:
+      "Идентификаторы и клиническую историю считайте чувствительными. Не загружайте записи без законного основания.",
+    sbm8Title: "8. Связь с другими рейлами",
+    sbm8Body:
+      "SKU искусственного переносчика кислорода (92 000 ACP) остаётся отдельным. Этот бриф архитектуры не разрешает компаундинг или нелицензированное производство.",
+    sbm9Title: "9. Платежи",
+    sbm9Body:
+      "ACP покупает бриф и подбор партнёра за 98 000 ACP — не единицу крови, не партию пептидов и не гарантированный исход трансфузии. Возвраты — /legal/refunds.",
+    sbm10Title: "10. Контакты",
+    sbm10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#synthetic-blood-mamba. Связанные тексты: /legal/oxygen-carrier, /legal/terms, /legal/risk.",
+    footerSyntheticBloodMamba: "Синтетическая кровь / Чёрная Мамба",
 
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
@@ -1973,6 +2049,44 @@ export const legalByLang: Record<Language, Tree> = {
     ox9Body: "ACP купує бриф і підбір партнера за 92 000 ACP.",
     ox10Title: "10. Контакти",
     ox10Body: "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#oxygen-carrier.",
+    syntheticBloodMambaLink: "Синтетична кров / Чорна Мамба",
+    hubCardSyntheticBloodMamba:
+      "Партнерський бриф біореактора: архітектура синтетичної крові з грамотністю модифікованих пептидів Чорної Мамби. Не кровозамінник, не компаундинг отрути, не виріб CE/FDA.",
+    syntheticBloodMambaKicker: "Право / біореактор",
+    syntheticBloodMambaTitle: "Синтетична кров / Чорна Мамба — рейл ліцензованого біореактора",
+    syntheticBloodMambaIntro:
+      "Як ANCAP описує SKU архітектури синтетичної крові / Чорної Мамби станом на 12 вересня 2026. Ці сторінки продають ACP-брифи, не кров і не пептиди отрути.",
+    sbm1Title: "1. Роль платформи",
+    sbm1Body:
+      "ANCAP дає розрахунок в ACP, брифи та підбір ліцензованого партнера. ANCAP не виробляє гемоглобінові везикули, емульсії PFC чи пептиди отрути.",
+    sbm2Title: "2. Не кровопродукт",
+    sbm2Body:
+      "Інфографіка — концептуальна архітектура. Це не брошура EU MDR/FDA і не CE-маркований терапевтик від ANCAP.",
+    sbm3Title: "3. Заборонені обіцянки результату",
+    sbm3Body:
+      "ANCAP не обіцяє замінити трансфузію чи гарантувати вазодилатацію, антикоагуляцію, нейропротекцію чи довголіття.",
+    sbm4Title: "4. Лише ліцензовані партнери",
+    sbm4Body:
+      "Будь-яке фізичне виробництво чи клінічне застосування — акт ліцензованого біореактора / трансфузіології.",
+    sbm5Title: "5. Грамотність інфографіки, не SOP",
+    sbm5Body:
+      "Ядро, оболонка, сітка, іконки пептидів Чорної Мамби та «контрольовані дози» — грамотність архітектури. ANCAP не публікує рецепти токсинів чи HBOC/PFC.",
+    sbm6Title: "6. Не медична консультація",
+    sbm6Body:
+      "Каталог — інформаційний. Це не діагноз і не план лікування.",
+    sbm7Title: "7. Дані про здоров'я",
+    sbm7Body:
+      "Ідентифікатори та клінічну історію вважайте чутливими.",
+    sbm8Title: "8. Зв'язок з іншими рейлами",
+    sbm8Body:
+      "SKU штучного переносника кисню (92 000 ACP) залишається окремим.",
+    sbm9Title: "9. Платежі",
+    sbm9Body:
+      "ACP купує бриф і підбір партнера за 98 000 ACP — не одиницю крові. Повернення — /legal/refunds.",
+    sbm10Title: "10. Контакти",
+    sbm10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#synthetic-blood-mamba.",
+    footerSyntheticBloodMamba: "Синтетична кров / Чорна Мамба",
 
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
@@ -2719,6 +2833,44 @@ export const legalByLang: Record<Language, Tree> = {
     ox9Body: "ACP kauft eine Kurzakte und Partnerzuordnung für 92.000 ACP.",
     ox10Title: "10. Kontakt",
     ox10Body: "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#oxygen-carrier.",
+    syntheticBloodMambaLink: "Synthetisches Blut / Black Mamba",
+    hubCardSyntheticBloodMamba:
+      "Lizenziertes Bioreaktor-Briefing zur Synthetisches-Blut-Architektur mit Black-Mamba-Peptid-Literacy. Kein Blutprodukt, kein Gift-Compounding, kein CE/FDA-Therapeutikum.",
+    syntheticBloodMambaKicker: "Recht / Bioreaktor",
+    syntheticBloodMambaTitle: "Synthetisches Blut / Black Mamba — lizenzierte Bioreaktor-Schiene",
+    syntheticBloodMambaIntro:
+      "So rahmt ANCAP die Synthetisches-Blut- / Black-Mamba-SKU zum 12. September 2026. Diese Seiten verkaufen ACP-Briefings, keine Blutprodukte und keine Giftpeptide.",
+    sbm1Title: "1. Plattformrolle",
+    sbm1Body:
+      "ANCAP bietet ACP-Abrechnung, Briefings und Partner-Matching. ANCAP stellt keine Hämoglobinvesikel, PFC-Emulsionen oder Giftpeptide her.",
+    sbm2Title: "2. Kein Blutprodukt",
+    sbm2Body:
+      "Die Infografik ist konzeptionelle Architektur. Kein EU-MDR-/FDA-Prospekt und kein CE-markiertes Therapeutikum von ANCAP.",
+    sbm3Title: "3. Verbotene Ergebnisversprechen",
+    sbm3Body:
+      "ANCAP behauptet nicht, Transfusionen zu ersetzen oder Vasodilatation, Antikoagulation, Neuroprotektion oder Langlebigkeit zu garantieren.",
+    sbm4Title: "4. Nur lizenzierte Partner",
+    sbm4Body:
+      "Jede physische Herstellung oder klinische Nutzung ist ein lizenzierter Bioreaktor- / Transfusionsmedizin-Akt.",
+    sbm5Title: "5. Infografik-Literacy, kein SOP",
+    sbm5Body:
+      "Kern, Hülle, Polymernetz, Black-Mamba-Peptid-Icons und 'kontrollierte Dosis'-Hinweise sind Architektur-Literacy. ANCAP veröffentlicht keine Toxin- oder HBOC/PFC-Rezepte.",
+    sbm6Title: "6. Keine medizinische Beratung",
+    sbm6Body:
+      "Katalogtexte sind informativ. Keine Diagnose und kein Behandlungsplan.",
+    sbm7Title: "7. Gesundheitsdaten",
+    sbm7Body:
+      "Identifikatoren und klinische Historie als sensibel behandeln.",
+    sbm8Title: "8. Bezug zu anderen Schienen",
+    sbm8Body:
+      "Die Sauerstoffträger-SKU (92.000 ACP) bleibt getrennt.",
+    sbm9Title: "9. Zahlungen",
+    sbm9Body:
+      "ACP kauft ein Briefing und Partner-Match für 98.000 ACP — keine Bluteinheit. Erstattungen: /legal/refunds.",
+    sbm10Title: "10. Kontakt",
+    sbm10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#synthetic-blood-mamba.",
+    footerSyntheticBloodMamba: "Synthetisches Blut / Black Mamba",
 
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
@@ -3463,6 +3615,44 @@ export const legalByLang: Record<Language, Tree> = {
     ox9Body: "ACP 以 92,000 ACP 購買諮詢簡報與夥伴配對。",
     ox10Title: "10. 聯絡",
     ox10Body: "法律通知：legal@ancap.cloud。產品：/aeterna#oxygen-carrier。",
+    syntheticBloodMambaLink: "合成血／黑曼巴",
+    hubCardSyntheticBloodMamba:
+      "持照生物反應器簡報：合成血架構與改性黑曼巴胜肽識讀。非血液製品、非毒液複配、非 CE/FDA 治療品。",
+    syntheticBloodMambaKicker: "法律／生物反應器",
+    syntheticBloodMambaTitle: "合成血／黑曼巴 — 持照生物反應器軌道",
+    syntheticBloodMambaIntro:
+      "ANCAP 於 2026 年 9 月 12 日對合成血／黑曼巴架構 SKU 的說明。這些頁面販售 ACP 諮詢簡報，不是血液製品或毒液胜肽。",
+    sbm1Title: "1. 平台角色",
+    sbm1Body:
+      "ANCAP 提供 ACP 結算、諮詢簡報與持照合作夥伴媒合。ANCAP 不製造血紅蛋白囊泡、PFC 乳劑或毒液胜肽。",
+    sbm2Title: "2. 非血液製品",
+    sbm2Body:
+      "資訊圖為概念架構。非 EU MDR／FDA 型錄，亦非 ANCAP 販售的 CE 標示治療品。",
+    sbm3Title: "3. 禁止結果宣稱",
+    sbm3Body:
+      "ANCAP 不宣稱取代輸血，亦不保證血管舒張、抗凝、神經保護或長壽。",
+    sbm4Title: "4. 僅限持照合作夥伴",
+    sbm4Body:
+      "任何實體製造或臨床使用均屬持照生物反應器／輸血醫學行為。",
+    sbm5Title: "5. 資訊圖識讀，非 SOP",
+    sbm5Body:
+      "核心、殼層、聚合物網、黑曼巴胜肽圖示與「控制劑量」標註為架構識讀。ANCAP 不發布毒素或 HBOC／PFC 配方。",
+    sbm6Title: "6. 非醫療建議",
+    sbm6Body:
+      "目錄文案僅供參考。非診斷、處方或治療計畫。",
+    sbm7Title: "7. 健康資料",
+    sbm7Body:
+      "將識別碼與臨床病史視為敏感資料。",
+    sbm8Title: "8. 與其他軌道之關係",
+    sbm8Body:
+      "人工氧載體 SKU（92,000 ACP）仍為獨立產品。",
+    sbm9Title: "9. 付款",
+    sbm9Body:
+      "ACP 以 98,000 ACP 購買諮詢簡報與合作夥伴媒合——非血袋。退款見 /legal/refunds。",
+    sbm10Title: "10. 聯絡",
+    sbm10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#synthetic-blood-mamba。",
+    footerSyntheticBloodMamba: "合成血／黑曼巴",
 
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
