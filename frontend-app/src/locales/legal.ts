@@ -239,7 +239,7 @@ export const legalByLang: Record<Language, Tree> = {
     welcomeGrantKicker: "Billing / consumer law",
     welcomeGrantTitle: "Welcome grant: 100 ACP access credit",
     welcomeGrantIntro:
-      "ANCAP credits 100 ACP to a new account so the user can try paid AI workflows without a first cash top-up. The “$100” figure is a nominal accounting label. This page states the legislative qualification: access grant, not charity, not USD, not a tax deduction.",
+      "ANCAP credits 100 ACP to a new account so the user can try paid AI workflows without a first cash top-up. The “$100” figure is a nominal accounting label. This page states the legislative qualification: access grant, not charity, not USD, not a tax deduction. EU instruments are in sections 5–9.",
     wg1Title: "1. What you receive",
     wg1Body:
       "On successful registration ANCAP credits 100 ACP to your platform ledger. The “$100” figure is a nominal accounting label because ACP is the unit used to price SKUs. It is not a payout of 100 US dollars, not a bank transfer, not a stablecoin airdrop, and not a gift of fiat.",
@@ -252,18 +252,30 @@ export const legalByLang: Record<Language, Tree> = {
     wg4Title: "4. United States",
     wg4Body:
       "The grant is not a tax-deductible charitable contribution under IRC §170 and is not a gift to a 501(c)(3) organization unless a separate registered charity actually receives funds. FTC Act §5 prohibits deceptive acts: calling a signup promo a “donation” when it is a platform credit would be misleading. ACP remains a utility / accounting unit, not an investment-return product.",
-    wg5Title: "5. EU / UK marketing and consumer law",
+    wg5Title: "5. EU — unfair commercial practices (not charity)",
     wg5Body:
-      "The Unfair Commercial Practices Directive (2005/29/EC) treats presenting a commercial promotion as a charitable act as a misleading practice. Promotional credits are not donations. Where consumer cooling-off rights apply to a later paid digital service, they are stated in Payments & refunds; this grant itself is a free credit, not a paid distance contract.",
-    wg6Title: "6. Product rules",
+      "Directive 2005/29/EC on unfair commercial practices (UCPD), as amended by Directive (EU) 2019/2161 (Omnibus), prohibits misleading actions and omissions (Arts. 6–7). Annex I blacklist point 22: falsely claiming or creating the impression that the trader is not acting for purposes relating to his trade, business, craft or profession. Presenting this signup credit as a charitable donation, humanitarian gift, or activity of a recognised public-benefit body — when ANCAP is a commercial platform and no funds are transferred to a registered EU charity — would be a misleading commercial practice. e-Commerce Directive 2000/31/EC Art. 6: commercial communications must be clearly identifiable as such; this grant is a commercial access promotion, not a non-profit appeal. National examples of the same rule: Germany UWG §§ 5 / 5a; France Code de la consommation L. 121-1 et seq.; Italy Codice del Consumo. The UK Consumer Protection from Unfair Trading Regulations 2008 (retained UCPD) reach the same result after Brexit. ANCAP is not a German gemeinnützige Körperschaft (AO § 52), not a French organisme d’intérêt général for mécénat, and not a UK charity under the Charities Act 2011 by reason of this credit.",
+    wg6Title: "6. EU — consumer rights and unfair contract terms",
     wg6Body:
-      "One grant per user account. A second registration of the same email is rejected. Abuse or multi-accounting may reverse the credit. Spendable on ANCAP services. Not withdrawable as USD. Not interest, yield, staking reward, or a security. Separate from the 25 ACP referral signup bonus paid to a referrer after a verified referred purchase.",
-    wg7Title: "7. Refunds and abuse",
+      "Consumer Rights Directive 2011/83/EU (as amended) and Directive (EU) 2019/770 on digital content/services: this welcome grant is a gratuitous promotional credit, not a paid distance contract. The 14-day withdrawal right (CRD Art. 9) attaches to a later paid digital service the consumer orders, not to the free credit itself. If the consumer requests immediate performance of a paid digital service during the withdrawal period (CRD Art. 16(m) / 16a), those rules are in Payments & refunds and remain unaffected by this grant. Unfair Terms Directive 93/13/EEC: terms that reverse the grant for abuse or multi-accounting must be transparent and proportionate; they cannot waive mandatory consumer rights. Geo-blocking Regulation (EU) 2018/302: this credit is not offered as a nationality-based price discrimination among Member State customers. Digital Services Act (EU) 2022/2065 does not recharacterise a platform ledger credit as a donation.",
+    wg7Title: "7. EU — not e-money, not a payment service, not consumer credit",
     wg7Body:
-      "The grant is not refundable as fiat. Fraudulent or duplicate accounts may be closed and the credit reversed. Paid workflow runs follow Payments & refunds.",
-    wg8Title: "8. Not legal advice",
+      "Electronic Money Directive 2009/110/EC (EMD2): e-money is electronically stored monetary value representing a claim on the issuer, issued on receipt of funds, and accepted by persons other than the issuer. This grant is issued without receiving funds from the user, is spendable only on ANCAP services, and is not redeemable as EUR or USD. ANCAP does not hold itself out as an electronic money institution by this credit. Payment Services Directive (EU) 2015/2366 (PSD2): the grant is not a payment transaction, payment account, or issuance of a payment instrument. Consumer Credit Directive 2008/48/EC and the new Consumer Credit Directive (EU) 2023/2225: it is not a loan, deferred-payment agreement, or credit with interest or a repayment schedule. A deterministic one-per-account credit is not a game of chance and is not offered as an EU-licensed lottery or gambling prize.",
+    wg8Title: "8. EU — MiCA and capital-markets framing",
     wg8Body:
-      "This notice is operator disclosure, not tax or charity-filing advice to any user. Questions: legal@ancap.cloud.",
+      "Markets in Crypto-Assets Regulation (EU) 2023/1114 (MiCA): ACP is positioned as a utility / accounting unit for paid AI workflows. This grant is not a public offer of an asset-referenced token or e-money token, not a fundraising offer of crypto-assets, and not a right to dividends, interest, or a share of profits. It is not a financial instrument under MiFID II 2014/65/EU and not an offer of securities under Prospectus Regulation (EU) 2017/1129. Marketing must not use “guaranteed return”, “risk-free $100”, or similar yield language. The nominal “$100” label is an accounting scale for SKU prices, not a promise to pay 100 US dollars or 100 euro.",
+    wg9Title: "9. EU — VAT, tax, and personal data",
+    wg9Body:
+      "VAT Directive 2006/112/EC: a free-of-charge promotional credit issued without consideration is generally not a taxable supply at the moment it is granted. Later paid workflow consumption may be a taxable supply under ordinary place-of-supply / OSS rules; this notice does not determine any user’s VAT status. The grant is not a tax-deductible gift to an EU public-benefit organisation (national charitable-relief and Gift Aid analogues do not apply). DAC8 / Directive (EU) 2023/2226, where it applies, concerns reportable crypto-asset transactions — this promotional ledger credit is not a charitable donation for tax reporting. GDPR (EU) 2016/679: registration data are processed to create the account and to credit the grant (Art. 6(1)(b) performance of terms); details are in the Privacy Notice. The grant is not a “donation” used to obtain extra marketing consent beyond the Cookie Policy and Privacy Notice (ePrivacy Directive 2002/58/EC).",
+    wg10Title: "10. Product rules",
+    wg10Body:
+      "One grant per user account. A second registration of the same email is rejected. Abuse or multi-accounting may reverse the credit. Spendable on ANCAP services. Not withdrawable as USD or EUR. Not interest, yield, staking reward, or a security. Separate from the 25 ACP referral signup bonus paid to a referrer after a verified referred purchase.",
+    wg11Title: "11. Refunds and abuse",
+    wg11Body:
+      "The grant is not refundable as fiat. Fraudulent or duplicate accounts may be closed and the credit reversed. Paid workflow runs follow Payments & refunds. Mandatory EU consumer cooling-off rights on later paid digital services, where they legally apply, remain unaffected.",
+    wg12Title: "12. Not legal advice",
+    wg12Body:
+      "This notice is operator disclosure, not tax, charity-filing, or licensed legal advice to any user in the EU/EEA/UK or elsewhere. Questions: legal@ancap.cloud.",
     welcomeGrantAlso: "Open an account or read related notices:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
@@ -580,7 +592,7 @@ export const legalByLang: Record<Language, Tree> = {
     welcomeGrantKicker: "Биллинг / потребительское право",
     welcomeGrantTitle: "Грант при регистрации: 100 ACP кредита доступа",
     welcomeGrantIntro:
-      "ANCAP начисляет 100 ACP новому аккаунту, чтобы пользователь мог попробовать платные AI-workflow без первой покупки. «$100» — номинальная учётная метка. Эта страница фиксирует юридическую квалификацию: грант доступа, не благотворительность, не USD, не налоговый вычет.",
+      "ANCAP начисляет 100 ACP новому аккаунту, чтобы пользователь мог попробовать платные AI-workflow без первой покупки. «$100» — номинальная учётная метка. Эта страница фиксирует юридическую квалификацию: грант доступа, не благотворительность, не USD, не налоговый вычет. Инструменты ЕС — в пунктах 5–9.",
     wg1Title: "1. Что вы получаете",
     wg1Body:
       "После успешной регистрации ANCAP зачисляет 100 ACP на платформенный леджер. Сумма «$100» — номинальная учётная метка, потому что ACP — единица цены SKU. Это не выплата 100 долларов США, не банковский перевод, не airdrop стейблкоина и не подарок фиата.",
@@ -593,18 +605,30 @@ export const legalByLang: Record<Language, Tree> = {
     wg4Title: "4. США",
     wg4Body:
       "Грант не является налоговычитаемым charitable contribution по IRC §170 и не подарок 501(c)(3), пока отдельная зарегистрированная charity реально не получает средства. FTC Act §5 запрещает обман: называть signup-промо «донатом», когда это кредит платформы, — misleading. ACP остаётся utility / учётной единицей, не продуктом инвестиционной доходности.",
-    wg5Title: "5. ЕС / Великобритания",
+    wg5Title: "5. ЕС — недобросовестная коммерческая практика (не благотворительность)",
     wg5Body:
-      "Директива о недобросовестной коммерческой практике (2005/29/EC) считает misleading выдавать коммерческое промо за благотворительный акт. Промо-кредиты — не пожертвования. Права на отказ от платной цифровой услуги, где они применимы, описаны в «Платежи и возвраты»; сам грант — бесплатный кредит, не возмездный дистанционный договор.",
-    wg6Title: "6. Правила продукта",
+      "Директива 2005/29/EC о недобросовестных коммерческих практиках (UCPD) в редакции (EU) 2019/2161 (Omnibus) запрещает misleading actions/omissions (ст. 6–7). Приложение I, п. 22: ложно утверждать или создавать впечатление, что трейдер действует не в целях своей торговли, бизнеса или профессии. Выдавать этот signup-кредит за пожертвование, гуманитарный дар или деятельность признанной организации общественного блага — когда ANCAP коммерческая платформа и средства зарегистрированной EU-charity не передаются — было бы misleading commercial practice. Директива об электронной коммерции 2000/31/EC ст. 6: коммерческие коммуникации должны быть явно распознаваемы; этот грант — коммерческое промо доступа, не сбор в пользу НКО. Национальные аналоги: Германия UWG §§ 5 / 5a; Франция Code de la consommation L. 121-1 и след.; Италия Codice del Consumo. В Великобритании те же выводы дают Consumer Protection from Unfair Trading Regulations 2008 (сохранённая UCPD после Brexit). Этот кредит не делает ANCAP немецкой gemeinnützige Körperschaft (AO § 52), французским organisme d’intérêt général для mécénat или британской charity по Charities Act 2011.",
+    wg6Title: "6. ЕС — права потребителя и несправедливые условия",
     wg6Body:
-      "Один грант на аккаунт. Повторная регистрация того же email отклоняется. Злоупотребление и мультиаккаунты могут привести к отмене кредита. Тратится на сервисы ANCAP. Не выводится как USD. Не проценты, не yield, не стейкинг-награда и не ценная бумага. Отдельно от бонуса рефереру 25 ACP после подтверждённой покупки реферала.",
-    wg7Title: "7. Возвраты и злоупотребления",
+      "Директива о правах потребителей 2011/83/EU и Директива (EU) 2019/770 о цифровом контенте/услугах: грант — безвозмездный промо-кредит, не возмездный дистанционный договор. 14-дневное право отказа (CRD ст. 9) относится к поздней платной цифровой услуге, которую заказывает потребитель, а не к самому бесплатному кредиту. Если потребитель просит немедленное исполнение платной цифровой услуги в период отказа (CRD ст. 16(m) / 16a), эти правила — в «Платежи и возвраты» и грантом не отменяются. Директива 93/13/EEC о несправедливых условиях: условия об отмене гранта за abuse/мультиаккаунты должны быть прозрачными и соразмерными и не могут отменять императивные права потребителя. Регламент о геоблокировке (EU) 2018/302: этот кредит не предлагается как ценовая дискриминация по гражданству государства-члена. Digital Services Act (EU) 2022/2065 не превращает леджер-кредит платформы в пожертвование.",
+    wg7Title: "7. ЕС — не e-money, не платёжная услуга, не потребительский кредит",
     wg7Body:
-      "Грант не возвращается фиатом. Мошеннические и дублирующие аккаунты могут быть закрыты с отменой кредита. Платные запуски — по политике платежей и возвратов.",
-    wg8Title: "8. Это не юридическая консультация",
+      "Директива об электронных деньгах 2009/110/EC (EMD2): e-money — электронно хранимая денежная стоимость, представляющая требование к эмитенту, выпускаемая при получении средств и принимаемая лицами иными, чем эмитент. Этот грант выпускается без получения средств от пользователя, тратится только на сервисы ANCAP и не погашается в EUR/USD. ANCAP не выдаёт себя за electronic money institution этим кредитом. PSD2 (EU) 2015/2366: грант не платёжная операция, не платёжный счёт и не выпуск платёжного инструмента. Директива о потребительском кредите 2008/48/EC и новая (EU) 2023/2225: это не заём, не отсрочка платежа и не кредит с процентами или графиком погашения. Детерминированный кредит «один на аккаунт» не азартная игра и не лицензируемая лотерея ЕС.",
+    wg8Title: "8. ЕС — MiCA и рамка рынков капитала",
     wg8Body:
-      "Страница — раскрытие оператора, не совет пользователю по налогам или отчётности НКО. Вопросы: legal@ancap.cloud.",
+      "Регламент о рынках криптоактивов (EU) 2023/1114 (MiCA): ACP позиционируется как utility / учётная единица для платных AI-workflow. Грант не публичное предложение asset-referenced token или e-money token, не fundraising-оферта криптоактивов и не право на дивиденды, проценты или долю прибыли. Это не финансовый инструмент по MiFID II 2014/65/EU и не оферта ценных бумаг по Prospectus Regulation (EU) 2017/1129. В маркетинге нельзя писать «гарантированная доходность», «безрисковые $100» и подобный yield. Номинальная метка «$100» — шкала учёта цен SKU, не обещание выплатить 100 долларов США или 100 евро.",
+    wg9Title: "9. ЕС — НДС, налоги и персональные данные",
+    wg9Body:
+      "Директива по НДС 2006/112/EC: бесплатный промо-кредит без встречного предоставления, как правило, не является облагаемой поставкой в момент начисления. Поздняя платная услуга workflow может быть облагаемой поставкой по обычным правилам места поставки / OSS; это уведомление не определяет НДС-статус пользователя. Грант не налоговычитаемый дар организации общественного блага ЕС (национальные режимы charitable relief / Gift Aid не применяются). DAC8 / Директива (EU) 2023/2226, где применима, касается отчётных операций с криптоактивами — этот промо-кредит леджера не благотворительный взнос для налоговой отчётности. GDPR (EU) 2016/679: данные регистрации обрабатываются для создания аккаунта и начисления гранта (ст. 6(1)(b) исполнение условий); подробности — в Privacy Notice. Грант не «донат» для выбивания дополнительного marketing consent сверх Cookie Policy и Privacy Notice (ePrivacy 2002/58/EC).",
+    wg10Title: "10. Правила продукта",
+    wg10Body:
+      "Один грант на аккаунт. Повторная регистрация того же email отклоняется. Злоупотребление и мультиаккаунты могут привести к отмене кредита. Тратится на сервисы ANCAP. Не выводится как USD или EUR. Не проценты, не yield, не стейкинг-награда и не ценная бумага. Отдельно от бонуса рефереру 25 ACP после подтверждённой покупки реферала.",
+    wg11Title: "11. Возвраты и злоупотребления",
+    wg11Body:
+      "Грант не возвращается фиатом. Мошеннические и дублирующие аккаунты могут быть закрыты с отменой кредита. Платные запуски — по политике платежей и возвратов. Императивные права потребителя ЕС на отказ от поздней платной цифровой услуги, где они применимы, грантом не затрагиваются.",
+    wg12Title: "12. Это не юридическая консультация",
+    wg12Body:
+      "Страница — раскрытие оператора, не совет пользователю по налогам, отчётности НКО или лицензированная юридическая консультация в ЕС/ЕЭЗ/Великобритании или где бы то ни было. Вопросы: legal@ancap.cloud.",
     welcomeGrantAlso: "Открыть аккаунт или связанные уведомления:",
     cyberKicker: "Юридическая / публичная политика",
     cyberTitle: "Поддержка ANCAP коллективной киберзащиты",
@@ -916,7 +940,7 @@ export const legalByLang: Record<Language, Tree> = {
     welcomeGrantKicker: "Білінг / споживче право",
     welcomeGrantTitle: "Грант при реєстрації: 100 ACP кредиту доступу",
     welcomeGrantIntro:
-      "ANCAP нараховує 100 ACP новому акаунту, щоб користувач міг спробувати платні AI-workflow без першої купівлі. «$100» — номінальна облікова мітка. Ця сторінка фіксує кваліфікацію: грант доступу, не благодійність, не USD, не податкове відрахування.",
+      "ANCAP нараховує 100 ACP новому акаунту, щоб користувач міг спробувати платні AI-workflow без першої купівлі. «$100» — номінальна облікова мітка. Ця сторінка фіксує кваліфікацію: грант доступу, не благодійність, не USD, не податкове відрахування. Інструменти ЄС — у пунктах 5–9.",
     wg1Title: "1. Що ви отримуєте",
     wg1Body:
       "Після успішної реєстрації ANCAP зараховує 100 ACP на платформовий леджер. «$100» — номінальна облікова мітка. Це не виплата 100 доларів США, не банківський переказ і не подарунок фіату.",
@@ -929,18 +953,30 @@ export const legalByLang: Record<Language, Tree> = {
     wg4Title: "4. США",
     wg4Body:
       "Грант не є tax-deductible charitable contribution за IRC §170 і не подарунок 501(c)(3), доки окрема charity реально не отримує кошти. FTC Act §5 забороняє видавати signup-промо за донат. ACP залишається utility / обліковою одиницею, не продуктом дохідності.",
-    wg5Title: "5. ЄС / Велика Британія",
+    wg5Title: "5. ЄС — недобросовісна комерційна практика (не благодійність)",
     wg5Body:
-      "Директива 2005/29/EC вважає misleading видавати комерційне промо за благодійний акт. Промо-кредити — не пожертви. Права на відмову від платної цифрової послуги, де вони застосовні, описані в платежах і поверненнях.",
-    wg6Title: "6. Правила продукту",
+      "Директива 2005/29/EC (UCPD) у редакції (EU) 2019/2161 забороняє misleading actions/omissions (ст. 6–7). Додаток I, п. 22: хибно стверджувати, що трейдер діє не в цілях своєї торгівлі чи професії. Видавати цей signup-кредит за пожертву чи діяльність визнаної організації суспільної користі — коли ANCAP комерційна платформа і кошти зареєстрованій EU-charity не передаються — було б misleading commercial practice. Директива 2000/31/EC ст. 6: комерційні комунікації мають бути явно розпізнаваними. Національні аналоги: Німеччина UWG §§ 5 / 5a; Франція Code de la consommation; Італія Codice del Consumo. У Великій Британії — CPRs 2008 (збережена UCPD). Цей кредит не робить ANCAP gemeinnützige Körperschaft, organisme d’intérêt général чи charity за Charities Act 2011.",
+    wg6Title: "6. ЄС — права споживача і несправедливі умови",
     wg6Body:
-      "Один грант на акаунт. Повторна реєстрація того ж email відхиляється. Зловживання може скасувати кредит. Витрачається на сервіси ANCAP. Не виводиться як USD. Не відсотки, не yield і не цінний папір. Окремо від бонусу рефереру 25 ACP.",
-    wg7Title: "7. Повернення і зловживання",
+      "Директива 2011/83/EU та (EU) 2019/770: грант — безоплатний промо-кредит, не відплатний дистанційний договір. 14-денне право відмови (CRD ст. 9) стосується пізнішої платної цифрової послуги, а не самого безкоштовного кредиту. Якщо споживач просить негайне виконання платної цифрової послуги в період відмови (CRD ст. 16(m) / 16a), ці правила — в платежах і поверненнях. Директива 93/13/EEC: умови про скасування гранта за abuse мають бути прозорими й пропорційними. Регламент (EU) 2018/302: кредит не є ціновою дискримінацією за громадянством держави-члена. DSA (EU) 2022/2065 не перетворює леджер-кредит на пожертву.",
+    wg7Title: "7. ЄС — не e-money, не платіжна послуга, не споживчий кредит",
     wg7Body:
-      "Грант не повертається фіатом. Шахрайські акаунти можуть бути закриті зі скасуванням кредиту.",
-    wg8Title: "8. Це не юридична консультація",
+      "Директива 2009/110/EC (EMD2): e-money випускається при отриманні коштів і приймається особами іншими, ніж емітент. Цей грант випускається без отримання коштів від користувача, витрачається лише на сервіси ANCAP і не погашається в EUR/USD. PSD2 (EU) 2015/2366: це не платіжна операція і не платіжний рахунок. Директиви 2008/48/EC та (EU) 2023/2225: це не позика і не кредит із відсотками. Детермінований кредит «один на акаунт» не азартна гра і не ліцензована лотерея ЄС.",
+    wg8Title: "8. ЄС — MiCA і рамка ринків капіталу",
     wg8Body:
-      "Сторінка — розкриття оператора, не порада користувачу щодо податків. Питання: legal@ancap.cloud.",
+      "Регламент (EU) 2023/1114 (MiCA): ACP — utility / облікова одиниця для платних AI-workflow. Грант не публічна пропозиція ART/EMT, не fundraising-оферта криптоактивів і не право на дивіденди чи відсотки. Це не фінансовий інструмент за MiFID II 2014/65/EU і не оферта цінних паперів за Prospectus Regulation (EU) 2017/1129. Не можна рекламувати «гарантовану дохідність» чи «безризикові $100». Номінальна мітка «$100» — шкала обліку цін SKU, не обіцянка виплатити 100 доларів США чи 100 євро.",
+    wg9Title: "9. ЄС — ПДВ, податки і персональні дані",
+    wg9Body:
+      "Директива 2006/112/EC: безоплатний промо-кредит без зустрічного надання зазвичай не є оподатковуваною поставкою в момент нарахування. Пізніше платне споживання workflow може бути оподатковуваною поставкою за звичайними правилами місця поставки / OSS. Грант не податкововідраховуваний дар організації суспільної користі ЄС. DAC8 / (EU) 2023/2226, де застосовна, стосується звітних операцій із криптоактивами — цей промо-кредит не благодійний внесок. GDPR (EU) 2016/679: дані реєстрації обробляються для створення акаунта і нарахування гранта (ст. 6(1)(b)); деталі — в Privacy Notice. Грант не «донат» для додаткової marketing consent понад Cookie Policy (ePrivacy 2002/58/EC).",
+    wg10Title: "10. Правила продукту",
+    wg10Body:
+      "Один грант на акаунт. Повторна реєстрація того ж email відхиляється. Зловживання може скасувати кредит. Витрачається на сервіси ANCAP. Не виводиться як USD чи EUR. Не відсотки, не yield і не цінний папір. Окремо від бонусу рефереру 25 ACP.",
+    wg11Title: "11. Повернення і зловживання",
+    wg11Body:
+      "Грант не повертається фіатом. Шахрайські акаунти можуть бути закриті зі скасуванням кредиту. Імперативні права споживача ЄС на відмову від пізнішої платної цифрової послуги, де вони застосовні, грантом не зачіпаються.",
+    wg12Title: "12. Це не юридична консультація",
+    wg12Body:
+      "Сторінка — розкриття оператора, не порада користувачу щодо податків чи ліцензована юридична консультація в ЄС/ЄЕЗ/Великій Британії. Питання: legal@ancap.cloud.",
     welcomeGrantAlso: "Відкрити акаунт або пов’язані повідомлення:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
@@ -1257,7 +1293,7 @@ export const legalByLang: Record<Language, Tree> = {
     welcomeGrantKicker: "Abrechnung / Verbraucherrecht",
     welcomeGrantTitle: "Willkommenszuschuss: 100 ACP Zugangsguthaben",
     welcomeGrantIntro:
-      "ANCAP schreibt neuen Konten 100 ACP gut, damit bezahlte KI-Workflows ohne ersten Barkauf getestet werden können. „$100“ ist ein nominelles Buchungslabel. Diese Seite stellt die rechtliche Einordnung fest: Zugangszuschuss, keine Wohltätigkeit, kein USD, kein Steuerabzug.",
+      "ANCAP schreibt neuen Konten 100 ACP gut, damit bezahlte KI-Workflows ohne ersten Barkauf getestet werden können. „$100“ ist ein nominelles Buchungslabel. Diese Seite stellt die rechtliche Einordnung fest: Zugangszuschuss, keine Wohltätigkeit, kein USD, kein Steuerabzug. EU-Rechtsakte stehen in den Abschnitten 5–9.",
     wg1Title: "1. Was Sie erhalten",
     wg1Body:
       "Nach erfolgreicher Registrierung schreibt ANCAP 100 ACP auf Ihr Plattformledger. Die „$100“-Angabe ist ein nominelles Buchungslabel, weil ACP die SKU-Preiseinheit ist. Es ist keine Auszahlung von 100 US-Dollar, keine Banküberweisung und kein Fiat-Geschenk.",
@@ -1270,18 +1306,30 @@ export const legalByLang: Record<Language, Tree> = {
     wg4Title: "4. Vereinigte Staaten",
     wg4Body:
       "Der Zuschuss ist kein steuerlich absetzbarer charitable contribution nach IRC §170 und kein Geschenk an eine 501(c)(3), solange keine separate registrierte Charity tatsächlich Mittel erhält. FTC Act §5 verbietet Täuschung: ein Signup-Promo als „Spende“ zu bezeichnen, obwohl es ein Plattformguthaben ist, wäre irreführend. ACP bleibt eine Utility-/Rechnungseinheit, kein Renditeprodukt.",
-    wg5Title: "5. EU / Vereinigtes Königreich",
+    wg5Title: "5. EU — unlautere Geschäftspraktiken (keine Wohltätigkeit)",
     wg5Body:
-      "Die Richtlinie über unlautere Geschäftspraktiken (2005/29/EG) behandelt es als irreführend, eine kommerzielle Promotion als Wohltat darzustellen. Promo-Guthaben sind keine Spenden. Widerrufsrechte für spätere entgeltliche digitale Leistungen stehen unter Zahlungen & Erstattungen; dieser Zuschuss selbst ist ein kostenloses Guthaben, kein entgeltlicher Fernabsatzvertrag.",
-    wg6Title: "6. Produktregeln",
+      "Richtlinie 2005/29/EG über unlautere Geschäftspraktiken (UGP-RL), geändert durch (EU) 2019/2161 (Omnibus), verbietet irreführende Handlungen und Unterlassungen (Art. 6–7). Anhang I Nr. 22: fälschlich den Eindruck erwecken, der Gewerbetreibende handele nicht zu Zwecken seines Handels, Gewerbes oder Berufs. Diesen Anmelde-Zuschuss als Spende, humanitäre Gabe oder Tätigkeit einer anerkannten gemeinnützigen Einrichtung darzustellen — obwohl ANCAP eine kommerzielle Plattform ist und keine Mittel an eine registrierte EU-Charity fließen — wäre eine irreführende Geschäftspraxis. E-Commerce-Richtlinie 2000/31/EG Art. 6: kommerzielle Kommunikationen müssen als solche erkennbar sein; dieser Zuschuss ist eine kommerzielle Zugangsförderung, kein Spendenaufruf. Nationale Umsetzungen: Deutschland UWG §§ 5 / 5a; Frankreich Code de la consommation L. 121-1 ff.; Italien Codice del Consumo. Im Vereinigten Königreich gelten die Consumer Protection from Unfair Trading Regulations 2008 (beibehaltene UGP-RL) nach dem Brexit entsprechend. Dieser Zuschuss macht ANCAP nicht zur gemeinnützigen Körperschaft nach AO § 52, nicht zum organisme d’intérêt général für französisches Mécénat und nicht zur Charity nach dem Charities Act 2011.",
+    wg6Title: "6. EU — Verbraucherrechte und missbräuchliche Klauseln",
     wg6Body:
-      "Ein Zuschuss pro Nutzerkonto. Eine zweite Registrierung derselben E-Mail wird abgelehnt. Missbrauch oder Mehrfachkonten können die Gutschrift stornieren. Verwendbar für ANCAP-Dienste. Nicht als USD auszahlbar. Keine Zinsen, kein Yield, keine Staking-Prämie, kein Wertpapier. Getrennt vom 25-ACP-Empfehlungsbonus an den Werber nach einem verifizierten Erstkauf.",
-    wg7Title: "7. Erstattungen und Missbrauch",
+      "Verbraucherrechte-Richtlinie 2011/83/EU und Richtlinie (EU) 2019/770 über digitale Inhalte/Dienstleistungen: der Willkommenszuschuss ist ein unentgeltliches Promo-Guthaben, kein entgeltlicher Fernabsatzvertrag. Das 14-tägige Widerrufsrecht (Art. 9 VRRL) knüpft an eine spätere entgeltliche digitale Dienstleistung, die der Verbraucher bestellt — nicht an das kostenlose Guthaben selbst. Verlangt der Verbraucher während der Widerrufsfrist die sofortige Erfüllung einer entgeltlichen digitalen Dienstleistung (Art. 16 Buchst. m / 16a VRRL), gelten die Regeln unter Zahlungen & Erstattungen; dieser Zuschuss ändert sie nicht. Klausel-Richtlinie 93/13/EWG: Bedingungen zur Stornierung bei Missbrauch müssen transparent und verhältnismäßig sein und dürfen zwingende Verbraucherrechte nicht abbedingen. Geo-Blocking-Verordnung (EU) 2018/302: dieses Guthaben wird nicht als preisliche Diskriminierung nach Staatsangehörigkeit eines Mitgliedstaats angeboten. Der Digital Services Act (EU) 2022/2065 macht ein Plattform-Ledger-Guthaben nicht zur Spende.",
+    wg7Title: "7. EU — kein E-Geld, kein Zahlungsdienst, kein Verbraucherkredit",
     wg7Body:
-      "Der Zuschuss ist nicht als Fiat erstattbar. Betrügerische oder doppelte Konten können geschlossen und die Gutschrift storniert werden. Bezahlte Läufe folgen Zahlungen & Erstattungen.",
-    wg8Title: "8. Keine Rechtsberatung",
+      "E-Geld-Richtlinie 2009/110/EG (EMD2): E-Geld ist elektronisch gespeicherter Geldwert mit Forderung gegen den Emittenten, ausgegeben gegen Entgegennahme von Geldmitteln und von anderen als dem Emittenten angenommen. Dieser Zuschuss wird ohne Entgegennahme von Geldmitteln des Nutzers ausgegeben, ist nur für ANCAP-Dienste verwendbar und nicht in EUR oder USD einlösbar. ANCAP gibt sich damit nicht als E-Geld-Institut aus. Zahlungsdiensterichtlinie (EU) 2015/2366 (PSD2): der Zuschuss ist kein Zahlungsvorgang, kein Zahlungskonto und keine Ausgabe eines Zahlungsinstruments. Verbraucherkreditrichtlinie 2008/48/EG und neue Richtlinie (EU) 2023/2225: kein Darlehen, keine Zahlungsaufschubvereinbarung, kein Kredit mit Zinsen oder Tilgungsplan. Ein deterministisches Guthaben einmal pro Konto ist kein Glücksspiel und keine lizenzpflichtige EU-Lotterie.",
+    wg8Title: "8. EU — MiCA und kapitalmarktrechtlicher Rahmen",
     wg8Body:
-      "Dieser Hinweis ist eine Betreiberoffenlegung, keine Steuer- oder NPO-Beratung für Nutzer. Fragen: legal@ancap.cloud.",
+      "Verordnung (EU) 2023/1114 über Märkte für Kryptowerte (MiCA): ACP wird als Utility-/Rechnungseinheit für bezahlte KI-Workflows positioniert. Dieser Zuschuss ist kein öffentliches Angebot eines vermögenswertereferenzierten Tokens oder E-Geld-Tokens, kein Fundraising-Angebot von Kryptowerten und kein Recht auf Dividenden, Zinsen oder Gewinnbeteiligung. Er ist kein Finanzinstrument nach MiFID II 2014/65/EU und kein Wertpapierangebot nach Prospektverordnung (EU) 2017/1129. Werbung darf nicht „garantierte Rendite“, „risikofreie 100 $“ oder ähnliche Yield-Sprache verwenden. Das nominelle „$100“-Label ist eine Buchungsskala für SKU-Preise, kein Versprechen, 100 US-Dollar oder 100 Euro auszuzahlen.",
+    wg9Title: "9. EU — Umsatzsteuer, Steuern und personenbezogene Daten",
+    wg9Body:
+      "MwSt-Systemrichtlinie 2006/112/EG: ein unentgeltliches Promo-Guthaben ohne Gegenleistung ist im Zeitpunkt der Gutschrift in der Regel keine steuerbare Lieferung/sonstige Leistung. Spätere entgeltliche Workflow-Nutzung kann nach den gewöhnlichen Orts-/OSS-Regeln steuerbar sein; dieser Hinweis bestimmt nicht den MwSt-Status des Nutzers. Der Zuschuss ist keine steuerlich absetzbare Zuwendung an eine EU-Gemeinnützige (nationale Spendenabzüge / Gift-Aid-Analoga greifen nicht). DAC8 / Richtlinie (EU) 2023/2226 betrifft, soweit anwendbar, meldepflichtige Kryptowert-Transaktionen — dieses Promo-Ledger-Guthaben ist keine Spende für die Steuerberichterstattung. DSGVO (EU) 2016/679: Registrierungsdaten werden zur Kontoeröffnung und Gutschrift verarbeitet (Art. 6 Abs. 1 Buchst. b Vertragserfüllung); Einzelheiten in der Datenschutzerklärung. Der Zuschuss ist keine „Spende“, um zusätzliche Marketing-Einwilligung jenseits der Cookie-Richtlinie und Datenschutzerklärung zu erlangen (ePrivacy 2002/58/EG).",
+    wg10Title: "10. Produktregeln",
+    wg10Body:
+      "Ein Zuschuss pro Nutzerkonto. Eine zweite Registrierung derselben E-Mail wird abgelehnt. Missbrauch oder Mehrfachkonten können die Gutschrift stornieren. Verwendbar für ANCAP-Dienste. Nicht als USD oder EUR auszahlbar. Keine Zinsen, kein Yield, keine Staking-Prämie, kein Wertpapier. Getrennt vom 25-ACP-Empfehlungsbonus an den Werber nach einem verifizierten Erstkauf.",
+    wg11Title: "11. Erstattungen und Missbrauch",
+    wg11Body:
+      "Der Zuschuss ist nicht als Fiat erstattbar. Betrügerische oder doppelte Konten können geschlossen und die Gutschrift storniert werden. Bezahlte Läufe folgen Zahlungen & Erstattungen. Zwingende EU-Widerrufsrechte bei späteren entgeltlichen digitalen Dienstleistungen, soweit sie gelten, bleiben unberührt.",
+    wg12Title: "12. Keine Rechtsberatung",
+    wg12Body:
+      "Dieser Hinweis ist eine Betreiberoffenlegung, keine Steuer-, NPO- oder zugelassene Rechtsberatung für Nutzer in der EU/EWR/UK oder anderswo. Fragen: legal@ancap.cloud.",
     welcomeGrantAlso: "Konto eröffnen oder verwandte Hinweise lesen:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
@@ -1597,7 +1645,7 @@ export const legalByLang: Record<Language, Tree> = {
     welcomeGrantKicker: "帳務／消費者法",
     welcomeGrantTitle: "註冊贈與額度：100 ACP 使用點數",
     welcomeGrantIntro:
-      "ANCAP 於新帳戶入帳 100 ACP，讓使用者無需先儲值即可試用付費 AI 工作流程。「$100」為名義會計標示。本頁說明法律定性：使用額度，非慈善、非美元、不可抵稅。",
+      "ANCAP 於新帳戶入帳 100 ACP，讓使用者無需先儲值即可試用付費 AI 工作流程。「$100」為名義會計標示。本頁說明法律定性：使用額度，非慈善、非美元、不可抵稅。歐盟規範見第 5–9 節。",
     wg1Title: "1. 您獲得什麼",
     wg1Body:
       "註冊成功後，ANCAP 將 100 ACP 記入平台帳本。「$100」是名義會計標示，因 ACP 為 SKU 計價單位。這不是支付 100 美元、不是銀行轉帳，也不是法幣贈與。",
@@ -1610,18 +1658,30 @@ export const legalByLang: Record<Language, Tree> = {
     wg4Title: "4. 美國",
     wg4Body:
       "本贈與並非 IRC §170 可抵稅慈善捐款，亦非對 501(c)(3) 的贈與，除非另有已登記慈善機構實際收款。FTC Act §5 禁止欺騙：將註冊促銷稱為「捐款」而實為平台點數，屬誤導。ACP 仍為效用／會計單位，非投資報酬產品。",
-    wg5Title: "5. 歐盟／英國",
+    wg5Title: "5. 歐盟 — 不公平商業行為（非慈善）",
     wg5Body:
-      "不公平商業行為指令（2005/29/EC）將商業促銷包裝成慈善行為視為誤導。促銷點數不是捐款。後續付費數位服務的猶豫期權利見付款與退款；本贈與本身為免費點數，非有償遠距契約。",
-    wg6Title: "6. 產品規則",
+      "指令 2005/29/EC（UCPD，經 (EU) 2019/2161 修正）禁止誤導行為與隱匿（第 6–7 條）。附件 I 第 22 點：虛偽主張交易人並非為其營業或職業目的而行為。若將本註冊額度稱為捐款、人道贈與或已認可公益機構之活動——而 ANCAP 為商業平台且未將資金移轉予已登記之歐盟慈善機構——即屬誤導性商業行為。電子商務指令 2000/31/EC 第 6 條：商業通訊須可識別為商業通訊。本國對應：德國 UWG §§ 5／5a、法國消費法典、義大利 Codice del Consumo。英國脫歐後仍適用 CPRs 2008。本額度不使 ANCAP 成為德國 AO § 52 公益法人、法國 mécénat 之 organisme d’intérêt général，或 Charities Act 2011 下的 charity。",
+    wg6Title: "6. 歐盟 — 消費者權利與不公平條款",
     wg6Body:
-      "每帳戶一次。同一 email 再次註冊會被拒絕。濫用或多帳戶可能撤銷點數。僅能用於 ANCAP 服務。不可提領美元。非利息、非收益、非質押獎勵、非證券。與推薦人在驗證推薦購買後獲得的 25 ACP 分開。",
-    wg7Title: "7. 退款與濫用",
+      "消費者權利指令 2011/83/EU 與 (EU) 2019/770：本贈與為無償促銷點數，非有償遠距契約。14 日撤回權（CRD 第 9 條）適用於嗣後訂購的付費數位服務，而非本免費點數本身。若消費者於撤回期間請求立即履行付費數位服務（CRD 第 16(m)／16a 條），規則見付款與退款。不公平條款指令 93/13/EEC：因濫用而撤銷點數的條款須透明且合比例，不得排除強制消費者權利。地理封鎖規則 (EU) 2018/302：本點數不依會員國國籍差別定價。DSA (EU) 2022/2065 不會把平台帳本點數改定性為捐款。",
+    wg7Title: "7. 歐盟 — 非電子貨幣、非支付服務、非消費信貸",
     wg7Body:
-      "本贈與不以法幣退還。詐欺或重複帳戶可能被關閉並撤銷點數。付費執行依付款與退款政策。",
-    wg8Title: "8. 非法律意見",
+      "電子貨幣指令 2009/110/EC（EMD2）：電子貨幣須於收受資金後發行，並由發行人以外之人接受。本贈與未向使用者收受資金、僅能用於 ANCAP 服務，且不可兌成 EUR／USD。PSD2 (EU) 2015/2366：非支付交易、非支付帳戶。消費信貸指令 2008/48/EC 與 (EU) 2023/2225：非貸款、非附利息或還款期之信貸。每帳戶一次的確定額度非博弈，亦非需執照的歐盟彩券。",
+    wg8Title: "8. 歐盟 — MiCA 與資本市場定性",
     wg8Body:
-      "本頁為營運方揭露，非對使用者稅務或慈善申報的建議。詢問：legal@ancap.cloud。",
+      "加密資產市場規則 (EU) 2023/1114（MiCA）：ACP 定位為付費 AI 工作流程的效用／會計單位。本贈與非 ART／EMT 公開要約、非加密資產募資、非股息或利息權利。非 MiFID II 2014/65/EU 金融工具，亦非 Prospectus Regulation (EU) 2017/1129 證券要約。行銷不得使用「保證報酬」或「無風險 100 美元」。名義「$100」為 SKU 計價尺度，非承諾支付 100 美元或 100 歐元。",
+    wg9Title: "9. 歐盟 — 加值稅、稅務與個人資料",
+    wg9Body:
+      "VAT 指令 2006/112/EC：無對價的免費促銷點數於入帳時通常非應稅供應。嗣後付費使用工作流程可能依供應地／OSS 成為應稅供應；本頁不決定使用者的 VAT 地位。本贈與不可作為對歐盟公益組織的可抵稅捐贈。DAC8／(EU) 2023/2226（如適用）針對應申報加密資產交易——本促銷帳本點數非慈善捐款。GDPR (EU) 2016/679：註冊資料為開戶及入帳而處理（第 6(1)(b) 條履行契約）；詳見隱私權聲明。本贈與不得作為超出 Cookie／隱私政策的行銷同意對價（ePrivacy 2002/58/EC）。",
+    wg10Title: "10. 產品規則",
+    wg10Body:
+      "每帳戶一次。同一 email 再次註冊會被拒絕。濫用或多帳戶可能撤銷點數。僅能用於 ANCAP 服務。不可提領美元或歐元。非利息、非收益、非質押獎勵、非證券。與推薦人在驗證推薦購買後獲得的 25 ACP 分開。",
+    wg11Title: "11. 退款與濫用",
+    wg11Body:
+      "本贈與不以法幣退還。詐欺或重複帳戶可能被關閉並撤銷點數。付費執行依付款與退款政策。嗣後付費數位服務的歐盟強制撤回權（如依法適用）不受影響。",
+    wg12Title: "12. 非法律意見",
+    wg12Body:
+      "本頁為營運方揭露，非對歐盟／歐洲經濟區／英國或其他地區使用者的稅務、慈善申報或執業法律意見。詢問：legal@ancap.cloud。",
     welcomeGrantAlso: "開立帳戶或閱讀相關說明：",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
