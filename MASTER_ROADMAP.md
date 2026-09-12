@@ -886,6 +886,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-XO12 | ZEISS Lightfield 4D research citation | [x] `/legal/research-refs` + AETERNA imaging refs; tech note link; no affiliation / no PDF host |
 | P5-XO14 | Daewoong eTurna mRNA LNP USPTO citation | [x] `/legal/research-refs` §7 + `/aeterna` consult `aeterna-mrna-reprogramming-brief`; notice of allowance literacy as of 11 Sep 2026; no affiliation / no lipid recipes |
 | P5-XO15 | Chalmers Floquet bosonic-code stack | [x] `/tech` `stack-floquet-bosonic` + lot `tech-floquet-bosonic`; `/quantum-sim` compute_stack; `/legal/research-refs` §8; docs/CHALMERS_FLOQUET_BOSONIC_CODES.md |
+| P5-XO16 | Startup investment desk | [x] `/startups` + `GET /v1/startups/catalog`; AI/retail-B2B/SECaaS/agrotech literacy as of 12 Sep 2026; `/legal/research-refs` §9; `docs/STARTUP_INVEST_DESK.md` — not a securities offering |
 | P5-XO9 | AuctionEscrow + TECH auction | [x] Foundry `contracts/auction-escrow` + `/tech-auction/*` + UI `/tech` — `docs/TECH_AUCTION_ESCROW.md` |
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |

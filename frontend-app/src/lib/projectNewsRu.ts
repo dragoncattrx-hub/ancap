@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "startup-invest-desk",
+    date: "2026-09-12",
+    title: "Инвестиции в стартапы — IT-газели 2026",
+    summary:
+      "Новый /startups: literacy и ACP-брифы по ИИ/ML, IT для ритейла и e-commerce, SECaaS, агротеху. Цитаты CNews/Spark-Interfax (Джиэй Тэктим / «Золотое яблоко»), Forbes/ФРИИ, Sky.pro. Не оферта ценных бумаг. Юр. §9: /legal/research-refs.",
+    href: "/startups",
+  },
+  {
     id: "chalmers-floquet-bosonic",
     date: "2026-09-11",
     title: "Стек: Floquet / бозонные коды (~1000× меньше циклов)",

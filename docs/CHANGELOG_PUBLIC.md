@@ -4,6 +4,12 @@ Curated public-facing changelog for major ANCAP repository milestones.
 
 For exhaustive implementation detail, see [LOG.md](../LOG.md).
 
+## 2026-09-12 — startup investment desk (IT gazelle literacy)
+
+- added public `/startups` desk with ACP-paid screens of AI/ML, retail/e-commerce B2B ops, SECaaS, and agrotech/production software
+- cited CNews/Spark-Interfax ICT gazelles, Forbes/FRIИ small-IT growth, Sky.pro idea ranges, and businessmens.ru 2026 niches as literacy — not a securities offering
+- legal `/legal/research-refs` §9 + `docs/STARTUP_INVEST_DESK.md`
+
 ## 2026-09-12 — false work-stop blockers cleared in status docs
 
 - Phase 1 GitHub community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are recorded as present; progress bots must not report missing README

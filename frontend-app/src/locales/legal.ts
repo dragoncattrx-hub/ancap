@@ -4,7 +4,7 @@ type Tree = { [key: string]: string | Tree };
 
 export const legalByLang: Record<Language, Tree> = {
   en: {
-    lastUpdated: "Last updated: 11 September 2026.",
+    lastUpdated: "Last updated: 12 September 2026.",
     privacyLink: "Privacy Notice",
     cookiesLink: "Cookie Policy",
     termsLink: "User Agreement",
@@ -30,7 +30,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerMarketData: "Market data",
     researchRefsLink: "Research references",
     hubCardResearchRefs:
-      "Third-party scientific instruments, mRNA/LNP patent journalism, Floquet bosonic-code PRL, and quantum-info cites (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance, Chalmers Huang–Du–Guo, iXBT Live) — trademarks stay with their owners; no affiliation.",
+      "Third-party scientific instruments, mRNA/LNP patent journalism, Floquet bosonic-code PRL, quantum-info cites, and 2026 IT-gazelle / startup-market journalism (ZEISS Lightfield 4D, Daewoong eTurna USPTO allowance, Chalmers Huang–Du–Guo, iXBT Live, CNews/Spark-Interfax, Forbes/FRIИ) — trademarks stay with their owners; no affiliation.",
     footerResearchRefs: "Research refs",
     researchRefsKicker: "Third-party science",
     researchRefsTitle: "Research references and instrument citations",
@@ -60,9 +60,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr8Title: "8. Chalmers Floquet bosonic codes / quantum lattice gates (PRL 2026)",
     rr8Body:
       "As of 11 September 2026, ANCAP cites public journalism (Nauka TV, 10 September 2026) of the theoretical Physical Review Letters paper “Single-Period Floquet Control of Bosonic Codes with Quantum Lattice Gates” (Huang, Du, Guo; DOI 10.1103/tnb8-3m8m). Reported idea: encode in microwave/resonator bosonic codes and implement quantum lattice gates in one Floquet drive period instead of thousands of adiabatic cycles (~1000× fewer periods on that axis). Work is theoretical; authors discuss a future check on Chalmers’ developing 100-qubit superconducting platform. ANCAP is not affiliated with Chalmers University of Technology, Tianjin University, APS/PRL, or Nauka TV. Citation is literacy for the /tech stack and /quantum-sim compute layer — not a claim that ANCAP operates a quantum computer, not a speed SLA, and not an error-correction warranty.",
+    rr9Title: "9. Startup investment desk — IT gazelle / B2B retail & AI market cites (2026)",
+    rr9Body:
+      "As of 12 September 2026, ANCAP cites public market journalism for the /startups desk: CNews (13 Aug 2026) on Spark-Interfax ICT gazelles 2021–2025 (leader OOO «Джиэй Тэктим» / GA Tech Team serving «Золотое яблоко», ~112.71% CAGR, single-client concentration); Forbes/FRIИ small-IT gazelles (farm/herd software, AI tutors); Sky.pro idea ranges for AI and SECaaS; businessmens.ru 2026 agrotech/production-IT niches. These are third-party rankings and idea sketches, not ANCAP forecasts, not a securities offering, not equity in named issuers, and not investment advice. ANCAP is not affiliated with CNews, Spark-Interfax, Forbes, FRIИ, Sky.pro, businessmens.ru, GA Tactic, or Zolotoe Yabloko. ACP on /startups pays for research briefs and licensed-partner handoffs only.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, Chalmers/PRL Floquet bosonic-code coverage, and the iXBT quantum-info article are cited for literacy only.",
+      "Use these public URLs. Prefer the publisher page if a deep link changes. ZEISS imaging notes, Daewoong/eTurna USPTO-allowance journalism, Chalmers/PRL Floquet bosonic-code coverage, the iXBT quantum-info article, and 2026 IT-gazelle / startup-market journalism are cited for literacy only.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, and constitutional jurisdiction notes as of this notice date.",
@@ -308,7 +311,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   ru: {
-    lastUpdated: "Обновлено: 11 сентября 2026.",
+    lastUpdated: "Обновлено: 12 сентября 2026.",
     privacyLink: "Уведомление о конфиденциальности",
     cookiesLink: "Политика cookie",
     termsLink: "Пользовательское соглашение",
@@ -364,9 +367,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr8Title: "8. Floquet / бозонные коды Чалмерса (PRL 2026)",
     rr8Body:
       "По состоянию на 11 сентября 2026 ANCAP цитирует публичную журналистику («Наука», 10 сентября 2026) теоретической статьи Physical Review Letters «Single-Period Floquet Control of Bosonic Codes with Quantum Lattice Gates» (Huang, Du, Guo; DOI 10.1103/tnb8-3m8m). Идея: кодировать информацию в микроволновых/резонаторных бозонных кодах и выполнять quantum lattice gates за один период Флоке вместо тысяч адиабатических циклов (~1000× меньше периодов на этой оси). Работа теоретическая; авторы обсуждают проверку на разрабатываемом 100-кубитном сверхпроводящем компьютере Чалмерса. ANCAP не аффилирован с Chalmers, Tianjin University, APS/PRL и телеканалом «Наука». Цитата — literacy для стека /tech и compute-слоя /quantum-sim: не заявление, что ANCAP эксплуатирует квантовый компьютер, не SLA по скорости и не гарантия коррекции ошибок.",
+    rr9Title: "9. Инвестиции в стартапы — IT-газели / B2B-ритейл и ИИ (2026)",
+    rr9Body:
+      "По состоянию на 12 сентября 2026 ANCAP цитирует публичную рыночную журналистику для стола /startups: CNews (13 авг. 2026) о газелях ИКТ Spark-Interfax 2021–2025 (лидер ООО «Джиэй Тэктим» / GA Tech Team, клиент «Золотое яблоко», ~112,71% CAGR, концентрация на одном клиенте); Forbes/ФРИИ (софт для хозяйств, ИИ-репетиторы); Sky.pro (диапазоны идей AI и SECaaS); businessmens.ru (агротех и цифровизация производств, 2026). Это сторонние рейтинги и эскизы идей, не прогнозы ANCAP, не оферта ценных бумаг, не акции названных эмитентов и не инвестиционный совет. ANCAP не аффилирован с CNews, Spark-Interfax, Forbes, ФРИИ, Sky.pro, businessmens.ru, «Джиэй Тэктим» и «Золотым яблоком». ACP на /startups оплачивает research-брифы и handoff лицензированным партнёрам.",
     researchRefsLinksTitle: "Канонические research-ссылки",
     researchRefsLinksBody:
-      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance, Floquet/бозонные коды Чалмерса и iXBT цитируются для грамотности, не как warranty продукта.",
+      "Публичные URL издателей. Если deep link изменится — начинайте со страницы источника. ZEISS, Daewoong/eTurna USPTO-allowance, Floquet/бозонные коды Чалмерса, iXBT и рыночная журналистика IT-газелей 2026 цитируются для грамотности, не как warranty продукта.",
     cryoLink: "Крионика и конституции",
     hubCardCryo:
       "Стол криоконсервации, research-протоколы по тихоходкам, партнёры КриоРус и Tomorrow.bio, конституционные пределы на дату уведомления.",
@@ -607,7 +613,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   uk: {
-    lastUpdated: "Оновлено: 11 вересня 2026.",
+    lastUpdated: "Оновлено: 12 вересня 2026.",
     privacyLink: "Повідомлення про конфіденційність",
     cookiesLink: "Політика cookie",
     termsLink: "Угода користувача",
@@ -663,9 +669,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr8Title: "8. Chalmers Floquet bosonic codes / quantum lattice gates (PRL 2026)",
     rr8Body:
       "As of 11 September 2026, ANCAP cites Nauka TV (10 Sep 2026) coverage of Huang–Du–Guo PRL (DOI 10.1103/tnb8-3m8m): bosonic codes + quantum lattice gates in one Floquet period instead of thousands. Theoretical; not ANCAP hardware. No affiliation with Chalmers / Tianjin / APS.",
+    rr9Title: "9. Startup investment desk — IT gazelle / B2B retail & AI cites (2026)",
+    rr9Body:
+      "As of 12 September 2026, /startups cites CNews/Spark-Interfax ICT gazelles (GA Tactic / Golden Apple concentration), Forbes/FRIИ small-IT gazelles, Sky.pro AI/SECaaS idea ranges, and businessmens.ru agrotech niches. Not a securities offering, not investment advice, no affiliation with named publishers or issuers.",
     researchRefsLinksTitle: "Canonical research links",
     researchRefsLinksBody:
-      "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, Chalmers Floquet bosonic codes, and iXBT.",
+      "Use public publisher URLs. Prefer the source page if a deep link changes. Includes ZEISS, Daewoong/eTurna USPTO-allowance journalism, Chalmers Floquet bosonic codes, iXBT, and 2026 IT-gazelle / startup-market journalism.",
     cryoLink: "Cryonics & constitutions",
     hubCardCryo:
       "Cryopreservation desk, tardigrade-inspired research framing, partners KrioRus and Tomorrow.bio, constitutional notes as of this notice date.",
@@ -911,7 +920,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: ".",
   },
   de: {
-    lastUpdated: "Zuletzt aktualisiert: 11. September 2026.",
+    lastUpdated: "Zuletzt aktualisiert: 12. September 2026.",
     privacyLink: "Datenschutzhinweis",
     cookiesLink: "Cookie-Richtlinie",
     termsLink: "Nutzungsvereinbarung",
@@ -967,9 +976,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr8Title: "8. Chalmers-Floquet / bosonische Codes (PRL 2026)",
     rr8Body:
       "Stand 11. September 2026 zitiert ANCAP Nauka-TV-Berichterstattung (10. Sep. 2026) zu Huang–Du–Guo, PRL DOI 10.1103/tnb8-3m8m: bosonische Codes und Quantum Lattice Gates in einer Floquet-Periode statt Tausender. Theorie; keine ANCAP-Hardware. Keine Affiliation mit Chalmers / Tianjin / APS.",
+    rr9Title: "9. Startup-Investments — IT-Gazellen / B2B-Retail & KI (2026)",
+    rr9Body:
+      "Stand 12. September 2026 zitiert der /startups-Desk CNews/Spark-Interfax-IKT-Gazellen (GA Tactic / Goldener Apfel, Kundenkonzentration), Forbes/FRIИ-Klein-IT, Sky.pro-KI/SECaaS-Spannen und businessmens.ru-Agrotech-Nischen. Kein Wertpapierangebot, keine Anlageberatung, keine Affiliation mit den genannten Verlagen oder Emittenten.",
     researchRefsLinksTitle: "Kanonische Research-Links",
     researchRefsLinksBody:
-      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance, Chalmers-Floquet-bosonische Codes und iXBT nur zur Literacy.",
+      "Öffentliche Verleger-URLs verwenden. Bei toten Deep-Links die Quellseite bevorzugen. ZEISS, Daewoong/eTurna-USPTO-Allowance, Chalmers-Floquet-bosonische Codes, iXBT und IT-Gazellen-Journalismus 2026 nur zur Literacy.",
     cryoLink: "Kryonik & Verfassungen",
     hubCardCryo:
       "Kryokonservierungs-Desk, Tardigraden-Research-Framing, Partner KrioRus und Tomorrow.bio, verfassungsrechtliche Hinweise zum Stand dieses Datums.",
@@ -1215,7 +1227,7 @@ export const legalByLang: Record<Language, Tree> = {
     authAgreeSuffix: " zu.",
   },
   "zh-Hant": {
-    lastUpdated: "最後更新：2026 年 9 月 11 日。",
+    lastUpdated: "最後更新：2026 年 9 月 12 日。",
     privacyLink: "隱私權聲明",
     cookiesLink: "Cookie 政策",
     termsLink: "使用者協議",
@@ -1270,9 +1282,12 @@ export const legalByLang: Record<Language, Tree> = {
     rr8Title: "8. Chalmers Floquet 玻色碼／量子晶格閘（PRL 2026）",
     rr8Body:
       "截至 2026 年 9 月 11 日，ANCAP 引用 Nauka TV（2026 年 9 月 10 日）對 Huang–Du–Guo PRL（DOI 10.1103/tnb8-3m8m）之報導：以微波／共振器玻色碼編碼，並在單一 Floquet 週期（而非數千週期）實作 quantum lattice gates。屬理論工作，非 ANCAP 硬體。與 Chalmers／天津大學／APS 無關聯。",
+    rr9Title: "9. 新創投資桌 — IT 瞪羚／B2B 零售與 AI 市場引用（2026）",
+    rr9Body:
+      "截至 2026 年 9 月 12 日，/startups 引用 CNews／Spark-Interfax ICT 瞪羚（GA Tactic／Zolotoe Yabloko 單一客戶集中）、Forbes／FRIИ 小型 IT、Sky.pro AI／SECaaS 構想區間，以及 businessmens.ru 農技利基。非證券發行、非投資建議，與所列出版社或發行人無關聯。",
     researchRefsLinksTitle: "正規研究連結",
     researchRefsLinksBody:
-      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance、Chalmers Floquet 玻色碼與 iXBT，僅供素養。",
+      "使用公開出版商 URL。若深層連結失效，請改從來源頁面開始。含 ZEISS、Daewoong／eTurna USPTO allowance、Chalmers Floquet 玻色碼、iXBT 與 2026 IT 瞪羚／新創市場報導，僅供素養。",
     cryoLink: "冷凍與憲法",
     hubCardCryo:
       "冷凍保存服務台、緩步類動物研究框架、夥伴 KrioRus 與 Tomorrow.bio，以及截至本公告日之憲法管轄說明。",

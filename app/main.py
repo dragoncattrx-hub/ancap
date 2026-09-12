@@ -103,6 +103,7 @@ from app.api.routers import (
     quantum_sim,
     saliva_rx,
     social_network,
+    startup_invest,
 )
 
 settings = get_settings()
@@ -298,6 +299,7 @@ ALL_ROUTERS = [
     quantum_sim.router,
     saliva_rx.router,
     social_network.router,
+    startup_invest.router,
 ]
 
 for r in ALL_ROUTERS:

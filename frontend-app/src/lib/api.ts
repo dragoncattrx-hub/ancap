@@ -596,6 +596,12 @@ export const salivaRxDesk = {
   },
 };
 
+export const startupInvestDesk = {
+  async catalog() {
+    return apiFetch("/startups/catalog");
+  },
+};
+
 export const nexusSocial = {
   async catalog() {
     return apiFetch("/nexus/catalog");

@@ -1,6 +1,7 @@
 import { legalByLang } from "./legal";
 import { aeternaByLang } from "./aeterna";
 import { agencyByLang } from "./agency";
+import { startupsByLang } from "./startups";
 import { lunarByLang } from "./lunar";
 import { faunaByLang } from "./fauna";
 import { insuranceByLang } from "./insurance";
@@ -116,6 +117,7 @@ export const translations: Record<Language, TranslationTree> = {
       galaxy: "Galaxy",
       fauna: "Fauna",
       tech: "Tech",
+      startups: "Startups",
       insurance: "Insurance",
       arena: "Arena",
       openMenu: "Open menu",
@@ -434,6 +436,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.en,
     aeternaPage: aeternaByLang.en,
     agencyPage: agencyByLang.en,
+    startupsPage: startupsByLang.en,
     lunarPage: lunarByLang.en,
     faunaPage: faunaByLang.en,
     insurancePage: insuranceByLang.en,
@@ -608,6 +611,7 @@ export const translations: Record<Language, TranslationTree> = {
       galaxy: "Галактика",
       fauna: "Фауна",
       tech: "Технологии",
+      startups: "Стартапы",
       insurance: "Страхование",
       arena: "Арена",
       openMenu: "Открыть меню",
@@ -926,6 +930,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.ru,
     aeternaPage: aeternaByLang.ru,
     agencyPage: agencyByLang.ru,
+    startupsPage: startupsByLang.ru,
     lunarPage: lunarByLang.ru,
     faunaPage: faunaByLang.ru,
     insurancePage: insuranceByLang.ru,
@@ -1100,6 +1105,7 @@ export const translations: Record<Language, TranslationTree> = {
       galaxy: "Галактика",
       fauna: "Фауна",
       tech: "Технології",
+      startups: "Стартапи",
       insurance: "Страхування",
       arena: "Арена",
       openMenu: "Відкрити меню",
@@ -1418,6 +1424,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.uk,
     aeternaPage: aeternaByLang.uk,
     agencyPage: agencyByLang.uk,
+    startupsPage: startupsByLang.uk,
     lunarPage: lunarByLang.uk,
     faunaPage: faunaByLang.uk,
     insurancePage: insuranceByLang.uk,
@@ -1592,6 +1599,7 @@ export const translations: Record<Language, TranslationTree> = {
       galaxy: "Galaxie",
       fauna: "Tierwelt",
       tech: "Technik",
+      startups: "Startups",
       insurance: "Versicherung",
       arena: "Arena",
       openMenu: "Menü öffnen",
@@ -1910,6 +1918,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.de,
     aeternaPage: aeternaByLang.de,
     agencyPage: agencyByLang.de,
+    startupsPage: startupsByLang.de,
     lunarPage: lunarByLang.de,
     faunaPage: faunaByLang.de,
     insurancePage: insuranceByLang.de,
@@ -2084,6 +2093,7 @@ export const translations: Record<Language, TranslationTree> = {
       galaxy: "銀河",
       fauna: "動物",
       tech: "技術",
+      startups: "新創",
       insurance: "保險",
       arena: "競技場",
       openMenu: "開啟選單",
@@ -2402,6 +2412,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang["zh-Hant"],
     aeternaPage: aeternaByLang["zh-Hant"],
     agencyPage: agencyByLang["zh-Hant"],
+    startupsPage: startupsByLang["zh-Hant"],
     lunarPage: lunarByLang["zh-Hant"],
     faunaPage: faunaByLang["zh-Hant"],
     insurancePage: insuranceByLang["zh-Hant"],

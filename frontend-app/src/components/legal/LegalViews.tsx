@@ -495,6 +495,13 @@ const CHALMERS_NAUKA_TV =
   "https://naukatv.ru/news/najden_sposob_uskoreniya_kvantovykh_vychislenij_v_1000_raz";
 const CHALMERS_PRL = "https://doi.org/10.1103/tnb8-3m8m";
 const CHALMERS_RECORD = "https://research.chalmers.se/en/publication/553484";
+const CNEWS_ICT_GAZELLES =
+  "https://www.cnews.ru/news/top/2026-08-13_samaya_bystrorastushchaya_it-kompaniya";
+const FORBES_FRII_IT =
+  "https://www.forbes.ru/svoi-biznes/548659-soft-dla-upravlenia-korovami-i-ii-repetitory-8-samyh-bystrorastusih-it-kompanij";
+const SKYPRO_IT_BUSINESSES =
+  "https://sky.pro/wiki/profession/15-perspektivnykh-it-biznesov-ot-iskusstvennogo-intellekta-do-fin-tech/";
+const BUSINESSMENS_TECH = "https://businessmens.ru/article/biznes-v-sfere-tehnologiy";
 
 export function ResearchRefsDisclosureView() {
   const { t } = useLanguage();
@@ -507,7 +514,7 @@ export function ResearchRefsDisclosureView() {
       actions={<LegalNavPills current="/legal/research-refs" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.rr${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.rr${n}Body`)}</p>
@@ -615,6 +622,44 @@ export function ResearchRefsDisclosureView() {
             className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
           >
             Quantum SIM — compute literacy
+          </Link>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={CNEWS_ICT_GAZELLES}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CNews — Spark-Interfax ICT gazelles; GA Tactic / Golden Apple (13 Aug 2026)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={FORBES_FRII_IT}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Forbes / FRIИ — fastest-growing small IT (farm software, AI tutors)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={SKYPRO_IT_BUSINESSES}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Sky.pro — 15 prospective IT businesses (AI, SECaaS, FinTech idea ranges)
+          </a>
+          <a
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+            href={BUSINESSMENS_TECH}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            businessmens.ru — 2026 technology-business niches (agrotech, production IT)
+          </a>
+          <Link
+            href="/startups"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            Startup investment desk
           </Link>
         </div>
       </section>
