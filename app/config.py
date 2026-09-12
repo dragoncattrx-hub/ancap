@@ -300,6 +300,10 @@ class Settings(BaseSettings):
     project_treasury_acp_address: str = "acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902"
     project_treasury_keystore_file: str = ""
 
+    # Welcome access grant on registration (promotional platform credit, not
+    # USD cash and not a charitable donation). Tests set this to "0".
+    welcome_grant_acp: str = "100"
+
     # Referral (bonuses are minted from the platform account — keep them
     # below expected lifetime platform revenue per referred user)
     referral_signup_bonus_acp: str = "25"

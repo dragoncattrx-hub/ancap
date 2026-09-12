@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "welcome-grant-100-acp",
+    date: "2026-09-12",
+    title: "Грант 100 ACP при регистрации — доступ, не пожертвование",
+    summary:
+      "Новый аккаунт получает 100 ACP на леджер (номинальная метка $100, не выплата USD). Смысл — снизить барьер входа к платным AI-workflow. Это промо-кредит, не благотворительный взнос по 135-ФЗ / ст. 582 ГК, не налоговый вычет. Юр. текст: /legal/welcome-grant.",
+    href: "/legal/welcome-grant",
+  },
+  {
     id: "startup-invest-desk",
     date: "2026-09-12",
     title: "Инвестиции в стартапы — IT-газели 2026",

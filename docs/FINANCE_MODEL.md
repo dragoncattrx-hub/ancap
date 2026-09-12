@@ -1,6 +1,6 @@
 # ANCAP Finance Model
 
-Last updated: 2026-07-02. Source of truth for platform monetization, fee routing, and the project treasury.
+Last updated: 2026-09-12. Source of truth for platform monetization, fee routing, and the project treasury.
 
 ## 1. Revenue streams and take rates
 
@@ -24,6 +24,7 @@ Rationale: the platform earns on **both sides** — a moderate 5% marketplace ta
 | Expense | Amount | Config key |
 |---|---|---|
 | Referral signup bonus | **25 ACP** per verified referral | `referral_signup_bonus_acp` |
+| Welcome access grant | **100 ACP** per new account (promotional platform credit; not USD, not a donation) | `welcome_grant_acp` |
 | Referral commission | **10%** of referred first purchase | `referral_commission_share_rate` |
 | Staking rewards | **40%** of daily fee revenue recycled | `staking_rewards_fees_share_percent` |
 | Staking bootstrap emission | 300 ACP/day, 108,000 ACP total cap | `staking_rewards_bootstrap_*` |
@@ -33,6 +34,11 @@ Rationale: the platform earns on **both sides** — a moderate 5% marketplace ta
 Unit economics guardrail: referral cost per user (25 ACP + 10% of first purchase) must stay below
 expected lifetime platform revenue per referred user. Previous values (100 ACP + 30%) were
 loss-making on typical 10–25 ACP first purchases and were reduced on 2026-07-02.
+
+The **welcome grant** (100 ACP on every new account, 12 Sep 2026) is a separate growth expense
+from the platform account. It is a promotional access credit, not a charitable donation and not
+USD cash (`docs/WELCOME_GRANT.md`). Pytest sets `WELCOME_GRANT_ACP=0` so exact-balance suites
+stay stable. Do not restore the old 100 ACP + 30% *referral* cut.
 
 ## 3. Ledger routing (single revenue bucket)
 

@@ -254,6 +254,12 @@ export function LoginForm() {
               <Link href="/register" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
                 {t("nav.register")}
               </Link>
+              <div style={{ marginTop: 8, fontSize: "0.8rem" }}>
+                {t("auth.welcomeGrantNote")}{" "}
+                <Link href="/legal/welcome-grant" style={{ color: "var(--accent)", textDecoration: "none" }}>
+                  {t("legal.welcomeGrantLink")}
+                </Link>
+              </div>
             </div>
           </form>
 

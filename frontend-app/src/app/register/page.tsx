@@ -69,6 +69,12 @@ export default function RegisterPage() {
             <h1 style={{ fontSize: "1.5rem", fontWeight: 600, marginTop: "16px", color: "var(--text)" }}>
               {t("nav.register")}
             </h1>
+            <p style={{ marginTop: "12px", fontSize: "0.85rem", lineHeight: 1.5, color: "var(--text-muted)" }}>
+              {t("auth.welcomeGrantNote")}{" "}
+              <a href="/legal/welcome-grant" style={{ color: "var(--accent)" }}>
+                {t("legal.welcomeGrantLink")}
+              </a>
+            </p>
           </div>
 
           <form onSubmit={handleSubmit}>

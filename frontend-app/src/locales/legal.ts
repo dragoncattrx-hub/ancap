@@ -13,6 +13,7 @@ export const legalByLang: Record<Language, Tree> = {
     acpLink: "ACP Whitepaper",
     riskLink: "Risk disclosure",
     refundsLink: "Payments & refunds",
+    welcomeGrantLink: "Welcome grant",
     hubLink: "Legal center",
     complianceLink: "Compliance",
     contactLegal: "legal@ancap.cloud",
@@ -90,6 +91,8 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Body:
       "Catalog copy and AI/user reviews are informational. They are not medical, legal, or investment advice. Mandatory consumer and patient rights that cannot be waived remain unaffected.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
+    hubCardWelcomeGrant:
+      "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
     hubCardCyber: "Public policy endorsement of collective cyber defense.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging and on-ramp / bridge risk notes.",
@@ -232,6 +235,36 @@ export const legalByLang: Record<Language, Tree> = {
     f4Body: "Card or bank payments processed by Stripe or other partners follow those partners' dispute and chargeback rules. Opening a chargeback without first contacting support@ancap.cloud may delay resolution and can lead to account review.",
     f5Title: "5. How to request a review",
     f5Body: "Email support@ancap.cloud with your account email, payment or run ID, and a short description. We aim to respond within a reasonable time. Mandatory consumer cooling-off rights, where they legally apply and have not been exhausted by digital performance you requested, remain unaffected.",
+    refundsWelcomeGrantMore: "The registration access grant is a promotional platform credit, not a donation and not refundable as fiat. Details:",
+    welcomeGrantKicker: "Billing / consumer law",
+    welcomeGrantTitle: "Welcome grant: 100 ACP access credit",
+    welcomeGrantIntro:
+      "ANCAP credits 100 ACP to a new account so the user can try paid AI workflows without a first cash top-up. The “$100” figure is a nominal accounting label. This page states the legislative qualification: access grant, not charity, not USD, not a tax deduction.",
+    wg1Title: "1. What you receive",
+    wg1Body:
+      "On successful registration ANCAP credits 100 ACP to your platform ledger. The “$100” figure is a nominal accounting label because ACP is the unit used to price SKUs. It is not a payout of 100 US dollars, not a bank transfer, not a stablecoin airdrop, and not a gift of fiat.",
+    wg2Title: "2. Access purpose (why this can sound like charity)",
+    wg2Body:
+      "The operator’s stated purpose is to lower the cash barrier so a new person can try paid AI workflows. In ordinary speech that is an access grant. That purpose does not change the legal qualification of the credit into a charitable donation.",
+    wg3Title: "3. Russian law — not a donation",
+    wg3Body:
+      "A пожертвование under Civil Code article 582 is a gift of property to a donee for generally useful purposes. A platform that credits its own internal ledger is not transferring property to a charity. Federal Law 135-FZ on charitable activity applies to registered charitable organizations and actual transfers of funds or property for statutory purposes with receipts. ANCAP is not holding this grant out as activity of a благотворительная организация. Advertising a marketing credit as “charity” without that legal form would be unfair advertising under Federal Law 38-FZ article 5. The grant is not a lottery or random prize. Users cannot claim a tax deduction under the Tax Code merely because they received or spent this credit.",
+    wg4Title: "4. United States",
+    wg4Body:
+      "The grant is not a tax-deductible charitable contribution under IRC §170 and is not a gift to a 501(c)(3) organization unless a separate registered charity actually receives funds. FTC Act §5 prohibits deceptive acts: calling a signup promo a “donation” when it is a platform credit would be misleading. ACP remains a utility / accounting unit, not an investment-return product.",
+    wg5Title: "5. EU / UK marketing and consumer law",
+    wg5Body:
+      "The Unfair Commercial Practices Directive (2005/29/EC) treats presenting a commercial promotion as a charitable act as a misleading practice. Promotional credits are not donations. Where consumer cooling-off rights apply to a later paid digital service, they are stated in Payments & refunds; this grant itself is a free credit, not a paid distance contract.",
+    wg6Title: "6. Product rules",
+    wg6Body:
+      "One grant per user account. A second registration of the same email is rejected. Abuse or multi-accounting may reverse the credit. Spendable on ANCAP services. Not withdrawable as USD. Not interest, yield, staking reward, or a security. Separate from the 25 ACP referral signup bonus paid to a referrer after a verified referred purchase.",
+    wg7Title: "7. Refunds and abuse",
+    wg7Body:
+      "The grant is not refundable as fiat. Fraudulent or duplicate accounts may be closed and the credit reversed. Paid workflow runs follow Payments & refunds.",
+    wg8Title: "8. Not legal advice",
+    wg8Body:
+      "This notice is operator disclosure, not tax or charity-filing advice to any user. Questions: legal@ancap.cloud.",
+    welcomeGrantAlso: "Open an account or read related notices:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -305,6 +338,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerCookies: "Cookies",
     footerRisk: "Risks",
     footerRefunds: "Refunds",
+    footerWelcomeGrant: "Welcome grant",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -320,6 +354,7 @@ export const legalByLang: Record<Language, Tree> = {
     acpLink: "Whitepaper ACP",
     riskLink: "Раскрытие рисков",
     refundsLink: "Платежи и возвраты",
+    welcomeGrantLink: "Грант при регистрации",
     hubLink: "Юридический центр",
     complianceLink: "Комплаенс",
     contactLegal: "legal@ancap.cloud",
@@ -397,6 +432,8 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Body:
       "Каталог и отзывы пользователей/ИИ носят информационный характер. Это не медицинский, юридический или инвестиционный совет. Неотчуждаемые права потребителя/пациента сохраняются.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
+    hubCardWelcomeGrant:
+      "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
     hubCardCyber: "Публичная поддержка коллективной киберзащиты.",
     hubCardClarity: "Полное согласие с U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging и заметки по on-ramp / bridge.",
@@ -539,6 +576,36 @@ export const legalByLang: Record<Language, Tree> = {
     f4Body: "Карточные платежи через Stripe и партнёров подчиняются их правилам диспутов. Chargeback без предварительного обращения в support@ancap.cloud может затянуть решение и привести к проверке аккаунта.",
     f5Title: "5. Как запросить проверку",
     f5Body: "Напишите на support@ancap.cloud с email аккаунта, ID платежа/запуска и кратким описанием. Обязательные права потребителя на отказ, где они применимы и не исчерпаны запрошенным вами цифровым исполнением, сохраняются.",
+    refundsWelcomeGrantMore: "Грант при регистрации — промо-кредит платформы, не пожертвование и не возврат фиатом. Подробности:",
+    welcomeGrantKicker: "Биллинг / потребительское право",
+    welcomeGrantTitle: "Грант при регистрации: 100 ACP кредита доступа",
+    welcomeGrantIntro:
+      "ANCAP начисляет 100 ACP новому аккаунту, чтобы пользователь мог попробовать платные AI-workflow без первой покупки. «$100» — номинальная учётная метка. Эта страница фиксирует юридическую квалификацию: грант доступа, не благотворительность, не USD, не налоговый вычет.",
+    wg1Title: "1. Что вы получаете",
+    wg1Body:
+      "После успешной регистрации ANCAP зачисляет 100 ACP на платформенный леджер. Сумма «$100» — номинальная учётная метка, потому что ACP — единица цены SKU. Это не выплата 100 долларов США, не банковский перевод, не airdrop стейблкоина и не подарок фиата.",
+    wg2Title: "2. Цель доступа (почему это звучит как благотворительность)",
+    wg2Body:
+      "Заявленная цель оператора — снизить денежный барьер, чтобы новый человек мог попробовать платные AI-workflow. В обычной речи это грант доступа. Эта цель не превращает кредит в пожертвование по закону.",
+    wg3Title: "3. Право РФ — не пожертвование",
+    wg3Body:
+      "Пожертвование по ст. 582 ГК РФ — дарение имущества одаряемому для общеполезных целей. Платформа, которая кредитует собственный внутренний леджер, имущество благотворительной организации не передаёт. 135-ФЗ о благотворительной деятельности касается зарегистрированных НКО и фактической передачи средств/имущества на уставные цели с документами. ANCAP не выдаёт этот грант за деятельность благотворительной организации. Называть маркетинговый кредит «благотворительностью» без такой формы — ненадлежащая реклама по ст. 5 38-ФЗ. Грант не лотерея и не случайный приз. Пользователь не получает налоговый вычет по НК РФ лишь потому, что ему начислили или он потратил этот кредит.",
+    wg4Title: "4. США",
+    wg4Body:
+      "Грант не является налоговычитаемым charitable contribution по IRC §170 и не подарок 501(c)(3), пока отдельная зарегистрированная charity реально не получает средства. FTC Act §5 запрещает обман: называть signup-промо «донатом», когда это кредит платформы, — misleading. ACP остаётся utility / учётной единицей, не продуктом инвестиционной доходности.",
+    wg5Title: "5. ЕС / Великобритания",
+    wg5Body:
+      "Директива о недобросовестной коммерческой практике (2005/29/EC) считает misleading выдавать коммерческое промо за благотворительный акт. Промо-кредиты — не пожертвования. Права на отказ от платной цифровой услуги, где они применимы, описаны в «Платежи и возвраты»; сам грант — бесплатный кредит, не возмездный дистанционный договор.",
+    wg6Title: "6. Правила продукта",
+    wg6Body:
+      "Один грант на аккаунт. Повторная регистрация того же email отклоняется. Злоупотребление и мультиаккаунты могут привести к отмене кредита. Тратится на сервисы ANCAP. Не выводится как USD. Не проценты, не yield, не стейкинг-награда и не ценная бумага. Отдельно от бонуса рефереру 25 ACP после подтверждённой покупки реферала.",
+    wg7Title: "7. Возвраты и злоупотребления",
+    wg7Body:
+      "Грант не возвращается фиатом. Мошеннические и дублирующие аккаунты могут быть закрыты с отменой кредита. Платные запуски — по политике платежей и возвратов.",
+    wg8Title: "8. Это не юридическая консультация",
+    wg8Body:
+      "Страница — раскрытие оператора, не совет пользователю по налогам или отчётности НКО. Вопросы: legal@ancap.cloud.",
+    welcomeGrantAlso: "Открыть аккаунт или связанные уведомления:",
     cyberKicker: "Юридическая / публичная политика",
     cyberTitle: "Поддержка ANCAP коллективной киберзащиты",
     cyberIntro: "ANCAP публично согласна с открытым письмом OpenAI «A call for collective action on cyber defense». Эта страница — юридическое и политическое заявление. Она не заменяет Пользовательское соглашение, Privacy Notice или Cookie Policy.",
@@ -607,6 +674,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerCookies: "Cookie",
     footerRisk: "Риски",
     footerRefunds: "Возвраты",
+    footerWelcomeGrant: "Грант 100 ACP",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -622,6 +690,7 @@ export const legalByLang: Record<Language, Tree> = {
     acpLink: "ACP Whitepaper",
     riskLink: "Розкриття ризиків",
     refundsLink: "Платежі та повернення",
+    welcomeGrantLink: "Грант при реєстрації",
     hubLink: "Юридичний центр",
     complianceLink: "Комплаєнс",
     contactLegal: "legal@ancap.cloud",
@@ -699,6 +768,8 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Body:
       "Catalog copy and AI/user reviews are informational only. Mandatory consumer/patient rights remain unaffected.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
+    hubCardWelcomeGrant:
+      "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
     hubCardCyber: "Публічна підтримка колективного кіберзахисту.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging та нотатки щодо on-ramp / bridge.",
@@ -841,6 +912,36 @@ export const legalByLang: Record<Language, Tree> = {
     f4Body: "Карткові платежі підлягають правилам Stripe/партнерів. Спочатку звертайтеся до support@ancap.cloud.",
     f5Title: "5. Як запросити перевірку",
     f5Body: "Email support@ancap.cloud з ID платежу/запуску. Обов’язкові права споживача зберігаються, де застосовні.",
+    refundsWelcomeGrantMore: "Грант при реєстрації — промо-кредит платформи, не пожертва і не повернення фіатом. Докладно:",
+    welcomeGrantKicker: "Білінг / споживче право",
+    welcomeGrantTitle: "Грант при реєстрації: 100 ACP кредиту доступу",
+    welcomeGrantIntro:
+      "ANCAP нараховує 100 ACP новому акаунту, щоб користувач міг спробувати платні AI-workflow без першої купівлі. «$100» — номінальна облікова мітка. Ця сторінка фіксує кваліфікацію: грант доступу, не благодійність, не USD, не податкове відрахування.",
+    wg1Title: "1. Що ви отримуєте",
+    wg1Body:
+      "Після успішної реєстрації ANCAP зараховує 100 ACP на платформовий леджер. «$100» — номінальна облікова мітка. Це не виплата 100 доларів США, не банківський переказ і не подарунок фіату.",
+    wg2Title: "2. Мета доступу (чому це звучить як благодійність)",
+    wg2Body:
+      "Заявлена мета оператора — знизити грошовий бар’єр, щоб нова людина могла спробувати платні AI-workflow. У звичайній мові це грант доступу. Ця мета не перетворює кредит на пожертву за законом.",
+    wg3Title: "3. Право — не пожертва",
+    wg3Body:
+      "Пожертва (дарування майна обдаровуваному для загальнокорисних цілей) вимагає передачі майна. Платформа, що кредитує власний леджер, майно благодійній організації не передає. Маркетинговий кредит не є благодійною діяльністю зареєстрованої НКО. Називати його «благодійністю» без такої форми — недобросовісна реклама. Грант не лотерея. Користувач не отримує податкове відрахування лише через нарахування цього кредиту.",
+    wg4Title: "4. США",
+    wg4Body:
+      "Грант не є tax-deductible charitable contribution за IRC §170 і не подарунок 501(c)(3), доки окрема charity реально не отримує кошти. FTC Act §5 забороняє видавати signup-промо за донат. ACP залишається utility / обліковою одиницею, не продуктом дохідності.",
+    wg5Title: "5. ЄС / Велика Британія",
+    wg5Body:
+      "Директива 2005/29/EC вважає misleading видавати комерційне промо за благодійний акт. Промо-кредити — не пожертви. Права на відмову від платної цифрової послуги, де вони застосовні, описані в платежах і поверненнях.",
+    wg6Title: "6. Правила продукту",
+    wg6Body:
+      "Один грант на акаунт. Повторна реєстрація того ж email відхиляється. Зловживання може скасувати кредит. Витрачається на сервіси ANCAP. Не виводиться як USD. Не відсотки, не yield і не цінний папір. Окремо від бонусу рефереру 25 ACP.",
+    wg7Title: "7. Повернення і зловживання",
+    wg7Body:
+      "Грант не повертається фіатом. Шахрайські акаунти можуть бути закриті зі скасуванням кредиту.",
+    wg8Title: "8. Це не юридична консультація",
+    wg8Body:
+      "Сторінка — розкриття оператора, не порада користувачу щодо податків. Питання: legal@ancap.cloud.",
+    welcomeGrantAlso: "Відкрити акаунт або пов’язані повідомлення:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -915,6 +1016,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerCookies: "Cookie",
     footerRisk: "Ризики",
     footerRefunds: "Повернення",
+    footerWelcomeGrant: "Грант 100 ACP",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -929,6 +1031,7 @@ export const legalByLang: Record<Language, Tree> = {
     acpLink: "ACP Whitepaper",
     riskLink: "Risikohinweis",
     refundsLink: "Zahlungen & Erstattungen",
+    welcomeGrantLink: "Willkommenszuschuss",
     hubLink: "Rechtszentrum",
     complianceLink: "Compliance",
     contactLegal: "legal@ancap.cloud",
@@ -1006,6 +1109,8 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Body:
       "Katalog und Nutzer-/KI-Reviews sind informativ. Zwingende Verbraucher-/Patientenrechte bleiben unberührt.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
+    hubCardWelcomeGrant:
+      "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
     hubCardCyber: "Öffentliche Unterstützung kollektiver Cyberabwehr.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-sichere Botschaften und On-Ramp-/Bridge-Hinweise.",
@@ -1148,6 +1253,36 @@ export const legalByLang: Record<Language, Tree> = {
     f4Body: "KartenZahlungen folgen Stripe/Partnerregeln. Zuerst support@ancap.cloud kontaktieren.",
     f5Title: "5. Prüfung anfordern",
     f5Body: "E-Mail an support@ancap.cloud mit Konto und Run-/Zahlungs-ID. Zwingende Verbraucherrechte bleiben unberührt.",
+    refundsWelcomeGrantMore: "Der Registrierungszuschuss ist ein Promo-Plattformguthaben, keine Spende und nicht als Fiat erstattbar. Details:",
+    welcomeGrantKicker: "Abrechnung / Verbraucherrecht",
+    welcomeGrantTitle: "Willkommenszuschuss: 100 ACP Zugangsguthaben",
+    welcomeGrantIntro:
+      "ANCAP schreibt neuen Konten 100 ACP gut, damit bezahlte KI-Workflows ohne ersten Barkauf getestet werden können. „$100“ ist ein nominelles Buchungslabel. Diese Seite stellt die rechtliche Einordnung fest: Zugangszuschuss, keine Wohltätigkeit, kein USD, kein Steuerabzug.",
+    wg1Title: "1. Was Sie erhalten",
+    wg1Body:
+      "Nach erfolgreicher Registrierung schreibt ANCAP 100 ACP auf Ihr Plattformledger. Die „$100“-Angabe ist ein nominelles Buchungslabel, weil ACP die SKU-Preiseinheit ist. Es ist keine Auszahlung von 100 US-Dollar, keine Banküberweisung und kein Fiat-Geschenk.",
+    wg2Title: "2. Zugangszweck (warum das nach Wohltätigkeit klingen kann)",
+    wg2Body:
+      "Der erklärte Zweck des Betreibers ist, die Geldbürde zu senken, damit eine neue Person bezahlte KI-Workflows ausprobieren kann. Umgangssprachlich ist das ein Zugangszuschuss. Dieser Zweck macht den Kredit rechtlich nicht zur Spende.",
+    wg3Title: "3. Russisches Recht — keine Spende",
+    wg3Body:
+      "Eine пожертвование nach Art. 582 ZGB RF ist eine Schenkung von Vermögen an einen Beschenkten zu gemeinnützigen Zwecken. Eine Plattform, die das eigene interne Ledger gutschreibt, überträgt kein Vermögen an eine Wohltätigkeitsorganisation. Das Wohltätigkeitsgesetz 135-FZ betrifft registrierte NPO und tatsächliche Übertragungen mit Belegen. ANCAP gibt diesen Zuschuss nicht als Tätigkeit einer благотворительная организация aus. Ein Marketingguthaben als „Wohltätigkeit“ ohne diese Form zu bewerben wäre unlautere Werbung (38-FZ Art. 5). Der Zuschuss ist keine Lotterie. Nutzer erhalten keinen Steuerabzug allein wegen dieser Gutschrift.",
+    wg4Title: "4. Vereinigte Staaten",
+    wg4Body:
+      "Der Zuschuss ist kein steuerlich absetzbarer charitable contribution nach IRC §170 und kein Geschenk an eine 501(c)(3), solange keine separate registrierte Charity tatsächlich Mittel erhält. FTC Act §5 verbietet Täuschung: ein Signup-Promo als „Spende“ zu bezeichnen, obwohl es ein Plattformguthaben ist, wäre irreführend. ACP bleibt eine Utility-/Rechnungseinheit, kein Renditeprodukt.",
+    wg5Title: "5. EU / Vereinigtes Königreich",
+    wg5Body:
+      "Die Richtlinie über unlautere Geschäftspraktiken (2005/29/EG) behandelt es als irreführend, eine kommerzielle Promotion als Wohltat darzustellen. Promo-Guthaben sind keine Spenden. Widerrufsrechte für spätere entgeltliche digitale Leistungen stehen unter Zahlungen & Erstattungen; dieser Zuschuss selbst ist ein kostenloses Guthaben, kein entgeltlicher Fernabsatzvertrag.",
+    wg6Title: "6. Produktregeln",
+    wg6Body:
+      "Ein Zuschuss pro Nutzerkonto. Eine zweite Registrierung derselben E-Mail wird abgelehnt. Missbrauch oder Mehrfachkonten können die Gutschrift stornieren. Verwendbar für ANCAP-Dienste. Nicht als USD auszahlbar. Keine Zinsen, kein Yield, keine Staking-Prämie, kein Wertpapier. Getrennt vom 25-ACP-Empfehlungsbonus an den Werber nach einem verifizierten Erstkauf.",
+    wg7Title: "7. Erstattungen und Missbrauch",
+    wg7Body:
+      "Der Zuschuss ist nicht als Fiat erstattbar. Betrügerische oder doppelte Konten können geschlossen und die Gutschrift storniert werden. Bezahlte Läufe folgen Zahlungen & Erstattungen.",
+    wg8Title: "8. Keine Rechtsberatung",
+    wg8Body:
+      "Dieser Hinweis ist eine Betreiberoffenlegung, keine Steuer- oder NPO-Beratung für Nutzer. Fragen: legal@ancap.cloud.",
+    welcomeGrantAlso: "Konto eröffnen oder verwandte Hinweise lesen:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -1222,6 +1357,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerCookies: "Cookies",
     footerRisk: "Risiken",
     footerRefunds: "Erstattungen",
+    footerWelcomeGrant: "Willkommenszuschuss",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -1236,6 +1372,7 @@ export const legalByLang: Record<Language, Tree> = {
     acpLink: "ACP Whitepaper",
     riskLink: "風險揭露",
     refundsLink: "付款與退款",
+    welcomeGrantLink: "註冊贈與額度",
     hubLink: "法律中心",
     complianceLink: "合規",
     contactLegal: "legal@ancap.cloud",
@@ -1312,6 +1449,8 @@ export const legalByLang: Record<Language, Tree> = {
     cryo5Body:
       "目錄與使用者／AI 評論僅供資訊參考。強制消費者／患者權利不受影響。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
+    hubCardWelcomeGrant:
+      "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
     hubCardCyber: "公開支持集體網路防禦。",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA 安全表述與 on-ramp／橋接風險說明。",
@@ -1454,6 +1593,36 @@ export const legalByLang: Record<Language, Tree> = {
     f4Body: "卡片付款遵循 Stripe／合作夥伴規則。請先聯絡 support@ancap.cloud。",
     f5Title: "5. 如何申請審查",
     f5Body: "寄 support@ancap.cloud 並附帳戶與付款／執行 ID。強制消費者權利在適用時不受影響。",
+    refundsWelcomeGrantMore: "註冊贈與額度為平台促銷點數，非捐款，亦不以法幣退還。詳情：",
+    welcomeGrantKicker: "帳務／消費者法",
+    welcomeGrantTitle: "註冊贈與額度：100 ACP 使用點數",
+    welcomeGrantIntro:
+      "ANCAP 於新帳戶入帳 100 ACP，讓使用者無需先儲值即可試用付費 AI 工作流程。「$100」為名義會計標示。本頁說明法律定性：使用額度，非慈善、非美元、不可抵稅。",
+    wg1Title: "1. 您獲得什麼",
+    wg1Body:
+      "註冊成功後，ANCAP 將 100 ACP 記入平台帳本。「$100」是名義會計標示，因 ACP 為 SKU 計價單位。這不是支付 100 美元、不是銀行轉帳，也不是法幣贈與。",
+    wg2Title: "2. 使用目的（為何聽起來像慈善）",
+    wg2Body:
+      "營運方聲明的目的是降低現金門檻，讓新使用者能試用付費 AI 工作流程。日常用語可稱為使用贈與。該目的並不會使該點數在法律上成為捐款。",
+    wg3Title: "3. 俄羅斯法 — 非捐贈",
+    wg3Body:
+      "依俄羅斯民法第 582 條，пожертвование 是為一般有益目的向受贈人贈與財產。平台將點數記入自有帳本，並未向慈善機構移轉財產。135-FZ 適用於已登記慈善組織及實際移轉資金／財產並開立憑證的情形。ANCAP 不以本贈與自稱為慈善組織。若無該法律形式而將行銷點數稱為「慈善」，屬不當廣告（38-FZ 第 5 條）。本贈與非彩券。使用者不得僅因收到或使用此點數主張抵稅。",
+    wg4Title: "4. 美國",
+    wg4Body:
+      "本贈與並非 IRC §170 可抵稅慈善捐款，亦非對 501(c)(3) 的贈與，除非另有已登記慈善機構實際收款。FTC Act §5 禁止欺騙：將註冊促銷稱為「捐款」而實為平台點數，屬誤導。ACP 仍為效用／會計單位，非投資報酬產品。",
+    wg5Title: "5. 歐盟／英國",
+    wg5Body:
+      "不公平商業行為指令（2005/29/EC）將商業促銷包裝成慈善行為視為誤導。促銷點數不是捐款。後續付費數位服務的猶豫期權利見付款與退款；本贈與本身為免費點數，非有償遠距契約。",
+    wg6Title: "6. 產品規則",
+    wg6Body:
+      "每帳戶一次。同一 email 再次註冊會被拒絕。濫用或多帳戶可能撤銷點數。僅能用於 ANCAP 服務。不可提領美元。非利息、非收益、非質押獎勵、非證券。與推薦人在驗證推薦購買後獲得的 25 ACP 分開。",
+    wg7Title: "7. 退款與濫用",
+    wg7Body:
+      "本贈與不以法幣退還。詐欺或重複帳戶可能被關閉並撤銷點數。付費執行依付款與退款政策。",
+    wg8Title: "8. 非法律意見",
+    wg8Body:
+      "本頁為營運方揭露，非對使用者稅務或慈善申報的建議。詢問：legal@ancap.cloud。",
+    welcomeGrantAlso: "開立帳戶或閱讀相關說明：",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -1528,6 +1697,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerCookies: "Cookie",
     footerRisk: "風險",
     footerRefunds: "退款",
+    footerWelcomeGrant: "註冊贈與額度",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",

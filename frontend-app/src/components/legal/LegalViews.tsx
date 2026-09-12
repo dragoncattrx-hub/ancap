@@ -53,6 +53,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/research-refs", key: "researchRefsLink" },
     { href: "/legal/cryo-constitution", key: "cryoLink" },
     { href: "/legal/refunds", key: "refundsLink" },
+    { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
@@ -88,6 +89,7 @@ export function LegalHubView() {
     { href: "/legal/research-refs", title: "researchRefsLink", body: "hubCardResearchRefs" },
     { href: "/legal/cryo-constitution", title: "cryoLink", body: "hubCardCryo" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
+    { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -259,6 +261,10 @@ export function RiskDisclosureView() {
           <Link href="/legal/research-refs" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
             /legal/research-refs
           </Link>
+          {" · "}
+          <Link href="/legal/welcome-grant" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/welcome-grant
+          </Link>
         </p>
       </section>
     </LegalShell>
@@ -282,6 +288,12 @@ export function RefundsView() {
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.f${n}Body`)}</p>
           </article>
         ))}
+        <p className="text-sm leading-7 text-white/55">
+          {t("legal.refundsWelcomeGrantMore")}{" "}
+          <Link href="/legal/welcome-grant" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/welcome-grant
+          </Link>
+        </p>
       </section>
     </LegalShell>
   );
@@ -716,6 +728,42 @@ export function CryoConstitutionView() {
   );
 }
 
+export function WelcomeGrantView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-emerald-300/20 bg-emerald-400/[0.06]"
+      kicker={t("legal.welcomeGrantKicker")}
+      title={t("legal.welcomeGrantTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.welcomeGrantIntro")}`}
+      actions={<LegalNavPills current="/legal/welcome-grant" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.wg${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.wg${n}Body`)}</p>
+          </article>
+        ))}
+        <p className="text-sm leading-7 text-white/55">
+          {t("legal.welcomeGrantAlso")}{" "}
+          <Link href="/register" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /register
+          </Link>
+          {" · "}
+          <Link href="/legal/refunds" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/refunds
+          </Link>
+          {" · "}
+          <Link href="/legal/risk" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/risk
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function SiteLegalFooter() {
   const { t } = useLanguage();
   const links = [
@@ -728,6 +776,7 @@ export function SiteLegalFooter() {
     { href: "/legal/research-refs", label: "footerResearchRefs" },
     { href: "/legal/cryo-constitution", label: "footerCryo" },
     { href: "/legal/refunds", label: "footerRefunds" },
+    { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/clarity-act", label: "footerClarity" },
   ] as const;
   return (

@@ -45,6 +45,7 @@ from app.services.auth_flows import (
 )
 from app.services.referrals import attribute_referral
 from app.services.turnstile import verify_turnstile
+from app.services.welcome_grant import issue_welcome_grant_idempotent
 from app.services.wallet_auth import create_wallet_auth_challenge, verify_wallet_auth_and_issue_token
 from app.services.rate_limit import build_rate_limit_key, enforce_rate_limit, get_request_ip
 
@@ -303,6 +304,7 @@ async def create_user(body: UserCreateRequest, request: Request, response: Respo
             referred_agent_id=None,
             source="signup",
         )
+    await issue_welcome_grant_idempotent(session, user_id=user.id)
     await session.refresh(user)
     token = create_access_token(str(user.id))
     _set_auth_cookie(response, token, request)

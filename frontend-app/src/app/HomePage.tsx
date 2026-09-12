@@ -164,10 +164,24 @@ export function HomePage() {
                       color: "var(--text-muted)",
                       maxWidth: 720,
                       lineHeight: 1.7,
-                      marginBottom: 28,
+                      marginBottom: 12,
                     }}
                   >
                     {t("homePage.acpLead")}
+                  </p>
+                  <p
+                    style={{
+                      color: "var(--text-muted)",
+                      maxWidth: 720,
+                      lineHeight: 1.7,
+                      marginBottom: 28,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    {t("homePage.welcomeGrantLead")}{" "}
+                    <Link href="/legal/welcome-grant" style={{ color: "var(--accent)" }}>
+                      {t("legal.welcomeGrantLink")}
+                    </Link>
                   </p>
                   <div className="action-cluster" style={{ marginBottom: 22 }}>
                     <Link href="/token-snapshot" className="btn btn-primary">
