@@ -12,8 +12,16 @@ def test_tech_auction_catalog_and_bid(client):
     assert len(body["technologies"]) >= 3
     stack_ids = {t["id"] for t in body["technologies"]}
     assert "stack-floquet-bosonic" in stack_ids
+    assert "stack-aeterna-synthetic-blood-mamba" in stack_ids
+    assert "stack-aeterna-oxygen-carrier" in stack_ids
     assert any(lot["id"] == "tech-floquet-bosonic" for lot in body["lots"])
+    assert any(lot["id"] == "tech-aeterna-synthetic-blood-mamba" for lot in body["lots"])
+    assert any(lot["id"] == "tech-aeterna-oxygen-carrier" for lot in body["lots"])
     assert any(lot["category"] == "quantum_compute" for lot in body["lots"])
+    mamba = next(lot for lot in body["lots"] if lot["id"] == "tech-aeterna-synthetic-blood-mamba")
+    assert mamba["starting_acp"] == "98000.00000000" or mamba["starting_acp"].startswith("98000")
+    ox = next(lot for lot in body["lots"] if lot["id"] == "tech-aeterna-oxygen-carrier")
+    assert ox["starting_acp"].startswith("92000")
     lot_id = body["lots"][0]["id"]
     min_next = body["lots"][0]["min_next_acp"]
 

@@ -1359,7 +1359,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflows",
     next: "Weiter:",
     homeTitle: "Longevity-DNA-Schienen",
-    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP, Vinci-Lichtkammer 48.000 ACP, Mikrowellen-Body-Contouring 52.000 ACP, DPSC-Biomaterial 65.000 ACP, BioFusion 88.000 ACP, M-Rezeptor-Abo ab 12.000 ACP / Monat, künstlicher Sauerstoffträger 92.000 ACP.",
+    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP, Vinci-Lichtkammer 48.000 ACP, Mikrowellen-Body-Contouring 52.000 ACP, DPSC-Biomaterial 65.000 ACP, BioFusion 88.000 ACP, M-Rezeptor-Abo ab 12.000 ACP / Monat, künstlicher Sauerstoffträger 92.000 ACP, Synthetisches Blut / Black Mamba 98.000 ACP.",
     enter: "AETERNA öffnen",
     sandboxCta: "DNA-Sandbox",
   },

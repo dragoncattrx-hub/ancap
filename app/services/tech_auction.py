@@ -44,6 +44,18 @@ _TECH_STACK: tuple[dict[str, Any], ...] = (
     {"id": "stack-orbital", "label": "Orbital edge sealed payloads", "layer": "infra"},
     {"id": "stack-aeterna", "label": "AETERNA longevity intents", "layer": "longevity"},
     {
+        "id": "stack-aeterna-oxygen-carrier",
+        "label": "AETERNA HBOC/PFC oxygen-carrier architecture",
+        "layer": "longevity",
+        "cite": "Partner brief literacy · /aeterna#oxygen-carrier · /legal/oxygen-carrier",
+    },
+    {
+        "id": "stack-aeterna-synthetic-blood-mamba",
+        "label": "AETERNA synthetic-blood / Black Mamba peptide architecture",
+        "layer": "longevity",
+        "cite": "Partner brief literacy · /aeterna#synthetic-blood-mamba · /legal/synthetic-blood-mamba",
+    },
+    {
         "id": "stack-floquet-bosonic",
         "label": "Single-period Floquet bosonic codes (quantum lattice gates)",
         "layer": "quantum_compute",
@@ -114,6 +126,31 @@ _SEED: tuple[dict[str, Any], ...] = (
         "blurb": "ACP-priced longevity consult workflows (licensed partners only).",
         "starting_acp": "100000",
         "featured": False,
+    },
+    {
+        "id": "tech-aeterna-oxygen-carrier",
+        "category": "longevity",
+        "title": "AETERNA oxygen-carrier architecture license",
+        "stack": "Hemoglobin-vesicle / PFC-emulsion literacy + bioreactor partner handoff",
+        "blurb": (
+            "License the AETERNA artificial oxygen-carrier partner-brief rail (92,000 ACP SKU). "
+            "Architecture literacy only — not a blood product, not compounding, not a CE/FDA therapeutic."
+        ),
+        "starting_acp": "92000",
+        "featured": True,
+    },
+    {
+        "id": "tech-aeterna-synthetic-blood-mamba",
+        "category": "longevity",
+        "title": "AETERNA synthetic-blood / Black Mamba architecture license",
+        "stack": "HBOC/PFC core + lipid shell + polymer mesh + modified peptide literacy",
+        "blurb": (
+            "License the AETERNA synthetic-blood architecture rail with modified Black Mamba peptide "
+            "literacy (98,000 ACP SKU). Conceptual partner brief only — not a blood product, not venom "
+            "compounding, not a toxin SOP, not a CE/FDA therapeutic."
+        ),
+        "starting_acp": "98000",
+        "featured": True,
     },
     {
         "id": "tech-floquet-bosonic",
@@ -309,7 +346,7 @@ async def catalog(session: AsyncSession, *, user_id: str | None = None) -> TechA
     featured = [lot for lot in lots if lot.featured]
     return TechAuctionCatalogPublic(
         title="ANCAP TECH Auction",
-        tagline="License ANCAP technologies — AI, identity, escrow, orbital, quantum-compute literacy — settled in ACP.",
+        tagline="License ANCAP technologies — AI, identity, escrow, orbital, AETERNA longevity / oxygen-carrier rails, quantum-compute literacy — settled in ACP.",
         compliance_note=_COMPLIANCE,
         lots=lots,
         featured=featured,
