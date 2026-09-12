@@ -174,6 +174,43 @@ export const legalByLang: Record<Language, Tree> = {
     lc10Title: "10. Contact",
     lc10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#vinci-light. Related notices: /legal/terms, /legal/risk, /legal/research-refs.",
+    bodyContouringLink: "Microwave body contouring",
+    hubCardBodyContouring:
+      "Contact-cooled 2.45 / 5.8 GHz applicator: licensed aesthetic/dermatology partner only, not liposuction, not a CE/FDA device, not a guaranteed fat-loss claim.",
+    bodyContouringKicker: "Legal / aesthetic",
+    bodyContouringTitle: "Microwave body contouring — licensed aesthetic partner rail",
+    bodyContouringIntro:
+      "How ANCAP frames contact-cooled microwave body contouring as of 12 September 2026. These pages sell ACP-settled consult and session-protocol briefs, not hardware and not a fat-reduction treatment.",
+    bc1Title: "1. Platform role",
+    bc1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching for AETERNA microwave body contouring. ANCAP does not operate aesthetic clinics, does not manufacture microwave carts or applicators, does not issue medical devices, and does not administer body-contouring sessions.",
+    bc2Title: "2. Not a marketed medical device",
+    bc2Body:
+      "The infographic is conceptual architecture for partner discussion. It is not an EU MDR device brochure, not an FDA 510(k) or PMA, not a CE-marked aesthetic product sold by ANCAP, and not a home microwave-antenna recipe. Listing a workflow does not place a device on the market.",
+    bc3Title: "3. Forbidden outcome claims",
+    bc3Body:
+      "ANCAP does not claim liposuction-equivalent fat removal, a guaranteed centimetre loss, weight-loss, adipocyte destruction, blebbing, macrophage clearance, lymphatic drainage, or a numeric success rate. 2.45 GHz / 5.8 GHz ISM bands are public radio-spectrum literacy, not a verified device specification ANCAP certifies.",
+    bc4Title: "4. Licensed clinicians only",
+    bc4Body:
+      "Microwave aesthetic procedures and related aftercare are clinical acts. They may be performed only by a person licensed to practice in the relevant jurisdiction (aesthetic medicine, dermatology, or other applicable practice acts). Users must not build home microwave applicators or antenna arrays from these pages.",
+    bc5Title: "5. Screening and contraindications",
+    bc5Body:
+      "Partner protocols must screen for implants, pacemakers and other implanted electronics, pregnancy, metal in the treatment field, thermal injury history, and other clinic-defined contraindications. Contact cooling on the infographic is an architecture note, not a validated no-burn safety system ANCAP certifies.",
+    bc6Title: "6. Not medical advice",
+    bc6Body:
+      "Catalog copy, infographics, workflow outputs, and reviews are informational. They are not a diagnosis, prescription, or treatment plan.",
+    bc7Title: "7. Health data",
+    bc7Body:
+      "If you submit identifiers or clinical history, treat them as sensitive. Do not upload medical records without a lawful basis. Partner clinics process clinical data under their own privacy notices.",
+    bc8Title: "8. Relationship to other AETERNA rails",
+    bc8Body:
+      "Human stem-cell organ print, mRNA-reprogramming consults, veterinary organ rails, and the Vinci light chamber remain separate. Microwave body contouring does not authorize DIY CRISPR, LNP recipes, unlicensed microwave hardware, or liposuction, and does not change AETERNA’s ban on diagnostic claims.",
+    bc9Title: "9. Payments",
+    bc9Body:
+      "ACP paid for this workflow buys a consult / session-protocol brief and partner match — not title to hardware, not a guaranteed clinic slot, and not a refundable cosmetic outcome. Refunds follow /legal/refunds.",
+    bc10Title: "10. Contact",
+    bc10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#microwave-body. Related notices: /legal/terms, /legal/risk, /legal/research-refs.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
       "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
@@ -487,6 +524,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerHumanitarian: "Aid desk",
     footerVetRegen: "Vet regen",
     footerLightChamber: "Light chamber",
+    footerBodyContouring: "Body contouring",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -663,6 +701,43 @@ export const legalByLang: Record<Language, Tree> = {
     lc10Title: "10. Контакты",
     lc10Body:
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#vinci-light. Связанные страницы: /legal/terms, /legal/risk, /legal/research-refs.",
+    bodyContouringLink: "Микроволновый контур тела",
+    hubCardBodyContouring:
+      "Контактно охлаждаемый аппликатор 2,45 / 5,8 ГГц: только лицензированный эстетический / дерматологический партнёр, не липосакция, не изделие CE/FDA, не гарантированная потеря жира.",
+    bodyContouringKicker: "Право / эстетика",
+    bodyContouringTitle: "Микроволновый контур тела — рейл лицензированного эстетического партнёра",
+    bodyContouringIntro:
+      "Как ANCAP описывает контактно охлаждаемый микроволновый контур тела по состоянию на 12 сентября 2026. Эти страницы продают брифы консультации и протокола сеанса за ACP, не оборудование и не лечение по снижению жира.",
+    bc1Title: "1. Роль платформы",
+    bc1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы консультаций и подбор лицензированного партнёра для микроволнового контура тела AETERNA. ANCAP не ведёт эстетические клиники, не производит стойки и аппликаторы, не выпускает медицинские изделия и не проводит сеансы контура тела.",
+    bc2Title: "2. Не изделие на рынке",
+    bc2Body:
+      "Инфографика — концептуальная архитектура для обсуждения с партнёром. Это не брошюра изделия EU MDR, не FDA 510(k) или PMA, не CE-маркированный эстетический продукт, продаваемый ANCAP, и не рецепт домашней микроволновой антенны. Листинг workflow не выводит изделие на рынок.",
+    bc3Title: "3. Запрещённые заявления о результате",
+    bc3Body:
+      "ANCAP не заявляет удаление жира, сопоставимое с липосакцией, гарантированную потерю сантиметров, похудение, уничтожение адипоцитов, blebbing, клиренс макрофагами, лимфодренаж или числовой процент успеха. Диапазоны ISM 2,45 / 5,8 ГГц — публичная грамотность радиоспектра, не сертифицированная ANCAP спецификация устройства.",
+    bc4Title: "4. Только лицензированные клиницисты",
+    bc4Body:
+      "Микроволновые эстетические процедуры и послеуход — клинические акты. Их может выполнять только лицо с правом практики в соответствующей юрисдикции (эстетическая медицина, дерматология или иные применимые акты). Пользователи не должны собирать домашние микроволновые аппликаторы или антенные решётки по этим страницам.",
+    bc5Title: "5. Скрининг и противопоказания",
+    bc5Body:
+      "Протоколы партнёра должны учитывать импланты, кардиостимуляторы и другую вживлённую электронику, беременность, металл в зоне воздействия, термическую травму в анамнезе и иные противопоказания клиники. Контактное охлаждение на инфографике — заметка архитектуры, не сертифицированная ANCAP система «без ожогов».",
+    bc6Title: "6. Не медицинская рекомендация",
+    bc6Body:
+      "Каталог, инфографика, выходы workflow и отзывы — информация. Это не диагноз, рецепт и не план лечения.",
+    bc7Title: "7. Данные о здоровье",
+    bc7Body:
+      "Если вы передаёте идентификаторы или клиническую историю, считайте их чувствительными. Не загружайте медкарты без правового основания. Клиники-партнёры обрабатывают клинические данные по своим уведомлениям о конфиденциальности.",
+    bc8Title: "8. Связь с другими рейлами AETERNA",
+    bc8Body:
+      "Печать органов, консультации по мРНК-перепрограммированию, ветеринарные рейлы и световая камера Vinci остаются отдельными. Микроволновый контур тела не разрешает DIY CRISPR, рецепты LNP, нелицензированное микроволновое оборудование или липосакцию и не снимает запрет AETERNA на диагностические заявления.",
+    bc9Title: "9. Платежи",
+    bc9Body:
+      "ACP за этот workflow покупает бриф консультации / протокола сеанса и подбор партнёра — не право на оборудование, не гарантированный слот клиники и не возмещаемый косметический результат. Возвраты — /legal/refunds.",
+    bc10Title: "10. Контакты",
+    bc10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#microwave-body. Связанные страницы: /legal/terms, /legal/risk, /legal/research-refs.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
       "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
@@ -971,6 +1046,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerHumanitarian: "Помощь",
     footerVetRegen: "Вет-реген",
     footerLightChamber: "Световая камера",
+    footerBodyContouring: "Контур тела",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -1147,6 +1223,43 @@ export const legalByLang: Record<Language, Tree> = {
     lc10Title: "10. Контакти",
     lc10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#vinci-light.",
+    bodyContouringLink: "Мікрохвильовий контур тіла",
+    hubCardBodyContouring:
+      "Контактно охолоджуваний аплікатор 2,45 / 5,8 ГГц: лише ліцензований естетичний / дерматологічний партнер, не ліпосакція, не виріб CE/FDA, не гарантована втрата жиру.",
+    bodyContouringKicker: "Право / естетика",
+    bodyContouringTitle: "Мікрохвильовий контур тіла — рейл ліцензованого естетичного партнера",
+    bodyContouringIntro:
+      "Як ANCAP описує контактно охолоджуваний мікрохвильовий контур тіла станом на 12 вересня 2026. Ці сторінки продають бриф консультації та протоколу сеансу за ACP, не обладнання і не лікування зі зниження жиру.",
+    bc1Title: "1. Роль платформи",
+    bc1Body:
+      "ANCAP забезпечує розрахунок в ACP, бриф консультацій і підбір ліцензованого партнера для мікрохвильового контуру тіла AETERNA. ANCAP не веде естетичні клініки, не виробляє стійки й аплікатори, не випускає медичні вироби і не проводить сеанси контуру тіла.",
+    bc2Title: "2. Не виріб на ринку",
+    bc2Body:
+      "Інфографіка — концептуальна архітектура для обговорення з партнером. Це не брошура виробу EU MDR, не FDA 510(k) чи PMA, не CE-маркований естетичний продукт, який продає ANCAP, і не рецепт домашньої мікрохвильової антени. Лістинг workflow не виводить виріб на ринок.",
+    bc3Title: "3. Заборонені заяви про результат",
+    bc3Body:
+      "ANCAP не заявляє видалення жиру, зіставне з ліпосакцією, гарантовану втрату сантиметрів, схуднення, знищення адипоцитів, blebbing, кліренс макрофагами, лімфодренаж чи числовий відсоток успіху. Діапазони ISM 2,45 / 5,8 ГГц — публічна грамотність радіоспектра, не сертифікована ANCAP специфікація пристрою.",
+    bc4Title: "4. Лише ліцензовані клініцисти",
+    bc4Body:
+      "Мікрохвильові естетичні процедури і післядогляд — клінічні акти. Їх може виконувати лише особа з правом практики у відповідній юрисдикції. Користувачі не повинні збирати домашні мікрохвильові аплікатори чи антенні решітки за цими сторінками.",
+    bc5Title: "5. Скринінг і протипоказання",
+    bc5Body:
+      "Протоколи партнера мають враховувати імпланти, кардіостимулятори та іншу імплантовану електроніку, вагітність, метал у зоні впливу, термічну травму в анамнезі та інші протипоказання клініки. Контактне охолодження на інфографіці — нотатка архітектури, не сертифікована ANCAP система «без опіків».",
+    bc6Title: "6. Не медична рекомендація",
+    bc6Body:
+      "Каталог, інфографіка, виходи workflow і відгуки — інформація. Це не діагноз, рецепт і не план лікування.",
+    bc7Title: "7. Дані про здоров’я",
+    bc7Body:
+      "Ідентифікатори та клінічну історію вважайте чутливими. Не завантажуйте медкарти без правової підстави. Клініки-партнери обробляють клінічні дані за своїми повідомленнями про конфіденційність.",
+    bc8Title: "8. Зв’язок з іншими рейлами AETERNA",
+    bc8Body:
+      "Друк органів, мРНК-консультації, ветеринарні рейли і світлова камера Vinci лишаються окремими. Мікрохвильовий контур тіла не дозволяє DIY CRISPR, рецепти LNP, неліцензоване мікрохвильове обладнання чи ліпосакцію і не знімає заборону AETERNA на діагностичні заяви.",
+    bc9Title: "9. Платежі",
+    bc9Body:
+      "ACP купує бриф консультації / протоколу сеансу і підбір партнера — не право на обладнання. Повернення — /legal/refunds.",
+    bc10Title: "10. Контакти",
+    bc10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#microwave-body.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
       "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
@@ -1461,6 +1574,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerHumanitarian: "Допомога",
     footerVetRegen: "Вет-реген",
     footerLightChamber: "Світлова камера",
+    footerBodyContouring: "Контур тіла",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -1636,6 +1750,43 @@ export const legalByLang: Record<Language, Tree> = {
     lc10Title: "10. Kontakt",
     lc10Body:
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#vinci-light.",
+    bodyContouringLink: "Mikrowellen-Body-Contouring",
+    hubCardBodyContouring:
+      "Kontaktgekühlter 2,45-/5,8-GHz-Applikator: nur lizenzierter Ästhetik-/Dermatologie-Partner, keine Liposuktion, kein CE/FDA-Gerät, keine garantierte Fettverlust-Behauptung.",
+    bodyContouringKicker: "Recht / Ästhetik",
+    bodyContouringTitle: "Mikrowellen-Body-Contouring — lizenzierte Ästhetik-Partnerschiene",
+    bodyContouringIntro:
+      "Wie ANCAP kontaktgekühltes Mikrowellen-Body-Contouring zum 12. September 2026 rahmt. Diese Seiten verkaufen ACP-abgerechnete Konsultations- und Sitzungsprotokoll-Briefings, keine Hardware und keine Fett-Reduktionsbehandlung.",
+    bc1Title: "1. Plattformrolle",
+    bc1Body:
+      "ANCAP stellt ACP-Abrechnung, Konsultationsbriefings und lizenziertes Partner-Matching für AETERNA-Mikrowellen-Body-Contouring bereit. ANCAP betreibt keine Ästhetikkliniken, stellt keine Mikrowellenwagen oder Applikatoren her, bringt keine Medizinprodukte in Verkehr und führt keine Body-Contouring-Sitzungen durch.",
+    bc2Title: "2. Kein vermarktetes Medizinprodukt",
+    bc2Body:
+      "Die Infografik ist konzeptionelle Architektur zur Partnerdiskussion. Sie ist keine EU-MDR-Gerätebroschüre, kein FDA 510(k) oder PMA, kein von ANCAP verkauftes CE-gekennzeichnetes Ästhetikprodukt und kein Heim-Mikrowellenantennen-Rezept. Ein Workflow-Listing bringt kein Gerät auf den Markt.",
+    bc3Title: "3. Verbotene Ergebnisbehauptungen",
+    bc3Body:
+      "ANCAP behauptet keine liposuktionsgleiche Fettentfernung, keinen garantierten Zentimeterverlust, keine Gewichtsabnahme, keine Adipozytenzerstörung, kein Blebbing, keine Makrophagen-Clearance, keine Lymphdrainage und keine numerische Erfolgsquote. 2,45-/5,8-GHz-ISM-Bänder sind öffentliche Funkspektrum-Literacy, keine von ANCAP zertifizierte Gerätespezifikation.",
+    bc4Title: "4. Nur lizenzierte Kliniker",
+    bc4Body:
+      "Mikrowellen-Ästhetikverfahren und Nachsorge sind klinische Handlungen. Sie dürfen nur von einer in der jeweiligen Jurisdiktion zugelassenen Person durchgeführt werden. Nutzer dürfen aus diesen Seiten keine Heim-Mikrowellenapplikatoren oder Antennenarrays bauen.",
+    bc5Title: "5. Screening und Kontraindikationen",
+    bc5Body:
+      "Partnerprotokolle müssen Implantate, Schrittmacher und andere implantierte Elektronik, Schwangerschaft, Metall im Behandlungsfeld, thermische Verletzungen in der Vorgeschichte und weitere klinikdefinierte Kontraindikationen prüfen. Kontaktkühlung auf der Infografik ist eine Architekturnotiz, kein von ANCAP zertifiziertes Verbrennungsschutzsystem.",
+    bc6Title: "6. Keine medizinische Beratung",
+    bc6Body:
+      "Katalogtexte, Infografiken, Workflow-Ausgaben und Bewertungen sind informativ. Sie sind keine Diagnose, kein Rezept und kein Behandlungsplan.",
+    bc7Title: "7. Gesundheitsdaten",
+    bc7Body:
+      "Identifikatoren und klinische Anamnese sind sensibel. Laden Sie keine Krankenakten ohne Rechtsgrundlage hoch. Partnerkliniken verarbeiten klinische Daten nach eigenen Datenschutzhinweisen.",
+    bc8Title: "8. Verhältnis zu anderen AETERNA-Schienen",
+    bc8Body:
+      "Organdruck, mRNA-Konsultationen, Veterinärschienen und die Vinci-Lichtkammer bleiben getrennt. Mikrowellen-Body-Contouring erlaubt kein DIY-CRISPR, keine LNP-Rezepte, keine unlizenzierte Mikrowellenhardware und keine Liposuktion und ändert AETERNAs Verbot diagnostischer Behauptungen nicht.",
+    bc9Title: "9. Zahlungen",
+    bc9Body:
+      "ACP kauft ein Briefing und ein Partner-Matching — kein Eigentum an Hardware. Erstattungen: /legal/refunds.",
+    bc10Title: "10. Kontakt",
+    bc10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#microwave-body.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
       "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
@@ -1950,6 +2101,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerHumanitarian: "Hilfsdesk",
     footerVetRegen: "Vet-Regen",
     footerLightChamber: "Lichtkammer",
+    footerBodyContouring: "Body-Contouring",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -2124,6 +2276,43 @@ export const legalByLang: Record<Language, Tree> = {
     lc10Title: "10. 聯絡",
     lc10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#vinci-light。",
+    bodyContouringLink: "微波身體輪廓",
+    hubCardBodyContouring:
+      "接觸冷卻 2.45 / 5.8 GHz 施打頭：僅持照醫美／皮膚科夥伴，非抽脂、非 CE/FDA 器材、非保證減脂主張。",
+    bodyContouringKicker: "法律／醫美",
+    bodyContouringTitle: "微波身體輪廓——持照醫美夥伴軌道",
+    bodyContouringIntro:
+      "ANCAP 截至 2026 年 9 月 12 日如何表述接觸冷卻微波身體輪廓。這些頁面出售以 ACP 結算的諮詢與療程流程簡報，不是硬體，也不是減脂治療。",
+    bc1Title: "1. 平台角色",
+    bc1Body:
+      "ANCAP 為 AETERNA 微波身體輪廓提供 ACP 結算、諮詢簡報與持照夥伴配對。ANCAP 不經營醫美診所、不製造微波推車或施打頭、不發行醫療器材，亦不執行身體輪廓療程。",
+    bc2Title: "2. 非上市醫療器材",
+    bc2Body:
+      "資訊圖為夥伴討論用概念架構。不是 EU MDR 器材型錄、不是 FDA 510(k) 或 PMA、不是 ANCAP 出售的 CE 標章醫美產品，也不是家用微波天線配方。列出工作流程不構成將器材投放市場。",
+    bc3Title: "3. 禁止的結果主張",
+    bc3Body:
+      "ANCAP 不主張等同抽脂的去脂、保證公分減少、減重、脂肪細胞破壞、blebbing、巨噬細胞清除、淋巴引流或數值成功率。2.45 / 5.8 GHz ISM 頻段為公開無線電頻譜素養，非 ANCAP 認證的器材規格。",
+    bc4Title: "4. 僅限持照臨床人員",
+    bc4Body:
+      "微波醫美處置與後續照護屬臨床行為，僅能由相關法域持照人員執行。使用者不得依這些頁面自製家用微波施打頭或天線陣列。",
+    bc5Title: "5. 篩檢與禁忌",
+    bc5Body:
+      "夥伴流程須篩檢植入物、心律調節器及其他植入電子裝置、妊娠、治療區金屬、熱傷害病史及其他診所定義禁忌。資訊圖上的接觸冷卻為架構註記，非 ANCAP 認證的無燒傷安全系統。",
+    bc6Title: "6. 非醫療建議",
+    bc6Body:
+      "型錄文案、資訊圖、工作流程輸出與評論僅供資訊。不是診斷、處方或治療計畫。",
+    bc7Title: "7. 健康資料",
+    bc7Body:
+      "識別資料與臨床病史應視為敏感。無合法基礎請勿上傳病歷。夥伴診所依其自身隱私聲明處理臨床資料。",
+    bc8Title: "8. 與其他 AETERNA 軌道的關係",
+    bc8Body:
+      "器官列印、mRNA 諮詢、獸醫軌道與 Vinci 光艙仍分開。微波身體輪廓不授權 DIY CRISPR、LNP 配方、未持照微波硬體或抽脂，亦不改變 AETERNA 對診斷主張的禁令。",
+    bc9Title: "9. 付款",
+    bc9Body:
+      "ACP 購買諮詢／療程簡報與夥伴配對——不是硬體所有權。退款見 /legal/refunds。",
+    bc10Title: "10. 聯絡",
+    bc10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#microwave-body。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
       "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
@@ -2438,6 +2627,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerHumanitarian: "人道援助",
     footerVetRegen: "獸醫再生",
     footerLightChamber: "光艙",
+    footerBodyContouring: "身體輪廓",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",

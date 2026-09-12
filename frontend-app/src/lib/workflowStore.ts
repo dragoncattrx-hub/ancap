@@ -440,6 +440,27 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
     tags: ["aeterna", "photobiomodulation", "light-chamber", "leonardo", "consult"],
   },
+  {
+    slug: "aeterna-microwave-body-contouring",
+    title: "AETERNA Microwave Body Contouring",
+    category: "AETERNA",
+    summary:
+      "Licensed aesthetic/dermatology-partner intake for contact-cooled microwave body contouring (2.45 / 5.8 GHz ISM applicator) — 52,000 ACP.",
+    description:
+      "Settles 52,000 ACP and issues a licensed dermatology or aesthetic-medicine partner brief. Public literature discusses selective adipocyte heating with surface cooling — AETERNA does not claim blebbing, lymphatic clearance, or a guaranteed contour change. Not liposuction, not a weight-loss program, not a CE/FDA device sold by ANCAP. Licensed clinician only.",
+    price: { amount: "52000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 45,
+    preview_items: ["Contraindication intake", "Aesthetic partner match", "Session-protocol literacy pack"],
+    output_items: [
+      "Microwave body-contouring intake brief",
+      "Licensed aesthetic handoff",
+      "Non-claim checklist (no lipo / no guaranteed fat loss / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
+    tags: ["aeterna", "body-contouring", "microwave", "aesthetic", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

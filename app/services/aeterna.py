@@ -43,6 +43,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-vet-cat-cryo-restore",
     "aeterna-vet-regen-pod",
     "aeterna-vinci-light-chamber",
+    "aeterna-microwave-body-contouring",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -55,6 +56,8 @@ VET_REGEN_POD_SLUG = "aeterna-vet-regen-pod"
 VET_REGEN_POD_PRICE_ACP = Decimal("180000")
 VINCI_LIGHT_SLUG = "aeterna-vinci-light-chamber"
 VINCI_LIGHT_PRICE_ACP = Decimal("48000")
+MICROWAVE_BODY_SLUG = "aeterna-microwave-body-contouring"
+MICROWAVE_BODY_PRICE_ACP = Decimal("52000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -164,6 +167,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.vet_feline_cryo_restore.value: VET_CAT_CRYO_SLUG,
     AeternaIntentKind.vet_canine_regen_pod.value: VET_REGEN_POD_SLUG,
     AeternaIntentKind.vinci_light_chamber.value: VINCI_LIGHT_SLUG,
+    AeternaIntentKind.microwave_body_contouring.value: MICROWAVE_BODY_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -231,6 +235,23 @@ VINCI_LIGHT_META = {
         "a licensed dermatology or phototherapy-partner brief. Not a reconstructed Leonardo invention, "
         "not a marketed medical device, and not a safe-tanning or vitamin-D treatment claim. "
         "UVA on the infographic is a known skin-cancer risk class — partner screening required."
+    ),
+}
+
+MICROWAVE_BODY_META = {
+    "mode": "licensed_aesthetic_dermatology_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "52000",
+    "architecture": "contact_cooled_microwave_applicator",
+    "bands": {
+        "ism_2450": "2.45GHz",
+        "ism_5800": "5.8GHz",
+    },
+    "note": (
+        "Conceptual contact-cooled microwave body-contouring rail (2.45 / 5.8 GHz ISM). ANCAP settles ACP "
+        "and issues a licensed aesthetic or dermatology-partner brief. Not a marketed medical device, not "
+        "liposuction, not a weight-loss program, and not a guaranteed adipocyte-clearance or contour result. "
+        "Partner screening required (implants, pacemakers, pregnancy, metal, thermal injury history)."
     ),
 }
 
@@ -366,6 +387,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Vinci light chamber listings are licensed phototherapy / dermatology partner intakes. "
             "Infographics are conceptual architecture inspired by Leonardo-era sunlight literacy — "
             "not a reconstructed invention, not a CE/FDA device, and not a safe-tanning claim."
+        ),
+        microwave_body_note=(
+            "Microwave body-contouring listings are licensed aesthetic / dermatology partner intakes "
+            "for a contact-cooled 2.45 / 5.8 GHz applicator. Infographics are conceptual architecture — "
+            "not a marketed device, not liposuction, and not a guaranteed fat-loss claim."
         ),
     )
 
@@ -510,6 +536,20 @@ async def create_intent_order(
                 detail="vinci_light_chamber budget_acp must be at least 48000 ACP",
             )
         for key, value in VINCI_LIGHT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.microwave_body_contouring:
+        if slug and slug != MICROWAVE_BODY_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="microwave_body_contouring requires workflow_slug aeterna-microwave-body-contouring",
+            )
+        slug = MICROWAVE_BODY_SLUG
+        if body.budget_acp < MICROWAVE_BODY_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="microwave_body_contouring budget_acp must be at least 52000 ACP",
+            )
+        for key, value in MICROWAVE_BODY_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

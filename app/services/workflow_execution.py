@@ -403,6 +403,36 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
         tags=["aeterna", "photobiomodulation", "light-chamber", "leonardo", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-microwave-body-contouring",
+        title="AETERNA Microwave Body Contouring",
+        category="AETERNA",
+        summary=(
+            "Licensed aesthetic/dermatology-partner intake for contact-cooled microwave body contouring "
+            "(2.45 / 5.8 GHz ISM applicator) — 52,000 ACP."
+        ),
+        description=(
+            "Settles 52,000 ACP and issues a licensed dermatology or aesthetic-medicine partner brief for a "
+            "contact-cooled microwave applicator in the 2.45 GHz / 5.8 GHz ISM bands. Public device literature "
+            "discusses selective heating of adipocytes with surface cooling; AETERNA does not claim blebbing, "
+            "macrophage clearance, lymphatic drainage, or a guaranteed contour change. Not liposuction, not a "
+            "weight-loss program, not a marketed medical device, and not a CE/FDA product sold by ANCAP. "
+            "Physical sessions occur only under a licensed clinician after screening (implants, pacemakers, "
+            "pregnancy, metal, burns). No home microwave-antenna recipe."
+        ),
+        price=Money(amount="52000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=["Contraindication intake", "Aesthetic partner match", "Session-protocol literacy pack"],
+        output_items=[
+            "Microwave body-contouring intake brief",
+            "Licensed aesthetic handoff",
+            "Non-claim checklist (no lipo / no guaranteed fat loss / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
+        tags=["aeterna", "body-contouring", "microwave", "aesthetic", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1447,6 +1477,27 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Physical light sessions occur "
                     "only under a licensed clinician. Infographic 'safe tan' copy is not a product claim. "
                     "UV exposure remains a known skin-cancer risk class."
+                ),
+            }
+        if template.slug == "aeterna-microwave-body-contouring":
+            deliverable["intent"] = str(payload.get("intent_kind") or "microwave_body_contouring")
+            deliverable["compliance"] = (
+                "Licensed aesthetic / dermatology partner intake only. Not a diagnosis, not a marketed "
+                "medical device, not liposuction, and not a guaranteed fat-loss or body-contour claim. "
+                "No home microwave-antenna recipe, CRISPR, or gene synthesis."
+            )
+            deliverable["microwave_body_contouring"] = {
+                "mode": "licensed_aesthetic_dermatology_partner",
+                "architecture": "contact_cooled_microwave_applicator",
+                "price_acp": "52000",
+                "bands": {
+                    "ism_2450": "2.45GHz",
+                    "ism_5800": "5.8GHz",
+                },
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical microwave sessions occur "
+                    "only under a licensed clinician. Infographic adipocyte-blebbing or lymphatic-clearance "
+                    "copy is public protocol literacy, not a product claim."
                 ),
             }
         execution_summary = {

@@ -54,6 +54,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/cryo-constitution", key: "cryoLink" },
     { href: "/legal/vet-regen", key: "vetRegenLink" },
     { href: "/legal/light-chamber", key: "lightChamberLink" },
+    { href: "/legal/body-contouring", key: "bodyContouringLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -93,6 +94,7 @@ export function LegalHubView() {
     { href: "/legal/cryo-constitution", title: "cryoLink", body: "hubCardCryo" },
     { href: "/legal/vet-regen", title: "vetRegenLink", body: "hubCardVetRegen" },
     { href: "/legal/light-chamber", title: "lightChamberLink", body: "hubCardLightChamber" },
+    { href: "/legal/body-contouring", title: "bodyContouringLink", body: "hubCardBodyContouring" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -850,6 +852,36 @@ export function LightChamberLegalView() {
   );
 }
 
+export function BodyContouringLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.bodyContouringKicker")}
+      title={t("legal.bodyContouringTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.bodyContouringIntro")}`}
+      actions={<LegalNavPills current="/legal/body-contouring" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.bc${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.bc${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#microwave-body" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#microwave-body
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function WelcomeGrantView() {
   const { t } = useLanguage();
   return (
@@ -903,6 +935,7 @@ export function SiteLegalFooter() {
     { href: "/legal/cryo-constitution", label: "footerCryo" },
     { href: "/legal/vet-regen", label: "footerVetRegen" },
     { href: "/legal/light-chamber", label: "footerLightChamber" },
+    { href: "/legal/body-contouring", label: "footerBodyContouring" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/humanitarian", label: "footerHumanitarian" },

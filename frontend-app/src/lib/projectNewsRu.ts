@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-microwave-body-contouring",
+    date: "2026-09-12",
+    title: "AETERNA: микроволновой контур тела",
+    summary:
+      "На /aeterna — партнёрский бриф контактно-охлаждаемого аппликатора 2,45 / 5,8 ГГц за 52 000 ACP. Инфографика описывает избирательный нагрев адипоцитов и лимфодренаж как грамотность протокола, не как гарантированный результат. Это не липосакция, не CE/FDA-изделие и не программа похудения. Юр. текст: /legal/body-contouring.",
+    href: "/aeterna#microwave-body",
+  },
+  {
     id: "aeterna-vinci-light-chamber",
     date: "2026-09-12",
     title: "AETERNA: световая камера Vinci для тканей",

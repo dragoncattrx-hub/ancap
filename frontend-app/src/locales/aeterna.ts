@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, or a Vinci light-chamber session brief at 48,000 ACP.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, or microwave body contouring at 52,000 ACP.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -42,6 +42,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent10Title: "Vinci light chamber (photobiomodulation)",
     intent10Body:
       "Licensed phototherapy-partner brief for a full-body LED chamber: red 620–680 nm and near-IR 780–950 nm as PBM literacy, UVA only under clinic screening. 48,000 ACP. Inspired by Leonardo’s sunlight-and-health notes — not a reconstructed invention and not a safe tan.",
+    intent11Title: "Microwave body contouring",
+    intent11Body:
+      "Licensed aesthetic-partner brief for a contact-cooled 2.45 / 5.8 GHz applicator. 52,000 ACP. Selective adipocyte heating is protocol literacy — not liposuction, not a CE/FDA device, and not a guaranteed centimetre loss.",
     agingKicker: "Blood RNA · 15 hallmarks · sex-aware",
     agingTitle: "Molecular aging profile",
     agingLead:
@@ -79,6 +82,25 @@ export const aeternaByLang: Record<Language, Tree> = {
     vinciStep4Body: "Partner monitoring. No guaranteed tan, collagen, or recovery timeline.",
     vinciStep5Title: "Receipt",
     vinciStep5Body: "ACP settlement plus an audit receipt. Hardware stays with the licensed partner.",
+    mwCta: "Open microwave contouring intake",
+    mwKicker: "Microwave · 2.45 / 5.8 GHz · licensed clinic",
+    mwTitle: "Microwave body contouring",
+    mwPrice: "52,000 ACP",
+    mwLead:
+      "A contact-cooled applicator in the 2.45 GHz and 5.8 GHz ISM bands. Public device literature discusses selective heating of adipocytes while cooling the skin surface — AETERNA does not sell a guaranteed fat-cell clearance, lymphatic drainage, or contour change. Sessions are a licensed-clinic protocol brief, not liposuction and not a weight-loss program.",
+    mwDisclaimer:
+      "The infographic is conceptual partner architecture. ANCAP does not manufacture the cart or handpiece, does not practice aesthetic medicine, and does not claim CE/FDA device status, a numeric centimetre loss, or a no-burn guarantee. Partner screening is required (implants, pacemakers, pregnancy, metal, thermal injury). Results, if any, are individual and unfold over weeks.",
+    mwLegalCta: "Body-contouring legal notice",
+    mwAlt:
+      "Infographic of a microwave body-contouring session: cooled applicator on the abdomen, 2.45 / 5.8 GHz console, adipocyte heating, macrophage clearance, and a before/after fat-volume diagram. Conceptual architecture for licensed aesthetic partners.",
+    mwStep1Title: "Microwave",
+    mwStep1Body: "Cooled applicator protects the skin; 2.45 / 5.8 GHz energy is aimed at adipocytes — protocol literacy, not a guaranteed effect.",
+    mwStep2Title: "Adipocytes",
+    mwStep2Body: "Clinic literature describes thermal stress and membrane disruption. ANCAP does not claim cell destruction.",
+    mwStep3Title: "Clearance",
+    mwStep3Body: "Macrophage / lymphatic clearance is a partner-protocol story, not a promised drainage result.",
+    mwStep4Title: "Weeks later",
+    mwStep4Body: "Any volume change is gradual and individual. No guaranteed before/after.",
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
     vetTitle: "Grow and restore organs for companion animals",
     vetLead:
@@ -130,8 +152,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Partner desk only",
     mrnaStep3Body: "AETERNA sells a 1,000,000 ACP consult brief. No lipid recipes, mRNA sequences, or home kits.",
     statusTitle: "Division status",
-    taglineFallback: "Eternal life rails: DNA vault, 15-axis molecular aging, partial mRNA-reprogramming consults, stem-cell organ print, veterinary organ rails, Vinci light chamber, ACP workflows, licensed partners.",
-    complianceFallback: "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only — not diagnoses, DIY PCR kits, tanning-bed prescriptions, or marketed veterinary devices.",
+    taglineFallback: "Eternal life rails: DNA vault, 15-axis molecular aging, partial mRNA-reprogramming consults, stem-cell organ print, veterinary organ rails, Vinci light chamber, microwave body contouring, ACP workflows, licensed partners.",
+    complianceFallback: "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only — not diagnoses, DIY PCR kits, tanning-bed prescriptions, liposuction, or marketed veterinary devices.",
     feature: "Feature",
     featureOn: "on",
     featureOff: "flagged off",
@@ -141,7 +163,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     next: "Next:",
     homeTitle: "Longevity DNA rails — hash locally, settle in ACP",
     homeLead:
-      "15-axis molecular aging profiles, partial mRNA-reprogramming consults, interactive helix sandbox, hash-only vault, consults at 1,000,000 ACP, stem-cell organ print at 250,000 ACP per organ, feline tissue cryo at 75,000 ACP, canine VET REGEN POD at 180,000 ACP, Vinci light chamber at 48,000 ACP.",
+      "15-axis molecular aging profiles, partial mRNA-reprogramming consults, interactive helix sandbox, hash-only vault, consults at 1,000,000 ACP, stem-cell organ print at 250,000 ACP per organ, feline tissue cryo at 75,000 ACP, canine VET REGEN POD at 180,000 ACP, Vinci light chamber at 48,000 ACP, microwave body contouring at 52,000 ACP.",
     enter: "Enter AETERNA",
     sandboxCta: "DNA sandbox",
   },
@@ -149,7 +171,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, осведомлённость о Cas9 и расчёты в блокчейне",
     heroTitle: "Рейлы долголетия: молекулярный профиль старения по 15 осям, а не одна цифра «биологического возраста».",
     heroLead:
-      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак или бриф световой камеры Vinci за 48 000 ACP.",
+      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак, бриф световой камеры Vinci за 48 000 ACP или микроволновый контур тела за 52 000 ACP.",
     openSandbox: "Открыть ДНК-песочницу",
     browseWorkflows: "Смотреть workflow AETERNA",
     demoKicker: "Публичное демо · нанороботы + химические ножницы",
@@ -158,7 +180,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Интерактивная двойная спираль: вращайте, меняйте пары A/T/G/C. Только обучение; ANCAP не хранит полные референсные геномы.",
     payTitle: "За что можно заплатить",
     payLead:
-      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий и не ветеринарная операционная.",
+      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP; микроволновый контур тела — 52 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий, липосакция и не ветеринарная операционная.",
     intent1Title: "Молекулярный профиль старения (15 осей)",
     intent1Body:
       "Карта репарации ДНК, протеостаза, энергообмена, клеточного старения и других осей по метаданным панели / blood-RNA — индивидуальная конфигурация процессов, а не одна цифра возраста.",
@@ -185,6 +207,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent10Title: "Световая камера Vinci (фотобиомодуляция)",
     intent10Body:
       "Бриф для лицензированного партнёра по фототерапии: красный 620–680 нм и ближний ИК 780–950 нм как грамотность PBM, UVA только после скрининга. 48 000 ACP. Вдохновлено заметками Леонардо о свете и теле — не реконструкция изобретения и не «безопасный загар».",
+    intent11Title: "Микроволновый контур тела",
+    intent11Body:
+      "Бриф для лицензированного эстетического партнёра: контактно охлаждаемый аппликатор 2,45 / 5,8 ГГц. 52 000 ACP. Избирательный нагрев адипоцитов — грамотность протокола, не липосакция, не изделие CE/FDA и не гарантированная потеря сантиметров.",
     agingKicker: "РНК крови · 15 механизмов · с учётом пола",
     agingTitle: "Молекулярный профиль старения",
     agingLead:
@@ -222,6 +247,25 @@ export const aeternaByLang: Record<Language, Tree> = {
     vinciStep4Body: "Мониторинг у партнёра. Без гарантированного загара, коллагена или срока восстановления.",
     vinciStep5Title: "Квитанция",
     vinciStep5Body: "Расчёт в ACP и аудиторская квитанция. Оборудование остаётся у лицензированного партнёра.",
+    mwCta: "Открыть приём микроволнового контура",
+    mwKicker: "Микроволны · 2,45 / 5,8 ГГц · лицензированная клиника",
+    mwTitle: "Микроволновый контур тела",
+    mwPrice: "52 000 ACP",
+    mwLead:
+      "Контактно охлаждаемый аппликатор в ISM-диапазонах 2,45 ГГц и 5,8 ГГц. Публичная литература устройств описывает избирательный нагрев адипоцитов при охлаждении поверхности кожи — AETERNA не продаёт гарантированное разрушение жировых клеток, лимфодренаж или изменение контура. Сеансы — бриф протокола лицензированной клиники, не липосакция и не программа похудения.",
+    mwDisclaimer:
+      "Инфографика — концептуальная архитектура партнёра. ANCAP не производит стойку и насадку, не занимается эстетической медициной и не заявляет статус CE/FDA, числовую потерю сантиметров или гарантию отсутствия ожогов. Нужен скрининг партнёра (импланты, кардиостимуляторы, беременность, металл, термическая травма). Результат, если есть, индивидуален и проявляется неделями.",
+    mwLegalCta: "Юридическое уведомление (контур тела)",
+    mwAlt:
+      "Инфографика сеанса микроволнового контура тела: охлаждаемая насадка на животе, консоль 2,45 / 5,8 ГГц, нагрев адипоцитов, клиренс макрофагами и схема объёма жира «до / после». Концептуальная архитектура для лицензированных эстетических партнёров.",
+    mwStep1Title: "Микроволны",
+    mwStep1Body: "Охлаждаемая насадка защищает кожу; энергия 2,45 / 5,8 ГГц направлена на адипоциты — грамотность протокола, не гарантированный эффект.",
+    mwStep2Title: "Адипоциты",
+    mwStep2Body: "Клиническая литература описывает тепловой стресс и нарушение мембраны. ANCAP не заявляет уничтожение клеток.",
+    mwStep3Title: "Клиренс",
+    mwStep3Body: "Макрофаги / лимфодренаж — история протокола партнёра, не обещанный результат.",
+    mwStep4Title: "Через недели",
+    mwStep4Body: "Любое изменение объёма постепенное и индивидуальное. Без гарантированного «до / после».",
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
     vetTitle: "Выращивание и восстановление органов для животных-компаньонов",
     vetLead:
@@ -273,8 +317,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Только партнёрский стол",
     mrnaStep3Body: "AETERNA продаёт бриф за 1 000 000 ACP. Без рецептов липидов, последовательностей мРНК и домашних наборов.",
     statusTitle: "Статус направления",
-    taglineFallback: "Рейлы вечной жизни: ДНК-хранилище, 15 осей молекулярного старения, консультации по мРНК-перепрограммированию, печать органов, ветеринарные рейлы, световая камера Vinci, ACP-workflow.",
-    complianceFallback: "AETERNA продаёт только анализ за ACP и передачу партнёрам — не диагнозы, не DIY ПЦР и не сертифицированные ветеринарные изделия.",
+    taglineFallback: "Рейлы вечной жизни: ДНК-хранилище, 15 осей молекулярного старения, консультации по мРНК-перепрограммированию, печать органов, ветеринарные рейлы, световая камера Vinci, микроволновый контур тела, ACP-workflow.",
+    complianceFallback: "AETERNA продаёт только анализ за ACP и передачу партнёрам — не диагнозы, не DIY ПЦР, не липосакция и не сертифицированные ветеринарные изделия.",
     feature: "Функция",
     featureOn: "вкл.",
     featureOff: "флаг выкл.",
@@ -283,7 +327,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflow",
     next: "Далее:",
     homeTitle: "ДНК-рейлы долголетия — хешируйте локально, рассчитывайтесь в ACP",
-    homeLead: "Молекулярный профиль старения по 15 осям, консультации по частичному перепрограммированию мРНК, спираль, хеш-хранилище, консультации 1 000 000 ACP, печать органа 250 000 ACP, крио тканей кошки 75 000 ACP, VET REGEN POD 180 000 ACP, световая камера Vinci 48 000 ACP.",
+    homeLead: "Молекулярный профиль старения по 15 осям, консультации по частичному перепрограммированию мРНК, спираль, хеш-хранилище, консультации 1 000 000 ACP, печать органа 250 000 ACP, крио тканей кошки 75 000 ACP, VET REGEN POD 180 000 ACP, световая камера Vinci 48 000 ACP, микроволновый контур тела 52 000 ACP.",
     enter: "Войти в AETERNA",
     sandboxCta: "ДНК-песочница",
   },
@@ -291,7 +335,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, обізнаність про Cas9 і розрахунки в блокчейні",
     heroTitle: "Рейли довголіття: молекулярний профіль старіння за 15 осями, а не одна цифра біовіку.",
     heroLead:
-      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак або бриф світлової камери Vinci за 48 000 ACP.",
+      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак, бриф світлової камери Vinci за 48 000 ACP або мікрохвильовий контур тіла за 52 000 ACP.",
     openSandbox: "Відкрити ДНК-пісочницю",
     browseWorkflows: "Дивитися workflow AETERNA",
     demoKicker: "Публічне демо · нанороботи + хімічні ножиці",
@@ -299,7 +343,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Інтерактивна подвійна спіраль. Лише навчання.",
     payTitle: "За що можна заплатити",
     payLead:
-      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій і не ветеринарна операційна.",
+      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP; мікрохвильовий контур тіла — 52 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій, не ліпосакція і не ветеринарна операційна.",
     intent1Title: "Молекулярний профіль старіння (15 осей)",
     intent1Body: "Конфігурація процесів старіння з метаданих панелі — не одна цифра віку.",
     intent2Title: "Панель теломер",
@@ -323,6 +367,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent10Title: "Світлова камера Vinci (фотобіомодуляція)",
     intent10Body:
       "Бриф для ліцензованого партнера з фототерапії: червоний 620–680 нм і ближній ІЧ 780–950 нм як грамотність PBM, UVA лише після скринінгу. 48 000 ACP. Натхненно нотатками Леонардо про світло й тіло — не реконструкція винаходу і не «безпечний засмаг».",
+    intent11Title: "Мікрохвильовий контур тіла",
+    intent11Body:
+      "Бриф для ліцензованого естетичного партнера: контактно охолоджуваний аплікатор 2,45 / 5,8 ГГц. 52 000 ACP. Вибіркове нагрівання адипоцитів — грамотність протоколу, не ліпосакція, не виріб CE/FDA і не гарантована втрата сантиметрів.",
     agingKicker: "РНК крові · 15 механізмів · з урахуванням статі",
     agingTitle: "Молекулярний профіль старіння",
     agingLead: "Мета — індивідуальна конфігурація процесів старіння, а не універсальна цифра біовіку.",
@@ -356,6 +403,25 @@ export const aeternaByLang: Record<Language, Tree> = {
     vinciStep4Body: "Моніторинг у партнера. Без гарантованого засмагу чи строку відновлення.",
     vinciStep5Title: "Квитанція",
     vinciStep5Body: "Розрахунок в ACP і аудиторська квитанція. Обладнання залишається в ліцензованого партнера.",
+    mwCta: "Відкрити прийом мікрохвильового контуру",
+    mwKicker: "Мікрохвилі · 2,45 / 5,8 ГГц · ліцензована клініка",
+    mwTitle: "Мікрохвильовий контур тіла",
+    mwPrice: "52 000 ACP",
+    mwLead:
+      "Контактно охолоджуваний аплікатор у ISM-діапазонах 2,45 ГГц і 5,8 ГГц. Публічна література пристроїв описує вибіркове нагрівання адипоцитів при охолодженні поверхні шкіри — AETERNA не продає гарантоване руйнування жирових клітин, лімфодренаж чи зміну контуру. Сеанси — бриф протоколу ліцензованої клініки, не ліпосакція і не програма схуднення.",
+    mwDisclaimer:
+      "Інфографіка — концептуальна архітектура партнера. ANCAP не виробляє стійку й насадку, не займається естетичною медициною і не заявляє статус CE/FDA, числову втрату сантиметрів чи гарантію відсутності опіків. Потрібен скринінг партнера (імпланти, кардіостимулятори, вагітність, метал, термічна травма). Результат, якщо є, індивідуальний і проявляється тижнями.",
+    mwLegalCta: "Юридичне повідомлення (контур тіла)",
+    mwAlt:
+      "Інфографіка сеансу мікрохвильового контуру тіла: охолоджена насадка на животі, консоль 2,45 / 5,8 ГГц, нагрівання адипоцитів, кліренс макрофагами і схема об’єму жиру «до / після». Концептуальна архітектура для ліцензованих естетичних партнерів.",
+    mwStep1Title: "Мікрохвилі",
+    mwStep1Body: "Охолоджена насадка захищає шкіру; енергія 2,45 / 5,8 ГГц спрямована на адипоцити — грамотність протоколу, не гарантований ефект.",
+    mwStep2Title: "Адипоцити",
+    mwStep2Body: "Клінічна література описує тепловий стрес і порушення мембрани. ANCAP не заявляє знищення клітин.",
+    mwStep3Title: "Кліренс",
+    mwStep3Body: "Макрофаги / лімфодренаж — історія протоколу партнера, не обіцяний результат.",
+    mwStep4Title: "За тижні",
+    mwStep4Body: "Будь-яка зміна об’єму поступова й індивідуальна. Без гарантованого «до / після».",
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
     vetTitle: "Вирощування і відновлення органів для тварин-компаньйонів",
     vetLead:
@@ -407,8 +473,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Лише партнерський стіл",
     mrnaStep3Body: "AETERNA продає бриф за 1 000 000 ACP. Без рецептів ліпідів і домашніх наборів.",
     statusTitle: "Статус напряму",
-    taglineFallback: "Рейли вічного життя: ДНК-сховище, 15 осей, консультації з мРНК-перепрограмування, друк органів, ветеринарні рейли, світлова камера Vinci.",
-    complianceFallback: "Лише аналіз за ACP і передача партнерам — не діагнози, не DIY ПЛР і не сертифіковані ветеринарні вироби.",
+    taglineFallback: "Рейли вічного життя: ДНК-сховище, 15 осей, консультації з мРНК-перепрограмування, друк органів, ветеринарні рейли, світлова камера Vinci, мікрохвильовий контур тіла.",
+    complianceFallback: "Лише аналіз за ACP і передача партнерам — не діагнози, не DIY ПЛР, не ліпосакція і не сертифіковані ветеринарні вироби.",
     feature: "Функція",
     featureOn: "увімк.",
     featureOff: "прапорець вимк.",
@@ -417,7 +483,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflow",
     next: "Далі:",
     homeTitle: "ДНК-рейли довголіття",
-    homeLead: "Профіль старіння за 15 осями, консультації з часткового перепрограмування мРНК, спіраль, хеш-сховище, друк органа 250 000 ACP, кріо тканин кота 75 000 ACP, VET REGEN POD 180 000 ACP, світлова камера Vinci 48 000 ACP.",
+    homeLead: "Профіль старіння за 15 осями, консультації з часткового перепрограмування мРНК, спіраль, хеш-сховище, друк органа 250 000 ACP, кріо тканин кота 75 000 ACP, VET REGEN POD 180 000 ACP, світлова камера Vinci 48 000 ACP, мікрохвильовий контур тіла 52 000 ACP.",
     enter: "Увійти в AETERNA",
     sandboxCta: "ДНК-пісочниця",
   },
@@ -425,7 +491,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9-Bewusstsein und Blockchain-Abrechnung",
     heroTitle: "Longevity-Schienen: molekulares Alterungsprofil über 15 Achsen — keine einzelne Bio-Age-Zahl.",
     heroLead:
-      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen oder ein Vinci-Lichtkammer-Briefing für 48.000 ACP.",
+      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen, ein Vinci-Lichtkammer-Briefing für 48.000 ACP oder Mikrowellen-Body-Contouring für 52.000 ACP.",
     openSandbox: "DNA-Sandbox öffnen",
     browseWorkflows: "AETERNA-Workflows ansehen",
     demoKicker: "Öffentliche Demo · Nanobots + chemische Scheren",
@@ -433,7 +499,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Interaktive Doppelhelix — nur Bildung.",
     payTitle: "Wofür Sie zahlen können",
     payLead:
-      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium und keine Veterinär-OP.",
+      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP; Mikrowellen-Body-Contouring 52.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium, keine Liposuktion und keine Veterinär-OP.",
     intent1Title: "Molekulares Alterungsprofil (15 Achsen)",
     intent1Body: "Hallmark-Karte aus Panel-/Blut-RNA-Metadaten — Konfiguration, keine Bio-Age-Zahl.",
     intent2Title: "Telomer-Panel",
@@ -457,6 +523,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent10Title: "Vinci-Lichtkammer (Photobiomodulation)",
     intent10Body:
       "Lizenzierter Phototherapie-Partner: Rot 620–680 nm und Nah-IR 780–950 nm als PBM-Literacy, UVA nur nach Screening. 48.000 ACP. Inspiriert von Leonardos Notizen zu Licht und Körper — keine rekonstruierte Erfindung und keine „sichere Bräune“.",
+    intent11Title: "Mikrowellen-Body-Contouring",
+    intent11Body:
+      "Lizenziertes Ästhetik-Partner-Briefing für einen kontaktgekühlten 2,45-/5,8-GHz-Applikator. 52.000 ACP. Selektive Adipozyten-Erwärmung ist Protokoll-Literacy — keine Liposuktion, kein CE/FDA-Gerät, kein garantierter Zentimeterverlust.",
     agingKicker: "Blut-RNA · 15 Mechanismen · geschlechtssensitiv",
     agingTitle: "Molekulares Alterungsprofil",
     agingLead: "Individuelle Konfiguration von Alterungsprozessen, keine universelle Bio-Age-Zahl.",
@@ -490,6 +559,25 @@ export const aeternaByLang: Record<Language, Tree> = {
     vinciStep4Body: "Partnermonitoring. Keine garantierte Bräune, Kollagen oder Erholungsfrist.",
     vinciStep5Title: "Beleg",
     vinciStep5Body: "ACP-Abrechnung plus Audit-Beleg. Hardware bleibt beim lizenzierten Partner.",
+    mwCta: "Mikrowellen-Contouring-Intake öffnen",
+    mwKicker: "Mikrowelle · 2,45 / 5,8 GHz · lizenzierte Klinik",
+    mwTitle: "Mikrowellen-Body-Contouring",
+    mwPrice: "52.000 ACP",
+    mwLead:
+      "Kontaktgekühlter Applikator in den ISM-Bändern 2,45 GHz und 5,8 GHz. Öffentliche Geräteliteratur beschreibt selektive Erwärmung von Adipozyten bei gekühlter Hautoberfläche — AETERNA verkauft keine garantierte Fettzell-Clearance, Lymphdrainage oder Konturänderung. Sitzungen sind ein lizenziertes Klinik-Protokoll-Briefing, keine Liposuktion und kein Abnehmprogramm.",
+    mwDisclaimer:
+      "Die Infografik ist konzeptionelle Partnerarchitektur. ANCAP stellt Wagen und Handstück nicht her, praktiziert keine Ästhetikmedizin und behauptet keinen CE/FDA-Gerätestatus, keinen numerischen Zentimeterverlust und keine Verbrennungsfreiheit. Partner-Screening ist Pflicht (Implantate, Schrittmacher, Schwangerschaft, Metall, thermische Verletzung). Ergebnisse, falls vorhanden, sind individuell und entfalten sich über Wochen.",
+    mwLegalCta: "Rechtshinweis Body-Contouring",
+    mwAlt:
+      "Infografik einer Mikrowellen-Body-Contouring-Sitzung: gekühlter Applikator am Bauch, 2,45-/5,8-GHz-Konsole, Adipozyten-Erwärmung, Makrophagen-Clearance und Vorher/Nachher-Fettvolumen. Konzeptionelle Architektur für lizenzierte Ästhetikpartner.",
+    mwStep1Title: "Mikrowelle",
+    mwStep1Body: "Gekühlter Applikator schützt die Haut; 2,45 / 5,8 GHz zielen auf Adipozyten — Protokoll-Literacy, kein garantierter Effekt.",
+    mwStep2Title: "Adipozyten",
+    mwStep2Body: "Klinikliteratur beschreibt thermischen Stress und Membranstörung. ANCAP behauptet keine Zellzerstörung.",
+    mwStep3Title: "Clearance",
+    mwStep3Body: "Makrophagen-/Lymph-Clearance ist Partnerprotokoll, kein versprochenes Drainage-Ergebnis.",
+    mwStep4Title: "Wochen später",
+    mwStep4Body: "Jede Volumenänderung ist schrittweise und individuell. Kein garantiertes Vorher/Nachher.",
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
     vetTitle: "Organzüchtung und -wiederherstellung für Haustiere",
     vetLead:
@@ -541,8 +629,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Nur Partner-Desk",
     mrnaStep3Body: "AETERNA verkauft ein 1.000.000-ACP-Briefing. Keine Lipidrezepte, mRNA-Sequenzen oder Heimkits.",
     statusTitle: "Divisionsstatus",
-    taglineFallback: "Ewigkeits-Schienen: DNA-Vault, 15 Achsen, partielle mRNA-Reprogrammierung, Organdruck, Veterinär-Organschienen, Vinci-Lichtkammer, ACP-Workflows.",
-    complianceFallback: "Nur ACP-Analysen und Partner-Übergaben — keine Diagnosen, Heim-PCR-Kits oder vermarktete Veterinärprodukte.",
+    taglineFallback: "Ewigkeits-Schienen: DNA-Vault, 15 Achsen, partielle mRNA-Reprogrammierung, Organdruck, Veterinär-Organschienen, Vinci-Lichtkammer, Mikrowellen-Body-Contouring, ACP-Workflows.",
+    complianceFallback: "Nur ACP-Analysen und Partner-Übergaben — keine Diagnosen, Heim-PCR-Kits, Liposuktion oder vermarktete Veterinärprodukte.",
     feature: "Feature",
     featureOn: "an",
     featureOff: "Flag aus",
@@ -551,7 +639,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflows",
     next: "Weiter:",
     homeTitle: "Longevity-DNA-Schienen",
-    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP, Vinci-Lichtkammer 48.000 ACP.",
+    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP, Vinci-Lichtkammer 48.000 ACP, Mikrowellen-Body-Contouring 52.000 ACP.",
     enter: "AETERNA öffnen",
     sandboxCta: "DNA-Sandbox",
   },
@@ -559,7 +647,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA、Cas9 認知與區塊鏈結算",
     heroTitle: "長壽軌道：15 軸分子衰老剖面，而非單一生物年齡數字。",
     heroLead:
-      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道，或以 48,000 ACP 開啟 Vinci 光艙簡報。",
+      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道、以 48,000 ACP 開啟 Vinci 光艙簡報，或以 52,000 ACP 開啟微波身體輪廓。",
     openSandbox: "開啟 DNA 沙盒",
     browseWorkflows: "瀏覽 AETERNA 工作流程",
     demoKicker: "公開示範 · 奈米機器人 + 化學剪刀",
@@ -567,7 +655,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "互動雙螺旋僅供教育。",
     payTitle: "可付費項目",
     payLead:
-      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床，亦非獸醫手術套件。",
+      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP；微波身體輪廓 52,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床、非抽脂，亦非獸醫手術套件。",
     intent1Title: "分子衰老剖面（15 軸）",
     intent1Body: "以血液 RNA／面板中繼資料對應衰老機制——是配置，不是單一生物年齡。",
     intent2Title: "端粒面板",
@@ -591,6 +679,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent10Title: "Vinci 光艙（光生物調節）",
     intent10Body:
       "持照光療夥伴簡報：紅光 620–680 nm 與近紅外 780–950 nm 作為 PBM 素養，UVA 僅能在篩檢後使用。48,000 ACP。啟發自達文西對光與身體的筆記——不是重建發明，也不是「安全曬黑」。",
+    intent11Title: "微波身體輪廓",
+    intent11Body:
+      "持照醫美夥伴簡報：接觸冷卻 2.45 / 5.8 GHz 施打頭。52,000 ACP。選擇性加熱脂肪細胞為流程素養——非抽脂、非 CE/FDA 器材，亦非保證公分減少。",
     agingKicker: "血液 RNA · 15 機制 · 性別敏感",
     agingTitle: "分子衰老剖面",
     agingLead: "目標是個別衰老過程配置，而非通用生物年齡數字。",
@@ -624,6 +715,25 @@ export const aeternaByLang: Record<Language, Tree> = {
     vinciStep4Body: "夥伴監測。無保證曬黑、膠原或恢復時程。",
     vinciStep5Title: "收據",
     vinciStep5Body: "ACP 結算加上稽核收據。硬體留在持照夥伴處。",
+    mwCta: "開啟微波輪廓收件",
+    mwKicker: "微波 · 2.45 / 5.8 GHz · 持照診所",
+    mwTitle: "微波身體輪廓",
+    mwPrice: "52,000 ACP",
+    mwLead:
+      "接觸冷卻施打頭，使用 2.45 GHz 與 5.8 GHz ISM 頻段。公開器材文獻討論選擇性加熱脂肪細胞並冷卻皮膚表面——AETERNA 不出售保證脂肪細胞清除、淋巴引流或輪廓改變。療程為持照診所流程簡報，非抽脂，亦非減重計畫。",
+    mwDisclaimer:
+      "資訊圖為夥伴概念架構。ANCAP 不製造推車或手件、不從事醫美診療，亦不主張 CE/FDA 器材地位、公分數值減少或無燒傷保證。夥伴須篩檢（植入物、心律調節器、妊娠、金屬、熱傷害）。若有結果，屬個人差異，並於數週後逐漸出現。",
+    mwLegalCta: "身體輪廓法律聲明",
+    mwAlt:
+      "微波身體輪廓療程資訊圖：腹部冷卻施打頭、2.45 / 5.8 GHz 控制台、脂肪細胞加熱、巨噬細胞清除與脂肪體積前後示意。持照醫美夥伴的概念架構。",
+    mwStep1Title: "微波",
+    mwStep1Body: "冷卻施打頭保護皮膚；2.45 / 5.8 GHz 能量針對脂肪細胞——流程素養，非保證效果。",
+    mwStep2Title: "脂肪細胞",
+    mwStep2Body: "臨床文獻描述熱壓力與膜損傷。ANCAP 不主張細胞破壞。",
+    mwStep3Title: "清除",
+    mwStep3Body: "巨噬細胞／淋巴清除為夥伴流程敘述，非承諾的引流結果。",
+    mwStep4Title: "數週後",
+    mwStep4Body: "任何體積變化皆為漸進且因人而異。無保證前後對比。",
     vetKicker: "獸醫 · 持照診所 · 概念架構",
     vetTitle: "伴侶動物器官培養與復原",
     vetLead:
@@ -675,8 +785,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "僅夥伴櫃台",
     mrnaStep3Body: "AETERNA 出售 1,000,000 ACP 簡報。無脂質配方、mRNA 序列或家用套件。",
     statusTitle: "部門狀態",
-    taglineFallback: "永恆生命軌道：DNA 庫、15 軸分子衰老、部分 mRNA 重編程諮詢、器官列印、獸醫器官軌道、Vinci 光艙、ACP。",
-    complianceFallback: "僅出售 ACP 分析與夥伴轉介——非診斷、非家用 PCR，亦非上市獸醫器材。",
+    taglineFallback: "永恆生命軌道：DNA 庫、15 軸分子衰老、部分 mRNA 重編程諮詢、器官列印、獸醫器官軌道、Vinci 光艙、微波身體輪廓、ACP。",
+    complianceFallback: "僅出售 ACP 分析與夥伴轉介——非診斷、非家用 PCR、非抽脂，亦非上市獸醫器材。",
     feature: "功能",
     featureOn: "開",
     featureOff: "旗標關",
@@ -685,7 +795,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "工作流程",
     next: "下一步：",
     homeTitle: "長壽 DNA 軌道",
-    homeLead: "15 軸分子衰老剖面、部分 mRNA 重編程諮詢、螺旋沙盒、雜湊庫、器官列印 250,000 ACP、貓組織冷凍 75,000 ACP、VET REGEN POD 180,000 ACP、Vinci 光艙 48,000 ACP。",
+    homeLead: "15 軸分子衰老剖面、部分 mRNA 重編程諮詢、螺旋沙盒、雜湊庫、器官列印 250,000 ACP、貓組織冷凍 75,000 ACP、VET REGEN POD 180,000 ACP、Vinci 光艙 48,000 ACP、微波身體輪廓 52,000 ACP。",
     enter: "進入 AETERNA",
     sandboxCta: "DNA 沙盒",
   },

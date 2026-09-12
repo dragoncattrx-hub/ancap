@@ -48,6 +48,7 @@ class AeternaIntentKind(str, Enum):
     vet_feline_cryo_restore = "vet_feline_cryo_restore"
     vet_canine_regen_pod = "vet_canine_regen_pod"
     vinci_light_chamber = "vinci_light_chamber"
+    microwave_body_contouring = "microwave_body_contouring"
 
 
 class AeternaDnaSource(str, Enum):
@@ -245,4 +246,9 @@ class AeternaStatusPublic(BaseModel):
         "The Vinci light / photobiomodulation chamber is a licensed-partner consult and session-protocol "
         "brief. Infographics are conceptual architecture inspired by Leonardo-era sunlight-and-health literacy "
         "— not a reconstructed invention, not a marketed phototherapy device, and not a safe-tanning claim."
+    )
+    microwave_body_note: str = (
+        "Microwave body contouring (2.45 / 5.8 GHz ISM, contact-cooled applicator) is a licensed aesthetic / "
+        "dermatology partner session-protocol brief. Infographics are conceptual architecture — not a marketed "
+        "medical device, not liposuction, and not a guaranteed fat-loss or body-contour claim."
     )

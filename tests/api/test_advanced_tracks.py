@@ -62,10 +62,12 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.vet_feline_cryo_restore.value == "vet_feline_cryo_restore"
     assert AeternaIntentKind.vet_canine_regen_pod.value == "vet_canine_regen_pod"
     assert AeternaIntentKind.vinci_light_chamber.value == "vinci_light_chamber"
+    assert AeternaIntentKind.microwave_body_contouring.value == "microwave_body_contouring"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
     assert AeternaStatusPublic.model_fields["vinci_light_note"]
+    assert AeternaStatusPublic.model_fields["microwave_body_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -75,12 +77,13 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 11
+    assert len(aeterna) >= 12
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
         "aeterna-vet-regen-pod": "180000",
         "aeterna-vinci-light-chamber": "48000",
+        "aeterna-microwave-body-contouring": "52000",
     }
     for tpl in aeterna:
         assert tpl.price.currency == "ACP"
@@ -89,6 +92,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-vet-cat-cryo-restore" in slugs
     assert "aeterna-vet-regen-pod" in slugs
     assert "aeterna-vinci-light-chamber" in slugs
+    assert "aeterna-microwave-body-contouring" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -328,6 +332,44 @@ def test_vinci_light_intent_default_slug_and_reject_low_budget(client):
     assert payload["workflow_slug"] == VINCI_LIGHT_SLUG
     assert payload["metadata_json"]["architecture"] == "full_body_led_uva_red_nir_chamber"
     assert payload["metadata_json"]["bands"]["red"] == "620-680nm"
+
+
+def test_microwave_body_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-microwave-body-contouring")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "microwave_body_contouring"})
+    mw = out["deliverable"]["microwave_body_contouring"]
+    assert mw["price_acp"] == "52000"
+    assert mw["bands"]["ism_2450"] == "2.45GHz"
+    assert mw["bands"]["ism_5800"] == "5.8GHz"
+    assert out["deliverable"]["partner_handoff"]["required"] is True
+    blob = str(out).lower()
+    for forbidden in ("guide rna", "pcr primer", "incubate at", "ionizable lipid recipe"):
+        assert forbidden not in blob
+    assert "licensed_aesthetic_dermatology_partner" in blob
+    assert "liposuction" in blob
+
+
+def test_microwave_body_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import MICROWAVE_BODY_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "microwave_body_contouring", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "microwave_body_contouring", "budget_acp": "52000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == MICROWAVE_BODY_SLUG
+    assert payload["metadata_json"]["architecture"] == "contact_cooled_microwave_applicator"
+    assert payload["metadata_json"]["bands"]["ism_5800"] == "5.8GHz"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

@@ -349,6 +349,9 @@ export function HomePage() {
                     <Link href="/aeterna#vinci-light" className="btn btn-ghost">
                       {t("aeternaPage.vinciCta")}
                     </Link>
+                    <Link href="/aeterna#microwave-body" className="btn btn-ghost">
+                      {t("aeternaPage.mwCta")}
+                    </Link>
                 </div>
               </div>
               <div
