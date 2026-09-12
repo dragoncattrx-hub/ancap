@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-oxygen-carrier",
+    date: "2026-09-12",
+    title: "AETERNA: искусственный переносчик кислорода",
+    summary:
+      "На /aeterna — партнёрский бриф гемоглобиновой везикулы или эмульсии перфторуглерода за 92 000 ACP. Инфографика описывает ядро, оболочку, регулятор сродства к O₂, буферы и стерильный розлив как грамотность архитектуры, не как SOP производства. Это не кровезаменитель, не компаундинг гемоглобина или PFC, не изделие CE/FDA и не инфузионный продукт ANCAP. Юр. текст: /legal/oxygen-carrier.",
+    href: "/aeterna#oxygen-carrier",
+  },
+  {
     id: "perimeter-security-watch",
     date: "2026-09-12",
     title: "Периметр: система охраны и раннего обнаружения",

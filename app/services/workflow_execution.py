@@ -621,6 +621,40 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         subscription_price_quarterly=Money(amount="32000", currency="ACP"),
         subscription_price_annual=Money(amount="108000", currency="ACP"),
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-oxygen-carrier",
+        title="AETERNA Artificial Oxygen Carrier",
+        category="AETERNA",
+        summary=(
+            "Licensed bioreactor / transfusion-medicine partner brief for hemoglobin-vesicle or "
+            "perfluorocarbon-emulsion oxygen-carrier architecture literacy — 92,000 ACP."
+        ),
+        description=(
+            "Settles 92,000 ACP and issues a licensed-partner brief for a conceptual oxygen-transfer particle: "
+            "hemoglobin or PFC core, lipid or polymer shell, affinity regulators, buffers, and sterile-fill "
+            "literacy. Infographic production steps, QC icons, and vial diagrams are architecture literacy, "
+            "not a manufacturing SOP and not compounding. ANCAP does not produce blood substitutes, does not "
+            "compound hemoglobin or perfluorocarbon emulsions, and does not claim CE/FDA oxygen-therapeutic "
+            "status or a transfusion outcome. Physical manufacture and any clinical use occur only under a "
+            "licensed bioreactor / transfusion-medicine partner after screening."
+        ),
+        price=Money(amount="92000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=[
+            "Core path (hemoglobin vesicle vs PFC emulsion literacy)",
+            "Licensed bioreactor partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Oxygen-carrier intake brief",
+            "Licensed bioreactor handoff",
+            "Non-claim checklist (no blood product / no hemoglobin or PFC recipe / no CE-FDA / no transfusion claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "oxygen-carrier", "hboC", "pfc", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1808,6 +1842,24 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles the subscription period in ACP and issues a partner handoff brief. "
                     "Physical modules occur only under a licensed clinician. Infographic M1–M5 and "
                     "scopolamine copy is receptor literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-oxygen-carrier":
+            deliverable["intent"] = str(payload.get("intent_kind") or "oxygen_carrier_brief")
+            deliverable["compliance"] = (
+                "Licensed bioreactor / transfusion-medicine partner only. Not a blood product, not compounding "
+                "of hemoglobin or perfluorocarbon, not a CE/FDA oxygen therapeutic, and not a manufacturing SOP. "
+                "No home emulsion kit, CRISPR, or gene synthesis."
+            )
+            deliverable["oxygen_carrier"] = {
+                "mode": "licensed_bioreactor_partner",
+                "architecture": "hboC_or_pfc_oxygen_carrier",
+                "price_acp": "92000",
+                "cores_literacy": ["modified_hemoglobin_vesicle", "perfluorocarbon_emulsion"],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical manufacture occurs only "
+                    "under a licensed bioreactor. Infographic QC and fill copy is architecture literacy, "
+                    "not a product claim."
                 ),
             }
         execution_summary = {

@@ -50,6 +50,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-vascular-care",
     "aeterna-transdermal-pistol",
     "aeterna-m-receptor-subscription",
+    "aeterna-oxygen-carrier",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -78,6 +79,8 @@ M_RECEPTOR_SLUG = "aeterna-m-receptor-subscription"
 M_RECEPTOR_PRICE_ACP = Decimal("12000")
 M_RECEPTOR_QUARTERLY_ACP = Decimal("32000")
 M_RECEPTOR_ANNUAL_ACP = Decimal("108000")
+OXYGEN_CARRIER_SLUG = "aeterna-oxygen-carrier"
+OXYGEN_CARRIER_PRICE_ACP = Decimal("92000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -194,6 +197,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.vascular_care.value: VASCULAR_CARE_SLUG,
     AeternaIntentKind.transdermal_pistol.value: TRANSDERMAL_SLUG,
     AeternaIntentKind.m_receptor_subscription.value: M_RECEPTOR_SLUG,
+    AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -393,6 +397,21 @@ M_RECEPTOR_META = {
     ),
 }
 
+OXYGEN_CARRIER_META = {
+    "mode": "licensed_bioreactor_partner",
+    "unit": "architecture_brief",
+    "price_acp": "92000",
+    "architecture": "hboC_or_pfc_oxygen_carrier",
+    "cores_literacy": ["modified_hemoglobin_vesicle", "perfluorocarbon_emulsion"],
+    "note": (
+        "Conceptual artificial oxygen-carrier brief. ANCAP settles ACP and issues a licensed bioreactor / "
+        "transfusion-medicine partner handoff covering hemoglobin-core or PFC-core architecture literacy. "
+        "Not a blood product, not compounding of hemoglobin or perfluorocarbon, not a CE/FDA oxygen "
+        "therapeutic, and not a manufacturing SOP. Infographic QC and fill diagrams are literacy, not a recipe. "
+        "Partner screening required."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -495,7 +514,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, microwave body contouring, "
             "BioFusion micromanipulation chamber, wisdom-tooth DPSC biomaterial, "
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
-            "M-receptor delivery subscription, licensed longevity partners."
+            "M-receptor delivery subscription, artificial oxygen-carrier brief, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -562,6 +581,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "M-receptor listings are licensed-clinic subscriptions for multimodal delivery and neuromodulation "
             "literacy (patch, iontophoresis, inhaler, vagus-adjacent stimulation). Infographics are conceptual "
             "architecture — not compounding, not a CE/FDA device, and not a treatment claim."
+        ),
+        oxygen_carrier_note=(
+            "Oxygen-carrier listings are licensed bioreactor / transfusion-medicine partner intakes for "
+            "hemoglobin-vesicle or PFC-emulsion architecture literacy. Infographics are conceptual — not a "
+            "blood product, not compounding, and not a CE/FDA oxygen therapeutic."
         ),
     )
 
@@ -804,6 +828,20 @@ async def create_intent_order(
                 detail="m_receptor_subscription budget_acp must be at least 12000 ACP per month",
             )
         for key, value in M_RECEPTOR_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.oxygen_carrier_brief:
+        if slug and slug != OXYGEN_CARRIER_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="oxygen_carrier_brief requires workflow_slug aeterna-oxygen-carrier",
+            )
+        slug = OXYGEN_CARRIER_SLUG
+        if body.budget_acp < OXYGEN_CARRIER_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="oxygen_carrier_brief budget_acp must be at least 92000 ACP",
+            )
+        for key, value in OXYGEN_CARRIER_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

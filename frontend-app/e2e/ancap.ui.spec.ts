@@ -32,6 +32,7 @@ test.describe("ANCAP Frontend - UI smoke", () => {
       "/legal/vascular-care",
       "/legal/transdermal",
       "/legal/m-receptor",
+      "/legal/oxygen-carrier",
       "/legal/humanitarian",
       "/humanitarian",
       "/aeterna",

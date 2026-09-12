@@ -433,6 +433,44 @@ export const legalByLang: Record<Language, Tree> = {
     mr10Title: "10. Contact",
     mr10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#m-receptor. Related notices: /legal/transdermal, /legal/terms, /legal/risk.",
+    oxygenCarrierLink: "Oxygen carrier",
+    hubCardOxygenCarrier:
+      "Licensed bioreactor / transfusion-medicine brief for hemoglobin-vesicle or PFC-emulsion architecture. Not a blood product, not compounding, not a CE/FDA oxygen therapeutic.",
+    oxygenCarrierKicker: "Legal / bioreactor / transfusion literacy",
+    oxygenCarrierTitle: "Artificial oxygen carrier — licensed bioreactor partner rail",
+    oxygenCarrierIntro:
+      "How ANCAP frames the artificial oxygen-transfer SKU as of 12 September 2026. These pages sell ACP-settled consult briefs, not blood products, not emulsions, and not a home kit.",
+    ox1Title: "1. Platform role",
+    ox1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture hemoglobin vesicles or PFC emulsions, does not compound blood substitutes, and does not operate a transfusion or biomanufacturing plant.",
+    ox2Title: "2. Not a blood product",
+    ox2Body:
+      "The infographic is conceptual architecture. It is not an EU MDR or FDA brochure and not a CE-marked oxygen therapeutic, HBOC, or PFC emulsion sold by ANCAP.",
+    ox3Title: "3. Forbidden outcome claims",
+    ox3Body:
+      "ANCAP does not claim to replace transfusion, treat anemia, trauma, ischemia, or carbon-monoxide exposure, or to guarantee oxygen delivery or circulation time.",
+    ox4Title: "4. Licensed partners only",
+    ox4Body:
+      "Any physical manufacture or clinical use is a licensed bioreactor / transfusion-medicine act. Users must not build home emulsions or hemoglobin kits from these pages.",
+    ox5Title: "5. Infographic literacy, not an SOP",
+    ox5Body:
+      "Core, shell, affinity-regulator, buffer, emulsifier, QC, and fill diagrams are architecture literacy. ANCAP does not publish hemoglobin-modification, PFC-emulsion, or sterile-fill recipes.",
+    ox6Title: "6. Not medical advice",
+    ox6Body:
+      "Catalog copy is informational. It is not a diagnosis, prescription, or treatment plan.",
+    ox7Title: "7. Health data",
+    ox7Body:
+      "Treat identifiers and clinical history as sensitive. Do not upload records without a lawful basis.",
+    ox8Title: "8. Relationship to other rails",
+    ox8Body:
+      "Organ-print, DPSC biomaterial, and M-receptor rails remain separate. This SKU does not authorize compounding or unlicensed manufacture.",
+    ox9Title: "9. Payments",
+    ox9Body:
+      "ACP buys a consult brief and partner match at 92,000 ACP — not a blood unit, not an emulsion lot, and not a refundable transfusion outcome. Refunds follow /legal/refunds.",
+    ox10Title: "10. Contact",
+    ox10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#oxygen-carrier. Related notices: /legal/dpsc, /legal/terms, /legal/risk.",
+
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -754,6 +792,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascular: "Vascular Care",
     footerTransdermal: "Transdermal",
     footerMReceptor: "M-receptor",
+    footerOxygenCarrier: "Oxygen carrier",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -1165,6 +1204,35 @@ export const legalByLang: Record<Language, Tree> = {
       "ACP покупает ретейнер периода лицензированной клиники (12 000 / месяц, 32 000 / квартал, 108 000 / год) и подбор партнёра — не право собственности на железо. Возвраты — /legal/refunds.",
     mr10Title: "10. Контакты",
     mr10Body: "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#m-receptor.",
+    oxygenCarrierLink: "Переносчик кислорода",
+    hubCardOxygenCarrier:
+      "Бриф лицензированного биореактора / трансфузиологии: гемоглобиновая везикула или эмульсия PFC. Не кровепродукт, не компаундинг, не кислородный терапевтик CE/FDA.",
+    oxygenCarrierKicker: "Право / биореактор / грамотность трансфузии",
+    oxygenCarrierTitle: "Искусственный переносчик кислорода — рейл лицензированного биореактора",
+    oxygenCarrierIntro:
+      "Как ANCAP описывает SKU искусственного переноса кислорода на 12 сентября 2026. Эти страницы продают ACP-брифы, не кровепродукты, не эмульсии и не домашний набор.",
+    ox1Title: "1. Роль платформы",
+    ox1Body:
+      "ANCAP даёт расчёт ACP, брифы и подбор лицензированного партнёра. ANCAP не производит гемоглобиновые везикулы или эмульсии PFC и не ведёт службу трансфузии.",
+    ox2Title: "2. Не кровепродукт",
+    ox2Body: "Инфографика — концептуальная архитектура. Это не брошюра EU MDR / FDA и не изделие CE.",
+    ox3Title: "3. Запрещённые заявления о результате",
+    ox3Body: "ANCAP не заявляет замену трансфузии, лечение анемии, травмы или ишемии и не гарантирует доставку кислорода.",
+    ox4Title: "4. Только лицензированные партнёры",
+    ox4Body: "Любое изготовление или клиническое применение — акт лицензированного биореактора / трансфузиологии. Не собирайте домашние эмульсии.",
+    ox5Title: "5. Грамотность инфографики, не SOP",
+    ox5Body: "Ядро, оболочка, регулятор сродства, буферы, эмульгатор, QC и розлив — грамотность архитектуры. ANCAP не публикует рецепты.",
+    ox6Title: "6. Не медицинская рекомендация",
+    ox6Body: "Каталог — информация. Это не диагноз, рецепт и не план лечения.",
+    ox7Title: "7. Данные о здоровье",
+    ox7Body: "Идентификаторы считайте чувствительными. Не загружайте записи без правового основания.",
+    ox8Title: "8. Связь с другими рейлами",
+    ox8Body: "Печать органа, биоматериал DPSC и M-рецепторы остаются отдельными. Этот SKU не разрешает компаундинг.",
+    ox9Title: "9. Платежи",
+    ox9Body: "ACP покупает бриф и подбор партнёра за 92 000 ACP — не единицу крови. Возвраты — /legal/refunds.",
+    ox10Title: "10. Контакты",
+    ox10Body: "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#oxygen-carrier.",
+
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -1481,6 +1549,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascular: "Vascular Care",
     footerTransdermal: "Трансдермальный",
     footerMReceptor: "M-рецепторы",
+    footerOxygenCarrier: "Переносчик O₂",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -1877,6 +1946,34 @@ export const legalByLang: Record<Language, Tree> = {
       "ACP купує ретейнер періоду (12 000 / місяць, 32 000 / квартал, 108 000 / рік) і підбір партнера.",
     mr10Title: "10. Контакти",
     mr10Body: "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#m-receptor.",
+    oxygenCarrierLink: "Переносник кисню",
+    hubCardOxygenCarrier:
+      "Бриф ліцензованого біореактора / трансфузіології: гемоглобінова везикула або емульсія PFC. Не кровопродукт і не виріб CE/FDA.",
+    oxygenCarrierKicker: "Право / біореактор",
+    oxygenCarrierTitle: "Штучний переносник кисню — рейл ліцензованого біореактора",
+    oxygenCarrierIntro:
+      "Як ANCAP описує SKU штучного перенесення кисню на 12 вересня 2026. Ці сторінки продають ACP-брифи, не кровопродукти.",
+    ox1Title: "1. Роль платформи",
+    ox1Body: "ANCAP дає розрахунок ACP, брифи і підбір партнера. ANCAP не виробляє везикули гемоглобіну чи емульсії PFC.",
+    ox2Title: "2. Не кровопродукт",
+    ox2Body: "Інфографіка — концептуальна архітектура. Це не брошура EU MDR / FDA.",
+    ox3Title: "3. Заборонені заяви про результат",
+    ox3Body: "ANCAP не заявляє заміну трансфузії чи лікування анемії.",
+    ox4Title: "4. Лише ліцензовані партнери",
+    ox4Body: "Будь-яке виготовлення — акт ліцензованого біореактора. Не збирайте домашні емульсії.",
+    ox5Title: "5. Грамотність інфографіки, не SOP",
+    ox5Body: "Ядро, оболонка, буфери і QC — грамотність архітектури. ANCAP не публікує рецепти.",
+    ox6Title: "6. Не медична рекомендація",
+    ox6Body: "Каталог — інформація.",
+    ox7Title: "7. Дані про здоров'я",
+    ox7Body: "Ідентифікатори вважайте чутливими.",
+    ox8Title: "8. Зв'язок з іншими рейлами",
+    ox8Body: "Друк органа і DPSC лишаються окремими.",
+    ox9Title: "9. Платежі",
+    ox9Body: "ACP купує бриф і підбір партнера за 92 000 ACP.",
+    ox10Title: "10. Контакти",
+    ox10Body: "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#oxygen-carrier.",
+
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
@@ -2199,6 +2296,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascular: "Vascular Care",
     footerTransdermal: "Трансдермальний",
     footerMReceptor: "M-рецептори",
+    footerOxygenCarrier: "Переносник O₂",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -2594,6 +2692,34 @@ export const legalByLang: Record<Language, Tree> = {
       "ACP kauft einen Perioden-Retainer (12.000 / Monat, 32.000 / Quartal, 108.000 / Jahr) und eine Partnerzuordnung.",
     mr10Title: "10. Kontakt",
     mr10Body: "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#m-receptor.",
+    oxygenCarrierLink: "Sauerstoffträger",
+    hubCardOxygenCarrier:
+      "Lizenziertes Bioreaktor-/Transfusionsmedizin-Briefing für Hämoglobin-Vesikel oder PFC-Emulsion. Kein Blutprodukt, kein Compounding, kein CE/FDA-Sauerstofftherapeutikum.",
+    oxygenCarrierKicker: "Recht / Bioreaktor",
+    oxygenCarrierTitle: "Künstlicher Sauerstoffträger — lizenzierte Bioreaktor-Schiene",
+    oxygenCarrierIntro:
+      "Wie ANCAP die Sauerstoffträger-SKU zum 12. September 2026 rahmt. Diese Seiten verkaufen ACP-Kurzakten, keine Blutprodukte.",
+    ox1Title: "1. Plattformrolle",
+    ox1Body: "ANCAP bietet ACP-Abrechnung, Kurzakten und Partnerzuordnung. ANCAP fertigt keine Hämoglobin-Vesikel oder PFC-Emulsionen.",
+    ox2Title: "2. Kein Blutprodukt",
+    ox2Body: "Die Infografik ist Konzeptarchitektur. Keine EU-MDR-/FDA-Broschüre.",
+    ox3Title: "3. Verbotene Ergebnisaussagen",
+    ox3Body: "ANCAP beansprucht keinen Transfusionsersatz und keine Anämiebehandlung.",
+    ox4Title: "4. Nur lizenzierte Partner",
+    ox4Body: "Jede Herstellung ist ein lizenzierter Bioreaktor-Akt. Keine Heim-Emulsionen.",
+    ox5Title: "5. Infografik-Literacy, kein SOP",
+    ox5Body: "Kern, Hülle, Puffer und QC sind Architektur-Literacy. ANCAP veröffentlicht keine Rezepturen.",
+    ox6Title: "6. Keine medizinische Beratung",
+    ox6Body: "Katalogtexte sind Information.",
+    ox7Title: "7. Gesundheitsdaten",
+    ox7Body: "Kennungen als sensibel behandeln.",
+    ox8Title: "8. Verhältnis zu anderen Schienen",
+    ox8Body: "Organdruck und DPSC bleiben getrennt.",
+    ox9Title: "9. Zahlungen",
+    ox9Body: "ACP kauft eine Kurzakte und Partnerzuordnung für 92.000 ACP.",
+    ox10Title: "10. Kontakt",
+    ox10Body: "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#oxygen-carrier.",
+
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -2916,6 +3042,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascular: "Vascular Care",
     footerTransdermal: "Transdermal",
     footerMReceptor: "M-Rezeptor",
+    footerOxygenCarrier: "Sauerstoffträger",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -3309,6 +3436,34 @@ export const legalByLang: Record<Language, Tree> = {
       "ACP 購買期間保留金（每月 12,000／季繳 32,000／年繳 108,000）與夥伴配對。",
     mr10Title: "10. 聯絡",
     mr10Body: "法律通知：legal@ancap.cloud。產品：/aeterna#m-receptor。",
+    oxygenCarrierLink: "氧載體",
+    hubCardOxygenCarrier:
+      "持照生物反應器／輸血醫學簡報：血紅蛋白囊泡或 PFC 乳劑架構。非血液製品、非調劑、非 CE/FDA 氧氣治療品。",
+    oxygenCarrierKicker: "法律／生物反應器",
+    oxygenCarrierTitle: "人工氧載體 — 持照生物反應器軌道",
+    oxygenCarrierIntro:
+      "ANCAP 於 2026 年 9 月 12 日對人工氧氣轉運 SKU 的說明。這些頁面出售 ACP 諮詢簡報，非血液製品。",
+    ox1Title: "1. 平台角色",
+    ox1Body: "ANCAP 提供 ACP 結算、諮詢簡報與持照夥伴配對。ANCAP 不製造血紅蛋白囊泡或 PFC 乳劑。",
+    ox2Title: "2. 非血液製品",
+    ox2Body: "資訊圖為概念架構。非 EU MDR／FDA 型錄。",
+    ox3Title: "3. 禁止的結果主張",
+    ox3Body: "ANCAP 不主張替代輸血或治療貧血。",
+    ox4Title: "4. 僅持照夥伴",
+    ox4Body: "任何實體製造均為持照生物反應器行為。請勿自製家用乳劑。",
+    ox5Title: "5. 資訊圖素養，非 SOP",
+    ox5Body: "核心、外殼、緩衝與品管為架構素養。ANCAP 不公布配方。",
+    ox6Title: "6. 非醫療建議",
+    ox6Body: "目錄為資訊。",
+    ox7Title: "7. 健康資料",
+    ox7Body: "識別資料視為敏感。",
+    ox8Title: "8. 與其他軌道關係",
+    ox8Body: "器官列印與 DPSC 仍為獨立。",
+    ox9Title: "9. 付款",
+    ox9Body: "ACP 以 92,000 ACP 購買諮詢簡報與夥伴配對。",
+    ox10Title: "10. 聯絡",
+    ox10Body: "法律通知：legal@ancap.cloud。產品：/aeterna#oxygen-carrier。",
+
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
@@ -3631,6 +3786,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerVascular: "Vascular Care",
     footerTransdermal: "經皮手槍",
     footerMReceptor: "M 受體",
+    footerOxygenCarrier: "氧載體",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",

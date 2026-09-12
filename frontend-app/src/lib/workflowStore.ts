@@ -599,6 +599,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     subscription_price_quarterly: { amount: "32000", currency: "ACP" },
     subscription_price_annual: { amount: "108000", currency: "ACP" },
   },
+  {
+    slug: "aeterna-oxygen-carrier",
+    title: "AETERNA Artificial Oxygen Carrier",
+    category: "AETERNA",
+    summary:
+      "Licensed bioreactor / transfusion-medicine partner brief for hemoglobin-vesicle or perfluorocarbon-emulsion oxygen-carrier architecture literacy — 92,000 ACP.",
+    description:
+      "Settles 92,000 ACP and issues a licensed-partner brief. Not a blood product, not compounding of hemoglobin or PFC, not a CE/FDA oxygen therapeutic, not a manufacturing SOP.",
+    price: { amount: "92000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 45,
+    preview_items: [
+      "Core path (hemoglobin vesicle vs PFC emulsion literacy)",
+      "Licensed bioreactor partner match",
+      "Non-claim protocol pack",
+    ],
+    output_items: [
+      "Oxygen-carrier intake brief",
+      "Licensed bioreactor handoff",
+      "Non-claim checklist (no blood product / no hemoglobin or PFC recipe / no CE-FDA / no transfusion claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "oxygen-carrier", "hboc", "pfc", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

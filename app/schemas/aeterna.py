@@ -55,6 +55,7 @@ class AeternaIntentKind(str, Enum):
     vascular_care = "vascular_care"
     transdermal_pistol = "transdermal_pistol"
     m_receptor_subscription = "m_receptor_subscription"
+    oxygen_carrier_brief = "oxygen_carrier_brief"
 
 
 class AeternaDnaSource(str, Enum):
@@ -289,4 +290,10 @@ class AeternaStatusPublic(BaseModel):
         "iontophoresis, inhaler/nebulizer, and vagus-adjacent stimulation as architecture literacy. Infographics "
         "are conceptual — not a marketed device, not compounding of scopolamine or any muscarinic agonist/"
         "antagonist, and not a treatment claim for Parkinson, asthma, COPD, or arrhythmia."
+    )
+    oxygen_carrier_note: str = (
+        "The artificial oxygen-carrier rail is a licensed bioreactor / transfusion-medicine partner brief "
+        "for hemoglobin-vesicle or perfluorocarbon-emulsion architecture literacy. Infographics are conceptual "
+        "— not a blood product, not compounding of hemoglobin or PFC, not a CE/FDA oxygen therapeutic, and "
+        "not a manufacturing SOP."
     )

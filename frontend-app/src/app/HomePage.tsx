@@ -370,6 +370,9 @@ export function HomePage() {
                     <Link href="/aeterna#m-receptor" className="btn btn-ghost">
                       {t("aeternaPage.mrCta")}
                     </Link>
+                    <Link href="/aeterna#oxygen-carrier" className="btn btn-ghost">
+                      {t("aeternaPage.oxCta")}
+                    </Link>
                 </div>
               </div>
               <div
