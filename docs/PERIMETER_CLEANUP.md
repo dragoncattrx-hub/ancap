@@ -41,12 +41,14 @@ Public procedure + hashes: `GET /v1/perimeter-cleanup/blast-radius`. Owners repl
 
 ## UI
 
-- `/perimeter` — catalog + encrypted job brief form
+- Cleanup SKUs: full sweep 2,500 ACP / site day; chemical 1,800; bio 2,200; rad survey 5,000; oil 1,600; industrial 1,200; small-site operator 400 ACP.
+- Security-watch SKU: `perimeter-security-watch` **8,500 ACP / site intake** — licensed partner brief for cameras, sensors, alarm cable, laser barriers, fence, access control, lighting, 24/7 SOC. Infographic is conceptual architecture; ANCAP does not manufacture hardware and does not claim a detection rate.
+- `/perimeter` — catalog + encrypted job brief form + `#security-watch`
 - Insurance product `perimeter_cleanup` on `/insurance`
 
 ## Compliance
 
-Licensed operators and local environmental permits required. Radiological SKU is survey/protocol notes only — not waste custody. ANCAP stores encrypted briefs; it does not run unlicensed hazmat itself.
+Licensed operators and local environmental permits required for cleanup. The security-watch SKU is a licensed security-partner intake only — not a marketed camera system, not a guaranteed detection rate, and not a private-security or police service sold by ANCAP. Radiological cleanup SKU is survey/protocol notes only — not waste custody. ANCAP stores encrypted briefs; it does not run unlicensed hazmat itself.
 
 ## Migration
 

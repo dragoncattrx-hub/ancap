@@ -15,6 +15,7 @@ ContaminationKind = Literal[
     "soil",
     "water",
     "mixed_all",
+    "physical_security",
 ]
 
 JobStatus = Literal["draft", "quoted", "scheduled", "in_progress", "completed", "cancelled"]

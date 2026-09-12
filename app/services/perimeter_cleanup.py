@@ -22,6 +22,7 @@ ALLOWED_CONTAMINATION = frozenset(
         "soil",
         "water",
         "mixed_all",
+        "physical_security",
     }
 )
 
@@ -87,6 +88,20 @@ _SERVICES: tuple[dict[str, Any], ...] = (
         "unit": "small site",
         "small_operator": True,
     },
+    {
+        "id": "perimeter-security-watch",
+        "label": "Perimeter security watch",
+        "contamination": "physical_security",
+        "description": (
+            "Лицензированный бриф охраны периметра: IP/PTZ/тепловизор, ИК и микроволновые датчики, "
+            "тревожный кабель, лазерные барьеры, ограждение, контроль доступа, освещение, 24/7 SOC "
+            "и ИИ-разбор ложных тревог. 8 500 ACP за site intake. Инфографика — концептуальная "
+            "архитектура партнёра: ANCAP не продаёт камеры, не гарантирует «никто не пройдёт» "
+            "и не является ЧОП или силовым ведомством."
+        ),
+        "price_from_acp": "8500",
+        "unit": "site intake",
+    },
 )
 
 
@@ -108,13 +123,15 @@ def cipher_info() -> dict[str, str]:
 
 def catalog() -> dict[str, Any]:
     return {
-        "title": "Perimeter cleanup desk",
-        "tagline": "Уборка периметра от всех видов загрязнений — ACP-paid, vault encrypted Abrams Suite-B.",
+        "title": "Perimeter desk",
+        "tagline": "Уборка загрязнений и охрана периметра — ACP-paid, vault encrypted Abrams Suite-B.",
         "cipher": cipher_info(),
         "compliance_note": (
-            "Field work requires licensed operators and local environmental permits. "
-            "ANCAP stores encrypted job briefs only — we do not perform unlicensed hazmat ourselves. "
-            "Radiological items are survey/protocol notes, not waste custody."
+            "Cleanup field work requires licensed operators and local environmental permits. "
+            "The security-watch SKU is a licensed security-partner intake: ANCAP stores encrypted "
+            "briefs only, does not manufacture cameras or sirens, and does not claim a detection "
+            "rate or police/military authority. Radiological cleanup items remain survey/protocol "
+            "notes, not waste custody."
         ),
         "accessibility_note": (
             "Catalog and cipher metadata are public without login. AES-256-GCM + HKDF-SHA384 "

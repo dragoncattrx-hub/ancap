@@ -35,6 +35,7 @@ test.describe("ANCAP Frontend - UI smoke", () => {
       "/legal/humanitarian",
       "/humanitarian",
       "/aeterna",
+      "/perimeter",
     ]) {
       const response = await page.goto(path, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${path} status`).toBe(200);

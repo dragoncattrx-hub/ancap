@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { perimeterCleanupDesk } from "@/lib/api";
@@ -110,6 +111,9 @@ export default function PerimeterPage() {
     setServiceId(id);
     const svc = services.find((s) => s.id === id);
     if (svc) setContamination(svc.contamination);
+    if (typeof document !== "undefined") {
+      document.getElementById("intake-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const onSubmit = async (e: FormEvent) => {
@@ -167,15 +171,16 @@ export default function PerimeterPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
-      <main className="mx-auto max-w-3xl px-4 py-10">
+      <main className="mx-auto max-w-4xl px-4 py-10">
         <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">Field services</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-          Уборка периметра
+          Периметр: уборка и охрана
         </h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          Услуга очистки периметра от всех видов загрязнений. Брифы заявок хранятся в сейфе{" "}
-          <strong className="text-white/90">Abrams Suite-B</strong>: AES-256-GCM + HKDF-SHA384 —
-          публичные алгоритмы того же класса, что у Type-1 стеков Abrams (не секретные Type-1 ключи).
+          Два рейла на одном сейфе{" "}
+          <strong className="text-white/90">Abrams Suite-B</strong> (AES-256-GCM + HKDF-SHA384):
+          очистка загрязнений и лицензированный бриф охраны периметра. Каталог открыт без входа;
+          заявки шифруются at-rest. ANCAP не продаёт камеры и не выполняет нелицензированный hazmat.
         </p>
 
         {cipher ? (
@@ -226,6 +231,63 @@ export default function PerimeterPage() {
         {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
         {info ? <p className="mt-4 text-sm text-emerald-300">{info}</p> : null}
 
+        <section
+          id="security-watch"
+          className="mt-8 scroll-mt-24 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.05] p-5 sm:p-6"
+        >
+          <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/80">
+            Security watch · 24/7 SOC · licensed partner
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Система охраны периметра</h2>
+            <p className="font-mono text-xl font-semibold text-emerald-200">8 500 ACP</p>
+          </div>
+          <p className="mt-3 text-sm leading-7 text-white/70">
+            Раннее обнаружение, быстрое реагирование, полный контроль: камеры, датчики, тревожный
+            кабель, лазерные барьеры, ограждение, контроль доступа, освещение и пульт 24/7. ACP
+            покупает бриф и подбор лицензированного охранного партнёра — не железо и не штат ЧОП.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-white/50">
+            Инфографика — концептуальная архитектура. ANCAP не производит камеры и сирены, не
+            обещает нулевой прорыв периметра и не является полицией, ЧОП или силовым ведомством.
+            ИИ-разбор тревог — грамотность протокола партнёра, не сертифицированный детектор.
+          </p>
+          <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/20">
+            <div className="relative aspect-[16/11] w-full bg-[#071018]">
+              <Image
+                src="/perimeter/security-watch.jpg"
+                alt="Инфографика системы охраны периметра: камеры, датчики, лазерные барьеры, пульт SOC. Концептуальная архитектура для лицензированных партнёров."
+                fill
+                className="object-contain"
+                sizes="(max-width: 1024px) 100vw, 48rem"
+              />
+            </div>
+          </div>
+          <ol className="mt-5 grid gap-3 sm:grid-cols-4">
+            {[
+              ["Обнаружение", "ИИ фиксирует человека, транспорт или иное нарушение — literacy, не гарантия."],
+              ["Идентификация", "Классификация события на пульте партнёра, не автоматический приговор."],
+              ["Уведомление", "Оператор, служба охраны и владелец. Не экстренный вызов от ANCAP."],
+              ["Реагирование", "Сирены, свет, блокировка доступа — только у лицензированного партнёра."],
+            ].map(([title, body], idx) => (
+              <li key={title} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
+                  {String(idx + 1).padStart(2, "0")}
+                </div>
+                <div className="mt-2 text-sm font-medium text-emerald-200">{title}</div>
+                <div className="mt-1 text-xs leading-5 text-white/50">{body}</div>
+              </li>
+            ))}
+          </ol>
+          <button
+            type="button"
+            className="mt-6 rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950"
+            onClick={() => onServicePick("perimeter-security-watch")}
+          >
+            Выбрать security-watch в заявке
+          </button>
+        </section>
+
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">Каталог</h2>
           <div className="grid gap-3">
@@ -257,7 +319,7 @@ export default function PerimeterPage() {
           </div>
         </section>
 
-        <form onSubmit={onSubmit} className="mt-10 space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <form id="intake-form" onSubmit={onSubmit} className="mt-10 scroll-mt-24 space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
             Зашифрованная заявка
           </h2>
@@ -295,6 +357,7 @@ export default function PerimeterPage() {
               <option value="industrial">Пром. отходы</option>
               <option value="soil">Грунт</option>
               <option value="water">Вода</option>
+              <option value="physical_security">Охрана периметра</option>
             </select>
           </label>
           <label className="block text-sm">

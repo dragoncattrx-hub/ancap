@@ -33,6 +33,9 @@ def test_perimeter_catalog_and_cipher(client):
     assert any(s["id"] == "perimeter-full-sweep" for s in services)
     assert any(s["contamination"] == "mixed_all" for s in services)
     assert any(s["id"] == "perimeter-micro-site" and s.get("small_operator") is True for s in services)
+    watch = next(s for s in services if s["id"] == "perimeter-security-watch")
+    assert watch["price_from_acp"] == "8500"
+    assert watch["contamination"] == "physical_security"
     assert body.get("not_rwa_yield") is True
     note = (body.get("accessibility_note") + " " + body.get("market_structure_note")).lower()
     assert "key ceremony" in note or "login" in note
@@ -78,6 +81,28 @@ def test_catalog_helper_lists_full_sweep():
     ids = {s["id"] for s in raw["services"]}
     assert "perimeter-full-sweep" in ids
     assert "perimeter-micro-site" in ids
+    assert "perimeter-security-watch" in ids
+
+
+def test_perimeter_security_watch_job_create(client):
+    headers = _register_user(client, "watch")
+    create = client.post(
+        "/v1/perimeter-cleanup/jobs",
+        headers=headers,
+        json={
+            "service_id": "perimeter-security-watch",
+            "contamination": "physical_security",
+            "site_label": "North fence SOC",
+            "notes": "cameras + microwave sensors intake",
+        },
+    )
+    assert create.status_code == 201, create.text
+    job = create.json()
+    assert job["payload"]["service_id"] == "perimeter-security-watch"
+    assert job["payload"]["contamination"] == "physical_security"
+    blob = str(job).lower()
+    assert "guide rna" not in blob
+    assert "compounding" not in blob
 
 
 def test_blast_radius_canary_holds():
