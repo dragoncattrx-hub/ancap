@@ -137,6 +137,43 @@ export const legalByLang: Record<Language, Tree> = {
     vr10Title: "10. Contact",
     vr10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#vet-regen and /cryo. Related notices: /legal/cryo-constitution, /legal/terms, /legal/risk.",
+    lightChamberLink: "Vinci light chamber",
+    hubCardLightChamber:
+      "Full-body photobiomodulation chamber: Leonardo sunlight literacy, licensed phototherapy partner only, no safe-tanning or CE/FDA device claim.",
+    lightChamberKicker: "Legal / phototherapy",
+    lightChamberTitle: "Vinci light chamber — photobiomodulation partner rail",
+    lightChamberIntro:
+      "How ANCAP frames the full-body LED / UVA / red / near-IR chamber as of 12 September 2026. These pages sell ACP-settled consult and session-protocol briefs, not hardware and not a phototherapy treatment.",
+    lc1Title: "1. Platform role",
+    lc1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching for the AETERNA Vinci light chamber. ANCAP does not operate dermatology clinics, does not manufacture LED/UVA pods, does not issue medical devices, and does not administer light sessions.",
+    lc2Title: "2. Not a marketed medical device",
+    lc2Body:
+      "The infographic is conceptual architecture for partner discussion. It is not an EU MDR device brochure, not an FDA 510(k) or PMA, not a CE-marked tanning or phototherapy product sold by ANCAP, and not a reconstructed Leonardo invention. Listing a workflow does not place a device on the market.",
+    lc3Title: "3. Forbidden outcome claims",
+    lc3Body:
+      "ANCAP does not claim safe tanning, a guaranteed tan, vitamin-D treatment, collagen increase, wound closure, nerve regeneration, anti-aging, or a numeric success rate. Red / near-IR photobiomodulation (including cytochrome-c oxidase / ATP framing around 600–950 nm) is public research literacy, not a product effect. UV (including UVA 320–400 nm on the illustration) remains a known skin-cancer risk class.",
+    lc4Title: "4. Licensed clinicians only",
+    lc4Body:
+      "Phototherapy, UV exposure, and related aftercare are clinical acts. They may be performed only by a person licensed to practice in the relevant jurisdiction (dermatology, phototherapy, or other applicable practice acts). Users must not build home LED arrays, tanning beds, or DIY UV cabinets from these pages.",
+    lc5Title: "5. Screening and contraindications",
+    lc5Body:
+      "Partner protocols must screen for photosensitivity, melanoma or atypical-mole history, photosensitizing drugs, pregnancy where relevant, and skin phototype. The rotating platform, cooling, and sensor callouts on the infographic are architecture notes, not a validated safety system ANCAP certifies.",
+    lc6Title: "6. Not medical advice",
+    lc6Body:
+      "Catalog copy, infographics, Leonardo attributions, workflow outputs, and reviews are informational. They are not a diagnosis, prescription, or treatment plan. A quotation or paraphrase associated with Leonardo is historical colour — not a verified specification for this chamber.",
+    lc7Title: "7. Health data",
+    lc7Body:
+      "If you submit skin history or identifiers, treat them as sensitive. Do not upload medical records without a lawful basis. Partner clinics process clinical data under their own privacy notices.",
+    lc8Title: "8. Relationship to other AETERNA rails",
+    lc8Body:
+      "Human stem-cell organ print, mRNA-reprogramming consults, and veterinary organ rails remain separate. The Vinci light chamber does not authorize DIY CRISPR, LNP recipes, or unlicensed phototherapy hardware, and does not change AETERNA’s ban on diagnostic claims.",
+    lc9Title: "9. Payments",
+    lc9Body:
+      "ACP paid for this workflow buys a consult / session-protocol brief and partner match — not title to hardware, not a guaranteed clinic slot, and not a refundable cosmetic outcome. Refunds follow /legal/refunds.",
+    lc10Title: "10. Contact",
+    lc10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#vinci-light. Related notices: /legal/terms, /legal/risk, /legal/research-refs.",
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
       "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
@@ -449,6 +486,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerWelcomeGrant: "Welcome grant",
     footerHumanitarian: "Aid desk",
     footerVetRegen: "Vet regen",
+    footerLightChamber: "Light chamber",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
     authAgreeAnd: "and",
@@ -588,6 +626,43 @@ export const legalByLang: Record<Language, Tree> = {
     vr10Title: "10. Контакты",
     vr10Body:
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#vet-regen и /cryo. Связанные страницы: /legal/cryo-constitution, /legal/terms, /legal/risk.",
+    lightChamberLink: "Световая камера Vinci",
+    hubCardLightChamber:
+      "Полноростовая камера фотобиомодуляции: грамотность Леонардо о солнечном свете, только лицензированный партнёр по фототерапии, без «безопасного загара» и без заявления CE/FDA.",
+    lightChamberKicker: "Право / фототерапия",
+    lightChamberTitle: "Световая камера Vinci — рейл фотобиомодуляции",
+    lightChamberIntro:
+      "Как ANCAP описывает полноростовую LED / UVA / красную / ближний-ИК камеру на 12 сентября 2026. Эти страницы продают ACP-брифы консультации и протокола сеанса, не оборудование и не курс фототерапии.",
+    lc1Title: "1. Роль платформы",
+    lc1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор лицензированного партнёра для световой камеры Vinci. ANCAP не ведёт дерматологические клиники, не производит LED/UVA-капсулы, не выпускает медизделия и не проводит сеансы света.",
+    lc2Title: "2. Не выводимое на рынок медизделие",
+    lc2Body:
+      "Инфографика — концептуальная архитектура для обсуждения с партнёром. Это не брошюра EU MDR, не FDA 510(k)/PMA, не CE-маркированный солярий или фототерапевтический продукт ANCAP и не реконструкция изобретения Леонардо. Листинг workflow не означает выпуск изделия на рынок.",
+    lc3Title: "3. Запрещённые заявления о результате",
+    lc3Body:
+      "ANCAP не обещает безопасный загар, гарантированный загар, лечение витамином D, рост коллагена, закрытие ран, регенерацию нервов, омоложение или числовой процент успеха. Красный / ближний ИК (включая фрейминг цитохром-c-оксидазы / АТФ около 600–950 нм) — публичная исследовательская грамотность, не эффект продукта. УФ (включая UVA 320–400 нм на иллюстрации) остаётся классом риска рака кожи.",
+    lc4Title: "4. Только лицензированные клиницисты",
+    lc4Body:
+      "Фототерапия, УФ-экспозиция и связанный уход — клинические действия. Их может выполнять только лицо, имеющее право практики в соответствующей юрисдикции. Нельзя собирать домашние LED-массивы, солярии или УФ-шкафы по этим страницам.",
+    lc5Title: "5. Скрининг и противопоказания",
+    lc5Body:
+      "Протоколы партнёра должны учитывать фотосенсибилизацию, меланому или атипичные невусы в анамнезе, фотосенсибилизирующие препараты, беременность где это уместно, и фототип. Вращение платформы, охлаждение и датчики на инфографике — заметки архитектуры, не сертифицированная ANCAP система безопасности.",
+    lc6Title: "6. Не медицинская рекомендация",
+    lc6Body:
+      "Каталог, инфографика, отсылки к Леонардо, выходы workflow и отзывы — информация. Это не диагноз, рецепт и не план лечения. Цитата или парафраз, связанный с Леонардо, — исторический колорит, не проверенная спецификация камеры.",
+    lc7Title: "7. Данные о здоровье",
+    lc7Body:
+      "Если вы передаёте историю кожи или идентификаторы, считайте их чувствительными. Не загружайте медкарты без правового основания. Клиники-партнёры обрабатывают клинические данные по своим уведомлениям о конфиденциальности.",
+    lc8Title: "8. Связь с другими рейлами AETERNA",
+    lc8Body:
+      "Печать органов, консультации по мРНК-перепрограммированию и ветеринарные рейлы остаются отдельными. Световая камера Vinci не разрешает DIY CRISPR, рецепты LNP или нелицензированное оборудование фототерапии и не снимает запрет AETERNA на диагностические заявления.",
+    lc9Title: "9. Платежи",
+    lc9Body:
+      "ACP за этот workflow покупает бриф консультации / протокола сеанса и подбор партнёра — не право на оборудование, не гарантированный слот клиники и не возмещаемый косметический результат. Возвраты — /legal/refunds.",
+    lc10Title: "10. Контакты",
+    lc10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#vinci-light. Связанные страницы: /legal/terms, /legal/risk, /legal/research-refs.",
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
       "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
@@ -895,6 +970,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerWelcomeGrant: "Грант 100 ACP",
     footerHumanitarian: "Помощь",
     footerVetRegen: "Вет-реген",
+    footerLightChamber: "Световая камера",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
     authAgreeAnd: "и",
@@ -1034,6 +1110,43 @@ export const legalByLang: Record<Language, Tree> = {
     vr10Title: "10. Контакти",
     vr10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#vet-regen і /cryo.",
+    lightChamberLink: "Світлова камера Vinci",
+    hubCardLightChamber:
+      "Повнозростова камера фотобіомодуляції: грамотність Леонардо, лише ліцензований партнер з фототерапії, без «безпечного засмагу» і без заяви CE/FDA.",
+    lightChamberKicker: "Право / фототерапія",
+    lightChamberTitle: "Світлова камера Vinci — рейл фотобіомодуляції",
+    lightChamberIntro:
+      "Як ANCAP описує повнозростову LED / UVA / червону / ближній-ІЧ камеру на 12 вересня 2026. Ці сторінки продають ACP-брифи, не обладнання і не курс фототерапії.",
+    lc1Title: "1. Роль платформи",
+    lc1Body:
+      "ANCAP забезпечує розрахунок в ACP, брифи і підбір ліцензованого партнера. ANCAP не веде дерматологічні клініки, не виробляє LED/UVA-капсули і не проводить сеанси світла.",
+    lc2Title: "2. Не виведений на ринок медичний виріб",
+    lc2Body:
+      "Інфографіка — концептуальна архітектура. Це не брошура EU MDR / FDA і не реконструкція винаходу Леонардо. Лістинг workflow не означає випуск виробу на ринок.",
+    lc3Title: "3. Заборонені заяви про результат",
+    lc3Body:
+      "ANCAP не обіцяє безпечний засмаг, лікування вітаміном D, колаген, загоєння ран чи омолодження. Червоний / ближній ІЧ — публічна дослідницька грамотність. УФ лишається класом ризику раку шкіри.",
+    lc4Title: "4. Лише ліцензовані клініцисти",
+    lc4Body:
+      "Фототерапія та УФ — клінічні дії. Не можна збирати домашні LED-масиви чи солярії за цими сторінками.",
+    lc5Title: "5. Скринінг",
+    lc5Body:
+      "Протоколи партнера мають враховувати фотосенсибілізацію, меланому в анамнезі, фотосенсибілізуючі препарати та фототип.",
+    lc6Title: "6. Не медична рекомендація",
+    lc6Body:
+      "Каталог, інфографіка й відсилання до Леонардо — інформація, не діагноз і не план лікування.",
+    lc7Title: "7. Дані про здоров’я",
+    lc7Body:
+      "Історію шкіри вважайте чутливою. Не завантажуйте медкарти без правової підстави.",
+    lc8Title: "8. Зв’язок з іншими рейлами AETERNA",
+    lc8Body:
+      "Друк органів, мРНК-консультації та ветеринарні рейли лишаються окремими. Світлова камера не дозволяє DIY CRISPR чи неліцензоване обладнання фототерапії.",
+    lc9Title: "9. Платежі",
+    lc9Body:
+      "ACP купує бриф консультації / протоколу сеансу і підбір партнера — не право на обладнання. Повернення — /legal/refunds.",
+    lc10Title: "10. Контакти",
+    lc10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#vinci-light.",
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
       "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
@@ -1347,6 +1460,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerWelcomeGrant: "Грант 100 ACP",
     footerHumanitarian: "Допомога",
     footerVetRegen: "Вет-реген",
+    footerLightChamber: "Світлова камера",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
     authAgreeSuffix: ".",
@@ -1485,6 +1599,43 @@ export const legalByLang: Record<Language, Tree> = {
     vr10Title: "10. Kontakt",
     vr10Body:
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#vet-regen und /cryo.",
+    lightChamberLink: "Vinci-Lichtkammer",
+    hubCardLightChamber:
+      "Ganzkörper-Photobiomodulationskammer: Leonardo-Sonnenlicht-Literacy, nur lizenzierter Phototherapie-Partner, keine sichere Bräune und kein CE/FDA-Geräteanspruch.",
+    lightChamberKicker: "Recht / Phototherapie",
+    lightChamberTitle: "Vinci-Lichtkammer — Photobiomodulations-Schiene",
+    lightChamberIntro:
+      "Wie ANCAP die Ganzkörper-LED/UVA/Rot/Nah-IR-Kammer zum 12. September 2026 einordnet. Diese Seiten verkaufen ACP-Briefings, keine Hardware und keine Phototherapie-Behandlung.",
+    lc1Title: "1. Plattformrolle",
+    lc1Body:
+      "ANCAP stellt ACP-Abrechnung, Briefings und Partner-Matching. ANCAP betreibt keine Dermatologiekliniken, stellt keine LED/UVA-Kapseln her und führt keine Lichtsitzungen durch.",
+    lc2Title: "2. Kein in Verkehr gebrachtes Medizinprodukt",
+    lc2Body:
+      "Die Infografik ist konzeptionelle Architektur. Kein EU-MDR-Prospekt, kein FDA-510(k), keine rekonstruierte Leonardo-Erfindung. Ein Workflow-Listing bringt kein Gerät in Verkehr.",
+    lc3Title: "3. Verbotene Ergebniszusagen",
+    lc3Body:
+      "ANCAP behauptet keine sichere Bräune, Vitamin-D-Therapie, Kollagenzuwachs, Wundverschluss oder Anti-Aging. Rot/Nah-IR ist öffentliche Forschungsliteracy. UV bleibt eine Hautkrebs-Risikoklasse.",
+    lc4Title: "4. Nur lizenzierte Kliniker",
+    lc4Body:
+      "Phototherapie und UV sind klinische Handlungen. Keine Heim-LED-Arrays oder Solarien nach diesen Seiten bauen.",
+    lc5Title: "5. Screening",
+    lc5Body:
+      "Partnerprotokolle müssen Photosensibilität, Melanom-Anamnese, photosensibilisierende Arzneimittel und Phototyp prüfen.",
+    lc6Title: "6. Keine medizinische Beratung",
+    lc6Body:
+      "Katalog, Infografik und Leonardo-Bezüge sind Information, keine Diagnose und kein Behandlungsplan.",
+    lc7Title: "7. Gesundheitsdaten",
+    lc7Body:
+      "Hautanamnese als sensibel behandeln. Keine Krankenakten ohne Rechtsgrundlage hochladen.",
+    lc8Title: "8. Verhältnis zu anderen AETERNA-Schienen",
+    lc8Body:
+      "Organdruck, mRNA-Konsultationen und Veterinärschienen bleiben getrennt. Die Lichtkammer erlaubt kein DIY-CRISPR und keine unlizenzierte Phototherapie-Hardware.",
+    lc9Title: "9. Zahlungen",
+    lc9Body:
+      "ACP kauft ein Briefing und ein Partner-Matching — kein Eigentum an Hardware. Erstattungen: /legal/refunds.",
+    lc10Title: "10. Kontakt",
+    lc10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#vinci-light.",
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
       "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
@@ -1798,6 +1949,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerWelcomeGrant: "Willkommenszuschuss",
     footerHumanitarian: "Hilfsdesk",
     footerVetRegen: "Vet-Regen",
+    footerLightChamber: "Lichtkammer",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
     authAgreeSuffix: " zu.",
@@ -1935,6 +2087,43 @@ export const legalByLang: Record<Language, Tree> = {
     vr10Title: "10. 聯絡",
     vr10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#vet-regen 與 /cryo。",
+    lightChamberLink: "Vinci 光艙",
+    hubCardLightChamber:
+      "全身光生物調節艙：達文西陽光素養，僅限持照光療夥伴，無安全曬黑或 CE/FDA 器材主張。",
+    lightChamberKicker: "法律 / 光療",
+    lightChamberTitle: "Vinci 光艙 — 光生物調節軌道",
+    lightChamberIntro:
+      "ANCAP 於 2026 年 9 月 12 日如何描述全身 LED／UVA／紅光／近紅外艙。這些頁面出售 ACP 簡報，不是硬體，也不是光療療程。",
+    lc1Title: "1. 平台角色",
+    lc1Body:
+      "ANCAP 提供 ACP 結算、簡報與持照夥伴配對。ANCAP 不經營皮膚科診所、不製造 LED/UVA 艙，亦不執行光照療程。",
+    lc2Title: "2. 非上市醫療器材",
+    lc2Body:
+      "資訊圖為概念架構。非 EU MDR 型錄、非 FDA 510(k)、非達文西發明重建。上架工作流程不構成將器材投放市場。",
+    lc3Title: "3. 禁止結果主張",
+    lc3Body:
+      "ANCAP 不主張安全曬黑、維生素 D 治療、膠原增加、傷口閉合或抗老。紅光／近紅外為公開研究素養。紫外線仍屬皮膚癌風險類。",
+    lc4Title: "4. 僅限持照臨床人員",
+    lc4Body:
+      "光療與紫外線暴露為臨床行為。不得依這些頁面自製 LED 陣列或日光浴床。",
+    lc5Title: "5. 篩檢",
+    lc5Body:
+      "夥伴流程須篩檢光敏感、黑色素瘤病史、光敏感藥物與膚質。",
+    lc6Title: "6. 非醫療建議",
+    lc6Body:
+      "目錄、資訊圖與達文西引用為資訊，不是診斷或治療計畫。",
+    lc7Title: "7. 健康資料",
+    lc7Body:
+      "皮膚病史視為敏感。無合法基礎請勿上傳病歷。",
+    lc8Title: "8. 與其他 AETERNA 軌道的關係",
+    lc8Body:
+      "器官列印、mRNA 諮詢與獸醫軌道仍分開。光艙不授權 DIY CRISPR 或未持照光療硬體。",
+    lc9Title: "9. 付款",
+    lc9Body:
+      "ACP 購買諮詢／療程簡報與夥伴配對——不是硬體所有權。退款見 /legal/refunds。",
+    lc10Title: "10. 聯絡",
+    lc10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#vinci-light。",
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
       "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
@@ -2248,6 +2437,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerWelcomeGrant: "註冊贈與額度",
     footerHumanitarian: "人道援助",
     footerVetRegen: "獸醫再生",
+    footerLightChamber: "光艙",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",
     authAgreeSuffix: "。",

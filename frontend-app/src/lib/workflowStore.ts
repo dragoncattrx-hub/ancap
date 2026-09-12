@@ -419,6 +419,27 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
     tags: ["aeterna", "veterinary", "canine", "organ-print", "regen-pod"],
   },
+  {
+    slug: "aeterna-vinci-light-chamber",
+    title: "AETERNA Vinci Light Chamber",
+    category: "AETERNA",
+    summary:
+      "Licensed phototherapy-partner intake for a full-body LED / UVA / red / near-IR photobiomodulation chamber (Leonardo sunlight-health literacy) — 48,000 ACP.",
+    description:
+      "Settles 48,000 ACP and issues a licensed dermatology or phototherapy-partner brief. Inspired by Leonardo da Vinci’s notes on sunlight and the body — not a reconstructed invention. ANCAP does not manufacture the chamber and does not claim safe tanning, vitamin-D treatment, or a CE/FDA device. UV remains a known skin-cancer risk class.",
+    price: { amount: "48000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 40,
+    preview_items: ["Skin-type / contraindication intake", "Phototherapy partner match", "Session-protocol literacy pack"],
+    output_items: [
+      "Vinci light-chamber intake brief",
+      "Licensed phototherapy handoff",
+      "Non-claim checklist (no safe tan / no device CE-FDA claim)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
+    tags: ["aeterna", "photobiomodulation", "light-chamber", "leonardo", "consult"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

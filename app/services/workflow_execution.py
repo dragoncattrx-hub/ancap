@@ -372,6 +372,37 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "species", "status_timeline"],
         tags=["aeterna", "veterinary", "canine", "organ-print", "regen-pod"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-vinci-light-chamber",
+        title="AETERNA Vinci Light Chamber",
+        category="AETERNA",
+        summary=(
+            "Licensed phototherapy-partner intake for a full-body LED / UVA / red / near-IR "
+            "photobiomodulation chamber (Leonardo sunlight-health literacy) — 48,000 ACP."
+        ),
+        description=(
+            "Settles 48,000 ACP and issues a licensed dermatology or phototherapy-partner brief for a "
+            "full-body light-session chamber: red 620–680 nm and near-IR 780–950 nm as photobiomodulation "
+            "literacy (cytochrome-c oxidase / ATP as public research framing, not a guaranteed effect), "
+            "plus UVA 320–400 nm only under partner screening. Inspired by Leonardo da Vinci’s notes on "
+            "sunlight and the body — not a reconstructed invention, not a verified Leonardo quote as a "
+            "device spec, and not a museum replica. ANCAP does not manufacture the chamber, does not "
+            "practice medicine, and does not claim safe tanning, vitamin-D treatment, wound closure, or "
+            "anti-aging results. UV tanning is a known skin-cancer risk class. No home LED-array recipe."
+        ),
+        price=Money(amount="48000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=["Skin-type / contraindication intake", "Phototherapy partner match", "Session-protocol literacy pack"],
+        output_items=[
+            "Vinci light-chamber intake brief",
+            "Licensed phototherapy handoff",
+            "Non-claim checklist (no safe tan / no device CE-FDA claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "bands", "status_timeline"],
+        tags=["aeterna", "photobiomodulation", "light-chamber", "leonardo", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1393,6 +1424,29 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "ANCAP settles ACP and matches a licensed veterinary partner. ANCAP does not operate "
                     "VET REGEN POD hardware."
+                ),
+            }
+        if template.slug == "aeterna-vinci-light-chamber":
+            deliverable["intent"] = str(payload.get("intent_kind") or "vinci_light_chamber")
+            deliverable["compliance"] = (
+                "Licensed phototherapy / dermatology partner intake only. Not a diagnosis, not a "
+                "marketed medical device, not a reconstructed Leonardo invention, and not a safe-tanning "
+                "or vitamin-D treatment claim. No home LED-array recipe, CRISPR, or gene synthesis."
+            )
+            deliverable["photobiomodulation"] = {
+                "mode": "licensed_phototherapy_partner",
+                "architecture": "full_body_led_uva_red_nir_chamber",
+                "price_acp": "48000",
+                "bands": {
+                    "uva": "320-400nm",
+                    "red": "620-680nm",
+                    "nir": "780-950nm",
+                    "pbm_window": "600-950nm",
+                },
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Physical light sessions occur "
+                    "only under a licensed clinician. Infographic 'safe tan' copy is not a product claim. "
+                    "UV exposure remains a known skin-cancer risk class."
                 ),
             }
         execution_summary = {

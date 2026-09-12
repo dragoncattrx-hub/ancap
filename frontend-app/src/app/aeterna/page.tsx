@@ -10,6 +10,7 @@ import { GenomeHashVaultPanel } from "@/components/aeterna/GenomeHashVaultPanel"
 import { MolecularAgingPanel } from "@/components/aeterna/MolecularAgingPanel";
 import { MrnaReprogrammingPanel } from "@/components/aeterna/MrnaReprogrammingPanel";
 import { VetRegenPanel } from "@/components/aeterna/VetRegenPanel";
+import { VinciLightPanel } from "@/components/aeterna/VinciLightPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -35,9 +36,10 @@ type AeternaStatus = {
   molecular_aging_note?: string;
   reprogramming_note?: string;
   vet_regen_note?: string;
+  vinci_light_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -130,6 +132,12 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.organRailCta")}
             </a>
+            <a
+              href="#vinci-light"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.vinciCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -173,6 +181,10 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <VetRegenPanel note={status?.vet_regen_note} />
+        </section>
+
+        <section className="mt-16">
+          <VinciLightPanel note={status?.vinci_light_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">
@@ -259,7 +271,7 @@ export default function AeternaPage() {
             </div>
             <div>
               <dt className="text-xs uppercase tracking-[0.16em] text-white/40">{t("aeternaPage.workflows")}</dt>
-              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 8}</dd>
+              <dd className="mt-1 text-2xl font-semibold">{status?.workflow_slugs.length ?? 11}</dd>
             </div>
           </dl>
           {status && (

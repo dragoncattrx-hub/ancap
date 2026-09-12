@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, or open a licensed veterinary organ rail for cats and dogs.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, or a Vinci light-chamber session brief at 48,000 ACP.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -39,6 +39,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent9Title: "Canine VET REGEN POD",
     intent9Body:
       "Licensed-veterinary-partner organ-transplant and regeneration chamber for dogs — organ bank, 3D bioprint assist, robot-assisted placement. 180,000 ACP. Infographic percentages are not claims.",
+    intent10Title: "Vinci light chamber (photobiomodulation)",
+    intent10Body:
+      "Licensed phototherapy-partner brief for a full-body LED chamber: red 620–680 nm and near-IR 780–950 nm as PBM literacy, UVA only under clinic screening. 48,000 ACP. Inspired by Leonardo’s sunlight-and-health notes — not a reconstructed invention and not a safe tan.",
     agingKicker: "Blood RNA · 15 hallmarks · sex-aware",
     agingTitle: "Molecular aging profile",
     agingLead:
@@ -53,6 +56,29 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Primary: your own stem cells. Fallback: wisdom-tooth dental pulp stem cells (DPSC). AETERNA settles ACP and matches a licensed bioreactor partner.",
     organSkuCta: "Order organ print",
     organRailCta: "Veterinary organ rails",
+    vinciCta: "Open light-chamber intake",
+    vinciKicker: "Photobiomodulation · licensed clinic · Leonardo literacy",
+    vinciTitle: "Light chamber for tissue regeneration",
+    vinciPrice: "48,000 ACP",
+    vinciLead:
+      "A full-body partner chamber combining red and near-infrared photobiomodulation literacy with tightly screened UVA. Public research discusses red/NIR windows around 600–950 nm and cytochrome-c oxidase / ATP framing — AETERNA does not sell a guaranteed collagen, wound, or anti-aging effect. Inspired by Leonardo da Vinci’s studies of sunlight and the body, not a museum replica of a machine he built.",
+    vinciQuote:
+      "Historical sunlight-and-health literacy — not a verified Leonardo specification for this chamber.",
+    vinciDisclaimer:
+      "The infographic is conceptual partner architecture. ANCAP does not manufacture the pod, does not practice dermatology, and does not claim safe tanning, vitamin-D treatment, or a CE/FDA device. UV remains a known skin-cancer risk class. Sessions occur only under a licensed clinician after screening (photosensitivity, melanoma history, photosensitizing drugs).",
+    vinciLegalCta: "Light-chamber legal notice",
+    vinciAlt:
+      "Infographic of a full-body LED light chamber with red, near-IR, and UVA bands, cooling, sensors, and a rotating platform. Conceptual architecture for licensed phototherapy partners, inspired by Leonardo-era sunlight literacy.",
+    vinciStep1Title: "Intake",
+    vinciStep1Body: "Skin type, contraindications, and a licensed clinic match — ACP brief only.",
+    vinciStep2Title: "Bands",
+    vinciStep2Body: "Red / near-IR as PBM literacy; UVA only if the partner protocol allows it after screening.",
+    vinciStep3Title: "Session",
+    vinciStep3Body: "Dose, temperature, and duration are set by the licensed clinician — not by the infographic.",
+    vinciStep4Title: "Aftercare",
+    vinciStep4Body: "Partner monitoring. No guaranteed tan, collagen, or recovery timeline.",
+    vinciStep5Title: "Receipt",
+    vinciStep5Body: "ACP settlement plus an audit receipt. Hardware stays with the licensed partner.",
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
     vetTitle: "Grow and restore organs for companion animals",
     vetLead:
@@ -104,8 +130,8 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Partner desk only",
     mrnaStep3Body: "AETERNA sells a 1,000,000 ACP consult brief. No lipid recipes, mRNA sequences, or home kits.",
     statusTitle: "Division status",
-    taglineFallback: "Eternal life rails: DNA vault, 15-axis molecular aging, partial mRNA-reprogramming consults, stem-cell organ print, veterinary organ rails, ACP workflows, licensed partners.",
-    complianceFallback: "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only — not diagnoses, DIY PCR kits, or marketed veterinary devices.",
+    taglineFallback: "Eternal life rails: DNA vault, 15-axis molecular aging, partial mRNA-reprogramming consults, stem-cell organ print, veterinary organ rails, Vinci light chamber, ACP workflows, licensed partners.",
+    complianceFallback: "AETERNA sells ACP-paid analysis, consult briefs, and licensed-partner handoffs only — not diagnoses, DIY PCR kits, tanning-bed prescriptions, or marketed veterinary devices.",
     feature: "Feature",
     featureOn: "on",
     featureOff: "flagged off",
@@ -115,7 +141,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     next: "Next:",
     homeTitle: "Longevity DNA rails — hash locally, settle in ACP",
     homeLead:
-      "15-axis molecular aging profiles, partial mRNA-reprogramming consults, interactive helix sandbox, hash-only vault, consults at 1,000,000 ACP, stem-cell organ print at 250,000 ACP per organ, feline tissue cryo at 75,000 ACP, canine VET REGEN POD at 180,000 ACP.",
+      "15-axis molecular aging profiles, partial mRNA-reprogramming consults, interactive helix sandbox, hash-only vault, consults at 1,000,000 ACP, stem-cell organ print at 250,000 ACP per organ, feline tissue cryo at 75,000 ACP, canine VET REGEN POD at 180,000 ACP, Vinci light chamber at 48,000 ACP.",
     enter: "Enter AETERNA",
     sandboxCta: "DNA sandbox",
   },
@@ -123,7 +149,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, осведомлённость о Cas9 и расчёты в блокчейне",
     heroTitle: "Рейлы долголетия: молекулярный профиль старения по 15 осям, а не одна цифра «биологического возраста».",
     heroLead:
-      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP или открыть ветеринарный рейл выращивания органов для кошек и собак.",
+      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак или бриф световой камеры Vinci за 48 000 ACP.",
     openSandbox: "Открыть ДНК-песочницу",
     browseWorkflows: "Смотреть workflow AETERNA",
     demoKicker: "Публичное демо · нанороботы + химические ножницы",
@@ -132,7 +158,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Интерактивная двойная спираль: вращайте, меняйте пары A/T/G/C. Только обучение; ANCAP не хранит полные референсные геномы.",
     payTitle: "За что можно заплатить",
     payLead:
-      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR и не ветеринарная операционная.",
+      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий и не ветеринарная операционная.",
     intent1Title: "Молекулярный профиль старения (15 осей)",
     intent1Body:
       "Карта репарации ДНК, протеостаза, энергообмена, клеточного старения и других осей по метаданным панели / blood-RNA — индивидуальная конфигурация процессов, а не одна цифра возраста.",
@@ -156,6 +182,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent9Title: "Камера VET REGEN POD для собаки",
     intent9Body:
       "Лицензированный вет-партнёр: банк органов, 3D-биопечать, робот-ассистированная пересадка и регенерация в герметичной камере. 180 000 ACP. Цифры с инфографики — не заявления о результате.",
+    intent10Title: "Световая камера Vinci (фотобиомодуляция)",
+    intent10Body:
+      "Бриф для лицензированного партнёра по фототерапии: красный 620–680 нм и ближний ИК 780–950 нм как грамотность PBM, UVA только после скрининга. 48 000 ACP. Вдохновлено заметками Леонардо о свете и теле — не реконструкция изобретения и не «безопасный загар».",
     agingKicker: "РНК крови · 15 механизмов · с учётом пола",
     agingTitle: "Молекулярный профиль старения",
     agingLead:
@@ -170,6 +199,29 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Основной источник: ваши стволовые клетки. Запасной: DPSC зуба мудрости. AETERNA подбирает лицензированного партнёра.",
     organSkuCta: "Заказать печать органа",
     organRailCta: "Ветеринарные рейлы органов",
+    vinciCta: "Открыть приём световой камеры",
+    vinciKicker: "Фотобиомодуляция · лицензированная клиника · грамотность Леонардо",
+    vinciTitle: "Камера регенерации тканей светом",
+    vinciPrice: "48 000 ACP",
+    vinciLead:
+      "Полноростовая партнёрская камера: красный и ближний ИК как грамотность фотобиомодуляции, UVA — только после скрининга. Публичные исследования обсуждают окно 600–950 нм и цитохром-c-оксидазу / АТФ — AETERNA не продаёт гарантированный коллаген, заживление ран или омоложение. Вдохновлено штудиями Леонардо да Винчи о солнечном свете и теле, не музейной копией машины, которую он построил.",
+    vinciQuote:
+      "Историческая грамотность о свете и здоровье — не проверенная спецификация Леонардо для этой камеры.",
+    vinciDisclaimer:
+      "Инфографика — концептуальная архитектура партнёра. ANCAP не производит капсулу, не занимается дерматологией и не заявляет безопасный загар, лечение витамином D или изделие CE/FDA. УФ остаётся классом риска рака кожи. Сеансы — только у лицензированного клинициста после скрининга (фотосенсибилизация, меланома в анамнезе, фотосенсибилизирующие препараты).",
+    vinciLegalCta: "Юридическое уведомление (световая камера)",
+    vinciAlt:
+      "Инфографика полноростовой LED-камеры с красным, ближним ИК и UVA, охлаждением, датчиками и вращающейся платформой. Концептуальная архитектура для лицензированных партнёров по фототерапии, вдохновлённая грамотностью Леонардо о солнечном свете.",
+    vinciStep1Title: "Приём",
+    vinciStep1Body: "Фототип, противопоказания и подбор лицензированной клиники — только ACP-бриф.",
+    vinciStep2Title: "Полосы",
+    vinciStep2Body: "Красный / ближний ИК как грамотность PBM; UVA — только если протокол партнёра допускает после скрининга.",
+    vinciStep3Title: "Сеанс",
+    vinciStep3Body: "Дозу, температуру и длительность задаёт лицензированный клиницист — не инфографика.",
+    vinciStep4Title: "После",
+    vinciStep4Body: "Мониторинг у партнёра. Без гарантированного загара, коллагена или срока восстановления.",
+    vinciStep5Title: "Квитанция",
+    vinciStep5Body: "Расчёт в ACP и аудиторская квитанция. Оборудование остаётся у лицензированного партнёра.",
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
     vetTitle: "Выращивание и восстановление органов для животных-компаньонов",
     vetLead:
@@ -221,7 +273,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Только партнёрский стол",
     mrnaStep3Body: "AETERNA продаёт бриф за 1 000 000 ACP. Без рецептов липидов, последовательностей мРНК и домашних наборов.",
     statusTitle: "Статус направления",
-    taglineFallback: "Рейлы вечной жизни: ДНК-хранилище, 15 осей молекулярного старения, консультации по мРНК-перепрограммированию, печать органов, ветеринарные рейлы, ACP-workflow.",
+    taglineFallback: "Рейлы вечной жизни: ДНК-хранилище, 15 осей молекулярного старения, консультации по мРНК-перепрограммированию, печать органов, ветеринарные рейлы, световая камера Vinci, ACP-workflow.",
     complianceFallback: "AETERNA продаёт только анализ за ACP и передачу партнёрам — не диагнозы, не DIY ПЦР и не сертифицированные ветеринарные изделия.",
     feature: "Функция",
     featureOn: "вкл.",
@@ -231,7 +283,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflow",
     next: "Далее:",
     homeTitle: "ДНК-рейлы долголетия — хешируйте локально, рассчитывайтесь в ACP",
-    homeLead: "Молекулярный профиль старения по 15 осям, консультации по частичному перепрограммированию мРНК, спираль, хеш-хранилище, консультации 1 000 000 ACP, печать органа 250 000 ACP, крио тканей кошки 75 000 ACP, VET REGEN POD 180 000 ACP.",
+    homeLead: "Молекулярный профиль старения по 15 осям, консультации по частичному перепрограммированию мРНК, спираль, хеш-хранилище, консультации 1 000 000 ACP, печать органа 250 000 ACP, крио тканей кошки 75 000 ACP, VET REGEN POD 180 000 ACP, световая камера Vinci 48 000 ACP.",
     enter: "Войти в AETERNA",
     sandboxCta: "ДНК-песочница",
   },
@@ -239,7 +291,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, обізнаність про Cas9 і розрахунки в блокчейні",
     heroTitle: "Рейли довголіття: молекулярний профіль старіння за 15 осями, а не одна цифра біовіку.",
     heroLead:
-      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP або відкрити ветеринарний рейл вирощування органів для котів і собак.",
+      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак або бриф світлової камери Vinci за 48 000 ACP.",
     openSandbox: "Відкрити ДНК-пісочницю",
     browseWorkflows: "Дивитися workflow AETERNA",
     demoKicker: "Публічне демо · нанороботи + хімічні ножиці",
@@ -247,7 +299,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Інтерактивна подвійна спіраль. Лише навчання.",
     payTitle: "За що можна заплатити",
     payLead:
-      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR і не ветеринарна операційна.",
+      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій і не ветеринарна операційна.",
     intent1Title: "Молекулярний профіль старіння (15 осей)",
     intent1Body: "Конфігурація процесів старіння з метаданих панелі — не одна цифра віку.",
     intent2Title: "Панель теломер",
@@ -268,6 +320,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent9Title: "Камера VET REGEN POD для собаки",
     intent9Body:
       "Ліцензований вет-партнер: банк органів, 3D-біодрук, робот-асистована пересадка. 180 000 ACP. Відсотки з інфографіки — не заяви про результат.",
+    intent10Title: "Світлова камера Vinci (фотобіомодуляція)",
+    intent10Body:
+      "Бриф для ліцензованого партнера з фототерапії: червоний 620–680 нм і ближній ІЧ 780–950 нм як грамотність PBM, UVA лише після скринінгу. 48 000 ACP. Натхненно нотатками Леонардо про світло й тіло — не реконструкція винаходу і не «безпечний засмаг».",
     agingKicker: "РНК крові · 15 механізмів · з урахуванням статі",
     agingTitle: "Молекулярний профіль старіння",
     agingLead: "Мета — індивідуальна конфігурація процесів старіння, а не універсальна цифра біовіку.",
@@ -279,6 +334,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     organSkuLead: "Основне джерело: ваші стовбурові клітини. Запасне: DPSC.",
     organSkuCta: "Замовити друк органа",
     organRailCta: "Ветеринарні рейли органів",
+    vinciCta: "Відкрити прийом світлової камери",
+    vinciKicker: "Фотобіомодуляція · ліцензована клініка · грамотність Леонардо",
+    vinciTitle: "Камера регенерації тканин світлом",
+    vinciPrice: "48 000 ACP",
+    vinciLead:
+      "Повнозростова партнерська камера: червоний і ближній ІЧ як грамотність фотобіомодуляції, UVA — лише після скринінгу. Публічні дослідження обговорюють вікно 600–950 нм. AETERNA не продає гарантований колаген чи засмагу. Натхненно студіями Леонардо да Вінчі про сонячне світло й тіло, не музейною копією машини.",
+    vinciQuote: "Історична грамотність про світло й здоров’я — не перевірена специфікація Леонардо для цієї камери.",
+    vinciDisclaimer:
+      "Інфографіка — концептуальна архітектура партнера. ANCAP не виробляє капсулу, не займається дерматологією і не заявляє безпечний засмаг, лікування вітаміном D чи виріб CE/FDA. УФ залишається класом ризику раку шкіри. Сеанси — лише в ліцензованого клініциста після скринінгу.",
+    vinciLegalCta: "Юридичне повідомлення (світлова камера)",
+    vinciAlt:
+      "Інфографіка повнозростової LED-камери з червоним, ближнім ІЧ та UVA. Концептуальна архітектура для ліцензованих партнерів з фототерапії.",
+    vinciStep1Title: "Прийом",
+    vinciStep1Body: "Фототип, протипоказання і підбір ліцензованої клініки — лише ACP-бриф.",
+    vinciStep2Title: "Смуги",
+    vinciStep2Body: "Червоний / ближній ІЧ як грамотність PBM; UVA — лише якщо протокол партнера дозволяє після скринінгу.",
+    vinciStep3Title: "Сеанс",
+    vinciStep3Body: "Дозу, температуру і тривалість задає ліцензований клініцист — не інфографіка.",
+    vinciStep4Title: "Після",
+    vinciStep4Body: "Моніторинг у партнера. Без гарантованого засмагу чи строку відновлення.",
+    vinciStep5Title: "Квитанція",
+    vinciStep5Body: "Розрахунок в ACP і аудиторська квитанція. Обладнання залишається в ліцензованого партнера.",
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
     vetTitle: "Вирощування і відновлення органів для тварин-компаньйонів",
     vetLead:
@@ -330,7 +407,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Лише партнерський стіл",
     mrnaStep3Body: "AETERNA продає бриф за 1 000 000 ACP. Без рецептів ліпідів і домашніх наборів.",
     statusTitle: "Статус напряму",
-    taglineFallback: "Рейли вічного життя: ДНК-сховище, 15 осей, консультації з мРНК-перепрограмування, друк органів, ветеринарні рейли.",
+    taglineFallback: "Рейли вічного життя: ДНК-сховище, 15 осей, консультації з мРНК-перепрограмування, друк органів, ветеринарні рейли, світлова камера Vinci.",
     complianceFallback: "Лише аналіз за ACP і передача партнерам — не діагнози, не DIY ПЛР і не сертифіковані ветеринарні вироби.",
     feature: "Функція",
     featureOn: "увімк.",
@@ -340,7 +417,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflow",
     next: "Далі:",
     homeTitle: "ДНК-рейли довголіття",
-    homeLead: "Профіль старіння за 15 осями, консультації з часткового перепрограмування мРНК, спіраль, хеш-сховище, друк органа 250 000 ACP, кріо тканин кота 75 000 ACP, VET REGEN POD 180 000 ACP.",
+    homeLead: "Профіль старіння за 15 осями, консультації з часткового перепрограмування мРНК, спіраль, хеш-сховище, друк органа 250 000 ACP, кріо тканин кота 75 000 ACP, VET REGEN POD 180 000 ACP, світлова камера Vinci 48 000 ACP.",
     enter: "Увійти в AETERNA",
     sandboxCta: "ДНК-пісочниця",
   },
@@ -348,7 +425,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9-Bewusstsein und Blockchain-Abrechnung",
     heroTitle: "Longevity-Schienen: molekulares Alterungsprofil über 15 Achsen — keine einzelne Bio-Age-Zahl.",
     heroLead:
-      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen oder eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen.",
+      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen oder ein Vinci-Lichtkammer-Briefing für 48.000 ACP.",
     openSandbox: "DNA-Sandbox öffnen",
     browseWorkflows: "AETERNA-Workflows ansehen",
     demoKicker: "Öffentliche Demo · Nanobots + chemische Scheren",
@@ -356,7 +433,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Interaktive Doppelhelix — nur Bildung.",
     payTitle: "Wofür Sie zahlen können",
     payLead:
-      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR und keine Veterinär-OP.",
+      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium und keine Veterinär-OP.",
     intent1Title: "Molekulares Alterungsprofil (15 Achsen)",
     intent1Body: "Hallmark-Karte aus Panel-/Blut-RNA-Metadaten — Konfiguration, keine Bio-Age-Zahl.",
     intent2Title: "Telomer-Panel",
@@ -377,6 +454,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent9Title: "Canine VET REGEN POD",
     intent9Body:
       "Lizenzierter Veterinärpartner: Organbank, 3D-Biodruck, roboterassistierte Transplantation. 180.000 ACP. Infografik-Prozente sind keine Ergebniszusagen.",
+    intent10Title: "Vinci-Lichtkammer (Photobiomodulation)",
+    intent10Body:
+      "Lizenzierter Phototherapie-Partner: Rot 620–680 nm und Nah-IR 780–950 nm als PBM-Literacy, UVA nur nach Screening. 48.000 ACP. Inspiriert von Leonardos Notizen zu Licht und Körper — keine rekonstruierte Erfindung und keine „sichere Bräune“.",
     agingKicker: "Blut-RNA · 15 Mechanismen · geschlechtssensitiv",
     agingTitle: "Molekulares Alterungsprofil",
     agingLead: "Individuelle Konfiguration von Alterungsprozessen, keine universelle Bio-Age-Zahl.",
@@ -388,6 +468,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     organSkuLead: "Primär: eigene Stammzellen. Fallback: Weisheitszahn-DPSC.",
     organSkuCta: "Organdruck bestellen",
     organRailCta: "Veterinär-Organschienen",
+    vinciCta: "Lichtkammer-Intake öffnen",
+    vinciKicker: "Photobiomodulation · lizenzierte Klinik · Leonardo-Literacy",
+    vinciTitle: "Lichtkammer zur Geweberegeneration",
+    vinciPrice: "48.000 ACP",
+    vinciLead:
+      "Ganzkörper-Partnerkammer: Rot und Nah-IR als Photobiomodulations-Literacy, UVA nur nach Screening. Öffentliche Forschung diskutiert Fenster um 600–950 nm. AETERNA verkauft keine garantierte Kollagen-, Wund- oder Anti-Aging-Wirkung. Inspiriert von Leonardo da Vincis Studien zu Sonnenlicht und Körper, keine Museumsreplik einer von ihm gebauten Maschine.",
+    vinciQuote: "Historische Sonnenlicht-Gesundheitsliteracy — keine verifizierte Leonardo-Spezifikation für diese Kammer.",
+    vinciDisclaimer:
+      "Die Infografik ist konzeptionelle Partnerarchitektur. ANCAP stellt die Kapsel nicht her, praktiziert keine Dermatologie und behauptet keine sichere Bräune, Vitamin-D-Therapie oder ein CE/FDA-Produkt. UV bleibt eine Hautkrebs-Risikoklasse. Sitzungen nur unter einem lizenzierten Kliniker nach Screening.",
+    vinciLegalCta: "Rechtshinweis Lichtkammer",
+    vinciAlt:
+      "Infografik einer Ganzkörper-LED-Lichtkammer mit Rot, Nah-IR und UVA. Konzeptionelle Architektur für lizenzierte Phototherapie-Partner.",
+    vinciStep1Title: "Intake",
+    vinciStep1Body: "Hauttyp, Kontraindikationen und lizenzierte Klinik — nur ACP-Briefing.",
+    vinciStep2Title: "Bänder",
+    vinciStep2Body: "Rot / Nah-IR als PBM-Literacy; UVA nur wenn das Partnerprotokoll nach Screening zulässt.",
+    vinciStep3Title: "Sitzung",
+    vinciStep3Body: "Dosis, Temperatur und Dauer setzt der lizenzierte Kliniker — nicht die Infografik.",
+    vinciStep4Title: "Nachsorge",
+    vinciStep4Body: "Partnermonitoring. Keine garantierte Bräune, Kollagen oder Erholungsfrist.",
+    vinciStep5Title: "Beleg",
+    vinciStep5Body: "ACP-Abrechnung plus Audit-Beleg. Hardware bleibt beim lizenzierten Partner.",
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
     vetTitle: "Organzüchtung und -wiederherstellung für Haustiere",
     vetLead:
@@ -439,7 +541,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "Nur Partner-Desk",
     mrnaStep3Body: "AETERNA verkauft ein 1.000.000-ACP-Briefing. Keine Lipidrezepte, mRNA-Sequenzen oder Heimkits.",
     statusTitle: "Divisionsstatus",
-    taglineFallback: "Ewigkeits-Schienen: DNA-Vault, 15 Achsen, partielle mRNA-Reprogrammierung, Organdruck, Veterinär-Organschienen, ACP-Workflows.",
+    taglineFallback: "Ewigkeits-Schienen: DNA-Vault, 15 Achsen, partielle mRNA-Reprogrammierung, Organdruck, Veterinär-Organschienen, Vinci-Lichtkammer, ACP-Workflows.",
     complianceFallback: "Nur ACP-Analysen und Partner-Übergaben — keine Diagnosen, Heim-PCR-Kits oder vermarktete Veterinärprodukte.",
     feature: "Feature",
     featureOn: "an",
@@ -449,7 +551,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "Workflows",
     next: "Weiter:",
     homeTitle: "Longevity-DNA-Schienen",
-    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP.",
+    homeLead: "15-Achsen-Alterungsprofil, partielle mRNA-Reprogrammierung, Helix-Sandbox, Hash-Vault, Organdruck 250.000 ACP, feliner Kryo 75.000 ACP, VET REGEN POD 180.000 ACP, Vinci-Lichtkammer 48.000 ACP.",
     enter: "AETERNA öffnen",
     sandboxCta: "DNA-Sandbox",
   },
@@ -457,7 +559,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA、Cas9 認知與區塊鏈結算",
     heroTitle: "長壽軌道：15 軸分子衰老剖面，而非單一生物年齡數字。",
     heroLead:
-      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印，或開通貓犬持照獸醫器官軌道。",
+      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道，或以 48,000 ACP 開啟 Vinci 光艙簡報。",
     openSandbox: "開啟 DNA 沙盒",
     browseWorkflows: "瀏覽 AETERNA 工作流程",
     demoKicker: "公開示範 · 奈米機器人 + 化學剪刀",
@@ -465,7 +567,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "互動雙螺旋僅供教育。",
     payTitle: "可付費項目",
     payLead:
-      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR，亦非獸醫手術套件。",
+      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床，亦非獸醫手術套件。",
     intent1Title: "分子衰老剖面（15 軸）",
     intent1Body: "以血液 RNA／面板中繼資料對應衰老機制——是配置，不是單一生物年齡。",
     intent2Title: "端粒面板",
@@ -486,6 +588,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent9Title: "犬用 VET REGEN POD",
     intent9Body:
       "持照獸醫夥伴：器官庫、3D 生物列印、機器人輔助移植。180,000 ACP。資訊圖百分比不是結果承諾。",
+    intent10Title: "Vinci 光艙（光生物調節）",
+    intent10Body:
+      "持照光療夥伴簡報：紅光 620–680 nm 與近紅外 780–950 nm 作為 PBM 素養，UVA 僅能在篩檢後使用。48,000 ACP。啟發自達文西對光與身體的筆記——不是重建發明，也不是「安全曬黑」。",
     agingKicker: "血液 RNA · 15 機制 · 性別敏感",
     agingTitle: "分子衰老剖面",
     agingLead: "目標是個別衰老過程配置，而非通用生物年齡數字。",
@@ -497,6 +602,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     organSkuLead: "主要：自體幹細胞。備援：智齒 DPSC。",
     organSkuCta: "訂購器官列印",
     organRailCta: "獸醫器官軌道",
+    vinciCta: "開啟光艙收件",
+    vinciKicker: "光生物調節 · 持照診所 · 達文西素養",
+    vinciTitle: "組織再生光艙",
+    vinciPrice: "48,000 ACP",
+    vinciLead:
+      "全身夥伴艙：紅光與近紅外作為光生物調節素養，UVA 僅在篩檢後使用。公開研究討論約 600–950 nm 窗口。AETERNA 不出售保證膠原、傷口癒合或抗老效果。啟發自達文西對陽光與身體的研究，不是他所建造機器的博物館複製品。",
+    vinciQuote: "歷史上的陽光與健康素養——不是達文西對此艙的已驗證規格。",
+    vinciDisclaimer:
+      "資訊圖為夥伴概念架構。ANCAP 不製造艙體、不從事皮膚科診療，亦不主張安全曬黑、維生素 D 治療或 CE/FDA 器材。紫外線仍屬皮膚癌風險類。療程僅能由持照臨床人員在篩檢後執行。",
+    vinciLegalCta: "光艙法律聲明",
+    vinciAlt:
+      "全身 LED 光艙資訊圖，含紅光、近紅外與 UVA。持照光療夥伴的概念架構。",
+    vinciStep1Title: "收件",
+    vinciStep1Body: "膚質、禁忌與持照診所配對——僅 ACP 簡報。",
+    vinciStep2Title: "波段",
+    vinciStep2Body: "紅光／近紅外作為 PBM 素養；UVA 僅在夥伴流程篩檢後允許。",
+    vinciStep3Title: "療程",
+    vinciStep3Body: "劑量、溫度與時長由持照臨床人員設定——不是資訊圖。",
+    vinciStep4Title: "後續",
+    vinciStep4Body: "夥伴監測。無保證曬黑、膠原或恢復時程。",
+    vinciStep5Title: "收據",
+    vinciStep5Body: "ACP 結算加上稽核收據。硬體留在持照夥伴處。",
     vetKicker: "獸醫 · 持照診所 · 概念架構",
     vetTitle: "伴侶動物器官培養與復原",
     vetLead:
@@ -548,7 +675,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     mrnaStep3Title: "僅夥伴櫃台",
     mrnaStep3Body: "AETERNA 出售 1,000,000 ACP 簡報。無脂質配方、mRNA 序列或家用套件。",
     statusTitle: "部門狀態",
-    taglineFallback: "永恆生命軌道：DNA 庫、15 軸分子衰老、部分 mRNA 重編程諮詢、器官列印、獸醫器官軌道、ACP。",
+    taglineFallback: "永恆生命軌道：DNA 庫、15 軸分子衰老、部分 mRNA 重編程諮詢、器官列印、獸醫器官軌道、Vinci 光艙、ACP。",
     complianceFallback: "僅出售 ACP 分析與夥伴轉介——非診斷、非家用 PCR，亦非上市獸醫器材。",
     feature: "功能",
     featureOn: "開",
@@ -558,7 +685,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     workflows: "工作流程",
     next: "下一步：",
     homeTitle: "長壽 DNA 軌道",
-    homeLead: "15 軸分子衰老剖面、部分 mRNA 重編程諮詢、螺旋沙盒、雜湊庫、器官列印 250,000 ACP、貓組織冷凍 75,000 ACP、VET REGEN POD 180,000 ACP。",
+    homeLead: "15 軸分子衰老剖面、部分 mRNA 重編程諮詢、螺旋沙盒、雜湊庫、器官列印 250,000 ACP、貓組織冷凍 75,000 ACP、VET REGEN POD 180,000 ACP、Vinci 光艙 48,000 ACP。",
     enter: "進入 AETERNA",
     sandboxCta: "DNA 沙盒",
   },

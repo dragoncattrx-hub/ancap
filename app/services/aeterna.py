@@ -42,6 +42,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-mrna-reprogramming-brief",
     "aeterna-vet-cat-cryo-restore",
     "aeterna-vet-regen-pod",
+    "aeterna-vinci-light-chamber",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -52,6 +53,8 @@ VET_CAT_CRYO_SLUG = "aeterna-vet-cat-cryo-restore"
 VET_CAT_CRYO_PRICE_ACP = Decimal("75000")
 VET_REGEN_POD_SLUG = "aeterna-vet-regen-pod"
 VET_REGEN_POD_PRICE_ACP = Decimal("180000")
+VINCI_LIGHT_SLUG = "aeterna-vinci-light-chamber"
+VINCI_LIGHT_PRICE_ACP = Decimal("48000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -160,6 +163,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.partial_reprogramming_consult.value: MRNA_REPROGRAMMING_SLUG,
     AeternaIntentKind.vet_feline_cryo_restore.value: VET_CAT_CRYO_SLUG,
     AeternaIntentKind.vet_canine_regen_pod.value: VET_REGEN_POD_SLUG,
+    AeternaIntentKind.vinci_light_chamber.value: VINCI_LIGHT_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -207,6 +211,26 @@ VET_REGEN_POD_META = {
     "note": (
         "Conceptual canine VET REGEN POD organ-transplant and regeneration chamber. ANCAP settles ACP "
         "and matches a licensed veterinary partner. Infographic survival or speed figures are not product claims."
+    ),
+}
+
+VINCI_LIGHT_META = {
+    "mode": "licensed_phototherapy_partner",
+    "unit": "session_protocol_brief",
+    "price_acp": "48000",
+    "architecture": "full_body_led_uva_red_nir_chamber",
+    "bands": {
+        "uva": "320-400nm",
+        "red": "620-680nm",
+        "nir": "780-950nm",
+        "pbm_window": "600-950nm",
+    },
+    "inspiration": "leonardo_sunlight_health_literacy",
+    "note": (
+        "Conceptual full-body photobiomodulation / light-session chamber. ANCAP settles ACP and issues "
+        "a licensed dermatology or phototherapy-partner brief. Not a reconstructed Leonardo invention, "
+        "not a marketed medical device, and not a safe-tanning or vitamin-D treatment claim. "
+        "UVA on the infographic is a known skin-cancer risk class — partner screening required."
     ),
 }
 
@@ -309,7 +333,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
         tagline=(
             "Eternal life rails: DNA vault, 15-axis molecular aging profile, "
             "partial mRNA-reprogramming consults, stem-cell organ print, "
-            "veterinary tissue-cryo / VET REGEN POD partner rails, licensed longevity partners."
+            "veterinary tissue-cryo / VET REGEN POD partner rails, Vinci light chamber, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -337,6 +361,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Feline cryoconservator-restorer and canine VET REGEN POD listings are licensed-veterinary "
             "partner intakes. Infographics are conceptual architecture — not a marketed device and not "
             "a survival-rate or return-to-life claim."
+        ),
+        vinci_light_note=(
+            "Vinci light chamber listings are licensed phototherapy / dermatology partner intakes. "
+            "Infographics are conceptual architecture inspired by Leonardo-era sunlight literacy — "
+            "not a reconstructed invention, not a CE/FDA device, and not a safe-tanning claim."
         ),
     )
 
@@ -467,6 +496,20 @@ async def create_intent_order(
                 detail="vet_canine_regen_pod budget_acp must be at least 180000 ACP",
             )
         for key, value in VET_REGEN_POD_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.vinci_light_chamber:
+        if slug and slug != VINCI_LIGHT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="vinci_light_chamber requires workflow_slug aeterna-vinci-light-chamber",
+            )
+        slug = VINCI_LIGHT_SLUG
+        if body.budget_acp < VINCI_LIGHT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="vinci_light_chamber budget_acp must be at least 48000 ACP",
+            )
+        for key, value in VINCI_LIGHT_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

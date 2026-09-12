@@ -58,6 +58,7 @@ Headline product (2026-09 modernization): **Molecular Aging Profile (15 axes)** 
 - `[x]` Homepage AETERNA promo; consult workflows **1,000,000 ACP**; stem-cell organ print **250,000 ACP** per organ (pack 2,500,000 ACP).
 - `[x]` Partial mRNA-reprogramming consult (`aeterna-mrna-reprogramming-brief`) + USPTO eTurna citation (legal as of 11 Sep 2026).
 - `[x]` Veterinary organ rails (12 Sep 2026): feline tissue cryoconservator-restorer (`aeterna-vet-cat-cryo-restore`, 75,000 ACP) + canine VET REGEN POD (`aeterna-vet-regen-pod`, 180,000 ACP) — conceptual partner architecture, licensed veterinarian only, no resurrection / survival-rate claims. Legal: `/legal/vet-regen`.
+- `[x]` Vinci light chamber (12 Sep 2026): full-body photobiomodulation / LED session protocol (`aeterna-vinci-light-chamber`, 48,000 ACP) — Leonardo sunlight-health literacy, licensed phototherapy/dermatology partner only; not a reconstructed invention; not a safe-tanning or CE/FDA device claim. Legal: `/legal/light-chamber`.
 - `[ ]` Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
 - No edit simulation that implies real wet-lab editing capability.
 
@@ -100,7 +101,8 @@ GET  /organizations/{org_id}/aeterna/intents
 - `aeterna-mrna-reprogramming-brief` — **1,000,000 ACP**; partial reprogramming consult (mRNA-in-LNP literacy); USPTO eTurna notice-of-allowance citation only.
 - `aeterna-vet-cat-cryo-restore` — **75,000 ACP**; feline tissue cryoconservator-restorer partner intake; conceptual architecture; licensed veterinarian only.
 - `aeterna-vet-regen-pod` — **180,000 ACP**; canine VET REGEN POD organ-transplant / regeneration chamber pathway; conceptual architecture; licensed veterinarian only.
+- `aeterna-vinci-light-chamber` — **48,000 ACP**; full-body photobiomodulation chamber (red / near-IR literacy + screened UVA); Leonardo sunlight-health framing; licensed phototherapy partner only; not a reconstructed invention and not a safe-tanning claim.
 
 Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + molecular aging profile + longevity panel. Organ print is sold per organ, not inside the pack. The mRNA-reprogramming consult is sold separately.
 
-Intent `molecular_aging_profile` defaults to `aeterna-molecular-aging-profile`. Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Intent `partial_reprogramming_consult` defaults to `aeterna-mrna-reprogramming-brief` and requires `budget_acp >= 1000000`. Intent `vet_feline_cryo_restore` defaults to `aeterna-vet-cat-cryo-restore` (`>= 75000`). Intent `vet_canine_regen_pod` defaults to `aeterna-vet-regen-pod` (`>= 180000`). Vault source enum includes `venous_blood_rna` for panel hash registration.
+Intent `molecular_aging_profile` defaults to `aeterna-molecular-aging-profile`. Intent `organ_bioprint` defaults to `aeterna-stem-cell-organ-print` and requires `budget_acp >= 250000`. Intent `partial_reprogramming_consult` defaults to `aeterna-mrna-reprogramming-brief` and requires `budget_acp >= 1000000`. Intent `vet_feline_cryo_restore` defaults to `aeterna-vet-cat-cryo-restore` (`>= 75000`). Intent `vet_canine_regen_pod` defaults to `aeterna-vet-regen-pod` (`>= 180000`). Intent `vinci_light_chamber` defaults to `aeterna-vinci-light-chamber` (`>= 48000`). Vault source enum includes `venous_blood_rna` for panel hash registration.

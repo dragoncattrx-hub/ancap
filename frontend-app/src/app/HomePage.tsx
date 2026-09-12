@@ -346,6 +346,9 @@ export function HomePage() {
                     <Link href="/aeterna#vet-regen" className="btn btn-ghost">
                       {t("aeternaPage.organRailCta")}
                     </Link>
+                    <Link href="/aeterna#vinci-light" className="btn btn-ghost">
+                      {t("aeternaPage.vinciCta")}
+                    </Link>
                 </div>
               </div>
               <div

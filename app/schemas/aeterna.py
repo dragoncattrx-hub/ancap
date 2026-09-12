@@ -47,6 +47,7 @@ class AeternaIntentKind(str, Enum):
     partial_reprogramming_consult = "partial_reprogramming_consult"
     vet_feline_cryo_restore = "vet_feline_cryo_restore"
     vet_canine_regen_pod = "vet_canine_regen_pod"
+    vinci_light_chamber = "vinci_light_chamber"
 
 
 class AeternaDnaSource(str, Enum):
@@ -239,4 +240,9 @@ class AeternaStatusPublic(BaseModel):
         "Veterinary organ rails (feline tissue cryoconservator-restorer and canine VET REGEN POD) "
         "are licensed-partner consult / intake briefs. Infographics are conceptual architecture, "
         "not a marketed veterinary device, not a survival-rate claim, and not a return-to-life warranty."
+    )
+    vinci_light_note: str = (
+        "The Vinci light / photobiomodulation chamber is a licensed-partner consult and session-protocol "
+        "brief. Infographics are conceptual architecture inspired by Leonardo-era sunlight-and-health literacy "
+        "— not a reconstructed invention, not a marketed phototherapy device, and not a safe-tanning claim."
     )

@@ -53,6 +53,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/research-refs", key: "researchRefsLink" },
     { href: "/legal/cryo-constitution", key: "cryoLink" },
     { href: "/legal/vet-regen", key: "vetRegenLink" },
+    { href: "/legal/light-chamber", key: "lightChamberLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -91,6 +92,7 @@ export function LegalHubView() {
     { href: "/legal/research-refs", title: "researchRefsLink", body: "hubCardResearchRefs" },
     { href: "/legal/cryo-constitution", title: "cryoLink", body: "hubCardCryo" },
     { href: "/legal/vet-regen", title: "vetRegenLink", body: "hubCardVetRegen" },
+    { href: "/legal/light-chamber", title: "lightChamberLink", body: "hubCardLightChamber" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -818,6 +820,36 @@ export function VetRegenLegalView() {
   );
 }
 
+export function LightChamberLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.lightChamberKicker")}
+      title={t("legal.lightChamberTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.lightChamberIntro")}`}
+      actions={<LegalNavPills current="/legal/light-chamber" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.lc${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.lc${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#vinci-light" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /aeterna#vinci-light
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function WelcomeGrantView() {
   const { t } = useLanguage();
   return (
@@ -870,6 +902,7 @@ export function SiteLegalFooter() {
     { href: "/legal/research-refs", label: "footerResearchRefs" },
     { href: "/legal/cryo-constitution", label: "footerCryo" },
     { href: "/legal/vet-regen", label: "footerVetRegen" },
+    { href: "/legal/light-chamber", label: "footerLightChamber" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/humanitarian", label: "footerHumanitarian" },

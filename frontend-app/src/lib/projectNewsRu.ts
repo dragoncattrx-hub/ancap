@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-vinci-light-chamber",
+    date: "2026-09-12",
+    title: "AETERNA: световая камера Vinci для тканей",
+    summary:
+      "На /aeterna — партнёрский бриф полноростовой LED-камеры (красный / ближний ИК как грамотность фотобиомодуляции, UVA только после скрининга) за 48 000 ACP. Инфографика вдохновлена заметками Леонардо о свете и теле: это не реконструкция изобретения, не CE/FDA-изделие и не «безопасный загар». Юр. текст: /legal/light-chamber.",
+    href: "/aeterna#vinci-light",
+  },
+  {
     id: "perimeter-blast-radius-proof",
     date: "2026-09-12",
     title: "Периметр: blast-radius proof против ключей DNA и паспорта",
