@@ -55,6 +55,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/vet-regen", key: "vetRegenLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
+    { href: "/legal/humanitarian", key: "humanitarianLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
@@ -92,6 +93,7 @@ export function LegalHubView() {
     { href: "/legal/vet-regen", title: "vetRegenLink", body: "hubCardVetRegen" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
+    { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -138,7 +140,7 @@ export function LegalHubView() {
 
 export function TermsView() {
   const { t } = useLanguage();
-  const sections = Array.from({ length: 20 }, (_, i) => i + 1);
+  const sections = Array.from({ length: 21 }, (_, i) => i + 1);
   return (
     <LegalShell
       kickerClass="border-white/10 bg-white/[0.03]"
@@ -248,7 +250,7 @@ export function RiskDisclosureView() {
       actions={<LegalNavPills current="/legal/risk" />}
     >
       <section className="mt-6 grid gap-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.r${n}Title`)}</h2>
             <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.r${n}Body`)}</p>
@@ -266,6 +268,10 @@ export function RiskDisclosureView() {
           {" · "}
           <Link href="/legal/welcome-grant" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
             /legal/welcome-grant
+          </Link>
+          {" · "}
+          <Link href="/legal/humanitarian" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/humanitarian
           </Link>
         </p>
       </section>
@@ -734,6 +740,50 @@ export function CryoConstitutionView() {
   );
 }
 
+export function HumanitarianLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-rose-300/20 bg-rose-400/[0.06]"
+      kicker={t("legal.humanitarianKicker")}
+      title={t("legal.humanitarianTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.humanitarianIntro")}`}
+      actions={<LegalNavPills current="/legal/humanitarian" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.hum${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.hum${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Desk:{" "}
+          <Link href="/humanitarian" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /humanitarian
+          </Link>
+          {" · "}
+          {t("legal.humanitarianAlso")}{" "}
+          <Link href="/legal/welcome-grant" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/welcome-grant
+          </Link>
+          {" · "}
+          <a
+            href="https://www.ifrc.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            ifrc.org
+          </a>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function VetRegenLegalView() {
   const { t } = useLanguage();
   return (
@@ -798,6 +848,10 @@ export function WelcomeGrantView() {
           <Link href="/legal/risk" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
             /legal/risk
           </Link>
+          {" · "}
+          <Link href="/legal/humanitarian" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/humanitarian
+          </Link>
         </p>
       </section>
     </LegalShell>
@@ -818,6 +872,7 @@ export function SiteLegalFooter() {
     { href: "/legal/vet-regen", label: "footerVetRegen" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
+    { href: "/legal/humanitarian", label: "footerHumanitarian" },
     { href: "/legal/clarity-act", label: "footerClarity" },
   ] as const;
   return (

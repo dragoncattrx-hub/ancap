@@ -584,6 +584,12 @@ export const cryoDesk = {
   },
 };
 
+export const humanitarianDesk = {
+  async catalog() {
+    return apiFetch("/humanitarian/catalog");
+  },
+};
+
 export const quantumSimDesk = {
   async catalog() {
     return apiFetch("/quantum-sim/catalog");

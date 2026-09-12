@@ -14,6 +14,7 @@ export const legalByLang: Record<Language, Tree> = {
     riskLink: "Risk disclosure",
     refundsLink: "Payments & refunds",
     welcomeGrantLink: "Welcome grant",
+    humanitarianLink: "Humanitarian aid",
     hubLink: "Legal center",
     complianceLink: "Compliance",
     contactLegal: "legal@ancap.cloud",
@@ -139,6 +140,8 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
       "100 ACP on signup is a promotional access credit (nominal $100 label), not a donation, not USD cash, not tax-deductible.",
+    hubCardHumanitarian:
+      "ACP-settled aid briefs for food, water, nutrition, warm clothing, medical supplies, and livelihood matching — desk listings of Red Cross / Red Crescent national societies, not a signed ICRC/IFRC contract and not a 135-FZ charity.",
     hubCardCyber: "Public policy endorsement of collective cyber defense.",
     hubCardClarity: "Full agreement with the U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging and on-ramp / bridge risk notes.",
@@ -189,6 +192,9 @@ export const legalByLang: Record<Language, Tree> = {
     t20Title: "20. Longevity, organ-print, and veterinary rails",
     t20Body:
       "AETERNA and cryo-desk workflows sell analysis, consult briefs, and licensed-partner handoffs. They are not medical or veterinary treatment, not marketed medical devices, and not a promise that organs will print, tissues will revive, or animals or humans will be restored to life. Human organ print and veterinary chambers (including VET REGEN POD illustrations) are partner-clinic rails only. You must not use ANCAP to obtain wet-lab protocols, CRISPR designs, gene synthesis, LNP recipes, or unlicensed procedures on humans or animals. See /legal/vet-regen, /legal/cryo-constitution, and /legal/research-refs.",
+    t21Title: "21. Humanitarian aid desk",
+    t21Body:
+      "The /humanitarian desk sells ACP-settled aid briefs and partner handoffs (food, water, nutrition, warm clothing, medical supplies via licensed channels, livelihood matching). ANCAP is not a charitable organisation under RF 135-FZ and is not a tax-exempt charity in the EU, UK, or US. A listing of IFRC or a national Red Cross / Red Crescent society is not a signed partnership, not an emblem licence, and not an ICRC endorsement. ACP paid on this desk is not a tax-deductible donation unless a registered charity separately receipts funds. Distinct from the 100 ACP welcome grant. See /legal/humanitarian.",
     privacyKicker: "Privacy notice",
     privacyTitle: "How ANCAP handles client data",
     privacyIntro: "This Privacy Notice explains how the ANCAP platform operator of ancap.cloud processes personal data for accounts, wallets, paid workflows, API usage, proof receipts, support, security, and analytics preferences.",
@@ -250,6 +256,9 @@ export const legalByLang: Record<Language, Tree> = {
     r8Title: "8. Longevity, organ-print, and veterinary outcome risk",
     r8Body:
       "AETERNA organ-print and veterinary rails (feline tissue cryo, canine VET REGEN POD) can fail, be delayed, or be refused by a licensed partner. Illustrations are conceptual. No survival rate, regeneration speed, or return-to-life outcome is promised. Paying ACP does not create a clinical or veterinary duty of care owed by ANCAP.",
+    r9Title: "9. Humanitarian aid and partner-handoff risk",
+    r9Body:
+      "Humanitarian briefs may be delayed, refused, or redirected by a listed national society or IFRC channel. ANCAP does not deliver food, water, clothing, medicines, or jobs itself. A desk listing is not a signed Red Cross partnership and not a tax-deductible gift. Medical-supply intents are not pharmacy sales. Livelihood matching is not a guaranteed job. See /legal/humanitarian.",
     riskMarketDataMore: "Full market-data disclosure:",
     p9Title: "9. Third-party market and weather providers",
     p9Body: "To show indicative crypto and FX context, ANCAP may call third-party market-data APIs (currently CoinGecko). To show local weather on the Earth / Support widget, ANCAP may call AccuWeather APIs with approximate latitude/longitude derived from IP geolocation (or interim numeric feeds with AccuWeather attribution if the AccuWeather key is not configured). Those requests use ANCAP server credentials where applicable and typically do not send your account password. Provider logs may include technical metadata (including approximate location) under their own privacy terms. We do not sell your personal data to market-data or weather vendors.",
@@ -327,8 +336,43 @@ export const legalByLang: Record<Language, Tree> = {
       "The grant is not refundable as fiat. Fraudulent or duplicate accounts may be closed and the credit reversed. Paid workflow runs follow Payments & refunds. Mandatory EU consumer cooling-off rights on later paid digital services, where they legally apply, remain unaffected.",
     wg12Title: "12. Not legal advice",
     wg12Body:
-      "This notice is operator disclosure, not tax, charity-filing, or licensed legal advice to any user in the EU/EEA/UK or elsewhere. Questions: legal@ancap.cloud.",
+      "This notice is operator disclosure, not tax, charity-filing, or licensed legal advice to any user in the EU/EEA/UK or elsewhere. Questions: legal@ancap.cloud. Humanitarian aid briefs (food, water, clothing, medical supplies, livelihood) are a separate product at /humanitarian and /legal/humanitarian — they are not this welcome grant.",
     welcomeGrantAlso: "Open an account or read related notices:",
+    humanitarianKicker: "Legal / humanitarian",
+    humanitarianTitle: "Humanitarian aid desk and Red Cross / Red Crescent listings",
+    humanitarianIntro:
+      "How ANCAP frames ACP-settled humanitarian briefs and partner handoffs to Red Cross / Red Crescent national societies. ANCAP is not a registered charity and does not claim a signed ICRC, IFRC, or national-society partnership unless a dated operator agreement is published here.",
+    hum1Title: "1. Platform role",
+    hum1Body:
+      "ANCAP operates an ACP-first software platform. On /humanitarian it sells aid briefs and partner-handoff tooling settled in ACP. ANCAP is not a благотворительная организация under RF Federal Law No. 135-FZ of 11 August 1995, not a public-benefit / gemeinnützig body, not a UK charity, and not a U.S. 501(c)(3) organisation. Paying ACP does not make the user a donor to ANCAP as a charity.",
+    hum2Title: "2. Red Cross / Red Crescent Movement",
+    hum2Body:
+      "The International Red Cross and Red Crescent Movement has three components: the ICRC, the IFRC, and national societies. They are not interchangeable. A desk listing of the IFRC or of the Russian, Ukrainian, German, or American Red Cross is a handoff rail to official websites — not membership in the Movement, not a fundraising-agency contract, not ICRC endorsement, and not a claim that ANCAP is “the Red Cross”. Until a dated MoU is published on this page, official_partnership is false.",
+    hum3Title: "3. What ACP pays",
+    hum3Body:
+      "ACP on this desk pays for a brief and a contribution toward partner-channel handoff covering emergency food, safe water, nutrition/foodstuffs, warm clothing, medical supplies via licensed partner channels, and livelihood / starting-work matching. ANCAP does not warehouse goods, run ambulances, or employ WASH crews. Suggested from-prices are not a tax receipt and not a guaranteed delivery of a ration, garment, drug, or job.",
+    hum4Title: "4. Distinct from the welcome grant",
+    hum4Body:
+      "The 100 ACP registration credit is promotional platform access. It is explicitly not charity. Do not treat /legal/welcome-grant and /legal/humanitarian as the same product. Mixing them in advertising would be misleading under RF 38-FZ and EU UCPD Annex I point 22 (false impression of charitable purpose).",
+    hum5Title: "5. Emblems and Geneva Conventions",
+    hum5Body:
+      "The red cross, red crescent, and red crystal emblems are protected distinctive signs under the 1949 Geneva Conventions and Additional Protocols. ANCAP is not licensed to display them as a logo, app icon, or payment badge. This site uses text names and official-domain links only. emblem_licensed remains false.",
+    hum6Title: "6. Medical supplies",
+    hum6Body:
+      "Medical-supply briefs are intents for licensed / partner channels only. ANCAP is not a pharmacy, not a remote drugstore, and does not issue prescriptions or medical advice. Controlled substances, unlicensed drug distribution, and DIY protocols are prohibited. Partner jurisdiction health and customs rules control what can ship.",
+    hum7Title: "7. Livelihood / starting work",
+    hum7Body:
+      "Livelihood matching (подъёмная работа) is a brief to partner programmes. ANCAP is not a licensed employment agency in every jurisdiction, not a visa sponsor, and does not guarantee a job, wage, or work permit. Listings must not be advertised as “guaranteed employment”.",
+    hum8Title: "8. Russian Federation",
+    hum8Body:
+      "Charitable activity is regulated by 135-FZ. Civil Code art. 582 (donation) is a distinct civil-law gift to a permitted donee — an ANCAP ACP ledger debit is not that gift unless a registered charity separately receipts it. Advertising that ANCAP itself is a charity, or that ACP payments are automatically tax-deductible пожертвования, is prohibited (38-FZ). National-society programmes remain those of Российский Красный Крест, not of ANCAP.",
+    hum9Title: "9. EU, UK, US, and tax receipts",
+    hum9Body:
+      "EU UCPD 2005/29/EC Annex I p.22 and e-Commerce Directive 2000/31/EC Art. 6: commercial communications must not create a false impression of charitable purpose or of acting for a humanitarian organisation. DE UWG and FR Code de la consommation apply similarly. UK CPRs 2008. US FTC Act §5. IRC §170 / Gift Aid / German Zuwendungsbestätigung / national charitable-relief deductions require a qualified recipient’s receipt — an ANCAP ACP entry is not that receipt. MiCA: this desk is not a public crypto-asset offer.",
+    hum10Title: "10. Contacts",
+    hum10Body:
+      "Legal notices: legal@ancap.cloud. Product: /humanitarian. Related: /legal/welcome-grant, /legal/terms, /legal/risk. Official Movement sites: https://www.ifrc.org/ and the national-society domains listed on the desk. This page is operator disclosure, not licensed legal, tax, or medical advice.",
+    humanitarianAlso: "Related notices and official sites:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -403,6 +447,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Risks",
     footerRefunds: "Refunds",
     footerWelcomeGrant: "Welcome grant",
+    footerHumanitarian: "Aid desk",
     footerVetRegen: "Vet regen",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "I agree to the",
@@ -420,6 +465,7 @@ export const legalByLang: Record<Language, Tree> = {
     riskLink: "Раскрытие рисков",
     refundsLink: "Платежи и возвраты",
     welcomeGrantLink: "Грант при регистрации",
+    humanitarianLink: "Гуманитарная помощь",
     hubLink: "Юридический центр",
     complianceLink: "Комплаенс",
     contactLegal: "legal@ancap.cloud",
@@ -545,6 +591,8 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
       "100 ACP при регистрации — промо-кредит доступа (номинальная метка $100), не пожертвование, не выплата USD, не налоговый вычет.",
+    hubCardHumanitarian:
+      "ACP-брифы по еде, воде, питанию, тёплой одежде, медпрепаратам и подъёмной работе — листинги обществ Красного Креста / Красного Полумесяца, не подписанный контракт с МККК/МФКК и не благотворительная организация по 135-ФЗ.",
     hubCardCyber: "Публичная поддержка коллективной киберзащиты.",
     hubCardClarity: "Полное согласие с U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging и заметки по on-ramp / bridge.",
@@ -595,6 +643,9 @@ export const legalByLang: Record<Language, Tree> = {
     t20Title: "20. Рейлы долголетия, печати органов и ветеринарии",
     t20Body:
       "Workflow AETERNA и крио-стола продают анализ, брифы и передачу лицензированным партнёрам. Это не медицинское и не ветеринарное лечение, не выведенные на рынок медизделия и не обещание, что органы напечатаются, ткани оживут или человек/животное будут возвращены к жизни. Печать человеческого органа и ветеринарные камеры (включая иллюстрации VET REGEN POD) — только рейлы клиник-партнёров. Нельзя использовать ANCAP, чтобы получить wet-lab протоколы, CRISPR-дизайн, синтез генов, рецепты LNP или нелицензированные процедуры над людьми или животными. См. /legal/vet-regen, /legal/cryo-constitution и /legal/research-refs.",
+    t21Title: "21. Стол гуманитарной помощи",
+    t21Body:
+      "Стол /humanitarian продаёт ACP-брифы и передачу партнёрам (еда, вода, питание, тёплая одежда, медпрепараты через лицензированные каналы, подбор подъёмной работы). ANCAP не является благотворительной организацией по 135-ФЗ и не налогоосвобождённой charity в ЕС/UK/US. Листинг МФКК или национального общества Красного Креста — не подписанное партнёрство, не лицензия эмблемы и не одобрение МККК. ACP на этом столе не налоговый вычет, пока зарегистрированная charity отдельно не выдаст квитанцию. Отдельно от гранта 100 ACP. См. /legal/humanitarian.",
     privacyKicker: "Уведомление о конфиденциальности",
     privacyTitle: "Как ANCAP обрабатывает данные клиентов",
     privacyIntro: "Это Уведомление объясняет, как оператор платформы ANCAP на ancap.cloud обрабатывает персональные данные аккаунтов, кошельков, платных workflow, API, proof-квитанций, поддержки, безопасности и аналитики.",
@@ -656,6 +707,9 @@ export const legalByLang: Record<Language, Tree> = {
     r8Title: "8. Риск исхода долголетия, печати органов и ветеринарии",
     r8Body:
       "Рейлы AETERNA (печать органа, крио тканей кошки, VET REGEN POD для собаки) могут не состояться, задержаться или быть отклонены лицензированным партнёром. Иллюстрации концептуальны. Процент выживаемости, скорость регенерации и возвращение к жизни не обещаются. Оплата ACP не создаёт у ANCAP клинической или ветеринарной обязанности заботы.",
+    r9Title: "9. Риск гуманитарной помощи и передачи партнёру",
+    r9Body:
+      "Гуманитарные брифы могут быть задержаны, отклонены или перенаправлены национальным обществом или каналом МФКК. ANCAP сам не доставляет еду, воду, одежду, лекарства и не трудоустраивает. Листинг стола — не подписанное партнёрство с Красным Крестом и не налоговый вычет. Медпрепараты — не аптека. Подъёмная работа — не гарантированная занятость. См. /legal/humanitarian.",
     riskMarketDataMore: "Полное раскрытие по рыночным данным:",
     p9Title: "9. Провайдеры рыночных и погодных данных",
     p9Body: "Чтобы показывать ориентировочный крипто- и FX-контекст, ANCAP может вызывать сторонние API (сейчас CoinGecko). Для погоды во виджете Earth / Support ANCAP может вызывать AccuWeather API с приблизительными lat/lon из IP-геолокации (или временный числовой фид с атрибуцией AccuWeather, если ключ не настроен). Запросы идут с серверными ключами ANCAP где применимо и обычно не передают ваш пароль. У провайдера могут оставаться технические логи (включая приблизительное местоположение) по их политике. Мы не продаём ваши персональные данные вендорам рыночных или погодных данных.",
@@ -733,8 +787,43 @@ export const legalByLang: Record<Language, Tree> = {
       "Грант не возвращается фиатом. Мошеннические и дублирующие аккаунты могут быть закрыты с отменой кредита. Платные запуски — по политике платежей и возвратов. Императивные права потребителя ЕС на отказ от поздней платной цифровой услуги, где они применимы, грантом не затрагиваются.",
     wg12Title: "12. Это не юридическая консультация",
     wg12Body:
-      "Страница — раскрытие оператора, не совет пользователю по налогам, отчётности НКО или лицензированная юридическая консультация в ЕС/ЕЭЗ/Великобритании или где бы то ни было. Вопросы: legal@ancap.cloud.",
+      "Страница — раскрытие оператора, не совет пользователю по налогам, отчётности НКО или лицензированная юридическая консультация в ЕС/ЕЭЗ/Великобритании или где бы то ни было. Вопросы: legal@ancap.cloud. Гуманитарные брифы (еда, вода, одежда, медпрепараты, подъёмная работа) — отдельный продукт на /humanitarian и /legal/humanitarian, это не грант при регистрации.",
     welcomeGrantAlso: "Открыть аккаунт или связанные уведомления:",
+    humanitarianKicker: "Юридическое / гуманитарное",
+    humanitarianTitle: "Стол гуманитарной помощи и листинги Красного Креста / Красного Полумесяца",
+    humanitarianIntro:
+      "Как ANCAP описывает ACP-брифы гуманитарной помощи и передачу национальным обществам Красного Креста / Красного Полумесяца. ANCAP не зарегистрированная благотворительная организация и не заявляет подписанное партнёрство с МККК, МФКК или национальным обществом, пока датированное соглашение не опубликовано здесь.",
+    hum1Title: "1. Роль платформы",
+    hum1Body:
+      "ANCAP — ACP-first программная платформа. На /humanitarian продаются брифы помощи и инструменты передачи партнёру, расчёты в ACP. ANCAP не является благотворительной организацией по Федеральному закону РФ № 135-ФЗ от 11.08.1995, не общественно-полезной / gemeinnützig организацией, не UK charity и не 501(c)(3) США. Оплата ACP не делает пользователя жертвователем ANCAP как НКО.",
+    hum2Title: "2. Движение Красного Креста / Красного Полумесяца",
+    hum2Body:
+      "Международное движение состоит из МККК, МФКК и национальных обществ — это разные компоненты. Листинг МФКК или Российского, Украинского, Немецкого, Американского Красного Креста — рейл на официальные сайты, не членство в Движении, не агентский фандрайзинг-контракт, не одобрение МККК и не утверждение, что ANCAP «это Красный Крест». Пока MoU не опубликован, official_partnership = false.",
+    hum3Title: "3. Что оплачивает ACP",
+    hum3Body:
+      "ACP на этом столе оплачивает бриф и вклад в передачу партнёрскому каналу: экстренное питание, питьевая вода, продовольствие, тёплая одежда, медпрепараты через лицензированные каналы, подбор подъёмной работы. ANCAP не держит склады, не водит скорую и не эксплуатирует WASH-бригады. Цены from — не налоговая квитанция и не гарантия пайка, одежды, лекарства или рабочего места.",
+    hum4Title: "4. Отличие от гранта при регистрации",
+    hum4Body:
+      "100 ACP при регистрации — промо-доступ к платформе, явно не благотворительность. Нельзя смешивать /legal/welcome-grant и /legal/humanitarian. Смешение в рекламе вводит в заблуждение по 38-ФЗ и UCPD Annex I п. 22 (ложное впечатление благотворительной цели).",
+    hum5Title: "5. Эмблемы и Женевские конвенции",
+    hum5Body:
+      "Красный крест, красный полумесяц и красный кристалл — охраняемые отличительные знаки по Женевским конвенциям 1949 г. и Дополнительным протоколам. У ANCAP нет лицензии использовать их как логотип, иконку приложения или значок оплаты. Сайт использует текстовые названия и ссылки на официальные домены. emblem_licensed = false.",
+    hum6Title: "6. Медицинские препараты",
+    hum6Body:
+      "Брифы по медпрепаратам — только лицензированные / партнёрские каналы. ANCAP не аптека, не интернет-аптека, не выписывает рецепты и не даёт медицинских советов. Контролируемые вещества, нелицензированный оборот лекарств и DIY-протоколы запрещены. Правила здравоохранения и таможни партнёра определяют, что можно отгрузить.",
+    hum7Title: "7. Подъёмная работа",
+    hum7Body:
+      "Подбор подъёмной работы — бриф в партнёрские программы. ANCAP не лицензированное кадровое агентство во всех юрисдикциях, не спонсор визы и не гарантирует работу, зарплату или разрешение на труд. Нельзя рекламировать «гарантированное трудоустройство».",
+    hum8Title: "8. Российская Федерация",
+    hum8Body:
+      "Благотворительная деятельность регулируется 135-ФЗ. Ст. 582 ГК (пожертвование) — отдельный гражданско-правовой дар дозволенному одаряемому; списание ACP в леджере ANCAP само по себе таким даром не является, пока зарегистрированная charity отдельно не выдаст квитанцию. Реклама, что ANCAP — благотворительная организация или что платежи ACP автоматически дают налоговый вычет, запрещена (38-ФЗ). Программы национального общества остаются программами Российского Красного Креста, не ANCAP.",
+    hum9Title: "9. ЕС, Великобритания, США и налоговые квитанции",
+    hum9Body:
+      "UCPD 2005/29/EC Annex I п. 22 и Директива об электронной коммерции 2000/31/EC ст. 6: коммерческие сообщения не должны создавать ложного впечатления благотворительной цели или действий от имени гуманитарной организации. Аналогично DE UWG, FR Code de la consommation, UK CPRs 2008, US FTC Act §5. IRC §170 / Gift Aid / Zuwendungsbestätigung требуют квитанции квалифицированного получателя — запись ACP в ANCAP ею не является. MiCA: этот стол не публичное предложение криптоактива.",
+    hum10Title: "10. Контакты",
+    hum10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /humanitarian. Связанные страницы: /legal/welcome-grant, /legal/terms, /legal/risk. Официальные сайты Движения: https://www.ifrc.org/ и домены национальных обществ на столе. Страница — раскрытие оператора, не лицензированный юридический, налоговый или медицинский совет.",
+    humanitarianAlso: "Связанные уведомления и официальные сайты:",
     cyberKicker: "Юридическая / публичная политика",
     cyberTitle: "Поддержка ANCAP коллективной киберзащиты",
     cyberIntro: "ANCAP публично согласна с открытым письмом OpenAI «A call for collective action on cyber defense». Эта страница — юридическое и политическое заявление. Она не заменяет Пользовательское соглашение, Privacy Notice или Cookie Policy.",
@@ -804,6 +893,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Риски",
     footerRefunds: "Возвраты",
     footerWelcomeGrant: "Грант 100 ACP",
+    footerHumanitarian: "Помощь",
     footerVetRegen: "Вет-реген",
     footerClarity: "CLARITY Act",
     authAgreePrefix: "Я соглашаюсь с",
@@ -821,6 +911,7 @@ export const legalByLang: Record<Language, Tree> = {
     riskLink: "Розкриття ризиків",
     refundsLink: "Платежі та повернення",
     welcomeGrantLink: "Грант при реєстрації",
+    humanitarianLink: "Гуманітарна допомога",
     hubLink: "Юридичний центр",
     complianceLink: "Комплаєнс",
     contactLegal: "legal@ancap.cloud",
@@ -946,6 +1037,8 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
     hubCardWelcomeGrant:
       "100 ACP при реєстрації — промо-кредит доступу (номінальна мітка $100), не пожертва, не виплата USD, не податкове відрахування.",
+    hubCardHumanitarian:
+      "ACP-брифи щодо їжі, води, харчування, теплого одягу, медпрепаратів і підйомної роботи — лістинги товариств Червоного Хреста / Червоного Півмісяця, не підписаний контракт з МКЧХ/МФЧХ і не благодійна організація за 135-ФЗ.",
     hubCardCyber: "Публічна підтримка колективного кіберзахисту.",
     hubCardClarity: "Повна згода з U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-safe messaging та нотатки щодо on-ramp / bridge.",
@@ -996,6 +1089,9 @@ export const legalByLang: Record<Language, Tree> = {
     t20Title: "20. Рейли довголіття, друку органів і ветеринарії",
     t20Body:
       "Workflow AETERNA і кріо-стола продають аналіз, брифи та передачу ліцензованим партнерам. Це не медичне і не ветеринарне лікування, не виведені на ринок медичні вироби і не обіцянка, що органи надрукуються чи тканини оживуть. Не можна використовувати ANCAP, щоб отримати wet-lab протоколи, CRISPR-дизайн, синтез генів, рецепти LNP або неліцензовані процедури над людьми чи тваринами. Див. /legal/vet-regen.",
+    t21Title: "21. Стіл гуманітарної допомоги",
+    t21Body:
+      "Стіл /humanitarian продає ACP-брифи та передачу партнерам (їжа, вода, харчування, теплий одяг, медпрепарати через ліцензовані канали, підбір підйомної роботи). ANCAP не є благодійною організацією за 135-ФЗ. Лістинг МФЧХ або національного товариства — не підписане партнерство і не ліцензія емблеми. ACP на цьому столі не податкове відрахування, доки зареєстрована charity окремо не видасть квитанцію. Окремо від гранту 100 ACP. Див. /legal/humanitarian.",
     privacyKicker: "Повідомлення про конфіденційність",
     privacyTitle: "Як ANCAP обробляє дані клієнтів",
     privacyIntro: "Це Повідомлення пояснює обробку персональних даних оператором ANCAP на ancap.cloud.",
@@ -1057,6 +1153,9 @@ export const legalByLang: Record<Language, Tree> = {
     r8Title: "8. Ризик результату довголіття, друку органів і ветеринарії",
     r8Body:
       "Рейли AETERNA (друк органа, кріо тканин кота, VET REGEN POD для собаки) можуть не відбутися або бути відхилені партнером. Ілюстрації концептуальні. Відсоток виживаності та повернення до життя не обіцяються.",
+    r9Title: "9. Ризик гуманітарної допомоги",
+    r9Body:
+      "Гуманітарні брифи можуть бути затримані або відхилені національним товариством. ANCAP сам не доставляє їжу, воду, одяг, ліки і не працевлаштовує. Лістинг — не підписане партнерство з Червоним Хрестом і не податкове відрахування. Див. /legal/humanitarian.",
     riskMarketDataMore: "Повне розкриття щодо ринкових даних:",
     p9Title: "9. Провайдери ринкових даних",
     p9Body: "ANCAP може викликати CoinGecko API для орієнтовних котирувань. Запити йдуть із серверними ключами і зазвичай без вашого пароля.",
@@ -1134,8 +1233,43 @@ export const legalByLang: Record<Language, Tree> = {
       "Грант не повертається фіатом. Шахрайські акаунти можуть бути закриті зі скасуванням кредиту. Імперативні права споживача ЄС на відмову від пізнішої платної цифрової послуги, де вони застосовні, грантом не зачіпаються.",
     wg12Title: "12. Це не юридична консультація",
     wg12Body:
-      "Сторінка — розкриття оператора, не порада користувачу щодо податків чи ліцензована юридична консультація в ЄС/ЄЕЗ/Великій Британії. Питання: legal@ancap.cloud.",
+      "Сторінка — розкриття оператора, не порада користувачу щодо податків чи ліцензована юридична консультація в ЄС/ЄЕЗ/Великій Британії. Питання: legal@ancap.cloud. Гуманітарні брифи — окремий продукт на /humanitarian і /legal/humanitarian, це не грант при реєстрації.",
     welcomeGrantAlso: "Відкрити акаунт або пов’язані повідомлення:",
+    humanitarianKicker: "Юридичне / гуманітарне",
+    humanitarianTitle: "Стіл гуманітарної допомоги та лістинги Червоного Хреста / Червоного Півмісяця",
+    humanitarianIntro:
+      "Як ANCAP описує ACP-брифи гуманітарної допомоги та передачу національним товариствам Червоного Хреста / Червоного Півмісяця. ANCAP не зареєстрована благодійна організація і не заявляє підписане партнерство з МКЧХ, МФЧХ чи національним товариством, доки датоване узгодження не опубліковано тут.",
+    hum1Title: "1. Роль платформи",
+    hum1Body:
+      "ANCAP — ACP-first програмна платформа. На /humanitarian продаються брифи допомоги та інструменти передачі партнеру. ANCAP не є благодійною організацією за 135-ФЗ РФ, не UK charity і не 501(c)(3) США. Оплата ACP не робить користувача жертводавцем ANCAP як НКО.",
+    hum2Title: "2. Рух Червоного Хреста / Червоного Півмісяця",
+    hum2Body:
+      "МКЧХ, МФЧХ і національні товариства — різні компоненти. Лістинг МФЧХ або національного товариства — рейл на офіційні сайти, не членство в Русі, не агентський контракт і не схвалення МКЧХ. Поки MoU не опубліковано, official_partnership = false.",
+    hum3Title: "3. Що оплачує ACP",
+    hum3Body:
+      "ACP на цьому столі оплачує бриф і внесок у передачу партнерському каналу: їжа, питна вода, харчі, теплий одяг, медпрепарати через ліцензовані канали, підбір підйомної роботи. ANCAP не тримає склади і не гарантує пайку, ліки чи робоче місце.",
+    hum4Title: "4. Відмінність від гранту при реєстрації",
+    hum4Body:
+      "100 ACP при реєстрації — промо-доступ, явно не благодійність. Не змішуйте /legal/welcome-grant і /legal/humanitarian (38-ФЗ / UCPD Annex I п. 22).",
+    hum5Title: "5. Емблеми та Женевські конвенції",
+    hum5Body:
+      "Червоний хрест, червоний півмісяць і червоний кристал охороняються Женевськими конвенціями 1949 р. У ANCAP немає ліцензії використовувати їх як логотип. Сайт використовує текстові назви. emblem_licensed = false.",
+    hum6Title: "6. Медичні препарати",
+    hum6Body:
+      "Брифи щодо медпрепаратів — лише ліцензовані / партнерські канали. ANCAP не аптека, не виписує рецепти і не дає медичних порад. Контрольовані речовини та неліцензований обіг ліків заборонені.",
+    hum7Title: "7. Підйомна робота",
+    hum7Body:
+      "Підбір підйомної роботи — бриф у партнерські програми. ANCAP не ліцензоване кадрове агентство в усіх юрисдикціях і не гарантує роботу, зарплату чи дозвіл на працю.",
+    hum8Title: "8. Російська Федерація / суміжне право",
+    hum8Body:
+      "135-ФЗ і ст. 582 ЦК РФ: списання ACP у леджері ANCAP саме по собі не є пожертвою, доки зареєстрована charity окремо не видасть квитанцію. Реклама, що ANCAP — благодійна організація, заборонена (38-ФЗ).",
+    hum9Title: "9. ЄС, Велика Британія, США та податкові квитанції",
+    hum9Body:
+      "UCPD 2005/29/EC Annex I п. 22, e-Commerce Directive ст. 6, UK CPRs, US FTC Act §5, IRC §170: комерційні повідомлення не повинні створювати хибне враження благодійної мети. Запис ACP в ANCAP не є квитанцією qualified organisation.",
+    hum10Title: "10. Контакти",
+    hum10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /humanitarian. Пов’язані сторінки: /legal/welcome-grant. Офіційний сайт: https://www.ifrc.org/. Це розкриття оператора, не ліцензована юридична, податкова чи медична порада.",
+    humanitarianAlso: "Пов’язані повідомлення та офіційні сайти:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -1211,6 +1345,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Ризики",
     footerRefunds: "Повернення",
     footerWelcomeGrant: "Грант 100 ACP",
+    footerHumanitarian: "Допомога",
     footerVetRegen: "Вет-реген",
     authAgreePrefix: "Я погоджуюсь з",
     authAgreeAnd: "і",
@@ -1227,6 +1362,7 @@ export const legalByLang: Record<Language, Tree> = {
     riskLink: "Risikohinweis",
     refundsLink: "Zahlungen & Erstattungen",
     welcomeGrantLink: "Willkommenszuschuss",
+    humanitarianLink: "Humanitäre Hilfe",
     hubLink: "Rechtszentrum",
     complianceLink: "Compliance",
     contactLegal: "legal@ancap.cloud",
@@ -1352,6 +1488,8 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
       "100 ACP bei der Registrierung ist ein Promo-Zugangskredit (nominelles $100-Label), keine Spende, keine USD-Auszahlung, nicht steuerlich absetzbar.",
+    hubCardHumanitarian:
+      "ACP-Briefings zu Nahrung, Wasser, Ernährung, warmer Kleidung, Medizinprodukten und Existenzsicherung — Desk-Listings von Rotkreuz-/Rothalbmond-Gesellschaften, kein unterzeichneter IKRK/IFRK-Vertrag und keine 135-FZ-Wohltätigkeitsorganisation.",
     hubCardCyber: "Öffentliche Unterstützung kollektiver Cyberabwehr.",
     hubCardClarity: "Volle Zustimmung zum U.S. Digital Asset Market Clarity Act (CLARITY Act).",
     hubCardCompliance: "MiCA-sichere Botschaften und On-Ramp-/Bridge-Hinweise.",
@@ -1402,6 +1540,9 @@ export const legalByLang: Record<Language, Tree> = {
     t20Title: "20. Longevity-, Organdruck- und Veterinärschienen",
     t20Body:
       "AETERNA- und Kryo-Workflows verkaufen Analysen, Briefings und lizenzierte Partner-Übergaben. Sie sind keine medizinische oder veterinärmedizinische Behandlung, keine in Verkehr gebrachten Medizinprodukte und kein Versprechen, dass Organe gedruckt oder Gewebe wiederbelebt werden. ANCAP darf nicht genutzt werden, um Nasslabor-Protokolle, CRISPR-Designs, Gensynthese, LNP-Rezepte oder unlizenzierte Eingriffe an Mensch oder Tier zu erhalten. Siehe /legal/vet-regen.",
+    t21Title: "21. Humanitärer Hilfsdesk",
+    t21Body:
+      "Der Desk /humanitarian verkauft ACP-Briefings und Partner-Übergaben (Nahrung, Wasser, Ernährung, warme Kleidung, Medizinprodukte über lizenzierte Kanäle, Existenzsicherung). ANCAP ist keine gemeinnützige Organisation nach RF 135-FZ und keine steuerbefreite Charity in EU/UK/US. Ein Listing von IFRK oder einer nationalen Rotkreuzgesellschaft ist keine unterzeichnete Partnerschaft und keine Emblem-Lizenz. ACP auf diesem Desk ist keine steuerlich absetzbare Spende, solange eine anerkannte Empfängerin keine Zuwendungsbestätigung ausstellt. Getrennt vom 100-ACP-Willkommenszuschuss. Siehe /legal/humanitarian.",
     privacyKicker: "Datenschutzhinweis",
     privacyTitle: "Wie ANCAP Kundendaten verarbeitet",
     privacyIntro: "Dieser Hinweis erklärt die Verarbeitung personenbezogener Daten durch den ANCAP-Betreiber von ancap.cloud.",
@@ -1463,6 +1604,9 @@ export const legalByLang: Record<Language, Tree> = {
     r8Title: "8. Ergebnisrisiko Longevity, Organdruck und Veterinär",
     r8Body:
       "AETERNA-Schienen (Organdruck, feliner Kryo, canine VET REGEN POD) können scheitern oder vom Partner abgelehnt werden. Illustrationen sind konzeptionell. Keine Überlebensquote und keine Rückkehr ins Leben wird versprochen.",
+    r9Title: "9. Risiko humanitärer Hilfe",
+    r9Body:
+      "Humanitäre Briefings können von einer nationalen Gesellschaft verzögert oder abgelehnt werden. ANCAP liefert selbst keine Nahrung, kein Wasser, keine Kleidung, keine Arzneimittel und keine Arbeitsplätze. Ein Desk-Listing ist keine unterzeichnete Rotkreuz-Partnerschaft und keine steuerlich absetzbare Spende. Siehe /legal/humanitarian.",
     riskMarketDataMore: "Vollständige Marktdaten-Offenlegung:",
     p9Title: "9. Marktdaten-Anbieter",
     p9Body: "ANCAP kann CoinGecko-APIs für indikative Kurse nutzen. Anfragen verwenden Server-Credentials.",
@@ -1540,8 +1684,43 @@ export const legalByLang: Record<Language, Tree> = {
       "Der Zuschuss ist nicht als Fiat erstattbar. Betrügerische oder doppelte Konten können geschlossen und die Gutschrift storniert werden. Bezahlte Läufe folgen Zahlungen & Erstattungen. Zwingende EU-Widerrufsrechte bei späteren entgeltlichen digitalen Dienstleistungen, soweit sie gelten, bleiben unberührt.",
     wg12Title: "12. Keine Rechtsberatung",
     wg12Body:
-      "Dieser Hinweis ist eine Betreiberoffenlegung, keine Steuer-, NPO- oder zugelassene Rechtsberatung für Nutzer in der EU/EWR/UK oder anderswo. Fragen: legal@ancap.cloud.",
+      "Dieser Hinweis ist eine Betreiberoffenlegung, keine Steuer-, NPO- oder zugelassene Rechtsberatung für Nutzer in der EU/EWR/UK oder anderswo. Fragen: legal@ancap.cloud. Humanitäre Briefings sind ein separates Produkt unter /humanitarian und /legal/humanitarian — nicht dieser Willkommenszuschuss.",
     welcomeGrantAlso: "Konto eröffnen oder verwandte Hinweise lesen:",
+    humanitarianKicker: "Rechtliches / humanitär",
+    humanitarianTitle: "Humanitärer Hilfsdesk und Rotkreuz-/Rothalbmond-Listings",
+    humanitarianIntro:
+      "Wie ANCAP ACP-abgerechnete humanitäre Briefings und Partner-Übergaben an nationale Rotkreuz-/Rothalbmond-Gesellschaften rahmt. ANCAP ist keine eingetragene Wohltätigkeitsorganisation und behauptet keine unterzeichnete IKRK-, IFRK- oder nationale Partnerschaft, solange keine datierte Vereinbarung hier veröffentlicht ist.",
+    hum1Title: "1. Plattformrolle",
+    hum1Body:
+      "ANCAP betreibt eine ACP-first-Softwareplattform. Unter /humanitarian verkauft sie Hilfsbriefings und Partner-Übergabe-Tools, abgerechnet in ACP. ANCAP ist keine благотворительная организация nach RF 135-FZ, keine gemeinnützige Körperschaft, keine UK-Charity und keine US-501(c)(3)-Organisation. Die Zahlung von ACP macht den Nutzer nicht zum Spender an ANCAP als NPO.",
+    hum2Title: "2. Rotkreuz-/Rothalbmond-Bewegung",
+    hum2Body:
+      "IKRK, IFRK und Nationalgesellschaften sind verschiedene Komponenten. Ein Desk-Listing der IFRK oder des DRK/RRK/URCS/ARC ist eine Handoff-Schiene zu offiziellen Websites — keine Mitgliedschaft in der Bewegung, kein Fundraising-Agenturvertrag und keine IKRK-Unterstützung. Bis ein datiertes MoU hier steht, gilt official_partnership = false.",
+    hum3Title: "3. Wofür ACP zahlt",
+    hum3Body:
+      "ACP auf diesem Desk zahlt ein Briefing und einen Beitrag zur Partnerkanal-Übergabe: Notnahrung, Trinkwasser, Ernährung/Lebensmittel, warme Kleidung, Medizinprodukte über lizenzierte Kanäle, Existenzsicherung / Starthilfe zur Arbeit. ANCAP lagert keine Güter und garantiert keine Ration, kein Arzneimittel und keinen Arbeitsplatz.",
+    hum4Title: "4. Getrennt vom Willkommenszuschuss",
+    hum4Body:
+      "Die 100 ACP bei Registrierung sind Promo-Zugang, ausdrücklich keine Wohltätigkeit. /legal/welcome-grant und /legal/humanitarian dürfen in der Werbung nicht vermischt werden (UCPD Anhang I Nr. 22, RF 38-FZ).",
+    hum5Title: "5. Embleme und Genfer Abkommen",
+    hum5Body:
+      "Rotes Kreuz, Roter Halbmond und Roter Kristall sind geschützte Kennzeichen der Genfer Abkommen von 1949. ANCAP ist nicht lizenziert, sie als Logo, App-Icon oder Zahlungsbadge zu führen. Nur Textnamen und Offizialdomains. emblem_licensed = false.",
+    hum6Title: "6. Medizinische Güter",
+    hum6Body:
+      "Briefings zu medizinischen Gütern gelten nur für lizenzierte Partnerkanäle. ANCAP ist keine Apotheke, stellt keine Rezepte aus und erteilt keine medizinische Beratung. Betäubungsmittel und unlizenzierter Arzneimittelvertrieb sind verboten.",
+    hum7Title: "7. Existenzsicherung / Arbeit",
+    hum7Body:
+      "Matching zur Existenzsicherung ist ein Briefing an Partnerprogramme. ANCAP ist nicht in jedem Land eine zugelassene Arbeitsvermittlung und garantiert keinen Job, Lohn oder Aufenthaltstitel.",
+    hum8Title: "8. Russische Föderation",
+    hum8Body:
+      "135-FZ und Art. 582 ZGB RF: ein ACP-Ledger-Eintrag ist keine Spende, solange eine registrierte Charity nicht separat quittiert. Werbung, ANCAP sei selbst eine Wohltätigkeitsorganisation, ist unzulässig (38-FZ).",
+    hum9Title: "9. EU, UK, US und Spendenbescheinigungen",
+    hum9Body:
+      "UCPD 2005/29/EG Anhang I Nr. 22, E-Commerce-RL Art. 6, UWG, UK CPRs, US FTC Act §5, IRC §170: kommerzielle Mitteilungen dürfen keinen falschen Wohltätigkeitseindruck erzeugen. Eine ANCAP-ACP-Buchung ist keine Zuwendungsbestätigung.",
+    hum10Title: "10. Kontakt",
+    hum10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /humanitarian. Verwandt: /legal/welcome-grant. Offiziell: https://www.ifrc.org/. Diese Seite ist Betreiberoffenlegung, keine zugelassene Rechts-, Steuer- oder medizinische Beratung.",
+    humanitarianAlso: "Verwandte Hinweise und offizielle Sites:",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -1617,6 +1796,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "Risiken",
     footerRefunds: "Erstattungen",
     footerWelcomeGrant: "Willkommenszuschuss",
+    footerHumanitarian: "Hilfsdesk",
     footerVetRegen: "Vet-Regen",
     authAgreePrefix: "Ich stimme den",
     authAgreeAnd: "und der",
@@ -1633,6 +1813,7 @@ export const legalByLang: Record<Language, Tree> = {
     riskLink: "風險揭露",
     refundsLink: "付款與退款",
     welcomeGrantLink: "註冊贈與額度",
+    humanitarianLink: "人道援助",
     hubLink: "法律中心",
     complianceLink: "合規",
     contactLegal: "legal@ancap.cloud",
@@ -1757,6 +1938,8 @@ export const legalByLang: Record<Language, Tree> = {
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",
     hubCardWelcomeGrant:
       "註冊時 100 ACP 為促銷使用額度（名義 $100 標示），非捐款、非美元現金、不可抵稅。",
+    hubCardHumanitarian:
+      "以 ACP 結算之糧食、飲水、營養、保暖衣物、醫藥用品與謀生媒合簡報——紅十字／紅新月國家會社桌面列名，非已簽署之紅十字國際委員會／紅十字與紅新月會國際聯合會合約，亦非 135-FZ 慈善機構。",
     hubCardCyber: "公開支持集體網路防禦。",
     hubCardClarity: "完全同意美國 Digital Asset Market Clarity Act（CLARITY Act）。",
     hubCardCompliance: "MiCA 安全表述與 on-ramp／橋接風險說明。",
@@ -1807,6 +1990,9 @@ export const legalByLang: Record<Language, Tree> = {
     t20Title: "20. 長壽、器官列印與獸醫軌道",
     t20Body:
       "AETERNA 與冷凍服務台工作流程出售分析、簡報與持照夥伴交接。非醫療或獸醫治療、非已上市醫療器材，亦不保證器官列印或組織復活。不得利用 ANCAP 取得濕實驗協議、CRISPR 設計、基因合成、LNP 配方或對人或動物的未授權處置。見 /legal/vet-regen。",
+    t21Title: "21. 人道援助服務台",
+    t21Body:
+      "/humanitarian 服務台出售 ACP 簡報與夥伴交接（糧食、飲水、營養、保暖衣物、經持照通路之醫藥用品、謀生媒合）。ANCAP 非 135-FZ 慈善機構，亦非歐盟／英國／美國之免稅慈善。IFRC 或國家紅十字會社列名非已簽署夥伴關係、非標誌授權。此台 ACP 不可抵稅，除非合格慈善機構另行開立收據。與 100 ACP 註冊贈與額度有別。見 /legal/humanitarian。",
     privacyKicker: "隱私權聲明",
     privacyTitle: "ANCAP 如何處理客戶資料",
     privacyIntro: "本聲明說明 ancap.cloud 之 ANCAP 平台營運者如何處理個人資料。",
@@ -1868,6 +2054,9 @@ export const legalByLang: Record<Language, Tree> = {
     r8Title: "8. 長壽、器官列印與獸醫結果風險",
     r8Body:
       "AETERNA 軌道（器官列印、貓組織冷凍、犬用 VET REGEN POD）可能失敗或被夥伴拒絕。插圖為概念。不承諾存活率或起死回生。",
+    r9Title: "9. 人道援助風險",
+    r9Body:
+      "人道簡報可能被國家會社延遲或拒絕。ANCAP 本身不運送糧食、飲水、衣物、藥品，亦不提供職位。桌面列名非已簽署之紅十字夥伴關係，亦非可抵稅捐款。見 /legal/humanitarian。",
     riskMarketDataMore: "完整市場數據揭露：",
     p9Title: "9. 市場數據供應商",
     p9Body: "ANCAP 可能呼叫 CoinGecko API 顯示參考行情；請求使用伺服器憑證。",
@@ -1945,8 +2134,43 @@ export const legalByLang: Record<Language, Tree> = {
       "本贈與不以法幣退還。詐欺或重複帳戶可能被關閉並撤銷點數。付費執行依付款與退款政策。嗣後付費數位服務的歐盟強制撤回權（如依法適用）不受影響。",
     wg12Title: "12. 非法律意見",
     wg12Body:
-      "本頁為營運方揭露，非對歐盟／歐洲經濟區／英國或其他地區使用者的稅務、慈善申報或執業法律意見。詢問：legal@ancap.cloud。",
+      "本頁為營運方揭露，非對歐盟／歐洲經濟區／英國或其他地區使用者的稅務、慈善申報或執業法律意見。詢問：legal@ancap.cloud。人道援助簡報為獨立產品，見 /humanitarian 與 /legal/humanitarian，並非本註冊贈與額度。",
     welcomeGrantAlso: "開立帳戶或閱讀相關說明：",
+    humanitarianKicker: "法律／人道",
+    humanitarianTitle: "人道援助服務台與紅十字／紅新月列名",
+    humanitarianIntro:
+      "ANCAP 如何說明以 ACP 結算之人道簡報，以及向紅十字／紅新月國家會社之夥伴交接。ANCAP 非登記慈善機構，且未主張已簽署紅十字國際委員會、紅十字與紅新月會國際聯合會或國家會社夥伴關係，除非本頁公布載明日期之協議。",
+    hum1Title: "1. 平台角色",
+    hum1Body:
+      "ANCAP 營運 ACP 優先之軟體平台。於 /humanitarian 出售援助簡報與夥伴交接工具，以 ACP 結算。ANCAP 非俄羅斯 135-FZ 慈善組織、非公益法人、非英國 charity、非美國 501(c)(3)。支付 ACP 並不使使用者成為對 ANCAP 作為慈善機構之捐款人。",
+    hum2Title: "2. 紅十字／紅新月運動",
+    hum2Body:
+      "紅十字國際委員會、紅十字與紅新月會國際聯合會與國家會社為不同組成。聯合會或俄／烏／德／美紅十字列名僅為官方網站交接軌道，非運動成員身分、非募款代理合約、亦非紅十字國際委員會背書。在本頁公布載明日期之備忘錄前，official_partnership 為 false。",
+    hum3Title: "3. ACP 所支付者",
+    hum3Body:
+      "此台 ACP 支付簡報及對夥伴通路交接之貢獻：緊急糧食、安全飲水、營養／食品、保暖衣物、經持照通路之醫藥用品、謀生／起步工作媒合。ANCAP 不倉儲物資，亦不保證配給、藥品或職位。",
+    hum4Title: "4. 與註冊贈與額度有別",
+    hum4Body:
+      "註冊 100 ACP 為促銷平台使用額度，明確非慈善。廣告上不得將 /legal/welcome-grant 與 /legal/humanitarian 混為一談（UCPD 附件一第 22 點、俄羅斯 38-FZ）。",
+    hum5Title: "5. 標誌與日內瓦公約",
+    hum5Body:
+      "紅十字、紅新月與紅水晶為 1949 年日內瓦公約之受保護識別標誌。ANCAP 未獲授權將其作為標誌、應用程式圖示或付款徽章。本站僅使用文字名稱與官方網域。emblem_licensed 為 false。",
+    hum6Title: "6. 醫藥用品",
+    hum6Body:
+      "醫藥用品簡報僅適用持照／夥伴通路。ANCAP 非藥局、不開立處方、不提供醫療建議。管制藥品與未授權藥品流通均禁止。",
+    hum7Title: "7. 謀生／起步工作",
+    hum7Body:
+      "謀生媒合為對夥伴方案之簡報。ANCAP 並非各國持照就業仲介，亦不保證職位、薪資或工作許可。",
+    hum8Title: "8. 俄羅斯聯邦",
+    hum8Body:
+      "135-FZ 與民法典第 582 條：ANCAP 帳本之 ACP 扣帳本身並非捐贈，除非登記慈善機構另行開立收據。宣傳 ANCAP 本身為慈善機構為違法廣告（38-FZ）。",
+    hum9Title: "9. 歐盟、英國、美國與抵稅收據",
+    hum9Body:
+      "UCPD 2005/29/EC 附件一第 22 點、電子商務指令第 6 條、英國 CPRs、美國 FTC 法第 5 條、IRC §170：商業通訊不得造成慈善目的之虛假印象。ANCAP ACP 分錄並非合格機構收據。",
+    hum10Title: "10. 聯絡",
+    hum10Body:
+      "法律通知：legal@ancap.cloud。產品：/humanitarian。相關：/legal/welcome-grant。官方網站：https://www.ifrc.org/。本頁為營運方揭露，非執業法律、稅務或醫療意見。",
+    humanitarianAlso: "相關說明與官方網站：",
     cyberKicker: "Legal / public policy",
     cyberTitle: "ANCAP endorsement of collective cyber defense",
     cyberIntro: "ANCAP publicly agrees with the OpenAI open letter \"A call for collective action on cyber defense\" and the global surge it asks for. This page is the company's legal and policy statement of that agreement. It does not replace the User Agreement, Privacy Notice, or Cookie Policy.",
@@ -2022,6 +2246,7 @@ export const legalByLang: Record<Language, Tree> = {
     footerRisk: "風險",
     footerRefunds: "退款",
     footerWelcomeGrant: "註冊贈與額度",
+    footerHumanitarian: "人道援助",
     footerVetRegen: "獸醫再生",
     authAgreePrefix: "我同意",
     authAgreeAnd: "與",

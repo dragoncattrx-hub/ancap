@@ -182,6 +182,10 @@ export function HomePage() {
                     <Link href="/legal/welcome-grant" style={{ color: "var(--accent)" }}>
                       {t("legal.welcomeGrantLink")}
                     </Link>
+                    {" · "}
+                    <Link href="/humanitarian" style={{ color: "var(--accent)" }}>
+                      {t("legal.humanitarianLink")}
+                    </Link>
                   </p>
                   <div className="action-cluster" style={{ marginBottom: 22 }}>
                     <Link href="/token-snapshot" className="btn btn-primary">

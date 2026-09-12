@@ -23,7 +23,7 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `57099a0`: Stripe live adapter configured, welcome grant, vet-regen rails). **Work-stop blockers: none.**
+As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `57099a0`: Stripe live adapter configured, welcome grant, vet-regen rails). **Humanitarian aid desk** (`/humanitarian`) is in-repo as ACP briefs + Red Cross / Red Crescent national-society listings — not a signed ICRC/IFRC contract. **Work-stop blockers: none.**
 
 The core platform is largely built. Active remaining work (not blockers):
 
@@ -68,6 +68,7 @@ Parallel trust/adoption track:
 | Governance / trust / anti-sybil architecture | **Substantially delivered** | Medium | `ROADMAP.md` | Important capability waves were built, but this does not imply whole-project release completion. |
 | Release hygiene / architecture cleanup | **Baseline done** | Medium | `MASTER_ROADMAP.md` | Deployment story cleanup, dependency consolidation, release workflow, and documentation-health cleanup are now baseline done; broader release closure still depends on the higher-priority top-line tails. |
 | Test posture | **Good baseline, not fully closed** | Medium-High | `MASTER_ROADMAP.md`, `PRODUCTION_ROADMAP.md` | Broad test coverage exists and real GitHub CI/E2E verification is green; the main remaining validation gaps are mobile real-device/native runs plus external/manual checks like live Stripe end-to-end. |
+| Humanitarian aid desk | **Shipped (honest listing)** | High | `MASTER_ROADMAP.md`, `/legal/humanitarian` | ACP briefs for food/water/nutrition/clothing/medical/livelihood with IFRC and national-society handoff listings. Not a 135-FZ charity, not an emblem licence, not a tax receipt. |
 
 ---
 

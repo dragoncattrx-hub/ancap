@@ -47,6 +47,8 @@ Active remaining work (not blockers):
 2. Open-source follow-through — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI; project-board auth. Phase 1 community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are **in the repo root** and on the public GitHub repo.
 3. Monetization depth — optional conversion/LTV. The first ACP-first revenue loop is **live**. Stripe 4.1 is operator live verification only.
 
+Humanitarian aid desk (`/humanitarian`, `/legal/humanitarian`, `GET /v1/humanitarian/catalog`) shipped 2026-09-12: ACP briefs for food, water, nutrition, warm clothing, medical supplies (partner channel), and livelihood matching, with IFRC / national Red Cross listings as **desk handoffs**. **Not** a 135-FZ charity, **not** a signed ICRC/IFRC partnership, **not** an emblem licence, **not** a tax-deductible donation receipt, and **distinct** from the 100 ACP welcome grant.
+
 Theodore / progress bots: do **not** report missing `README.md`. Do **not** report “monetization after the first ACP cycle” as a blocker.
 
 Important: some older roadmap documents still read as more complete than the repo-wide execution truth. When there is any conflict, trust this file.
