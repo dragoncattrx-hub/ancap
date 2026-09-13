@@ -354,63 +354,12 @@ export function Navigation() {
       />
 
       <div className="relative mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div
-          className={cn(
-            "flex items-start justify-between gap-2 sm:gap-3 lg:items-center",
-            isAuthenticated ? "min-h-[64px] py-2 lg:min-h-[72px] lg:py-2.5" : "min-h-[64px] py-2 lg:min-h-[68px]"
-          )}
-        >
-          <div className="flex min-w-0 shrink items-center gap-2 pt-1 sm:shrink-0 sm:gap-5 lg:pt-0">
+        <div className="flex min-h-[64px] items-center justify-between gap-2 py-2 sm:gap-3 lg:min-h-[60px]">
+          <div className="flex min-w-0 shrink items-center gap-2 sm:shrink-0 sm:gap-5">
             <BrandMark />
           </div>
 
-          <div className="hidden min-w-0 flex-1 lg:flex lg:items-center lg:px-2 xl:px-3">
-            {isAuthenticated ? (
-              <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
-                <nav className={navWrapRow} aria-label={t("nav.main")}>
-                  {primaryNav.map((item) => (
-                    <PillNavLink
-                      key={item.href}
-                      item={item}
-                      label={navItemLabel(item, t)}
-                      active={pathname === item.href}
-                      tier="primary"
-                    />
-                  ))}
-                </nav>
-                <nav
-                  className={cn(navWrapRow, "mt-1 border-t border-white/[0.06] pt-1")}
-                  aria-label={t("nav.system")}
-                >
-                  {secondaryNav.map((item) => (
-                    <PillNavLink
-                      key={item.href}
-                      item={item}
-                      label={navItemLabel(item, t)}
-                      active={pathname === item.href}
-                      tier="secondary"
-                    />
-                  ))}
-                </nav>
-              </div>
-            ) : (
-              <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
-                <nav className={navWrapRow} aria-label={t("nav.main")}>
-                  {publicNav.map((item) => (
-                    <PillNavLink
-                      key={item.href}
-                      item={item}
-                      label={navItemLabel(item, t)}
-                      active={!item.href.startsWith("/#") && pathname === item.href}
-                      tier="primary"
-                    />
-                  ))}
-                </nav>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden min-w-0 shrink-0 items-center gap-1.5 self-center sm:gap-2 lg:flex">
+          <div className="hidden min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 lg:flex">
             <Link href="/wallet/acp" className={actionAcp}>
               {t("nav.acpWallet")}
             </Link>
@@ -523,6 +472,53 @@ export function Navigation() {
               )}
             </button>
           </div>
+        </div>
+
+        {/* Full-width menu tray — wrap pills inside the field so nothing clips */}
+        <div className="hidden pb-2.5 lg:block">
+          {isAuthenticated ? (
+            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
+              <nav className={navWrapRow} aria-label={t("nav.main")}>
+                {primaryNav.map((item) => (
+                  <PillNavLink
+                    key={item.href}
+                    item={item}
+                    label={navItemLabel(item, t)}
+                    active={pathname === item.href}
+                    tier="primary"
+                  />
+                ))}
+              </nav>
+              <nav
+                className={cn(navWrapRow, "mt-1 border-t border-white/[0.06] pt-1")}
+                aria-label={t("nav.system")}
+              >
+                {secondaryNav.map((item) => (
+                  <PillNavLink
+                    key={item.href}
+                    item={item}
+                    label={navItemLabel(item, t)}
+                    active={pathname === item.href}
+                    tier="secondary"
+                  />
+                ))}
+              </nav>
+            </div>
+          ) : (
+            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
+              <nav className={navWrapRow} aria-label={t("nav.main")}>
+                {publicNav.map((item) => (
+                  <PillNavLink
+                    key={item.href}
+                    item={item}
+                    label={navItemLabel(item, t)}
+                    active={!item.href.startsWith("/#") && pathname === item.href}
+                    tier="primary"
+                  />
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 
