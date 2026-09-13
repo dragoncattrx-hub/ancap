@@ -62,6 +62,7 @@ class AeternaIntentKind(str, Enum):
     barsuk_quantum_pen_brief = "barsuk_quantum_pen_brief"
     teleport_earphones_brief = "teleport_earphones_brief"
     installation_project_brief = "installation_project_brief"
+    dna_pheromone_perfume_bottle = "dna_pheromone_perfume_bottle"
 
 
 class AeternaDnaSource(str, Enum):
@@ -338,5 +339,11 @@ class AeternaStatusPublic(BaseModel):
         "neonatal hyperbaric-chamber architecture (1.5–2.0 ATA literacy). Infographics are partner architecture "
         "— not infant formula sold by ANCAP, not a CE/FDA device, not home HBO, and not a guaranteed growth "
         "or infection-risk outcome."
+    )
+    dna_pheromone_perfume_note: str = (
+        "DNA-matched pheromone perfume is sold per bottle (1 vial). ANCAP settles ACP and issues a licensed "
+        "cosmetic / fragrance partner handoff that may use a DNA-vault content hash for olfactory-profile "
+        "literacy. Not a drug, not an aphrodisiac claim, not a guaranteed attraction outcome, not CE/FDA "
+        "pheromone medicine, and not genome bytes uploaded to ANCAP."
     )
 

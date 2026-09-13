@@ -410,7 +410,29 @@ export const aeternaByLang: Record<Language, Tree> = {
     ipStep4Title: "Handoff",
     ipStep4Body: "ACP buys a partner brief — not a plant title deed or device clearance.",
 
+    intent25Title: "DNA-matched pheromone perfume (1 bottle)",
+    intent25Body:
+      "Licensed cosmetic / fragrance partner fill informed by an optional DNA-vault hash — 8,900 ACP per bottle. Not a drug, not an aphrodisiac claim, not a guaranteed attraction outcome.",
 
+    ppfCta: "Buy 1 bottle",
+    ppfVaultCta: "Open DNA vault",
+    ppfLegalCta: "Perfume legal notice",
+    ppfKicker: "AETERNA · fragrance · DNA match literacy",
+    ppfTitle: "Pheromone perfume matched to your DNA",
+    ppfPrice: "8,900 ACP",
+    ppfUnit: "per 1 bottle",
+    ppfLead:
+      "One bottle at a time. Optional DNA-vault content hash informs olfactory-profile literacy for a licensed cosmetic partner who blends a pheromone-forward fragrance and fills a single vial.",
+    ppfDisclaimer:
+      "ANCAP does not compound drugs, does not upload genome bytes, does not claim aphrodisiac or attraction results, and does not sell CE/FDA pheromone medicine. Physical fill and labeling stay with the licensed fragrance partner after screening.",
+    ppfStep1Title: "Vault hash",
+    ppfStep1Body: "Optional local hash → olfactory theme literacy. No genome upload.",
+    ppfStep2Title: "Blend",
+    ppfStep2Body: "Pheromone-forward fragrance literacy with skin-safe carrier notes.",
+    ppfStep3Title: "1 bottle",
+    ppfStep3Body: "Sale unit is exactly one vial. Order again for the next bottle.",
+    ppfStep4Title: "Handoff",
+    ppfStep4Body: "ACP buys partner fill + brief — not a drug prescription.",
 
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
     vetTitle: "Grow and restore organs for companion animals",
@@ -886,7 +908,29 @@ export const aeternaByLang: Record<Language, Tree> = {
     ipStep4Title: "Передача",
     ipStep4Body: "ACP покупает бриф партнёра — не право на завод и не clearance устройства.",
 
+    intent25Title: "Духи с феромонами под ДНК (1 флакон)",
+    intent25Body:
+      "Лицензированный косметический / парфюмерный партнёрский розлив с учётом опционального хеша DNA-vault — 8 900 ACP за 1 флакон. Не лекарство, не афродизиак-клейм, не гарантия притяжения.",
 
+    ppfCta: "Купить 1 флакон",
+    ppfVaultCta: "Открыть DNA vault",
+    ppfLegalCta: "Юр. текст духов",
+    ppfKicker: "AETERNA · парфюм · грамотность ДНК-матча",
+    ppfTitle: "Духи с феромонами, подобранные по ДНК",
+    ppfPrice: "8 900 ACP",
+    ppfUnit: "за 1 флакон",
+    ppfLead:
+      "Продажа строго по одному флакону. Опциональный хеш DNA-vault задаёт грамотность обонятельного профиля для лицензированного косметического партнёра, который смешивает феромонный аромат и разливает один флакон.",
+    ppfDisclaimer:
+      "ANCAP не компаундит лекарства, не загружает геном, не обещает афродизиак или результат «притяжения» и не продаёт CE/FDA-феромонную медицину. Физический розлив и этикетка — у лицензированного парфюмерного партнёра после скрининга.",
+    ppfStep1Title: "Хеш vault",
+    ppfStep1Body: "Опциональный локальный хеш → грамотность арома-темы. Без загрузки генома.",
+    ppfStep2Title: "Смесь",
+    ppfStep2Body: "Феромонный аромат и безопасный для кожи носитель — literacy.",
+    ppfStep3Title: "1 флакон",
+    ppfStep3Body: "Единица продажи — ровно один флакон. Следующий — отдельный заказ.",
+    ppfStep4Title: "Handoff",
+    ppfStep4Body: "ACP оплачивает партнёрский розлив и бриф — не рецепт.",
 
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
     vetTitle: "Выращивание и восстановление органов для животных-компаньонов",
@@ -1345,7 +1389,29 @@ export const aeternaByLang: Record<Language, Tree> = {
     ipStep4Title: "Передача",
     ipStep4Body: "ACP купує бриф партнера — не титул заводу.",
 
+    intent25Title: "Парфуми з феромонами під ДНК (1 флакон)",
+    intent25Body:
+      "Ліцензований косметичний / парфумерний партнерський розлив з урахуванням опційного хешу DNA-vault — 8 900 ACP за 1 флакон. Не ліки, не афродизіак-клейм, не гарантія притягання.",
 
+    ppfCta: "Купити 1 флакон",
+    ppfVaultCta: "Відкрити DNA vault",
+    ppfLegalCta: "Юр. текст парфумів",
+    ppfKicker: "AETERNA · парфум · грамотність ДНК-матчу",
+    ppfTitle: "Парфуми з феромонами, підібрані за ДНК",
+    ppfPrice: "8 900 ACP",
+    ppfUnit: "за 1 флакон",
+    ppfLead:
+      "Продаж строго по одному флакону. Опційний хеш DNA-vault задає грамотність нюхового профілю для ліцензованого косметичного партнера, який змішує феромонний аромат і розливає один флакон.",
+    ppfDisclaimer:
+      "ANCAP не компаундить ліки, не завантажує геном, не обіцяє афродизіак або результат «притягання» і не продає CE/FDA-феромонну медицину. Фізичний розлив і етикетка — у ліцензованого парфумерного партнера після скринінгу.",
+    ppfStep1Title: "Хеш vault",
+    ppfStep1Body: "Опційний локальний хеш → грамотність арома-теми. Без завантаження геному.",
+    ppfStep2Title: "Суміш",
+    ppfStep2Body: "Феромонний аромат і безпечний для шкіри носій — literacy.",
+    ppfStep3Title: "1 флакон",
+    ppfStep3Body: "Одиниця продажу — рівно один флакон. Наступний — окреме замовлення.",
+    ppfStep4Title: "Handoff",
+    ppfStep4Body: "ACP оплачує партнерський розлив і бриф — не рецепт.",
 
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
     vetTitle: "Вирощування і відновлення органів для тварин-компаньйонів",
@@ -1804,7 +1870,29 @@ export const aeternaByLang: Record<Language, Tree> = {
     ipStep4Title: "Übergabe",
     ipStep4Body: "ACP kauft ein Partnerbriefing — kein Werktitel.",
 
+    intent25Title: "DNA-abgestimmtes Pheromon-Parfuem (1 Flasche)",
+    intent25Body:
+      "Lizenzierter Kosmetik- / Duftpartner-Abfuellung mit optionalem DNA-Vault-Hash — 8.900 ACP pro Flasche. Kein Arzneimittel, kein Aphrodisiakum-Claim, kein garantiertes Anziehungsergebnis.",
 
+    ppfCta: "1 Flasche kaufen",
+    ppfVaultCta: "DNA-Vault oeffnen",
+    ppfLegalCta: "Parfuem-Rechtshinweis",
+    ppfKicker: "AETERNA · Duft · DNA-Match-Literalitaet",
+    ppfTitle: "Pheromon-Parfuem nach Ihrer DNA",
+    ppfPrice: "8.900 ACP",
+    ppfUnit: "pro 1 Flasche",
+    ppfLead:
+      "Verkauf streng pro Flasche. Ein optionaler DNA-Vault-Hash informiert die olfaktorische Profil-Literalitaet fuer einen lizenzierten Kosmetikpartner, der eine pheromonbetonte Duftnote mischt und eine einzelne Flasche abfuellt.",
+    ppfDisclaimer:
+      "ANCAP compoundiert keine Arzneimittel, laedt keine Genomdaten hoch, verspricht kein Aphrodisiakum oder Anziehungsergebnis und verkauft keine CE/FDA-Pheromonmedizin. Abfuellung und Etikett bleiben beim lizenzierten Duftpartner nach Screening.",
+    ppfStep1Title: "Vault-Hash",
+    ppfStep1Body: "Optionaler lokaler Hash → Duft-Themen-Literalitaet. Kein Genom-Upload.",
+    ppfStep2Title: "Mischung",
+    ppfStep2Body: "Pheromonbetonter Duft mit hautsicherem Traeger — Literacy.",
+    ppfStep3Title: "1 Flasche",
+    ppfStep3Body: "Verkaufseinheit ist genau eine Flasche. Naechste = neuer Auftrag.",
+    ppfStep4Title: "Handoff",
+    ppfStep4Body: "ACP kauft Partner-Abfuellung + Brief — kein Rezept.",
 
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
     vetTitle: "Organzüchtung und -wiederherstellung für Haustiere",
@@ -2259,7 +2347,29 @@ export const aeternaByLang: Record<Language, Tree> = {
     ipStep4Title: "交接",
     ipStep4Body: "ACP 購買夥伴簡報 — 非廠房產權。",
 
+    intent25Title: "DNA 匹配費洛蒙香水（1 瓶）",
+    intent25Body:
+      "持照化妝品／香水夥伴灌裝，可選 DNA vault 雜湊參考 — 每瓶 8,900 ACP。非藥品、非催情宣稱、非保證吸引結果。",
 
+    ppfCta: "購買 1 瓶",
+    ppfVaultCta: "開啟 DNA vault",
+    ppfLegalCta: "香水法律聲明",
+    ppfKicker: "AETERNA · 香水 · DNA 匹配素養",
+    ppfTitle: "依 DNA 匹配的費洛蒙香水",
+    ppfPrice: "8,900 ACP",
+    ppfUnit: "每 1 瓶",
+    ppfLead:
+      "嚴格以單瓶販售。可選 DNA vault 內容雜湊提供嗅覺輪廓素養，由持照化妝品夥伴調配費洛蒙導向香調並灌裝單瓶。",
+    ppfDisclaimer:
+      "ANCAP 不調配藥品、不上傳基因組、不承諾催情或吸引結果，亦不販售 CE/FDA 費洛蒙藥品。實體灌裝與標籤留在通過審查的持照香水夥伴。",
+    ppfStep1Title: "Vault 雜湊",
+    ppfStep1Body: "可選本地雜湊 → 香調素養。無基因組上傳。",
+    ppfStep2Title: "調配",
+    ppfStep2Body: "費洛蒙導向香調與膚用載體 — literacy。",
+    ppfStep3Title: "1 瓶",
+    ppfStep3Body: "銷售單位恰為一瓶。下一瓶需另下單。",
+    ppfStep4Title: "交接",
+    ppfStep4Body: "ACP 購買夥伴灌裝與簡報 — 非處方。",
 
     vetKicker: "獸醫 · 持照診所 · 概念架構",
     vetTitle: "伴侶動物器官培養與復原",

@@ -57,6 +57,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-barsuk-quantum-pen",
     "aeterna-teleport-earphones",
     "aeterna-installation-project",
+    "aeterna-dna-pheromone-perfume",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -101,6 +102,8 @@ TELEPORT_SLUG = "aeterna-teleport-earphones"
 TELEPORT_PRICE_ACP = Decimal("58000")
 INSTALLATION_PROJECT_SLUG = "aeterna-installation-project"
 INSTALLATION_PROJECT_PRICE_ACP = Decimal("72000")
+DNA_PHEROMONE_PERFUME_SLUG = "aeterna-dna-pheromone-perfume"
+DNA_PHEROMONE_PERFUME_PRICE_ACP = Decimal("8900")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -224,6 +227,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.barsuk_quantum_pen_brief.value: BARSUK_SLUG,
     AeternaIntentKind.teleport_earphones_brief.value: TELEPORT_SLUG,
     AeternaIntentKind.installation_project_brief.value: INSTALLATION_PROJECT_SLUG,
+    AeternaIntentKind.dna_pheromone_perfume_bottle.value: DNA_PHEROMONE_PERFUME_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -553,6 +557,27 @@ INSTALLATION_PROJECT_META = {
     ),
 }
 
+DNA_PHEROMONE_PERFUME_META = {
+    "mode": "licensed_cosmetic_fragrance_partner",
+    "unit": "per_bottle",
+    "quantity": 1,
+    "price_acp": "8900",
+    "architecture": "dna_matched_pheromone_perfume_literacy",
+    "themes_literacy": [
+        "olfactory_profile_from_vault_hash",
+        "cosmetic_pheromone_blend_literacy",
+        "skin_safe_fragrance_carrier",
+        "partner_fill_and_label",
+    ],
+    "note": (
+        "Sale unit is exactly one bottle. ANCAP settles 8,900 ACP and issues a licensed cosmetic / "
+        "fragrance partner handoff. Optional DNA-vault content hash informs olfactory-profile literacy — "
+        "genome bytes are never uploaded. Not a drug, not an aphrodisiac medical claim, not a guaranteed "
+        "attraction or relationship outcome, not CE/FDA pheromone medicine, and not compounding of "
+        "controlled substances. Partner screening required."
+    ),
+}
+
 PULMOPURE_META = {
     "mode": "licensed_clinic_subscription",
     "unit": "monthly_protocol_retainer",
@@ -787,6 +812,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Installation Project listings are licensed neonatology / infant-nutrition partner intakes for "
             "high-protein milk-line and neonatal hyperbaric-chamber literacy. Infographics are conceptual — "
             "not formula sold by ANCAP, not a CE/FDA device, not home HBO, and not a guaranteed clinical outcome."
+        ),
+        dna_pheromone_perfume_note=(
+            "DNA-matched pheromone perfume is sold per bottle (8,900 ACP). Optional DNA-vault hash informs "
+            "olfactory-profile literacy for a licensed cosmetic partner fill — not a drug, not an aphrodisiac "
+            "claim, and not a guaranteed attraction outcome."
         ),
     )
 
@@ -1129,6 +1159,22 @@ async def create_intent_order(
             )
         for key, value in INSTALLATION_PROJECT_META.items():
             meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.dna_pheromone_perfume_bottle:
+        if slug and slug != DNA_PHEROMONE_PERFUME_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="dna_pheromone_perfume_bottle requires workflow_slug aeterna-dna-pheromone-perfume",
+            )
+        slug = DNA_PHEROMONE_PERFUME_SLUG
+        if body.budget_acp < DNA_PHEROMONE_PERFUME_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="dna_pheromone_perfume_bottle budget_acp must be at least 8900 ACP per bottle",
+            )
+        for key, value in DNA_PHEROMONE_PERFUME_META.items():
+            meta.setdefault(key, value)
+        meta["quantity"] = 1
+        meta["unit"] = "per_bottle"
     now = _utcnow()
     row = AeternaIntentOrder(
         org_id=org_id,

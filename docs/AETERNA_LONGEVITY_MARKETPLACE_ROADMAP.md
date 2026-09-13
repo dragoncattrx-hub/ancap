@@ -73,6 +73,7 @@ Headline product (2026-09 modernization): **Molecular Aging Profile (15 axes)** 
 - `[x]` Project Barsuk quantum pen (13 Sep 2026): licensed secure-comms partner architecture literacy (`aeterna-barsuk-quantum-pen`, 36,000 ACP) — not a Parker product; not a weapon; not unbreakable crypto; not a CE/FDA device; fiction / architecture literacy only. Legal: `/legal/barsuk`.
 - `[x]` Teleport earphones medevac fiction (13 Sep 2026): licensed partner AIRPODS T-2026 / teleport-earphones brief (`aeterna-teleport-earphones`, 58,000 ACP) — medevac / rescue fiction literacy only; not an Apple product; not a real teleporter; not a military weapon system; not a guaranteed evacuation outcome. Legal: `/legal/teleport-earphones`.
 - `[x]` Installation Project / Проект Установки (13 Sep 2026): licensed neonatology / infant-nutrition partner brief (`aeterna-installation-project`, 72,000 ACP) — high-protein natural-synthetic milk-line literacy (~1,000 L/day conceptual) + neonatal hyperbaric-chamber architecture (1.5–2.0 ATA literacy); not formula sold by ANCAP; not a CE/FDA device; not home HBO; not a guaranteed rickets/anemia/infection/growth outcome. Legal: `/legal/installation-project`. Insurance coverage class: `neonatal_install`.
+- `[x]` DNA-matched pheromone perfume (13 Sep 2026): licensed cosmetic / fragrance partner fill (`aeterna-dna-pheromone-perfume`, **8,900 ACP per bottle**); optional DNA-vault content hash for olfactory-profile literacy; genome bytes never uploaded; not a drug; not an aphrodisiac claim; not CE/FDA pheromone medicine. Legal: `/legal/dna-pheromone-perfume`.
 - `[ ]` Variant browser / trait playground on vaulted VCF summaries (read-only annotation).
 - No edit simulation that implies real wet-lab editing capability.
 
@@ -130,6 +131,7 @@ GET  /organizations/{org_id}/aeterna/intents
 - `aeterna-barsuk-quantum-pen` — **36,000 ACP**; Project Barsuk quantum-pen architecture literacy; licensed secure-comms partner only; not a Parker product, not a weapon, not unbreakable crypto, not a CE/FDA device.
 - `aeterna-teleport-earphones` — **58,000 ACP**; AIRPODS T-2026 / teleport-earphones medevac fiction literacy; licensed partner only; not an Apple product, not a real teleporter, not a military weapon system, not a guaranteed evacuation outcome.
 - `aeterna-installation-project` — **72,000 ACP**; Installation Project (Проект Установки) neonatal nutrition + hyperbaric literacy; licensed neonatology / infant-nutrition partner only; not formula sold by ANCAP, not a CE/FDA device, not home HBO, not a guaranteed clinical outcome. Insurance: `neonatal_install`.
+- `aeterna-dna-pheromone-perfume` — **8,900 ACP / bottle**; DNA-matched pheromone fragrance via licensed cosmetic partner; optional vault-hash olfactory literacy; not a drug, not an aphrodisiac claim, not CE/FDA pheromone medicine. Legal: `/legal/dna-pheromone-perfume`.
 
 Bundle: `aeterna-longevity-pack` (2,500,000 ACP) — DNA wellness + molecular aging profile + longevity panel. Organ print is sold per organ, not inside the pack. The mRNA-reprogramming consult is sold separately.
 

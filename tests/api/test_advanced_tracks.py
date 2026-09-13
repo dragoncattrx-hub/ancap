@@ -76,6 +76,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.barsuk_quantum_pen_brief.value == "barsuk_quantum_pen_brief"
     assert AeternaIntentKind.teleport_earphones_brief.value == "teleport_earphones_brief"
     assert AeternaIntentKind.installation_project_brief.value == "installation_project_brief"
+    assert AeternaIntentKind.dna_pheromone_perfume_bottle.value == "dna_pheromone_perfume_bottle"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -94,6 +95,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["barsuk_note"]
     assert AeternaStatusPublic.model_fields["teleport_earphones_note"]
     assert AeternaStatusPublic.model_fields["installation_project_note"]
+    assert AeternaStatusPublic.model_fields["dna_pheromone_perfume_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -103,7 +105,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 25
+    assert len(aeterna) >= 26
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -116,6 +118,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-barsuk-quantum-pen": "36000",
         "aeterna-teleport-earphones": "58000",
         "aeterna-installation-project": "72000",
+        "aeterna-dna-pheromone-perfume": "8900",
         "aeterna-oxygen-carrier": "92000",
         "aeterna-synthetic-blood-mamba": "98000",
         "aeterna-adhd-support": "42000",
@@ -145,6 +148,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-barsuk-quantum-pen" in slugs
     assert "aeterna-teleport-earphones" in slugs
     assert "aeterna-installation-project" in slugs
+    assert "aeterna-dna-pheromone-perfume" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():

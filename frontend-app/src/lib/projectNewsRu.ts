@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-dna-pheromone-perfume",
+    date: "2026-09-13",
+    title: "AETERNA: духи с феромонами под ДНК — 1 флакон",
+    summary:
+      "На /aeterna — продажа ДНК-подобранных духов с феромонами строго за 1 флакон (8 900 ACP). Опциональный хеш DNA-vault задаёт грамотность арома-профиля; розлив у лицензированного косметического партнёра. Это не лекарство, не афродизиак-клейм, не CE/FDA-феромонная медицина и не загрузка генома на ANCAP. Юр. текст: /legal/dna-pheromone-perfume.",
+    href: "/aeterna#dna-pheromone-perfume",
+  },
+  {
     id: "stardust-weather-control",
     date: "2026-09-13",
     title: "Stardust: платный desk контроля погоды — аукцион ACP",

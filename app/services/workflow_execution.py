@@ -863,6 +863,38 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
         tags=["aeterna", "installation-project", "neonatal", "infant-nutrition", "hyperbaric", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-dna-pheromone-perfume",
+        title="AETERNA DNA-Matched Pheromone Perfume (1 Bottle)",
+        category="AETERNA",
+        summary=(
+            "Licensed cosmetic / fragrance partner fill for a DNA-vault–informed pheromone perfume — "
+            "sold per bottle at 8,900 ACP."
+        ),
+        description=(
+            "Settles 8,900 ACP for exactly one bottle and issues a licensed cosmetic / fragrance partner "
+            "handoff. An optional DNA-vault content hash may inform olfactory-profile literacy; genome bytes "
+            "are never uploaded to ANCAP. Not a drug, not an aphrodisiac medical claim, not a guaranteed "
+            "attraction or relationship outcome, not CE/FDA pheromone medicine, and not compounding of "
+            "controlled substances. Physical bottle fill and labeling remain with the licensed partner."
+        ),
+        price=Money(amount="8900", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=30,
+        preview_items=[
+            "Vault-hash olfactory profile literacy (optional)",
+            "Pheromone fragrance blend theme map",
+            "1-bottle partner fill pack",
+        ],
+        output_items=[
+            "DNA-matched perfume bottle intake brief",
+            "Licensed cosmetic / fragrance partner handoff",
+            "Non-claim checklist (no drug claim / no aphrodisiac guarantee / no CE-FDA / no genome upload)",
+            "Proof receipt (qty = 1 bottle)",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "unit", "quantity", "architecture", "status_timeline"],
+        tags=["aeterna", "perfume", "pheromone", "dna", "cosmetic", "bottle"],
+    ),
 
     WorkflowTemplatePublic(
         slug="stardust-extreme-weather-monitor",
@@ -2309,6 +2341,30 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "ANCAP settles ACP and issues a partner handoff brief. Infographic capacity, ATA, and "
                     "composition callouts are architecture literacy, not product claims."
+                ),
+            }
+        if template.slug == "aeterna-dna-pheromone-perfume":
+            deliverable["intent"] = str(payload.get("intent_kind") or "dna_pheromone_perfume_bottle")
+            deliverable["compliance"] = (
+                "Licensed cosmetic / fragrance partner only. Sold per bottle. Not a drug, not an "
+                "aphrodisiac medical claim, not a guaranteed attraction outcome, and not CE/FDA "
+                "pheromone medicine. Genome bytes are never uploaded."
+            )
+            deliverable["dna_pheromone_perfume"] = {
+                "mode": "licensed_cosmetic_fragrance_partner",
+                "architecture": "dna_matched_pheromone_perfume_literacy",
+                "unit": "per_bottle",
+                "quantity": 1,
+                "price_acp": "8900",
+                "themes_literacy": [
+                    "olfactory_profile_from_vault_hash",
+                    "cosmetic_pheromone_blend_literacy",
+                    "skin_safe_fragrance_carrier",
+                    "partner_fill_and_label",
+                ],
+                "note": (
+                    "ANCAP settles 8,900 ACP for one bottle and issues a partner handoff brief. "
+                    "Optional vault-hash matching is olfactory literacy, not a medical pheromone assay."
                 ),
             }
         execution_summary = {

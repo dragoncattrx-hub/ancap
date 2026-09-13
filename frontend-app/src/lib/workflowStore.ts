@@ -753,6 +753,56 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
     tags: ["aeterna", "teleport", "medevac", "fiction", "consult"],
   },
+  {
+    slug: "aeterna-installation-project",
+    title: "AETERNA Installation Project (Neonatal Nutrition + Hyperbaric)",
+    category: "AETERNA",
+    summary:
+      "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and neonatal hyperbaric-chamber literacy — 72,000 ACP.",
+    description:
+      "Settles 72,000 ACP and issues a licensed-partner brief for Installation Project milk-line and neonatal hyperbaric literacy. Not formula sold by ANCAP, not a CE/FDA device, not home HBO, not a guaranteed clinical outcome.",
+    price: { amount: "72000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 50,
+    preview_items: [
+      "Milk-line + hyperbaric theme map",
+      "Licensed partner match",
+      "Non-claim / GMP literacy pack",
+    ],
+    output_items: [
+      "Installation Project intake brief",
+      "Licensed neonatology / nutrition partner handoff",
+      "Non-claim checklist (no formula sale / no home HBO / no CE-FDA claim / no guaranteed outcome)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "installation-project", "neonatal", "infant-nutrition", "hyperbaric", "consult"],
+  },
+  {
+    slug: "aeterna-dna-pheromone-perfume",
+    title: "AETERNA DNA-Matched Pheromone Perfume (1 Bottle)",
+    category: "AETERNA",
+    summary:
+      "Licensed cosmetic / fragrance partner fill for a DNA-vault–informed pheromone perfume — sold per bottle at 8,900 ACP.",
+    description:
+      "Settles 8,900 ACP for exactly one bottle and issues a licensed cosmetic / fragrance partner handoff. Optional DNA-vault content hash may inform olfactory-profile literacy; genome bytes are never uploaded. Not a drug, not an aphrodisiac claim, not a guaranteed attraction outcome, not CE/FDA pheromone medicine.",
+    price: { amount: "8900", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 30,
+    preview_items: [
+      "Vault-hash olfactory profile literacy (optional)",
+      "Pheromone fragrance blend theme map",
+      "1-bottle partner fill pack",
+    ],
+    output_items: [
+      "DNA-matched perfume bottle intake brief",
+      "Licensed cosmetic / fragrance partner handoff",
+      "Non-claim checklist (no drug claim / no aphrodisiac guarantee / no CE-FDA / no genome upload)",
+      "Proof receipt (qty = 1 bottle)",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "unit", "quantity", "architecture", "status_timeline"],
+    tags: ["aeterna", "perfume", "pheromone", "dna", "cosmetic", "bottle"],
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [
