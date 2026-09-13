@@ -11,9 +11,9 @@ export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
     id: "stardust-weather-control",
     date: "2026-09-13",
-    title: "Stardust: платный desk контроля погоды по миру",
+    title: "Stardust: платный desk контроля погоды — аукцион ACP",
     summary:
-      "На /stardust — ACP-рейл по мониторингу Земли и weather-control грамотности: extreme weather, disaster early-warning, глобальный бриф (58 000 ACP) и подписка (45 000 ACP / месяц). Панель переключателей на странице — UI грамотности, не живая консоль геоинженерии. Страховка: класс weather_control. Юр. текст: /legal/stardust.",
+      "На /stardust ценовая политика weather-control переведена на аукцион TECH: лоты extreme weather, disaster early-warning, глобальный контроль и ретейнер с открывающими полами 18k–58k ACP. Ставки через AuctionEscrow на /tech. Панель переключателей — UI грамотности, не живая консоль. Страховка: weather_control. Юр.: /legal/stardust.",
     href: "/stardust",
   },
   {

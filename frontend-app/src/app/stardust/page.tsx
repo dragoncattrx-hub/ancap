@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { stardustDesk } from "@/lib/api";
+import { stardustDesk, techAuction } from "@/lib/api";
 import { ServiceReviewsPanel } from "@/components/ServiceReviewsPanel";
 
 type Service = {
@@ -16,6 +16,9 @@ type Service = {
   blurb: string;
   workflow_slug?: string | null;
   billing?: string;
+  pricing_model?: string;
+  auction_lot_id?: string | null;
+  auction_href?: string;
 };
 
 type Module = { id: string; label: string; role: string; blurb?: string };
@@ -34,10 +37,30 @@ type Catalog = {
   outcomes: Module[];
 };
 
+type AuctionLot = {
+  id: string;
+  category: string;
+  title: string;
+  current_acp: string;
+  min_next_acp: string;
+  bid_count: number;
+  starting_acp: string;
+};
+
+function formatAcp(value: string) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return `${value} ACP`;
+  return `${n.toLocaleString()} ACP`;
+}
+
 export default function StardustPage() {
   const { user, isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [lotsById, setLotsById] = useState<Record<string, AuctionLot>>({});
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [bidAmount, setBidAmount] = useState("");
   const [selected, setSelected] = useState<Service | null>(null);
   const [controlsOn, setControlsOn] = useState<Record<string, boolean>>({
     rainfall: true,
@@ -48,10 +71,20 @@ export default function StardustPage() {
 
   const load = useCallback(async () => {
     try {
-      const data = (await stardustDesk.catalog()) as Catalog;
-      setCatalog(data);
+      const [desk, auction] = await Promise.all([
+        stardustDesk.catalog() as Promise<Catalog>,
+        techAuction.catalog() as Promise<{ lots: AuctionLot[] }>,
+      ]);
+      const map: Record<string, AuctionLot> = {};
+      for (const lot of auction.lots || []) {
+        if (lot.category === "weather_control" || lot.id.startsWith("tech-stardust-")) {
+          map[lot.id] = lot;
+        }
+      }
+      setCatalog(desk);
+      setLotsById(map);
       setError("");
-      setSelected((prev) => prev ?? data.services[0] ?? null);
+      setSelected((prev) => prev ?? desk.services[0] ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load Stardust desk");
     }
@@ -62,11 +95,48 @@ export default function StardustPage() {
   }, [load]);
 
   const headline = catalog?.services.find((s) => s.id === "stardust-weather-control-global");
+  const headlineLot = headline?.auction_lot_id ? lotsById[headline.auction_lot_id] : undefined;
   const safeWebsiteRef =
     catalog?.website_ref &&
     /^https:\/\/(www\.)?stardustsrt\.com\/?$/i.test(catalog.website_ref.trim())
       ? catalog.website_ref.trim()
       : "https://stardustsrt.com";
+
+  const onBid = async (svc: Service) => {
+    const lotId = svc.auction_lot_id;
+    if (!lotId) {
+      setError("Auction lot missing for this service");
+      return;
+    }
+    if (!isAuthenticated) {
+      setError("Sign in to place an ACP bid on the weather auction");
+      return;
+    }
+    const lot = lotsById[lotId];
+    const stake = bidAmount.trim() || lot?.min_next_acp || svc.price_from_acp;
+    setBusy(true);
+    setError("");
+    setInfo("");
+    try {
+      const bid = (await techAuction.placeBid(lotId, { amount_acp: stake })) as {
+        tx_hash?: string;
+        amount_acp: string;
+      };
+      setInfo(
+        `Bid placed: ${formatAcp(bid.amount_acp)}${
+          bid.tx_hash ? ` · ${bid.tx_hash.slice(0, 12)}…` : ""
+        }`
+      );
+      setSelected(svc);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bid failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const services = useMemo(() => catalog?.services || [], [catalog]);
 
   return (
     <main className="min-h-screen bg-[#050b14] text-slate-100">
@@ -87,7 +157,7 @@ export default function StardustPage() {
         </div>
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:pt-20">
           <p className="text-xs uppercase tracking-[0.28em] text-cyan-300/90">
-            {catalog?.brand || "StardustSRT"} · Software for a smarter planet
+            {catalog?.brand || "StardustSRT"} · Auction pricing · Software for a smarter planet
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl md:text-6xl">
             {catalog?.title || "Earth Software for Weather Control"}
@@ -97,10 +167,11 @@ export default function StardustPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={headline?.workflow_slug ? `/ai/run/${headline.workflow_slug}` : "/ai/workflows"}
+              href="/tech"
               className="inline-flex rounded-md bg-cyan-400 px-5 py-3 text-sm font-semibold text-[#041018] transition hover:bg-cyan-300"
             >
-              Buy global weather control · {headline?.price_from_acp || "58,000"} ACP
+              Open weather auction · from{" "}
+              {formatAcp(headlineLot?.current_acp || headline?.price_from_acp || "58000")}
             </Link>
             <Link
               href="/insurance"
@@ -131,11 +202,16 @@ export default function StardustPage() {
             stardustsrt.com
           </a>
           {" · "}
+          <Link href="/tech" className="text-cyan-300 underline">
+            TECH auction
+          </Link>
+          {" · "}
           <Link href="/legal/market-data" className="text-cyan-300 underline">
             AccuWeather widget notice
           </Link>
         </p>
         {error ? <p className="mt-4 text-sm text-rose-400">{error}</p> : null}
+        {info ? <p className="mt-2 text-sm text-emerald-400">{info}</p> : null}
 
         <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#0a1524]/80">
@@ -164,11 +240,12 @@ export default function StardustPage() {
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-white">Weather Control</h2>
               <span className="rounded border border-cyan-400/30 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-cyan-200">
-                Paid desk
+                Auction desk
               </span>
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              Literacy toggles only — buying ACP opens a partner brief, not a live geoengineering console.
+              Literacy toggles only — bidding ACP opens a partner license via AuctionEscrow, not a
+              live geoengineering console.
             </p>
             <ul className="mt-5 space-y-3">
               {(catalog?.weather_controls || []).map((c) => {
@@ -201,25 +278,31 @@ export default function StardustPage() {
               })}
             </ul>
             <div className="mt-5 rounded-xl border border-white/10 bg-black/25 p-3">
-              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Real-time monitoring</div>
-              <div className="mt-3 flex h-16 items-end gap-1">
-                {[40, 55, 35, 70, 48, 62, 44, 78, 52, 66, 58, 72].map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-sm bg-gradient-to-t from-cyan-700/40 to-cyan-300/80"
-                    style={{ height: `${h}%` }}
-                  />
-                ))}
+              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                Live auction floor
               </div>
+              <p className="mt-2 font-mono text-cyan-100">
+                {formatAcp(headlineLot?.current_acp || headline?.price_from_acp || "58000")}
+                {headlineLot ? ` · next ${formatAcp(headlineLot.min_next_acp)}` : ""}
+              </p>
             </div>
-            {headline?.workflow_slug ? (
+            {headline?.auction_lot_id ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void onBid(headline)}
+                className="mt-5 flex w-full items-center justify-center rounded-md bg-cyan-400 px-4 py-3 text-sm font-semibold text-[#041018] transition hover:bg-cyan-300 disabled:opacity-50"
+              >
+                Bid worldwide control license
+              </button>
+            ) : (
               <Link
-                href={`/ai/run/${headline.workflow_slug}`}
+                href="/tech"
                 className="mt-5 flex w-full items-center justify-center rounded-md bg-cyan-400 px-4 py-3 text-sm font-semibold text-[#041018] transition hover:bg-cyan-300"
               >
-                Unlock worldwide control · {headline.price_from_acp} ACP
+                Open TECH auction
               </Link>
-            ) : null}
+            )}
           </aside>
         </div>
 
@@ -248,38 +331,74 @@ export default function StardustPage() {
         </section>
 
         <section className="mt-14">
-          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">Paid services</h2>
-          <p className="mt-2 text-sm text-slate-500">ACP settles partner briefs worldwide. Hardware and field ops stay with licensed partners.</p>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">Weather auction lots</h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Price discovery via TECH AuctionEscrow. Listed ACP figures are opening floors, not fixed
+            checkout prices. Hardware and field ops stay with licensed partners.
+          </p>
+          <div className="mt-5 flex flex-wrap items-end gap-3">
+            <label className="text-sm text-slate-400">
+              Bid amount (ACP)
+              <input
+                className="mt-1 block w-44 border border-white/15 bg-black/40 px-3 py-2 font-mono text-white"
+                value={bidAmount}
+                onChange={(e) => setBidAmount(e.target.value)}
+                placeholder="min next"
+              />
+            </label>
+            <Link href="/tech" className="text-sm text-cyan-300 underline">
+              Full TECH catalog
+            </Link>
+          </div>
           <ul className="mt-6 space-y-5">
-            {(catalog?.services || []).map((svc) => (
-              <li key={svc.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-lg font-medium text-white">{svc.label}</h3>
-                  <span className="font-mono text-cyan-200">
-                    {svc.price_from_acp} ACP
-                    {svc.billing === "subscription" ? " / month" : ""}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{svc.blurb}</p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {svc.workflow_slug ? (
-                    <Link
-                      href={`/ai/run/${svc.workflow_slug}`}
-                      className="inline-flex rounded-md bg-cyan-400/90 px-4 py-2 text-sm font-semibold text-[#041018] transition hover:bg-cyan-300"
+            {services.map((svc) => {
+              const lot = svc.auction_lot_id ? lotsById[svc.auction_lot_id] : undefined;
+              const current = lot?.current_acp || svc.price_from_acp;
+              const next = lot?.min_next_acp || svc.price_from_acp;
+              return (
+                <li key={svc.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className="text-lg font-medium text-white">{svc.label}</h3>
+                    <span className="font-mono text-cyan-200">
+                      floor {formatAcp(svc.price_from_acp)}
+                      {svc.billing === "subscription" ? " · retainer" : ""}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">{svc.blurb}</p>
+                  <p className="mt-3 text-sm text-slate-500">
+                    Current {formatAcp(current)} · next {formatAcp(next)}
+                    {lot ? ` · ${lot.bid_count} bids` : ""}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {svc.auction_lot_id ? (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => void onBid(svc)}
+                        className="inline-flex rounded-md bg-cyan-400/90 px-4 py-2 text-sm font-semibold text-[#041018] transition hover:bg-cyan-300 disabled:opacity-50"
+                      >
+                        Place ACP bid
+                      </button>
+                    ) : null}
+                    {svc.workflow_slug ? (
+                      <Link
+                        href={`/ai/run/${svc.workflow_slug}`}
+                        className="rounded-md border border-white/20 px-4 py-2 text-sm text-white/85 transition hover:border-white/45"
+                      >
+                        Workflow brief
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="rounded-md border border-white/20 px-4 py-2 text-sm text-white/85 transition hover:border-white/45"
+                      onClick={() => setSelected(svc)}
                     >
-                      Buy with ACP
-                    </Link>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="rounded-md border border-white/20 px-4 py-2 text-sm text-white/85 transition hover:border-white/45"
-                    onClick={() => setSelected(svc)}
-                  >
-                    Reviews
-                  </button>
-                </div>
-              </li>
-            ))}
+                      Reviews
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
 

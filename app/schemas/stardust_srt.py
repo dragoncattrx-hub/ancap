@@ -14,6 +14,9 @@ _ALLOWED_REFS = {
 }
 
 
+_AUCTION_LOT = re.compile(r"^tech-stardust-[a-z0-9-]{1,64}$")
+
+
 class StardustServicePublic(BaseModel):
     id: str
     review_target_id: str
@@ -22,6 +25,9 @@ class StardustServicePublic(BaseModel):
     blurb: str
     workflow_slug: str | None = None
     billing: str = "one_shot"
+    pricing_model: str = "auction"
+    auction_lot_id: str | None = None
+    auction_href: str = "/tech"
 
     @field_validator("workflow_slug")
     @classmethod
@@ -38,6 +44,33 @@ class StardustServicePublic(BaseModel):
         raw = str(value).strip()
         if not re.fullmatch(r"[0-9]{1,12}", raw):
             raise ValueError("price_from_acp must be a positive integer string")
+        return raw
+
+    @field_validator("pricing_model")
+    @classmethod
+    def _pricing_model(cls, value: str) -> str:
+        raw = (value or "auction").strip().lower()
+        if raw not in ("auction", "fixed"):
+            return "auction"
+        return raw
+
+    @field_validator("auction_lot_id")
+    @classmethod
+    def _safe_auction_lot(cls, value: str | None) -> str | None:
+        if value is None or value == "":
+            return None
+        if not _AUCTION_LOT.fullmatch(value):
+            raise ValueError("auction_lot_id must be a tech-stardust-* id")
+        return value
+
+    @field_validator("auction_href")
+    @classmethod
+    def _internal_auction_href(cls, value: str) -> str:
+        raw = (value or "").strip() or "/tech"
+        if not raw.startswith("/tech"):
+            return "/tech"
+        if "://" in raw or ".." in raw:
+            return "/tech"
         return raw
 
 

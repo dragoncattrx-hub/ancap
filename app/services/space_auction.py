@@ -792,13 +792,28 @@ async def place_bid(
         )
         .values(status="outbid")
     )
+    bid_id = uuid.uuid4()
+    note_clean = _clean_note(note)
+    from app.services.auction_deal_seal import seal_auction_deal
+
+    env_b64, chash, cipher_id = seal_auction_deal(
+        vertical="galaxy",
+        bid_id=str(bid_id),
+        lot_id=str(lot["id"]),
+        bidder_user_id=str(user_id),
+        amount_acp=_api_str(amount),
+        note=note_clean,
+    )
     row = SpaceAuctionBid(
-        id=str(uuid.uuid4()),
+        id=str(bid_id),
         lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
-        note=_clean_note(note),
+        note=None,
+        deal_cipher_id=cipher_id,
+        deal_envelope_b64=env_b64,
+        deal_content_hash=chash,
     )
     session.add(row)
     await session.flush()

@@ -111,6 +111,10 @@ export default function TechAuctionPage() {
             Quantum SIM + compute literacy
           </Link>
           {" · "}
+          <Link href="/stardust" className="text-cyan-200 underline">
+            Stardust weather auction
+          </Link>
+          {" · "}
           <Link href="/aeterna#synthetic-blood-mamba" className="text-cyan-200 underline">
             AETERNA synthetic blood / Black Mamba
           </Link>

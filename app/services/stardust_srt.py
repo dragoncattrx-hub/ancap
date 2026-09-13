@@ -27,14 +27,16 @@ def catalog() -> dict[str, Any]:
         ),
         "compliance_note": (
             "ANCAP sells ACP-settled partner briefs and coordination intents for earth monitoring "
-            "and weather-control architecture literacy. Toggle panels and satellite artwork are "
-            "product literacy — not a live geoengineering console, not a guaranteed storm "
-            "dissipation or rainfall outcome, and not an official meteorological warning service. "
-            "ANCAP does not unilaterally modify weather worldwide and is not affiliated with "
-            "StardustSRT (https://stardustsrt.com) unless a separate partner contract is executed. "
-            "Physical sensing, cloud-seeding, or licensed weather ops remain with licensed partners "
-            "under applicable environmental, aviation, and telecom law. AccuWeather widget weather "
-            "on ANCAP remains indicative UX only (/legal/market-data)."
+            "and weather-control architecture literacy. Pricing is auction-first on the TECH desk "
+            "(/tech): opening bids start at the listed ACP floors; winning bids settle via "
+            "AuctionEscrow. Toggle panels and satellite artwork are product literacy — not a live "
+            "geoengineering console, not a guaranteed storm dissipation or rainfall outcome, and "
+            "not an official meteorological warning service. ANCAP does not unilaterally modify "
+            "weather worldwide and is not affiliated with StardustSRT (https://stardustsrt.com) "
+            "unless a separate partner contract is executed. Physical sensing, cloud-seeding, or "
+            "licensed weather ops remain with licensed partners under applicable environmental, "
+            "aviation, and telecom law. AccuWeather widget weather on ANCAP remains indicative UX "
+            "only (/legal/market-data)."
         ),
         "legal_href": "/legal/stardust",
         "website_ref": "https://stardustsrt.com",
@@ -109,11 +111,15 @@ def catalog() -> dict[str, Any]:
                 "label": "Extreme weather worldwide monitor brief",
                 "price_from_acp": "18000",
                 "blurb": (
-                    "ACP-settled partner brief for hurricane / storm / heavy-rainfall monitoring "
-                    "literacy across global regions. Not an official weather warning."
+                    "Auction-settled partner brief for hurricane / storm / heavy-rainfall monitoring "
+                    "literacy across global regions. Opening floor 18,000 ACP on /tech. Not an "
+                    "official weather warning."
                 ),
                 "workflow_slug": "stardust-extreme-weather-monitor",
                 "billing": "one_shot",
+                "pricing_model": "auction",
+                "auction_lot_id": "tech-stardust-extreme-weather",
+                "auction_href": "/tech",
             },
             {
                 "id": "stardust-disaster-alert",
@@ -122,10 +128,14 @@ def catalog() -> dict[str, Any]:
                 "price_from_acp": "28000",
                 "blurb": (
                     "Seismic, tsunami, volcano, landslide, and flood early-alert coordination "
-                    "literacy for governments / businesses / communities — partner handoff only."
+                    "literacy for governments / businesses / communities — partner handoff only. "
+                    "Opening auction floor 28,000 ACP."
                 ),
                 "workflow_slug": "stardust-disaster-early-warning",
                 "billing": "one_shot",
+                "pricing_model": "auction",
+                "auction_lot_id": "tech-stardust-disaster-alert",
+                "auction_href": "/tech",
             },
             {
                 "id": "stardust-weather-control-global",
@@ -135,22 +145,29 @@ def catalog() -> dict[str, Any]:
                 "blurb": (
                     "Worldwide weather-control architecture literacy: rainfall enhancement, storm "
                     "dissipation, temperature regulation, and snow management themes for licensed "
-                    "partners. Not a live geoengineering console sold by ANCAP."
+                    "partners. Opening auction floor 58,000 ACP. Not a live geoengineering console."
                 ),
                 "workflow_slug": "stardust-weather-control-global",
                 "billing": "one_shot",
+                "pricing_model": "auction",
+                "auction_lot_id": "tech-stardust-weather-control-global",
+                "auction_href": "/tech",
             },
             {
                 "id": "stardust-weather-control-sub",
                 "review_target_id": SERVICE_IDS["stardust-weather-control-sub"],
-                "label": "Worldwide weather-control subscription",
+                "label": "Worldwide weather-control retainer license",
                 "price_from_acp": "45000",
                 "blurb": (
-                    "Monthly ACP retainer for ongoing worldwide weather-control / earth-monitoring "
-                    "partner coordination literacy. Cancel anytime under /legal/refunds."
+                    "Auction-settled retainer license for ongoing worldwide weather-control / "
+                    "earth-monitoring partner coordination literacy. Opening floor 45,000 ACP "
+                    "(was monthly fixed). Escrow settlement — not a live weather remote."
                 ),
                 "workflow_slug": "stardust-weather-control-subscription",
                 "billing": "subscription",
+                "pricing_model": "auction",
+                "auction_lot_id": "tech-stardust-weather-control-sub",
+                "auction_href": "/tech",
             },
         ],
     }

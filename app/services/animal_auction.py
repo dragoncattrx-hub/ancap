@@ -436,15 +436,31 @@ async def place_bid(
         amount_acp=amount,
         bid_hash=bid_hash,
     )
+    note_clean = _clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None
+    from app.services.auction_deal_seal import seal_auction_deal
+
+    env_b64, chash, cipher_id = seal_auction_deal(
+        vertical="fauna",
+        bid_id=str(bid_id),
+        lot_id=str(lot["id"]),
+        bidder_user_id=str(user_id),
+        amount_acp=_api_str(amount),
+        note=note_clean,
+        contract_hash=public.contract_hash,
+        tx_hash=tx_hash,
+    )
     row = AnimalAuctionBid(
         id=str(bid_id),
         lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
-        note=_clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None,
+        note=None,
         contract_hash=public.contract_hash,
         tx_hash=tx_hash,
+        deal_cipher_id=cipher_id,
+        deal_envelope_b64=env_b64,
+        deal_content_hash=chash,
         created_at=_utcnow(),
     )
     session.add(row)

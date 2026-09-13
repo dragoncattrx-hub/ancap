@@ -3,6 +3,17 @@
 > Status: experimental application primitive | 2026-09-09  
 > Scope: off-chain payload encryption; no consensus or transaction-format change
 
+## Application vault (ANCAP API)
+
+Auction deal bids (TECH / FAUNA / literary / galaxy) seal an off-chain envelope at
+rest via `app/services/auction_deal_crypto.py` using the same suite id advertised
+on the explorer:
+
+`xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1`
+
+Platform recipient keys are HKDF-derived (`AUCTION_DEAL_MASTER_KEY` or `SECRET_KEY`).
+Plaintext notes are not stored in the clear — only the sealed envelope + content hash.
+
 ## What shipped
 
 `acp-crypto` now exposes a versioned hybrid recipient envelope:

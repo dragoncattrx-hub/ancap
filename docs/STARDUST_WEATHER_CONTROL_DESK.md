@@ -4,19 +4,24 @@ ACP-settled partner literacy for worldwide weather-control and disaster-preventi
 
 ## Surface
 
-- UI: `/stardust`
-- API: `GET /v1/stardust/catalog`
+- UI: `/stardust` (auction bid UX)
+- TECH auction: `/tech` (category `weather_control`)
+- API: `GET /v1/stardust/catalog` · `GET /v1/tech-auction/catalog`
 - Legal: `/legal/stardust`
-- Insurance: coverage class `weather_control`
+- Insurance: coverage class `weather_control` (asset refs include `tech_auction_lot`)
 
-## Paid SKUs (ACP)
+## Pricing policy — auction
 
-| Workflow slug | From ACP | Notes |
+Weather SKUs are **auction-first**. Listed ACP amounts are **opening floors** on TECH AuctionEscrow, not fixed checkout prices.
+
+| Auction lot id | Opening floor ACP | Notes |
 |---|---|---|
-| `stardust-extreme-weather-monitor` | 18,000 | Extreme weather monitoring literacy |
-| `stardust-disaster-early-warning` | 28,000 | Multi-hazard early-alert coordination |
-| `stardust-weather-control-global` | 58,000 | Global weather-control partner brief |
-| `stardust-weather-control-subscription` | 45,000 / mo | Worldwide retainer |
+| `tech-stardust-extreme-weather` | 18,000 | Extreme weather monitoring literacy |
+| `tech-stardust-disaster-alert` | 28,000 | Multi-hazard early-alert coordination |
+| `tech-stardust-weather-control-global` | 58,000 | Global weather-control partner license |
+| `tech-stardust-weather-control-sub` | 45,000 | Worldwide retainer license |
+
+Catalog services expose `pricing_model: "auction"` and `auction_lot_id`. Workflow briefs under `/ai/run/stardust-*` remain available as literacy companions.
 
 ## Non-claims
 

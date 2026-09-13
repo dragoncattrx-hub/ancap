@@ -184,7 +184,11 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         "max": "5000000",
         "premium_bps": 140,
         "term_days": 90,
-        "asset_ref_types": ["stardust_service", "weather_control_brief"],
+        "asset_ref_types": [
+            "stardust_service",
+            "weather_control_brief",
+            "tech_auction_lot",
+        ],
     },
     {
         "coverage_class": "custom",

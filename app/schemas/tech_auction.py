@@ -13,6 +13,7 @@ TechCategory = Literal[
     "orbital_edge",
     "bridge_rail",
     "longevity",
+    "weather_control",
     "search_p2p",
     "wallet_sdk",
     "quantum_compute",
@@ -50,6 +51,7 @@ class TechAuctionCatalogPublic(BaseModel):
     lots: list[TechAuctionLotPublic]
     featured: list[TechAuctionLotPublic] = Field(default_factory=list)
     technologies: list[dict]
+    deal_encryption: dict | None = None
 
 
 class TechAuctionBidCreate(BaseModel):
@@ -65,6 +67,8 @@ class TechAuctionBidPublic(BaseModel):
     created_at: datetime
     contract_hash: str
     tx_hash: str | None = None
+    deal_cipher_id: str | None = None
+    deal_content_hash: str | None = None
     lot: TechAuctionLotPublic
 
 

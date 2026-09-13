@@ -413,6 +413,8 @@ class Settings(BaseSettings):
     auction_escrow_bsc_rpc_url: str = ""
     auction_escrow_operator_private_key: str | None = None
     ff_tech_auction: bool = True
+    # Optional dedicated master key for auction-deal X-Wing / PQC envelopes.
+    auction_deal_master_key: str = ""
 
     mobile_wallet_min_app_version: str = "1.0.0"
     mobile_wallet_maintenance: bool = False

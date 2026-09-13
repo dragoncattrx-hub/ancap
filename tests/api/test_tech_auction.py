@@ -12,12 +12,17 @@ def test_tech_auction_catalog_and_bid(client):
     assert len(body["technologies"]) >= 3
     stack_ids = {t["id"] for t in body["technologies"]}
     assert "stack-floquet-bosonic" in stack_ids
+    assert "stack-stardust-weather" in stack_ids
     assert "stack-aeterna-synthetic-blood-mamba" in stack_ids
     assert "stack-aeterna-oxygen-carrier" in stack_ids
     assert any(lot["id"] == "tech-floquet-bosonic" for lot in body["lots"])
+    assert any(lot["id"] == "tech-stardust-weather-control-global" for lot in body["lots"])
     assert any(lot["id"] == "tech-aeterna-synthetic-blood-mamba" for lot in body["lots"])
     assert any(lot["id"] == "tech-aeterna-oxygen-carrier" for lot in body["lots"])
     assert any(lot["category"] == "quantum_compute" for lot in body["lots"])
+    assert any(lot["category"] == "weather_control" for lot in body["lots"])
+    weather = next(lot for lot in body["lots"] if lot["id"] == "tech-stardust-weather-control-global")
+    assert weather["starting_acp"].startswith("58000")
     mamba = next(lot for lot in body["lots"] if lot["id"] == "tech-aeterna-synthetic-blood-mamba")
     assert mamba["starting_acp"] == "98000.00000000" or mamba["starting_acp"].startswith("98000")
     ox = next(lot for lot in body["lots"] if lot["id"] == "tech-aeterna-oxygen-carrier")
@@ -36,6 +41,10 @@ def test_tech_auction_catalog_and_bid(client):
     assert data["status"] == "winning"
     assert data["tx_hash"]
     assert data["tx_hash"].startswith("0x")
+    assert data.get("deal_cipher_id", "").startswith("xwing-draft10")
+    assert data.get("deal_content_hash", "").startswith("sha256:")
+    catalog2 = client.get("/v1/tech-auction/catalog")
+    assert catalog2.json()["deal_encryption"]["cipher_id"].startswith("xwing-draft10")
 
 
 def test_tech_auction_list_anchors_create(client):

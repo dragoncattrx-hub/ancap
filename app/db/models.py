@@ -2732,6 +2732,9 @@ class SpaceAuctionBid(Base):
     amount_acp = Column(Numeric(38, 18), nullable=False)
     status = Column(String(24), nullable=False, default="placed", index=True)
     note = Column(Text, nullable=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     bidder = relationship("User", foreign_keys=[bidder_user_id])
@@ -2788,6 +2791,9 @@ class AnimalAuctionBid(Base):
     note = Column(Text, nullable=True)
     contract_hash = Column(String(64), nullable=False)
     tx_hash = Column(String(128), nullable=True, index=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     bidder = relationship("User", foreign_keys=[bidder_user_id])
@@ -2843,6 +2849,9 @@ class TechAuctionBid(Base):
     note = Column(Text, nullable=True)
     contract_hash = Column(String(64), nullable=False)
     tx_hash = Column(String(128), nullable=True, index=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     bidder = relationship("User", foreign_keys=[bidder_user_id])
@@ -2899,6 +2908,9 @@ class LiteraryAuctionBid(Base):
     note = Column(Text, nullable=True)
     contract_hash = Column(String(64), nullable=False)
     tx_hash = Column(String(128), nullable=True, index=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     bidder = relationship("User", foreign_keys=[bidder_user_id])

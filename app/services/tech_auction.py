@@ -22,6 +22,8 @@ from app.schemas.tech_auction import (
 )
 from app.services.auction_escrow import anchor_bid, anchor_create_lot
 from app.services.auction_lock import lock_auction_lot, normalize_lot_id
+from app.services.auction_deal_seal import seal_auction_deal
+from app.services.auction_deal_crypto import vault_public_meta
 from app.services.exponential_growth import compute_growth
 
 _Q = Decimal("0.00000001")
@@ -30,6 +32,8 @@ _INCREMENT_BPS = Decimal("150")  # 1.5%
 
 _COMPLIANCE = (
     "TECH lots license software / IP rails settled in ACP through AuctionEscrow smart-contract anchors. "
+    "Winning bids seal a deal envelope at rest with X-Wing draft-10 "
+    "(ML-KEM-768 + X25519 + HKDF-SHA256 + XChaCha20-Poly1305). "
     "Not a securities offering. Settlement mode anchors claim hashes on-chain (mock or BSC); "
     "ACP ledger debit is separate and record-aware until ledger escrow is enabled."
 )
@@ -66,6 +70,12 @@ _TECH_STACK: tuple[dict[str, Any], ...] = (
         "label": "Single-period Floquet bosonic codes (quantum lattice gates)",
         "layer": "quantum_compute",
         "cite": "PRL 10.1103/tnb8-3m8m · Chalmers / Tianjin · Nauka TV 10 Sep 2026",
+    },
+    {
+        "id": "stack-stardust-weather",
+        "label": "StardustSRT weather-control / earth-monitoring rails",
+        "layer": "weather_control",
+        "cite": "Partner brief literacy · /stardust · /legal/stardust",
     },
 )
 
@@ -182,6 +192,54 @@ _SEED: tuple[dict[str, Any], ...] = (
             "Cites Huang–Du–Guo PRL (2026). Theoretical; not an ANCAP quantum computer."
         ),
         "starting_acp": "75000",
+        "featured": True,
+    },
+    {
+        "id": "tech-stardust-extreme-weather",
+        "category": "weather_control",
+        "title": "Stardust extreme-weather worldwide monitor license",
+        "stack": "Hurricane / storm / rainfall monitoring literacy + partner handoff",
+        "blurb": (
+            "Auction opening for the Stardust extreme-weather monitor rail (was 18,000 ACP fixed). "
+            "Partner literacy only — not an official meteorological warning."
+        ),
+        "starting_acp": "18000",
+        "featured": False,
+    },
+    {
+        "id": "tech-stardust-disaster-alert",
+        "category": "weather_control",
+        "title": "Stardust disaster early-warning coordination license",
+        "stack": "Seismic / tsunami / volcano / flood early-alert literacy",
+        "blurb": (
+            "Auction opening for the Stardust multi-hazard early-warning rail (was 28,000 ACP fixed). "
+            "Not a government emergency system and not a guaranteed early alert."
+        ),
+        "starting_acp": "28000",
+        "featured": False,
+    },
+    {
+        "id": "tech-stardust-weather-control-global",
+        "category": "weather_control",
+        "title": "Stardust global weather-control partner license",
+        "stack": "Rainfall / storm dissipation / temperature / snow management literacy",
+        "blurb": (
+            "Auction opening for worldwide weather-control architecture literacy (was 58,000 ACP fixed). "
+            "Not a live geoengineering console, not unilateral weather modification by ANCAP."
+        ),
+        "starting_acp": "58000",
+        "featured": True,
+    },
+    {
+        "id": "tech-stardust-weather-control-sub",
+        "category": "weather_control",
+        "title": "Stardust worldwide weather-control retainer license",
+        "stack": "Monthly weather-control / earth-monitoring partner coordination literacy",
+        "blurb": (
+            "Auction opening for the worldwide weather-control retainer brief (was 45,000 ACP / month fixed). "
+            "Not a live weather remote control and not a guaranteed climate outcome."
+        ),
+        "starting_acp": "45000",
         "featured": True,
     },
 )
@@ -365,11 +423,12 @@ async def catalog(session: AsyncSession, *, user_id: str | None = None) -> TechA
     featured = [lot for lot in lots if lot.featured]
     return TechAuctionCatalogPublic(
         title="ANCAP TECH Auction",
-        tagline="License ANCAP technologies — AI, identity, escrow, orbital, AETERNA longevity / oxygen-carrier rails, quantum-compute literacy — settled in ACP.",
+        tagline="License ANCAP technologies — AI, identity, escrow, orbital, AETERNA longevity, Stardust weather-control, quantum-compute literacy — settled in ACP.",
         compliance_note=_COMPLIANCE,
         lots=lots,
         featured=featured,
         technologies=list(_TECH_STACK),
+        deal_encryption=vault_public_meta(),
     )
 
 
@@ -391,6 +450,7 @@ async def list_tech(
         "orbital_edge",
         "bridge_rail",
         "longevity",
+        "weather_control",
         "search_p2p",
         "wallet_sdk",
         "quantum_compute",
@@ -477,15 +537,29 @@ async def place_bid(
         amount_acp=amount,
         bid_hash=bid_hash,
     )
+    note_clean = _clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None
+    env_b64, chash, cipher_id = seal_auction_deal(
+        vertical="tech",
+        bid_id=str(bid_id),
+        lot_id=str(lot["id"]),
+        bidder_user_id=str(user_id),
+        amount_acp=_api_str(amount),
+        note=note_clean,
+        contract_hash=public.contract_hash,
+        tx_hash=tx_hash,
+    )
     row = TechAuctionBid(
         id=str(bid_id),
         lot_id=str(lot["id"]),
         bidder_user_id=user_id,
         amount_acp=amount,
         status="winning",
-        note=_clean_text(note, "note", min_len=1, max_len=240) if (note or "").strip() else None,
+        note=None,
         contract_hash=public.contract_hash,
         tx_hash=tx_hash,
+        deal_cipher_id=cipher_id,
+        deal_envelope_b64=env_b64,
+        deal_content_hash=chash,
         created_at=_utcnow(),
     )
     session.add(row)
@@ -500,5 +574,7 @@ async def place_bid(
         created_at=row.created_at,
         contract_hash=str(row.contract_hash),
         tx_hash=row.tx_hash,
+        deal_cipher_id=row.deal_cipher_id,
+        deal_content_hash=row.deal_content_hash,
         lot=updated,
     )

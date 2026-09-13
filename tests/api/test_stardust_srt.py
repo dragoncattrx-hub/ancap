@@ -15,7 +15,10 @@ def test_stardust_catalog(client):
     priced = {s["id"]: s["price_from_acp"] for s in body["services"]}
     assert priced["stardust-weather-control-global"] == "58000"
     assert priced["stardust-weather-control-sub"] == "45000"
+    assert all(s.get("pricing_model") == "auction" for s in body["services"])
+    assert any(s.get("auction_lot_id") == "tech-stardust-weather-control-global" for s in body["services"])
     assert any(s.get("workflow_slug") == "stardust-weather-control-global" for s in body["services"])
+    assert "auction" in body["compliance_note"].lower()
     modules = {m["id"] for m in body["monitoring_modules"]}
     assert {"seismic", "extreme-weather", "tsunami"} <= modules
     controls = {c["id"] for c in body["weather_controls"]}

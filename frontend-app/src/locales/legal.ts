@@ -737,7 +737,7 @@ export const legalByLang: Record<Language, Tree> = {
       "Parametric ACP cover class weather_control on /insurance may reference Stardust intakes. It is not meteorological insurance, not a geoengineering warranty, and not a storm-dissipation guarantee.",
     sd9Title: "9. Payments",
     sd9Body:
-      "ACP buys partner briefs from 18,000 ACP (extreme weather monitor) to 58,000 ACP (global weather-control brief) and a 45,000 ACP / month subscription — not hardware title and not a refundable weather outcome. Refunds follow /legal/refunds.",
+      "Weather-control pricing is auction-first on the TECH desk (/tech). Opening floors: 18,000 ACP (extreme weather monitor), 28,000 ACP (disaster early-warning), 58,000 ACP (global weather-control), 45,000 ACP (retainer license). Winning bids settle via AuctionEscrow — not a fixed checkout price, not hardware title, and not a refundable weather outcome. Refunds follow /legal/refunds.",
     sd10Title: "10. Contact",
     sd10Body:
       "Legal notices: legal@ancap.cloud. Product: /stardust. Insurance: /insurance. Related: /legal/market-data, /legal/terms, /legal/risk.",
@@ -1771,7 +1771,7 @@ export const legalByLang: Record<Language, Tree> = {
       "Класс weather_control на /insurance может ссылаться на интейки Stardust. Это не гарантия рассеивания шторма.",
     sd9Title: "9. Платежи",
     sd9Body:
-      "ACP от 18 000 (мониторинг) до 58 000 (глобальный контроль) и подписка 45 000 / месяц. Возвраты — /legal/refunds.",
+      "Цена weather-control — аукцион на TECH (/tech). Открывающие полы: 18 000 ACP (мониторинг), 28 000 (раннее предупреждение), 58 000 (глобальный контроль), 45 000 (ретейнер). Ставки через AuctionEscrow — не фиксированный checkout и не гарантия погоды. Возвраты — /legal/refunds.",
     sd10Title: "10. Контакты",
     sd10Body:
       "legal@ancap.cloud · /stardust · /insurance · /legal/market-data",
@@ -2753,7 +2753,8 @@ export const legalByLang: Record<Language, Tree> = {
     sd8Title: "8. Страхування",
     sd8Body: "Клас weather_control на /insurance може посилатися на інтейки Stardust.",
     sd9Title: "9. Платежі",
-    sd9Body: "ACP від 18 000 до 58 000 і підписка 45 000 / місяць.",
+    sd9Body:
+      "Ціна weather-control — аукціон на TECH (/tech). Відкриваючі пороги: 18 000 / 28 000 / 58 000 / 45 000 ACP. Ставки через AuctionEscrow — не фіксований checkout і не гарантія погоди.",
     sd10Title: "10. Контакти",
     sd10Body: "legal@ancap.cloud · /stardust · /insurance",
     footerStardust: "Stardust — контроль погоди",
@@ -3739,7 +3740,8 @@ export const legalByLang: Record<Language, Tree> = {
     sd8Title: "8. Versicherung",
     sd8Body: "Coverage-Klasse weather_control auf /insurance kann Stardust-Intakes referenzieren.",
     sd9Title: "9. Zahlungen",
-    sd9Body: "ACP von 18.000 bis 58.000 und Abo 45.000 / Monat.",
+    sd9Body:
+      "Weather-Control-Preise sind Auktion auf /tech. Eröffnungsfloors: 18.000 / 28.000 / 58.000 / 45.000 ACP. Gebote über AuctionEscrow — kein Festpreis-Checkout und keine Wettergarantie.",
     sd10Title: "10. Kontakt",
     sd10Body: "legal@ancap.cloud · /stardust · /insurance",
     footerStardust: "Stardust Wetterkontrolle",
@@ -4723,7 +4725,8 @@ export const legalByLang: Record<Language, Tree> = {
     sd8Title: "8. 保險關係",
     sd8Body: "/insurance 的 weather_control 可對應 Stardust 進件。",
     sd9Title: "9. 付款",
-    sd9Body: "ACP 自 18,000 至 58,000，訂閱每月 45,000。",
+    sd9Body:
+      "天氣控制定價為 TECH 拍賣（/tech）。起拍：18,000 / 28,000 / 58,000 / 45,000 ACP。經 AuctionEscrow 結算——非固定結帳價，亦非天氣結果保證。",
     sd10Title: "10. 聯絡",
     sd10Body: "legal@ancap.cloud · /stardust · /insurance",
     footerStardust: "Stardust 天氣控制",
