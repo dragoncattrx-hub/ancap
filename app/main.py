@@ -105,6 +105,7 @@ from app.api.routers import (
     saliva_rx,
     social_network,
     startup_invest,
+    stardust_srt,
 )
 
 settings = get_settings()
@@ -302,6 +303,7 @@ ALL_ROUTERS = [
     saliva_rx.router,
     social_network.router,
     startup_invest.router,
+    stardust_srt.router,
 ]
 
 for r in ALL_ROUTERS:

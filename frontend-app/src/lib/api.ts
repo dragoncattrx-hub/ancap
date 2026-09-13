@@ -596,6 +596,12 @@ export const quantumSimDesk = {
   },
 };
 
+export const stardustDesk = {
+  async catalog() {
+    return apiFetch("/stardust/catalog");
+  },
+};
+
 export const salivaRxDesk = {
   async catalog() {
     return apiFetch("/saliva-rx/catalog");

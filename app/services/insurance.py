@@ -172,6 +172,21 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         "asset_ref_types": ["aeterna_intent_order", "installation_project_brief"],
     },
     {
+        "coverage_class": "weather_control",
+        "label": "Weather control / Stardust earth ops",
+        "description": (
+            "Parametric cover for licensed StardustSRT-style weather-control and disaster-monitoring "
+            "partner intakes booked via /stardust. Not a geoengineering warranty, not official "
+            "meteorological insurance, and not a guaranteed storm-dissipation outcome."
+        ),
+        "pool_id": "pool-weather-control",
+        "min": "500",
+        "max": "5000000",
+        "premium_bps": 140,
+        "term_days": 90,
+        "asset_ref_types": ["stardust_service", "weather_control_brief"],
+    },
+    {
         "coverage_class": "custom",
         "label": "Custom everything desk",
         "description": "Catch-all parametric cover — underwriter review required before claim pay.",
@@ -251,7 +266,7 @@ async def catalog(session: AsyncSession) -> InsuranceCatalogPublic:
     ]
     return InsuranceCatalogPublic(
         title="ACP Insurance Desk",
-        tagline="Parametric cover across wallet, bridge, cargo, real estate, commodities, space, neonatal install — premiums in ACP.",
+        tagline="Parametric cover across wallet, bridge, cargo, real estate, commodities, space, neonatal install, weather control — premiums in ACP.",
         compliance_note=_COMPLIANCE,
         products=products,
     )

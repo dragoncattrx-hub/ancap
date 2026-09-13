@@ -865,6 +865,107 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
     ),
 
     WorkflowTemplatePublic(
+        slug="stardust-extreme-weather-monitor",
+        title="Stardust Extreme Weather Worldwide Monitor",
+        category="StardustSRT",
+        summary="Licensed partner brief for worldwide hurricane / storm / rainfall monitoring literacy — 18,000 ACP.",
+        description=(
+            "Settles 18,000 ACP and issues a licensed-partner brief for extreme-weather monitoring "
+            "literacy worldwide. Not an official meteorological warning, not AccuWeather replacement, "
+            "and not a storm-track guarantee. ANCAP is not affiliated with StardustSRT unless separately contracted."
+        ),
+        price=Money(amount="18000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=35,
+        preview_items=["Region / hazard map", "Licensed partner match", "Non-claim pack"],
+        output_items=[
+            "Extreme weather monitor intake brief",
+            "Licensed partner handoff",
+            "Non-claim checklist (no official warning / no track guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "region_hint", "status_timeline"],
+        tags=["stardust", "weather", "monitoring", "disaster", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="stardust-disaster-early-warning",
+        title="Stardust Disaster Early-Warning Coordination",
+        category="StardustSRT",
+        summary="Seismic / tsunami / volcano / flood early-alert coordination literacy — 28,000 ACP.",
+        description=(
+            "Settles 28,000 ACP and issues a licensed-partner brief for multi-hazard early-warning "
+            "coordination literacy. Not a government emergency system and not a guaranteed early alert."
+        ),
+        price=Money(amount="28000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=["Hazard theme map", "Alert audience literacy", "Partner match"],
+        output_items=[
+            "Disaster early-warning intake brief",
+            "Licensed partner handoff",
+            "Non-claim checklist (no government SOPs / no alert guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "hazard_themes", "status_timeline"],
+        tags=["stardust", "disaster", "seismic", "tsunami", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="stardust-weather-control-global",
+        title="Stardust Global Weather-Control Partner Brief",
+        category="StardustSRT",
+        summary=(
+            "Worldwide weather-control architecture literacy (rainfall, storm dissipation, "
+            "temperature, snow) — 58,000 ACP."
+        ),
+        description=(
+            "Settles 58,000 ACP and issues a licensed-partner brief for global weather-control "
+            "architecture literacy. UI toggles and satellite artwork are product literacy — not a "
+            "live geoengineering console, not unilateral weather modification by ANCAP, and not a "
+            "guaranteed rainfall or storm-dissipation outcome. Partner screening required under "
+            "applicable environmental law."
+        ),
+        price=Money(amount="58000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=["Control theme map", "Worldwide region desk", "Non-claim / partner pack"],
+        output_items=[
+            "Global weather-control intake brief",
+            "Licensed partner handoff",
+            "Non-claim checklist (no geoengineering console / no guaranteed weather outcome)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "control_modules", "status_timeline"],
+        tags=["stardust", "weather-control", "geoengineering-literacy", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="stardust-weather-control-subscription",
+        title="Stardust Worldwide Weather-Control Subscription",
+        category="StardustSRT",
+        summary="Monthly ACP retainer for worldwide weather-control / earth-monitoring partner literacy — 45,000 ACP / month.",
+        description=(
+            "Settles 45,000 ACP per month and issues an ongoing licensed-partner coordination brief "
+            "for worldwide weather-control and earth-monitoring literacy. Not a live weather remote "
+            "control and not a guaranteed climate outcome."
+        ),
+        price=Money(amount="45000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=30,
+        preview_items=["Monthly coordination brief", "Partner desk", "Non-claim pack"],
+        output_items=[
+            "Weather-control subscription period brief",
+            "Licensed partner handoff",
+            "Non-claim checklist",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "billing", "status_timeline"],
+        tags=["stardust", "weather-control", "subscription", "consult"],
+        billing="subscription",
+        subscription_price_monthly=Money(amount="45000", currency="ACP"),
+        subscription_price_quarterly=Money(amount="120000", currency="ACP"),
+        subscription_price_annual=Money(amount="420000", currency="ACP"),
+    ),
+
+    WorkflowTemplatePublic(
         slug="market-direction-brief",
         title="Market Direction Brief",
         category="Markets",
@@ -2215,6 +2316,36 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "aeterna_longevity",
             "sections_generated": len(template.output_items),
             "focus": ["dna vault", "longevity consult", "partner handoff", "acp receipt"],
+        }
+    elif template.slug.startswith("stardust-"):
+        deliverable = {
+            "desk": "stardust",
+            "brand_literacy": "StardustSRT",
+            "compliance": (
+                "Licensed partner weather-control / earth-monitoring literacy only. Not a live "
+                "geoengineering console, not unilateral worldwide weather modification by ANCAP, "
+                "not an official meteorological warning, and not a guaranteed storm or rainfall outcome."
+            ),
+            "summary": f"StardustSRT partner brief generated for {project_name}.",
+            "items": template.output_items,
+            "modules_literacy": [
+                "rainfall_enhancement",
+                "storm_dissipation",
+                "temperature_regulation",
+                "snow_management",
+                "extreme_weather_monitor",
+                "disaster_early_warning",
+            ],
+            "note": (
+                "ANCAP settles ACP and issues a partner handoff brief. Infographic Weather Control "
+                "toggles are product literacy, not ops doctrine."
+            ),
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "stardust_weather_control",
+            "sections_generated": len(template.output_items),
+            "focus": ["weather control", "earth monitoring", "partner handoff", "acp receipt"],
         }
     else:
         deliverable = {

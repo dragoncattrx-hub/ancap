@@ -20,6 +20,7 @@ CoverageClass = Literal[
     "space_payload",
     "perimeter_cleanup",
     "neonatal_install",
+    "weather_control",
     "custom",
 ]
 
