@@ -19,6 +19,7 @@ CoverageClass = Literal[
     "livestock",
     "space_payload",
     "perimeter_cleanup",
+    "neonatal_install",
     "custom",
 ]
 

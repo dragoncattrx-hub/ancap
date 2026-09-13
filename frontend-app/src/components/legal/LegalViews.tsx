@@ -67,6 +67,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/pulmopure", key: "pulmopureLink" },
     { href: "/legal/barsuk", key: "barsukLink" },
     { href: "/legal/teleport-earphones", key: "teleportEarphonesLink" },
+    { href: "/legal/installation-project", key: "installationProjectLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -119,6 +120,7 @@ export function LegalHubView() {
     { href: "/legal/pulmopure", title: "pulmopureLink", body: "hubCardPulmopure" },
     { href: "/legal/barsuk", title: "barsukLink", body: "hubCardBarsuk" },
     { href: "/legal/teleport-earphones", title: "teleportEarphonesLink", body: "hubCardTeleportEarphones" },
+    { href: "/legal/installation-project", title: "installationProjectLink", body: "hubCardInstallationProject" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -1276,6 +1278,46 @@ export function TeleportEarphonesLegalView() {
   );
 }
 
+export function InstallationProjectLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.installationProjectKicker")}
+      title={t("legal.installationProjectTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.installationProjectIntro")}`}
+      actions={<LegalNavPills current="/legal/installation-project" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.ip${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.ip${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/aeterna#installation-project"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            /aeterna#installation-project
+          </Link>
+        </p>
+        <p className="mt-2">
+          Insurance:{" "}
+          <Link href="/insurance" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /insurance
+          </Link>{" "}
+          (coverage class neonatal_install)
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function WelcomeGrantView() {
   const { t } = useLanguage();
   return (
@@ -1342,6 +1384,7 @@ export function SiteLegalFooter() {
     { href: "/legal/pulmopure", label: "footerPulmopure" },
     { href: "/legal/barsuk", label: "footerBarsuk" },
     { href: "/legal/teleport-earphones", label: "footerTeleportEarphones" },
+    { href: "/legal/installation-project", label: "footerInstallationProject" },
     { href: "/legal/refunds", label: "footerRefunds" },
     { href: "/legal/welcome-grant", label: "footerWelcomeGrant" },
     { href: "/legal/humanitarian", label: "footerHumanitarian" },

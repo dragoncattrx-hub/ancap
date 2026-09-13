@@ -388,6 +388,9 @@ export function HomePage() {
                     <Link href="/aeterna#teleport-earphones" className="btn btn-ghost">
                       {t("aeternaPage.teCta")}
                     </Link>
+                    <Link href="/aeterna#installation-project" className="btn btn-ghost">
+                      {t("aeternaPage.ipCta")}
+                    </Link>
                 </div>
               </div>
               <div

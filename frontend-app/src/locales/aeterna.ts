@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP, or a PulmoPure lung-care subscription from 14,000 ACP / month, or a Project Barsuk quantum-pen brief at 36,000 ACP, or a teleport-earphones medevac fiction brief at 58,000 ACP.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP, or a PulmoPure lung-care subscription from 14,000 ACP / month, or a Project Barsuk quantum-pen brief at 36,000 ACP, or a teleport-earphones medevac fiction brief at 58,000 ACP, or an Installation Project neonatal nutrition / hyperbaric brief at 72,000 ACP.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP; PulmoPure lung-care subscription is 14,000 ACP / month (38,000 quarterly; 128,000 annual); Project Barsuk quantum-pen brief is 36,000 ACP; teleport-earphones medevac fiction brief is 58,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP; PulmoPure lung-care subscription is 14,000 ACP / month (38,000 quarterly; 128,000 annual); Project Barsuk quantum-pen brief is 36,000 ACP; teleport-earphones medevac fiction brief is 58,000 ACP; Installation Project neonatal nutrition / hyperbaric brief is 72,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -384,6 +384,31 @@ export const aeternaByLang: Record<Language, Tree> = {
     teStep3Body: "Neural-interface icons are fiction. Not a CE/FDA implant.",
     teStep4Title: "Handoff",
     teStep4Body: "ACP buys a fiction brief and partner match — not hardware title.",
+
+    intent24Title: "Installation Project (neonatal nutrition + hyperbaric)",
+    intent24Body:
+      "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and neonatal hyperbaric-chamber literacy — 72,000 ACP. Not formula sold by ANCAP, not home HBO, not a guaranteed clinical outcome.",
+
+    ipCta: "Open Installation Project brief",
+    ipInsuranceCta: "Neonatal install insurance",
+    ipKicker: "Installation Project · neonatal · GMP literacy",
+    ipTitle: "Installation Project — healthy start, partner clinic only",
+    ipPrice: "72,000 ACP",
+    ipLead:
+      "Two partner rails in one brief: high-protein natural-synthetic infant milk production literacy (conceptual ~1,000 L/day; liquid and dry formats; whey/casein/plant proteins, Omega-3/6, vitamins and minerals) and a neonatal hyperbaric chamber (1.5–2.0 ATA; 36–37 °C; 1–2 newborns; vitals monitoring).",
+    ipDisclaimer:
+      "ANCAP does not manufacture infant formula, does not operate a dairy plant or NICU, does not sell a CE/FDA hyperbaric device, and does not claim guaranteed reduction of rickets, anemia, infection, or developmental delay. GMP / medical-standards callouts and capacities on the artwork are partner literacy. Physical production and clinical sessions occur only under licensed partners after screening.",
+    ipLegalCta: "Installation Project legal notice",
+    ipAlt:
+      "Infographic of Installation Project: high-protein infant milk production line and neonatal hyperbaric chamber. Conceptual architecture for licensed neonatology / nutrition partners — not formula or a CE/FDA device sold by ANCAP.",
+    ipStep1Title: "Milk line",
+    ipStep1Body: "Prep → mix → pasteurize → enrich → pack. Conceptual ~1,000 L/day literacy.",
+    ipStep2Title: "Nutrition",
+    ipStep2Body: "High protein (3–4 g / 100 ml literacy), non-GMO / no-preservative framing — not a product claim.",
+    ipStep3Title: "Hyperbaric",
+    ipStep3Body: "1.5–2.0 ATA, 36–37 °C, vitals monitoring literacy. Not home HBO.",
+    ipStep4Title: "Handoff",
+    ipStep4Body: "ACP buys a partner brief — not a plant title deed or device clearance.",
 
 
 
@@ -836,6 +861,31 @@ export const aeternaByLang: Record<Language, Tree> = {
     teStep4Title: "Передача",
     teStep4Body: "ACP покупает fiction-бриф и партнёра — не право на железо.",
 
+    intent24Title: "Проект Установки (питание + барокамера)",
+    intent24Body:
+      "Бриф лицензированного неонатологического / нутриционного партнёра по линии высокобелкового молока и неонатальной барокамере — 72 000 ACP. Не смесь от ANCAP, не домашняя HBO, не гарантия клинического исхода.",
+
+    ipCta: "Открыть бриф Проекта Установки",
+    ipInsuranceCta: "Страховка neonatal install",
+    ipKicker: "Проект Установки · неонатология · грамотность GMP",
+    ipTitle: "Проект Установки — здоровое начало, только партнёрская клиника",
+    ipPrice: "72 000 ACP",
+    ipLead:
+      "Два рейла в одном брифе: производство натурально-синтетического высокобелкового молока для младенцев (концептуально до ~1 000 л/сутки; жидкое и сухое; сыворотка/казеин/растительные белки, Omega-3/6, витамины и минералы) и барокамера для недоношенных (1,5–2,0 ATA; 36–37 °C; 1–2 новорождённых; мониторинг витальных показателей).",
+    ipDisclaimer:
+      "ANCAP не производит детскую смесь, не ведёт молочный завод и не NICU, не продаёт изделие CE/FDA для HBO и не обещает снижение рахита, анемии, инфекций или задержки развития. Пометки GMP и мощности на инфографике — грамотность партнёра. Производство и сеансы — только у лицензированных партнёров после скрининга.",
+    ipLegalCta: "Юр. текст Проекта Установки",
+    ipAlt:
+      "Инфографика Проекта Установки: линия высокобелкового детского молока и неонатальная барокамера. Концептуальная архитектура для лицензированных партнёров.",
+    ipStep1Title: "Линия молока",
+    ipStep1Body: "Подготовка → смешивание → пастеризация → обогащение → фасовка. Грамотность ~1 000 л/сутки.",
+    ipStep2Title: "Питание",
+    ipStep2Body: "Высокий белок (3–4 г / 100 мл), без ГМО / консервантов на картинке — не претензия продукта.",
+    ipStep3Title: "Барокамера",
+    ipStep3Body: "1,5–2,0 ATA, 36–37 °C, мониторинг. Не домашняя HBO.",
+    ipStep4Title: "Передача",
+    ipStep4Body: "ACP покупает бриф партнёра — не право на завод и не clearance устройства.",
+
 
 
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
@@ -1269,6 +1319,31 @@ export const aeternaByLang: Record<Language, Tree> = {
     teStep3Body: "Нейроінтерфейс на картинці — fiction.",
     teStep4Title: "Передача",
     teStep4Body: "ACP купує fiction-бриф — не право на залізо.",
+
+    intent24Title: "Проєкт Установки (харчування + барокамера)",
+    intent24Body:
+      "Бриф ліцензованого неонатологічного / нутриційного партнера щодо лінії високобілкового молока та неонатальної барокамери — 72 000 ACP.",
+
+    ipCta: "Відкрити бриф Проєкту Установки",
+    ipInsuranceCta: "Страхування neonatal install",
+    ipKicker: "Проєкт Установки · неонатологія · грамотність GMP",
+    ipTitle: "Проєкт Установки — здоровий старт, лише партнерська клініка",
+    ipPrice: "72 000 ACP",
+    ipLead:
+      "Два рейли в одному брифі: високобілкове натурально-синтетичне молоко для немовлят (концептуально ~1 000 л/добу) та барокамера для недоношених (1,5–2,0 ATA; 36–37 °C).",
+    ipDisclaimer:
+      "ANCAP не виробляє суміш, не веде завод чи NICU і не гарантує клінічний результат. Сеанси — лише у ліцензованих партнерів після скринінгу.",
+    ipLegalCta: "Юр. текст Проєкту Установки",
+    ipAlt:
+      "Інфографіка Проєкту Установки: лінія молока та неонатальна барокамера. Концептуальна архітектура для ліцензованих партнерів.",
+    ipStep1Title: "Лінія молока",
+    ipStep1Body: "Підготовка → змішування → пастеризація → збагачення → фасування.",
+    ipStep2Title: "Харчування",
+    ipStep2Body: "Високий білок, без ГМО / консервантів на зображенні — не претензія продукту.",
+    ipStep3Title: "Барокамера",
+    ipStep3Body: "1,5–2,0 ATA, 36–37 °C, моніторинг. Не домашня HBO.",
+    ipStep4Title: "Передача",
+    ipStep4Body: "ACP купує бриф партнера — не титул заводу.",
 
 
 
@@ -1704,6 +1779,31 @@ export const aeternaByLang: Record<Language, Tree> = {
     teStep4Title: "Übergabe",
     teStep4Body: "ACP kauft Fiktionsbrief — kein Hardware-Eigentum.",
 
+    intent24Title: "Installationsprojekt (neonatale Ernährung + Druckkammer)",
+    intent24Body:
+      "Lizenziertes Neonatologie-/Ernährungs-Partnerbriefing für Hochprotein-Milchlinie und neonatale Druckkammer — 72.000 ACP.",
+
+    ipCta: "Installationsprojekt-Brief öffnen",
+    ipInsuranceCta: "Neonatal-Install-Versicherung",
+    ipKicker: "Installationsprojekt · Neonatologie · GMP-Literalität",
+    ipTitle: "Installationsprojekt — gesunder Start, nur Partnerklinik",
+    ipPrice: "72.000 ACP",
+    ipLead:
+      "Zwei Schienen in einem Briefing: hochproteinreiche natur-synthetische Säuglingsmilch (konzeptuell ~1.000 L/Tag) und neonatale Druckkammer (1,5–2,0 ATA; 36–37 °C).",
+    ipDisclaimer:
+      "ANCAP stellt keine Säuglingsnahrung her, betreibt keine Molkerei/NICU und gibt keine klinische Erfolgsgarantie. Sitzungen nur bei lizenzierten Partnern nach Screening.",
+    ipLegalCta: "Rechtshinweis Installationsprojekt",
+    ipAlt:
+      "Infografik Installationsprojekt: Milchlinie und neonatale Druckkammer. Konzeptuelle Architektur für lizenzierte Partner.",
+    ipStep1Title: "Milchlinie",
+    ipStep1Body: "Vorbereitung → Mischen → Pasteurisierung → Anreicherung → Abfüllung.",
+    ipStep2Title: "Ernährung",
+    ipStep2Body: "Hoher Proteinanteil, Non-GMO-/ohne-Konservierungsstoffe-Framing — kein Produktclaim.",
+    ipStep3Title: "Druckkammer",
+    ipStep3Body: "1,5–2,0 ATA, 36–37 °C, Monitoring. Kein Heim-HBO.",
+    ipStep4Title: "Übergabe",
+    ipStep4Body: "ACP kauft ein Partnerbriefing — kein Werktitel.",
+
 
 
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
@@ -2133,6 +2233,31 @@ export const aeternaByLang: Record<Language, Tree> = {
     teStep3Body: "神經介面圖示為虛構。非 CE/FDA 植入。",
     teStep4Title: "移交",
     teStep4Body: "ACP 購買虛構簡報 — 非硬體所有權。",
+
+    intent24Title: "安裝專案（新生兒營養＋高壓艙）",
+    intent24Body:
+      "持照新生兒科／營養夥伴簡報：高蛋白奶線與新生兒高壓艙素養 — 72,000 ACP。",
+
+    ipCta: "開啟安裝專案簡報",
+    ipInsuranceCta: "新生兒安裝保險",
+    ipKicker: "安裝專案 · 新生兒 · GMP 素養",
+    ipTitle: "安裝專案 — 健康起步，僅限夥伴診所",
+    ipPrice: "72,000 ACP",
+    ipLead:
+      "單一簡報兩條軌道：高蛋白天然－合成嬰兒奶線（概念約 1,000 升／日）與新生兒高壓艙（1.5–2.0 ATA；36–37 °C）。",
+    ipDisclaimer:
+      "ANCAP 不製造配方奶、不營運乳廠／NICU，亦不保證臨床結果。實體療程僅在持照夥伴篩檢後進行。",
+    ipLegalCta: "安裝專案法律聲明",
+    ipAlt:
+      "安裝專案資訊圖：高蛋白嬰兒奶生產線與新生兒高壓艙。持照夥伴的概念架構。",
+    ipStep1Title: "奶線",
+    ipStep1Body: "備料 → 混合 → 巴氏殺菌 → 強化 → 包裝。",
+    ipStep2Title: "營養",
+    ipStep2Body: "高蛋白、非基改／無防腐劑為圖示素養，非產品主張。",
+    ipStep3Title: "高壓艙",
+    ipStep3Body: "1.5–2.0 ATA、36–37 °C、監測。非家用 HBO。",
+    ipStep4Title: "交接",
+    ipStep4Body: "ACP 購買夥伴簡報 — 非廠房產權。",
 
 
 

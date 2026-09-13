@@ -24,6 +24,7 @@ import { AdhdSupportPanel } from "@/components/aeterna/AdhdSupportPanel";
 import { PulmoPurePanel } from "@/components/aeterna/PulmoPurePanel";
 import { BarsukQuantumPenPanel } from "@/components/aeterna/BarsukQuantumPenPanel";
 import { TeleportEarphonesPanel } from "@/components/aeterna/TeleportEarphonesPanel";
+import { InstallationProjectPanel } from "@/components/aeterna/InstallationProjectPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -63,9 +64,10 @@ type AeternaStatus = {
   pulmopure_note?: string;
   barsuk_note?: string;
   teleport_earphones_note?: string;
+  installation_project_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -341,6 +343,10 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <TeleportEarphonesPanel note={status?.teleport_earphones_note} />
+        </section>
+
+        <section className="mt-16">
+          <InstallationProjectPanel note={status?.installation_project_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

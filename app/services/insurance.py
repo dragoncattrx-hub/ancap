@@ -157,6 +157,21 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         "asset_ref_types": ["perimeter_cleanup_job"],
     },
     {
+        "coverage_class": "neonatal_install",
+        "label": "Neonatal install / Installation Project",
+        "description": (
+            "Parametric cover for licensed Installation Project partner intakes "
+            "(high-protein infant-nutrition line + neonatal hyperbaric-chamber literacy) booked via /aeterna#installation-project. "
+            "Not medical malpractice insurance, not a formula warranty, and not a CE/FDA device policy."
+        ),
+        "pool_id": "pool-neonatal-install",
+        "min": "500",
+        "max": "2000000",
+        "premium_bps": 130,
+        "term_days": 180,
+        "asset_ref_types": ["aeterna_intent_order", "installation_project_brief"],
+    },
+    {
         "coverage_class": "custom",
         "label": "Custom everything desk",
         "description": "Catch-all parametric cover — underwriter review required before claim pay.",
@@ -236,7 +251,7 @@ async def catalog(session: AsyncSession) -> InsuranceCatalogPublic:
     ]
     return InsuranceCatalogPublic(
         title="ACP Insurance Desk",
-        tagline="Parametric cover across wallet, bridge, cargo, real estate, commodities, space — premiums in ACP.",
+        tagline="Parametric cover across wallet, bridge, cargo, real estate, commodities, space, neonatal install — premiums in ACP.",
         compliance_note=_COMPLIANCE,
         products=products,
     )

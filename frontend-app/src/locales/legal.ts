@@ -665,6 +665,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Legal notices: legal@ancap.cloud. Product: /aeterna#teleport-earphones. Related notices: /legal/humanitarian, /legal/terms, /legal/risk.",
     footerTeleportEarphones: "Teleport earphones",
 
+    installationProjectLink: "Installation Project",
+    hubCardInstallationProject:
+      "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and neonatal hyperbaric literacy. Not formula sold by ANCAP, not home HBO, not a guaranteed outcome.",
+    installationProjectKicker: "Legal / neonatology / infant nutrition literacy",
+    installationProjectTitle: "Installation Project — licensed neonatal partner rail",
+    installationProjectIntro:
+      "How ANCAP frames the Installation Project (Проект Установки) SKU as of 13 September 2026. These pages sell ACP-settled partner briefs, not infant formula, not dairy plants, and not CE/FDA hyperbaric devices.",
+    ip1Title: "1. Platform role",
+    ip1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture infant formula, does not operate a milk plant or NICU, and does not practice neonatology.",
+    ip2Title: "2. Not a formula product sold by ANCAP",
+    ip2Body:
+      "Composition callouts (whey, casein, plant proteins, Omega-3/6, vitamins, minerals), non-GMO, and preservative-free framing on the artwork are partner literacy — not a marketed infant formula SKU from ANCAP.",
+    ip3Title: "3. Not a CE/FDA hyperbaric device",
+    ip3Body:
+      "Operating pressure (1.5–2.0 ATA), temperature (36–37 °C), capacity, and monitoring icons are architecture literacy. ANCAP does not sell a cleared hyperbaric chamber or home HBO kit.",
+    ip4Title: "4. Forbidden outcome claims",
+    ip4Body:
+      "ANCAP does not guarantee reduced rickets, anemia, infection, growth delay, or developmental outcomes. Capacity figures (e.g. ~1,000 L/day) are conceptual partner literacy.",
+    ip5Title: "5. Licensed partners only",
+    ip5Body:
+      "Any production run or clinical hyperbaric session is a partner act after screening under applicable food, drug, and medical-device law. Users must not treat these pages as a DIY plant or home chamber kit.",
+    ip6Title: "6. GMP / medical-standards literacy, not a certificate",
+    ip6Body:
+      "References to GMP and medical standards describe partner expectations. They are not an ANCAP-issued manufacturing certificate or regulatory approval.",
+    ip7Title: "7. Not medical or nutrition advice",
+    ip7Body:
+      "Catalog copy is informational architecture literacy. It is not infant feeding advice, a prescription, or a clinical protocol.",
+    ip8Title: "8. Insurance relationship",
+    ip8Body:
+      "Parametric ACP cover class neonatal_install on /insurance may reference Installation Project intakes. It is not medical malpractice insurance, not a formula warranty, and not a CE/FDA device policy.",
+    ip9Title: "9. Payments",
+    ip9Body:
+      "ACP buys a consult brief and partner match at 72,000 ACP — not plant title, not device clearance, and not a refundable clinical outcome. Refunds follow /legal/refunds.",
+    ip10Title: "10. Contact",
+    ip10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#installation-project. Insurance: /insurance. Related notices: /legal/terms, /legal/risk.",
+    footerInstallationProject: "Installation Project",
+
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -1621,6 +1660,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#teleport-earphones.",
     footerTeleportEarphones: "Наушники телепортации",
 
+    installationProjectLink: "Проект Установки",
+    hubCardInstallationProject:
+      "Бриф лицензированного неонатологического / нутриционного партнёра по высокобелковому молоку и неонатальной барокамере. Не смесь от ANCAP, не домашняя HBO, не гарантия исхода.",
+    installationProjectKicker: "Юридическое / неонатология / детское питание",
+    installationProjectTitle: "Проект Установки — лицензированный неонатальный рейл",
+    installationProjectIntro:
+      "Как ANCAP оформляет SKU «Проект Установки» на 13 сентября 2026. Эти страницы продают ACP-брифы партнёра, а не детскую смесь, не молочный завод и не изделие CE/FDA для HBO.",
+    ip1Title: "1. Роль платформы",
+    ip1Body:
+      "ANCAP даёт расчёт ACP, брифы и матч лицензированного партнёра. ANCAP не производит смесь, не ведёт завод или NICU и не практикует неонатологию.",
+    ip2Title: "2. Не смесь от ANCAP",
+    ip2Body:
+      "Состав, «без ГМО» и «без консервантов» на инфографике — грамотность партнёра, не маркетинговый SKU смеси ANCAP.",
+    ip3Title: "3. Не изделие CE/FDA для HBO",
+    ip3Body:
+      "Давление 1,5–2,0 ATA, температура 36–37 °C и мониторинг — архитектурная грамотность. ANCAP не продаёт cleared-камеру и не домашний HBO-набор.",
+    ip4Title: "4. Запрещённые обещания исхода",
+    ip4Body:
+      "ANCAP не гарантирует снижение рахита, анемии, инфекций или задержки развития. Мощность ~1 000 л/сутки — концептуальная грамотность.",
+    ip5Title: "5. Только лицензированные партнёры",
+    ip5Body:
+      "Производство и клинические сеансы — акт партнёра после скрининга по применимому праву. Страницы не DIY-завод и не домашний комплект.",
+    ip6Title: "6. GMP — грамотность, не сертификат ANCAP",
+    ip6Body:
+      "Упоминания GMP и медстандартов описывают ожидания к партнёру, а не сертификат или approval от ANCAP.",
+    ip7Title: "7. Не медсовет и не советы по вскармливанию",
+    ip7Body:
+      "Каталог — информационная архитектурная грамотность, не назначение и не клинический протокол.",
+    ip8Title: "8. Связь со страховкой",
+    ip8Body:
+      "Класс покрытия neonatal_install на /insurance может ссылаться на интейки Проекта Установки. Это не страховка от врачебной ошибки и не гарантия смеси.",
+    ip9Title: "9. Платежи",
+    ip9Body:
+      "ACP покупает бриф и матч партнёра за 72 000 ACP — не титул завода и не clearance устройства. Возвраты — /legal/refunds.",
+    ip10Title: "10. Контакты",
+    ip10Body:
+      "Юр. уведомления: legal@ancap.cloud. Продукт: /aeterna#installation-project. Страховка: /insurance. Связанные: /legal/terms, /legal/risk.",
+    footerInstallationProject: "Проект Установки",
+
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -2533,6 +2611,45 @@ export const legalByLang: Record<Language, Tree> = {
     tp10Title: "10. Контакти",
     tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
     footerTeleportEarphones: "Навушники телепортації",
+
+    installationProjectLink: "Проєкт Установки",
+    hubCardInstallationProject:
+      "Бриф ліцензованого неонатологічного / нутриційного партнера. Не суміш від ANCAP, не домашня HBO, не гарантія результату.",
+    installationProjectKicker: "Юридичне / неонатологія / дитяче харчування",
+    installationProjectTitle: "Проєкт Установки — ліцензований неонатальний рейл",
+    installationProjectIntro:
+      "Як ANCAP оформлює SKU «Проєкт Установки» станом на 13 вересня 2026. Сторінки продають ACP-брифи партнера, а не суміш і не CE/FDA-камеру.",
+    ip1Title: "1. Роль платформи",
+    ip1Body:
+      "ANCAP дає розрахунок ACP, брифи та матч ліцензованого партнера. ANCAP не виробляє суміш і не практикує неонатологію.",
+    ip2Title: "2. Не суміш від ANCAP",
+    ip2Body:
+      "Склад і «без ГМО» на інфографіці — грамотність партнера, не маркетинговий SKU суміші ANCAP.",
+    ip3Title: "3. Не виріб CE/FDA для HBO",
+    ip3Body:
+      "Тиск 1,5–2,0 ATA і температура 36–37 °C — архітектурна грамотність. ANCAP не продає cleared-камеру.",
+    ip4Title: "4. Заборонені обіцянки",
+    ip4Body:
+      "ANCAP не гарантує зниження рахіту, анемії чи затримки розвитку.",
+    ip5Title: "5. Лише ліцензовані партнери",
+    ip5Body:
+      "Виробництво та клінічні сеанси — акт партнера після скринінгу.",
+    ip6Title: "6. GMP — грамотність, не сертифікат ANCAP",
+    ip6Body:
+      "Згадки GMP описують очікування до партнера, а не approval від ANCAP.",
+    ip7Title: "7. Не медична порада",
+    ip7Body:
+      "Каталог — інформаційна грамотність, не призначення.",
+    ip8Title: "8. Зв’язок зі страхуванням",
+    ip8Body:
+      "Клас neonatal_install на /insurance може посилатися на інтейки Проєкту Установки. Це не страховка від лікарської помилки.",
+    ip9Title: "9. Платежі",
+    ip9Body:
+      "ACP купує бриф за 72 000 ACP. Повернення — /legal/refunds.",
+    ip10Title: "10. Контакти",
+    ip10Body:
+      "legal@ancap.cloud · /aeterna#installation-project · /insurance",
+    footerInstallationProject: "Проєкт Установки",
 
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
@@ -3452,6 +3569,45 @@ export const legalByLang: Record<Language, Tree> = {
     tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
     footerTeleportEarphones: "Teleport-Ohrhörer",
 
+    installationProjectLink: "Installationsprojekt",
+    hubCardInstallationProject:
+      "Lizenziertes Neonatologie-/Ernährungs-Partnerbriefing. Keine Säuglingsnahrung von ANCAP, kein Heim-HBO, keine Erfolgsgarantie.",
+    installationProjectKicker: "Recht / Neonatologie / Säuglingsernährung",
+    installationProjectTitle: "Installationsprojekt — lizenzierte neonatale Schiene",
+    installationProjectIntro:
+      "Wie ANCAP die SKU Installationsprojekt zum 13. September 2026 rahmt. Diese Seiten verkaufen ACP-Partnerbriefs, keine Säuglingsnahrung und kein CE/FDA-Druckkammergerät.",
+    ip1Title: "1. Plattformrolle",
+    ip1Body:
+      "ANCAP stellt ACP-Settlement, Briefings und Partner-Matching bereit. ANCAP stellt keine Säuglingsnahrung her und praktiziert keine Neonatologie.",
+    ip2Title: "2. Keine ANCAP-Säuglingsnahrung",
+    ip2Body:
+      "Zusammensetzung und Non-GMO-Framing auf der Infografik sind Partnerliteralität — kein vermarktetes ANCAP-Formula-SKU.",
+    ip3Title: "3. Kein CE/FDA-Druckkammergerät",
+    ip3Body:
+      "1,5–2,0 ATA und 36–37 °C sind Architekturliteralität. ANCAP verkauft keine freigegebene Druckkammer.",
+    ip4Title: "4. Verbotene Outcome-Claims",
+    ip4Body:
+      "ANCAP garantiert keine Reduktion von Rachitis, Anämie oder Entwicklungsverzögerung.",
+    ip5Title: "5. Nur lizenzierte Partner",
+    ip5Body:
+      "Produktion und klinische Sitzungen sind Partnerakte nach Screening.",
+    ip6Title: "6. GMP-Literalität, kein ANCAP-Zertifikat",
+    ip6Body:
+      "GMP-Hinweise beschreiben Partnererwartungen, keine ANCAP-Zulassung.",
+    ip7Title: "7. Keine medizinische Beratung",
+    ip7Body:
+      "Katalogtext ist Architekturliteralität, kein Rezept.",
+    ip8Title: "8. Versicherungsbezug",
+    ip8Body:
+      "Coverage-Klasse neonatal_install auf /insurance kann Installationsprojekt-Intakes referenzieren. Keine Malpractice-Police.",
+    ip9Title: "9. Zahlungen",
+    ip9Body:
+      "ACP kauft ein Briefing für 72.000 ACP. Rückerstattungen: /legal/refunds.",
+    ip10Title: "10. Kontakt",
+    ip10Body:
+      "legal@ancap.cloud · /aeterna#installation-project · /insurance",
+    footerInstallationProject: "Installationsprojekt",
+
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -4367,6 +4523,45 @@ export const legalByLang: Record<Language, Tree> = {
     tp10Title: "10. 聯絡",
     tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
     footerTeleportEarphones: "傳送耳機",
+
+    installationProjectLink: "安裝專案",
+    hubCardInstallationProject:
+      "持照新生兒科／營養夥伴簡報。非 ANCAP 配方奶、非家用 HBO、非結果保證。",
+    installationProjectKicker: "法律／新生兒／嬰兒營養素養",
+    installationProjectTitle: "安裝專案 — 持照新生兒夥伴軌道",
+    installationProjectIntro:
+      "ANCAP 於 2026 年 9 月 13 日對「安裝專案」SKU 的定位：販售 ACP 夥伴簡報，而非配方奶或 CE/FDA 高壓艙。",
+    ip1Title: "1. 平台角色",
+    ip1Body:
+      "ANCAP 提供 ACP 結算、簡報與持照夥伴配對。ANCAP 不製造配方奶，亦不執業新生兒科。",
+    ip2Title: "2. 非 ANCAP 配方奶",
+    ip2Body:
+      "成分與非基改／無防腐劑圖示為夥伴素養，非 ANCAP 市售配方 SKU。",
+    ip3Title: "3. 非 CE/FDA 高壓艙",
+    ip3Body:
+      "1.5–2.0 ATA 與 36–37 °C 為架構素養。ANCAP 不販售已核准高壓艙。",
+    ip4Title: "4. 禁止結果主張",
+    ip4Body:
+      "ANCAP 不保證降低佝僂病、貧血或發育遲緩。",
+    ip5Title: "5. 僅限持照夥伴",
+    ip5Body:
+      "生產與臨床療程為夥伴行為，須經篩檢。",
+    ip6Title: "6. GMP 素養，非 ANCAP 證書",
+    ip6Body:
+      "GMP 提及描述夥伴期待，非 ANCAP 核發核准。",
+    ip7Title: "7. 非醫療建議",
+    ip7Body:
+      "目錄文案為架構素養，非處方。",
+    ip8Title: "8. 與保險的關係",
+    ip8Body:
+      "/insurance 的 neonatal_install 可對應安裝專案進件。非醫療疏失保單。",
+    ip9Title: "9. 付款",
+    ip9Body:
+      "ACP 以 72,000 ACP 購買簡報。退款見 /legal/refunds。",
+    ip10Title: "10. 聯絡",
+    ip10Body:
+      "legal@ancap.cloud · /aeterna#installation-project · /insurance",
+    footerInstallationProject: "安裝專案",
 
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",

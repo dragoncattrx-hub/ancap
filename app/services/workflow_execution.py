@@ -828,6 +828,41 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
         tags=["aeterna", "teleport", "medevac", "fiction", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-installation-project",
+        title="AETERNA Installation Project (Neonatal Nutrition + Hyperbaric)",
+        category="AETERNA",
+        summary=(
+            "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and "
+            "neonatal hyperbaric-chamber literacy — 72,000 ACP."
+        ),
+        description=(
+            "Settles 72,000 ACP and issues a licensed-partner brief for Installation Project "
+            "(Проект Установки): high-protein natural-synthetic infant milk production literacy "
+            "(conceptual ~1,000 L/day; liquid and dry formats; GMP / medical-standards framing) and "
+            "neonatal hyperbaric-chamber architecture literacy (1.5–2.0 ATA; 36–37 °C; 1–2 newborns; "
+            "vitals monitoring). ANCAP does not manufacture infant formula, does not operate a dairy "
+            "plant or NICU, does not sell a CE/FDA hyperbaric device, and does not claim guaranteed "
+            "reduction of rickets, anemia, infection, or developmental delay. Physical production and "
+            "clinical sessions remain with licensed partners after screening."
+        ),
+        price=Money(amount="72000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=[
+            "Milk-line + hyperbaric theme map",
+            "Licensed partner match",
+            "Non-claim / GMP literacy pack",
+        ],
+        output_items=[
+            "Installation Project intake brief",
+            "Licensed neonatology / nutrition partner handoff",
+            "Non-claim checklist (no formula sale / no home HBO / no CE-FDA claim / no guaranteed outcome)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "installation-project", "neonatal", "infant-nutrition", "hyperbaric", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -2152,6 +2187,27 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "note": (
                     "ANCAP settles ACP and issues a partner handoff brief framed around medevac fiction. "
                     "Infographic combat panels are sci-fi literacy, not ops doctrine."
+                ),
+            }
+        if template.slug == "aeterna-installation-project":
+            deliverable["intent"] = str(payload.get("intent_kind") or "installation_project_brief")
+            deliverable["compliance"] = (
+                "Licensed neonatology / infant-nutrition partner only. Not infant formula sold by ANCAP, "
+                "not a CE/FDA hyperbaric device, not home HBO, and not a guaranteed clinical outcome."
+            )
+            deliverable["installation_project"] = {
+                "mode": "licensed_neonatology_nutrition_partner",
+                "architecture": "installation_project_neonatal_partner_literacy",
+                "price_acp": "72000",
+                "themes_literacy": [
+                    "high_protein_infant_formula_line",
+                    "natural_synthetic_milk_gmp_literacy",
+                    "neonatal_hyperbaric_chamber_literacy",
+                    "premature_infant_nursing_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Infographic capacity, ATA, and "
+                    "composition callouts are architecture literacy, not product claims."
                 ),
             }
         execution_summary = {

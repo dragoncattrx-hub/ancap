@@ -61,6 +61,7 @@ class AeternaIntentKind(str, Enum):
     pulmopure_subscription = "pulmopure_subscription"
     barsuk_quantum_pen_brief = "barsuk_quantum_pen_brief"
     teleport_earphones_brief = "teleport_earphones_brief"
+    installation_project_brief = "installation_project_brief"
 
 
 class AeternaDnaSource(str, Enum):
@@ -330,5 +331,12 @@ class AeternaStatusPublic(BaseModel):
         "AIRPODS T-2026 / teleport-earphones rail is a licensed partner brief for fictional medical-evacuation "
         "and quantum-comms literacy. Infographics are sci-fi architecture — not an Apple product, not a real "
         "teleporter, not a military weapon system, and not a guaranteed evacuation outcome."
+    )
+    installation_project_note: str = (
+        "Installation Project (Проект Установки) is a licensed neonatology / infant-nutrition partner brief "
+        "for high-protein natural-synthetic milk line literacy (up to ~1,000 L/day conceptual capacity) and "
+        "neonatal hyperbaric-chamber architecture (1.5–2.0 ATA literacy). Infographics are partner architecture "
+        "— not infant formula sold by ANCAP, not a CE/FDA device, not home HBO, and not a guaranteed growth "
+        "or infection-risk outcome."
     )
 

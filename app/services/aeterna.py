@@ -56,6 +56,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-pulmopure-subscription",
     "aeterna-barsuk-quantum-pen",
     "aeterna-teleport-earphones",
+    "aeterna-installation-project",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -98,6 +99,8 @@ BARSUK_SLUG = "aeterna-barsuk-quantum-pen"
 BARSUK_PRICE_ACP = Decimal("36000")
 TELEPORT_SLUG = "aeterna-teleport-earphones"
 TELEPORT_PRICE_ACP = Decimal("58000")
+INSTALLATION_PROJECT_SLUG = "aeterna-installation-project"
+INSTALLATION_PROJECT_PRICE_ACP = Decimal("72000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -220,6 +223,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
     AeternaIntentKind.barsuk_quantum_pen_brief.value: BARSUK_SLUG,
     AeternaIntentKind.teleport_earphones_brief.value: TELEPORT_SLUG,
+    AeternaIntentKind.installation_project_brief.value: INSTALLATION_PROJECT_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -519,6 +523,36 @@ TELEPORT_META = {
     ),
 }
 
+INSTALLATION_PROJECT_META = {
+    "mode": "licensed_neonatology_nutrition_partner",
+    "unit": "architecture_brief",
+    "price_acp": "72000",
+    "architecture": "installation_project_neonatal_partner_literacy",
+    "themes_literacy": [
+        "high_protein_infant_formula_line",
+        "natural_synthetic_milk_gmp_literacy",
+        "neonatal_hyperbaric_chamber_literacy",
+        "premature_infant_nursing_literacy",
+    ],
+    "modules": {
+        "milk_line_capacity_literacy": "up_to_1000_l_per_day_conceptual",
+        "formats": ["liquid_milk", "dry_powder"],
+        "hyperbaric_pressure_ata_literacy": "1.5_to_2.0",
+        "hyperbaric_temp_c_literacy": "36_to_37",
+        "capacity_newborns_literacy": "1_to_2",
+        "standards_literacy": ["GMP", "medical_partner_standards"],
+    },
+    "note": (
+        "Conceptual Installation Project (Проект Установки) brief. ANCAP settles ACP and issues a licensed "
+        "neonatology / infant-nutrition / perinatal partner handoff covering high-protein natural-synthetic "
+        "milk production literacy and neonatal hyperbaric-chamber architecture. Not infant formula sold by "
+        "ANCAP, not a CE/FDA device, not home hyperbaric oxygen therapy, not a milk factory title deed, and "
+        "not a guaranteed reduction of rickets, anemia, infection, or developmental delay. Infographic "
+        "capacities, ATA ranges, and composition callouts are partner architecture literacy. Partner "
+        "screening required."
+    ),
+}
+
 PULMOPURE_META = {
     "mode": "licensed_clinic_subscription",
     "unit": "monthly_protocol_retainer",
@@ -648,7 +682,9 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
             "M-receptor delivery subscription, artificial oxygen-carrier brief, "
             "synthetic-blood / Black Mamba peptide architecture brief, ADHD / СДВГ support brief, "
-            "PulmoPure lung-care subscription, Project Barsuk quantum-pen brief, teleport-earphones medevac fiction brief, licensed longevity partners."
+            "PulmoPure lung-care subscription, Project Barsuk quantum-pen brief, teleport-earphones medevac "
+            "fiction brief, Installation Project neonatal nutrition / hyperbaric partner brief, licensed "
+            "longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -746,6 +782,11 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Teleport-earphones listings are licensed partner intakes for fictional medical-evacuation "
             "architecture. Infographics are sci-fi — not an Apple product, not a real teleporter, and not "
             "a military weapon system."
+        ),
+        installation_project_note=(
+            "Installation Project listings are licensed neonatology / infant-nutrition partner intakes for "
+            "high-protein milk-line and neonatal hyperbaric-chamber literacy. Infographics are conceptual — "
+            "not formula sold by ANCAP, not a CE/FDA device, not home HBO, and not a guaranteed clinical outcome."
         ),
     )
 
@@ -1073,6 +1114,20 @@ async def create_intent_order(
                 detail="teleport_earphones_brief budget_acp must be at least 58000 ACP",
             )
         for key, value in TELEPORT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.installation_project_brief:
+        if slug and slug != INSTALLATION_PROJECT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="installation_project_brief requires workflow_slug aeterna-installation-project",
+            )
+        slug = INSTALLATION_PROJECT_SLUG
+        if body.budget_acp < INSTALLATION_PROJECT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="installation_project_brief budget_acp must be at least 72000 ACP",
+            )
+        for key, value in INSTALLATION_PROJECT_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(
