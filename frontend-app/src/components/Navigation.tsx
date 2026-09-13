@@ -131,14 +131,9 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-/** Horizontal scroll rail + thin scrollbar. */
-const navScrollRow =
-  "flex w-full max-w-full flex-nowrap items-center gap-0.5 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0.5 py-0.5 touch-pan-x whitespace-nowrap [-ms-overflow-style:none] [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent";
-
-const fadeL =
-  "pointer-events-none absolute inset-y-0 left-0 z-[1] w-8 bg-gradient-to-r from-[#070b16] via-[#070b16]/80 to-transparent";
-const fadeR =
-  "pointer-events-none absolute inset-y-0 right-0 z-[1] w-8 bg-gradient-to-l from-[#070b16] via-[#070b16]/80 to-transparent";
+/** Desktop pill row — wrap inside the field so labels stay fully readable. */
+const navWrapRow =
+  "flex w-full max-w-full flex-wrap items-center gap-x-0.5 gap-y-0.5 px-1 py-0.5";
 
 const actionGhost =
   "inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-white/80 transition duration-200 hover:border-white/18 hover:bg-white/[0.07] hover:text-white active:scale-[0.98]";
@@ -292,16 +287,6 @@ function MobileNavRow({
   );
 }
 
-function NavScrollWithFades({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative min-w-0">
-      <div className={fadeL} aria-hidden />
-      <div className={fadeR} aria-hidden />
-      {children}
-    </div>
-  );
-}
-
 function BrandMark() {
   return (
     <Link href="/" className="group inline-flex min-w-0 items-center gap-2.5 sm:gap-3">
@@ -371,67 +356,61 @@ export function Navigation() {
       <div className="relative mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
         <div
           className={cn(
-            "flex items-center justify-between gap-2 sm:gap-3",
-            isAuthenticated ? "min-h-[64px] lg:min-h-[70px]" : "min-h-[64px] py-2 lg:min-h-[68px]"
+            "flex items-start justify-between gap-2 sm:gap-3 lg:items-center",
+            isAuthenticated ? "min-h-[64px] py-2 lg:min-h-[72px] lg:py-2.5" : "min-h-[64px] py-2 lg:min-h-[68px]"
           )}
         >
-          <div className="flex min-w-0 shrink items-center gap-2 sm:shrink-0 sm:gap-5">
+          <div className="flex min-w-0 shrink items-center gap-2 pt-1 sm:shrink-0 sm:gap-5 lg:pt-0">
             <BrandMark />
           </div>
 
-          <div className="hidden min-w-0 flex-1 lg:flex lg:items-center lg:px-3">
+          <div className="hidden min-w-0 flex-1 lg:flex lg:items-center lg:px-2 xl:px-3">
             {isAuthenticated ? (
-              <div className="w-full rounded-xl border border-white/[0.07] bg-black/20 p-1 backdrop-blur-sm">
-                <NavScrollWithFades>
-                  <nav className={navScrollRow} aria-label={t("nav.main")}>
-                    {primaryNav.map((item) => (
-                      <PillNavLink
-                        key={item.href}
-                        item={item}
-                        label={navItemLabel(item, t)}
-                        active={pathname === item.href}
-                        tier="primary"
-                      />
-                    ))}
-                  </nav>
-                </NavScrollWithFades>
-                <NavScrollWithFades>
-                  <nav
-                    className={cn(navScrollRow, "mt-0.5 border-t border-white/[0.05] pt-0.5")}
-                    aria-label={t("nav.system")}
-                  >
-                    {secondaryNav.map((item) => (
-                      <PillNavLink
-                        key={item.href}
-                        item={item}
-                        label={navItemLabel(item, t)}
-                        active={pathname === item.href}
-                        tier="secondary"
-                      />
-                    ))}
-                  </nav>
-                </NavScrollWithFades>
+              <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
+                <nav className={navWrapRow} aria-label={t("nav.main")}>
+                  {primaryNav.map((item) => (
+                    <PillNavLink
+                      key={item.href}
+                      item={item}
+                      label={navItemLabel(item, t)}
+                      active={pathname === item.href}
+                      tier="primary"
+                    />
+                  ))}
+                </nav>
+                <nav
+                  className={cn(navWrapRow, "mt-1 border-t border-white/[0.06] pt-1")}
+                  aria-label={t("nav.system")}
+                >
+                  {secondaryNav.map((item) => (
+                    <PillNavLink
+                      key={item.href}
+                      item={item}
+                      label={navItemLabel(item, t)}
+                      active={pathname === item.href}
+                      tier="secondary"
+                    />
+                  ))}
+                </nav>
               </div>
             ) : (
-              <div className="w-full rounded-xl border border-white/[0.07] bg-black/20 p-1 backdrop-blur-sm">
-                <NavScrollWithFades>
-                  <nav className={cn(navScrollRow, "justify-center px-4")} aria-label={t("nav.main")}>
-                    {publicNav.map((item) => (
-                      <PillNavLink
-                        key={item.href}
-                        item={item}
-                        label={navItemLabel(item, t)}
-                        active={!item.href.startsWith("/#") && pathname === item.href}
-                        tier="primary"
-                      />
-                    ))}
-                  </nav>
-                </NavScrollWithFades>
+              <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
+                <nav className={navWrapRow} aria-label={t("nav.main")}>
+                  {publicNav.map((item) => (
+                    <PillNavLink
+                      key={item.href}
+                      item={item}
+                      label={navItemLabel(item, t)}
+                      active={!item.href.startsWith("/#") && pathname === item.href}
+                      tier="primary"
+                    />
+                  ))}
+                </nav>
               </div>
             )}
           </div>
 
-          <div className="hidden min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 lg:flex">
+          <div className="hidden min-w-0 shrink-0 items-center gap-1.5 self-center sm:gap-2 lg:flex">
             <Link href="/wallet/acp" className={actionAcp}>
               {t("nav.acpWallet")}
             </Link>
