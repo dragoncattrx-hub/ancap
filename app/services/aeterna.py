@@ -54,6 +54,8 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-synthetic-blood-mamba",
     "aeterna-adhd-support",
     "aeterna-pulmopure-subscription",
+    "aeterna-barsuk-quantum-pen",
+    "aeterna-teleport-earphones",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -92,6 +94,10 @@ PULMOPURE_SLUG = "aeterna-pulmopure-subscription"
 PULMOPURE_PRICE_ACP = Decimal("14000")
 PULMOPURE_QUARTERLY_ACP = Decimal("38000")
 PULMOPURE_ANNUAL_ACP = Decimal("128000")
+BARSUK_SLUG = "aeterna-barsuk-quantum-pen"
+BARSUK_PRICE_ACP = Decimal("36000")
+TELEPORT_SLUG = "aeterna-teleport-earphones"
+TELEPORT_PRICE_ACP = Decimal("58000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -212,6 +218,8 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
     AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
     AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
+    AeternaIntentKind.barsuk_quantum_pen_brief.value: BARSUK_SLUG,
+    AeternaIntentKind.teleport_earphones_brief.value: TELEPORT_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -471,6 +479,46 @@ ADHD_SUPPORT_META = {
     ),
 }
 
+
+BARSUK_META = {
+    "mode": "licensed_secure_comms_partner",
+    "unit": "architecture_brief",
+    "price_acp": "36000",
+    "architecture": "barsuk_quantum_pen_partner_literacy",
+    "themes_literacy": [
+        "pen_form_secure_comms",
+        "quantum_crypto_literacy",
+        "sensor_nav_literacy",
+        "smart_ink_literacy",
+    ],
+    "note": (
+        "Conceptual Project Barsuk / quantum-pen brief. ANCAP settles ACP and issues a licensed "
+        "secure-comms / identity partner handoff. Not a Parker Pen Company product, not a CE/FDA device, "
+        "not a military weapon, not unbreakable cryptography, and not a field kit sold by ANCAP. "
+        "Infographic ranges and materials are fiction / architecture literacy. Partner screening required."
+    ),
+}
+
+TELEPORT_META = {
+    "mode": "licensed_partner_fiction_brief",
+    "unit": "architecture_brief",
+    "price_acp": "58000",
+    "architecture": "teleport_earphones_medevac_literacy",
+    "themes_literacy": [
+        "fictional_medevac_teleport",
+        "quantum_comms_literacy",
+        "neural_interface_literacy",
+        "field_case_ruggedization_literacy",
+    ],
+    "note": (
+        "Conceptual AIRPODS T-2026 / teleport-earphones brief focused on medical-evacuation fiction. "
+        "ANCAP settles ACP and issues a licensed partner handoff. Not an Apple product, not a real "
+        "teleporter, not a military weapon system, not a guaranteed 10,000 km jump, and not a combat "
+        "ops kit. Infographic ranges and combat panels are sci-fi literacy; ANCAP frames the SKU around "
+        "rescue / medevac themes only. Partner screening required."
+    ),
+}
+
 PULMOPURE_META = {
     "mode": "licensed_clinic_subscription",
     "unit": "monthly_protocol_retainer",
@@ -600,7 +648,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
             "M-receptor delivery subscription, artificial oxygen-carrier brief, "
             "synthetic-blood / Black Mamba peptide architecture brief, ADHD / СДВГ support brief, "
-            "PulmoPure lung-care subscription, licensed longevity partners."
+            "PulmoPure lung-care subscription, Project Barsuk quantum-pen brief, teleport-earphones medevac fiction brief, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -688,6 +736,16 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "gas-vibration and lavender-oil architecture literacy. Infographics are conceptual — not a "
             "CE/FDA device, not ozone therapy, not medical-gas compounding, and not a guaranteed "
             "tar-clearance or 'clean lungs' outcome."
+        ),
+        barsuk_note=(
+            "Project Barsuk listings are licensed secure-comms partner intakes for pen-form cryptography "
+            "and sensor literacy. Infographics are fiction — not a Parker product, not a weapon, and not "
+            "unbreakable crypto sold by ANCAP."
+        ),
+        teleport_earphones_note=(
+            "Teleport-earphones listings are licensed partner intakes for fictional medical-evacuation "
+            "architecture. Infographics are sci-fi — not an Apple product, not a real teleporter, and not "
+            "a military weapon system."
         ),
     )
 
@@ -986,6 +1044,35 @@ async def create_intent_order(
                 detail="pulmopure_subscription budget_acp must be at least 14000 ACP per month",
             )
         for key, value in PULMOPURE_META.items():
+            meta.setdefault(key, value)
+
+    if body.intent_kind == AeternaIntentKind.barsuk_quantum_pen_brief:
+        if slug and slug != BARSUK_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="barsuk_quantum_pen_brief requires workflow_slug aeterna-barsuk-quantum-pen",
+            )
+        slug = BARSUK_SLUG
+        if body.budget_acp < BARSUK_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="barsuk_quantum_pen_brief budget_acp must be at least 36000 ACP",
+            )
+        for key, value in BARSUK_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.teleport_earphones_brief:
+        if slug and slug != TELEPORT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="teleport_earphones_brief requires workflow_slug aeterna-teleport-earphones",
+            )
+        slug = TELEPORT_SLUG
+        if body.budget_acp < TELEPORT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="teleport_earphones_brief budget_acp must be at least 58000 ACP",
+            )
+        for key, value in TELEPORT_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

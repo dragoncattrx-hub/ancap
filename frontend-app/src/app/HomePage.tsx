@@ -382,6 +382,12 @@ export function HomePage() {
                     <Link href="/aeterna#pulmopure" className="btn btn-ghost">
                       {t("aeternaPage.ppCta")}
                     </Link>
+                    <Link href="/aeterna#barsuk" className="btn btn-ghost">
+                      {t("aeternaPage.bkCta")}
+                    </Link>
+                    <Link href="/aeterna#teleport-earphones" className="btn btn-ghost">
+                      {t("aeternaPage.teCta")}
+                    </Link>
                 </div>
               </div>
               <div

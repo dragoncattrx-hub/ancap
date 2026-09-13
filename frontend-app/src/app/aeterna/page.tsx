@@ -22,6 +22,8 @@ import { OxygenCarrierPanel } from "@/components/aeterna/OxygenCarrierPanel";
 import { SyntheticBloodMambaPanel } from "@/components/aeterna/SyntheticBloodMambaPanel";
 import { AdhdSupportPanel } from "@/components/aeterna/AdhdSupportPanel";
 import { PulmoPurePanel } from "@/components/aeterna/PulmoPurePanel";
+import { BarsukQuantumPenPanel } from "@/components/aeterna/BarsukQuantumPenPanel";
+import { TeleportEarphonesPanel } from "@/components/aeterna/TeleportEarphonesPanel";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -59,9 +61,11 @@ type AeternaStatus = {
   synthetic_blood_mamba_note?: string;
   adhd_support_note?: string;
   pulmopure_note?: string;
+  barsuk_note?: string;
+  teleport_earphones_note?: string;
 };
 
-const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] as const;
+const INTENT_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] as const;
 const ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print";
 
 /** Public landing — sandbox + local hash work with zero account. Cloud vault sync is optional. */
@@ -226,6 +230,18 @@ export default function AeternaPage() {
             >
               {t("aeternaPage.ppCta")}
             </a>
+            <a
+              href="#barsuk"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.bkCta")}
+            </a>
+            <a
+              href="#teleport-earphones"
+              className="rounded-md border border-[#7ad0c8]/40 px-5 py-3 text-sm font-medium text-[#9ae0d9] transition hover:border-[#7ad0c8]"
+            >
+              {t("aeternaPage.teCta")}
+            </a>
           </div>
         </div>
       </section>
@@ -317,6 +333,14 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <PulmoPurePanel note={status?.pulmopure_note} />
+        </section>
+
+        <section className="mt-16">
+          <BarsukQuantumPenPanel note={status?.barsuk_note} />
+        </section>
+
+        <section className="mt-16">
+          <TeleportEarphonesPanel note={status?.teleport_earphones_note} />
         </section>
 
         <section className="mt-16 max-w-2xl">

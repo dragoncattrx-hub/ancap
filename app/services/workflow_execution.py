@@ -764,6 +764,70 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         subscription_price_quarterly=Money(amount="38000", currency="ACP"),
         subscription_price_annual=Money(amount="128000", currency="ACP"),
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-barsuk-quantum-pen",
+        title="AETERNA Project Barsuk Quantum Pen Brief",
+        category="AETERNA",
+        summary=(
+            "Licensed secure-comms partner brief for Project Barsuk pen-form cryptography, sensor, "
+            "and smart-ink literacy — 36,000 ACP."
+        ),
+        description=(
+            "Settles 36,000 ACP and issues a licensed-partner brief for a conceptual titanium pen with "
+            "quantum-crypto, sensor, AI, and smart-ink literacy. Infographic ranges (comms, sensors, "
+            "standby) are fiction / architecture literacy. ANCAP is not affiliated with Parker Pen Company, "
+            "does not sell a CE/FDA or military device, and does not claim unbreakable cryptography or a "
+            "field weapon. Physical modules, if any, remain with a licensed secure-comms partner after screening."
+        ),
+        price=Money(amount="36000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=[
+            "Secure-comms theme map",
+            "Licensed partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Barsuk quantum-pen intake brief",
+            "Licensed secure-comms handoff",
+            "Non-claim checklist (no Parker claim / no weapon / no unbreakable crypto / no CE-FDA)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "barsuk", "quantum-pen", "secure-comms", "consult"],
+    ),
+    WorkflowTemplatePublic(
+        slug="aeterna-teleport-earphones",
+        title="AETERNA Teleport Earphones Medevac Fiction Brief",
+        category="AETERNA",
+        summary=(
+            "Licensed partner brief for AIRPODS T-2026 fictional medical-evacuation / quantum-comms "
+            "literacy — 58,000 ACP."
+        ),
+        description=(
+            "Settles 58,000 ACP and issues a licensed-partner brief for sci-fi teleport-earphones framed "
+            "around medical evacuation and rescue literacy. Infographic ranges (10,000 km, 0.1–0.3 s) and "
+            "combat panels are fiction. ANCAP is not affiliated with Apple, does not sell a real teleporter "
+            "or military weapon system, and does not guarantee evacuation outcomes. The SKU emphasizes "
+            "rescue / medevac themes only — not offensive teleport ops."
+        ),
+        price=Money(amount="58000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=[
+            "Medevac fiction theme map",
+            "Licensed partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Teleport-earphones medevac intake brief",
+            "Licensed partner handoff",
+            "Non-claim checklist (no Apple claim / no real teleport / no weapon system / no guaranteed evac)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "teleport", "medevac", "fiction", "consult"],
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -2045,6 +2109,49 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles the subscription period in ACP and issues a partner handoff brief. "
                     "Physical sessions occur only under a licensed clinician after screening. Infographic "
                     "modes and before/after alveoli are protocol literacy, not a product claim."
+                ),
+            }
+
+        if template.slug == "aeterna-barsuk-quantum-pen":
+            deliverable["intent"] = str(payload.get("intent_kind") or "barsuk_quantum_pen_brief")
+            deliverable["compliance"] = (
+                "Licensed secure-comms partner only. Not a Parker product, not a weapon, not unbreakable "
+                "crypto, and not a CE/FDA device sold by ANCAP."
+            )
+            deliverable["barsuk_quantum_pen"] = {
+                "mode": "licensed_secure_comms_partner",
+                "architecture": "barsuk_quantum_pen_partner_literacy",
+                "price_acp": "36000",
+                "themes_literacy": [
+                    "pen_form_secure_comms",
+                    "quantum_crypto_literacy",
+                    "sensor_nav_literacy",
+                    "smart_ink_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Infographic ranges are fiction "
+                    "literacy, not a product claim."
+                ),
+            }
+        if template.slug == "aeterna-teleport-earphones":
+            deliverable["intent"] = str(payload.get("intent_kind") or "teleport_earphones_brief")
+            deliverable["compliance"] = (
+                "Licensed partner fiction brief only. Not an Apple product, not a real teleporter, not a "
+                "military weapon system, and not a guaranteed medical-evacuation outcome."
+            )
+            deliverable["teleport_earphones"] = {
+                "mode": "licensed_partner_fiction_brief",
+                "architecture": "teleport_earphones_medevac_literacy",
+                "price_acp": "58000",
+                "themes_literacy": [
+                    "fictional_medevac_teleport",
+                    "quantum_comms_literacy",
+                    "neural_interface_literacy",
+                    "field_case_ruggedization_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief framed around medevac fiction. "
+                    "Infographic combat panels are sci-fi literacy, not ops doctrine."
                 ),
             }
         execution_summary = {

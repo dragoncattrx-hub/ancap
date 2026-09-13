@@ -24,3 +24,9 @@ Verification ≠ distribution. A post can be `verification_status=verified` and 
 ## Preferred voice
 
 Builder note, one idea, zero or one link, no hashtag clusters, no "Live:" catalogs.
+
+## Site-first conceptual SKUs (Barsuk, teleport-earphones, etc.)
+
+Do **not** blast fiction / partner-literacy launches to Moltbook or Telegram spam loops.
+Put calm copy on `projectNewsRu` / ancap.cloud only. Theodore earn JSON marks these with `"channels": ["site"]`;
+`theodore-earn-promo.ps1` skips them for Telegram.

@@ -73,6 +73,8 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.synthetic_blood_mamba_brief.value == "synthetic_blood_mamba_brief"
     assert AeternaIntentKind.adhd_support_brief.value == "adhd_support_brief"
     assert AeternaIntentKind.pulmopure_subscription.value == "pulmopure_subscription"
+    assert AeternaIntentKind.barsuk_quantum_pen_brief.value == "barsuk_quantum_pen_brief"
+    assert AeternaIntentKind.teleport_earphones_brief.value == "teleport_earphones_brief"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -88,6 +90,8 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["synthetic_blood_mamba_note"]
     assert AeternaStatusPublic.model_fields["adhd_support_note"]
     assert AeternaStatusPublic.model_fields["pulmopure_note"]
+    assert AeternaStatusPublic.model_fields["barsuk_note"]
+    assert AeternaStatusPublic.model_fields["teleport_earphones_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -97,7 +101,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 22
+    assert len(aeterna) >= 24
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -107,6 +111,8 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-transdermal-pistol": "46000",
         "aeterna-m-receptor-subscription": "12000",
         "aeterna-pulmopure-subscription": "14000",
+        "aeterna-barsuk-quantum-pen": "36000",
+        "aeterna-teleport-earphones": "58000",
         "aeterna-oxygen-carrier": "92000",
         "aeterna-synthetic-blood-mamba": "98000",
         "aeterna-adhd-support": "42000",
@@ -133,6 +139,8 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-synthetic-blood-mamba" in slugs
     assert "aeterna-adhd-support" in slugs
     assert "aeterna-pulmopure-subscription" in slugs
+    assert "aeterna-barsuk-quantum-pen" in slugs
+    assert "aeterna-teleport-earphones" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -779,6 +787,71 @@ def test_pulmopure_intent_default_slug_and_reject_low_budget(client):
     assert payload["workflow_slug"] == PULMOPURE_SLUG
     assert payload["metadata_json"]["architecture"] == "pulmopure_gas_vibration_partner_literacy"
     assert payload["metadata_json"]["billing"] == "subscription"
+
+
+
+def test_barsuk_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-barsuk-quantum-pen")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "barsuk_quantum_pen_brief"})
+    item = out["deliverable"]["barsuk_quantum_pen"]
+    assert item["price_acp"] == "36000"
+    assert item["architecture"] == "barsuk_quantum_pen_partner_literacy"
+    blob = str(out).lower()
+    assert "parker" in blob
+    assert "weapon" in blob
+
+
+def test_barsuk_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import BARSUK_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "barsuk_quantum_pen_brief", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "barsuk_quantum_pen_brief", "budget_acp": "36000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == BARSUK_SLUG
+    assert payload["metadata_json"]["architecture"] == "barsuk_quantum_pen_partner_literacy"
+
+
+def test_teleport_earphones_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-teleport-earphones")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "teleport_earphones_brief"})
+    item = out["deliverable"]["teleport_earphones"]
+    assert item["price_acp"] == "58000"
+    assert item["architecture"] == "teleport_earphones_medevac_literacy"
+    blob = str(out).lower()
+    assert "apple" in blob
+    assert "medevac" in blob or "evacuation" in blob or "rescue" in blob
+
+
+def test_teleport_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import TELEPORT_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "teleport_earphones_brief", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "teleport_earphones_brief", "budget_acp": "58000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == TELEPORT_SLUG
+    assert payload["metadata_json"]["architecture"] == "teleport_earphones_medevac_literacy"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():

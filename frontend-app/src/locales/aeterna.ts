@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP, or a PulmoPure lung-care subscription from 14,000 ACP / month.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP, or a PulmoPure lung-care subscription from 14,000 ACP / month, or a Project Barsuk quantum-pen brief at 36,000 ACP, or a teleport-earphones medevac fiction brief at 58,000 ACP.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP; PulmoPure lung-care subscription is 14,000 ACP / month (38,000 quarterly; 128,000 annual). AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP; PulmoPure lung-care subscription is 14,000 ACP / month (38,000 quarterly; 128,000 annual); Project Barsuk quantum-pen brief is 36,000 ACP; teleport-earphones medevac fiction brief is 58,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -77,6 +77,14 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent21Title: "PulmoPure lung-care subscription",
     intent21Body:
       "Licensed pulmonology / respiratory clinic subscription for gas-vibration and lavender-oil architecture literacy. 14,000 ACP / month. Not a CE/FDA device, not ozone therapy, not medical-gas compounding, and not a guaranteed tar-clearance or clean-lungs outcome.",
+
+    intent22Title: "Project Barsuk quantum pen",
+    intent22Body:
+      "Licensed secure-comms partner brief for pen-form cryptography, sensor, and smart-ink literacy. 36,000 ACP. Not a Parker product, not a weapon, not unbreakable crypto, not a CE/FDA device — fiction / architecture literacy only.",
+
+    intent23Title: "Teleport earphones medevac fiction",
+    intent23Body:
+      "Licensed partner brief for AIRPODS T-2026 fictional medical-evacuation / quantum-comms literacy. 58,000 ACP. Not an Apple product, not a real teleporter, not a military weapon system, and not a guaranteed evacuation outcome.",
 
 
 
@@ -337,6 +345,46 @@ export const aeternaByLang: Record<Language, Tree> = {
     ppStep4Title: "Handoff",
     ppStep4Body: "ACP buys a subscription brief and licensed clinic match — not hardware title.",
 
+    bkCta: "Open Barsuk quantum-pen brief",
+    bkKicker: "Project Barsuk · secure-comms · fiction literacy",
+    bkTitle: "Barsuk quantum pen — architecture for a secure-comms partner",
+    bkPrice: "36,000 ACP",
+    bkLead:
+      "A conceptual titanium pen with quantum-crypto, sensor, AI, and smart-ink literacy. Infographic ranges (comms, sensors, standby) are fiction / architecture literacy for a licensed secure-comms partner — not a field kit ANCAP ships.",
+    bkDisclaimer:
+      "ANCAP is not affiliated with Parker Pen Company, does not sell a CE/FDA or military device, and does not claim unbreakable cryptography or a weapon. Physical modules, if any, remain with a licensed secure-comms partner after screening.",
+    bkLegalCta: "Barsuk legal notice",
+    bkAlt:
+      "Infographic of Project Barsuk quantum pen: titanium body, crypto module, sensors, and smart ink. Conceptual architecture for licensed secure-comms partners — not a Parker product or weapon.",
+    bkStep1Title: "Form factor",
+    bkStep1Body: "Pen-shaped secure-comms literacy. Not a Parker product claim.",
+    bkStep2Title: "Crypto",
+    bkStep2Body: "Quantum-crypto architecture literacy. Not unbreakable crypto sold by ANCAP.",
+    bkStep3Title: "Sensors",
+    bkStep3Body: "Nav / biometric sensor literacy on the artwork. Not a military kit.",
+    bkStep4Title: "Handoff",
+    bkStep4Body: "ACP buys a partner brief — not hardware title or CE/FDA clearance.",
+
+    teCta: "Open teleport-earphones brief",
+    teKicker: "AIRPODS T-2026 · medevac fiction · partner literacy",
+    teTitle: "Teleport earphones — rescue fiction, not a real jump",
+    tePrice: "58,000 ACP",
+    teLead:
+      "Sci-fi earphones framed around medical evacuation and quantum-comms literacy. Infographic ranges (10,000 km, 0.1–0.3 s) and combat panels are fiction. ANCAP emphasizes rescue / medevac themes only — not offensive teleport ops.",
+    teDisclaimer:
+      "ANCAP is not affiliated with Apple, does not sell a real teleporter or military weapon system, and does not guarantee evacuation outcomes. Artwork is sci-fi architecture literacy for a licensed partner brief.",
+    teLegalCta: "Teleport earphones legal notice",
+    teAlt:
+      "Infographic of AIRPODS T-2026 teleport earphones with medevac fiction ranges and quantum-comms themes. Conceptual literacy for licensed partners — not an Apple product or real teleporter.",
+    teStep1Title: "Medevac",
+    teStep1Body: "Rescue / evacuation fiction literacy. Not a guaranteed jump.",
+    teStep2Title: "Comms",
+    teStep2Body: "Quantum-comms theme literacy. Not a military C2 system.",
+    teStep3Title: "Interface",
+    teStep3Body: "Neural-interface icons are fiction. Not a CE/FDA implant.",
+    teStep4Title: "Handoff",
+    teStep4Body: "ACP buys a fiction brief and partner match — not hardware title.",
+
 
 
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
@@ -480,6 +528,14 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent21Title: "Подписка PulmoPure (лёгкие)",
     intent21Body:
       "Подписка лицензированной пульмонологической / респираторной клиники: газо-вибрация и лавандовый атомайзер как грамотность. 14 000 ACP / месяц. Не изделие CE/FDA, не озонотерапия, не компаундинг медгазов и не гарантия «чистых лёгких».",
+
+    intent22Title: "Квантовая ручка Project Barsuk",
+    intent22Body:
+      "Бриф для лицензированного secure-comms партнёра: ручка-формфактор, квантовая крипто-грамотность, сенсоры и умные чернила. 36 000 ACP. Не продукт Parker, не оружие, не «невзламываемая» криптография, не изделие CE/FDA — только художественная / архитектурная грамотность.",
+
+    intent23Title: "Наушники телепортации (медэвак-фикшн)",
+    intent23Body:
+      "Партнёрский бриф AIRPODS T-2026: художественная грамотность медицинской эвакуации и квантовых коммуникаций. 58 000 ACP. Не продукт Apple, не реальный телепорт, не военная система оружия и не гарантия эвакуации.",
 
 
 
@@ -740,6 +796,46 @@ export const aeternaByLang: Record<Language, Tree> = {
     ppStep4Title: "Передача",
     ppStep4Body: "ACP покупает подписочный бриф и клинику — не право на железо.",
 
+    bkCta: "Открыть бриф Barsuk",
+    bkKicker: "Project Barsuk · secure-comms · художественная грамотность",
+    bkTitle: "Квантовая ручка Barsuk — архитектура для secure-comms партнёра",
+    bkPrice: "36 000 ACP",
+    bkLead:
+      "Концептуальная титановая ручка с квантовой крипто-, сенсорной, ИИ- и smart-ink грамотностью. Диапазоны на инфографике — художественная / архитектурная грамотность для лицензированного партнёра, не полевой комплект от ANCAP.",
+    bkDisclaimer:
+      "ANCAP не аффилирована с Parker Pen Company, не продаёт изделие CE/FDA или военное устройство и не заявляет «невзламываемую» криптографию или оружие. Физические модули, если появятся, остаются у лицензированного secure-comms партнёра после скрининга.",
+    bkLegalCta: "Юр. текст Barsuk",
+    bkAlt:
+      "Инфографика квантовой ручки Project Barsuk: титановый корпус, крипто-модуль, сенсоры и умные чернила. Концептуальная архитектура для лицензированных secure-comms партнёров — не продукт Parker и не оружие.",
+    bkStep1Title: "Формфактор",
+    bkStep1Body: "Грамотность ручки-формфактора. Не claim продукта Parker.",
+    bkStep2Title: "Крипто",
+    bkStep2Body: "Грамотность квантовой крипто-архитектуры. Не «невзламываемая» крипта от ANCAP.",
+    bkStep3Title: "Сенсоры",
+    bkStep3Body: "Грамотность навигации / биометрии на картинке. Не военный комплект.",
+    bkStep4Title: "Передача",
+    bkStep4Body: "ACP покупает партнёрский бриф — не право на железо и не CE/FDA.",
+
+    teCta: "Открыть бриф наушников телепортации",
+    teKicker: "AIRPODS T-2026 · медэвак-фикшн · партнёрская грамотность",
+    teTitle: "Наушники телепортации — fiction спасения, не реальный прыжок",
+    tePrice: "58 000 ACP",
+    teLead:
+      "Наушники sci-fi в рамке медицинской эвакуации и квантовых коммуникаций. Диапазоны (10 000 км, 0,1–0,3 с) и боевые панели — fiction. ANCAP подчёркивает спасение / медэвак, не наступательные сценарии.",
+    teDisclaimer:
+      "ANCAP не аффилирована с Apple, не продаёт реальный телепорт или военную систему оружия и не гарантирует эвакуацию. Картинка — sci-fi архитектурная грамотность для лицензированного партнёрского брифа.",
+    teLegalCta: "Юр. текст наушников телепортации",
+    teAlt:
+      "Инфографика AIRPODS T-2026: fiction-медэвак, квантовые коммуникации. Концептуальная грамотность для лицензированных партнёров — не продукт Apple и не реальный телепорт.",
+    teStep1Title: "Медэвак",
+    teStep1Body: "Грамотность fiction спасения / эвакуации. Не гарантия прыжка.",
+    teStep2Title: "Связь",
+    teStep2Body: "Грамотность квантовых коммуникаций. Не военная C2-система.",
+    teStep3Title: "Интерфейс",
+    teStep3Body: "Иконки нейроинтерфейса — fiction. Не имплант CE/FDA.",
+    teStep4Title: "Передача",
+    teStep4Body: "ACP покупает fiction-бриф и партнёра — не право на железо.",
+
 
 
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
@@ -878,6 +974,14 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent21Title: "Підписка PulmoPure (легені)",
     intent21Body:
       "Підписка ліцензованої пульмонологічної / респіраторної клініки: газо-вібрація та лавандовий атомайзер як грамотність. 14 000 ACP / місяць. Не виріб CE/FDA, не озонотерапія, не компаундинг медгазів і не гарантія «чистих легень».",
+
+    intent22Title: "Квантова ручка Project Barsuk",
+    intent22Body:
+      "Бриф для ліцензованого secure-comms партнера: ручка-формфактор, квантова крипто-грамотність, сенсори й розумне чорнило. 36 000 ACP. Не продукт Parker, не зброя, не «невзламувана» криптографія, не виріб CE/FDA.",
+
+    intent23Title: "Навушники телепортації (медевак-фікшн)",
+    intent23Body:
+      "Партнерський бриф AIRPODS T-2026: художня грамотність медичної евакуації та квантових комунікацій. 58 000 ACP. Не продукт Apple, не реальний телепорт, не військова зброя і не гарантія евакуації.",
 
 
 
@@ -1128,6 +1232,44 @@ export const aeternaByLang: Record<Language, Tree> = {
     ppStep4Title: "Передача",
     ppStep4Body: "ACP купує підписний бриф і клініку — не право на залізо.",
 
+    bkCta: "Відкрити бриф Barsuk",
+    bkKicker: "Project Barsuk · secure-comms · художня грамотність",
+    bkTitle: "Квантова ручка Barsuk — архітектура для secure-comms партнера",
+    bkPrice: "36 000 ACP",
+    bkLead:
+      "Концептуальна титанова ручка з квантовою крипто-, сенсорною та smart-ink грамотністю. Інфографіка — художня / архітектурна грамотність.",
+    bkDisclaimer:
+      "ANCAP не афілійована з Parker, не продає CE/FDA чи військову зброю і не заявляє «невзламувану» криптографію.",
+    bkLegalCta: "Юр. текст Barsuk",
+    bkAlt: "Інфографіка квантової ручки Project Barsuk. Концептуальна архітектура для ліцензованих партнерів.",
+    bkStep1Title: "Формфактор",
+    bkStep1Body: "Грамотність ручки. Не claim Parker.",
+    bkStep2Title: "Крипто",
+    bkStep2Body: "Квантова крипто-грамотність. Не «невзламувана» крипта.",
+    bkStep3Title: "Сенсори",
+    bkStep3Body: "Сенсорна грамотність. Не військовий комплект.",
+    bkStep4Title: "Передача",
+    bkStep4Body: "ACP купує бриф партнера — не право на залізо.",
+
+    teCta: "Відкрити бриф навушників телепортації",
+    teKicker: "AIRPODS T-2026 · медевак-фікшн · партнерська грамотність",
+    teTitle: "Навушники телепортації — fiction порятунку",
+    tePrice: "58 000 ACP",
+    teLead:
+      "Sci-fi навушники в рамці медичної евакуації. Діапазони на інфографіці — fiction. Акцент — порятунок / медевак.",
+    teDisclaimer:
+      "ANCAP не афілійована з Apple, не продає реальний телепорт чи військову систему і не гарантує евакуацію.",
+    teLegalCta: "Юр. текст навушників телепортації",
+    teAlt: "Інфографіка AIRPODS T-2026 / teleport-earphones. Концептуальна грамотність для ліцензованих партнерів.",
+    teStep1Title: "Медевак",
+    teStep1Body: "Fiction порятунку. Не гарантія стрибка.",
+    teStep2Title: "Зв'язок",
+    teStep2Body: "Квантові комунікації як грамотність. Не військова C2.",
+    teStep3Title: "Інтерфейс",
+    teStep3Body: "Нейроінтерфейс на картинці — fiction.",
+    teStep4Title: "Передача",
+    teStep4Body: "ACP купує fiction-бриф — не право на залізо.",
+
 
 
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
@@ -1266,6 +1408,14 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent21Title: "PulmoPure Lungenpflege-Abo",
     intent21Body:
       "Lizenziertes Pneumologie-/Atemwegs-Klinik-Abo für Gasvibrations- und Lavendelöl-Literalität. 14.000 ACP / Monat. Kein CE/FDA-Gerät, keine Ozontherapie, kein Medizingas-Compounding und keine garantierte Teerklärung oder „saubere Lungen“.",
+
+    intent22Title: "Project-Barsuk-Quantenstift",
+    intent22Body:
+      "Partnerbrief für lizenzierte Secure-Comms: Stiftform, Quantenkrypto-, Sensor- und Smart-Ink-Literalität. 36.000 ACP. Kein Parker-Produkt, keine Waffe, keine unknackbare Krypto, kein CE/FDA-Gerät.",
+
+    intent23Title: "Teleport-Ohrhörer (Medevac-Fiktion)",
+    intent23Body:
+      "Partnerbrief für AIRPODS T-2026: fiktionale Medevac-/Quantencomms-Literalität. 58.000 ACP. Kein Apple-Produkt, kein echter Teleporter, kein Militärwaffensystem, keine garantierte Evakuierung.",
 
 
 
@@ -1516,6 +1666,44 @@ export const aeternaByLang: Record<Language, Tree> = {
     ppStep4Title: "Übergabe",
     ppStep4Body: "ACP kauft Abo-Brief und Klinik-Match — kein Hardware-Eigentum.",
 
+    bkCta: "Barsuk-Quantenstift-Brief öffnen",
+    bkKicker: "Project Barsuk · Secure-Comms · Fiktionsliteralität",
+    bkTitle: "Barsuk-Quantenstift — Architektur für Secure-Comms-Partner",
+    bkPrice: "36.000 ACP",
+    bkLead:
+      "Konzeptioneller Titanstift mit Quantenkrypto-, Sensor-, KI- und Smart-Ink-Literalität. Infografik-Bereiche sind Fiktions-/Architekturliteralität.",
+    bkDisclaimer:
+      "ANCAP ist nicht mit Parker verbunden, verkauft kein CE/FDA- oder Militärgerät und behauptet keine unknackbare Krypto oder Waffe.",
+    bkLegalCta: "Rechtshinweis Barsuk",
+    bkAlt: "Infografik des Project-Barsuk-Quantenstifts. Konzeptionelle Architektur für lizenzierte Secure-Comms-Partner.",
+    bkStep1Title: "Formfaktor",
+    bkStep1Body: "Stiftform-Literalität. Kein Parker-Claim.",
+    bkStep2Title: "Krypto",
+    bkStep2Body: "Quantenkrypto-Literalität. Keine unknackbare Krypto von ANCAP.",
+    bkStep3Title: "Sensoren",
+    bkStep3Body: "Sensor-Literalität. Kein Militärkit.",
+    bkStep4Title: "Übergabe",
+    bkStep4Body: "ACP kauft Partnerbrief — kein Hardware-Eigentum.",
+
+    teCta: "Teleport-Ohrhörer-Brief öffnen",
+    teKicker: "AIRPODS T-2026 · Medevac-Fiktion · Partnerliteralität",
+    teTitle: "Teleport-Ohrhörer — Rettungsfiktion, kein echter Sprung",
+    tePrice: "58.000 ACP",
+    teLead:
+      "Sci-Fi-Ohrhörer mit Medevac- und Quantencomms-Literalität. Infografik-Reichweiten sind Fiktion. Fokus: Rettung / Medevac.",
+    teDisclaimer:
+      "ANCAP ist nicht mit Apple verbunden, verkauft keinen echten Teleporter oder Militärwaffensystem und garantiert keine Evakuierung.",
+    teLegalCta: "Rechtshinweis Teleport-Ohrhörer",
+    teAlt: "Infografik AIRPODS T-2026 / Teleport-Ohrhörer. Konzeptionelle Literalität für lizenzierte Partner.",
+    teStep1Title: "Medevac",
+    teStep1Body: "Rettungsfiktion. Kein garantierter Sprung.",
+    teStep2Title: "Comms",
+    teStep2Body: "Quantencomms-Literalität. Kein Militär-C2.",
+    teStep3Title: "Interface",
+    teStep3Body: "Neural-Icons sind Fiktion. Kein CE/FDA-Implantat.",
+    teStep4Title: "Übergabe",
+    teStep4Body: "ACP kauft Fiktionsbrief — kein Hardware-Eigentum.",
+
 
 
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
@@ -1654,6 +1842,14 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent21Title: "PulmoPure 肺部照護訂閱",
     intent21Body:
       "持照肺科／呼吸科診所訂閱：氣體振動與薰衣草霧化架構素養。每月 14,000 ACP。非 CE/FDA 器材、非臭氧治療、非醫用氣體複配，亦非保證清除焦油或「潔淨肺部」。",
+
+    intent22Title: "Barsuk 量子筆",
+    intent22Body:
+      "持照安全通訊夥伴簡報：筆型密碼、感測與智慧墨水素養。36,000 ACP。非 Parker 產品、非武器、非不可破解加密、非 CE/FDA 器材。",
+
+    intent23Title: "傳送耳機（醫護後送虛構）",
+    intent23Body:
+      "AIRPODS T-2026 夥伴簡報：醫療後送／量子通訊虛構素養。58,000 ACP。非 Apple 產品、非真實傳送、非軍事武器系統，亦非保證後送結果。",
 
 
 
@@ -1903,6 +2099,40 @@ export const aeternaByLang: Record<Language, Tree> = {
     ppStep3Body: "芳療素養。非藥品宣稱。",
     ppStep4Title: "移交",
     ppStep4Body: "ACP 購買訂閱簡報與診所媒合 — 非硬體所有權。",
+
+    bkCta: "開啟 Barsuk 量子筆簡報",
+    bkKicker: "Project Barsuk · 安全通訊 · 虛構素養",
+    bkTitle: "Barsuk 量子筆 — 安全通訊夥伴架構",
+    bkPrice: "36,000 ACP",
+    bkLead: "概念性鈦合金筆：量子密碼、感測、AI 與智慧墨水素養。資訊圖為虛構／架構素養。",
+    bkDisclaimer: "ANCAP 與 Parker 無關，不販售 CE/FDA 或軍事裝置，亦不宣稱不可破解加密或武器。",
+    bkLegalCta: "Barsuk 法律聲明",
+    bkAlt: "Project Barsuk 量子筆資訊圖。持照安全通訊夥伴的概念架構。",
+    bkStep1Title: "外形",
+    bkStep1Body: "筆型素養。非 Parker 宣稱。",
+    bkStep2Title: "密碼",
+    bkStep2Body: "量子密碼架構素養。非不可破解加密。",
+    bkStep3Title: "感測",
+    bkStep3Body: "感測素養。非軍事套件。",
+    bkStep4Title: "移交",
+    bkStep4Body: "ACP 購買夥伴簡報 — 非硬體所有權。",
+
+    teCta: "開啟傳送耳機簡報",
+    teKicker: "AIRPODS T-2026 · 醫護後送虛構 · 夥伴素養",
+    teTitle: "傳送耳機 — 救援虛構，非真實跳躍",
+    tePrice: "58,000 ACP",
+    teLead: "以醫療後送與量子通訊為主題的科幻耳機。資訊圖距離為虛構。重點為救援／後送。",
+    teDisclaimer: "ANCAP 與 Apple 無關，不販售真實傳送器或軍事武器系統，亦不保證後送結果。",
+    teLegalCta: "傳送耳機法律聲明",
+    teAlt: "AIRPODS T-2026／傳送耳機資訊圖。持照夥伴的概念素養。",
+    teStep1Title: "後送",
+    teStep1Body: "救援虛構素養。非保證跳躍。",
+    teStep2Title: "通訊",
+    teStep2Body: "量子通訊素養。非軍事 C2。",
+    teStep3Title: "介面",
+    teStep3Body: "神經介面圖示為虛構。非 CE/FDA 植入。",
+    teStep4Title: "移交",
+    teStep4Body: "ACP 購買虛構簡報 — 非硬體所有權。",
 
 
 

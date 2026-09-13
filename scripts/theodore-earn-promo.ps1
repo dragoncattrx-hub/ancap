@@ -20,8 +20,13 @@ $channel = if ($env:TELEGRAM_CHANNEL) { $env:TELEGRAM_CHANNEL } else { "@ancap24
 
 $skusPath = Join-Path $PSScriptRoot "theodore-earn-skus.json"
 if (-not (Test-Path $skusPath)) { throw "Missing $skusPath" }
-$skus = Get-Content $skusPath -Raw -Encoding UTF8 | ConvertFrom-Json
-if (-not $skus -or $skus.Count -lt 1) { throw "No SKUs in $skusPath" }
+$allSkus = @(Get-Content $skusPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+# Site-only conceptual SKUs stay on ancap.cloud news — do not spam Telegram / Moltbook.
+$skus = @($allSkus | Where-Object {
+  if ($null -eq $_.channels) { return $true }
+  @($_.channels) -contains "telegram"
+})
+if (-not $skus -or $skus.Count -lt 1) { throw "No telegram-eligible SKUs in $skusPath" }
 
 $statePath = "C:\Users\drago\Desktop\ANCAP\memory\theodore-earn-state.json"
 New-Item -ItemType Directory -Path (Split-Path $statePath) -Force | Out-Null

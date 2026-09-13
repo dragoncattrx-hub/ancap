@@ -59,6 +59,8 @@ class AeternaIntentKind(str, Enum):
     synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
     adhd_support_brief = "adhd_support_brief"
     pulmopure_subscription = "pulmopure_subscription"
+    barsuk_quantum_pen_brief = "barsuk_quantum_pen_brief"
+    teleport_earphones_brief = "teleport_earphones_brief"
 
 
 class AeternaDnaSource(str, Enum):
@@ -318,3 +320,15 @@ class AeternaStatusPublic(BaseModel):
         "ANCAP, not ozone therapy, not medical-gas compounding, and not a guaranteed tar-clearance or "
         "'clean lungs' outcome."
     )
+    barsuk_note: str = (
+        "Project Barsuk / quantum-pen rail is a licensed secure-comms partner brief for conceptual "
+        "pen-form cryptography, sensor, and smart-ink literacy. Infographics are fiction / architecture "
+        "literacy — not a Parker product, not a CE/FDA device, not a military weapon, and not unbreakable "
+        "crypto sold by ANCAP."
+    )
+    teleport_earphones_note: str = (
+        "AIRPODS T-2026 / teleport-earphones rail is a licensed partner brief for fictional medical-evacuation "
+        "and quantum-comms literacy. Infographics are sci-fi architecture — not an Apple product, not a real "
+        "teleporter, not a military weapon system, and not a guaranteed evacuation outcome."
+    )
+

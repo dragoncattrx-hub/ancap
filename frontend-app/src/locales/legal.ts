@@ -587,6 +587,84 @@ export const legalByLang: Record<Language, Tree> = {
       "Legal notices: legal@ancap.cloud. Product: /aeterna#pulmopure. Related notices: /legal/m-receptor, /legal/terms, /legal/risk.",
     footerPulmopure: "PulmoPure",
 
+    barsukLink: "Project Barsuk",
+    hubCardBarsuk:
+      "Licensed secure-comms partner brief for Barsuk quantum-pen literacy. Not a Parker product, not a weapon, not unbreakable crypto, not a CE/FDA device.",
+    barsukKicker: "Legal / secure-comms / fiction literacy",
+    barsukTitle: "Project Barsuk quantum pen — licensed secure-comms partner rail",
+    barsukIntro:
+      "How ANCAP frames the Project Barsuk quantum-pen SKU as of 13 September 2026. These pages sell ACP-settled partner briefs, not pens, not weapons, and not cryptographic guarantees.",
+    bk1Title: "1. Platform role",
+    bk1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture pens, does not practice cryptanalysis as a product claim, and is not affiliated with Parker Pen Company.",
+    bk2Title: "2. Not a Parker or CE/FDA product",
+    bk2Body:
+      "The infographic is fiction / architecture literacy. It is not a Parker catalog page and not a CE-marked or FDA-cleared device sold by ANCAP.",
+    bk3Title: "3. Forbidden outcome claims",
+    bk3Body:
+      "ANCAP does not claim unbreakable cryptography, undetectable field use, guaranteed stealth, or a military advantage. Sensor and standby ranges on artwork are literacy only.",
+    bk4Title: "4. Not a weapon",
+    bk4Body:
+      "This SKU is not a weapon system, not a munition, and not authorization for offensive operations. Physical modules, if any, remain with a licensed secure-comms partner after screening.",
+    bk5Title: "5. Licensed partners only",
+    bk5Body:
+      "Any hardware evaluation or secure-comms deployment is a partner act after screening. Users must not treat these pages as a field kit or DIY crypto appliance.",
+    bk6Title: "6. Infographic literacy, not a build SOP",
+    bk6Body:
+      "Titanium body, quantum-crypto, AI, and smart-ink callouts are architecture literacy. ANCAP does not publish manufacturing SOPs or key-generation recipes.",
+    bk7Title: "7. Not legal or security advice",
+    bk7Body:
+      "Catalog copy is informational. It is not a security audit, penetration test, or export-control opinion.",
+    bk8Title: "8. Relationship to other rails",
+    bk8Body:
+      "Perimeter and other AETERNA rails remain separate. This SKU does not authorize weapons sales or unlicensed crypto hardware distribution.",
+    bk9Title: "9. Payments",
+    bk9Body:
+      "ACP buys a consult brief and partner match at 36,000 ACP — not hardware title and not a refundable crypto strength outcome. Refunds follow /legal/refunds.",
+    bk10Title: "10. Contact",
+    bk10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#barsuk. Related notices: /legal/terms, /legal/risk.",
+    footerBarsuk: "Project Barsuk",
+
+    teleportEarphonesLink: "Teleport earphones",
+    hubCardTeleportEarphones:
+      "Licensed partner brief for AIRPODS T-2026 medevac fiction literacy. Not an Apple product, not a real teleporter, not a military weapon system.",
+    teleportEarphonesKicker: "Legal / medevac fiction / partner literacy",
+    teleportEarphonesTitle: "Teleport earphones — licensed medevac fiction rail",
+    teleportEarphonesIntro:
+      "How ANCAP frames the AIRPODS T-2026 / teleport-earphones SKU as of 13 September 2026. These pages sell ACP-settled fiction briefs for rescue / medevac literacy, not teleporters and not weapons.",
+    tp1Title: "1. Platform role",
+    tp1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture earphones, does not sell a teleporter, and is not affiliated with Apple.",
+    tp2Title: "2. Not an Apple product",
+    tp2Body:
+      "The name AIRPODS T-2026 and similar artwork are fiction branding for partner literacy. ANCAP is not affiliated with Apple Inc. and does not sell Apple products.",
+    tp3Title: "3. Not a real teleporter",
+    tp3Body:
+      "Infographic ranges (for example 10,000 km or sub-second jumps) are sci-fi literacy. ANCAP does not claim real teleportation, wormholes, or guaranteed evacuation outcomes.",
+    tp4Title: "4. Not a military weapon system",
+    tp4Body:
+      "Combat panels on marketing art are fiction. This SKU is framed around rescue / medical-evacuation literacy only — not offensive teleport operations and not a weapon system.",
+    tp5Title: "5. Licensed partners only",
+    tp5Body:
+      "Any evaluation of ruggedized field cases or comms themes is a partner act after screening. Users must not treat these pages as a field deployment kit.",
+    tp6Title: "6. Infographic literacy, not a build SOP",
+    tp6Body:
+      "Quantum-comms, neural-interface, and case icons are fiction architecture. ANCAP does not publish manufacturing SOPs or combat doctrines.",
+    tp7Title: "7. Not medical or military advice",
+    tp7Body:
+      "Catalog copy is informational fiction literacy. It is not a medical protocol, MEDEVAC SOP, or rules-of-engagement document.",
+    tp8Title: "8. Relationship to other rails",
+    tp8Body:
+      "Humanitarian and perimeter rails remain separate. This SKU does not authorize weapons sales or claims of real teleportation.",
+    tp9Title: "9. Payments",
+    tp9Body:
+      "ACP buys a consult brief and partner match at 58,000 ACP — not hardware title and not a refundable evacuation outcome. Refunds follow /legal/refunds.",
+    tp10Title: "10. Contact",
+    tp10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#teleport-earphones. Related notices: /legal/humanitarian, /legal/terms, /legal/risk.",
+    footerTeleportEarphones: "Teleport earphones",
+
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -1465,6 +1543,84 @@ export const legalByLang: Record<Language, Tree> = {
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#pulmopure.",
     footerPulmopure: "PulmoPure",
 
+    barsukLink: "Project Barsuk",
+    hubCardBarsuk:
+      "Партнёрский бриф secure-comms по грамотности квантовой ручки Barsuk. Не продукт Parker, не оружие, не «невзламываемая» крипта, не изделие CE/FDA.",
+    barsukKicker: "Право / secure-comms / художественная грамотность",
+    barsukTitle: "Квантовая ручка Project Barsuk — рейл лицензированного secure-comms партнёра",
+    barsukIntro:
+      "Как ANCAP формулирует SKU Project Barsuk по состоянию на 13 сентября 2026. Эти страницы продают ACP-брифы, не ручки, не оружие и не криптографические гарантии.",
+    bk1Title: "1. Роль платформы",
+    bk1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор лицензированного партнёра. ANCAP не производит ручки, не продаёт оружие и не аффилирована с Parker Pen Company.",
+    bk2Title: "2. Не продукт Parker и не CE/FDA",
+    bk2Body:
+      "Инфографика — художественная / архитектурная грамотность. Это не каталог Parker и не изделие CE/FDA от ANCAP.",
+    bk3Title: "3. Запрещённые обещания результата",
+    bk3Body:
+      "ANCAP не заявляет «невзламываемую» криптографию, скрытность на поле или военное преимущество. Диапазоны на картинке — только грамотность.",
+    bk4Title: "4. Не оружие",
+    bk4Body:
+      "SKU не является системой оружия и не авторизует наступательные операции. Физические модули, если появятся, остаются у лицензированного партнёра после скрининга.",
+    bk5Title: "5. Только лицензированные партнёры",
+    bk5Body:
+      "Любая оценка железа или secure-comms — акт партнёра после скрининга. Эти страницы не полевой комплект и не DIY-криптоустройство.",
+    bk6Title: "6. Грамотность инфографики, не SOP сборки",
+    bk6Body:
+      "Титан, квантовая крипта, ИИ и умные чернила — архитектурная грамотность. ANCAP не публикует SOP производства или рецепты ключей.",
+    bk7Title: "7. Не юридический и не security-совет",
+    bk7Body:
+      "Тексты каталога информационные. Это не аудит безопасности и не заключение по экспортному контролю.",
+    bk8Title: "8. Связь с другими рейлами",
+    bk8Body:
+      "Периметр и другие рейлы AETERNA остаются отдельными. Этот SKU не авторизует продажу оружия.",
+    bk9Title: "9. Платежи",
+    bk9Body:
+      "ACP покупает бриф и подбор партнёра за 36 000 ACP — не право на железо и не возвратный «крипто-результат». Возвраты: /legal/refunds.",
+    bk10Title: "10. Контакты",
+    bk10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#barsuk.",
+    footerBarsuk: "Project Barsuk",
+
+    teleportEarphonesLink: "Наушники телепортации",
+    hubCardTeleportEarphones:
+      "Партнёрский бриф AIRPODS T-2026 — грамотность медэвак-фикшн. Не продукт Apple, не реальный телепорт, не военная система оружия.",
+    teleportEarphonesKicker: "Право / медэвак-фикшн / партнёрская грамотность",
+    teleportEarphonesTitle: "Наушники телепортации — рейл лицензированной медэвак-фикшн грамотности",
+    teleportEarphonesIntro:
+      "Как ANCAP формулирует SKU AIRPODS T-2026 / teleport-earphones по состоянию на 13 сентября 2026. Эти страницы продают ACP-брифы fiction о спасении / медэвак, не телепорты и не оружие.",
+    tp1Title: "1. Роль платформы",
+    tp1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор партнёра. ANCAP не производит наушники, не продаёт телепорт и не аффилирована с Apple.",
+    tp2Title: "2. Не продукт Apple",
+    tp2Body:
+      "Название AIRPODS T-2026 и похожая графика — fiction-брендинг для партнёрской грамотности. ANCAP не аффилирована с Apple Inc. и не продаёт продукцию Apple.",
+    tp3Title: "3. Не реальный телепорт",
+    tp3Body:
+      "Диапазоны на инфографике (например 10 000 км или доли секунды) — sci-fi грамотность. ANCAP не заявляет реальную телепортацию и не гарантирует эвакуацию.",
+    tp4Title: "4. Не военная система оружия",
+    tp4Body:
+      "Боевые панели на картинке — fiction. SKU сформулирован вокруг грамотности спасения / медэвак — не наступательных телепорт-операций и не системы оружия.",
+    tp5Title: "5. Только лицензированные партнёры",
+    tp5Body:
+      "Любая оценка полевых кейсов или тем связи — акт партнёра после скрининга. Эти страницы не полевой комплект развёртывания.",
+    tp6Title: "6. Грамотность инфографики, не SOP сборки",
+    tp6Body:
+      "Квантовые коммуникации, нейроинтерфейс и кейс — fiction-архитектура. ANCAP не публикует SOP производства или боевые доктрины.",
+    tp7Title: "7. Не медицинский и не военный совет",
+    tp7Body:
+      "Тексты каталога — информационная fiction-грамотность. Это не медпротокол MEDEVAC и не правила применения силы.",
+    tp8Title: "8. Связь с другими рейлами",
+    tp8Body:
+      "Гуманитарный и периметровый рейлы остаются отдельными. Этот SKU не авторизует продажу оружия или претензии на реальный телепорт.",
+    tp9Title: "9. Платежи",
+    tp9Body:
+      "ACP покупает бриф и подбор партнёра за 58 000 ACP — не право на железо и не возвратный исход эвакуации. Возвраты: /legal/refunds.",
+    tp10Title: "10. Контакты",
+    tp10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#teleport-earphones.",
+    footerTeleportEarphones: "Наушники телепортации",
+
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -2321,6 +2477,62 @@ export const legalByLang: Record<Language, Tree> = {
     pp10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#pulmopure.",
     footerPulmopure: "PulmoPure",
+
+    barsukLink: "Project Barsuk",
+    hubCardBarsuk:
+      "Партнерський бриф secure-comms щодо грамотності квантової ручки Barsuk. Не продукт Parker, не зброя, не «невзламувана» крипта.",
+    barsukKicker: "Право / secure-comms",
+    barsukTitle: "Квантова ручка Project Barsuk — рейл ліцензованого secure-comms партнера",
+    barsukIntro: "Як ANCAP формулює SKU Barsuk станом на 13 вересня 2026.",
+    bk1Title: "1. Роль платформи",
+    bk1Body: "ANCAP забезпечує розрахунок в ACP і підбір партнера. Не афілійована з Parker.",
+    bk2Title: "2. Не продукт Parker і не CE/FDA",
+    bk2Body: "Інфографіка — художня / архітектурна грамотність.",
+    bk3Title: "3. Заборонені обіцянки",
+    bk3Body: "ANCAP не заявляє «невзламувану» криптографію.",
+    bk4Title: "4. Не зброя",
+    bk4Body: "SKU не є системою зброї.",
+    bk5Title: "5. Лише ліцензовані партнери",
+    bk5Body: "Оцінка заліза — акт партнера після скринінгу.",
+    bk6Title: "6. Грамотність інфографіки",
+    bk6Body: "Не SOP виробництва.",
+    bk7Title: "7. Не юридична порада",
+    bk7Body: "Тексти каталогу інформаційні.",
+    bk8Title: "8. Зв'язок з іншими рейлами",
+    bk8Body: "Периметр залишається окремим.",
+    bk9Title: "9. Платежі",
+    bk9Body: "ACP купує бриф за 36 000 ACP. Повернення: /legal/refunds.",
+    bk10Title: "10. Контакти",
+    bk10Body: "legal@ancap.cloud · /aeterna#barsuk",
+    footerBarsuk: "Project Barsuk",
+
+    teleportEarphonesLink: "Навушники телепортації",
+    hubCardTeleportEarphones:
+      "Партнерський бриф AIRPODS T-2026 — медевак-фікшн. Не продукт Apple, не реальний телепорт, не військова зброя.",
+    teleportEarphonesKicker: "Право / медевак-фікшн",
+    teleportEarphonesTitle: "Навушники телепортації — рейл медевак-фікшн грамотності",
+    teleportEarphonesIntro: "Як ANCAP формулює SKU teleport-earphones станом на 13 вересня 2026.",
+    tp1Title: "1. Роль платформи",
+    tp1Body: "ANCAP забезпечує ACP і підбір партнера. Не афілійована з Apple.",
+    tp2Title: "2. Не продукт Apple",
+    tp2Body: "AIRPODS T-2026 — fiction-брендинг.",
+    tp3Title: "3. Не реальний телепорт",
+    tp3Body: "Діапазони на інфографіці — sci-fi грамотність.",
+    tp4Title: "4. Не військова зброя",
+    tp4Body: "Акцент — порятунок / медевак, не наступ.",
+    tp5Title: "5. Лише ліцензовані партнери",
+    tp5Body: "Оцінка — акт партнера після скринінгу.",
+    tp6Title: "6. Грамотність інфографіки",
+    tp6Body: "Не SOP виробництва.",
+    tp7Title: "7. Не медична порада",
+    tp7Body: "Тексти — fiction-грамотність.",
+    tp8Title: "8. Зв'язок з іншими рейлами",
+    tp8Body: "Гуманітарний рейл залишається окремим.",
+    tp9Title: "9. Платежі",
+    tp9Body: "ACP купує бриф за 58 000 ACP. Повернення: /legal/refunds.",
+    tp10Title: "10. Контакти",
+    tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
+    footerTeleportEarphones: "Навушники телепортації",
 
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
@@ -3184,6 +3396,62 @@ export const legalByLang: Record<Language, Tree> = {
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#pulmopure.",
     footerPulmopure: "PulmoPure",
 
+    barsukLink: "Project Barsuk",
+    hubCardBarsuk:
+      "Lizenzierter Secure-Comms-Partnerbrief zur Barsuk-Quantenstift-Literalität. Kein Parker-Produkt, keine Waffe, keine unknackbare Krypto.",
+    barsukKicker: "Recht / Secure-Comms",
+    barsukTitle: "Project-Barsuk-Quantenstift — lizenzierte Secure-Comms-Schiene",
+    barsukIntro: "Wie ANCAP die Barsuk-SKU zum 13. September 2026 einordnet.",
+    bk1Title: "1. Plattformrolle",
+    bk1Body: "ANCAP stellt ACP-Abrechnung und Partner-Match bereit. Keine Parker-Affiliation.",
+    bk2Title: "2. Kein Parker- oder CE/FDA-Produkt",
+    bk2Body: "Infografik ist Fiktions-/Architekturliteralität.",
+    bk3Title: "3. Verbotene Ergebniszusagen",
+    bk3Body: "Keine unknackbare Krypto-Behauptung.",
+    bk4Title: "4. Keine Waffe",
+    bk4Body: "Keine Waffensystem-Autorisierung.",
+    bk5Title: "5. Nur lizenzierte Partner",
+    bk5Body: "Hardware-Bewertung nur beim Partner nach Screening.",
+    bk6Title: "6. Infografik-Literalität",
+    bk6Body: "Kein Fertigungs-SOP.",
+    bk7Title: "7. Keine Rechtsberatung",
+    bk7Body: "Katalogtexte sind informativ.",
+    bk8Title: "8. Bezug zu anderen Schienen",
+    bk8Body: "Perimeter bleibt getrennt.",
+    bk9Title: "9. Zahlungen",
+    bk9Body: "ACP kauft Brief für 36.000 ACP. Rückerstattungen: /legal/refunds.",
+    bk10Title: "10. Kontakt",
+    bk10Body: "legal@ancap.cloud · /aeterna#barsuk",
+    footerBarsuk: "Project Barsuk",
+
+    teleportEarphonesLink: "Teleport-Ohrhörer",
+    hubCardTeleportEarphones:
+      "Partnerbrief AIRPODS T-2026 Medevac-Fiktion. Kein Apple-Produkt, kein echter Teleporter, kein Militärwaffensystem.",
+    teleportEarphonesKicker: "Recht / Medevac-Fiktion",
+    teleportEarphonesTitle: "Teleport-Ohrhörer — lizenzierte Medevac-Fiktions-Schiene",
+    teleportEarphonesIntro: "Wie ANCAP die Teleport-Ohrhörer-SKU zum 13. September 2026 einordnet.",
+    tp1Title: "1. Plattformrolle",
+    tp1Body: "ANCAP stellt ACP und Partner-Match bereit. Keine Apple-Affiliation.",
+    tp2Title: "2. Kein Apple-Produkt",
+    tp2Body: "AIRPODS T-2026 ist Fiktionsbranding.",
+    tp3Title: "3. Kein echter Teleporter",
+    tp3Body: "Reichweiten auf der Infografik sind Sci-Fi-Literalität.",
+    tp4Title: "4. Kein Militärwaffensystem",
+    tp4Body: "Fokus: Rettung / Medevac, nicht Offensive.",
+    tp5Title: "5. Nur lizenzierte Partner",
+    tp5Body: "Bewertung nur beim Partner nach Screening.",
+    tp6Title: "6. Infografik-Literalität",
+    tp6Body: "Kein Fertigungs-SOP.",
+    tp7Title: "7. Keine medizinische Beratung",
+    tp7Body: "Texte sind Fiktionsliteralität.",
+    tp8Title: "8. Bezug zu anderen Schienen",
+    tp8Body: "Humanitäre Schiene bleibt getrennt.",
+    tp9Title: "9. Zahlungen",
+    tp9Body: "ACP kauft Brief für 58.000 ACP. Rückerstattungen: /legal/refunds.",
+    tp10Title: "10. Kontakt",
+    tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
+    footerTeleportEarphones: "Teleport-Ohrhörer",
+
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -4043,6 +4311,62 @@ export const legalByLang: Record<Language, Tree> = {
     pp10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#pulmopure。",
     footerPulmopure: "PulmoPure",
+
+    barsukLink: "Project Barsuk",
+    hubCardBarsuk:
+      "持照安全通訊夥伴簡報：Barsuk 量子筆素養。非 Parker 產品、非武器、非不可破解加密。",
+    barsukKicker: "法律／安全通訊",
+    barsukTitle: "Barsuk 量子筆 — 持照安全通訊軌道",
+    barsukIntro: "ANCAP 於 2026 年 9 月 13 日對 Barsuk SKU 的表述。",
+    bk1Title: "1. 平台角色",
+    bk1Body: "ANCAP 提供 ACP 結算與夥伴媒合。與 Parker 無關。",
+    bk2Title: "2. 非 Parker 或 CE/FDA 產品",
+    bk2Body: "資訊圖為虛構／架構素養。",
+    bk3Title: "3. 禁止結果宣稱",
+    bk3Body: "不宣稱不可破解加密。",
+    bk4Title: "4. 非武器",
+    bk4Body: "不授權武器系統。",
+    bk5Title: "5. 僅持照夥伴",
+    bk5Body: "硬體評估僅在篩檢後由夥伴進行。",
+    bk6Title: "6. 資訊圖素養",
+    bk6Body: "非製造 SOP。",
+    bk7Title: "7. 非法律建議",
+    bk7Body: "目錄文案僅供資訊。",
+    bk8Title: "8. 與其他軌道之關係",
+    bk8Body: "Perimeter 仍為獨立。",
+    bk9Title: "9. 付款",
+    bk9Body: "ACP 以 36,000 ACP 購買簡報。退款依 /legal/refunds。",
+    bk10Title: "10. 聯絡",
+    bk10Body: "legal@ancap.cloud · /aeterna#barsuk",
+    footerBarsuk: "Project Barsuk",
+
+    teleportEarphonesLink: "傳送耳機",
+    hubCardTeleportEarphones:
+      "AIRPODS T-2026 醫護後送虛構夥伴簡報。非 Apple 產品、非真實傳送、非軍事武器。",
+    teleportEarphonesKicker: "法律／醫護後送虛構",
+    teleportEarphonesTitle: "傳送耳機 — 持照醫護後送虛構軌道",
+    teleportEarphonesIntro: "ANCAP 於 2026 年 9 月 13 日對傳送耳機 SKU 的表述。",
+    tp1Title: "1. 平台角色",
+    tp1Body: "ANCAP 提供 ACP 與夥伴媒合。與 Apple 無關。",
+    tp2Title: "2. 非 Apple 產品",
+    tp2Body: "AIRPODS T-2026 為虛構品牌。",
+    tp3Title: "3. 非真實傳送",
+    tp3Body: "資訊圖距離為科幻素養。",
+    tp4Title: "4. 非軍事武器",
+    tp4Body: "重點為救援／後送，非進攻。",
+    tp5Title: "5. 僅持照夥伴",
+    tp5Body: "評估僅在篩檢後由夥伴進行。",
+    tp6Title: "6. 資訊圖素養",
+    tp6Body: "非製造 SOP。",
+    tp7Title: "7. 非醫療建議",
+    tp7Body: "文案為虛構素養。",
+    tp8Title: "8. 與其他軌道之關係",
+    tp8Body: "人道軌道仍為獨立。",
+    tp9Title: "9. 付款",
+    tp9Body: "ACP 以 58,000 ACP 購買簡報。退款依 /legal/refunds。",
+    tp10Title: "10. 聯絡",
+    tp10Body: "legal@ancap.cloud · /aeterna#teleport-earphones",
+    footerTeleportEarphones: "傳送耳機",
 
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",

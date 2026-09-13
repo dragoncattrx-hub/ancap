@@ -9,6 +9,22 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-barsuk-quantum-pen",
+    date: "2026-09-13",
+    title: "AETERNA: Project Barsuk — бриф квантовой ручки",
+    summary:
+      "На /aeterna — партнёрский бриф для лицензированного secure-comms партнёра: ручка-формфактор, квантовая крипто-грамотность, сенсоры и умные чернила за 36 000 ACP. Инфографика — художественная / архитектурная грамотность. Это не продукт Parker, не оружие, не «невзламываемая» криптография, не изделие CE/FDA и не полевой комплект от ANCAP. Юр. текст: /legal/barsuk.",
+    href: "/aeterna#barsuk",
+  },
+  {
+    id: "aeterna-teleport-earphones",
+    date: "2026-09-13",
+    title: "AETERNA: наушники телепортации — грамотность медэвакуации",
+    summary:
+      "На /aeterna — партнёрский бриф AIRPODS T-2026 / teleport-earphones: художественная грамотность медицинской эвакуации и квантовых коммуникаций за 58 000 ACP. Это не продукт Apple, не реальный телепорт, не военная система оружия и не гарантия эвакуации. Акцент — спасение / медэвак, не наступательные сценарии. Юр. текст: /legal/teleport-earphones.",
+    href: "/aeterna#teleport-earphones",
+  },
+  {
     id: "aeterna-pulmopure-subscription",
     date: "2026-09-13",
     title: "AETERNA: подписка PulmoPure — грамотность ухода за лёгкими",
