@@ -51,17 +51,22 @@ export default function StardustPage() {
       const data = (await stardustDesk.catalog()) as Catalog;
       setCatalog(data);
       setError("");
-      if (!selected && data.services[0]) setSelected(data.services[0]);
+      setSelected((prev) => prev ?? data.services[0] ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load Stardust desk");
     }
-  }, [selected]);
+  }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const headline = catalog?.services.find((s) => s.id === "stardust-weather-control-global");
+  const safeWebsiteRef =
+    catalog?.website_ref &&
+    /^https:\/\/(www\.)?stardustsrt\.com\/?$/i.test(catalog.website_ref.trim())
+      ? catalog.website_ref.trim()
+      : "https://stardustsrt.com";
 
   return (
     <main className="min-h-screen bg-[#050b14] text-slate-100">
@@ -118,9 +123,9 @@ export default function StardustPage() {
         <p className="mt-3 text-sm text-slate-500">
           Reference literacy:{" "}
           <a
-            href={catalog?.website_ref || "https://stardustsrt.com"}
+            href={safeWebsiteRef}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="text-cyan-300 underline"
           >
             stardustsrt.com
