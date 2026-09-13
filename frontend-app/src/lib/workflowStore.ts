@@ -674,6 +674,35 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
     tags: ["aeterna", "adhd", "sdvg", "clinician", "consult"],
   },
+  {
+    slug: "aeterna-pulmopure-subscription",
+    title: "AETERNA PulmoPure Lung-Care Subscription",
+    category: "AETERNA",
+    summary:
+      "Licensed pulmonology / respiratory clinic subscription for PulmoPure gas-vibration and lavender-oil architecture literacy — 14,000 ACP / month.",
+    description:
+      "Settles the first subscription period and issues a licensed-clinic partner brief. Not a CE/FDA device, not ozone therapy, not medical-gas compounding, not a guaranteed tar-clearance or clean-lungs outcome.",
+    price: { amount: "14000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 35,
+    preview_items: [
+      "Respiratory contraindication intake",
+      "Mode match (Soft / Standard / Intensive literacy)",
+      "Subscription period pack",
+    ],
+    output_items: [
+      "PulmoPure subscription intake brief",
+      "Licensed pulmonology / respiratory clinic handoff",
+      "Non-claim checklist (no ozone therapy / no gas compounding / no CE-FDA / no clean-lungs guarantee)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "billing", "modules", "status_timeline"],
+    tags: ["aeterna", "pulmopure", "subscription", "pulmonology", "consult"],
+    billing: "subscription",
+    subscription_price_monthly: { amount: "14000", currency: "ACP" },
+    subscription_price_quarterly: { amount: "38000", currency: "ACP" },
+    subscription_price_annual: { amount: "128000", currency: "ACP" },
+  },
 ];
 
 export const fallbackWorkflowBundles: WorkflowBundle[] = [

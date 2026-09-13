@@ -53,6 +53,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-oxygen-carrier",
     "aeterna-synthetic-blood-mamba",
     "aeterna-adhd-support",
+    "aeterna-pulmopure-subscription",
 ]
 
 ORGAN_PRINT_SLUG = "aeterna-stem-cell-organ-print"
@@ -87,6 +88,10 @@ SYNTHETIC_BLOOD_MAMBA_SLUG = "aeterna-synthetic-blood-mamba"
 SYNTHETIC_BLOOD_MAMBA_PRICE_ACP = Decimal("98000")
 ADHD_SUPPORT_SLUG = "aeterna-adhd-support"
 ADHD_SUPPORT_PRICE_ACP = Decimal("42000")
+PULMOPURE_SLUG = "aeterna-pulmopure-subscription"
+PULMOPURE_PRICE_ACP = Decimal("14000")
+PULMOPURE_QUARTERLY_ACP = Decimal("38000")
+PULMOPURE_ANNUAL_ACP = Decimal("128000")
 
 # 15 hallmark axes for partner-ready molecular aging briefs (blood RNA / PCR-style panels).
 # Gene-pair hints are educational placeholders for consult prep — not diagnostic assays.
@@ -206,6 +211,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
     AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
+    AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
 }
 
 ORGAN_PRINT_HANDOFF_META = {
@@ -465,6 +471,31 @@ ADHD_SUPPORT_META = {
     ),
 }
 
+PULMOPURE_META = {
+    "mode": "licensed_clinic_subscription",
+    "unit": "monthly_protocol_retainer",
+    "billing": "subscription",
+    "price_acp_monthly": "14000",
+    "price_acp_quarterly": "38000",
+    "price_acp_annual": "128000",
+    "architecture": "pulmopure_gas_vibration_partner_literacy",
+    "modules": {
+        "gas_vibration": "licensed_clinic_literacy",
+        "medical_gas_mix": "partner_protocol_literacy_only",
+        "lavender_oil_atomizer": "aromatherapy_literacy",
+        "soft_standard_intensive_modes": "partner_mode_literacy",
+    },
+    "note": (
+        "Conceptual PulmoPure lung-care subscription. ANCAP settles ACP per billing period and issues a "
+        "licensed pulmonology / respiratory / smoking-cessation clinic partner brief covering gas-vibration, "
+        "gas-mix, and lavender-oil architecture literacy. Not a CE/FDA device sold by ANCAP, not ozone "
+        "therapy, not medical-gas compounding, not a home respiratory kit, and not a guaranteed tar-clearance, "
+        "cough reduction, or 'clean lungs' outcome. Soft / Standard / Intensive mode callouts and before/after "
+        "alveoli artwork are protocol literacy, not product claims. Partner screening required "
+        "(asthma, COPD, pneumothorax history, pregnancy, ozone sensitivity)."
+    ),
+}
+
 MRNA_REPROGRAMMING_META = {
     "mode": "licensed_partner_consult_only",
     "delivery_literacy": "mrna_in_lipid_nanoparticle_lnp",
@@ -569,7 +600,7 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "Vascular Care+ gas-light rail, Vascular Care ultrasound/RF rail, needle-free transdermal pistol, "
             "M-receptor delivery subscription, artificial oxygen-carrier brief, "
             "synthetic-blood / Black Mamba peptide architecture brief, ADHD / СДВГ support brief, "
-            "licensed longevity partners."
+            "PulmoPure lung-care subscription, licensed longevity partners."
         ),
         vault_entries=int(vaults or 0),
         intent_orders=int(orders or 0),
@@ -651,6 +682,12 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "ADHD / СДВГ support listings are licensed clinician partner intakes for attention, planning, "
             "emotion, and school-adaptation literacy. Infographics are motivational — not a diagnosis, "
             "not a prescription, not stimulant compounding, and not a guaranteed financial outcome."
+        ),
+        pulmopure_note=(
+            "PulmoPure listings are licensed pulmonology / respiratory clinic subscriptions for "
+            "gas-vibration and lavender-oil architecture literacy. Infographics are conceptual — not a "
+            "CE/FDA device, not ozone therapy, not medical-gas compounding, and not a guaranteed "
+            "tar-clearance or 'clean lungs' outcome."
         ),
     )
 
@@ -935,6 +972,20 @@ async def create_intent_order(
                 detail="adhd_support_brief budget_acp must be at least 42000 ACP",
             )
         for key, value in ADHD_SUPPORT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.pulmopure_subscription:
+        if slug and slug != PULMOPURE_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="pulmopure_subscription requires workflow_slug aeterna-pulmopure-subscription",
+            )
+        slug = PULMOPURE_SLUG
+        if body.budget_acp < PULMOPURE_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="pulmopure_subscription budget_acp must be at least 14000 ACP per month",
+            )
+        for key, value in PULMOPURE_META.items():
             meta.setdefault(key, value)
     now = _utcnow()
     row = AeternaIntentOrder(

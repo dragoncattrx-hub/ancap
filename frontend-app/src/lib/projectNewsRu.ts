@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "aeterna-pulmopure-subscription",
+    date: "2026-09-13",
+    title: "AETERNA: подписка PulmoPure — грамотность ухода за лёгкими",
+    summary:
+      "На /aeterna — подписка для лицензированной пульмонологической / респираторной клиники: газо-вибрация, смесь газов и лавандовый атомайзер как грамотность протокола. 14 000 ACP / месяц, 38 000 / квартал, 128 000 / год. Это не изделие CE/FDA, не озонотерапия, не компаундинг медгазов и не гарантия «чистых лёгких». Юр. текст: /legal/pulmopure.",
+    href: "/aeterna#pulmopure",
+  },
+  {
     id: "aeterna-adhd-support",
     date: "2026-09-13",
     title: "AETERNA: поддержка при СДВГ — партнёрский бриф",

@@ -548,6 +548,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Legal notices: legal@ancap.cloud. Product: /aeterna#adhd-support. Related notices: /legal/terms, /legal/risk.",
     footerAdhdSupport: "ADHD / СДВГ support",
 
+    pulmopureLink: "PulmoPure",
+    hubCardPulmopure:
+      "Licensed pulmonology subscription for PulmoPure gas-vibration literacy. Not a CE/FDA device, not ozone therapy, not a guaranteed clean-lungs outcome.",
+    pulmopureKicker: "Legal / pulmonology / lung-care literacy",
+    pulmopureTitle: "PulmoPure — licensed pulmonology subscription rail",
+    pulmopureIntro:
+      "How ANCAP frames the PulmoPure subscription SKU as of 13 September 2026. These pages sell ACP-settled clinic retainers, not devices, not ozone therapy, and not a guaranteed respiratory cure.",
+    pp1Title: "1. Platform role",
+    pp1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching. ANCAP does not manufacture PulmoPure, does not compound medical gases or ozone, and does not practice pulmonology.",
+    pp2Title: "2. Not a medical device sold here",
+    pp2Body:
+      "The infographic is conceptual architecture. It is not an EU MDR or FDA brochure and not a CE-marked respiratory device sold by ANCAP.",
+    pp3Title: "3. Forbidden outcome claims",
+    pp3Body:
+      "ANCAP does not guarantee tar clearance, clean alveoli, cough reduction, ease of breathing, or smoking-cessation success. Before/after artwork is literacy only.",
+    pp4Title: "4. Ozone and medical gases",
+    pp4Body:
+      "Any gas mix, including oxygen or ozone callouts on marketing art, is partner-protocol literacy. ANCAP does not sell ozone therapy or authorize home gas inhalation kits.",
+    pp5Title: "5. Licensed clinicians only",
+    pp5Body:
+      "Physical sessions occur only under a licensed pulmonology / respiratory / smoking-cessation clinician after screening (asthma, COPD, pneumothorax history, pregnancy, ozone sensitivity).",
+    pp6Title: "6. Modes and package contents",
+    pp6Body:
+      "Soft / Standard / Intensive modes, cartridges, USB-C cable, and case icons are package literacy — not a product catalog ANCAP ships.",
+    pp7Title: "7. Not medical advice",
+    pp7Body:
+      "Catalog copy is informational. It is not a diagnosis, prescription, or treatment plan.",
+    pp8Title: "8. Relationship to other rails",
+    pp8Body:
+      "M-receptor inhaler literacy and oxygen-carrier rails remain separate. This SKU does not authorize compounding or unlicensed device sale.",
+    pp9Title: "9. Payments",
+    pp9Body:
+      "ACP buys a subscription brief and partner match at 14,000 ACP / month (38,000 quarterly; 128,000 annual) — not hardware title and not a refundable clinical outcome. Refunds follow /legal/refunds.",
+    pp10Title: "10. Contact",
+    pp10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#pulmopure. Related notices: /legal/m-receptor, /legal/terms, /legal/risk.",
+    footerPulmopure: "PulmoPure",
+
 
     hubCardRefunds: "When charges are final, when we may credit a failed run, and how to request a review.",
     hubCardWelcomeGrant:
@@ -1387,6 +1426,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#adhd-support. Связанные тексты: /legal/terms, /legal/risk.",
     footerAdhdSupport: "Поддержка при СДВГ",
 
+    pulmopureLink: "PulmoPure",
+    hubCardPulmopure:
+      "Подписка лицензированной пульмонологии на грамотность PulmoPure. Не изделие CE/FDA, не озонотерапия, не гарантия «чистых лёгких».",
+    pulmopureKicker: "Право / пульмонология / грамотность ухода за лёгкими",
+    pulmopureTitle: "PulmoPure — подписочный рейл лицензированной пульмонологии",
+    pulmopureIntro:
+      "Как ANCAP формулирует подписку PulmoPure на 13 сентября 2026. Эти страницы продают ретейнер клиники в ACP, а не аппарат, не озонотерапию и не гарантированное лечение.",
+    pp1Title: "1. Роль платформы",
+    pp1Body:
+      "ANCAP обеспечивает расчёт в ACP, брифы и подбор партнёра. ANCAP не производит PulmoPure, не компаундит медгазы или озон и не практикует пульмонологию.",
+    pp2Title: "2. Не медицинское изделие на продажу здесь",
+    pp2Body:
+      "Инфографика — концептуальная архитектура. Это не брошюра EU MDR / FDA и не CE-изделие от ANCAP.",
+    pp3Title: "3. Запрещённые обещания результата",
+    pp3Body:
+      "ANCAP не гарантирует очистку от смол, чистые альвеолы, уменьшение кашля или успех отказа от курения. «До/после» — только грамотность.",
+    pp4Title: "4. Озон и медгазы",
+    pp4Body:
+      "Любая смесь газов на маркетинговой картинке — грамотность партнёрского протокола. ANCAP не продаёт озонотерапию и не разрешает домашние наборы ингаляции газов.",
+    pp5Title: "5. Только лицензированные клиницисты",
+    pp5Body:
+      "Физические сеансы — только у лицензированного пульмонолога / респираторного клинициста после скрининга.",
+    pp6Title: "6. Режимы и комплектация",
+    pp6Body:
+      "Режимы Soft / Standard / Intensive, картриджи и кейс — грамотность комплектации, не каталог поставки ANCAP.",
+    pp7Title: "7. Не медицинский совет",
+    pp7Body:
+      "Тексты каталога информационные. Это не диагноз, не рецепт и не план лечения.",
+    pp8Title: "8. Связь с другими рейлами",
+    pp8Body:
+      "Ингалятор M-рецепторов и переносчик кислорода остаются отдельными. Этот SKU не разрешает компаундинг.",
+    pp9Title: "9. Платежи",
+    pp9Body:
+      "ACP покупает подписочный бриф и подбор партнёра за 14 000 ACP / месяц (38 000 квартал; 128 000 год). Возвраты: /legal/refunds.",
+    pp10Title: "10. Контакты",
+    pp10Body:
+      "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#pulmopure.",
+    footerPulmopure: "PulmoPure",
+
 
     hubCardRefunds: "Когда списание окончательно, когда возможен кредит за сбой и как запросить проверку.",
     hubCardWelcomeGrant:
@@ -2204,6 +2282,45 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#adhd-support.",
     footerAdhdSupport: "Підтримка при СДУГ",
+
+    pulmopureLink: "PulmoPure",
+    hubCardPulmopure:
+      "Підписка ліцензованої пульмонології на грамотність PulmoPure. Не виріб CE/FDA, не озонотерапія, не гарантія «чистих легень».",
+    pulmopureKicker: "Право / пульмонологія",
+    pulmopureTitle: "PulmoPure — підписний рейл ліцензованої пульмонології",
+    pulmopureIntro:
+      "Як ANCAP формулює підписку PulmoPure станом на 13 вересня 2026.",
+    pp1Title: "1. Роль платформи",
+    pp1Body:
+      "ANCAP забезпечує розрахунок в ACP і підбір партнера. ANCAP не виробляє PulmoPure і не практикує пульмонологію.",
+    pp2Title: "2. Не медичний виріб на продаж тут",
+    pp2Body:
+      "Інфографіка — концептуальна архітектура. Не брошура CE/FDA від ANCAP.",
+    pp3Title: "3. Заборонені обіцянки результату",
+    pp3Body:
+      "ANCAP не гарантує очищення від смол чи зменшення кашлю.",
+    pp4Title: "4. Озон і медгази",
+    pp4Body:
+      "Суміш газів на зображенні — грамотність протоколу. ANCAP не продає озонотерапію.",
+    pp5Title: "5. Лише ліцензовані клініцисти",
+    pp5Body:
+      "Сеанси — лише у ліцензованого клініциста після скринінгу.",
+    pp6Title: "6. Режими та комплектація",
+    pp6Body:
+      "Режими Soft / Standard / Intensive — грамотність комплектації.",
+    pp7Title: "7. Не медична порада",
+    pp7Body:
+      "Тексти каталогу інформаційні.",
+    pp8Title: "8. Зв'язок з іншими рейлами",
+    pp8Body:
+      "M-рецептори та переносник кисню лишаються окремими.",
+    pp9Title: "9. Платежі",
+    pp9Body:
+      "ACP купує підписний бриф за 14 000 ACP / місяць. Повернення: /legal/refunds.",
+    pp10Title: "10. Контакти",
+    pp10Body:
+      "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#pulmopure.",
+    footerPulmopure: "PulmoPure",
 
 
     hubCardRefunds: "Коли списання остаточне, коли можливий кредит за збій і як запросити перевірку.",
@@ -3028,6 +3145,45 @@ export const legalByLang: Record<Language, Tree> = {
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#adhd-support.",
     footerAdhdSupport: "ADHS-Unterstützung",
 
+    pulmopureLink: "PulmoPure",
+    hubCardPulmopure:
+      "Lizenziertes Pneumologie-Abo für PulmoPure-Gasvibrations-Literalität. Kein CE/FDA-Gerät, keine Ozontherapie, keine garantierten sauberen Lungen.",
+    pulmopureKicker: "Recht / Pneumologie",
+    pulmopureTitle: "PulmoPure — lizenzierte Pneumologie-Abo-Schiene",
+    pulmopureIntro:
+      "Wie ANCAP die PulmoPure-Abo-SKU zum 13. September 2026 rahmt.",
+    pp1Title: "1. Plattformrolle",
+    pp1Body:
+      "ANCAP bietet ACP-Abrechnung und Partner-Matching. ANCAP stellt PulmoPure nicht her und praktiziert keine Pneumologie.",
+    pp2Title: "2. Kein hier verkauftes Medizinprodukt",
+    pp2Body:
+      "Die Infografik ist konzeptuelle Architektur. Keine CE/FDA-Broschüre von ANCAP.",
+    pp3Title: "3. Verbotene Ergebnisversprechen",
+    pp3Body:
+      "ANCAP garantiert keine Teerklärung oder Hustenreduktion.",
+    pp4Title: "4. Ozon und Medizingase",
+    pp4Body:
+      "Gasgemische auf der Grafik sind Partnerprotokoll-Literalität. ANCAP verkauft keine Ozontherapie.",
+    pp5Title: "5. Nur lizenzierte Kliniker",
+    pp5Body:
+      "Sitzungen nur unter lizenziertem Kliniker nach Screening.",
+    pp6Title: "6. Modi und Lieferumfang",
+    pp6Body:
+      "Soft / Standard / Intensiv sind Paket-Literalität.",
+    pp7Title: "7. Keine medizinische Beratung",
+    pp7Body:
+      "Katalogtexte sind informativ.",
+    pp8Title: "8. Verhältnis zu anderen Schienen",
+    pp8Body:
+      "M-Rezeptor und Sauerstoffträger bleiben getrennt.",
+    pp9Title: "9. Zahlungen",
+    pp9Body:
+      "ACP kauft Abo-Brief für 14.000 ACP / Monat. Rückerstattungen: /legal/refunds.",
+    pp10Title: "10. Kontakt",
+    pp10Body:
+      "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#pulmopure.",
+    footerPulmopure: "PulmoPure",
+
 
     hubCardRefunds: "Wann Belastungen endgültig sind und wie Sie eine Prüfung anfordern.",
     hubCardWelcomeGrant:
@@ -3848,6 +4004,45 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#adhd-support。",
     footerAdhdSupport: "ADHD 支援",
+
+    pulmopureLink: "PulmoPure",
+    hubCardPulmopure:
+      "持照肺科訂閱 PulmoPure 氣體振動素養。非 CE/FDA 器材、非臭氧治療、非保證潔淨肺部。",
+    pulmopureKicker: "法律／肺科",
+    pulmopureTitle: "PulmoPure — 持照肺科訂閱軌道",
+    pulmopureIntro:
+      "ANCAP 於 2026 年 9 月 13 日對 PulmoPure 訂閱 SKU 的表述。",
+    pp1Title: "1. 平台角色",
+    pp1Body:
+      "ANCAP 提供 ACP 結算與夥伴媒合。ANCAP 不製造 PulmoPure，亦不執業肺科。",
+    pp2Title: "2. 非於此販售之醫療器材",
+    pp2Body:
+      "資訊圖為概念架構。非 ANCAP 之 CE/FDA 型錄。",
+    pp3Title: "3. 禁止結果宣稱",
+    pp3Body:
+      "ANCAP 不保證清除焦油或減少咳嗽。",
+    pp4Title: "4. 臭氧與醫用氣體",
+    pp4Body:
+      "圖上氣體混合為夥伴協議素養。ANCAP 不販售臭氧治療。",
+    pp5Title: "5. 僅持照臨床醫師",
+    pp5Body:
+      "實體療程僅在篩檢後由持照臨床醫師進行。",
+    pp6Title: "6. 模式與配件",
+    pp6Body:
+      "Soft／Standard／Intensive 為配件素養。",
+    pp7Title: "7. 非醫療建議",
+    pp7Body:
+      "目錄文案僅供資訊。",
+    pp8Title: "8. 與其他軌道之關係",
+    pp8Body:
+      "M 受體與氧載體仍為獨立。",
+    pp9Title: "9. 付款",
+    pp9Body:
+      "ACP 以每月 14,000 ACP 購買訂閱簡報。退款依 /legal/refunds。",
+    pp10Title: "10. 聯絡",
+    pp10Body:
+      "法律通知：legal@ancap.cloud。產品：/aeterna#pulmopure。",
+    footerPulmopure: "PulmoPure",
 
 
     hubCardRefunds: "何時收費為最終、何時可因失敗執行取得點數，以及如何申請審查。",

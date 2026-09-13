@@ -6,7 +6,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9 awareness, and blockchain settlement",
     heroTitle: "Longevity rails for DNA you own — molecular aging profiles, not one bio-age number.",
     heroLead:
-      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP.",
+      "No registration for the DNA sandbox or local hash vault. Sign in to sync a fingerprint, buy a 1,000,000 ACP consult — including the 15-axis molecular aging profile and partial mRNA-reprogramming literacy — order a stem-cell organ print at 250,000 ACP, open a licensed veterinary organ rail for cats and dogs, a Vinci light-chamber session brief at 48,000 ACP, microwave body contouring at 52,000 ACP, a BioFusion micromanipulation brief at 88,000 ACP, wisdom-tooth DPSC biomaterial at 65,000 ACP, Vascular Care+ at 54,000 ACP, Vascular Care at 58,000 ACP, a needle-free transdermal pistol at 46,000 ACP, or an M-receptor delivery subscription from 12,000 ACP / month, an artificial oxygen-carrier brief at 92,000 ACP, or a synthetic-blood / Black Mamba architecture brief at 98,000 ACP, or an ADHD / СДВГ support brief at 42,000 ACP, or a PulmoPure lung-care subscription from 14,000 ACP / month.",
     openSandbox: "Open DNA sandbox",
     browseWorkflows: "Browse AETERNA workflows",
     demoKicker: "Public demo · nanobots + chemical scissors",
@@ -15,7 +15,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Interactive double helix — drag to rotate, click a rung to replace A/T/G/C pairs. Educational only; ANCAP never hosts full reference genomes (disk stays lean).",
     payTitle: "What you can pay for",
     payLead:
-      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP. AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
+      "Consult workflows settle at 1,000,000 ACP (DNA wellness, longevity panel, molecular aging profile, disease-risk, pigmentation, telomeres, partial mRNA-reprogramming literacy). Stem-cell organ print is 250,000 ACP per organ via a licensed biochemical reactor. Feline tissue cryo-restore is 75,000 ACP; canine VET REGEN POD is 180,000 ACP; Vinci light chamber is 48,000 ACP; microwave body contouring is 52,000 ACP; wisdom-tooth DPSC biomaterial is 65,000 ACP; BioFusion micromanipulation is 88,000 ACP; Vascular Care+ is 54,000 ACP; Vascular Care is 58,000 ACP; needle-free transdermal pistol is 46,000 ACP; M-receptor delivery subscription is 12,000 ACP / month (32,000 quarterly; 108,000 annual); artificial oxygen-carrier brief is 92,000 ACP; synthetic-blood / Black Mamba architecture brief is 98,000 ACP; ADHD / СДВГ support brief is 42,000 ACP; PulmoPure lung-care subscription is 14,000 ACP / month (38,000 quarterly; 128,000 annual). AETERNA is the capital and data rail, not a home CRISPR, LNP, wet-lab, tanning-bed, liposuction, IVF clinic, vein clinic, blood bank, or veterinary operating kit.",
     intent1Title: "Molecular aging profile (15 axes)",
     intent1Body:
       "Partner-ready map of DNA repair, proteostasis, energy metabolism, senescence and more from consented blood-RNA / panel metadata — individual configuration of aging, not a single biological-age score.",
@@ -73,6 +73,11 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent20Title: "ADHD / СДВГ support brief",
     intent20Body:
       "Licensed clinician / child psychiatry–neurology partner brief for ADHD support literacy. 42,000 ACP. Not a diagnosis, not a prescription, not stimulant compounding, not a CE/FDA drug, and not a guaranteed academic or financial outcome.",
+
+    intent21Title: "PulmoPure lung-care subscription",
+    intent21Body:
+      "Licensed pulmonology / respiratory clinic subscription for gas-vibration and lavender-oil architecture literacy. 14,000 ACP / month. Not a CE/FDA device, not ozone therapy, not medical-gas compounding, and not a guaranteed tar-clearance or clean-lungs outcome.",
+
 
 
     agingKicker: "Blood RNA · 15 hallmarks · sex-aware",
@@ -311,6 +316,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdStep6Title: "Risk literacy",
     adhdStep6Body: "Lower future risk themes (depression, anxiety, addiction, behavior). Not a cure claim.",
 
+    ppCta: "Subscribe to PulmoPure rail",
+    ppKicker: "Subscription · gas vibration · licensed pulmonology",
+    ppTitle: "PulmoPure — clean-lungs literacy, partner clinic only",
+    ppPrice: "14,000 ACP / month",
+    ppPeriods: "38,000 ACP / quarter · 128,000 ACP / year",
+    ppLead:
+      "A conceptual handheld system: silicone mouthpiece, gas-vibration generator, medical-gas mix literacy, lavender-oil atomizer, filter unit, and Soft / Standard / Intensive modes. Infographic before/after alveoli and 'clean lungs' slogans are protocol literacy — AETERNA does not sell a CE/FDA device, does not compound ozone or medical gases, and does not promise tar clearance.",
+    ppDisclaimer:
+      "ANCAP does not manufacture PulmoPure, does not practice pulmonology, and does not claim CE/FDA device status or safe home ozone inhalation. Soft / Standard / Intensive modes and package contents on the artwork are partner literacy. Physical sessions occur only under a licensed clinician after screening (asthma, COPD, pneumothorax history, pregnancy, ozone sensitivity).",
+    ppLegalCta: "PulmoPure legal notice",
+    ppAlt:
+      "Infographic of the PulmoPure handheld lung-care system: gas vibration, medical-gas mix literacy, lavender oils, Soft / Standard / Intensive modes, and before/after alveoli diagrams. Conceptual architecture for licensed pulmonology partners — not a CE/FDA device or ozone therapy sold by ANCAP.",
+    ppStep1Title: "Vibration",
+    ppStep1Body: "Controlled gas pulsation literacy. Not a guaranteed tar peel.",
+    ppStep2Title: "Gas mix",
+    ppStep2Body: "Partner medical-gas protocol literacy. Not ozone therapy sold by ANCAP.",
+    ppStep3Title: "Lavender",
+    ppStep3Body: "Aromatherapy atomizer literacy. Not a drug or antiseptic claim.",
+    ppStep4Title: "Handoff",
+    ppStep4Body: "ACP buys a subscription brief and licensed clinic match — not hardware title.",
+
+
 
     vetKicker: "Veterinary · licensed clinic · conceptual architecture",
     vetTitle: "Grow and restore organs for companion animals",
@@ -382,7 +409,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, осведомлённость о Cas9 и расчёты в блокчейне",
     heroTitle: "Рейлы долголетия: молекулярный профиль старения по 15 осям, а не одна цифра «биологического возраста».",
     heroLead:
-      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак, бриф световой камеры Vinci за 48 000 ACP или микроволновый контур тела за 52 000 ACP, камеру BioFusion за 88 000 ACP, биоматериал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP, безыгольный трансдермальный пистолет за 46 000 ACP или подписку на доставку к M-рецепторам от 12 000 ACP / месяц, бриф искусственного переносчика кислорода за 92 000 ACP или бриф синтетической крови / Чёрной Мамбы за 98 000 ACP, или бриф поддержки при СДВГ за 42 000 ACP.",
+      "Песочница ДНК и локальное хеш-хранилище не требуют регистрации. Войдите, чтобы синхронизировать отпечаток, купить консультацию за 1 000 000 ACP — включая молекулярный профиль старения и грамотность по частичному перепрограммированию мРНК — заказать печать органа за 250 000 ACP, открыть ветеринарный рейл выращивания органов для кошек и собак, бриф световой камеры Vinci за 48 000 ACP или микроволновый контур тела за 52 000 ACP, камеру BioFusion за 88 000 ACP, биоматериал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP, безыгольный трансдермальный пистолет за 46 000 ACP или подписку на доставку к M-рецепторам от 12 000 ACP / месяц, бриф искусственного переносчика кислорода за 92 000 ACP или бриф синтетической крови / Чёрной Мамбы за 98 000 ACP, или бриф поддержки при СДВГ за 42 000 ACP, или подписку PulmoPure от 14 000 ACP / месяц.",
     openSandbox: "Открыть ДНК-песочницу",
     browseWorkflows: "Смотреть workflow AETERNA",
     demoKicker: "Публичное демо · нанороботы + химические ножницы",
@@ -391,7 +418,7 @@ export const aeternaByLang: Record<Language, Tree> = {
       "Интерактивная двойная спираль: вращайте, меняйте пары A/T/G/C. Только обучение; ANCAP не хранит полные референсные геномы.",
     payTitle: "За что можно заплатить",
     payLead:
-      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP; микроволновый контур тела — 52 000 ACP; биоматериал DPSC — 65 000 ACP; камера BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безыгольный трансдермальный пистолет — 46 000 ACP; подписка на доставку к M-рецепторам — 12 000 ACP / месяц (32 000 квартал; 108 000 год); искусственный переносчик кислорода — 92 000 ACP; синтетическая кровь / Чёрная Мамба — 98 000 ACP; бриф поддержки при СДВГ — 42 000 ACP. AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий, липосакция, клиника ЭКО, венная клиника и не ветеринарная операционная.",
+      "Консультационные workflow — 1 000 000 ACP (wellness, longevity, молекулярный профиль старения, риски, пигментация, теломеры, частичное перепрограммирование мРНК). Печать органа — 250 000 ACP за орган. Криоконсервация тканей кошки — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; световая камера Vinci — 48 000 ACP; микроволновый контур тела — 52 000 ACP; биоматериал DPSC — 65 000 ACP; камера BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безыгольный трансдермальный пистолет — 46 000 ACP; подписка на доставку к M-рецепторам — 12 000 ACP / месяц (32 000 квартал; 108 000 год); искусственный переносчик кислорода — 92 000 ACP; синтетическая кровь / Чёрная Мамба — 98 000 ACP; бриф поддержки при СДВГ — 42 000 ACP; подписка PulmoPure — 14 000 ACP / месяц (38 000 квартал; 128 000 год). AETERNA — рейл капитала и данных, не домашний ПЦР, LNP, CRISPR, солярий, липосакция, клиника ЭКО, венная клиника и не ветеринарная операционная.",
     intent1Title: "Молекулярный профиль старения (15 осей)",
     intent1Body:
       "Карта репарации ДНК, протеостаза, энергообмена, клеточного старения и других осей по метаданным панели / blood-RNA — индивидуальная конфигурация процессов, а не одна цифра возраста.",
@@ -449,6 +476,11 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent20Title: "Поддержка при СДВГ",
     intent20Body:
       "Бриф для лицензированного клинициста (детская психиатрия / неврология) по поддержке при СДВГ. 42 000 ACP. Не диагноз, не рецепт, не компаундинг стимуляторов, не лекарство CE/FDA и не гарантированный учебный или финансовый результат.",
+
+    intent21Title: "Подписка PulmoPure (лёгкие)",
+    intent21Body:
+      "Подписка лицензированной пульмонологической / респираторной клиники: газо-вибрация и лавандовый атомайзер как грамотность. 14 000 ACP / месяц. Не изделие CE/FDA, не озонотерапия, не компаундинг медгазов и не гарантия «чистых лёгких».",
+
 
 
     agingKicker: "РНК крови · 15 механизмов · с учётом пола",
@@ -687,6 +719,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdStep6Title: "Риски",
     adhdStep6Body: "Темы снижения будущих рисков. Не claim «вылечили».",
 
+    ppCta: "Подписаться на PulmoPure",
+    ppKicker: "Подписка · газо-вибрация · лицензированная пульмонология",
+    ppTitle: "PulmoPure — грамотность «чистых лёгких», только партнёрская клиника",
+    ppPrice: "14 000 ACP / месяц",
+    ppPeriods: "38 000 ACP / квартал · 128 000 ACP / год",
+    ppLead:
+      "Концептуальный портативный аппарат: силиконовый мундштук, генератор газо-вибрации, грамотность смеси медгазов, лавандовый атомайзер, фильтр и режимы Soft / Standard / Intensive. «До/после» альвеол и слоган «чистые лёгкие» — грамотность протокола: AETERNA не продаёт изделие CE/FDA, не компаундит озон или медгазы и не обещает очистку от смол.",
+    ppDisclaimer:
+      "ANCAP не производит PulmoPure, не практикует пульмонологию и не заявляет статус CE/FDA или безопасную домашнюю озоноингаляцию. Режимы и комплектация на картинке — грамотность партнёра. Сеансы — только у лицензированного клинициста после скрининга.",
+    ppLegalCta: "Юр. текст PulmoPure",
+    ppAlt:
+      "Инфографика аппарата PulmoPure: газо-вибрация, смесь газов, лавандовые масла, режимы Soft / Standard / Intensive и схемы альвеол. Концептуальная архитектура для лицензированных пульмонологических партнёров.",
+    ppStep1Title: "Вибрация",
+    ppStep1Body: "Грамотность газовых пульсаций. Не гарантия снятия смол.",
+    ppStep2Title: "Смесь газов",
+    ppStep2Body: "Грамотность партнёрского протокола. Не озонотерапия от ANCAP.",
+    ppStep3Title: "Лаванда",
+    ppStep3Body: "Грамотность ароматерапии. Не лекарство и не антисептик-claim.",
+    ppStep4Title: "Передача",
+    ppStep4Body: "ACP покупает подписочный бриф и клинику — не право на железо.",
+
+
 
     vetKicker: "Ветеринария · лицензированная клиника · концептуальная архитектура",
     vetTitle: "Выращивание и восстановление органов для животных-компаньонов",
@@ -757,7 +811,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — ДНК, обізнаність про Cas9 і розрахунки в блокчейні",
     heroTitle: "Рейли довголіття: молекулярний профіль старіння за 15 осями, а не одна цифра біовіку.",
     heroLead:
-      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак, бриф світлової камери Vinci за 48 000 ACP або мікрохвильовий контур тіла за 52 000 ACP, камеру BioFusion за 88 000 ACP, біоматеріал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP, безголкову трансдермальну насадку за 46 000 ACP або підписку на доставку до M-рецепторів від 12 000 ACP / місяць, бриф штучного переносника кисню за 92 000 ACP або бриф синтетичної крові / Чорної Мамби за 98 000 ACP, або бриф підтримки при СДУГ за 42 000 ACP.",
+      "Пісочниця ДНК і локальне хеш-сховище не потребують реєстрації. Увійдіть, щоб синхронізувати відбиток, купити консультацію за 1 000 000 ACP — включно з молекулярним профілем старіння та грамотністю часткового перепрограмування мРНК — замовити друк органа за 250 000 ACP, відкрити ветеринарний рейл вирощування органів для котів і собак, бриф світлової камери Vinci за 48 000 ACP або мікрохвильовий контур тіла за 52 000 ACP, камеру BioFusion за 88 000 ACP, біоматеріал DPSC за 65 000 ACP, Vascular Care+ за 54 000 ACP, Vascular Care за 58 000 ACP, безголкову трансдермальну насадку за 46 000 ACP або підписку на доставку до M-рецепторів від 12 000 ACP / місяць, бриф штучного переносника кисню за 92 000 ACP або бриф синтетичної крові / Чорної Мамби за 98 000 ACP, або бриф підтримки при СДУГ за 42 000 ACP, або підписку PulmoPure від 14 000 ACP / місяць.",
     openSandbox: "Відкрити ДНК-пісочницю",
     browseWorkflows: "Дивитися workflow AETERNA",
     demoKicker: "Публічне демо · нанороботи + хімічні ножиці",
@@ -765,7 +819,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Інтерактивна подвійна спіраль. Лише навчання.",
     payTitle: "За що можна заплатити",
     payLead:
-      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP; мікрохвильовий контур тіла — 52 000 ACP; біоматеріал DPSC — 65 000 ACP; BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безголкова трансдермальна насадка — 46 000 ACP; підписка на доставку до M-рецепторів — 12 000 ACP / місяць (32 000 квартал; 108 000 рік); штучний переносник кисню — 92 000 ACP; синтетична кров / Чорна Мамба — 98 000 ACP; бриф підтримки при СДУГ — 42 000 ACP. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій, не ліпосакція, не клініка ЕКЗ і не ветеринарна операційна.",
+      "Консультації — 1 000 000 ACP (wellness, longevity, молекулярний профіль старіння, ризики, пігментація, теломери, часткове перепрограмування мРНК). Друк органа — 250 000 ACP за орган. Кріоконсервація тканин кота — 75 000 ACP; камера VET REGEN POD для собаки — 180 000 ACP; світлова камера Vinci — 48 000 ACP; мікрохвильовий контур тіла — 52 000 ACP; біоматеріал DPSC — 65 000 ACP; BioFusion — 88 000 ACP; Vascular Care+ — 54 000 ACP; Vascular Care — 58 000 ACP; безголкова трансдермальна насадка — 46 000 ACP; підписка на доставку до M-рецепторів — 12 000 ACP / місяць (32 000 квартал; 108 000 рік); штучний переносник кисню — 92 000 ACP; синтетична кров / Чорна Мамба — 98 000 ACP; бриф підтримки при СДУГ — 42 000 ACP; підписка PulmoPure — 14 000 ACP / місяць. AETERNA — рейл капіталу й даних, не домашній ПЛР / LNP / CRISPR, не солярій, не ліпосакція, не клініка ЕКЗ і не ветеринарна операційна.",
     intent1Title: "Молекулярний профіль старіння (15 осей)",
     intent1Body: "Конфігурація процесів старіння з метаданих панелі — не одна цифра віку.",
     intent2Title: "Панель теломер",
@@ -820,6 +874,11 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent20Title: "Підтримка при СДУГ",
     intent20Body:
       "Бриф для ліцензованого клініциста (дитяча психіатрія / неврологія) щодо підтримки при СДУГ. 42 000 ACP. Не діагноз, не рецепт, не компаундинг стимуляторів, не ліки CE/FDA і не гарантований навчальний чи фінансовий результат.",
+
+    intent21Title: "Підписка PulmoPure (легені)",
+    intent21Body:
+      "Підписка ліцензованої пульмонологічної / респіраторної клініки: газо-вібрація та лавандовий атомайзер як грамотність. 14 000 ACP / місяць. Не виріб CE/FDA, не озонотерапія, не компаундинг медгазів і не гарантія «чистих легень».",
+
 
 
     agingKicker: "РНК крові · 15 механізмів · з урахуванням статі",
@@ -1048,6 +1107,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdStep6Title: "Ризики",
     adhdStep6Body: "Теми зниження майбутніх ризиків. Не claim «вилікували».",
 
+    ppCta: "Підписатися на PulmoPure",
+    ppKicker: "Підписка · газо-вібрація · ліцензована пульмонологія",
+    ppTitle: "PulmoPure — грамотність «чистих легень», лише партнерська клініка",
+    ppPrice: "14 000 ACP / місяць",
+    ppPeriods: "38 000 ACP / квартал · 128 000 ACP / рік",
+    ppLead:
+      "Концептуальний портативний апарат: мундштук, газо-вібрація, грамотність суміші медгазів, лавандовий атомайзер і режими Soft / Standard / Intensive. AETERNA не продає виріб CE/FDA і не обіцяє очищення від смол.",
+    ppDisclaimer:
+      "ANCAP не виробляє PulmoPure і не практикує пульмонологію. Сеанси — лише у ліцензованого клініциста після скринінгу.",
+    ppLegalCta: "Юр. текст PulmoPure",
+    ppAlt:
+      "Інфографіка апарата PulmoPure: газо-вібрація, суміш газів, лаванда, режими та схеми альвеол. Концептуальна архітектура для ліцензованих партнерів.",
+    ppStep1Title: "Вібрація",
+    ppStep1Body: "Грамотність газових пульсацій. Не гарантія зняття смол.",
+    ppStep2Title: "Суміш газів",
+    ppStep2Body: "Грамотність партнерського протоколу. Не озонотерапія від ANCAP.",
+    ppStep3Title: "Лаванда",
+    ppStep3Body: "Грамотність ароматерапії. Не ліки.",
+    ppStep4Title: "Передача",
+    ppStep4Body: "ACP купує підписний бриф і клініку — не право на залізо.",
+
+
 
     vetKicker: "Ветеринарія · ліцензована клініка · концептуальна архітектура",
     vetTitle: "Вирощування і відновлення органів для тварин-компаньйонів",
@@ -1118,7 +1199,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA, Cas9-Bewusstsein und Blockchain-Abrechnung",
     heroTitle: "Longevity-Schienen: molekulares Alterungsprofil über 15 Achsen — keine einzelne Bio-Age-Zahl.",
     heroLead:
-      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen, ein Vinci-Lichtkammer-Briefing für 48.000 ACP oder Mikrowellen-Body-Contouring für 52.000 ACP, BioFusion für 88.000 ACP, DPSC-Biomaterial für 65.000 ACP, Vascular Care+ für 54.000 ACP, Vascular Care für 58.000 ACP, eine nadelfreie transdermale Pistole für 46.000 ACP oder ein M-Rezeptor-Abo ab 12.000 ACP / Monat, oder ein künstliches Sauerstoffträger-Briefing für 92.000 ACP, oder ein ADHS-Unterstützungsbrief für 42.000 ACP.",
+      "DNA-Sandbox und lokaler Hash-Vault ohne Registrierung. Anmelden, um einen Fingerabdruck zu synchronisieren, eine 1.000.000-ACP-Konsultation zu kaufen — inklusive 15-Achsen-Alterungsprofil und partieller mRNA-Reprogrammierungs-Literacy — einen Organdruck für 250.000 ACP zu bestellen, eine lizenzierte veterinärmedizinische Organschiene für Katzen und Hunde zu öffnen, ein Vinci-Lichtkammer-Briefing für 48.000 ACP oder Mikrowellen-Body-Contouring für 52.000 ACP, BioFusion für 88.000 ACP, DPSC-Biomaterial für 65.000 ACP, Vascular Care+ für 54.000 ACP, Vascular Care für 58.000 ACP, eine nadelfreie transdermale Pistole für 46.000 ACP oder ein M-Rezeptor-Abo ab 12.000 ACP / Monat, oder ein künstliches Sauerstoffträger-Briefing für 92.000 ACP, oder ein ADHS-Unterstützungsbrief für 42.000 ACP, oder ein PulmoPure-Lungenpflege-Abo ab 14.000 ACP / Monat.",
     openSandbox: "DNA-Sandbox öffnen",
     browseWorkflows: "AETERNA-Workflows ansehen",
     demoKicker: "Öffentliche Demo · Nanobots + chemische Scheren",
@@ -1126,7 +1207,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "Interaktive Doppelhelix — nur Bildung.",
     payTitle: "Wofür Sie zahlen können",
     payLead:
-      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP; Mikrowellen-Body-Contouring 52.000 ACP; DPSC-Biomaterial 65.000 ACP; BioFusion 88.000 ACP; Vascular Care+ 54.000 ACP; Vascular Care 58.000 ACP; nadelfreie transdermale Pistole 46.000 ACP; M-Rezeptor-Abo 12.000 ACP / Monat (32.000 quartalsweise; 108.000 jährlich); künstlicher Sauerstoffträger 92.000 ACP; ADHS-Unterstützungsbrief 42.000 ACP. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium, keine Liposuktion, keine IVF-Klinik und keine Veterinär-OP.",
+      "Konsultationen 1.000.000 ACP (Wellness, Longevity, molekulares Alterungsprofil, Risiken, Pigmentierung, Telomere, partielle mRNA-Reprogrammierung). Organdruck 250.000 ACP je Organ. Feliner Gewebe-Kryo 75.000 ACP; canine VET REGEN POD 180.000 ACP; Vinci-Lichtkammer 48.000 ACP; Mikrowellen-Body-Contouring 52.000 ACP; DPSC-Biomaterial 65.000 ACP; BioFusion 88.000 ACP; Vascular Care+ 54.000 ACP; Vascular Care 58.000 ACP; nadelfreie transdermale Pistole 46.000 ACP; M-Rezeptor-Abo 12.000 ACP / Monat (32.000 quartalsweise; 108.000 jährlich); künstlicher Sauerstoffträger 92.000 ACP; ADHS-Unterstützungsbrief 42.000 ACP; PulmoPure-Abo 14.000 ACP / Monat. AETERNA ist Kapital- und Datenschiene, kein Heim-PCR/LNP/CRISPR, kein Solarium, keine Liposuktion, keine IVF-Klinik und keine Veterinär-OP.",
     intent1Title: "Molekulares Alterungsprofil (15 Achsen)",
     intent1Body: "Hallmark-Karte aus Panel-/Blut-RNA-Metadaten — Konfiguration, keine Bio-Age-Zahl.",
     intent2Title: "Telomer-Panel",
@@ -1181,6 +1262,11 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent20Title: "ADHS-Unterstützung",
     intent20Body:
       "Partnerbrief für lizenzierte Kliniker (Kinderpsychiatrie / Neurologie) zur ADHS-Unterstützungsliteralität. 42.000 ACP. Keine Diagnose, kein Rezept, kein Stimulanzien-Compounding, kein CE/FDA-Arzneimittel und kein garantiertes Schul- oder Finanzergebnis.",
+
+    intent21Title: "PulmoPure Lungenpflege-Abo",
+    intent21Body:
+      "Lizenziertes Pneumologie-/Atemwegs-Klinik-Abo für Gasvibrations- und Lavendelöl-Literalität. 14.000 ACP / Monat. Kein CE/FDA-Gerät, keine Ozontherapie, kein Medizingas-Compounding und keine garantierte Teerklärung oder „saubere Lungen“.",
+
 
 
     agingKicker: "Blut-RNA · 15 Mechanismen · geschlechtssensitiv",
@@ -1409,6 +1495,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdStep6Title: "Risiken",
     adhdStep6Body: "Themen zur Senkung künftiger Risiken. Kein Heilungs-Claim.",
 
+    ppCta: "PulmoPure-Abo öffnen",
+    ppKicker: "Abo · Gasvibration · lizenzierte Pneumologie",
+    ppTitle: "PulmoPure — „saubere Lungen“-Literalität, nur Partnerklinik",
+    ppPrice: "14.000 ACP / Monat",
+    ppPeriods: "38.000 ACP / Quartal · 128.000 ACP / Jahr",
+    ppLead:
+      "Konzeptuelles Handgerät: Mundstück, Gasvibrationsgenerator, Medizingas-Mix-Literacy, Lavendelöl-Zerstäuber und Soft-/Standard-/Intensiv-Modi. AETERNA verkauft kein CE/FDA-Gerät und verspricht keine Teerklärung.",
+    ppDisclaimer:
+      "ANCAP stellt PulmoPure nicht her und praktiziert keine Pneumologie. Sitzungen nur unter lizenziertem Kliniker nach Screening.",
+    ppLegalCta: "Rechtshinweis PulmoPure",
+    ppAlt:
+      "Infografik des PulmoPure-Handgeräts: Gasvibration, Gasgemisch, Lavendel, Modi und Alveolen-Diagramme. Konzeptuelle Architektur für lizenzierte Pneumologie-Partner.",
+    ppStep1Title: "Vibration",
+    ppStep1Body: "Gasimpuls-Literalität. Keine garantierte Teerablösung.",
+    ppStep2Title: "Gasgemisch",
+    ppStep2Body: "Partnerprotokoll-Literalität. Keine Ozontherapie von ANCAP.",
+    ppStep3Title: "Lavendel",
+    ppStep3Body: "Aromatherapie-Literalität. Kein Arzneimittel-Claim.",
+    ppStep4Title: "Übergabe",
+    ppStep4Body: "ACP kauft Abo-Brief und Klinik-Match — kein Hardware-Eigentum.",
+
+
 
     vetKicker: "Veterinärmedizin · lizenzierte Klinik · konzeptionelle Architektur",
     vetTitle: "Organzüchtung und -wiederherstellung für Haustiere",
@@ -1479,7 +1587,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     heroAlt: "AETERNA — DNA、Cas9 認知與區塊鏈結算",
     heroTitle: "長壽軌道：15 軸分子衰老剖面，而非單一生物年齡數字。",
     heroLead:
-      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道、以 48,000 ACP 開啟 Vinci 光艙簡報，或以 52,000 ACP 開啟微波身體輪廓、以 88,000 ACP 開啟 BioFusion、以 65,000 ACP 開啟 DPSC 生物材料、以 54,000 ACP 開啟 Vascular Care+、以 58,000 ACP 開啟 Vascular Care、以 46,000 ACP 開啟無針經皮手槍，或以每月 12,000 ACP 起訂 M 受體遞送訂閱，以 92,000 ACP 開啟人工氧載體簡報，或以 98,000 ACP 開啟合成血／黑曼巴架構簡報，或以 42,000 ACP 開啟 ADHD 支援簡報。",
+      "DNA 沙盒與本機雜湊庫無需註冊。登入可同步指紋、購買 1,000,000 ACP 諮詢（含 15 軸分子衰老剖面與部分 mRNA 重編程素養）、以 250,000 ACP 訂購器官列印、開通貓犬持照獸醫器官軌道、以 48,000 ACP 開啟 Vinci 光艙簡報，或以 52,000 ACP 開啟微波身體輪廓、以 88,000 ACP 開啟 BioFusion、以 65,000 ACP 開啟 DPSC 生物材料、以 54,000 ACP 開啟 Vascular Care+、以 58,000 ACP 開啟 Vascular Care、以 46,000 ACP 開啟無針經皮手槍，或以每月 12,000 ACP 起訂 M 受體遞送訂閱，以 92,000 ACP 開啟人工氧載體簡報，或以 98,000 ACP 開啟合成血／黑曼巴架構簡報，或以 42,000 ACP 開啟 ADHD 支援簡報，或以每月 14,000 ACP 起訂 PulmoPure 肺部照護訂閱。",
     openSandbox: "開啟 DNA 沙盒",
     browseWorkflows: "瀏覽 AETERNA 工作流程",
     demoKicker: "公開示範 · 奈米機器人 + 化學剪刀",
@@ -1487,7 +1595,7 @@ export const aeternaByLang: Record<Language, Tree> = {
     sandboxLead: "互動雙螺旋僅供教育。",
     payTitle: "可付費項目",
     payLead:
-      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP；微波身體輪廓 52,000 ACP；DPSC 生物材料 65,000 ACP；BioFusion 88,000 ACP；Vascular Care+ 54,000 ACP；Vascular Care 58,000 ACP；無針經皮手槍 46,000 ACP；M 受體遞送訂閱每月 12,000 ACP（季繳 32,000；年繳 108,000）；人工氧載體簡報 92,000 ACP；合成血／黑曼巴架構簡報 98,000 ACP；ADHD 支援簡報 42,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床、非抽脂、非生殖診所，亦非獸醫手術套件。",
+      "諮詢 1,000,000 ACP（健康、長壽、分子衰老剖面、風險、色素、端粒、部分 mRNA 重編程素養）。幹細胞器官列印每器官 250,000 ACP。貓組織冷凍復原 75,000 ACP；犬用 VET REGEN POD 180,000 ACP；Vinci 光艙 48,000 ACP；微波身體輪廓 52,000 ACP；DPSC 生物材料 65,000 ACP；BioFusion 88,000 ACP；Vascular Care+ 54,000 ACP；Vascular Care 58,000 ACP；無針經皮手槍 46,000 ACP；M 受體遞送訂閱每月 12,000 ACP（季繳 32,000；年繳 108,000）；人工氧載體簡報 92,000 ACP；合成血／黑曼巴架構簡報 98,000 ACP；ADHD 支援簡報 42,000 ACP；PulmoPure 訂閱每月 14,000 ACP。AETERNA 是資金與資料軌道，非家用 PCR／LNP／CRISPR、非日光浴床、非抽脂、非生殖診所，亦非獸醫手術套件。",
     intent1Title: "分子衰老剖面（15 軸）",
     intent1Body: "以血液 RNA／面板中繼資料對應衰老機制——是配置，不是單一生物年齡。",
     intent2Title: "端粒面板",
@@ -1542,6 +1650,11 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent20Title: "ADHD／注意力不足過動支援",
     intent20Body:
       "持照臨床醫師（兒童精神／神經）夥伴簡報，ADHD 支援素養。42,000 ACP。非診斷、非處方、非興奮劑配製、非 CE/FDA 藥品，亦非保證學業或財務結果。",
+
+    intent21Title: "PulmoPure 肺部照護訂閱",
+    intent21Body:
+      "持照肺科／呼吸科診所訂閱：氣體振動與薰衣草霧化架構素養。每月 14,000 ACP。非 CE/FDA 器材、非臭氧治療、非醫用氣體複配，亦非保證清除焦油或「潔淨肺部」。",
+
 
 
     agingKicker: "血液 RNA · 15 機制 · 性別敏感",
@@ -1769,6 +1882,28 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdStep5Body: "更有信心發揮能力 — 非成績保證。",
     adhdStep6Title: "風險",
     adhdStep6Body: "降低未來風險的主題。非治癒宣稱。",
+
+    ppCta: "訂閱 PulmoPure",
+    ppKicker: "訂閱 · 氣體振動 · 持照肺科",
+    ppTitle: "PulmoPure — 「潔淨肺部」素養，僅限夥伴診所",
+    ppPrice: "每月 14,000 ACP",
+    ppPeriods: "季繳 38,000 ACP · 年繳 128,000 ACP",
+    ppLead:
+      "概念性手持裝置：矽膠咬嘴、氣體振動、醫用氣體混合素養、薰衣草霧化與 Soft／Standard／Intensive 模式。AETERNA 不販售 CE/FDA 器材，亦不保證清除焦油。",
+    ppDisclaimer:
+      "ANCAP 不製造 PulmoPure，亦不執業肺科。實體療程僅在持照臨床醫師篩檢後進行。",
+    ppLegalCta: "PulmoPure 法律聲明",
+    ppAlt:
+      "PulmoPure 手持肺部照護系統資訊圖：氣體振動、氣體混合、薰衣草、模式與肺泡圖。持照肺科夥伴的概念架構。",
+    ppStep1Title: "振動",
+    ppStep1Body: "氣體脈動素養。非保證清除焦油。",
+    ppStep2Title: "氣體混合",
+    ppStep2Body: "夥伴協議素養。非 ANCAP 臭氧治療。",
+    ppStep3Title: "薰衣草",
+    ppStep3Body: "芳療素養。非藥品宣稱。",
+    ppStep4Title: "移交",
+    ppStep4Body: "ACP 購買訂閱簡報與診所媒合 — 非硬體所有權。",
+
 
 
     vetKicker: "獸醫 · 持照診所 · 概念架構",

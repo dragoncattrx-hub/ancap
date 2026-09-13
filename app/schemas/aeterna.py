@@ -58,6 +58,7 @@ class AeternaIntentKind(str, Enum):
     oxygen_carrier_brief = "oxygen_carrier_brief"
     synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
     adhd_support_brief = "adhd_support_brief"
+    pulmopure_subscription = "pulmopure_subscription"
 
 
 class AeternaDnaSource(str, Enum):
@@ -310,4 +311,10 @@ class AeternaStatusPublic(BaseModel):
         "emotion, and school-adaptation literacy. Infographics are motivational architecture — not a "
         "diagnosis, not a prescription, not stimulant compounding, and not a guaranteed academic or "
         "financial outcome."
+    )
+    pulmopure_note: str = (
+        "The PulmoPure rail is a licensed pulmonology / respiratory clinic subscription for gas-vibration "
+        "and lavender-oil architecture literacy. Infographics are conceptual — not a CE/FDA device sold by "
+        "ANCAP, not ozone therapy, not medical-gas compounding, and not a guaranteed tar-clearance or "
+        "'clean lungs' outcome."
     )

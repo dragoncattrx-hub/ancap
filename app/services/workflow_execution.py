@@ -724,6 +724,46 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
         tags=["aeterna", "adhd", "sdvg", "clinician", "consult"],
     ),
+    WorkflowTemplatePublic(
+        slug="aeterna-pulmopure-subscription",
+        title="AETERNA PulmoPure Lung-Care Subscription",
+        category="AETERNA",
+        summary=(
+            "Licensed pulmonology / respiratory clinic subscription for PulmoPure gas-vibration and "
+            "lavender-oil architecture literacy — 14,000 ACP / month."
+        ),
+        description=(
+            "Settles the first subscription period (14,000 ACP monthly; 38,000 quarterly; 128,000 annual) "
+            "and issues a licensed-clinic partner brief for a conceptual handheld lung-care system: silicone "
+            "mouthpiece, gas-vibration generator, medical-gas mix literacy, lavender-oil atomizer, filter/"
+            "cleaning unit, and Soft / Standard / Intensive mode literacy. Infographic before/after alveoli "
+            "and 'clean lungs' slogans are protocol literacy, not a guaranteed clinical outcome. ANCAP does "
+            "not manufacture PulmoPure, does not compound medical gases or ozone, does not sell a CE/FDA "
+            "device, and does not claim tar clearance, cough cure, or safe home ozone inhalation. Physical "
+            "sessions occur only under a licensed clinician after screening. Renewal is a subscription "
+            "retainer — not hardware title."
+        ),
+        price=Money(amount="14000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=35,
+        preview_items=[
+            "Respiratory contraindication intake",
+            "Mode match (Soft / Standard / Intensive literacy)",
+            "Subscription period pack",
+        ],
+        output_items=[
+            "PulmoPure subscription intake brief",
+            "Licensed pulmonology / respiratory clinic handoff",
+            "Non-claim checklist (no ozone therapy / no gas compounding / no CE-FDA / no clean-lungs guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "billing", "modules", "status_timeline"],
+        tags=["aeterna", "pulmopure", "subscription", "pulmonology", "consult"],
+        billing="subscription",
+        subscription_price_monthly=Money(amount="14000", currency="ACP"),
+        subscription_price_quarterly=Money(amount="38000", currency="ACP"),
+        subscription_price_annual=Money(amount="128000", currency="ACP"),
+    ),
 
     WorkflowTemplatePublic(
         slug="market-direction-brief",
@@ -1979,6 +2019,32 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
                     "under a licensed clinician. Infographic steps are motivational literacy, not a "
                     "product claim."
+                ),
+            }
+        if template.slug == "aeterna-pulmopure-subscription":
+            deliverable["intent"] = str(payload.get("intent_kind") or "pulmopure_subscription")
+            deliverable["compliance"] = (
+                "Licensed pulmonology / respiratory clinic subscription only. Not a CE/FDA device sold by "
+                "ANCAP, not ozone therapy, not medical-gas compounding, not a home respiratory kit, and not "
+                "a guaranteed tar-clearance or 'clean lungs' outcome."
+            )
+            deliverable["pulmopure_subscription"] = {
+                "mode": "licensed_clinic_subscription",
+                "architecture": "pulmopure_gas_vibration_partner_literacy",
+                "billing": "subscription",
+                "price_acp_monthly": "14000",
+                "price_acp_quarterly": "38000",
+                "price_acp_annual": "128000",
+                "modules": {
+                    "gas_vibration": "licensed_clinic_literacy",
+                    "medical_gas_mix": "partner_protocol_literacy_only",
+                    "lavender_oil_atomizer": "aromatherapy_literacy",
+                    "soft_standard_intensive_modes": "partner_mode_literacy",
+                },
+                "note": (
+                    "ANCAP settles the subscription period in ACP and issues a partner handoff brief. "
+                    "Physical sessions occur only under a licensed clinician after screening. Infographic "
+                    "modes and before/after alveoli are protocol literacy, not a product claim."
                 ),
             }
         execution_summary = {

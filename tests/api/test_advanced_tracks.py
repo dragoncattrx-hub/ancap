@@ -72,6 +72,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.oxygen_carrier_brief.value == "oxygen_carrier_brief"
     assert AeternaIntentKind.synthetic_blood_mamba_brief.value == "synthetic_blood_mamba_brief"
     assert AeternaIntentKind.adhd_support_brief.value == "adhd_support_brief"
+    assert AeternaIntentKind.pulmopure_subscription.value == "pulmopure_subscription"
     assert AeternaStatusPublic.model_fields["division"]
     assert AeternaStatusPublic.model_fields["reprogramming_note"]
     assert AeternaStatusPublic.model_fields["vet_regen_note"]
@@ -86,6 +87,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["oxygen_carrier_note"]
     assert AeternaStatusPublic.model_fields["synthetic_blood_mamba_note"]
     assert AeternaStatusPublic.model_fields["adhd_support_note"]
+    assert AeternaStatusPublic.model_fields["pulmopure_note"]
 
 
 def test_aeterna_workflow_templates_catalogued():
@@ -95,7 +97,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 21
+    assert len(aeterna) >= 22
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -104,6 +106,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-microwave-body-contouring": "52000",
         "aeterna-transdermal-pistol": "46000",
         "aeterna-m-receptor-subscription": "12000",
+        "aeterna-pulmopure-subscription": "14000",
         "aeterna-oxygen-carrier": "92000",
         "aeterna-synthetic-blood-mamba": "98000",
         "aeterna-adhd-support": "42000",
@@ -129,6 +132,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-oxygen-carrier" in slugs
     assert "aeterna-synthetic-blood-mamba" in slugs
     assert "aeterna-adhd-support" in slugs
+    assert "aeterna-pulmopure-subscription" in slugs
 
 
 def test_aeterna_vault_metadata_rejects_sequence_blobs():
@@ -731,6 +735,50 @@ def test_adhd_support_intent_default_slug_and_reject_low_budget(client):
     payload = created.json()
     assert payload["workflow_slug"] == ADHD_SUPPORT_SLUG
     assert payload["metadata_json"]["architecture"] == "adhd_support_partner_literacy"
+
+
+def test_pulmopure_subscription_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-pulmopure-subscription")
+    assert tpl is not None
+    assert tpl.billing == "subscription"
+    assert tpl.subscription_price_monthly is not None
+    assert tpl.subscription_price_monthly.amount == "14000"
+    assert tpl.subscription_price_quarterly is not None
+    assert tpl.subscription_price_quarterly.amount == "38000"
+    assert tpl.subscription_price_annual is not None
+    assert tpl.subscription_price_annual.amount == "128000"
+    out = execute_workflow_template(tpl, {"intent_kind": "pulmopure_subscription"})
+    pp = out["deliverable"]["pulmopure_subscription"]
+    assert pp["billing"] == "subscription"
+    assert pp["price_acp_monthly"] == "14000"
+    assert pp["architecture"] == "pulmopure_gas_vibration_partner_literacy"
+    blob = str(out).lower()
+    for forbidden in ("ozone dose", "ppm ozone", "home ozone kit"):
+        assert forbidden not in blob
+    assert "licensed_clinic" in blob
+    assert "ozone" in blob
+
+
+def test_pulmopure_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import PULMOPURE_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "pulmopure_subscription", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "pulmopure_subscription", "budget_acp": "14000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == PULMOPURE_SLUG
+    assert payload["metadata_json"]["architecture"] == "pulmopure_gas_vibration_partner_literacy"
+    assert payload["metadata_json"]["billing"] == "subscription"
 
 
 def test_advanced_track_routes_include_org_aeterna_intents():
