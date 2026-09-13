@@ -4,6 +4,7 @@ import { agencyByLang } from "./agency";
 import { startupsByLang } from "./startups";
 import { lunarByLang } from "./lunar";
 import { faunaByLang } from "./fauna";
+import { floraByLang } from "./flora";
 import { insuranceByLang } from "./insurance";
 import { arenaByLang } from "./arena";
 import { techByLang } from "./tech";
@@ -118,6 +119,7 @@ export const translations: Record<Language, TranslationTree> = {
     stardust: "Stardust",
       galaxy: "Galaxy",
       fauna: "Fauna",
+      flora: "Flora",
       tech: "Tech",
       startups: "Startups",
       insurance: "Insurance",
@@ -443,6 +445,7 @@ export const translations: Record<Language, TranslationTree> = {
     startupsPage: startupsByLang.en,
     lunarPage: lunarByLang.en,
     faunaPage: faunaByLang.en,
+    floraPage: floraByLang.en,
     insurancePage: insuranceByLang.en,
     arenaPage: arenaByLang.en,
     techPage: techByLang.en,
@@ -616,6 +619,7 @@ export const translations: Record<Language, TranslationTree> = {
     stardust: "Stardust",
       galaxy: "Галактика",
       fauna: "Фауна",
+      flora: "Флора",
       tech: "Технологии",
       startups: "Стартапы",
       insurance: "Страхование",
@@ -941,6 +945,7 @@ export const translations: Record<Language, TranslationTree> = {
     startupsPage: startupsByLang.ru,
     lunarPage: lunarByLang.ru,
     faunaPage: faunaByLang.ru,
+    floraPage: floraByLang.ru,
     insurancePage: insuranceByLang.ru,
     arenaPage: arenaByLang.ru,
     techPage: techByLang.ru,
@@ -1114,6 +1119,7 @@ export const translations: Record<Language, TranslationTree> = {
     stardust: "Stardust",
       galaxy: "Галактика",
       fauna: "Фауна",
+      flora: "Флора",
       tech: "Технології",
       startups: "Стартапи",
       insurance: "Страхування",
@@ -1439,6 +1445,7 @@ export const translations: Record<Language, TranslationTree> = {
     startupsPage: startupsByLang.uk,
     lunarPage: lunarByLang.uk,
     faunaPage: faunaByLang.uk,
+    floraPage: floraByLang.uk,
     insurancePage: insuranceByLang.uk,
     arenaPage: arenaByLang.uk,
     techPage: techByLang.uk,
@@ -1612,6 +1619,7 @@ export const translations: Record<Language, TranslationTree> = {
     stardust: "Stardust",
       galaxy: "Galaxie",
       fauna: "Tierwelt",
+      flora: "Flora",
       tech: "Technik",
       startups: "Startups",
       insurance: "Versicherung",
@@ -1937,6 +1945,7 @@ export const translations: Record<Language, TranslationTree> = {
     startupsPage: startupsByLang.de,
     lunarPage: lunarByLang.de,
     faunaPage: faunaByLang.de,
+    floraPage: floraByLang.de,
     insurancePage: insuranceByLang.de,
     arenaPage: arenaByLang.de,
     techPage: techByLang.de,
@@ -2110,6 +2119,7 @@ export const translations: Record<Language, TranslationTree> = {
     stardust: "Stardust",
       galaxy: "銀河",
       fauna: "動物",
+      flora: "植物",
       tech: "技術",
       startups: "新創",
       insurance: "保險",
@@ -2435,6 +2445,7 @@ export const translations: Record<Language, TranslationTree> = {
     startupsPage: startupsByLang["zh-Hant"],
     lunarPage: lunarByLang["zh-Hant"],
     faunaPage: faunaByLang["zh-Hant"],
+    floraPage: floraByLang["zh-Hant"],
     insurancePage: insuranceByLang["zh-Hant"],
     arenaPage: arenaByLang["zh-Hant"],
     techPage: techByLang["zh-Hant"],

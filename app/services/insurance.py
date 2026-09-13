@@ -135,6 +135,17 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         "asset_ref_types": ["animal_auction_lot"],
     },
     {
+        "coverage_class": "floriculture",
+        "label": "FLORA flower cargo / escrow",
+        "description": "Flower auction escrow disruption cover (cut/potted/seed lots; licensed florist handoff).",
+        "pool_id": "pool-flora",
+        "min": "50",
+        "max": "250000",
+        "premium_bps": 140,
+        "term_days": 45,
+        "asset_ref_types": ["flora_auction_lot"],
+    },
+    {
         "coverage_class": "space_payload",
         "label": "Space / orbital payload",
         "description": "Galaxy auction / orbital payload title-desk parametric cover.",

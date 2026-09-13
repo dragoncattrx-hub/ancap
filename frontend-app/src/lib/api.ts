@@ -522,6 +522,36 @@ export const animalAuction = {
   },
 };
 
+export const floraAuction = {
+  async catalog() {
+    return apiFetch("/flora-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/flora-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async list(data: {
+    form: string;
+    name: string;
+    variety: string;
+    quantity?: number | null;
+    blurb: string;
+    starting_acp: string;
+    image_href?: string | null;
+    license_acknowledged: boolean;
+  }) {
+    return apiFetch("/flora-auction/lots", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  async bid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/flora-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const techAuction = {
   async catalog() {
     return apiFetch("/tech-auction/catalog");

@@ -2804,6 +2804,66 @@ class AnimalAuctionBid(Base):
     )
 
 
+# --- FLORA flower auction (any form, qty 1…∞, ACP escrow) ---
+
+
+class FloraAuctionLot(Base):
+    __tablename__ = "flora_auction_lots"
+
+    id = Column(String(64), primary_key=True)
+    seller_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    form = Column(String(32), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    variety = Column(String(120), nullable=False)
+    quantity = Column(BigInteger, nullable=True)  # null = unlimited (∞)
+    blurb = Column(Text, nullable=False)
+    starting_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="live", index=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    contract_address = Column(String(42), nullable=True)
+    chain_id = Column(String(32), nullable=True, default="bsc")
+    image_href = Column(String(160), nullable=True)
+    featured = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    seller = relationship("User", foreign_keys=[seller_user_id])
+
+
+class FloraAuctionBid(Base):
+    __tablename__ = "flora_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    contract_hash = Column(String(64), nullable=False)
+    tx_hash = Column(String(128), nullable=True, index=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_flora_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_flora_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )
+
+
 # --- TECH IP / technology license auction ---
 
 

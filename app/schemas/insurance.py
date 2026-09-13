@@ -17,6 +17,7 @@ CoverageClass = Literal[
     "device_nfc",
     "cyber_incident",
     "livestock",
+    "floriculture",
     "space_payload",
     "perimeter_cleanup",
     "neonatal_install",
