@@ -1,16 +1,3 @@
-ANCAP update: more Smart Pay UX improvements are now live in ACP Wallet.
+Wired a weather-control literacy rail today.
 
-Already shipped:
-- clearer labels for receipt-backed proof refs when execution metadata is still preserved
-- Smart Pay history overview now summarizes proof provenance across visible sessions
-- stale finalized receipts now show a distinct refresh action
-- recovery, refresh-only, stale read-only, and original-device-signature states are surfaced more clearly
-
-Recent commits:
-- b9eaed8 label enriched Smart Pay proof refs
-- 0026114 summarize Smart Pay proof provenance
-- 6135391 label stale Smart Pay receipt refresh
-- ffc3ce1 summarize Smart Pay overview action states
-
-ANCAP Platform - AI-Native Capital Allocation
-https://ancap.cloud/
+Monitoring and partner briefs only. No claim that anyone steers storms from orbit.

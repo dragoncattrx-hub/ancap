@@ -1,5 +1,15 @@
 [
   {
+    "id": "stardust-weather-control",
+    "channels": ["telegram", "site"],
+    "text": "Stardust desk на ANCAP\n\nСобрал /stardust — ACP-брифы по мониторингу и weather-control грамотности. Переключатели на странице — UI, не живая консоль геоинженерии.\n\nhttps://ancap.cloud/stardust"
+  },
+  {
+    "id": "aeterna-installation-project",
+    "channels": ["site"],
+    "text": "AETERNA: Проект Установки\n\nПартнёрский бриф (молочная линия + неонатальная барокамера) — 72 000 ACP.\nНе смесь от ANCAP, не домашняя HBO, не гарантия исхода.\n\nНа сайте: https://ancap.cloud/aeterna#installation-project"
+  },
+  {
     "id": "aeterna-barsuk-quantum-pen",
     "channels": ["site"],
     "text": "AETERNA: Project Barsuk\n\nПартнёрский бриф secure-comms грамотности (ручка-формфактор) — 36 000 ACP.\nНе Parker, не оружие, не «невзламываемая» криптография.\n\nНа сайте: https://ancap.cloud/aeterna#barsuk"
@@ -12,32 +22,32 @@
   {
     "id": "aeterna-pulmopure-subscription",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: подписка PulmoPure\n\nПартнёрский бриф лицензированной пульмонологии — 14 000 ACP / месяц.\nЭто не изделие CE/FDA, не озонотерапия и не гарантия «чистых лёгких».\n\nКупить: https://ancap.cloud/ai/run/aeterna-pulmopure-subscription\nЮр. текст: https://ancap.cloud/legal/pulmopure"
+    "text": "AETERNA: подписка PulmoPure\n\nПартнёрский бриф лицензированной пульмонологии — 14 000 ACP / месяц.\nЭто не изделие CE/FDA, не озонотерапия и не гарантия «чистых лёгких».\n\nhttps://ancap.cloud/aeterna#pulmopure"
   },
   {
     "id": "aeterna-adhd-support",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: поддержка при СДВГ\n\nПартнёрский бриф для лицензированного клинициста — 42 000 ACP.\nНе диагноз, не рецепт, не стимуляторы, не обещание «миллиардера».\n\nКупить: https://ancap.cloud/ai/run/aeterna-adhd-support\nЮр. текст: https://ancap.cloud/legal/adhd-support"
+    "text": "AETERNA: поддержка при СДВГ\n\nПартнёрский бриф для лицензированного клинициста — 42 000 ACP.\nНе диагноз, не рецепт, не стимуляторы.\n\nhttps://ancap.cloud/aeterna#adhd-support"
   },
   {
     "id": "aeterna-synthetic-blood-mamba",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: синтетическая кровь / Чёрная Мамба\n\nПартнёрский бриф архитектуры — 98 000 ACP.\nНе кровезаменитель, не компаундинг яда, не CE/FDA.\n\nКупить: https://ancap.cloud/ai/run/aeterna-synthetic-blood-mamba"
+    "text": "AETERNA: синтетическая кровь / Чёрная Мамба\n\nПартнёрский бриф архитектуры — 98 000 ACP.\nНе кровезаменитель, не компаундинг яда, не CE/FDA.\n\nhttps://ancap.cloud/aeterna#synthetic-blood-mamba"
   },
   {
     "id": "aeterna-oxygen-carrier",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: переносчик кислорода\n\nПартнёрский бриф HBOC/PFC — 92 000 ACP.\nНе кровезаменитель и не CE/FDA.\n\nКупить: https://ancap.cloud/ai/run/aeterna-oxygen-carrier"
+    "text": "AETERNA: переносчик кислорода\n\nПартнёрский бриф HBOC/PFC — 92 000 ACP.\nНе кровезаменитель и не CE/FDA.\n\nhttps://ancap.cloud/aeterna#oxygen-carrier"
   },
   {
     "id": "aeterna-stem-cell-organ-print",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: печать органа\n\n250 000 ACP за орган. Лицензированный биореактор, не домашний набор.\n\nКупить: https://ancap.cloud/ai/run/aeterna-stem-cell-organ-print"
+    "text": "AETERNA: печать органа\n\n250 000 ACP за орган. Лицензированный биореактор, не домашний набор.\n\nhttps://ancap.cloud/ai/run/aeterna-stem-cell-organ-print"
   },
   {
     "id": "aeterna-m-receptor-subscription",
     "channels": ["telegram", "site"],
-    "text": "AETERNA: подписка M-рецепторы\n\n12 000 ACP / месяц. Грамотность протокола лицензированной клиники.\n\nКупить: https://ancap.cloud/ai/run/aeterna-m-receptor-subscription"
+    "text": "AETERNA: подписка M-рецепторы\n\n12 000 ACP / месяц. Грамотность протокола лицензированной клиники.\n\nhttps://ancap.cloud/aeterna#m-receptor"
   },
   {
     "id": "perimeter-security-watch",

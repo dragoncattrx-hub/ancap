@@ -9,6 +9,22 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "stardust-weather-control",
+    date: "2026-09-13",
+    title: "Stardust: платный desk контроля погоды по миру",
+    summary:
+      "На /stardust — ACP-рейл по мониторингу Земли и weather-control грамотности: extreme weather, disaster early-warning, глобальный бриф (58 000 ACP) и подписка (45 000 ACP / месяц). Панель переключателей на странице — UI грамотности, не живая консоль геоинженерии. Страховка: класс weather_control. Юр. текст: /legal/stardust.",
+    href: "/stardust",
+  },
+  {
+    id: "aeterna-installation-project",
+    date: "2026-09-13",
+    title: "AETERNA: Проект Установки — питание и неонатальная барокамера",
+    summary:
+      "На /aeterna — партнёрский бриф «Проект Установки» за 72 000 ACP: грамотность линии высокобелкового натурально-синтетического молока и неонатальной барокамеры. Это не смесь от ANCAP, не CE/FDA-устройство, не домашняя HBO и не гарантия клинического исхода. Страховка: neonatal_install. Юр. текст: /legal/installation-project.",
+    href: "/aeterna#installation-project",
+  },
+  {
     id: "aeterna-barsuk-quantum-pen",
     date: "2026-09-13",
     title: "AETERNA: Project Barsuk — бриф квантовой ручки",
