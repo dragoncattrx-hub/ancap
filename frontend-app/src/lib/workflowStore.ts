@@ -675,6 +675,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     tags: ["aeterna", "adhd", "sdvg", "clinician", "consult"],
   },
   {
+    slug: "aeterna-down-syndrome-support",
+    title: "AETERNA Down Syndrome Support Brief",
+    category: "AETERNA",
+    summary:
+      "Licensed developmental pediatrics / genetics partner brief for Down syndrome support literacy — 42,000 ACP. Not a cure.",
+    description:
+      "Settles 42,000 ACP and issues a licensed-partner brief. Not a cure for Down syndrome, not a diagnosis, not gene therapy or CRISPR sold by ANCAP, not a prescription, and not a guaranteed developmental outcome.",
+    price: { amount: "42000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 40,
+    preview_items: [
+      "Support literacy map (early intervention / family / learning)",
+      "Licensed clinician partner match",
+      "Non-claim protocol pack",
+    ],
+    output_items: [
+      "Down syndrome support intake brief",
+      "Licensed clinician handoff",
+      "Non-claim checklist (no cure / no gene therapy / no diagnosis / no outcome guarantee)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "down-syndrome", "trisomy-21", "clinician", "consult"],
+  },
+  {
     slug: "aeterna-pulmopure-subscription",
     title: "AETERNA PulmoPure Lung-Care Subscription",
     category: "AETERNA",

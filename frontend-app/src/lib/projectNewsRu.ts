@@ -73,6 +73,22 @@ export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
     href: "/aeterna#pulmopure",
   },
   {
+    id: "aeterna-down-syndrome-support",
+    date: "2026-09-14",
+    title: "AETERNA: поддержка при синдроме Дауна — партнёрский бриф",
+    summary:
+      "На /aeterna — бриф для лицензированного клинициста (развивающая педиатрия / генетика / детская неврология) по поддержке при синдроме Дауна за 42 000 ACP. Это не излечение, не диагноз, не генная терапия или CRISPR от ANCAP и не гарантия результата развития. Юр. текст: /legal/down-syndrome-support.",
+    href: "/aeterna#down-syndrome-support",
+  },
+  {
+    id: "humanitarian-africa",
+    date: "2026-09-14",
+    title: "Гуманитарный стол: Африка — брифы и партнёры",
+    summary:
+      "На /humanitarian добавлены африканские коридоры помощи (еда, вода, медпоставки, livelihood) и листинги национальных обществ Красного Креста / Красного Полумесяца (Кения, ЮАР, Эфиопия, Сенегал, Египет). Это desk listing, не подписанное партнёрство с МФОКК и не лицензия на эмблему. Юр. текст: /legal/humanitarian.",
+    href: "/humanitarian",
+  },
+  {
     id: "aeterna-adhd-support",
     date: "2026-09-13",
     title: "AETERNA: поддержка при СДВГ — партнёрский бриф",

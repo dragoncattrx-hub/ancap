@@ -309,6 +309,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdDisclaimer:
       "ANCAP does not diagnose, prescribe, compound stimulants, or guarantee school, career, or financial outcomes. Physical care occurs only under a licensed clinician after screening. Infographic billionaire framing is motivational literacy, not a product claim.",
     adhdLegalCta: "ADHD support legal notice",
+    downKicker: "Down syndrome · licensed clinician · support literacy",
+    downTitle: "Down syndrome support",
+    downPrice: "42,000 ACP",
+    downLead: "ACP-settled brief for a licensed developmental pediatrics / genetics / child-neurology partner covering early intervention, family support, and school-adaptation literacy.",
+    downDisclaimer: "ANCAP is not a clinic. This is not a cure for Down syndrome, not a diagnosis, not gene therapy or CRISPR sold by ANCAP, not a prescription, and not a guaranteed developmental or life outcome.",
+    downAlt: "Down syndrome support literacy panel",
+    downStep1Title: "Early support",
+    downStep1Body: "Literacy on early intervention themes with the licensed clinician.",
+    downStep2Title: "Family care",
+    downStep2Body: "Caregiver coordination literacy — decisions stay with the family and clinician.",
+    downStep3Title: "Learning path",
+    downStep3Body: "School and skills adaptation literacy, not a guaranteed academic outcome.",
+    downStep4Title: "Health partners",
+    downStep4Body: "Partner screening for licensed developmental / genetics handoff.",
+    downStep5Title: "Community",
+    downStep5Body: "Peer and community support literacy — not a substitute for clinical care.",
+    downStep6Title: "ACP receipt",
+    downStep6Body: "Settled brief with proof receipt; clinical care remains with the licensed partner.",
+    downCta: "Open Down syndrome support brief",
+    downLegalCta: "Down syndrome support legal notice",
+
     adhdAlt:
       "Infographic about ADHD support for children: focus, planning, emotional control, relationships, self-esteem, risk reduction, and a motivational staircase. Conceptual literacy for licensed clinician partners — not a diagnosis or treatment claim.",
     adhdStep1Title: "Focus",
@@ -413,6 +434,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent25Title: "DNA-matched pheromone perfume (1 bottle)",
     intent25Body:
       "Licensed cosmetic / fragrance partner fill informed by an optional DNA-vault hash — 8,900 ACP per bottle. Not a drug, not an aphrodisiac claim, not a guaranteed attraction outcome.",
+    intent26Title: "Down syndrome support brief",
+    intent26Body:
+      "Licensed developmental pediatrics / genetics partner brief for Down syndrome support literacy — not a cure, not a diagnosis, not gene therapy sold by ANCAP.",
 
     ppfCta: "Buy 1 bottle",
     ppfVaultCta: "Open DNA vault",
@@ -807,6 +831,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdDisclaimer:
       "ANCAP не ставит диагноз, не выписывает рецепты, не компаундит стимуляторы и не гарантирует школу, карьеру или деньги. Физическая помощь — только у лицензированного клинициста после скрининга. «Миллиардер» на картинке — мотивация, не claim продукта.",
     adhdLegalCta: "Юр. текст: поддержка при СДВГ",
+    downKicker: "Синдром Дауна · лицензированный клиницист · грамотность поддержки",
+    downTitle: "Поддержка при синдроме Дауна",
+    downPrice: "42 000 ACP",
+    downLead: "ACP-бриф для лицензированного партнёра (развивающая педиатрия / генетика / детская неврология): ранняя поддержка, семья и школьная адаптация.",
+    downDisclaimer: "ANCAP не клиника. Это не излечение синдрома Дауна, не диагноз, не генная терапия или CRISPR от ANCAP, не рецепт и не гарантия результата развития.",
+    downAlt: "Панель грамотности поддержки при синдроме Дауна",
+    downStep1Title: "Ранняя поддержка",
+    downStep1Body: "Грамотность раннего вмешательства с лицензированным клиницистом.",
+    downStep2Title: "Семья",
+    downStep2Body: "Координация опекунов — решения остаются у семьи и врача.",
+    downStep3Title: "Обучение",
+    downStep3Body: "Школьная и навыковая адаптация — без гарантии академического исхода.",
+    downStep4Title: "Медпартнёры",
+    downStep4Body: "Скрининг лицензированного handoff (генетика / неврология).",
+    downStep5Title: "Сообщество",
+    downStep5Body: "Грамотность peer-поддержки — не замена клинической помощи.",
+    downStep6Title: "Чек ACP",
+    downStep6Body: "Оплаченный бриф с proof; клиника остаётся у лицензированного партнёра.",
+    downCta: "Открыть бриф поддержки",
+    downLegalCta: "Юр. текст: поддержка при синдроме Дауна",
+
     adhdAlt:
       "Инфографика о поддержке детей с СДВГ: фокус, планирование, эмоции, отношения, самооценка, снижение рисков и мотивационная лестница. Концептуальная грамотность для лицензированных клиницистов — не диагноз и не лечение от ANCAP.",
     adhdStep1Title: "Фокус",
@@ -911,6 +956,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent25Title: "Духи с феромонами под ДНК (1 флакон)",
     intent25Body:
       "Лицензированный косметический / парфюмерный партнёрский розлив с учётом опционального хеша DNA-vault — 8 900 ACP за 1 флакон. Не лекарство, не афродизиак-клейм, не гарантия притяжения.",
+    intent26Title: "Поддержка при синдроме Дауна",
+    intent26Body:
+      "Бриф для лицензированного партнёра (детская неврология / генетика / развивающая педиатрия) — не излечение, не диагноз и не генная терапия от ANCAP.",
 
     ppfCta: "Купить 1 флакон",
     ppfVaultCta: "Открыть DNA vault",
@@ -1290,6 +1338,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdDisclaimer:
       "ANCAP не ставить діагноз, не виписує рецепти, не компаундить стимулятори і не гарантує школу, кар'єру чи гроші. Фізична допомога — лише у ліцензованого клініциста.",
     adhdLegalCta: "Юр. текст: підтримка при СДУГ",
+    downKicker: "Синдром Дауна · ліцензований клініцист · грамотність підтримки",
+    downTitle: "Підтримка при синдромі Дауна",
+    downPrice: "42 000 ACP",
+    downLead: "ACP-бріф для ліцензованого партнера (розвиткова педіатрія / генетика / дитяча неврологія).",
+    downDisclaimer: "ANCAP не клініка. Це не вилікування синдрому Дауна, не діагноз, не генна терапія від ANCAP і не гарантія результату розвитку.",
+    downAlt: "Панель грамотності підтримки при синдромі Дауна",
+    downStep1Title: "Рання підтримка",
+    downStep1Body: "Грамотність раннього втручання з ліцензованим клініцистом.",
+    downStep2Title: "Сімʼя",
+    downStep2Body: "Координація опікунів — рішення залишаються в сімʼї та лікаря.",
+    downStep3Title: "Навчання",
+    downStep3Body: "Шкільна адаптація — без гарантії академічного результату.",
+    downStep4Title: "Медпартнери",
+    downStep4Body: "Скринінг ліцензованого handoff.",
+    downStep5Title: "Спільнота",
+    downStep5Body: "Peer-підтримка — не заміна клінічної допомоги.",
+    downStep6Title: "Чек ACP",
+    downStep6Body: "Оплачений бріф з proof; клініка у ліцензованого партнера.",
+    downCta: "Відкрити бріф підтримки",
+    downLegalCta: "Юр. текст: підтримка при синдромі Дауна",
+
     adhdAlt:
       "Інфографіка про підтримку дітей із СДУГ: фокус, планування, емоції, стосунки, самооцінка та мотиваційні сходи. Концептуальна грамотність для ліцензованих клініцистів.",
     adhdStep1Title: "Фокус",
@@ -1392,6 +1461,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent25Title: "Парфуми з феромонами під ДНК (1 флакон)",
     intent25Body:
       "Ліцензований косметичний / парфумерний партнерський розлив з урахуванням опційного хешу DNA-vault — 8 900 ACP за 1 флакон. Не ліки, не афродизіак-клейм, не гарантія притягання.",
+    intent26Title: "Підтримка при синдромі Дауна",
+    intent26Body:
+      "Бріф для ліцензованого партнера (дитяча неврологія / генетика) — не вилікування, не діагноз і не генна терапія від ANCAP.",
 
     ppfCta: "Купити 1 флакон",
     ppfVaultCta: "Відкрити DNA vault",
@@ -1771,6 +1843,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdDisclaimer:
       "ANCAP diagnostiziert nicht, verschreibt nicht, compoundiert keine Stimulanzien und garantiert keine Schul-, Karriere- oder Finanzergebnisse. Körperliche Versorgung nur unter lizenziertem Kliniker.",
     adhdLegalCta: "Rechtshinweis ADHS-Unterstützung",
+    downKicker: "Down-Syndrom · lizenzierter Kliniker · Unterstuetzungsliteralitaet",
+    downTitle: "Down-Syndrom-Unterstuetzung",
+    downPrice: "42.000 ACP",
+    downLead: "ACP-Brief fuer einen lizenzierten Partner (Entwicklungsmedizin / Genetik / Kinderneurologie).",
+    downDisclaimer: "ANCAP ist keine Klinik. Keine Heilung des Down-Syndroms, keine Diagnose, keine Gentherapie durch ANCAP und kein garantiertes Entwicklungsergebnis.",
+    downAlt: "Down-Syndrom-Unterstuetzungspanel",
+    downStep1Title: "Fruehe Foerderung",
+    downStep1Body: "Literalitaet frueher Intervention mit lizenziertem Kliniker.",
+    downStep2Title: "Familie",
+    downStep2Body: "Pflegekoordination — Entscheidungen bleiben bei Familie und Kliniker.",
+    downStep3Title: "Lernen",
+    downStep3Body: "Schul- und Kompetenzanpassung — ohne Ergebnisgarantie.",
+    downStep4Title: "Medizinpartner",
+    downStep4Body: "Partner-Screening fuer lizenzierten Handoff.",
+    downStep5Title: "Community",
+    downStep5Body: "Peer-Unterstuetzung — kein Ersatz fuer klinische Versorgung.",
+    downStep6Title: "ACP-Beleg",
+    downStep6Body: "Bezahlter Brief mit Proof; Klinik bleibt beim Partner.",
+    downCta: "Down-Syndrom-Brief oeffnen",
+    downLegalCta: "Rechtshinweis Down-Syndrom-Unterstuetzung",
+
     adhdAlt:
       "Infografik zur ADHS-Unterstützung bei Kindern: Fokus, Planung, Emotionen, Beziehungen, Selbstwert und Motivationsleiter. Konzeptuelle Literalität für lizenzierte Kliniker.",
     adhdStep1Title: "Fokus",
@@ -1873,6 +1966,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent25Title: "DNA-abgestimmtes Pheromon-Parfuem (1 Flasche)",
     intent25Body:
       "Lizenzierter Kosmetik- / Duftpartner-Abfuellung mit optionalem DNA-Vault-Hash — 8.900 ACP pro Flasche. Kein Arzneimittel, kein Aphrodisiakum-Claim, kein garantiertes Anziehungsergebnis.",
+    intent26Title: "Down-Syndrom-Unterstuetzung",
+    intent26Body:
+      "Lizenzierter Partnerbrief (Entwicklungsmedizin / Genetik) — keine Heilung, keine Diagnose und keine Gentherapie durch ANCAP.",
 
     ppfCta: "1 Flasche kaufen",
     ppfVaultCta: "DNA-Vault oeffnen",
@@ -2252,6 +2348,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     adhdDisclaimer:
       "ANCAP 不診斷、不開方、不配製興奮劑，亦不保證學業、職涯或財務結果。實體照護僅在持照臨床醫師篩檢後進行。",
     adhdLegalCta: "ADHD 支援法律聲明",
+    downKicker: "唐氏症 · 持照臨床醫師 · 支援素養",
+    downTitle: "唐氏症支援",
+    downPrice: "42,000 ACP",
+    downLead: "向持照發展兒科／遺傳學／兒童神經科夥伴交接的 ACP 簡報：早期介入、家庭與就學適應素養。",
+    downDisclaimer: "ANCAP 非診所。非唐氏症治癒、非診斷、非 ANCAP 基因治療、非處方、非保證發展結果。",
+    downAlt: "唐氏症支援素養面板",
+    downStep1Title: "早期支援",
+    downStep1Body: "與持照臨床醫師的早期介入素養。",
+    downStep2Title: "家庭",
+    downStep2Body: "照顧者協調——決定權在家庭與醫師。",
+    downStep3Title: "學習",
+    downStep3Body: "就學與技能適應——無學業結果保證。",
+    downStep4Title: "醫療夥伴",
+    downStep4Body: "持照交接夥伴篩選。",
+    downStep5Title: "社群",
+    downStep5Body: "同儕支援素養——非臨床照護替代。",
+    downStep6Title: "ACP 收據",
+    downStep6Body: "已結算簡報與證明；臨床照護在夥伴端。",
+    downCta: "開啟唐氏症支援簡報",
+    downLegalCta: "唐氏症支援法律聲明",
+
     adhdAlt:
       "關於兒童 ADHD 支援的資訊圖：專注、規劃、情緒、關係、自尊與動機階梯。持照臨床醫師夥伴的概念素養。",
     adhdStep1Title: "專注",
@@ -2350,6 +2467,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent25Title: "DNA 匹配費洛蒙香水（1 瓶）",
     intent25Body:
       "持照化妝品／香水夥伴灌裝，可選 DNA vault 雜湊參考 — 每瓶 8,900 ACP。非藥品、非催情宣稱、非保證吸引結果。",
+    intent26Title: "唐氏症支援簡報",
+    intent26Body:
+      "持照發展兒科／遺傳學夥伴簡報——非治癒、非診斷、非 ANCAP 基因治療。",
 
     ppfCta: "購買 1 瓶",
     ppfVaultCta: "開啟 DNA vault",

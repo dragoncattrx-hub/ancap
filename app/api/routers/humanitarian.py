@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.schemas.humanitarian import (
     HumanitarianCatalogPublic,
     HumanitarianPartnerPublic,
+    HumanitarianRegionPublic,
     HumanitarianServicePublic,
 )
 from app.services import humanitarian_desk as svc
@@ -20,6 +21,7 @@ async def humanitarian_catalog():
         title=raw["title"],
         tagline=raw["tagline"],
         compliance_note=raw["compliance_note"],
+        regions=[HumanitarianRegionPublic(**r) for r in raw.get("regions") or []],
         services=[HumanitarianServicePublic(**s) for s in raw["services"]],
         partners=[HumanitarianPartnerPublic(**p) for p in raw["partners"]],
         legal_href=raw["legal_href"],

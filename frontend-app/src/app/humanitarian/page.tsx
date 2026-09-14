@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { humanitarianDesk } from "@/lib/api";
 import { ServiceReviewsPanel } from "@/components/ServiceReviewsPanel";
+
+type Region = { id: string; label: string; blurb: string };
 
 type Service = {
   id: string;
@@ -13,6 +15,7 @@ type Service = {
   label: string;
   price_from_acp: string;
   blurb: string;
+  regions?: string[];
 };
 
 type Partner = {
@@ -28,12 +31,14 @@ type Partner = {
   emblem_licensed?: boolean;
   ethics_note?: string;
   regulatory_note?: string;
+  regions?: string[];
 };
 
 type Catalog = {
   title: string;
   tagline: string;
   compliance_note: string;
+  regions?: Region[];
   services: Service[];
   partners: Partner[];
   legal_href: string;
@@ -45,6 +50,7 @@ export default function HumanitarianPage() {
   const { user, isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
+  const [region, setRegion] = useState<string>("all");
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const [selectedLabel, setSelectedLabel] = useState("");
   const [selectedKind, setSelectedKind] = useState<"service" | "partner">("service");
@@ -68,6 +74,18 @@ export default function HumanitarianPage() {
     void load();
   }, [load]);
 
+  const services = useMemo(() => {
+    const items = catalog?.services || [];
+    if (region === "all") return items;
+    return items.filter((s) => (s.regions || []).includes(region) || (s.regions || []).includes("global"));
+  }, [catalog, region]);
+
+  const partners = useMemo(() => {
+    const items = catalog?.partners || [];
+    if (region === "all") return items;
+    return items.filter((p) => (p.regions || []).includes(region) || (p.regions || []).includes("global"));
+  }, [catalog, region]);
+
   return (
     <main className="min-h-screen bg-[#120a0c] text-slate-100">
       <Navigation />
@@ -80,7 +98,7 @@ export default function HumanitarianPage() {
         <p className="mt-4 text-sm leading-6 text-slate-500">{catalog?.compliance_note}</p>
         <p className="mt-3 text-sm text-amber-200/80">
           Desk listing — not a signed Red Cross partnership, not an emblem licence, not a 135-FZ
-          charity operated by ANCAP.
+          charity operated by ANCAP. Africa corridors are handoff listings, not AU programmes.
         </p>
         <p className="mt-3 text-sm">
           <Link href={catalog?.legal_href || "/legal/humanitarian"} className="text-rose-300 underline">
@@ -94,15 +112,56 @@ export default function HumanitarianPage() {
 
         {error ? <p className="mt-4 text-sm text-rose-400">{error}</p> : null}
 
-        <h2 className="mt-10 text-xl text-white">Aid briefs</h2>
+        <div className="mt-8 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={
+              region === "all"
+                ? "rounded-md bg-rose-400 px-3 py-1.5 text-sm font-medium text-[#1a080a]"
+                : "rounded-md border border-white/15 px-3 py-1.5 text-sm text-white/70 hover:border-white/30"
+            }
+            onClick={() => setRegion("all")}
+          >
+            All regions
+          </button>
+          {(catalog?.regions || []).map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className={
+                region === r.id
+                  ? "rounded-md bg-rose-400 px-3 py-1.5 text-sm font-medium text-[#1a080a]"
+                  : "rounded-md border border-white/15 px-3 py-1.5 text-sm text-white/70 hover:border-white/30"
+              }
+              onClick={() => setRegion(r.id)}
+              title={r.blurb}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        {region !== "all" ? (
+          <p className="mt-3 max-w-2xl text-sm text-slate-400">
+            {(catalog?.regions || []).find((r) => r.id === region)?.blurb}
+          </p>
+        ) : null}
+
+        <h2 className="mt-10 text-xl text-white">
+          {region === "africa" ? "Africa aid briefs" : "Aid briefs"}
+        </h2>
         <ul className="mt-4 space-y-5">
-          {(catalog?.services || []).map((svc) => (
+          {services.map((svc) => (
             <li key={svc.id} className="border-t border-white/10 pt-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg text-white">{svc.label}</h3>
                 <span className="text-sm text-rose-200/80">from {svc.price_from_acp} ACP</span>
               </div>
               <p className="mt-2 text-slate-300">{svc.blurb}</p>
+              {(svc.regions || []).length ? (
+                <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+                  {(svc.regions || []).join(" · ")}
+                </p>
+              ) : null}
               <button
                 type="button"
                 className="mt-3 border border-rose-400/40 px-3 py-1.5 text-sm text-rose-100 hover:bg-rose-400/10"
@@ -118,9 +177,11 @@ export default function HumanitarianPage() {
           ))}
         </ul>
 
-        <h2 className="mt-12 text-xl text-white">Movement listings (handoff rails)</h2>
+        <h2 className="mt-12 text-xl text-white">
+          {region === "africa" ? "African Movement listings" : "Movement listings (handoff rails)"}
+        </h2>
         <ul className="mt-4 space-y-5">
-          {(catalog?.partners || []).map((p) => (
+          {partners.map((p) => (
             <li key={p.id} className="border-t border-white/10 pt-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg text-white">{p.name}</h3>

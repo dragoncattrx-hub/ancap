@@ -64,6 +64,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/oxygen-carrier", key: "oxygenCarrierLink" },
     { href: "/legal/synthetic-blood-mamba", key: "syntheticBloodMambaLink" },
     { href: "/legal/adhd-support", key: "adhdSupportLink" },
+    { href: "/legal/down-syndrome-support", key: "downSyndromeSupportLink" },
     { href: "/legal/pulmopure", key: "pulmopureLink" },
     { href: "/legal/barsuk", key: "barsukLink" },
     { href: "/legal/teleport-earphones", key: "teleportEarphonesLink" },
@@ -121,6 +122,7 @@ export function LegalHubView() {
     { href: "/legal/oxygen-carrier", title: "oxygenCarrierLink", body: "hubCardOxygenCarrier" },
     { href: "/legal/synthetic-blood-mamba", title: "syntheticBloodMambaLink", body: "hubCardSyntheticBloodMamba" },
     { href: "/legal/adhd-support", title: "adhdSupportLink", body: "hubCardAdhdSupport" },
+    { href: "/legal/down-syndrome-support", title: "downSyndromeSupportLink", body: "hubCardDownSyndromeSupport" },
     { href: "/legal/pulmopure", title: "pulmopureLink", body: "hubCardPulmopure" },
     { href: "/legal/barsuk", title: "barsukLink", body: "hubCardBarsuk" },
     { href: "/legal/teleport-earphones", title: "teleportEarphonesLink", body: "hubCardTeleportEarphones" },
@@ -1223,6 +1225,39 @@ export function AdhdSupportLegalView() {
   );
 }
 
+export function DownSyndromeSupportLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.downSyndromeSupportKicker")}
+      title={t("legal.downSyndromeSupportTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.downSyndromeSupportIntro")}`}
+      actions={<LegalNavPills current="/legal/down-syndrome-support" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.ds${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.ds${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/aeterna#down-syndrome-support"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            /aeterna#down-syndrome-support
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function PulmoPureLegalView() {
   const { t } = useLanguage();
   return (
@@ -1540,6 +1575,7 @@ export function SiteLegalFooter() {
     { href: "/legal/oxygen-carrier", label: "footerOxygenCarrier" },
     { href: "/legal/synthetic-blood-mamba", label: "footerSyntheticBloodMamba" },
     { href: "/legal/adhd-support", label: "footerAdhdSupport" },
+    { href: "/legal/down-syndrome-support", label: "footerDownSyndromeSupport" },
     { href: "/legal/pulmopure", label: "footerPulmopure" },
     { href: "/legal/barsuk", label: "footerBarsuk" },
     { href: "/legal/teleport-earphones", label: "footerTeleportEarphones" },

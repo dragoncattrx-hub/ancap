@@ -53,6 +53,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-oxygen-carrier",
     "aeterna-synthetic-blood-mamba",
     "aeterna-adhd-support",
+    "aeterna-down-syndrome-support",
     "aeterna-pulmopure-subscription",
     "aeterna-barsuk-quantum-pen",
     "aeterna-teleport-earphones",
@@ -92,6 +93,8 @@ SYNTHETIC_BLOOD_MAMBA_SLUG = "aeterna-synthetic-blood-mamba"
 SYNTHETIC_BLOOD_MAMBA_PRICE_ACP = Decimal("98000")
 ADHD_SUPPORT_SLUG = "aeterna-adhd-support"
 ADHD_SUPPORT_PRICE_ACP = Decimal("42000")
+DOWN_SYNDROME_SUPPORT_SLUG = "aeterna-down-syndrome-support"
+DOWN_SYNDROME_SUPPORT_PRICE_ACP = Decimal("42000")
 PULMOPURE_SLUG = "aeterna-pulmopure-subscription"
 PULMOPURE_PRICE_ACP = Decimal("14000")
 PULMOPURE_QUARTERLY_ACP = Decimal("38000")
@@ -223,6 +226,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
     AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
+    AeternaIntentKind.down_syndrome_support_brief.value: DOWN_SYNDROME_SUPPORT_SLUG,
     AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
     AeternaIntentKind.barsuk_quantum_pen_brief.value: BARSUK_SLUG,
     AeternaIntentKind.teleport_earphones_brief.value: TELEPORT_SLUG,
@@ -484,6 +488,29 @@ ADHD_SUPPORT_META = {
         "not a CE/FDA drug, and not a guaranteed academic or financial outcome. Infographic "
         "'billionaire path' steps are motivational literacy, not a promise. Partner screening required; "
         "caregivers retain clinical decision rights with the licensed clinician."
+    ),
+}
+
+DOWN_SYNDROME_SUPPORT_META = {
+    "mode": "licensed_clinician_partner",
+    "unit": "support_brief",
+    "price_acp": "42000",
+    "architecture": "down_syndrome_support_partner_literacy",
+    "themes_literacy": [
+        "early_intervention",
+        "family_caregiver_coordination",
+        "learning_and_skills_adaptation",
+        "health_partner_screening",
+        "community_peer_support",
+        "developmental_literacy",
+    ],
+    "note": (
+        "Conceptual Down syndrome support brief. ANCAP settles ACP and issues a licensed developmental "
+        "pediatrics / genetics / child-neurology partner handoff covering early intervention, family "
+        "support, and school-adaptation literacy. Not a cure for Down syndrome, not a diagnosis, not "
+        "gene therapy or CRISPR sold by ANCAP, not a prescription, and not a guaranteed developmental "
+        "or life outcome. Partner screening required; caregivers retain clinical decision rights with "
+        "the licensed clinician."
     ),
 }
 
@@ -791,6 +818,12 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "ADHD / СДВГ support listings are licensed clinician partner intakes for attention, planning, "
             "emotion, and school-adaptation literacy. Infographics are motivational — not a diagnosis, "
             "not a prescription, not stimulant compounding, and not a guaranteed financial outcome."
+        ),
+        down_syndrome_support_note=(
+            "Down syndrome support listings are licensed developmental pediatrics / genetics / "
+            "child-neurology partner intakes for early intervention and family literacy. Infographics "
+            "are support architecture — not a cure, not a diagnosis, not gene therapy sold by ANCAP, "
+            "and not a guaranteed developmental outcome."
         ),
         pulmopure_note=(
             "PulmoPure listings are licensed pulmonology / respiratory clinic subscriptions for "
@@ -1101,6 +1134,20 @@ async def create_intent_order(
                 detail="adhd_support_brief budget_acp must be at least 42000 ACP",
             )
         for key, value in ADHD_SUPPORT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.down_syndrome_support_brief:
+        if slug and slug != DOWN_SYNDROME_SUPPORT_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="down_syndrome_support_brief requires workflow_slug aeterna-down-syndrome-support",
+            )
+        slug = DOWN_SYNDROME_SUPPORT_SLUG
+        if body.budget_acp < DOWN_SYNDROME_SUPPORT_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="down_syndrome_support_brief budget_acp must be at least 42000 ACP",
+            )
+        for key, value in DOWN_SYNDROME_SUPPORT_META.items():
             meta.setdefault(key, value)
     if body.intent_kind == AeternaIntentKind.pulmopure_subscription:
         if slug and slug != PULMOPURE_SLUG:

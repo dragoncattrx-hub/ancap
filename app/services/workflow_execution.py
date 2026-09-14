@@ -725,6 +725,40 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         tags=["aeterna", "adhd", "sdvg", "clinician", "consult"],
     ),
     WorkflowTemplatePublic(
+        slug="aeterna-down-syndrome-support",
+        title="AETERNA Down Syndrome Support Brief",
+        category="AETERNA",
+        summary=(
+            "Licensed developmental pediatrics / genetics partner brief for Down syndrome "
+            "support literacy — 42,000 ACP. Not a cure."
+        ),
+        description=(
+            "Settles 42,000 ACP and issues a licensed-partner brief covering Down syndrome support "
+            "literacy: early intervention, family caregiver coordination, learning and skills "
+            "adaptation, health-partner screening, and community peer-support literacy. ANCAP does "
+            "not cure Down syndrome, does not diagnose trisomy 21, does not sell gene therapy or CRISPR, "
+            "does not prescribe medications, and does not claim guaranteed developmental outcomes. "
+            "Clinical care occurs only under a licensed clinician after screening; caregivers retain "
+            "decision rights with that clinician."
+        ),
+        price=Money(amount="42000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=[
+            "Support theme map (early intervention / family / learning)",
+            "Licensed clinician partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Down syndrome support intake brief",
+            "Licensed clinician handoff",
+            "Non-claim checklist (no cure / no diagnosis / no gene therapy sold by ANCAP / no outcome guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "down-syndrome", "trisomy-21", "clinician", "consult"],
+    ),
+    WorkflowTemplatePublic(
         slug="aeterna-pulmopure-subscription",
         title="AETERNA PulmoPure Lung-Care Subscription",
         category="AETERNA",
@@ -2340,6 +2374,30 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
                     "under a licensed clinician. Infographic steps are motivational literacy, not a "
                     "product claim."
+                ),
+            }
+        if template.slug == "aeterna-down-syndrome-support":
+            deliverable["intent"] = str(payload.get("intent_kind") or "down_syndrome_support_brief")
+            deliverable["compliance"] = (
+                "Licensed developmental pediatrics / genetics / child-neurology partner only. Not a cure "
+                "for Down syndrome, not a diagnosis, not gene therapy or CRISPR sold by ANCAP, not a "
+                "prescription, and not a guaranteed developmental outcome."
+            )
+            deliverable["down_syndrome_support"] = {
+                "mode": "licensed_clinician_partner",
+                "architecture": "down_syndrome_support_partner_literacy",
+                "price_acp": "42000",
+                "themes_literacy": [
+                    "early_intervention",
+                    "family_caregiver_coordination",
+                    "learning_and_skills_adaptation",
+                    "health_partner_screening",
+                    "community_peer_support",
+                    "developmental_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
+                    "under a licensed clinician. Infographics are support literacy, not a cure claim."
                 ),
             }
         if template.slug == "aeterna-pulmopure-subscription":

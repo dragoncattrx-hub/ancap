@@ -17,6 +17,10 @@ SERVICE_IDS: dict[str, str] = {
     "aid-clothing": "e5000005-0000-4000-8000-000000000004",
     "aid-medical": "e5000005-0000-4000-8000-000000000005",
     "aid-livelihood": "e5000005-0000-4000-8000-000000000006",
+    "aid-africa-food": "e5000005-0000-4000-8000-000000000007",
+    "aid-africa-water": "e5000005-0000-4000-8000-000000000008",
+    "aid-africa-medical": "e5000005-0000-4000-8000-000000000009",
+    "aid-africa-livelihood": "e5000005-0000-4000-8000-00000000000a",
 }
 
 PARTNER_IDS: dict[str, str] = {
@@ -25,6 +29,11 @@ PARTNER_IDS: dict[str, str] = {
     "ua-red-cross": "e6000006-0000-4000-8000-000000000003",
     "de-red-cross": "e6000006-0000-4000-8000-000000000004",
     "us-red-cross": "e6000006-0000-4000-8000-000000000005",
+    "kenya-red-cross": "e6000006-0000-4000-8000-000000000006",
+    "sa-red-cross": "e6000006-0000-4000-8000-000000000007",
+    "ethiopia-red-cross": "e6000006-0000-4000-8000-000000000008",
+    "senegal-red-cross": "e6000006-0000-4000-8000-000000000009",
+    "egypt-red-crescent": "e6000006-0000-4000-8000-00000000000a",
 }
 
 
@@ -33,14 +42,15 @@ def catalog() -> dict[str, Any]:
         "title": "Humanitarian aid desk",
         "tagline": (
             "ACP-settled briefs for food, water, nutrition, warm clothing, medical supplies, "
-            "and livelihood matching — partner handoff rails to Red Cross / Red Crescent "
-            "national societies, not an ICRC or IFRC contract."
+            "and livelihood matching — including Africa corridors — with partner handoff rails "
+            "to Red Cross / Red Crescent national societies, not an ICRC or IFRC contract."
         ),
         "compliance_note": (
             "ANCAP is not a charitable organisation under RF 135-FZ and is not a tax-exempt "
-            "charity in the EU, UK, or US. This desk sells ACP-settled aid briefs and partner "
-            "handoffs. A listing of the International Federation of Red Cross and Red Crescent "
-            "Societies (IFRC) or a national Red Cross / Red Crescent society is not a signed "
+            "charity in the EU, UK, US, or African jurisdictions. This desk sells ACP-settled aid "
+            "briefs and partner handoffs, including Africa-focused corridors. A listing of the "
+            "International Federation of Red Cross and Red Crescent Societies (IFRC) or a national "
+            "Red Cross / Red Crescent society (including African national societies) is not a signed "
             "partnership, not an emblem licence, and not an ICRC endorsement. The red cross, "
             "red crescent, and red crystal emblems are protected under the Geneva Conventions; "
             "ANCAP does not display them as a logo. Medical-supply intents are not a pharmacy "
@@ -52,12 +62,39 @@ def catalog() -> dict[str, Any]:
         ),
         "emblem_licensed": False,
         "official_partnership": False,
+        "regions": [
+            {
+                "id": "global",
+                "label": "Global / multi-region",
+                "blurb": "General briefs that can hand off to any listed national society or IFRC appeal channel.",
+            },
+            {
+                "id": "africa",
+                "label": "Africa",
+                "blurb": (
+                    "Africa-focused food, water, medical-supply, and livelihood briefs with desk "
+                    "listings for African Red Cross / Red Crescent national societies. Not a signed "
+                    "AU or national-society partnership."
+                ),
+            },
+            {
+                "id": "europe",
+                "label": "Europe",
+                "blurb": "Handoff rails including RU, UA, and DE national-society listings.",
+            },
+            {
+                "id": "americas",
+                "label": "Americas",
+                "blurb": "Handoff rails including US national-society listing.",
+            },
+        ],
         "services": [
             {
                 "id": "aid-food",
                 "review_target_id": SERVICE_IDS["aid-food"],
                 "label": "Emergency food brief",
                 "price_from_acp": "2500",
+                "regions": ["global"],
                 "blurb": (
                     "ACP contribution toward a food-aid brief and handoff to a listed national "
                     "society or IFRC appeal channel. Not a guaranteed ration delivery by ANCAP."
@@ -68,6 +105,7 @@ def catalog() -> dict[str, Any]:
                 "review_target_id": SERVICE_IDS["aid-water"],
                 "label": "Safe water brief",
                 "price_from_acp": "1800",
+                "regions": ["global"],
                 "blurb": (
                     "ACP contribution toward drinking-water / hygiene briefs routed via partner "
                     "channels. ANCAP does not operate wells, tankers, or WASH crews."
@@ -78,6 +116,7 @@ def catalog() -> dict[str, Any]:
                 "review_target_id": SERVICE_IDS["aid-nutrition"],
                 "label": "Nutrition and foodstuffs brief",
                 "price_from_acp": "2200",
+                "regions": ["global"],
                 "blurb": (
                     "Staples and nutrition-support brief (foodstuffs, not a restaurant or "
                     "retail grocery). Partner programme rules govern eligibility."
@@ -88,6 +127,7 @@ def catalog() -> dict[str, Any]:
                 "review_target_id": SERVICE_IDS["aid-clothing"],
                 "label": "Warm clothing brief",
                 "price_from_acp": "3000",
+                "regions": ["global", "europe"],
                 "blurb": (
                     "Seasonal / winter clothing brief for partner distribution. Sizes, SKUs, "
                     "and logistics are the partner's, not an ANCAP warehouse."
@@ -98,6 +138,7 @@ def catalog() -> dict[str, Any]:
                 "review_target_id": SERVICE_IDS["aid-medical"],
                 "label": "Medical supplies brief (partner channel)",
                 "price_from_acp": "4500",
+                "regions": ["global"],
                 "blurb": (
                     "Intent for licensed / partner medical-supply channels only. Not a pharmacy, "
                     "not an online drugstore, not a prescription, and not medical advice. "
@@ -109,10 +150,55 @@ def catalog() -> dict[str, Any]:
                 "review_target_id": SERVICE_IDS["aid-livelihood"],
                 "label": "Livelihood / starting-work match",
                 "price_from_acp": "5000",
+                "regions": ["global"],
                 "blurb": (
                     "ACP-settled matching brief for livelihood and starting work (подъёмная работа) "
                     "via partner programmes. Not a licensed employment agency in every country "
                     "and not a guaranteed job, wage, or visa."
+                ),
+            },
+            {
+                "id": "aid-africa-food",
+                "review_target_id": SERVICE_IDS["aid-africa-food"],
+                "label": "Africa emergency food corridor",
+                "price_from_acp": "2800",
+                "regions": ["africa"],
+                "blurb": (
+                    "ACP brief aimed at Africa food-aid handoffs via listed African national societies "
+                    "or IFRC appeal channels. Not a guaranteed delivery by ANCAP and not an AU programme."
+                ),
+            },
+            {
+                "id": "aid-africa-water",
+                "review_target_id": SERVICE_IDS["aid-africa-water"],
+                "label": "Africa safe water / WASH corridor",
+                "price_from_acp": "2100",
+                "regions": ["africa"],
+                "blurb": (
+                    "Drinking-water and hygiene brief for Africa corridors. ANCAP does not drill wells "
+                    "or operate WASH crews; partner programme rules apply."
+                ),
+            },
+            {
+                "id": "aid-africa-medical",
+                "review_target_id": SERVICE_IDS["aid-africa-medical"],
+                "label": "Africa medical-supply corridor",
+                "price_from_acp": "4800",
+                "regions": ["africa"],
+                "blurb": (
+                    "Medical-supply intent for licensed / partner channels serving African corridors. "
+                    "Not a pharmacy, not a prescription, and not medical advice from ANCAP."
+                ),
+            },
+            {
+                "id": "aid-africa-livelihood",
+                "review_target_id": SERVICE_IDS["aid-africa-livelihood"],
+                "label": "Africa livelihood / skills match",
+                "price_from_acp": "5200",
+                "regions": ["africa"],
+                "blurb": (
+                    "Livelihood and skills-matching brief for Africa partner programmes. Not a "
+                    "guaranteed job, wage, scholarship, or visa."
                 ),
             },
         ],
@@ -123,6 +209,7 @@ def catalog() -> dict[str, Any]:
                 "name": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
                 "jurisdiction": "CH",
                 "website": "https://www.ifrc.org/",
+                "regions": ["global", "africa", "europe", "americas"],
                 "blurb": (
                     "IFRC coordinates national Red Cross and Red Crescent societies. Desk listing "
                     "only — not a Federation membership, not a fundraising agency contract, and "
@@ -148,6 +235,7 @@ def catalog() -> dict[str, Any]:
                 "name": "Российский Красный Крест (Russian Red Cross)",
                 "jurisdiction": "RU",
                 "website": "https://www.redcross.ru/",
+                "regions": ["europe"],
                 "blurb": "National society listing for RU-jurisdiction handoff. Not a 135-FZ charity operated by ANCAP.",
                 "verified": False,
                 "listing_kind": "desk_handoff",
@@ -168,6 +256,7 @@ def catalog() -> dict[str, Any]:
                 "name": "Товариство Червоного Хреста України (Ukrainian Red Cross)",
                 "jurisdiction": "UA",
                 "website": "https://redcross.org.ua/",
+                "regions": ["europe"],
                 "blurb": "National society listing for UA-jurisdiction handoff. Desk listing only.",
                 "verified": False,
                 "listing_kind": "desk_handoff",
@@ -188,6 +277,7 @@ def catalog() -> dict[str, Any]:
                 "name": "Deutsches Rotes Kreuz (German Red Cross)",
                 "jurisdiction": "DE",
                 "website": "https://www.drk.de/",
+                "regions": ["europe"],
                 "blurb": "National society listing for DE-jurisdiction handoff. Desk listing only.",
                 "verified": False,
                 "listing_kind": "desk_handoff",
@@ -208,6 +298,7 @@ def catalog() -> dict[str, Any]:
                 "name": "American Red Cross",
                 "jurisdiction": "US",
                 "website": "https://www.redcross.org/",
+                "regions": ["americas"],
                 "blurb": "National society listing for US-jurisdiction handoff. Desk listing only.",
                 "verified": False,
                 "listing_kind": "desk_handoff",
@@ -221,6 +312,81 @@ def catalog() -> dict[str, Any]:
                     "IRC §170 charitable deductions require a qualified organisation receipt. "
                     "ANCAP ACP on this desk is not that receipt."
                 ),
+            },
+            {
+                "id": "kenya-red-cross",
+                "review_target_id": PARTNER_IDS["kenya-red-cross"],
+                "name": "Kenya Red Cross Society",
+                "jurisdiction": "KE",
+                "website": "https://www.redcross.or.ke/",
+                "regions": ["africa"],
+                "blurb": "African national-society listing for Kenya-corridor handoff. Desk listing only.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "official_partnership": False,
+                "emblem_licensed": False,
+                "ethics_note": "Not a signed MoU and not an emblem licence. Confirm programmes on the official site.",
+                "regulatory_note": "ANCAP ACP is not a Kenyan charitable-receipt substitute.",
+            },
+            {
+                "id": "sa-red-cross",
+                "review_target_id": PARTNER_IDS["sa-red-cross"],
+                "name": "South African Red Cross Society",
+                "jurisdiction": "ZA",
+                "website": "https://www.redcross.org.za/",
+                "regions": ["africa"],
+                "blurb": "African national-society listing for South Africa corridor handoff. Desk listing only.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "official_partnership": False,
+                "emblem_licensed": False,
+                "ethics_note": "Listing is not ICRC/IFRC endorsement of ANCAP.",
+                "regulatory_note": "ANCAP ACP is not a South African section-18A receipt.",
+            },
+            {
+                "id": "ethiopia-red-cross",
+                "review_target_id": PARTNER_IDS["ethiopia-red-cross"],
+                "name": "Ethiopian Red Cross Society",
+                "jurisdiction": "ET",
+                "website": "https://www.redcrosseth.org/",
+                "regions": ["africa"],
+                "blurb": "African national-society listing for Ethiopia corridor handoff. Desk listing only.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "official_partnership": False,
+                "emblem_licensed": False,
+                "ethics_note": "Not a signed partnership or emblem licence.",
+                "regulatory_note": "Donate through official society channels; ANCAP ACP is a platform brief only.",
+            },
+            {
+                "id": "senegal-red-cross",
+                "review_target_id": PARTNER_IDS["senegal-red-cross"],
+                "name": "Croix-Rouge sénégalaise (Senegalese Red Cross)",
+                "jurisdiction": "SN",
+                "website": "https://www.croix-rouge.sn/",
+                "regions": ["africa"],
+                "blurb": "West Africa national-society listing for Senegal corridor handoff. Desk listing only.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "official_partnership": False,
+                "emblem_licensed": False,
+                "ethics_note": "Text name only — emblem not licensed to ANCAP.",
+                "regulatory_note": "ANCAP ACP is not a Senegalese charitable receipt.",
+            },
+            {
+                "id": "egypt-red-crescent",
+                "review_target_id": PARTNER_IDS["egypt-red-crescent"],
+                "name": "Egyptian Red Crescent",
+                "jurisdiction": "EG",
+                "website": "https://www.egyptianrc.org/",
+                "regions": ["africa"],
+                "blurb": "North Africa / Red Crescent national-society listing. Desk listing only.",
+                "verified": False,
+                "listing_kind": "desk_handoff",
+                "official_partnership": False,
+                "emblem_licensed": False,
+                "ethics_note": "Red crescent emblem is protected; ANCAP uses the society name in text only.",
+                "regulatory_note": "ANCAP ACP is not an Egyptian charitable-receipt substitute.",
             },
         ],
         "legal_href": "/legal/humanitarian",
