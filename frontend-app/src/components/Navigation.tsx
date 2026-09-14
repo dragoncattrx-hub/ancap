@@ -17,125 +17,165 @@ type NavItem = {
   i18nKey?: string;
 };
 
+type NavGroup = {
+  titleKey: string;
+  items: NavItem[];
+};
+
 function navItemLabel(item: NavItem, t: (key: string) => string): string {
   return item.i18nKey ? t(item.i18nKey) : item.label;
 }
 
-const primaryNav: NavItem[] = [
-  { label: "Search", href: "/search", i18nKey: "nav.search" },
-  { label: "Workflows", href: "/ai/workflows", i18nKey: "nav.workflows" },
-  { label: "Pricing", href: "/pricing", i18nKey: "nav.pricing" },
-  { label: "Developers", href: "/developers", i18nKey: "nav.developers" },
-  { label: "Webhooks", href: "/developers/webhooks", i18nKey: "nav.webhooks" },
-  { label: "Billing", href: "/billing", i18nKey: "nav.billing" },
-  { label: "Credits", href: "/wallet/credits", i18nKey: "nav.credits" },
-  { label: "Dashboard", href: "/dashboard", i18nKey: "nav.dashboard" },
-  { label: "Feed", href: "/feed", i18nKey: "nav.feed" },
-  { label: "Nexus", href: "/nexus" },
-  { label: "Agents", href: "/agents", i18nKey: "nav.agents" },
-  { label: "Strategies", href: "/strategies", i18nKey: "nav.strategies" },
-  { label: "Verticals", href: "/verticals", i18nKey: "nav.verticals" },
-  { label: "Marketplace", href: "/marketplace", i18nKey: "nav.marketplace" },
+/** Short magnetic strip — fits one row without clipping. */
+const spotlightPublic: NavItem[] = [
+  { label: "Enter now", href: "/#product", i18nKey: "nav.product" },
+  { label: "Buy a result", href: "/ai/workflows", i18nKey: "nav.workflows" },
+  { label: "Open market", href: "/marketplace", i18nKey: "nav.marketplace" },
   { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
-  { label: "Agency", href: "/agency", i18nKey: "nav.agency" },
-  { label: "DNA Bank", href: "/dna-bank" },
-  { label: "Perimeter", href: "/perimeter" },
-  { label: "Cryo", href: "/cryo" },
-  { label: "Aid", href: "/humanitarian", i18nKey: "nav.humanitarian" },
-  { label: "Counsel", href: "/counsel", i18nKey: "nav.counsel" },
-  { label: "Saliva Rx", href: "/saliva-rx" },
-  { label: "Quantum SIM", href: "/quantum-sim" },
-  { label: "Stardust", href: "/stardust", i18nKey: "nav.stardust" },
-  { label: "Literary", href: "/literary" },
-  { label: "Entertainment", href: "/entertainment" },
-  { label: "Lunar", href: "/lunar", i18nKey: "nav.lunar" },
-  { label: "Mail", href: "/mail/connect" },
-  { label: "Passport", href: "/passport" },
-  { label: "Galaxy", href: "/galaxy", i18nKey: "nav.galaxy" },
-  { label: "Fauna", href: "/fauna", i18nKey: "nav.fauna" },
-  { label: "Flora", href: "/flora", i18nKey: "nav.flora" },
-  { label: "Tech", href: "/tech", i18nKey: "nav.tech" },
-  { label: "Startups", href: "/startups", i18nKey: "nav.startups" },
-  { label: "Insurance", href: "/insurance", i18nKey: "nav.insurance" },
-  { label: "Arena", href: "/arena", i18nKey: "nav.arena" },
-  { label: "Reputation", href: "/reputation", i18nKey: "nav.reputation" },
-  { label: "Ledger", href: "/ledger", i18nKey: "nav.ledger" },
+  { label: "Counsel anywhere", href: "/counsel", i18nKey: "nav.counsel" },
+  { label: "Any flower", href: "/flora", i18nKey: "nav.flora" },
+  { label: "Own the weather", href: "/stardust", i18nKey: "nav.stardust" },
+  { label: "Win here", href: "/arena", i18nKey: "nav.arena" },
+  { label: "ACP rail", href: "/whitepaper/acp", i18nKey: "nav.acpPaper" },
 ];
 
-const secondaryNav: NavItem[] = [
-  { label: "Analytics", href: "/dashboard/analytics", i18nKey: "nav.analytics" },
-  { label: "Search", href: "/search", i18nKey: "nav.search" },
-  { label: "Organizations", href: "/organizations", i18nKey: "nav.organizations" },
-  { label: "Builder", href: "/strategy-builder", i18nKey: "nav.builder" },
-  { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
-  { label: "ACP Paper", href: "/whitepaper/acp", i18nKey: "nav.acpPaper" },
-  { label: "Legal", href: "/legal", i18nKey: "nav.legal" },
-  { label: "AI Console", href: "/ai-console", i18nKey: "nav.aiConsole" },
-  { label: "Referrals", href: "/referrals", i18nKey: "nav.referrals" },
-  { label: "Evolution", href: "/evolution", i18nKey: "nav.evolution" },
-  { label: "Tournaments", href: "/tournaments", i18nKey: "nav.tournaments" },
-  { label: "Bounties", href: "/bounties", i18nKey: "nav.bounties" },
-  { label: "Chain Receipts", href: "/chain-receipts", i18nKey: "nav.chainReceipts" },
-  { label: "Proof Center", href: "/proof-center", i18nKey: "nav.proofCenter" },
-  { label: "Free Snapshot", href: "/token-snapshot", i18nKey: "nav.freeSnapshot" },
-  { label: "Operations NOC", href: "/operations-noc", i18nKey: "nav.operationsNoc" },
-  { label: "Audit Log", href: "/admin/audit", i18nKey: "nav.auditLog" },
-  { label: "AI Council", href: "/ai-council", i18nKey: "nav.aiCouncil" },
-  { label: "Strategy Compiler", href: "/strategy-compiler", i18nKey: "nav.strategyCompiler" },
-  { label: "Governance", href: "/governance", i18nKey: "nav.governance" },
-  { label: "Onboarding", href: "/onboarding", i18nKey: "nav.onboarding" },
-  { label: "Notifications", href: "/notifications", i18nKey: "nav.notifications" },
-  { label: "Leaderboards", href: "/leaderboards", i18nKey: "nav.leaderboards" },
-  { label: "Growth", href: "/growth", i18nKey: "nav.growth" },
-  { label: "Pools", href: "/pools", i18nKey: "nav.pools" },
-  { label: "Funds", href: "/funds", i18nKey: "nav.funds" },
-  { label: "Staking", href: "/staking", i18nKey: "nav.staking" },
-  { label: "Orders", href: "/orders", i18nKey: "nav.orders" },
-  { label: "Access", href: "/access", i18nKey: "nav.access" },
-  { label: "Seller", href: "/dashboard/seller", i18nKey: "nav.sellerDashboard" },
-  { label: "Flows", href: "/flows", i18nKey: "nav.flows" },
-  { label: "Runs", href: "/runs", i18nKey: "nav.runs" },
-  { label: "Contracts", href: "/contracts", i18nKey: "nav.contracts" },
-  { label: "Listings", href: "/listings", i18nKey: "nav.listings" },
+const spotlightAuth: NavItem[] = [
+  { label: "Buy a result", href: "/ai/workflows", i18nKey: "nav.workflows" },
+  { label: "Your command", href: "/dashboard", i18nKey: "nav.dashboard" },
+  { label: "Open market", href: "/marketplace", i18nKey: "nav.marketplace" },
+  { label: "Your agents", href: "/agents", i18nKey: "nav.agents" },
+  { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
+  { label: "Counsel anywhere", href: "/counsel", i18nKey: "nav.counsel" },
+  { label: "Any flower", href: "/flora", i18nKey: "nav.flora" },
+  { label: "Win here", href: "/arena", i18nKey: "nav.arena" },
+  { label: "Feel the pulse", href: "/feed", i18nKey: "nav.feed" },
 ];
 
-const publicNav: NavItem[] = [
-  { label: "Product", href: "/#product", i18nKey: "nav.product" },
-  { label: "Vision", href: "/#vision", i18nKey: "nav.vision" },
-  { label: "Workflows", href: "/ai/workflows", i18nKey: "nav.workflows" },
-  { label: "AETERNA", href: "/aeterna", i18nKey: "nav.aeterna" },
-  { label: "Agency", href: "/agency", i18nKey: "nav.agency" },
-  { label: "DNA Bank", href: "/dna-bank" },
-  { label: "Perimeter", href: "/perimeter" },
-  { label: "Cryo", href: "/cryo" },
-  { label: "Aid", href: "/humanitarian", i18nKey: "nav.humanitarian" },
-  { label: "Counsel", href: "/counsel", i18nKey: "nav.counsel" },
-  { label: "Saliva Rx", href: "/saliva-rx" },
-  { label: "Quantum SIM", href: "/quantum-sim" },
-  { label: "Stardust", href: "/stardust", i18nKey: "nav.stardust" },
-  { label: "Literary", href: "/literary" },
-  { label: "Nexus", href: "/nexus" },
-  { label: "Entertainment", href: "/entertainment" },
-  { label: "Lunar", href: "/lunar", i18nKey: "nav.lunar" },
-  { label: "Galaxy", href: "/galaxy", i18nKey: "nav.galaxy" },
-  { label: "Fauna", href: "/fauna", i18nKey: "nav.fauna" },
-  { label: "Flora", href: "/flora", i18nKey: "nav.flora" },
-  { label: "Tech", href: "/tech", i18nKey: "nav.tech" },
-  { label: "Startups", href: "/startups", i18nKey: "nav.startups" },
-  { label: "Insurance", href: "/insurance", i18nKey: "nav.insurance" },
-  { label: "Arena", href: "/arena", i18nKey: "nav.arena" },
-  { label: "ACP Token and Chain", href: "/whitepaper/acp", i18nKey: "hero.acpToken" },
-  { label: "Whitepaper", href: "/whitepaper", i18nKey: "nav.whitepaper" },
-  { label: "Legal", href: "/legal", i18nKey: "nav.legal" },
+const explorePublicGroups: NavGroup[] = [
+  {
+    titleKey: "nav.groupDesks",
+    items: [
+      { label: "Scale with agents", href: "/agency", i18nKey: "nav.agency" },
+      { label: "DNA vault", href: "/dna-bank", i18nKey: "nav.dnaBank" },
+      { label: "Clear perimeter", href: "/perimeter", i18nKey: "nav.perimeter" },
+      { label: "Cryo future", href: "/cryo", i18nKey: "nav.cryo" },
+      { label: "Help now", href: "/humanitarian", i18nKey: "nav.humanitarian" },
+      { label: "Saliva Rx", href: "/saliva-rx", i18nKey: "nav.salivaRx" },
+      { label: "Quantum SIM", href: "/quantum-sim", i18nKey: "nav.quantumSim" },
+      { label: "Own the story", href: "/literary", i18nKey: "nav.literary" },
+      { label: "Meet Nexus", href: "/nexus", i18nKey: "nav.nexus" },
+      { label: "Feel the show", href: "/entertainment", i18nKey: "nav.entertainment" },
+    ],
+  },
+  {
+    titleKey: "nav.groupWorlds",
+    items: [
+      { label: "Claim the Moon", href: "/lunar", i18nKey: "nav.lunar" },
+      { label: "Go farther", href: "/galaxy", i18nKey: "nav.galaxy" },
+      { label: "Living world", href: "/fauna", i18nKey: "nav.fauna" },
+      { label: "Build tech", href: "/tech", i18nKey: "nav.tech" },
+      { label: "Fund startups", href: "/startups", i18nKey: "nav.startups" },
+      { label: "Cover risk", href: "/insurance", i18nKey: "nav.insurance" },
+    ],
+  },
+  {
+    titleKey: "nav.groupTrust",
+    items: [
+      { label: "See the path", href: "/#vision", i18nKey: "nav.vision" },
+      { label: "Clear prices", href: "/pricing", i18nKey: "nav.pricing" },
+      { label: "Read the thesis", href: "/whitepaper", i18nKey: "nav.whitepaper" },
+      { label: "Trust & terms", href: "/legal", i18nKey: "nav.legal" },
+    ],
+  },
+];
+
+const exploreAuthGroups: NavGroup[] = [
+  {
+    titleKey: "nav.groupBuild",
+    items: [
+      { label: "Your edge", href: "/strategies", i18nKey: "nav.strategies" },
+      { label: "Verticals", href: "/verticals", i18nKey: "nav.verticals" },
+      { label: "Scale with agents", href: "/agency", i18nKey: "nav.agency" },
+      { label: "Builder", href: "/strategy-builder", i18nKey: "nav.builder" },
+      { label: "Flows", href: "/flows", i18nKey: "nav.flows" },
+      { label: "Runs", href: "/runs", i18nKey: "nav.runs" },
+      { label: "Contracts", href: "/contracts", i18nKey: "nav.contracts" },
+      { label: "Listings", href: "/listings", i18nKey: "nav.listings" },
+      { label: "Seller", href: "/dashboard/seller", i18nKey: "nav.sellerDashboard" },
+    ],
+  },
+  {
+    titleKey: "nav.groupDesks",
+    items: [
+      { label: "DNA vault", href: "/dna-bank", i18nKey: "nav.dnaBank" },
+      { label: "Clear perimeter", href: "/perimeter", i18nKey: "nav.perimeter" },
+      { label: "Cryo future", href: "/cryo", i18nKey: "nav.cryo" },
+      { label: "Help now", href: "/humanitarian", i18nKey: "nav.humanitarian" },
+      { label: "Own the weather", href: "/stardust", i18nKey: "nav.stardust" },
+      { label: "Saliva Rx", href: "/saliva-rx", i18nKey: "nav.salivaRx" },
+      { label: "Quantum SIM", href: "/quantum-sim", i18nKey: "nav.quantumSim" },
+      { label: "Own the story", href: "/literary", i18nKey: "nav.literary" },
+      { label: "Meet Nexus", href: "/nexus", i18nKey: "nav.nexus" },
+      { label: "Feel the show", href: "/entertainment", i18nKey: "nav.entertainment" },
+      { label: "Claim the Moon", href: "/lunar", i18nKey: "nav.lunar" },
+      { label: "Connect mail", href: "/mail/connect", i18nKey: "nav.mail" },
+      { label: "Your passport", href: "/passport", i18nKey: "nav.passport" },
+      { label: "Go farther", href: "/galaxy", i18nKey: "nav.galaxy" },
+      { label: "Living world", href: "/fauna", i18nKey: "nav.fauna" },
+      { label: "Build tech", href: "/tech", i18nKey: "nav.tech" },
+      { label: "Fund startups", href: "/startups", i18nKey: "nav.startups" },
+      { label: "Cover risk", href: "/insurance", i18nKey: "nav.insurance" },
+    ],
+  },
+  {
+    titleKey: "nav.groupSystem",
+    items: [
+      { label: "Search", href: "/search", i18nKey: "nav.search" },
+      { label: "Clear prices", href: "/pricing", i18nKey: "nav.pricing" },
+      { label: "Developers", href: "/developers", i18nKey: "nav.developers" },
+      { label: "Webhooks", href: "/developers/webhooks", i18nKey: "nav.webhooks" },
+      { label: "Billing", href: "/billing", i18nKey: "nav.billing" },
+      { label: "Credits", href: "/wallet/credits", i18nKey: "nav.credits" },
+      { label: "Analytics", href: "/dashboard/analytics", i18nKey: "nav.analytics" },
+      { label: "Organizations", href: "/organizations", i18nKey: "nav.organizations" },
+      { label: "AI Console", href: "/ai-console", i18nKey: "nav.aiConsole" },
+      { label: "Referrals", href: "/referrals", i18nKey: "nav.referrals" },
+      { label: "Grow faster", href: "/growth", i18nKey: "nav.growth" },
+      { label: "Pools", href: "/pools", i18nKey: "nav.pools" },
+      { label: "Funds", href: "/funds", i18nKey: "nav.funds" },
+      { label: "Staking", href: "/staking", i18nKey: "nav.staking" },
+      { label: "Orders", href: "/orders", i18nKey: "nav.orders" },
+      { label: "Access", href: "/access", i18nKey: "nav.access" },
+      { label: "Prove trust", href: "/reputation", i18nKey: "nav.reputation" },
+      { label: "Ledger", href: "/ledger", i18nKey: "nav.ledger" },
+      { label: "Proof Center", href: "/proof-center", i18nKey: "nav.proofCenter" },
+      { label: "Chain Receipts", href: "/chain-receipts", i18nKey: "nav.chainReceipts" },
+      { label: "Read the thesis", href: "/whitepaper", i18nKey: "nav.whitepaper" },
+      { label: "ACP rail", href: "/whitepaper/acp", i18nKey: "nav.acpPaper" },
+      { label: "Trust & terms", href: "/legal", i18nKey: "nav.legal" },
+      { label: "Evolution", href: "/evolution", i18nKey: "nav.evolution" },
+      { label: "Tournaments", href: "/tournaments", i18nKey: "nav.tournaments" },
+      { label: "Bounties", href: "/bounties", i18nKey: "nav.bounties" },
+      { label: "Free Snapshot", href: "/token-snapshot", i18nKey: "nav.freeSnapshot" },
+      { label: "Operations NOC", href: "/operations-noc", i18nKey: "nav.operationsNoc" },
+      { label: "Audit Log", href: "/admin/audit", i18nKey: "nav.auditLog" },
+      { label: "AI Council", href: "/ai-council", i18nKey: "nav.aiCouncil" },
+      { label: "Strategy Compiler", href: "/strategy-compiler", i18nKey: "nav.strategyCompiler" },
+      { label: "Governance", href: "/governance", i18nKey: "nav.governance" },
+      { label: "Onboarding", href: "/onboarding", i18nKey: "nav.onboarding" },
+      { label: "Notifications", href: "/notifications", i18nKey: "nav.notifications" },
+      { label: "Leaderboards", href: "/leaderboards", i18nKey: "nav.leaderboards" },
+    ],
+  },
 ];
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-/** Desktop pill row — wrap inside the field so labels stay fully readable. */
-const navWrapRow =
-  "flex w-full max-w-full flex-wrap items-center gap-x-0.5 gap-y-0.5 px-1 py-0.5";
+/** Single elegant row — no wrap wall, no clip. */
+const navSpotlightRow =
+  "flex w-full min-w-0 items-center gap-0.5 overflow-x-auto overscroll-x-contain px-1 py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 
 const actionGhost =
   "inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-white/80 transition duration-200 hover:border-white/18 hover:bg-white/[0.07] hover:text-white active:scale-[0.98]";
@@ -212,44 +252,131 @@ function LangSwitcher({
   );
 }
 
-/** Desktop: compact chip links in a scroll rail. */
+/** Desktop spotlight chip — full label visible, soft desire hover. */
 function PillNavLink({
   item,
   label,
   active,
-  tier,
   onClick,
 }: {
   item: NavItem;
   label: string;
   active: boolean;
-  tier: "primary" | "secondary";
   onClick?: () => void;
 }) {
   const isSectionJump = item.href.startsWith("/#");
-  const base = cn(
-    "relative shrink-0 whitespace-nowrap font-medium transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b16]",
-    isSectionJump ? "rounded-none" : "rounded-md"
-  );
-  const primary = isSectionJump
-    ? "px-1.5 py-1.5 text-[13px] text-white/65 hover:text-white"
-    : active
-      ? "bg-white/[0.11] px-2.5 py-1.5 text-[12.5px] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]"
-      : "px-2.5 py-1.5 text-[12.5px] text-white/50 hover:bg-white/[0.06] hover:text-white/90";
-  const secondary = active
-    ? "bg-cyan-400/12 px-2 py-1 text-[11px] leading-tight text-cyan-50 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.22)] sm:text-[11.5px]"
-    : "px-2 py-1 text-[11px] leading-tight text-white/40 hover:bg-white/[0.05] hover:text-cyan-100/90 sm:text-[11.5px]";
-
   return (
-    <Link href={item.href} onClick={onClick} className={cn(base, tier === "primary" ? primary : secondary)}>
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={cn(
+        "relative shrink-0 whitespace-nowrap rounded-lg font-medium tracking-[-0.01em] transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b16]",
+        active
+          ? "bg-white/[0.12] px-3 py-1.5 text-[13px] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
+          : isSectionJump
+            ? "px-2.5 py-1.5 text-[13px] text-emerald-100/75 hover:text-white"
+            : "px-3 py-1.5 text-[13px] text-white/55 hover:bg-white/[0.07] hover:text-white"
+      )}
+    >
       <span className="relative z-10">{label}</span>
-      {active && !isSectionJump && tier === "primary" ? (
+      {active && !isSectionJump ? (
         <span
-          className="pointer-events-none absolute inset-x-2 -bottom-px h-px bg-gradient-to-r from-transparent via-emerald-300/70 to-transparent"
+          className="pointer-events-none absolute inset-x-2.5 -bottom-px h-px bg-gradient-to-r from-transparent via-emerald-300/80 to-transparent"
           aria-hidden
         />
       ) : null}
     </Link>
+  );
+}
+
+function ExploreMenu({
+  groups,
+  open,
+  onOpenChange,
+  pathname,
+  t,
+}: {
+  groups: NavGroup[];
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  pathname: string;
+  t: (key: string) => string;
+}) {
+  const rootRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) onOpenChange(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, onOpenChange]);
+
+  return (
+    <div ref={rootRef} className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => onOpenChange(!open)}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold tracking-[-0.01em] transition duration-200",
+          open
+            ? "bg-emerald-400/15 text-emerald-50 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
+            : "text-emerald-100/80 hover:bg-emerald-400/10 hover:text-white"
+        )}
+      >
+        {t("nav.explore")}
+        <span className={cn("text-[10px] transition duration-200", open && "rotate-180")} aria-hidden>
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+8px)] z-[120] w-[min(92vw,42rem)] animate-[navSheetIn_180ms_ease-out] rounded-2xl border border-white/12 bg-[#0a1020]/96 p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {groups.map((group) => (
+              <div key={group.titleKey} className="min-w-0">
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200/55">
+                  {t(group.titleKey)}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  {group.items.map((item) => {
+                    const active = !item.href.startsWith("/#") && pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        role="menuitem"
+                        href={item.href}
+                        onClick={() => onOpenChange(false)}
+                        className={cn(
+                          "rounded-lg px-2.5 py-1.5 text-[13px] transition duration-150",
+                          active
+                            ? "bg-white/[0.1] text-white"
+                            : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                        )}
+                      >
+                        {navItemLabel(item, t)}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -313,9 +440,14 @@ export function Navigation() {
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [exploreOpen, setExploreOpen] = React.useState(false);
+
+  const spotlight = isAuthenticated ? spotlightAuth : spotlightPublic;
+  const exploreGroups = isAuthenticated ? exploreAuthGroups : explorePublicGroups;
 
   React.useEffect(() => {
     setMobileMenuOpen(false);
+    setExploreOpen(false);
   }, [pathname]);
 
   React.useEffect(() => {
@@ -476,51 +608,30 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Full-width menu tray — wrap pills inside the field so nothing clips */}
+        {/* One magnetic row + Explore — no wrap wall, labels stay whole */}
         <div className="hidden pb-2.5 lg:block">
-          {isAuthenticated ? (
-            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
-              <nav className={navWrapRow} aria-label={t("nav.main")}>
-                {primaryNav.map((item) => (
-                  <PillNavLink
-                    key={item.href}
-                    item={item}
-                    label={navItemLabel(item, t)}
-                    active={pathname === item.href}
-                    tier="primary"
-                  />
-                ))}
-              </nav>
-              <nav
-                className={cn(navWrapRow, "mt-1 border-t border-white/[0.06] pt-1")}
-                aria-label={t("nav.system")}
-              >
-                {secondaryNav.map((item) => (
-                  <PillNavLink
-                    key={item.href}
-                    item={item}
-                    label={navItemLabel(item, t)}
-                    active={pathname === item.href}
-                    tier="secondary"
-                  />
-                ))}
-              </nav>
-            </div>
-          ) : (
-            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-1.5 backdrop-blur-sm">
-              <nav className={navWrapRow} aria-label={t("nav.main")}>
-                {publicNav.map((item) => (
+          <div className="relative w-full min-w-0 rounded-xl border border-white/[0.08] bg-gradient-to-r from-black/35 via-emerald-950/10 to-black/25 p-1.5 backdrop-blur-sm">
+            <div className="flex min-w-0 items-center gap-1">
+              <nav className={cn(navSpotlightRow, "flex-1")} aria-label={t("nav.main")}>
+                {spotlight.map((item) => (
                   <PillNavLink
                     key={item.href}
                     item={item}
                     label={navItemLabel(item, t)}
                     active={!item.href.startsWith("/#") && pathname === item.href}
-                    tier="primary"
                   />
                 ))}
               </nav>
+              <div className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden />
+              <ExploreMenu
+                groups={exploreGroups}
+                open={exploreOpen}
+                onOpenChange={setExploreOpen}
+                pathname={pathname ?? ""}
+                t={t}
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -543,41 +654,43 @@ export function Navigation() {
                     <div className="mb-2.5 flex items-center gap-2">
                       <span className="h-px w-4 bg-emerald-400/70" />
                       <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-                        {t("nav.main")}
+                        {t("nav.groupSpotlight")}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      {primaryNav.map((item) => (
+                      {spotlight.map((item) => (
                         <MobileNavRow
                           key={item.href}
                           item={item}
                           label={navItemLabel(item, t)}
-                          active={pathname === item.href}
+                          active={!item.href.startsWith("/#") && pathname === item.href}
                           onNavigate={() => setMobileMenuOpen(false)}
                         />
                       ))}
                     </div>
                   </div>
 
-                  <div>
-                    <div className="mb-2.5 flex items-center gap-2">
-                      <span className="h-px w-4 bg-cyan-400/60" />
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-                        {t("nav.system")}
-                      </span>
+                  {exploreGroups.map((group) => (
+                    <div key={group.titleKey}>
+                      <div className="mb-2.5 flex items-center gap-2">
+                        <span className="h-px w-4 bg-cyan-400/60" />
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                          {t(group.titleKey)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        {group.items.map((item) => (
+                          <MobileNavRow
+                            key={item.href}
+                            item={item}
+                            label={navItemLabel(item, t)}
+                            active={!item.href.startsWith("/#") && pathname === item.href}
+                            onNavigate={() => setMobileMenuOpen(false)}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      {secondaryNav.map((item) => (
-                        <MobileNavRow
-                          key={item.href}
-                          item={item}
-                          label={navItemLabel(item, t)}
-                          active={pathname === item.href}
-                          onNavigate={() => setMobileMenuOpen(false)}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  ))}
 
                   <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
                     <div className="flex min-w-0 flex-col gap-2">
@@ -605,50 +718,80 @@ export function Navigation() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    {publicNav.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex min-h-[44px] items-center rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[14px] text-white/70 transition hover:border-white/12 hover:bg-white/[0.05]"
-                      >
-                        {navItemLabel(item, t)}
-                      </Link>
-                    ))}
-                    <Link
-                      href="/wallet/acp"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-[44px] items-center rounded-xl border border-emerald-400/30 bg-emerald-400/[0.08] px-3.5 py-2.5 text-[14px] font-medium text-emerald-100 transition hover:bg-emerald-400/[0.14]"
-                    >
-                      {t("nav.acpWallet")}
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setMobileMenuOpen(false);
-                        if (!isConnected) {
-                          clearError();
-                          await connect();
-                          return;
-                        }
-                        const provider = getPreferredEvmProvider();
-                        if (!isAuthenticated && provider) {
-                          const accountsRaw = await provider.request({ method: "eth_accounts" });
-                          const accounts = Array.isArray(accountsRaw) ? accountsRaw : [];
-                          const address = typeof accounts[0] === "string" ? accounts[0] : "";
-                          if (address) await loginWithWallet(address, chainId);
-                        }
-                      }}
-                      className="flex min-h-[44px] items-center rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[14px] text-white/70 transition hover:border-white/12 hover:bg-white/[0.05]"
-                    >
-                      {isConnected
-                        ? shortAddress || t("auth.walletConnected")
-                        : isConnecting
-                          ? t("auth.connectingWallet")
-                          : t("auth.connectWallet")}
-                    </button>
+                  <div>
+                    <div className="mb-2.5 flex items-center gap-2">
+                      <span className="h-px w-4 bg-emerald-400/70" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                        {t("nav.groupSpotlight")}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {spotlight.map((item) => (
+                        <MobileNavRow
+                          key={item.href}
+                          item={item}
+                          label={navItemLabel(item, t)}
+                          active={!item.href.startsWith("/#") && pathname === item.href}
+                          onNavigate={() => setMobileMenuOpen(false)}
+                        />
+                      ))}
+                    </div>
                   </div>
+
+                  {exploreGroups.map((group) => (
+                    <div key={group.titleKey}>
+                      <div className="mb-2.5 flex items-center gap-2">
+                        <span className="h-px w-4 bg-cyan-400/60" />
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                          {t(group.titleKey)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        {group.items.map((item) => (
+                          <MobileNavRow
+                            key={item.href}
+                            item={item}
+                            label={navItemLabel(item, t)}
+                            active={!item.href.startsWith("/#") && pathname === item.href}
+                            onNavigate={() => setMobileMenuOpen(false)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <Link
+                    href="/wallet/acp"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex min-h-[44px] items-center rounded-xl border border-emerald-400/30 bg-emerald-400/[0.08] px-3.5 py-2.5 text-[14px] font-medium text-emerald-100 transition hover:bg-emerald-400/[0.14]"
+                  >
+                    {t("nav.acpWallet")}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      if (!isConnected) {
+                        clearError();
+                        await connect();
+                        return;
+                      }
+                      const provider = getPreferredEvmProvider();
+                      if (!isAuthenticated && provider) {
+                        const accountsRaw = await provider.request({ method: "eth_accounts" });
+                        const accounts = Array.isArray(accountsRaw) ? accountsRaw : [];
+                        const address = typeof accounts[0] === "string" ? accounts[0] : "";
+                        if (address) await loginWithWallet(address, chainId);
+                      }
+                    }}
+                    className="flex min-h-[44px] items-center rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[14px] text-white/70 transition hover:border-white/12 hover:bg-white/[0.05]"
+                  >
+                    {isConnected
+                      ? shortAddress || t("auth.walletConnected")
+                      : isConnecting
+                        ? t("auth.connectingWallet")
+                        : t("auth.connectWallet")}
+                  </button>
                   <div className="flex items-center gap-2 border-t border-white/10 pt-3">
                     <Link
                       href="/login"
