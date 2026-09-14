@@ -187,99 +187,71 @@ export function HomePage() {
                       {t("legal.humanitarianLink")}
                     </Link>
                   </p>
-                  <div className="action-cluster" style={{ marginBottom: 22 }}>
-                    <Link href="/token-snapshot" className="btn btn-primary">
-                      {t("homePage.ctaSnapshot")}
-                    </Link>
-                    <Link href="/ai/run/token-risk-report-pro" className="btn btn-primary">
-                      {t("homePage.ctaProReport")}
-                    </Link>
-                    <Link href="/pay/create" className="btn btn-ghost">
-                      {t("homePage.ctaPayLink")}
-                    </Link>
-                    <Link href="/developers" className="btn btn-ghost">
-                      {t("homePage.ctaApi")}
-                    </Link>
-                  </div>
-                  <div className="action-cluster">
-                    {acpUrl.startsWith("http") ? (
-                      <a href={acpUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-                        {t("hero.acpLink")}
-                      </a>
-                    ) : (
-                      <Link href={acpUrl} className="btn btn-ghost">
-                        {t("hero.acpLink")}
+                  <div className="home-cta-board">
+                    <div className="home-cta-board__row home-cta-board__row--2">
+                      <Link href="/token-snapshot" className="home-cta home-cta--primary home-cta--glow">
+                        <span className="home-cta__eyebrow">{t("homePage.ctaSnapshotEyebrow")}</span>
+                        <span className="home-cta__label">{t("homePage.ctaSnapshot")}</span>
                       </Link>
-                    )}
-                    <Link href="/wallet/acp" className="btn btn-ghost">
-                      {t("nav.acpWallet")}
-                    </Link>
-                    <Link href="/proof-center" className="btn btn-ghost">
-                      {t("homePage.proofCenter")}
-                    </Link>
-                  </div>
-                  <div className="action-cluster" style={{ marginTop: 14 }}>
-                    {socialLinks.map((social) => (
-                      <a
-                        key={social.href}
-                        href={social.href}
-                        className="btn btn-ghost"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          minHeight: 42,
-                          padding: "10px 16px",
-                          borderRadius: 999,
-                          gap: 10,
-                          background: "rgba(255, 255, 255, 0.035)",
-                        }}
-                      >
-                        <span
-                          aria-hidden
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 26,
-                            height: 26,
-                            borderRadius: 999,
-                            background: "rgba(25, 195, 138, 0.14)",
-                            color: "var(--accent-strong)",
-                            fontSize: 11,
-                            fontWeight: 800,
-                            letterSpacing: 0,
-                          }}
+                      <Link href="/ai/run/token-risk-report-pro" className="home-cta home-cta--primary">
+                        <span className="home-cta__eyebrow">{t("homePage.ctaProReportEyebrow")}</span>
+                        <span className="home-cta__label">{t("homePage.ctaProReport")}</span>
+                      </Link>
+                    </div>
+                    <div className="home-cta-board__row home-cta-board__row--2">
+                      <Link href="/pay/create" className="home-cta home-cta--ghost">
+                        <span className="home-cta__label">{t("homePage.ctaPayLink")}</span>
+                      </Link>
+                      <Link href="/developers" className="home-cta home-cta--ghost">
+                        <span className="home-cta__label">{t("homePage.ctaApi")}</span>
+                      </Link>
+                    </div>
+                    <div className="home-cta-board__row home-cta-board__row--3">
+                      {acpUrl.startsWith("http") ? (
+                        <a href={acpUrl} className="home-cta home-cta--rail" target="_blank" rel="noopener noreferrer">
+                          <span className="home-cta__label">{t("hero.acpLink")}</span>
+                        </a>
+                      ) : (
+                        <Link href={acpUrl} className="home-cta home-cta--rail">
+                          <span className="home-cta__label">{t("hero.acpLink")}</span>
+                        </Link>
+                      )}
+                      <Link href="/wallet/acp" className="home-cta home-cta--rail">
+                        <span className="home-cta__label">{t("nav.acpWallet")}</span>
+                      </Link>
+                      <Link href="/proof-center" className="home-cta home-cta--rail">
+                        <span className="home-cta__label">{t("homePage.proofCenter")}</span>
+                      </Link>
+                    </div>
+                    <div className="home-cta-board__row home-cta-board__row--2">
+                      {socialLinks.map((social) => (
+                        <a
+                          key={social.href}
+                          href={social.href}
+                          className="home-cta home-cta--social"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          {social.icon}
-                        </span>
-                        {t(social.labelKey)}
-                      </a>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 14 }}>
-                    <WacpPublicActions
-                      layout="home"
-                      addLabel={t("homePage.wacpAddMetaMask")}
-                    />
+                          <span className="home-cta__icon" aria-hidden>
+                            {social.icon}
+                          </span>
+                          <span className="home-cta__label">{t(social.labelKey)}</span>
+                        </a>
+                      ))}
+                    </div>
+                    <div className="home-cta-board__row home-cta-board__row--1">
+                      <WacpPublicActions
+                        layout="home"
+                        addLabel={t("homePage.wacpAddMetaMask")}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <aside
-                  className="card"
-                  aria-label={t("homePage.productMapTitle")}
-                  style={{
-                    borderRadius: 8,
-                    background: "rgba(18, 26, 45, 0.82)",
-                    backdropFilter: "blur(14px)",
-                  }}
-                >
-                  <div className="badge badge-success" style={{ marginBottom: 18 }}>
-                    {t("homePage.liveMap")}
-                  </div>
-                  <h2 style={{ fontSize: "1.35rem", fontWeight: 800, marginBottom: 14 }}>
-                    {t("homePage.productMapTitle")}
-                  </h2>
-                  <div className="home-product-map" style={{ display: "grid", gap: 0 }}>
+                <aside className="home-product-card" aria-label={t("homePage.productMapTitle")}>
+                  <div className="home-product-card__badge">{t("homePage.liveMap")}</div>
+                  <h2 className="home-product-card__title">{t("homePage.productMapTitle")}</h2>
+                  <div className="home-product-map">
                     {productMapDefs.map(([nameKey, textKey]) => (
                       <div key={nameKey} className="home-product-map-row">
                         <strong className="home-product-map-label">{t(nameKey)}</strong>

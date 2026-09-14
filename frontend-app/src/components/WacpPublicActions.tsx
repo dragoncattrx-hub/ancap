@@ -76,12 +76,12 @@ export function WacpPublicActions({
   const pillClass = layout === "home" ? "btn btn-ghost" : "btn btn-ghost btn-sm";
 
   return (
-    <div style={{ display: "grid", gap: 8 }}>
+    <div className={layout === "home" ? "wacp-home-cta" : undefined} style={{ display: "grid", gap: 8 }}>
       <div className="action-cluster" style={{ marginTop: layout === "home" ? 0 : undefined }}>
         <button
           type="button"
           className={pillClass}
-          style={layout === "home" ? xPillStyle : undefined}
+          style={layout === "home" ? undefined : xPillStyle}
           onClick={() => void onAdd()}
           disabled={busy}
           aria-busy={busy}
