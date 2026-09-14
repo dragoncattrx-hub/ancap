@@ -493,6 +493,21 @@ export const spaceAuction = {
   },
 };
 
+export const darkMatterAuction = {
+  async catalog() {
+    return apiFetch("/dark-matter-auction/catalog");
+  },
+  async lot(lotId: string) {
+    return apiFetch(`/dark-matter-auction/lots/${encodeURIComponent(lotId)}`);
+  },
+  async bid(lotId: string, data: { amount_acp: string; note?: string }) {
+    return apiFetch(`/dark-matter-auction/lots/${encodeURIComponent(lotId)}/bids`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const animalAuction = {
   async catalog() {
     return apiFetch("/animal-auction/catalog");

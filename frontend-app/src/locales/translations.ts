@@ -6,6 +6,7 @@ import { startupsByLang } from "./startups";
 import { lunarByLang } from "./lunar";
 import { faunaByLang } from "./fauna";
 import { floraByLang } from "./flora";
+import { darkMatterByLang } from "./darkMatter";
 import { insuranceByLang } from "./insurance";
 import { arenaByLang } from "./arena";
 import { techByLang } from "./tech";
@@ -120,6 +121,7 @@ export const translations: Record<Language, TranslationTree> = {
       lunar: "Claim the Moon",
       stardust: "Own the weather",
       galaxy: "Go farther",
+      darkMatter: "Claim the dark",
       fauna: "Living world",
       flora: "Any flower",
       tech: "Build tech",
@@ -468,6 +470,7 @@ export const translations: Record<Language, TranslationTree> = {
     lunarPage: lunarByLang.en,
     faunaPage: faunaByLang.en,
     floraPage: floraByLang.en,
+    darkMatterPage: darkMatterByLang.en,
     insurancePage: insuranceByLang.en,
     arenaPage: arenaByLang.en,
     techPage: techByLang.en,
@@ -641,6 +644,7 @@ export const translations: Record<Language, TranslationTree> = {
       lunar: "Заяви Луну",
       stardust: "Погода в руки",
       galaxy: "Дальше",
+      darkMatter: "Тёмная материя",
       fauna: "Живой мир",
       flora: "Любой цветок",
       tech: "Создай tech",
@@ -989,6 +993,7 @@ export const translations: Record<Language, TranslationTree> = {
     lunarPage: lunarByLang.ru,
     faunaPage: faunaByLang.ru,
     floraPage: floraByLang.ru,
+    darkMatterPage: darkMatterByLang.ru,
     insurancePage: insuranceByLang.ru,
     arenaPage: arenaByLang.ru,
     techPage: techByLang.ru,
@@ -1162,6 +1167,7 @@ export const translations: Record<Language, TranslationTree> = {
       lunar: "Заяви Місяць",
       stardust: "Погода в руки",
       galaxy: "Далі",
+      darkMatter: "Темна матерія",
       fauna: "Живий світ",
       flora: "Будь-яка квітка",
       tech: "Створи tech",
@@ -1510,6 +1516,7 @@ export const translations: Record<Language, TranslationTree> = {
     lunarPage: lunarByLang.uk,
     faunaPage: faunaByLang.uk,
     floraPage: floraByLang.uk,
+    darkMatterPage: darkMatterByLang.uk,
     insurancePage: insuranceByLang.uk,
     arenaPage: arenaByLang.uk,
     techPage: techByLang.uk,
@@ -1683,6 +1690,7 @@ export const translations: Record<Language, TranslationTree> = {
       lunar: "Mond beanspruchen",
       stardust: "Wetter in der Hand",
       galaxy: "Weiter hinaus",
+      darkMatter: "Dunkle Materie",
       fauna: "Lebende Welt",
       flora: "Jede Blume",
       tech: "Tech bauen",
@@ -2031,6 +2039,7 @@ export const translations: Record<Language, TranslationTree> = {
     lunarPage: lunarByLang.de,
     faunaPage: faunaByLang.de,
     floraPage: floraByLang.de,
+    darkMatterPage: darkMatterByLang.de,
     insurancePage: insuranceByLang.de,
     arenaPage: arenaByLang.de,
     techPage: techByLang.de,
@@ -2204,6 +2213,7 @@ export const translations: Record<Language, TranslationTree> = {
       lunar: "宣告月球",
       stardust: "掌握天氣",
       galaxy: "走得更遠",
+      darkMatter: "暗物質",
       fauna: "生命世界",
       flora: "任何花朵",
       tech: "打造科技",
@@ -2552,6 +2562,7 @@ export const translations: Record<Language, TranslationTree> = {
     lunarPage: lunarByLang["zh-Hant"],
     faunaPage: faunaByLang["zh-Hant"],
     floraPage: floraByLang["zh-Hant"],
+    darkMatterPage: darkMatterByLang["zh-Hant"],
     insurancePage: insuranceByLang["zh-Hant"],
     arenaPage: arenaByLang["zh-Hant"],
     techPage: techByLang["zh-Hant"],

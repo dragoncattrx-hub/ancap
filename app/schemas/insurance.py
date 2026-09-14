@@ -19,6 +19,7 @@ CoverageClass = Literal[
     "livestock",
     "floriculture",
     "space_payload",
+    "dark_matter_title",
     "perimeter_cleanup",
     "neonatal_install",
     "weather_control",

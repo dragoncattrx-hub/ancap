@@ -72,6 +72,7 @@ const explorePublicGroups: NavGroup[] = [
     items: [
       { label: "Claim the Moon", href: "/lunar", i18nKey: "nav.lunar" },
       { label: "Go farther", href: "/galaxy", i18nKey: "nav.galaxy" },
+      { label: "Dark matter", href: "/dark-matter", i18nKey: "nav.darkMatter" },
       { label: "Living world", href: "/fauna", i18nKey: "nav.fauna" },
       { label: "Build tech", href: "/tech", i18nKey: "nav.tech" },
       { label: "Fund startups", href: "/startups", i18nKey: "nav.startups" },
@@ -121,6 +122,7 @@ const exploreAuthGroups: NavGroup[] = [
       { label: "Connect mail", href: "/mail/connect", i18nKey: "nav.mail" },
       { label: "Your passport", href: "/passport", i18nKey: "nav.passport" },
       { label: "Go farther", href: "/galaxy", i18nKey: "nav.galaxy" },
+      { label: "Dark matter", href: "/dark-matter", i18nKey: "nav.darkMatter" },
       { label: "Living world", href: "/fauna", i18nKey: "nav.fauna" },
       { label: "Build tech", href: "/tech", i18nKey: "nav.tech" },
       { label: "Fund startups", href: "/startups", i18nKey: "nav.startups" },

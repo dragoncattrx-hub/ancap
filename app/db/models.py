@@ -2745,6 +2745,33 @@ class SpaceAuctionBid(Base):
     )
 
 
+class DarkMatterAuctionBid(Base):
+    __tablename__ = "dark_matter_auction_bids"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(String(64), nullable=False, index=True)
+    bidder_user_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(24), nullable=False, default="placed", index=True)
+    note = Column(Text, nullable=True)
+    deal_cipher_id = Column(String(96), nullable=True)
+    deal_envelope_b64 = Column(Text, nullable=True)
+    deal_content_hash = Column(String(120), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    bidder = relationship("User", foreign_keys=[bidder_user_id])
+
+    __table_args__ = (
+        Index("ix_dark_matter_auction_bids_lot_created", "lot_id", "created_at"),
+        Index("ix_dark_matter_auction_bids_lot_amount", "lot_id", "amount_acp"),
+    )
+
+
 # --- FAUNA companion-animal auction (ACP escrow smart contracts) ---
 
 

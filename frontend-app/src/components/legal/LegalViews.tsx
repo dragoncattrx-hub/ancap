@@ -70,6 +70,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/installation-project", key: "installationProjectLink" },
     { href: "/legal/dna-pheromone-perfume", key: "dnaPheromonePerfumeLink" },
     { href: "/legal/stardust", key: "stardustLink" },
+    { href: "/legal/dark-matter", key: "darkMatterLink" },
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
@@ -126,6 +127,7 @@ export function LegalHubView() {
     { href: "/legal/installation-project", title: "installationProjectLink", body: "hubCardInstallationProject" },
     { href: "/legal/dna-pheromone-perfume", title: "dnaPheromonePerfumeLink", body: "hubCardDnaPheromonePerfume" },
     { href: "/legal/stardust", title: "stardustLink", body: "hubCardStardust" },
+    { href: "/legal/dark-matter", title: "darkMatterLink", body: "hubCardDarkMatter" },
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
@@ -1428,6 +1430,47 @@ export function StardustLegalView() {
             /insurance
           </Link>{" "}
           (coverage class weather_control)
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function DarkMatterLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-indigo-300/20 bg-indigo-400/[0.06]"
+      kicker={t("legal.darkMatterKicker")}
+      title={t("legal.darkMatterTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.darkMatterIntro")}`}
+      actions={<LegalNavPills current="/legal/dark-matter" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.dm${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.dm${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/dark-matter" className="text-indigo-200 underline decoration-indigo-400/40 underline-offset-4">
+            /dark-matter
+          </Link>
+        </p>
+        <p className="mt-2">
+          Related:{" "}
+          <Link href="/galaxy" className="text-indigo-200 underline decoration-indigo-400/40 underline-offset-4">
+            /galaxy
+          </Link>
+          {" · "}
+          <Link href="/insurance" className="text-indigo-200 underline decoration-indigo-400/40 underline-offset-4">
+            /insurance
+          </Link>{" "}
+          (coverage class dark_matter_title)
         </p>
       </section>
     </LegalShell>
