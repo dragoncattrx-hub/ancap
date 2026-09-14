@@ -620,6 +620,12 @@ export const humanitarianDesk = {
   },
 };
 
+export const counselDesk = {
+  async catalog() {
+    return apiFetch("/counsel/catalog");
+  },
+};
+
 export const quantumSimDesk = {
   async catalog() {
     return apiFetch("/quantum-sim/catalog");

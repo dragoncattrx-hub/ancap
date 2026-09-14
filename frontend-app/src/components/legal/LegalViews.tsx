@@ -73,6 +73,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/refunds", key: "refundsLink" },
     { href: "/legal/welcome-grant", key: "welcomeGrantLink" },
     { href: "/legal/humanitarian", key: "humanitarianLink" },
+    { href: "/legal/counsel", key: "counselLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
@@ -128,6 +129,7 @@ export function LegalHubView() {
     { href: "/legal/refunds", title: "refundsLink", body: "hubCardRefunds" },
     { href: "/legal/welcome-grant", title: "welcomeGrantLink", body: "hubCardWelcomeGrant" },
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
+    { href: "/legal/counsel", title: "counselLink", body: "hubCardCounsel" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -812,6 +814,36 @@ export function HumanitarianLegalView() {
           >
             ifrc.org
           </a>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function CounselLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-blue-300/20 bg-blue-400/[0.06]"
+      kicker={t("legal.counselKicker")}
+      title={t("legal.counselTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.counselIntro")}`}
+      actions={<LegalNavPills current="/legal/counsel" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.cn${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.cn${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/counsel" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /counsel
+          </Link>
         </p>
       </section>
     </LegalShell>

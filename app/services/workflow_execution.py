@@ -895,6 +895,95 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "unit", "quantity", "architecture", "status_timeline"],
         tags=["aeterna", "perfume", "pheromone", "dna", "cosmetic", "bottle"],
     ),
+    WorkflowTemplatePublic(
+        slug="counsel-jurisdiction-match",
+        title="Worldwide Legal Counsel — Jurisdiction Match",
+        category="Counsel",
+        summary="Match licensed counsel in any covered country — from 3,900 ACP.",
+        description=(
+            "Settles ACP for a worldwide jurisdiction-match brief and licensed-counsel shortlist "
+            "handoff. ANCAP is not a law firm, does not practice law, and does not form an "
+            "attorney–client relationship. Local counsel remain independent."
+        ),
+        price=Money(amount="3900", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=35,
+        preview_items=["Jurisdiction intake", "Licensed counsel shortlist", "Non-advice checklist"],
+        output_items=[
+            "Jurisdiction match brief",
+            "Licensed counsel handoff pack",
+            "Non-claim checklist (no law practice / no attorney–client with ANCAP / no outcome guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "jurisdiction", "status_timeline"],
+        tags=["counsel", "legal", "jurisdiction", "worldwide", "handoff"],
+    ),
+    WorkflowTemplatePublic(
+        slug="counsel-entity-setup",
+        title="Worldwide Legal Counsel — Entity / Incorporation Brief",
+        category="Counsel",
+        summary="Entity setup intake + licensed local counsel handoff — from 8,900 ACP.",
+        description=(
+            "Settles ACP for an incorporation / entity-setup intake brief and licensed local "
+            "counsel handoff anywhere covered by the desk. Not a ready-made company sold by ANCAP."
+        ),
+        price=Money(amount="8900", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=["Entity goals intake", "Jurisdiction options literacy", "Counsel handoff"],
+        output_items=[
+            "Entity setup intake brief",
+            "Licensed counsel handoff",
+            "Non-claim checklist",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "jurisdiction", "status_timeline"],
+        tags=["counsel", "legal", "incorporation", "entity", "worldwide"],
+    ),
+    WorkflowTemplatePublic(
+        slug="counsel-contract-review",
+        title="Worldwide Legal Counsel — Contract Review Brief",
+        category="Counsel",
+        summary="Contract intake + licensed counsel review handoff — from 4,500 ACP.",
+        description=(
+            "Settles ACP for a structured contract-review intake and licensed-counsel handoff. "
+            "ANCAP does not redline as your attorney."
+        ),
+        price=Money(amount="4500", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=["Contract intake checklist", "Risk theme map", "Counsel handoff"],
+        output_items=[
+            "Contract review intake brief",
+            "Licensed counsel handoff",
+            "Non-claim checklist",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "status_timeline"],
+        tags=["counsel", "legal", "contract", "review", "worldwide"],
+    ),
+    WorkflowTemplatePublic(
+        slug="counsel-crypto-assets",
+        title="Worldwide Legal Counsel — Crypto / Digital Assets Match",
+        category="Counsel",
+        summary="Crypto-assets counsel match for token / exchange / stablecoin rails — from 12,000 ACP.",
+        description=(
+            "Settles ACP for a crypto / digital-assets literacy pack and licensed counsel match. "
+            "Not an investment prospectus or securities opinion from ANCAP."
+        ),
+        price=Money(amount="12000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=50,
+        preview_items=["Asset / activity map", "Regulatory theme literacy", "Counsel match"],
+        output_items=[
+            "Crypto assets counsel match brief",
+            "Licensed counsel handoff",
+            "Non-claim checklist",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "jurisdiction", "status_timeline"],
+        tags=["counsel", "legal", "crypto", "digital-assets", "worldwide"],
+    ),
 
     WorkflowTemplatePublic(
         slug="stardust-extreme-weather-monitor",

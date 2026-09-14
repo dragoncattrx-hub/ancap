@@ -1,6 +1,7 @@
 import { legalByLang } from "./legal";
 import { aeternaByLang } from "./aeterna";
 import { agencyByLang } from "./agency";
+import { counselByLang } from "./counsel";
 import { startupsByLang } from "./startups";
 import { lunarByLang } from "./lunar";
 import { faunaByLang } from "./fauna";
@@ -114,6 +115,7 @@ export const translations: Record<Language, TranslationTree> = {
       contracts: "Contracts",
       aeterna: "AETERNA",
       humanitarian: "Aid",
+      counsel: "Counsel",
       agency: "Agency",
       lunar: "Lunar",
     stardust: "Stardust",
@@ -442,6 +444,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.en,
     aeternaPage: aeternaByLang.en,
     agencyPage: agencyByLang.en,
+    counselPage: counselByLang.en,
     startupsPage: startupsByLang.en,
     lunarPage: lunarByLang.en,
     faunaPage: faunaByLang.en,
@@ -614,6 +617,7 @@ export const translations: Record<Language, TranslationTree> = {
       contracts: "Контракты",
       aeterna: "AETERNA",
       humanitarian: "Помощь",
+      counsel: "Юристы",
       agency: "Агентство",
       lunar: "Луна",
     stardust: "Stardust",
@@ -942,6 +946,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.ru,
     aeternaPage: aeternaByLang.ru,
     agencyPage: agencyByLang.ru,
+    counselPage: counselByLang.ru,
     startupsPage: startupsByLang.ru,
     lunarPage: lunarByLang.ru,
     faunaPage: faunaByLang.ru,
@@ -1114,6 +1119,7 @@ export const translations: Record<Language, TranslationTree> = {
       contracts: "Контракти",
       aeterna: "AETERNA",
       humanitarian: "Допомога",
+      counsel: "Юристи",
       agency: "Агентство",
       lunar: "Місяць",
     stardust: "Stardust",
@@ -1442,6 +1448,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.uk,
     aeternaPage: aeternaByLang.uk,
     agencyPage: agencyByLang.uk,
+    counselPage: counselByLang.uk,
     startupsPage: startupsByLang.uk,
     lunarPage: lunarByLang.uk,
     faunaPage: faunaByLang.uk,
@@ -1614,6 +1621,7 @@ export const translations: Record<Language, TranslationTree> = {
       contracts: "Verträge",
       aeterna: "AETERNA",
       humanitarian: "Hilfe",
+      counsel: "Recht",
       agency: "Agentur",
       lunar: "Mond",
     stardust: "Stardust",
@@ -1942,6 +1950,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang.de,
     aeternaPage: aeternaByLang.de,
     agencyPage: agencyByLang.de,
+    counselPage: counselByLang.de,
     startupsPage: startupsByLang.de,
     lunarPage: lunarByLang.de,
     faunaPage: faunaByLang.de,
@@ -2114,6 +2123,7 @@ export const translations: Record<Language, TranslationTree> = {
       contracts: "合約",
       aeterna: "AETERNA",
       humanitarian: "人道援助",
+      counsel: "法律顧問",
       agency: "代理商",
       lunar: "月球",
     stardust: "Stardust",
@@ -2442,6 +2452,7 @@ export const translations: Record<Language, TranslationTree> = {
     legal: legalByLang["zh-Hant"],
     aeternaPage: aeternaByLang["zh-Hant"],
     agencyPage: agencyByLang["zh-Hant"],
+    counselPage: counselByLang["zh-Hant"],
     startupsPage: startupsByLang["zh-Hant"],
     lunarPage: lunarByLang["zh-Hant"],
     faunaPage: faunaByLang["zh-Hant"],
