@@ -759,6 +759,40 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         tags=["aeterna", "down-syndrome", "trisomy-21", "clinician", "consult"],
     ),
     WorkflowTemplatePublic(
+        slug="aeterna-substance-coding",
+        title="AETERNA Substance Coding Support Brief",
+        category="AETERNA",
+        summary=(
+            "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief for coding "
+            "literacy (light, clinic-only substances, hypnosis) aimed at non-essential psychoactive "
+            "dependence — 48,000 ACP. Not a coding session by ANCAP."
+        ),
+        description=(
+            "Settles 48,000 ACP and issues a licensed-partner brief covering substance-coding support "
+            "literacy: light-protocol themes, clinic-only substance protocol literacy, and clinical "
+            "hypnosis literacy for psychoactive substances that are not necessary for life. ANCAP does "
+            "not perform coding, does not guarantee abstinence, does not compound or sell controlled "
+            "substances, does not sell hypnosis as entertainment, and does not replace emergency or "
+            "psychiatric care. Clinical care occurs only under a licensed clinician after screening."
+        ),
+        price=Money(amount="48000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=45,
+        preview_items=[
+            "Modality map (light / clinic substances / hypnosis literacy)",
+            "Licensed clinician partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "Substance-coding support intake brief",
+            "Licensed clinician handoff",
+            "Non-claim checklist (no ANCAP coding session / no abstinence guarantee / no controlled-substance sale)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "substance-coding", "narcology", "hypnosis", "clinician", "consult"],
+    ),
+    WorkflowTemplatePublic(
         slug="aeterna-pulmopure-subscription",
         title="AETERNA PulmoPure Lung-Care Subscription",
         category="AETERNA",
@@ -1175,6 +1209,41 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         output_items=["Radar brief", "Ranked scenarios", "Contagion notes", "Evidence gaps", "Proof receipt"],
         receipt_items=["workflow_slug", "price_snapshot", "input_hash", "margin_snapshot", "status_timeline"],
         tags=["markets", "pro", "commodities", "crypto", "prediction", "ai"],
+    ),
+    WorkflowTemplatePublic(
+        slug="entertainment-tesla-coil-party",
+        title="Tesla Coil Party Desk Brief",
+        category="Entertainment",
+        summary=(
+            "Licensed venue partner brief for a Tesla-coil spectacle party with complimentary "
+            "Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only — 8,900 ACP."
+        ),
+        description=(
+            "Settles 8,900 ACP and issues a licensed entertainment-venue partner brief for a Tesla-coil "
+            "show party. Complimentary whiskey hospitality is framed as Jack Daniel's brand literacy where "
+            "the venue holds a liquor licence — ANCAP is not affiliated with Jack Daniel's or Brown-Forman "
+            "and does not hold a liquor licence. Age/ID gates (18+/21+ by jurisdiction) apply. "
+            "Jurisdiction-permitted adult substances means only substances lawful for adults in the event "
+            "locale under venue rules — ANCAP does not sell alcohol, cannabis, or controlled substances. "
+            "High-voltage Tesla coil operation is venue-partner electrical safety literacy only — not a DIY "
+            "coil kit and not a guaranteed show outcome."
+        ),
+        price=Money(amount="8900", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=30,
+        preview_items=[
+            "Venue / HV safety literacy map",
+            "Age-gate + hospitality compliance pack",
+            "Partner handoff checklist",
+        ],
+        output_items=[
+            "Tesla coil party intake brief",
+            "Licensed venue partner handoff",
+            "Non-claim checklist (no Jack Daniel's affiliation / no ANCAP liquor licence / no controlled-substance sale / no DIY HV kit)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "architecture", "status_timeline"],
+        tags=["entertainment", "tesla-coil", "party", "hospitality", "age-gated"],
     ),
 
 ]
@@ -2400,6 +2469,28 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "under a licensed clinician. Infographics are support literacy, not a cure claim."
                 ),
             }
+        if template.slug == "aeterna-substance-coding":
+            deliverable["intent"] = str(payload.get("intent_kind") or "substance_coding_brief")
+            deliverable["compliance"] = (
+                "Licensed addiction-medicine / narcology / clinical-hypnosis partner only. Not a coding "
+                "session performed by ANCAP, not a guarantee of abstinence, not compounding or sale of "
+                "controlled substances by ANCAP, and not a substitute for emergency care."
+            )
+            deliverable["substance_coding"] = {
+                "mode": "licensed_clinician_partner",
+                "architecture": "substance_coding_partner_literacy",
+                "price_acp": "48000",
+                "modalities_literacy": [
+                    "light_protocol_literacy",
+                    "clinic_only_substance_protocol_literacy",
+                    "clinical_hypnosis_literacy",
+                    "non_essential_psychoactive_dependence_literacy",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
+                    "under a licensed clinician. Infographics are support literacy, not a coding claim."
+                ),
+            }
         if template.slug == "aeterna-pulmopure-subscription":
             deliverable["intent"] = str(payload.get("intent_kind") or "pulmopure_subscription")
             deliverable["compliance"] = (
@@ -2519,6 +2610,39 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "aeterna_longevity",
             "sections_generated": len(template.output_items),
             "focus": ["dna vault", "longevity consult", "partner handoff", "acp receipt"],
+        }
+    elif template.slug == "entertainment-tesla-coil-party":
+        deliverable = {
+            "desk": "entertainment",
+            "intent": "tesla_coil_party",
+            "compliance": (
+                "Licensed venue partner only. Not affiliated with Jack Daniel's or Brown-Forman. "
+                "ANCAP does not hold a liquor licence and does not sell alcohol, cannabis, or controlled "
+                "substances. Age/ID gates apply. Tesla coil HV is venue electrical-safety literacy — not a DIY kit."
+            ),
+            "tesla_coil_party": {
+                "mode": "licensed_venue_partner",
+                "architecture": "tesla_coil_party_partner_literacy",
+                "price_acp": "8900",
+                "hospitality_literacy": [
+                    "jack_daniels_brand_hospitality_where_licensed",
+                    "age_id_gate_18_or_21",
+                    "jurisdiction_permitted_adult_substances_only",
+                    "hv_tesla_coil_venue_operator_only",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a venue partner handoff brief. Complimentary whiskey "
+                    "copy is hospitality literacy where the partner is licensed — not an ANCAP bar."
+                ),
+            },
+            "summary": f"Tesla coil party venue brief generated for {project_name}.",
+            "items": template.output_items,
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "entertainment_party",
+            "sections_generated": len(template.output_items),
+            "focus": ["venue handoff", "age gate", "hv safety literacy", "acp receipt"],
         }
     elif template.slug.startswith("stardust-"):
         deliverable = {

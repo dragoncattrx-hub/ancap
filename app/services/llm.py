@@ -16,6 +16,18 @@ from app.schemas import WorkflowTemplatePublic
 from app.services.workflow_execution import execute_workflow_template
 
 
+# Sensitive medical / adult-hospitality SKUs: always use vetted template deliverables
+# (never raw LLM JSON alone) so compliance blocks cannot be dropped.
+_COMPLIANCE_LOCKED_SLUGS = frozenset(
+    {
+        "aeterna-substance-coding",
+        "aeterna-adhd-support",
+        "aeterna-down-syndrome-support",
+        "entertainment-tesla-coil-party",
+    }
+)
+
+
 # Retryable status codes: transient failures we should retry
 _RETRYABLE_STATUS_CODES = {429, 502, 503, 504}
 
@@ -296,6 +308,28 @@ async def execute_paid_workflow_with_llm(
     prompt = _workflow_prompt(template, inputs or {})
     started = time.perf_counter()
     metadata: dict[str, Any] = {"workflow_slug": template.slug, "provider_configured": provider}
+
+    if template.slug in _COMPLIANCE_LOCKED_SLUGS:
+        fallback = execute_workflow_template(template, inputs or {})
+        latency_ms = int((time.perf_counter() - started) * 1000)
+        fallback["llm_usage"] = {
+            "status": "compliance_locked",
+            "provider": provider,
+            "model": model,
+            "fallback_used": True,
+            "note": "Vetted template deliverable forced for sensitive medical / adult-hospitality SKU.",
+        }
+        summary = fallback.setdefault("execution_summary", {})
+        if isinstance(summary, dict):
+            summary["mode"] = "compliance_locked_template"
+        return LlmExecutionResult(
+            result=fallback,
+            usage_event_id=None,
+            provider=provider,
+            model=model,
+            status="compliance_locked",
+            fallback_used=True,
+        )
 
     if provider == "disabled":
         fallback = execute_workflow_template(template, inputs or {})

@@ -11,7 +11,7 @@ test.describe("ANCAP Frontend - UI smoke", () => {
     const header = page.locator("header").first();
     await expect(header.getByRole("link", { name: /^login$/i }).first()).toBeVisible();
     await expect(header.getByRole("link", { name: /^register$/i }).first()).toBeVisible();
-    await expect(header.getByRole("link", { name: /whitepaper/i }).first()).toBeVisible();
+    await expect(header.locator('a[href="/whitepaper"]').first()).toBeVisible();
   });
 
   test("public routes return success", async ({ page }) => {
@@ -35,11 +35,15 @@ test.describe("ANCAP Frontend - UI smoke", () => {
       "/legal/oxygen-carrier",
       "/legal/synthetic-blood-mamba",
       "/legal/adhd-support",
+      "/legal/down-syndrome-support",
+      "/legal/substance-coding",
       "/legal/pulmopure",
       "/legal/barsuk",
       "/legal/teleport-earphones",
       "/legal/humanitarian",
+      "/legal/tesla-coil-party",
       "/humanitarian",
+      "/entertainment",
       "/aeterna",
       "/perimeter",
     ]) {

@@ -329,6 +329,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     downStep6Body: "Settled brief with proof receipt; clinical care remains with the licensed partner.",
     downCta: "Open Down syndrome support brief",
     downLegalCta: "Down syndrome support legal notice",
+    codingKicker: "Substance coding · light · clinic substances · hypnosis",
+    codingTitle: "Coding from non-essential substances",
+    codingPrice: "48,000 ACP",
+    codingLead: "ACP-settled brief for a licensed addiction-medicine / narcology / clinical-hypnosis partner covering light-protocol, clinic-only substance, and hypnosis literacy aimed at psychoactive substances that are not necessary for life.",
+    codingDisclaimer: "ANCAP is not a clinic and does not perform coding. Not an abstinence guarantee, not compounding or sale of controlled substances by ANCAP, not entertainment hypnosis, and not a substitute for emergency care.",
+    codingAlt: "Substance coding support literacy panel",
+    codingStep1Title: "Light",
+    codingStep1Body: "Light-protocol literacy with the licensed clinician.",
+    codingStep2Title: "Clinic substances",
+    codingStep2Body: "Clinic-only substance protocol literacy — never sold by ANCAP.",
+    codingStep3Title: "Hypnosis",
+    codingStep3Body: "Clinical hypnosis literacy under a licensed clinician.",
+    codingStep4Title: "Risk map",
+    codingStep4Body: "Relapse-risk and comorbidity literacy — not a promise.",
+    codingStep5Title: "Partner match",
+    codingStep5Body: "Screened addiction-medicine / narcology handoff.",
+    codingStep6Title: "ACP receipt",
+    codingStep6Body: "Settled brief with proof; clinical care stays with the partner.",
+    codingCta: "Open substance coding brief",
+    codingLegalCta: "Substance coding legal notice",
+
 
     adhdAlt:
       "Infographic about ADHD support for children: focus, planning, emotional control, relationships, self-esteem, risk reduction, and a motivational staircase. Conceptual literacy for licensed clinician partners — not a diagnosis or treatment claim.",
@@ -437,6 +458,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent26Title: "Down syndrome support brief",
     intent26Body:
       "Licensed developmental pediatrics / genetics partner brief for Down syndrome support literacy — not a cure, not a diagnosis, not gene therapy sold by ANCAP.",
+    intent27Title: "Substance coding support brief",
+    intent27Body:
+      "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief — light, clinic-only substances, hypnosis literacy for non-essential psychoactive dependence. Not a coding session by ANCAP.",
 
     ppfCta: "Buy 1 bottle",
     ppfVaultCta: "Open DNA vault",
@@ -851,6 +875,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     downStep6Body: "Оплаченный бриф с proof; клиника остаётся у лицензированного партнёра.",
     downCta: "Открыть бриф поддержки",
     downLegalCta: "Юр. текст: поддержка при синдроме Дауна",
+    codingKicker: "Кодирование · свет · вещества клиники · гипноз",
+    codingTitle: "Кодирование от веществ, не необходимых для жизни",
+    codingPrice: "48 000 ACP",
+    codingLead: "ACP-бриф для лицензированного партнёра (наркология / клинический гипноз): свет, клиника-only вещества и гипноз — против психоактивной зависимости от веществ, не нужных для жизни.",
+    codingDisclaimer: "ANCAP не клиника и не проводит кодирование. Нет гарантии трезвости, нет продажи контролируемых веществ от ANCAP, нет развлекательного гипноза и нет замены экстренной помощи.",
+    codingAlt: "Панель грамотности кодирования от веществ",
+    codingStep1Title: "Свет",
+    codingStep1Body: "Грамотность световых протоколов с лицензированным клиницистом.",
+    codingStep2Title: "Вещества клиники",
+    codingStep2Body: "Только клиника-протокол — ANCAP вещества не продаёт.",
+    codingStep3Title: "Гипноз",
+    codingStep3Body: "Клинический гипноз у лицензированного специалиста.",
+    codingStep4Title: "Риски",
+    codingStep4Body: "Грамотность рецидива и коморбидности — без обещаний.",
+    codingStep5Title: "Партнёр",
+    codingStep5Body: "Скрининг handoff в наркологию / клинику.",
+    codingStep6Title: "Чек ACP",
+    codingStep6Body: "Оплаченный бриф с proof; клиника у партнёра.",
+    codingCta: "Открыть бриф кодирования",
+    codingLegalCta: "Юр. текст: кодирование",
+
 
     adhdAlt:
       "Инфографика о поддержке детей с СДВГ: фокус, планирование, эмоции, отношения, самооценка, снижение рисков и мотивационная лестница. Концептуальная грамотность для лицензированных клиницистов — не диагноз и не лечение от ANCAP.",
@@ -959,6 +1004,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent26Title: "Поддержка при синдроме Дауна",
     intent26Body:
       "Бриф для лицензированного партнёра (детская неврология / генетика / развивающая педиатрия) — не излечение, не диагноз и не генная терапия от ANCAP.",
+    intent27Title: "Кодирование от веществ — бриф поддержки",
+    intent27Body:
+      "Бриф для лицензированного партнёра (наркология / клинический гипноз): свет, клиника-only вещества, гипноз — для психоактивных веществ, не необходимых для жизни. Не сеанс кодирования от ANCAP.",
 
     ppfCta: "Купить 1 флакон",
     ppfVaultCta: "Открыть DNA vault",
@@ -1358,6 +1406,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     downStep6Body: "Оплачений бріф з proof; клініка у ліцензованого партнера.",
     downCta: "Відкрити бріф підтримки",
     downLegalCta: "Юр. текст: підтримка при синдромі Дауна",
+    codingKicker: "Кодування · світло · речовини клініки · гіпноз",
+    codingTitle: "Кодування від речовин, не необхідних для життя",
+    codingPrice: "48 000 ACP",
+    codingLead: "ACP-бріф для ліцензованого партнера (наркологія / клінічний гіпноз).",
+    codingDisclaimer: "ANCAP не клініка і не проводить кодування. Немає гарантії тверезості і продажу контрольованих речовин від ANCAP.",
+    codingAlt: "Панель грамотності кодування",
+    codingStep1Title: "Світло",
+    codingStep1Body: "Грамотність світлових протоколів.",
+    codingStep2Title: "Речовини клініки",
+    codingStep2Body: "Лише клінічний протокол — ANCAP не продає речовини.",
+    codingStep3Title: "Гіпноз",
+    codingStep3Body: "Клінічний гіпноз у ліцензованого фахівця.",
+    codingStep4Title: "Ризики",
+    codingStep4Body: "Грамотність рецидиву — без обіцянок.",
+    codingStep5Title: "Партнер",
+    codingStep5Body: "Скринінг handoff у наркологію.",
+    codingStep6Title: "Чек ACP",
+    codingStep6Body: "Оплачений бріф з proof.",
+    codingCta: "Відкрити бріф кодування",
+    codingLegalCta: "Юр. текст: кодування",
+
 
     adhdAlt:
       "Інфографіка про підтримку дітей із СДУГ: фокус, планування, емоції, стосунки, самооцінка та мотиваційні сходи. Концептуальна грамотність для ліцензованих клініцистів.",
@@ -1464,6 +1533,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent26Title: "Підтримка при синдромі Дауна",
     intent26Body:
       "Бріф для ліцензованого партнера (дитяча неврологія / генетика) — не вилікування, не діагноз і не генна терапія від ANCAP.",
+    intent27Title: "Кодування від речовин — бріф підтримки",
+    intent27Body:
+      "Бріф для ліцензованого партнера (наркологія / клінічний гіпноз). Не сеанс кодування від ANCAP.",
 
     ppfCta: "Купити 1 флакон",
     ppfVaultCta: "Відкрити DNA vault",
@@ -1863,6 +1935,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     downStep6Body: "Bezahlter Brief mit Proof; Klinik bleibt beim Partner.",
     downCta: "Down-Syndrom-Brief oeffnen",
     downLegalCta: "Rechtshinweis Down-Syndrom-Unterstuetzung",
+    codingKicker: "Substanz-Codierung · Licht · Klinik-Substanzen · Hypnose",
+    codingTitle: "Codierung gegen nicht lebensnotwendige Substanzen",
+    codingPrice: "48.000 ACP",
+    codingLead: "ACP-Brief fuer lizenzierten Partner (Suchtmedizin / klinische Hypnose).",
+    codingDisclaimer: "ANCAP ist keine Klinik und fuehrt keine Codierung durch. Keine Abstinenzgarantie und kein Verkauf kontrollierter Substanzen.",
+    codingAlt: "Substanz-Codierungs-Panel",
+    codingStep1Title: "Licht",
+    codingStep1Body: "Lichtprotokoll-Literalitaet mit Kliniker.",
+    codingStep2Title: "Klinik-Substanzen",
+    codingStep2Body: "Nur Klinikprotokoll — kein Verkauf durch ANCAP.",
+    codingStep3Title: "Hypnose",
+    codingStep3Body: "Klinische Hypnose beim lizenzierten Kliniker.",
+    codingStep4Title: "Risiken",
+    codingStep4Body: "Rueckfall-Literalitaet — kein Versprechen.",
+    codingStep5Title: "Partner",
+    codingStep5Body: "Screening fuer Suchtmedizin-Handoff.",
+    codingStep6Title: "ACP-Beleg",
+    codingStep6Body: "Bezahlter Brief mit Proof.",
+    codingCta: "Codierungs-Brief oeffnen",
+    codingLegalCta: "Rechtshinweis Substanz-Codierung",
+
 
     adhdAlt:
       "Infografik zur ADHS-Unterstützung bei Kindern: Fokus, Planung, Emotionen, Beziehungen, Selbstwert und Motivationsleiter. Konzeptuelle Literalität für lizenzierte Kliniker.",
@@ -1969,6 +2062,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent26Title: "Down-Syndrom-Unterstuetzung",
     intent26Body:
       "Lizenzierter Partnerbrief (Entwicklungsmedizin / Genetik) — keine Heilung, keine Diagnose und keine Gentherapie durch ANCAP.",
+    intent27Title: "Substanz-Codierung Support-Brief",
+    intent27Body:
+      "Lizenzierter Partnerbrief (Suchtmedizin / klinische Hypnose). Keine Codierungssitzung durch ANCAP.",
 
     ppfCta: "1 Flasche kaufen",
     ppfVaultCta: "DNA-Vault oeffnen",
@@ -2368,6 +2464,27 @@ export const aeternaByLang: Record<Language, Tree> = {
     downStep6Body: "已結算簡報與證明；臨床照護在夥伴端。",
     downCta: "開啟唐氏症支援簡報",
     downLegalCta: "唐氏症支援法律聲明",
+    codingKicker: "物質編碼 · 光 · 診所藥物 · 催眠",
+    codingTitle: "非生命必需物質之編碼支援",
+    codingPrice: "48,000 ACP",
+    codingLead: "向持照成癮醫學／臨床催眠夥伴交接的 ACP 簡報。",
+    codingDisclaimer: "ANCAP 非診所、不執行編碼。無戒斷保證、不販售管制物質。",
+    codingAlt: "物質編碼支援面板",
+    codingStep1Title: "光",
+    codingStep1Body: "與持照臨床醫師的光療協議素養。",
+    codingStep2Title: "診所藥物",
+    codingStep2Body: "僅診所協議——ANCAP 不販售。",
+    codingStep3Title: "催眠",
+    codingStep3Body: "持照臨床催眠素養。",
+    codingStep4Title: "風險",
+    codingStep4Body: "復發風險素養——非承諾。",
+    codingStep5Title: "夥伴",
+    codingStep5Body: "成癮醫學交接篩選。",
+    codingStep6Title: "ACP 收據",
+    codingStep6Body: "已結算簡報與證明。",
+    codingCta: "開啟物質編碼簡報",
+    codingLegalCta: "物質編碼法律聲明",
+
 
     adhdAlt:
       "關於兒童 ADHD 支援的資訊圖：專注、規劃、情緒、關係、自尊與動機階梯。持照臨床醫師夥伴的概念素養。",
@@ -2470,6 +2587,9 @@ export const aeternaByLang: Record<Language, Tree> = {
     intent26Title: "唐氏症支援簡報",
     intent26Body:
       "持照發展兒科／遺傳學夥伴簡報——非治癒、非診斷、非 ANCAP 基因治療。",
+    intent27Title: "物質編碼支援簡報",
+    intent27Body:
+      "持照成癮醫學／臨床催眠夥伴簡報。非 ANCAP 編碼療程。",
 
     ppfCta: "購買 1 瓶",
     ppfVaultCta: "開啟 DNA vault",

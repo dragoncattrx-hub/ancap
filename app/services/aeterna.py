@@ -54,6 +54,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-synthetic-blood-mamba",
     "aeterna-adhd-support",
     "aeterna-down-syndrome-support",
+    "aeterna-substance-coding",
     "aeterna-pulmopure-subscription",
     "aeterna-barsuk-quantum-pen",
     "aeterna-teleport-earphones",
@@ -95,6 +96,8 @@ ADHD_SUPPORT_SLUG = "aeterna-adhd-support"
 ADHD_SUPPORT_PRICE_ACP = Decimal("42000")
 DOWN_SYNDROME_SUPPORT_SLUG = "aeterna-down-syndrome-support"
 DOWN_SYNDROME_SUPPORT_PRICE_ACP = Decimal("42000")
+SUBSTANCE_CODING_SLUG = "aeterna-substance-coding"
+SUBSTANCE_CODING_PRICE_ACP = Decimal("48000")
 PULMOPURE_SLUG = "aeterna-pulmopure-subscription"
 PULMOPURE_PRICE_ACP = Decimal("14000")
 PULMOPURE_QUARTERLY_ACP = Decimal("38000")
@@ -227,6 +230,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
     AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
     AeternaIntentKind.down_syndrome_support_brief.value: DOWN_SYNDROME_SUPPORT_SLUG,
+    AeternaIntentKind.substance_coding_brief.value: SUBSTANCE_CODING_SLUG,
     AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
     AeternaIntentKind.barsuk_quantum_pen_brief.value: BARSUK_SLUG,
     AeternaIntentKind.teleport_earphones_brief.value: TELEPORT_SLUG,
@@ -511,6 +515,31 @@ DOWN_SYNDROME_SUPPORT_META = {
         "gene therapy or CRISPR sold by ANCAP, not a prescription, and not a guaranteed developmental "
         "or life outcome. Partner screening required; caregivers retain clinical decision rights with "
         "the licensed clinician."
+    ),
+}
+
+
+SUBSTANCE_CODING_META = {
+    "mode": "licensed_clinician_partner",
+    "unit": "coding_support_brief",
+    "price_acp": "48000",
+    "architecture": "substance_coding_partner_literacy",
+    "modalities_literacy": [
+        "light_protocol_literacy",
+        "clinic_only_substance_protocol_literacy",
+        "clinical_hypnosis_literacy",
+        "non_essential_psychoactive_dependence_literacy",
+        "relapse_risk_literacy",
+        "emergency_care_handoff",
+    ],
+    "note": (
+        "Conceptual substance-coding support brief. ANCAP settles ACP and issues a licensed "
+        "addiction-medicine / narcology / clinical-hypnosis partner handoff covering light-protocol, "
+        "clinic-only substance, and hypnosis literacy aimed at psychoactive substances that are not "
+        "necessary for life. Not a coding session performed by ANCAP, not a guarantee of abstinence, "
+        "not compounding or sale of controlled substances by ANCAP, not hypnosis sold as entertainment, "
+        "and not a substitute for emergency or psychiatric care. Clinical care occurs only under a "
+        "licensed clinician after screening."
     ),
 }
 
@@ -824,6 +853,12 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "child-neurology partner intakes for early intervention and family literacy. Infographics "
             "are support architecture — not a cure, not a diagnosis, not gene therapy sold by ANCAP, "
             "and not a guaranteed developmental outcome."
+        ),
+        substance_coding_note=(
+            "Substance-coding listings are licensed addiction-medicine / narcology / clinical-hypnosis "
+            "partner intakes for light, clinic-only substance, and hypnosis literacy aimed at non-essential "
+            "psychoactive dependence. Infographics are architecture — not a coding session by ANCAP, "
+            "not guaranteed abstinence, and not controlled-substance compounding by ANCAP."
         ),
         pulmopure_note=(
             "PulmoPure listings are licensed pulmonology / respiratory clinic subscriptions for "
@@ -1148,6 +1183,20 @@ async def create_intent_order(
                 detail="down_syndrome_support_brief budget_acp must be at least 42000 ACP",
             )
         for key, value in DOWN_SYNDROME_SUPPORT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.substance_coding_brief:
+        if slug and slug != SUBSTANCE_CODING_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="substance_coding_brief requires workflow_slug aeterna-substance-coding",
+            )
+        slug = SUBSTANCE_CODING_SLUG
+        if body.budget_acp < SUBSTANCE_CODING_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="substance_coding_brief budget_acp must be at least 48000 ACP",
+            )
+        for key, value in SUBSTANCE_CODING_META.items():
             meta.setdefault(key, value)
     if body.intent_kind == AeternaIntentKind.pulmopure_subscription:
         if slug and slug != PULMOPURE_SLUG:

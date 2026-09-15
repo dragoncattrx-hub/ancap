@@ -284,7 +284,9 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   const [createdRun, setCreatedRun] = useState<WorkflowRun | null>(null);
   const [history, setHistory] = useState<WorkflowRun[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [adultAttested, setAdultAttested] = useState(false);
 
+  const requiresAdultAttestation = workflow.slug === "entertainment-tesla-coil-party";
   const supportsStructuredForm = supportsStructuredWorkflow(workflow.slug);
   const prefillAppliedKey = useMemo(
     () => `${workflow.slug}:${searchParams?.get("fromRun") || ""}:${searchParams?.get("prefill") || ""}`,
@@ -381,11 +383,19 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
       router.push("/login");
       return;
     }
+    if (requiresAdultAttestation && !adultAttested) {
+      setError("Confirm you are of legal drinking age (18+/21+ by jurisdiction) before purchasing this adult hospitality desk brief.");
+      return;
+    }
 
     setSubmitting(true);
     setError("");
     try {
-      const inputs = JSON.parse(inputsText || "{}");
+      const parsed = JSON.parse(inputsText || "{}");
+      const inputs =
+        requiresAdultAttestation
+          ? { ...parsed, adult_age_attested: true, age_gate: "18_or_21_by_jurisdiction" }
+          : parsed;
       const created = await workflowStore.createRun({
         workflow_slug: workflow.slug,
         payment_currency: paymentCurrency,
@@ -543,13 +553,29 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
             <div className="mt-2 text-xs text-white/45">Structured form updates this JSON automatically. You can still override it manually.</div>
           </div>
 
+          {requiresAdultAttestation ? (
+            <label className="flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/8 p-4 text-sm text-amber-50/90">
+              <input
+                type="checkbox"
+                checked={adultAttested}
+                onChange={(e) => setAdultAttested(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                I confirm I am of legal drinking / adult age for my jurisdiction (18+ or 21+) and understand
+                ANCAP does not sell alcohol or controlled substances — hospitality and Tesla-coil HV stay with
+                the licensed venue partner.
+              </span>
+            </label>
+          ) : null}
+
           {error && <div className="rounded-2xl border border-red-400/25 bg-red-500/10 p-3 text-sm text-red-200">{error}</div>}
 
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={submit}
-              disabled={submitting || isLoading}
+              disabled={submitting || isLoading || (requiresAdultAttestation && !adultAttested)}
               className="rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
             >
               {submitting ? "Creating run..." : isAuthenticated ? "Run workflow" : "Sign in to run workflow"}

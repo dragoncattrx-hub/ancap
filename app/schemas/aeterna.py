@@ -59,6 +59,7 @@ class AeternaIntentKind(str, Enum):
     synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
     adhd_support_brief = "adhd_support_brief"
     down_syndrome_support_brief = "down_syndrome_support_brief"
+    substance_coding_brief = "substance_coding_brief"
     pulmopure_subscription = "pulmopure_subscription"
     barsuk_quantum_pen_brief = "barsuk_quantum_pen_brief"
     teleport_earphones_brief = "teleport_earphones_brief"
@@ -322,6 +323,13 @@ class AeternaStatusPublic(BaseModel):
         "partner brief for early intervention, family, and school-adaptation literacy. Infographics are "
         "support architecture — not a cure, not a diagnosis, not gene therapy or CRISPR sold by ANCAP, "
         "and not a guaranteed developmental outcome."
+    )
+    substance_coding_note: str = (
+        "The substance-coding rail is a licensed addiction-medicine / narcology / clinical-hypnosis partner "
+        "brief for literacy on light protocols, clinic-only substances, and hypnosis themes aimed at "
+        "non-essential psychoactive dependence. Infographics are architecture literacy — not a coding "
+        "session sold by ANCAP, not a guarantee of abstinence, not compounding of controlled substances, "
+        "and not a substitute for emergency care."
     )
     pulmopure_note: str = (
         "The PulmoPure rail is a licensed pulmonology / respiratory clinic subscription for gas-vibration "

@@ -256,6 +256,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     tags: ["markets", "pro", "commodities", "crypto", "prediction", "ai"],
   },
   {
+    slug: "entertainment-tesla-coil-party",
+    title: "Tesla Coil Party Desk Brief",
+    category: "Entertainment",
+    summary:
+      "Licensed venue partner brief for a Tesla-coil spectacle party with complimentary Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only — 8,900 ACP.",
+    description:
+      "Settles 8,900 ACP and issues a licensed entertainment-venue partner brief. Not affiliated with Jack Daniel's or Brown-Forman. ANCAP does not hold a liquor licence and does not sell alcohol or controlled substances. Age/ID gates (18+/21+) apply. Tesla coil HV operated only by licensed venue partner — not a DIY kit.",
+    price: { amount: "8900", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 30,
+    preview_items: [
+      "Venue / HV safety literacy map",
+      "Age-gate + hospitality compliance pack",
+      "Partner handoff checklist",
+    ],
+    output_items: [
+      "Tesla coil party intake brief",
+      "Licensed venue partner handoff",
+      "Non-claim checklist (no Jack Daniel's affiliation / no ANCAP liquor licence / no controlled-substance sale / no DIY HV kit)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "architecture", "status_timeline"],
+    tags: ["entertainment", "tesla-coil", "party", "hospitality", "age-gated"],
+  },
+  {
     slug: "aeterna-dna-wellness-report",
     title: "AETERNA DNA Wellness Report",
     category: "AETERNA",
@@ -698,6 +723,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     ],
     receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
     tags: ["aeterna", "down-syndrome", "trisomy-21", "clinician", "consult"],
+  },
+  {
+    slug: "aeterna-substance-coding",
+    title: "AETERNA Substance Coding Support Brief",
+    category: "AETERNA",
+    summary:
+      "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief for coding literacy — 48,000 ACP. Not a coding session by ANCAP.",
+    description:
+      "Settles 48,000 ACP and issues a licensed-partner brief covering light-protocol, clinic-only substance, and clinical-hypnosis literacy for non-essential psychoactive dependence. ANCAP does not perform coding, does not guarantee abstinence, does not compound or sell controlled substances, and does not replace emergency care.",
+    price: { amount: "48000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 45,
+    preview_items: [
+      "Modality map (light / clinic substances / hypnosis literacy)",
+      "Licensed clinician partner match",
+      "Non-claim protocol pack",
+    ],
+    output_items: [
+      "Substance-coding support intake brief",
+      "Licensed clinician handoff",
+      "Non-claim checklist (no ANCAP coding session / no abstinence guarantee / no controlled-substance sale)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+    tags: ["aeterna", "substance-coding", "narcology", "hypnosis", "clinician", "consult"],
   },
   {
     slug: "aeterna-pulmopure-subscription",

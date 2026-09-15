@@ -73,6 +73,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaIntentKind.synthetic_blood_mamba_brief.value == "synthetic_blood_mamba_brief"
     assert AeternaIntentKind.adhd_support_brief.value == "adhd_support_brief"
     assert AeternaIntentKind.down_syndrome_support_brief.value == "down_syndrome_support_brief"
+    assert AeternaIntentKind.substance_coding_brief.value == "substance_coding_brief"
     assert AeternaIntentKind.pulmopure_subscription.value == "pulmopure_subscription"
     assert AeternaIntentKind.barsuk_quantum_pen_brief.value == "barsuk_quantum_pen_brief"
     assert AeternaIntentKind.teleport_earphones_brief.value == "teleport_earphones_brief"
@@ -93,6 +94,7 @@ def test_advanced_track_schema_smoke():
     assert AeternaStatusPublic.model_fields["synthetic_blood_mamba_note"]
     assert AeternaStatusPublic.model_fields["adhd_support_note"]
     assert AeternaStatusPublic.model_fields["down_syndrome_support_note"]
+    assert AeternaStatusPublic.model_fields["substance_coding_note"]
     assert AeternaStatusPublic.model_fields["pulmopure_note"]
     assert AeternaStatusPublic.model_fields["barsuk_note"]
     assert AeternaStatusPublic.model_fields["teleport_earphones_note"]
@@ -107,7 +109,7 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-stem-cell-organ-print" in slugs
     assert "aeterna-mrna-reprogramming-brief" in slugs
     aeterna = [t for t in WORKFLOW_TEMPLATES if t.category == "AETERNA"]
-    assert len(aeterna) >= 27
+    assert len(aeterna) >= 28
     priced = {
         "aeterna-stem-cell-organ-print": "250000",
         "aeterna-vet-cat-cryo-restore": "75000",
@@ -125,6 +127,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-synthetic-blood-mamba": "98000",
         "aeterna-adhd-support": "42000",
         "aeterna-down-syndrome-support": "42000",
+        "aeterna-substance-coding": "48000",
         "aeterna-vascular-care-plus": "54000",
         "aeterna-vascular-care": "58000",
         "aeterna-dpsc-biomaterial": "65000",
@@ -148,7 +151,9 @@ def test_aeterna_workflow_templates_catalogued():
     assert "aeterna-synthetic-blood-mamba" in slugs
     assert "aeterna-adhd-support" in slugs
     assert "aeterna-down-syndrome-support" in slugs
+    assert "aeterna-substance-coding" in slugs
     assert "aeterna-pulmopure-subscription" in slugs
+    assert "entertainment-tesla-coil-party" in slugs
     assert "aeterna-barsuk-quantum-pen" in slugs
     assert "aeterna-teleport-earphones" in slugs
     assert "aeterna-installation-project" in slugs
@@ -790,6 +795,57 @@ def test_down_syndrome_support_intent_default_slug_and_reject_low_budget(client)
     payload = created.json()
     assert payload["workflow_slug"] == DOWN_SYNDROME_SUPPORT_SLUG
     assert payload["metadata_json"]["architecture"] == "down_syndrome_support_partner_literacy"
+
+
+def test_substance_coding_execution_is_partner_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("aeterna-substance-coding")
+    assert tpl is not None
+    out = execute_workflow_template(tpl, {"intent_kind": "substance_coding_brief"})
+    coding = out["deliverable"]["substance_coding"]
+    assert coding["price_acp"] == "48000"
+    assert coding["architecture"] == "substance_coding_partner_literacy"
+    blob = str(out).lower()
+    for forbidden in ("dose recipe mg", "compound methadone", "diy hypnosis kit"):
+        assert forbidden not in blob
+    assert "licensed" in blob
+    assert "abstinence" in blob
+
+
+def test_substance_coding_intent_default_slug_and_reject_low_budget(client):
+    from app.services.aeterna import SUBSTANCE_CODING_SLUG
+
+    too_low = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "substance_coding_brief", "budget_acp": "1000"},
+    )
+    assert too_low.status_code == 400, too_low.text
+
+    created = client.post(
+        "/v1/aeterna/intents",
+        json={"intent_kind": "substance_coding_brief", "budget_acp": "48000"},
+    )
+    assert created.status_code == 201, created.text
+    payload = created.json()
+    assert payload["workflow_slug"] == SUBSTANCE_CODING_SLUG
+    assert payload["metadata_json"]["architecture"] == "substance_coding_partner_literacy"
+
+
+def test_tesla_coil_party_execution_is_venue_handoff_only():
+    from app.services.workflow_execution import execute_workflow_template, find_workflow_template
+
+    tpl = find_workflow_template("entertainment-tesla-coil-party")
+    assert tpl is not None
+    assert tpl.price.amount == "8900"
+    out = execute_workflow_template(tpl, {})
+    party = out["deliverable"]["tesla_coil_party"]
+    assert party["price_acp"] == "8900"
+    assert party["architecture"] == "tesla_coil_party_partner_literacy"
+    blob = str(out).lower()
+    assert "jack daniel" in blob or "brown-forman" in blob
+    assert "liquor" in blob
+    assert "age" in blob
 
 
 def test_pulmopure_subscription_execution_is_partner_handoff_only():

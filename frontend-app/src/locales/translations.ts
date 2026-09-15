@@ -9,6 +9,7 @@ import { floraByLang } from "./flora";
 import { darkMatterByLang } from "./darkMatter";
 import { insuranceByLang } from "./insurance";
 import { arenaByLang } from "./arena";
+import { entertainmentByLang } from "./entertainment";
 import { techByLang } from "./tech";
 import { billingByLang, creditsByLang, developersByLang, workflowsByLang } from "./desks";
 import { whitepaperByLang, acpWhitepaperByLang } from "./whitepaper";
@@ -473,6 +474,7 @@ export const translations: Record<Language, TranslationTree> = {
     darkMatterPage: darkMatterByLang.en,
     insurancePage: insuranceByLang.en,
     arenaPage: arenaByLang.en,
+    entertainmentPage: entertainmentByLang.en,
     techPage: techByLang.en,
     billingPage: billingByLang.en,
     creditsPage: creditsByLang.en,
@@ -996,6 +998,7 @@ export const translations: Record<Language, TranslationTree> = {
     darkMatterPage: darkMatterByLang.ru,
     insurancePage: insuranceByLang.ru,
     arenaPage: arenaByLang.ru,
+    entertainmentPage: entertainmentByLang.ru,
     techPage: techByLang.ru,
     billingPage: billingByLang.ru,
     creditsPage: creditsByLang.ru,
@@ -1519,6 +1522,7 @@ export const translations: Record<Language, TranslationTree> = {
     darkMatterPage: darkMatterByLang.uk,
     insurancePage: insuranceByLang.uk,
     arenaPage: arenaByLang.uk,
+    entertainmentPage: entertainmentByLang.uk,
     techPage: techByLang.uk,
     billingPage: billingByLang.uk,
     creditsPage: creditsByLang.uk,
@@ -2042,6 +2046,7 @@ export const translations: Record<Language, TranslationTree> = {
     darkMatterPage: darkMatterByLang.de,
     insurancePage: insuranceByLang.de,
     arenaPage: arenaByLang.de,
+    entertainmentPage: entertainmentByLang.de,
     techPage: techByLang.de,
     billingPage: billingByLang.de,
     creditsPage: creditsByLang.de,
@@ -2565,6 +2570,7 @@ export const translations: Record<Language, TranslationTree> = {
     darkMatterPage: darkMatterByLang["zh-Hant"],
     insurancePage: insuranceByLang["zh-Hant"],
     arenaPage: arenaByLang["zh-Hant"],
+    entertainmentPage: entertainmentByLang["zh-Hant"],
     techPage: techByLang["zh-Hant"],
     billingPage: billingByLang["zh-Hant"],
     creditsPage: creditsByLang["zh-Hant"],

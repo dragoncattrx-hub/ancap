@@ -65,6 +65,8 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/synthetic-blood-mamba", key: "syntheticBloodMambaLink" },
     { href: "/legal/adhd-support", key: "adhdSupportLink" },
     { href: "/legal/down-syndrome-support", key: "downSyndromeSupportLink" },
+    { href: "/legal/substance-coding", key: "substanceCodingLink" },
+    { href: "/legal/tesla-coil-party", key: "teslaCoilPartyLink" },
     { href: "/legal/pulmopure", key: "pulmopureLink" },
     { href: "/legal/barsuk", key: "barsukLink" },
     { href: "/legal/teleport-earphones", key: "teleportEarphonesLink" },
@@ -123,6 +125,8 @@ export function LegalHubView() {
     { href: "/legal/synthetic-blood-mamba", title: "syntheticBloodMambaLink", body: "hubCardSyntheticBloodMamba" },
     { href: "/legal/adhd-support", title: "adhdSupportLink", body: "hubCardAdhdSupport" },
     { href: "/legal/down-syndrome-support", title: "downSyndromeSupportLink", body: "hubCardDownSyndromeSupport" },
+    { href: "/legal/substance-coding", title: "substanceCodingLink", body: "hubCardSubstanceCoding" },
+    { href: "/legal/tesla-coil-party", title: "teslaCoilPartyLink", body: "hubCardTeslaCoilParty" },
     { href: "/legal/pulmopure", title: "pulmopureLink", body: "hubCardPulmopure" },
     { href: "/legal/barsuk", title: "barsukLink", body: "hubCardBarsuk" },
     { href: "/legal/teleport-earphones", title: "teleportEarphonesLink", body: "hubCardTeleportEarphones" },
@@ -1258,6 +1262,72 @@ export function DownSyndromeSupportLegalView() {
   );
 }
 
+export function SubstanceCodingLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.substanceCodingKicker")}
+      title={t("legal.substanceCodingTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.substanceCodingIntro")}`}
+      actions={<LegalNavPills current="/legal/substance-coding" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.sc${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.sc${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/aeterna#substance-coding"
+            className="text-amber-200 underline decoration-amber-400/40 underline-offset-4"
+          >
+            /aeterna#substance-coding
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function TeslaCoilPartyLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-violet-300/20 bg-violet-400/[0.06]"
+      kicker={t("legal.teslaCoilPartyKicker")}
+      title={t("legal.teslaCoilPartyTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.teslaCoilPartyIntro")}`}
+      actions={<LegalNavPills current="/legal/tesla-coil-party" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.tcp${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.tcp${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/entertainment#tesla-coil-party"
+            className="text-violet-200 underline decoration-violet-400/40 underline-offset-4"
+          >
+            /entertainment#tesla-coil-party
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function PulmoPureLegalView() {
   const { t } = useLanguage();
   return (
@@ -1576,6 +1646,8 @@ export function SiteLegalFooter() {
     { href: "/legal/synthetic-blood-mamba", label: "footerSyntheticBloodMamba" },
     { href: "/legal/adhd-support", label: "footerAdhdSupport" },
     { href: "/legal/down-syndrome-support", label: "footerDownSyndromeSupport" },
+    { href: "/legal/substance-coding", label: "footerSubstanceCoding" },
+    { href: "/legal/tesla-coil-party", label: "footerTeslaCoilParty" },
     { href: "/legal/pulmopure", label: "footerPulmopure" },
     { href: "/legal/barsuk", label: "footerBarsuk" },
     { href: "/legal/teleport-earphones", label: "footerTeleportEarphones" },

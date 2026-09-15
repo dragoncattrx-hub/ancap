@@ -73,6 +73,22 @@ export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
     href: "/aeterna#pulmopure",
   },
   {
+    id: "aeterna-substance-coding",
+    date: "2026-09-15",
+    title: "AETERNA: кодирование от веществ — партнёрский бриф",
+    summary:
+      "На /aeterna — бриф для лицензированного нарколога / клинического гипноза (свет, вещества клиники, гипноз) за 48 000 ACP против зависимости от веществ, не необходимых для жизни. Это не сеанс кодирования от ANCAP, не гарантия трезвости и не продажа контролируемых веществ. Юр. текст: /legal/substance-coding.",
+    href: "/aeterna#substance-coding",
+  },
+  {
+    id: "entertainment-tesla-coil-party",
+    date: "2026-09-15",
+    title: "Развлечения: пати с катушкой Теслы и hospitality Jack Daniel's",
+    summary:
+      "На /entertainment — desk brief 8 900 ACP для лицензированной площадки: шоу катушки Теслы, complimentary whiskey literacy и только разрешённые взрослые вещества. ANCAP не аффилирован с Jack Daniel's, не держит алкогольную лицензию и не продаёт контролируемые вещества. Юр. текст: /legal/tesla-coil-party.",
+    href: "/entertainment#tesla-coil-party",
+  },
+  {
     id: "aeterna-down-syndrome-support",
     date: "2026-09-14",
     title: "AETERNA: поддержка при синдроме Дауна — партнёрский бриф",
