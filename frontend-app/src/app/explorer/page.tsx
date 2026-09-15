@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { acpExplorer } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
 
-function CopyableHash({ value }: { value: string | null | undefined }) {
+function CopyableHash({ value, copyLabel, copiedLabel, copyAria }: { value: string | null | undefined; copyLabel: string; copiedLabel: string; copyAria: (hash: string) => string }) {
   const hash = String(value || "").trim();
   const [copied, setCopied] = useState(false);
 
@@ -32,15 +33,16 @@ function CopyableHash({ value }: { value: string | null | undefined }) {
         type="button"
         onClick={() => void onCopy()}
         className="shrink-0 rounded-md border border-white/12 bg-white/[0.04] px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.08]"
-        aria-label={`Copy hash ${hash}`}
+        aria-label={copyAria(hash)}
       >
-        {copied ? "Copied" : "Copy"}
+        {copied ? copiedLabel : copyLabel}
       </button>
     </div>
   );
 }
 
 export default function ExplorerPage() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<any>(null);
   const [efficiency, setEfficiency] = useState<any>(null);
   const [blocks, setBlocks] = useState<any[]>([]);
@@ -62,12 +64,12 @@ export default function ExplorerPage() {
         setBlocks(b.items || []);
         setEfficiency(e);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Explorer unavailable");
+        setError(err instanceof Error ? err.message : t("explorerPage.errUnavailable"));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   function onSearch(event: FormEvent) {
     event.preventDefault();
@@ -83,37 +85,42 @@ export default function ExplorerPage() {
     window.location.href = `/explorer/address/${encodeURIComponent(addr)}`;
   }
 
+  const copyProps = {
+    copyLabel: t("explorerPage.copy"),
+    copiedLabel: t("explorerPage.copied"),
+    copyAria: (hash: string) => t("explorerPage.copyHashAria").replace("{hash}", hash),
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
       <main className="mx-auto max-w-5xl px-4 py-10">
-        <h1 className="text-3xl font-semibold">ACP Explorer</h1>
-        <p className="mt-2 text-sm text-white/65">
-          Lean ACP v1.4 — PQC hybrid signatures, fee-packed blocks, ultra-light energy model (no PoW).
-        </p>
+        <h1 className="text-3xl font-semibold">{t("explorerPage.title")}</h1>
+        <p className="mt-2 text-sm text-white/65">{t("explorerPage.subtitle")}</p>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
         {status ? (
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
-            <div>Chain ID: {status.chain_id}</div>
-            <div className="mt-1">Height: {status.block_height}</div>
+            <div>{t("explorerPage.chainId")}: {status.chain_id}</div>
+            <div className="mt-1">{t("explorerPage.height")}: {status.block_height}</div>
             <div className="mt-1">
-              <span className="text-white/55">Best hash:</span>
+              <span className="text-white/55">{t("explorerPage.bestHash")}:</span>
               <div className="mt-1">
-                <CopyableHash value={status.best_block_hash} />
+                <CopyableHash value={status.best_block_hash} {...copyProps} />
               </div>
             </div>
             {status.lean ? (
               <div className="mt-4 grid gap-2 border-t border-white/10 pt-4 text-white/70 sm:grid-cols-2">
-                <div>Profile: {status.lean.protocol_profile}</div>
-                <div>Energy: {status.lean.energy_model}</div>
-                <div>Security: {status.lean.signing_security}</div>
+                <div>{t("explorerPage.profile")}: {status.lean.protocol_profile}</div>
+                <div>{t("explorerPage.energy")}: {status.lean.energy_model}</div>
+                <div>{t("explorerPage.security")}: {status.lean.signing_security}</div>
                 <div className="break-words">
-                  Encryption: {status.lean.encryption_security}
+                  {t("explorerPage.encryption")}: {status.lean.encryption_security}
                   {status.lean.encryption_status ? ` · ${status.lean.encryption_status}` : ""}
                 </div>
                 <div>
-                  Cadence: {status.lean.target_block_time_sec}s · design ~{status.lean.design_tps_hint}{" "}
-                  TPS
+                  {t("explorerPage.cadence")
+                    .replace("{sec}", String(status.lean.target_block_time_sec))
+                    .replace("{tps}", String(status.lean.design_tps_hint))}
                 </div>
               </div>
             ) : null}
@@ -123,9 +130,9 @@ export default function ExplorerPage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             {(
               [
-                ["Security", efficiency.market_alignment_2026.security],
-                ["Speed", efficiency.market_alignment_2026.speed],
-                ["Energy", efficiency.market_alignment_2026.energy],
+                [t("explorerPage.colSecurity"), efficiency.market_alignment_2026.security],
+                [t("explorerPage.colSpeed"), efficiency.market_alignment_2026.speed],
+                [t("explorerPage.colEnergy"), efficiency.market_alignment_2026.energy],
               ] as const
             ).map(([title, items]) => (
               <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -142,35 +149,35 @@ export default function ExplorerPage() {
         <form onSubmit={onSearch} className="mt-6 flex gap-2">
           <input
             className="flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
-            placeholder="Search transaction id"
+            placeholder={t("explorerPage.searchTxPlaceholder")}
             value={searchTx}
             onChange={(e) => setSearchTx(e.target.value)}
           />
           <button type="submit" className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
-            Search tx
+            {t("explorerPage.searchTxBtn")}
           </button>
         </form>
         <form onSubmit={onAddressSearch} className="mt-3 flex gap-2">
           <input
             className="flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
-            placeholder="Search ACP address"
+            placeholder={t("explorerPage.searchAddrPlaceholder")}
             value={searchAddr}
             onChange={(e) => setSearchAddr(e.target.value)}
           />
           <button type="submit" className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold">
-            Search address
+            {t("explorerPage.searchAddrBtn")}
           </button>
         </form>
         <section className="mt-8">
-          <h2 className="text-lg font-semibold">Latest blocks</h2>
-          {loading ? <p className="mt-4 text-sm text-white/55">Loading blocks…</p> : null}
+          <h2 className="text-lg font-semibold">{t("explorerPage.latestBlocks")}</h2>
+          {loading ? <p className="mt-4 text-sm text-white/55">{t("explorerPage.loadingBlocks")}</p> : null}
           <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-white/[0.04] text-white/60">
                 <tr>
-                  <th className="px-4 py-3">Height</th>
-                  <th className="px-4 py-3">Hash</th>
-                  <th className="px-4 py-3">Tx count</th>
+                  <th className="px-4 py-3">{t("explorerPage.colHeight")}</th>
+                  <th className="px-4 py-3">{t("explorerPage.colHash")}</th>
+                  <th className="px-4 py-3">{t("explorerPage.colTxCount")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -178,7 +185,7 @@ export default function ExplorerPage() {
                   <tr key={row.height} className="border-t border-white/10">
                     <td className="px-4 py-3">{row.height}</td>
                     <td className="px-4 py-3">
-                      <CopyableHash value={row.hash} />
+                      <CopyableHash value={row.hash} {...copyProps} />
                     </td>
                     <td className="px-4 py-3">{row.tx_count ?? 0}</td>
                   </tr>
@@ -186,7 +193,7 @@ export default function ExplorerPage() {
                 {!loading && blocks.length === 0 ? (
                   <tr className="border-t border-white/10">
                     <td className="px-4 py-3 text-white/55" colSpan={3}>
-                      No blocks indexed yet.
+                      {t("explorerPage.noBlocks")}
                     </td>
                   </tr>
                 ) : null}
@@ -195,7 +202,7 @@ export default function ExplorerPage() {
           </div>
         </section>
         <Link href="/reserves" className="mt-6 inline-block text-sm text-emerald-300">
-          View reserves dashboard
+          {t("explorerPage.viewReserves")}
         </Link>
       </main>
     </div>

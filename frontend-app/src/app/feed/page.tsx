@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { growthPublic } from "@/lib/api";
 
 type FeedItem = {
@@ -14,30 +15,22 @@ type FeedItem = {
   score: string;
 };
 
-/** Human-readable label for the event_type column (kept short on purpose). */
-function describeEventType(t: string): string {
-  switch (t) {
-    case "run_succeeded":
-      return "Run succeeded";
-    case "run_failed":
-      return "Run failed";
-    case "run_started":
-      return "Run started";
-    case "listing_published":
-      return "Listing published";
-    case "order_placed":
-      return "Order placed";
-    case "order_settled":
-      return "Order settled";
-    case "stake_locked":
-      return "Stake locked";
-    case "stake_released":
-      return "Stake released";
-    case "anchor_committed":
-      return "Anchor committed";
-    default:
-      return t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  }
+const EVENT_TYPE_KEYS: Record<string, string> = {
+  run_succeeded: "feedPage.eventRunSucceeded",
+  run_failed: "feedPage.eventRunFailed",
+  run_started: "feedPage.eventRunStarted",
+  listing_published: "feedPage.eventListingPublished",
+  order_placed: "feedPage.eventOrderPlaced",
+  order_settled: "feedPage.eventOrderSettled",
+  stake_locked: "feedPage.eventStakeLocked",
+  stake_released: "feedPage.eventStakeReleased",
+  anchor_committed: "feedPage.eventAnchorCommitted",
+};
+
+function describeEventType(eventType: string, t: (key: string) => string): string {
+  const key = EVENT_TYPE_KEYS[eventType];
+  if (key) return t(key);
+  return eventType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /** Tone for the badge attached to the event type. */
@@ -60,7 +53,7 @@ function summarizePayload(payload: any): string {
   const keys = Object.keys(payload);
   if (keys.length === 0) return "";
   const interesting = keys
-    .filter((k) => !/_id$|^id$/i.test(k)) // hide raw ids — they're already in ref_id and clutter
+    .filter((k) => !/_id$|^id$/i.test(k))
     .slice(0, 3);
   if (interesting.length === 0) return "";
   return interesting
@@ -73,6 +66,7 @@ function summarizePayload(payload: any): string {
 }
 
 export default function FeedPage() {
+  const { t } = useLanguage();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -87,12 +81,12 @@ export default function FeedPage() {
         const r = await growthPublic.getFeed(100);
         setItems(r || []);
       } catch (e: any) {
-        setError(e?.message || "Failed to load feed");
+        setError(e?.message || t("feedPage.errLoad"));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
@@ -115,8 +109,8 @@ export default function FeedPage() {
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-            <h1 style={{ marginTop: 0 }}>Public Activity Feed</h1>
-            <div role="radiogroup" aria-label="Filter feed" style={{ display: "flex", gap: 6 }}>
+            <h1 style={{ marginTop: 0 }}>{t("feedPage.title")}</h1>
+            <div role="radiogroup" aria-label={t("feedPage.filterFeed")} style={{ display: "flex", gap: 6 }}>
               <button
                 role="radio"
                 aria-checked={filter === "all"}
@@ -124,7 +118,7 @@ export default function FeedPage() {
                 onClick={() => setFilter("all")}
                 style={{ padding: "4px 10px", fontSize: "0.85rem" }}
               >
-                All ({counts.all})
+                {t("feedPage.filterAll")} ({counts.all})
               </button>
               <button
                 role="radio"
@@ -133,7 +127,7 @@ export default function FeedPage() {
                 onClick={() => setFilter("good")}
                 style={{ padding: "4px 10px", fontSize: "0.85rem" }}
               >
-                Successful ({counts.good})
+                {t("feedPage.filterSuccessful")} ({counts.good})
               </button>
               <button
                 role="radio"
@@ -142,7 +136,7 @@ export default function FeedPage() {
                 onClick={() => setFilter("bad")}
                 style={{ padding: "4px 10px", fontSize: "0.85rem" }}
               >
-                Failed ({counts.bad})
+                {t("feedPage.filterFailed")} ({counts.bad})
               </button>
               <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "var(--text-muted)", marginLeft: 8 }}>
                 <input
@@ -150,7 +144,7 @@ export default function FeedPage() {
                   checked={showRaw}
                   onChange={(e) => setShowRaw(e.target.checked)}
                 />
-                Raw payload
+                {t("feedPage.rawPayload")}
               </label>
             </div>
           </div>
@@ -158,9 +152,9 @@ export default function FeedPage() {
           {error && <div className="alert alert-error" style={{ marginTop: 12 }}>{error}</div>}
 
           {loading ? (
-            <div style={{ marginTop: 16, color: "var(--text-muted)" }}>Loading feed…</div>
+            <div style={{ marginTop: 16, color: "var(--text-muted)" }}>{t("feedPage.loading")}</div>
           ) : filtered.length === 0 && !error ? (
-            <div style={{ marginTop: 16, color: "var(--text-muted)" }}>No activity yet.</div>
+            <div style={{ marginTop: 16, color: "var(--text-muted)" }}>{t("feedPage.noActivity")}</div>
           ) : (
             <ul style={{ display: "grid", gap: 10, marginTop: 14, padding: 0, listStyle: "none" }}>
               {filtered.map((it) => {
@@ -190,10 +184,10 @@ export default function FeedPage() {
                             fontWeight: 600,
                           }}
                         >
-                          {describeEventType(it.event_type)}
+                          {describeEventType(it.event_type, t)}
                         </span>
                         <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                          score {it.score}
+                          {t("feedPage.score")} {it.score}
                         </span>
                       </div>
                       <time
@@ -215,7 +209,7 @@ export default function FeedPage() {
 
                     {showRaw && it.payload && Object.keys(it.payload).length > 0 ? (
                       <details style={{ marginTop: 8 }}>
-                        <summary style={{ cursor: "pointer", color: "var(--text-muted)", fontSize: 12 }}>Raw payload</summary>
+                        <summary style={{ cursor: "pointer", color: "var(--text-muted)", fontSize: 12 }}>{t("feedPage.rawPayload")}</summary>
                         <pre style={{ marginTop: 6, fontSize: 12, opacity: 0.9, overflowX: "auto" }}>
                           {JSON.stringify(it.payload, null, 2)}
                         </pre>

@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 import { perimeterCleanupDesk } from "@/lib/api";
 
 type CipherInfo = {
@@ -53,7 +54,20 @@ type Job = {
   payload?: Record<string, unknown>;
 };
 
+const CONTAMINATION_OPTIONS = [
+  { value: "mixed_all", key: "contaminationMixedAll" },
+  { value: "chemical", key: "contaminationChemical" },
+  { value: "biological", key: "contaminationBiological" },
+  { value: "radiological_survey", key: "contaminationRadiological" },
+  { value: "oil_hydrocarbon", key: "contaminationOil" },
+  { value: "industrial", key: "contaminationIndustrial" },
+  { value: "soil", key: "contaminationSoil" },
+  { value: "water", key: "contaminationWater" },
+  { value: "physical_security", key: "contaminationPhysicalSecurity" },
+] as const;
+
 export default function PerimeterPage() {
+  const { t } = useLanguage();
   const [cipher, setCipher] = useState<CipherInfo | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -70,6 +84,28 @@ export default function PerimeterPage() {
   const [marketNote, setMarketNote] = useState("");
   const [blast, setBlast] = useState<BlastProof | null>(null);
   const [jobProofs, setJobProofs] = useState<Record<string, BlastProof>>({});
+
+  const securitySteps = useMemo(
+    () => [
+      {
+        title: t("perimeterPage.securityStepDetectionTitle"),
+        body: t("perimeterPage.securityStepDetectionBody"),
+      },
+      {
+        title: t("perimeterPage.securityStepIdentificationTitle"),
+        body: t("perimeterPage.securityStepIdentificationBody"),
+      },
+      {
+        title: t("perimeterPage.securityStepNotificationTitle"),
+        body: t("perimeterPage.securityStepNotificationBody"),
+      },
+      {
+        title: t("perimeterPage.securityStepResponseTitle"),
+        body: t("perimeterPage.securityStepResponseBody"),
+      },
+    ],
+    [t]
+  );
 
   const refresh = useCallback(async () => {
     setError("");
@@ -99,9 +135,9 @@ export default function PerimeterPage() {
       }
       setJobs(list.items || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load perimeter desk");
+      setError(err instanceof Error ? err.message : t("perimeterPage.loadError"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -129,12 +165,12 @@ export default function PerimeterPage() {
         perimeter_meters: perimeterMeters.trim() || undefined,
         notes: notes.trim() || undefined,
       });
-      setInfo("Заявка зашифрована (Abrams Suite-B AES-256-GCM) и сохранена.");
+      setInfo(t("perimeterPage.createSuccess"));
       setSiteLabel("");
       setNotes("");
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Create failed");
+      setError(err instanceof Error ? err.message : t("perimeterPage.createFailed"));
     } finally {
       setBusy(false);
     }
@@ -146,9 +182,13 @@ export default function PerimeterPage() {
     try {
       const proof = (await perimeterCleanupDesk.jobBlastRadius(id)) as BlastProof;
       setJobProofs((prev) => ({ ...prev, [id]: proof }));
-      setInfo(`Blast-radius ${proof.proof_status} for job ${id.slice(0, 8)}…`);
+      setInfo(
+        t("perimeterPage.blastRadiusInfo")
+          .replace("{status}", proof.proof_status)
+          .replace("{id}", id.slice(0, 8))
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Blast-radius failed");
+      setError(err instanceof Error ? err.message : t("perimeterPage.blastRadiusFailed"));
     } finally {
       setBusy(false);
     }
@@ -160,9 +200,9 @@ export default function PerimeterPage() {
     try {
       const job = (await perimeterCleanupDesk.getJob(id)) as Job;
       setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, payload: job.payload } : j)));
-      setInfo(`Расшифрован job ${id.slice(0, 8)}…`);
+      setInfo(t("perimeterPage.decryptedInfo").replace("{id}", id.slice(0, 8)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Decrypt failed");
+      setError(err instanceof Error ? err.message : t("perimeterPage.decryptFailed"));
     } finally {
       setBusy(false);
     }
@@ -172,21 +212,20 @@ export default function PerimeterPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
       <main className="mx-auto max-w-4xl px-4 py-10">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">Field services</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">{t("perimeterPage.kicker")}</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-          Периметр: уборка и охрана
+          {t("perimeterPage.title")}
         </h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          Два рейла на одном сейфе{" "}
-          <strong className="text-white/90">Abrams Suite-B</strong> (AES-256-GCM + HKDF-SHA384):
-          очистка загрязнений и лицензированный бриф охраны периметра. Каталог открыт без входа;
-          заявки шифруются at-rest. ANCAP не продаёт камеры и не выполняет нелицензированный hazmat.
+          {t("perimeterPage.intro").split("Abrams Suite-B")[0]}
+          <strong className="text-white/90">Abrams Suite-B</strong>
+          {t("perimeterPage.intro").split("Abrams Suite-B")[1]}
         </p>
 
         {cipher ? (
           <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/55">
             {cipher.algorithm} · {cipher.kdf} · <code>{cipher.cipher_id}</code>
-            {" — "}каталог открыт без входа; ключи не вводятся в форму.
+            {t("perimeterPage.cipherNoteSuffix")}
           </p>
         ) : null}
 
@@ -200,11 +239,11 @@ export default function PerimeterPage() {
         {blast ? (
           <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
-              Blast-radius proof
+              {t("perimeterPage.blastRadiusProof")}
             </h2>
             <p className="mt-2 text-sm text-emerald-200/90">
-              Status: {blast.proof_status}
-              {blast.namespaces?.fingerprints_distinct ? " · fingerprints distinct" : ""}
+              {t("perimeterPage.blastStatus").replace("{status}", blast.proof_status)}
+              {blast.namespaces?.fingerprints_distinct ? t("perimeterPage.fingerprintsDistinct") : ""}
             </p>
             <p className="mt-2 text-xs leading-5 text-white/50">{blast.note}</p>
             <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs leading-5 text-white/55">
@@ -215,14 +254,14 @@ export default function PerimeterPage() {
             <ul className="mt-3 space-y-1 text-xs text-white/60">
               {(blast.attempts || []).map((a) => (
                 <li key={a.role}>
-                  {a.role}: {a.opened ? "OPENED" : "failed"}
+                  {a.role}: {a.opened ? t("perimeterPage.attemptOpened") : t("perimeterPage.attemptFailed")}
                   {a.error ? ` (${a.error})` : ""}
                 </li>
               ))}
             </ul>
             {blast.captured_brief?.content_hash ? (
               <p className="mt-2 break-all text-[11px] text-white/40">
-                canary {blast.captured_brief.content_hash}
+                {t("perimeterPage.canaryHash").replace("{hash}", blast.captured_brief.content_hash)}
               </p>
             ) : null}
           </section>
@@ -236,27 +275,23 @@ export default function PerimeterPage() {
           className="mt-8 scroll-mt-24 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.05] p-5 sm:p-6"
         >
           <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/80">
-            Security watch · 24/7 SOC · licensed partner
+            {t("perimeterPage.securityWatchKicker")}
           </p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-[-0.03em]">Система охраны периметра</h2>
-            <p className="font-mono text-xl font-semibold text-emerald-200">8 500 ACP</p>
+            <h2 className="text-2xl font-semibold tracking-[-0.03em]">
+              {t("perimeterPage.securityWatchTitle")}
+            </h2>
+            <p className="font-mono text-xl font-semibold text-emerald-200">
+              {t("perimeterPage.securityWatchPrice")}
+            </p>
           </div>
-          <p className="mt-3 text-sm leading-7 text-white/70">
-            Раннее обнаружение, быстрое реагирование, полный контроль: камеры, датчики, тревожный
-            кабель, лазерные барьеры, ограждение, контроль доступа, освещение и пульт 24/7. ACP
-            покупает бриф и подбор лицензированного охранного партнёра — не железо и не штат ЧОП.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-white/50">
-            Инфографика — концептуальная архитектура. ANCAP не производит камеры и сирены, не
-            обещает нулевой прорыв периметра и не является полицией, ЧОП или силовым ведомством.
-            ИИ-разбор тревог — грамотность протокола партнёра, не сертифицированный детектор.
-          </p>
+          <p className="mt-3 text-sm leading-7 text-white/70">{t("perimeterPage.securityWatchIntro")}</p>
+          <p className="mt-2 text-sm leading-6 text-white/50">{t("perimeterPage.securityWatchDisclaimer")}</p>
           <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/20">
             <div className="relative aspect-[16/11] w-full bg-[#071018]">
               <Image
                 src="/perimeter/security-watch.jpg"
-                alt="Инфографика системы охраны периметра: камеры, датчики, лазерные барьеры, пульт SOC. Концептуальная архитектура для лицензированных партнёров."
+                alt={t("perimeterPage.securityWatchImageAlt")}
                 fill
                 unoptimized
                 className="object-contain"
@@ -265,12 +300,7 @@ export default function PerimeterPage() {
             </div>
           </div>
           <ol className="mt-5 grid gap-3 sm:grid-cols-4">
-            {[
-              ["Обнаружение", "ИИ фиксирует человека, транспорт или иное нарушение — literacy, не гарантия."],
-              ["Идентификация", "Классификация события на пульте партнёра, не автоматический приговор."],
-              ["Уведомление", "Оператор, служба охраны и владелец. Не экстренный вызов от ANCAP."],
-              ["Реагирование", "Сирены, свет, блокировка доступа — только у лицензированного партнёра."],
-            ].map(([title, body], idx) => (
+            {securitySteps.map(({ title, body }, idx) => (
               <li key={title} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                 <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
                   {String(idx + 1).padStart(2, "0")}
@@ -285,12 +315,14 @@ export default function PerimeterPage() {
             className="mt-6 rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950"
             onClick={() => onServicePick("perimeter-security-watch")}
           >
-            Выбрать security-watch в заявке
+            {t("perimeterPage.selectSecurityWatch")}
           </button>
         </section>
 
         <section className="mt-8 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">Каталог</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
+            {t("perimeterPage.catalog")}
+          </h2>
           <div className="grid gap-3">
             {services.map((s) => (
               <button
@@ -306,12 +338,14 @@ export default function PerimeterPage() {
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-semibold">{s.label}</span>
                   <span className="text-sm text-emerald-300/90">
-                    from {Number(s.price_from_acp).toLocaleString()} ACP / {s.unit}
+                    {t("perimeterPage.fromAcpUnit")
+                      .replace("{price}", Number(s.price_from_acp).toLocaleString())
+                      .replace("{unit}", s.unit)}
                   </span>
                 </div>
                 {s.small_operator ? (
                   <p className="mt-1 text-[11px] uppercase tracking-wide text-emerald-200/80">
-                    Small operator SKU
+                    {t("perimeterPage.smallOperatorSku")}
                   </p>
                 ) : null}
                 <p className="mt-1 text-sm text-white/60">{s.description}</p>
@@ -322,47 +356,43 @@ export default function PerimeterPage() {
 
         <form id="intake-form" onSubmit={onSubmit} className="mt-10 scroll-mt-24 space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
-            Зашифрованная заявка
+            {t("perimeterPage.encryptedIntake")}
           </h2>
           <label className="block text-sm">
-            <span className="text-white/55">Объект / периметр</span>
+            <span className="text-white/55">{t("perimeterPage.siteLabel")}</span>
             <input
               className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
               value={siteLabel}
               onChange={(e) => setSiteLabel(e.target.value)}
               required
-              placeholder="Склад А / периметр север"
+              placeholder={t("perimeterPage.sitePlaceholder")}
             />
           </label>
           <label className="block text-sm">
-            <span className="text-white/55">Длина периметра (м)</span>
+            <span className="text-white/55">{t("perimeterPage.perimeterMeters")}</span>
             <input
               className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
               value={perimeterMeters}
               onChange={(e) => setPerimeterMeters(e.target.value)}
-              placeholder="опционально"
+              placeholder={t("perimeterPage.perimeterOptional")}
             />
           </label>
           <label className="block text-sm">
-            <span className="text-white/55">Класс загрязнения</span>
+            <span className="text-white/55">{t("perimeterPage.contaminationClass")}</span>
             <select
               className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
               value={contamination}
               onChange={(e) => setContamination(e.target.value)}
             >
-              <option value="mixed_all">Все виды (mixed)</option>
-              <option value="chemical">Химия</option>
-              <option value="biological">Биология</option>
-              <option value="radiological_survey">Радиология (survey)</option>
-              <option value="oil_hydrocarbon">Нефтепродукты</option>
-              <option value="industrial">Пром. отходы</option>
-              <option value="soil">Грунт</option>
-              <option value="water">Вода</option>
-              <option value="physical_security">Охрана периметра</option>
+              {CONTAMINATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {t(`perimeterPage.${opt.key}`)}
+                </option>
+              ))}
             </select>
           </label>
           <label className="block text-sm">
-            <span className="text-white/55">Заметки для лицензированной бригады</span>
+            <span className="text-white/55">{t("perimeterPage.notesLabel")}</span>
             <textarea
               className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
               rows={3}
@@ -375,14 +405,16 @@ export default function PerimeterPage() {
             disabled={busy || !siteLabel.trim()}
             className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 disabled:opacity-50"
           >
-            {busy ? "Сохранение…" : "Зашифровать и создать заявку"}
+            {busy ? t("perimeterPage.saving") : t("perimeterPage.encryptAndCreate")}
           </button>
         </form>
 
         <section className="mt-10 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">Мои заявки</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
+            {t("perimeterPage.myJobs")}
+          </h2>
           {jobs.length === 0 ? (
-            <p className="text-sm text-white/45">Пока пусто — войдите и создайте заявку.</p>
+            <p className="text-sm text-white/45">{t("perimeterPage.jobsEmpty")}</p>
           ) : (
             jobs.map((j) => (
               <div key={j.id} className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3">
@@ -399,22 +431,25 @@ export default function PerimeterPage() {
                   className="mt-2 mr-3 text-sm text-emerald-300 underline"
                   onClick={() => void onDecrypt(j.id)}
                 >
-                  Расшифровать
+                  {t("perimeterPage.decrypt")}
                 </button>
                 <button
                   type="button"
                   className="mt-2 text-sm text-emerald-300 underline"
                   onClick={() => void onBlast(j.id)}
                 >
-                  Blast-radius
+                  {t("perimeterPage.blastRadius")}
                 </button>
                 {jobProofs[j.id] ? (
                   <p className="mt-2 text-xs text-amber-200/80">
-                    Compartment {jobProofs[j.id].proof_status}
+                    {t("perimeterPage.compartmentStatus").replace(
+                      "{status}",
+                      jobProofs[j.id].proof_status
+                    )}
                     {" · "}
                     {jobProofs[j.id].attempts.filter((a) => a.role !== "control_perimeter" && a.opened).length === 0
-                      ? "foreign namespaces did not open this brief"
-                      : "FOREIGN KEY OPENED — compartment failed"}
+                      ? t("perimeterPage.foreignNamespacesClosed")
+                      : t("perimeterPage.foreignKeyOpened")}
                   </p>
                 ) : null}
                 {j.payload ? (
@@ -431,10 +466,10 @@ export default function PerimeterPage() {
 
         <div className="mt-8 flex flex-wrap gap-3 text-sm">
           <Link href="/insurance" className="text-emerald-300 underline">
-            Страховка периметра
+            {t("perimeterPage.linkInsurance")}
           </Link>
           <Link href="/buy-acp" className="text-emerald-300 underline">
-            Купить ACP
+            {t("perimeterPage.linkBuyAcp")}
           </Link>
         </div>
       </main>

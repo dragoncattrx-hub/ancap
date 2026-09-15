@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { agents, nexusSocial } from "@/lib/api";
 
 type Author = { kind: string; id: string; display_name: string; href: string };
@@ -26,6 +27,7 @@ type Catalog = {
 type AgentRow = { id: string; display_name: string };
 
 export default function NexusPage() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -53,9 +55,9 @@ export default function NexusPage() {
         }
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load Nexus");
+      setError(e instanceof Error ? e.message : t("nexusPage.loadError"));
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, t]);
 
   useEffect(() => {
     void load();
@@ -86,7 +88,7 @@ export default function NexusPage() {
       if (replyTo) await openThread(replyTo);
       await load();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Post failed");
+      setError(err instanceof Error ? err.message : t("nexusPage.postFailed"));
     } finally {
       setBusy(false);
     }
@@ -96,17 +98,19 @@ export default function NexusPage() {
     <main className="min-h-screen bg-[#0b1020] text-slate-100">
       <Navigation />
       <section className="mx-auto max-w-3xl px-4 py-10">
-        <p className="text-sm uppercase tracking-[0.2em] text-violet-300/80">People + robots</p>
-        <h1 className="mt-2 font-serif text-4xl text-white md:text-5xl">{catalog?.title || "Nexus"}</h1>
+        <p className="text-sm uppercase tracking-[0.2em] text-violet-300/80">{t("nexusPage.kicker")}</p>
+        <h1 className="mt-2 font-serif text-4xl text-white md:text-5xl">
+          {catalog?.title || t("nexusPage.titleFallback")}
+        </h1>
         <p className="mt-3 text-slate-300">{catalog?.tagline}</p>
         <p className="mt-4 text-sm leading-6 text-slate-500">{catalog?.compliance_note}</p>
         <p className="mt-3 text-sm">
           <Link href="/feed" className="text-violet-300 underline">
-            Activity feed
+            {t("nexusPage.activityFeed")}
           </Link>
           {" · "}
           <Link href="/agents" className="text-violet-300 underline">
-            Agents
+            {t("nexusPage.agents")}
           </Link>
         </p>
 
@@ -124,14 +128,16 @@ export default function NexusPage() {
 
         <form onSubmit={onSubmit} className="mt-8 border border-violet-400/30 bg-violet-950/20 p-4">
           <label className="block text-sm text-slate-300">
-            {replyTo ? `Reply to ${replyTo.author.display_name}` : "New post"}
+            {replyTo
+              ? t("nexusPage.replyTo").replace("{name}", replyTo.author.display_name)
+              : t("nexusPage.newPost")}
           </label>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={4}
             maxLength={2000}
-            placeholder={isAuthenticated ? "Say something as a human or robot…" : "Sign in to post"}
+            placeholder={isAuthenticated ? t("nexusPage.placeholderAuth") : t("nexusPage.placeholderGuest")}
             disabled={!isAuthenticated || busy}
             className="mt-2 w-full rounded border border-white/15 bg-[#070b16] p-3 text-slate-100"
           />
@@ -142,10 +148,10 @@ export default function NexusPage() {
               disabled={!isAuthenticated || busy || myAgents.length === 0}
               className="rounded border border-white/15 bg-[#070b16] px-3 py-2 text-sm"
             >
-              <option value="">Post as human</option>
+              <option value="">{t("nexusPage.postAsHuman")}</option>
               {myAgents.map((a) => (
                 <option key={a.id} value={a.id}>
-                  Robot: {a.display_name}
+                  {t("nexusPage.postAsRobot").replace("{name}", a.display_name)}
                 </option>
               ))}
             </select>
@@ -158,7 +164,7 @@ export default function NexusPage() {
                   setThread([]);
                 }}
               >
-                Cancel reply
+                {t("nexusPage.cancelReply")}
               </button>
             ) : null}
             <button
@@ -166,22 +172,22 @@ export default function NexusPage() {
               disabled={!isAuthenticated || busy || !body.trim()}
               className="ml-auto border border-violet-300/50 px-4 py-2 text-sm text-violet-100 hover:bg-violet-400/10 disabled:opacity-40"
             >
-              {busy ? "Posting…" : "Post"}
+              {busy ? t("nexusPage.posting") : t("nexusPage.post")}
             </button>
           </div>
           {!isAuthenticated ? (
             <p className="mt-3 text-sm text-slate-500">
               <Link href="/login" className="underline">
-                Sign in
+                {t("nexusPage.signInHint")}
               </Link>{" "}
-              to post as a person or as an owned agent.
+              {t("nexusPage.signInPostHint")}
             </p>
           ) : null}
         </form>
 
         {replyTo ? (
           <div className="mt-8 border border-white/10 p-4">
-            <h2 className="text-lg text-white">Thread</h2>
+            <h2 className="text-lg text-white">{t("nexusPage.thread")}</h2>
             <article className="mt-3 border-b border-white/10 pb-3">
               <div className="text-xs uppercase tracking-wide text-violet-300/80">
                 {replyTo.author.kind} · {replyTo.author.display_name}
@@ -201,7 +207,7 @@ export default function NexusPage() {
           </div>
         ) : null}
 
-        <h2 className="mt-10 text-xl text-white">Timeline</h2>
+        <h2 className="mt-10 text-xl text-white">{t("nexusPage.timeline")}</h2>
         <ul className="mt-4 space-y-5">
           {posts.map((p) => (
             <li key={p.id} className="border-t border-white/10 pt-4">
@@ -217,11 +223,13 @@ export default function NexusPage() {
                 className="mt-3 text-sm text-slate-400 underline"
                 onClick={() => void openThread(p)}
               >
-                {p.reply_count ? `${p.reply_count} replies` : "Reply"}
+                {p.reply_count
+                  ? t("nexusPage.replies").replace("{n}", String(p.reply_count))
+                  : t("nexusPage.reply")}
               </button>
             </li>
           ))}
-          {!posts.length ? <li className="text-slate-500">No posts yet — be the first human or robot.</li> : null}
+          {!posts.length ? <li className="text-slate-500">{t("nexusPage.emptyTimeline")}</li> : null}
         </ul>
       </section>
     </main>

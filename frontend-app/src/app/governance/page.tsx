@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { governance } from "@/lib/api";
 
 type Proposal = {
@@ -61,7 +62,8 @@ function stableJson(value: Record<string, any> | null | undefined): string {
 
 function buildPayloadDiff(
   prevPayload: Record<string, any> | null | undefined,
-  currPayload: Record<string, any> | null | undefined
+  currPayload: Record<string, any> | null | undefined,
+  noChangesText: string
 ): DiffLine[] {
   const prev = prevPayload || {};
   const curr = currPayload || {};
@@ -74,10 +76,11 @@ function buildPayloadDiff(
     if (key in prev) lines.push({ type: "remove", text: `- ${key}: ${a}` });
     if (key in curr) lines.push({ type: "add", text: `+ ${key}: ${b}` });
   }
-  return lines.length ? lines : [{ type: "info", text: "No changes vs previous proposal payload." }];
+  return lines.length ? lines : [{ type: "info", text: noChangesText }];
 }
 
 export default function GovernancePage() {
+  const { t } = useLanguage();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -123,8 +126,12 @@ export default function GovernancePage() {
 
   const selectedPayloadDiffLines = useMemo(() => {
     if (!selectedProposal) return [] as DiffLine[];
-    return buildPayloadDiff(previousComparableProposal?.payload_json, selectedProposal.payload_json);
-  }, [previousComparableProposal, selectedProposal]);
+    return buildPayloadDiff(
+      previousComparableProposal?.payload_json,
+      selectedProposal.payload_json,
+      t("governancePage.noPayloadChanges")
+    );
+  }, [previousComparableProposal, selectedProposal, t]);
 
   const filteredProposals = useMemo(() => {
     const q = proposalSearch.trim().toLowerCase();
@@ -168,7 +175,7 @@ export default function GovernancePage() {
       }
       setCases(caseList?.items || []);
     } catch (e: any) {
-      setError(e?.message || "Failed to load governance data");
+      setError(e?.message || t("governancePage.errLoadData"));
     } finally {
       setLoading(false);
     }
@@ -183,7 +190,7 @@ export default function GovernancePage() {
       const r = await governance.getProposalAudit(proposalId, 300);
       setAuditEvents(r?.items || []);
     } catch (e: any) {
-      setError(e?.message || "Failed to load audit trail");
+      setError(e?.message || t("governancePage.errLoadAudit"));
     }
   }
 
@@ -208,7 +215,7 @@ export default function GovernancePage() {
       try {
         payload = proposalForm.payload_json ? JSON.parse(proposalForm.payload_json) : {};
       } catch {
-        setError("payload_json must be valid JSON");
+        setError(t("governancePage.errInvalidJson"));
         return;
       }
       await governance.createProposal({
@@ -220,7 +227,7 @@ export default function GovernancePage() {
       setProposalForm(defaultProposalForm);
       await loadAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to create proposal");
+      setError(e?.message || t("governancePage.errCreateProposal"));
     }
   }
 
@@ -231,7 +238,7 @@ export default function GovernancePage() {
       await loadAll();
       await loadAudit(id);
     } catch (e: any) {
-      setError(e?.message || "Failed to submit proposal");
+      setError(e?.message || t("governancePage.errSubmitProposal"));
     }
   }
 
@@ -241,7 +248,7 @@ export default function GovernancePage() {
       await governance.voteProposal(id, vote);
       await loadAudit(id);
     } catch (e: any) {
-      setError(e?.message || "Failed to vote proposal");
+      setError(e?.message || t("governancePage.errVoteProposal"));
     }
   }
 
@@ -250,10 +257,10 @@ export default function GovernancePage() {
       setError("");
       let reason: string | undefined = undefined;
       if (decision === "rejected" || decision === "appealed") {
-        const raw = window.prompt(`Reason is required for decision "${decision}"`, "");
+        const raw = window.prompt(t("governancePage.reasonPrompt").replace("{decision}", decision), "");
         reason = (raw || "").trim();
         if (!reason) {
-          setError(`Reason is required for decision "${decision}"`);
+          setError(t("governancePage.reasonRequiredForDecision").replace("{decision}", decision));
           return;
         }
       }
@@ -261,7 +268,7 @@ export default function GovernancePage() {
       await loadAll();
       await loadAudit(id);
     } catch (e: any) {
-      setError(e?.message || "Failed to decide proposal");
+      setError(e?.message || t("governancePage.errDecideProposal"));
     }
   }
 
@@ -276,7 +283,7 @@ export default function GovernancePage() {
       setCaseForm(defaultCaseForm);
       await loadAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to open moderation case");
+      setError(e?.message || t("governancePage.errOpenCase"));
     }
   }
 
@@ -286,7 +293,7 @@ export default function GovernancePage() {
       await governance.resolveModerationCase(id, status);
       await loadAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to resolve moderation case");
+      setError(e?.message || t("governancePage.errResolveCase"));
     }
   }
 
@@ -297,18 +304,20 @@ export default function GovernancePage() {
     try {
       setError("");
       if (!["agent", "strategy", "listing", "vertical", "pool"].includes(c.subject_type)) {
-        setError(`Unsupported moderation action target_type: ${c.subject_type}`);
+        setError(t("governancePage.errUnsupportedTarget").replace("{type}", c.subject_type));
         return;
       }
       const customReason = (caseActionReason[c.id] || "").trim();
       const mappedAction = action === "ban" ? "suspend" : action;
       if (action === "ban") {
         if (!customReason) {
-          setError("Reason is required for Ban action");
+          setError(t("governancePage.errBanReasonRequired"));
           return;
         }
         const ok = window.confirm(
-          `Ban subject ${c.subject_type}:${c.subject_id}? This will send suspend action.`
+          t("governancePage.banConfirm")
+            .replace("{type}", c.subject_type)
+            .replace("{id}", c.subject_id)
         );
         if (!ok) return;
       }
@@ -320,11 +329,28 @@ export default function GovernancePage() {
       });
       await loadAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to apply moderation action");
+      setError(e?.message || t("governancePage.errApplyAction"));
     }
   }
 
   if (isLoading || !isAuthenticated) return null;
+
+  const proposalStatusOptions = [
+    ["all", "filterAll"],
+    ["draft", "filterDraft"],
+    ["review", "filterReview"],
+    ["active", "filterActive"],
+    ["rejected", "filterRejected"],
+    ["appealed", "filterAppealed"],
+  ] as const;
+
+  const caseStatusOptions = [
+    ["all", "filterAll"],
+    ["open", "filterOpen"],
+    ["resolved", "filterResolved"],
+    ["appealed", "filterAppealedCase"],
+    ["rejected", "filterRejectedCase"],
+  ] as const;
 
   return (
     <>
@@ -332,14 +358,12 @@ export default function GovernancePage() {
         <Navigation />
         <div className="container" style={{ padding: "40px 24px 56px" }}>
           <div className="section-header">
-            <h1 className="section-title">Governance</h1>
+            <h1 className="section-title">{t("governancePage.title")}</h1>
             <button className="btn btn-ghost" type="button" onClick={loadAll}>
-              Refresh
+              {t("governancePage.refresh")}
             </button>
           </div>
-          <div className="section-subtitle">
-            Proposals lifecycle, immutable audit trail and moderation cases.
-          </div>
+          <div className="section-subtitle">{t("governancePage.subtitle")}</div>
 
           {error && (
             <div className="card" style={{ borderColor: "rgba(239,68,68,0.35)", marginBottom: 18 }}>
@@ -349,79 +373,79 @@ export default function GovernancePage() {
 
           <div className="responsive-grid responsive-grid-2" style={{ marginBottom: 18 }}>
             <div className="card">
-              <h3 style={{ marginTop: 0, marginBottom: 10 }}>Create proposal</h3>
+              <h3 style={{ marginTop: 0, marginBottom: 10 }}>{t("governancePage.createProposal")}</h3>
               <div style={{ display: "grid", gap: 12 }}>
                 <input
                   className="input input-bordered w-full"
-                  placeholder="kind (policy_update)"
+                  placeholder={t("governancePage.kindPlaceholder")}
                   value={proposalForm.kind}
                   onChange={(e) => setProposalForm((p) => ({ ...p, kind: e.target.value }))}
                 />
                 <input
                   className="input input-bordered w-full"
-                  placeholder="target_type (policy|vertical|system)"
+                  placeholder={t("governancePage.targetTypePlaceholder")}
                   value={proposalForm.target_type}
                   onChange={(e) => setProposalForm((p) => ({ ...p, target_type: e.target.value }))}
                 />
                 <input
                   className="input input-bordered w-full"
-                  placeholder="target_id (optional UUID)"
+                  placeholder={t("governancePage.targetIdPlaceholder")}
                   value={proposalForm.target_id}
                   onChange={(e) => setProposalForm((p) => ({ ...p, target_id: e.target.value }))}
                 />
                 <textarea
                   className="textarea textarea-bordered w-full"
-                  placeholder="payload_json"
+                  placeholder={t("governancePage.payloadPlaceholder")}
                   rows={6}
                   value={proposalForm.payload_json}
                   onChange={(e) => setProposalForm((p) => ({ ...p, payload_json: e.target.value }))}
                 />
                 <button className="btn btn-primary" type="button" onClick={createProposal}>
-                  Create proposal
+                  {t("governancePage.createProposalBtn")}
                 </button>
               </div>
             </div>
 
             <div className="card">
-              <h3 style={{ marginTop: 0, marginBottom: 10 }}>Open moderation case</h3>
+              <h3 style={{ marginTop: 0, marginBottom: 10 }}>{t("governancePage.openCase")}</h3>
               <div style={{ display: "grid", gap: 12 }}>
                 <input
                   className="input input-bordered w-full"
-                  placeholder="subject_type (agent|strategy|listing|vertical|policy)"
+                  placeholder={t("governancePage.subjectTypePlaceholder")}
                   value={caseForm.subject_type}
                   onChange={(e) => setCaseForm((p) => ({ ...p, subject_type: e.target.value }))}
                 />
                 <input
                   className="input input-bordered w-full"
-                  placeholder="subject_id (UUID)"
+                  placeholder={t("governancePage.subjectIdPlaceholder")}
                   value={caseForm.subject_id}
                   onChange={(e) => setCaseForm((p) => ({ ...p, subject_id: e.target.value }))}
                 />
                 <input
                   className="input input-bordered w-full"
-                  placeholder="reason_code"
+                  placeholder={t("governancePage.reasonCodePlaceholder")}
                   value={caseForm.reason_code}
                   onChange={(e) => setCaseForm((p) => ({ ...p, reason_code: e.target.value }))}
                 />
                 <button className="btn btn-primary" type="button" onClick={openCase}>
-                  Open case
+                  {t("governancePage.openCaseBtn")}
                 </button>
               </div>
             </div>
           </div>
 
           {loading ? (
-            <div style={{ color: "var(--text-muted)", padding: "24px 0" }}>Loading governance data...</div>
+            <div style={{ color: "var(--text-muted)", padding: "24px 0" }}>{t("governancePage.loading")}</div>
           ) : (
             <div className="responsive-grid responsive-grid-2">
               <div className="card">
                 <div className="section-header" style={{ marginBottom: 10 }}>
-                  <h3 style={{ margin: 0 }}>Proposals</h3>
+                  <h3 style={{ margin: 0 }}>{t("governancePage.proposals")}</h3>
                   <div className="toolbar-row">
                     <input
                       className="input input-bordered"
                       style={{ minWidth: 220 }}
-                      placeholder="Search proposals"
+                      placeholder={t("governancePage.searchProposals")}
                       value={proposalSearch}
                       onChange={(e) => setProposalSearch(e.target.value)}
                     />
@@ -431,12 +455,11 @@ export default function GovernancePage() {
                       value={proposalStatusFilter}
                       onChange={(e) => setProposalStatusFilter(e.target.value)}
                     >
-                      <option value="all">all</option>
-                      <option value="draft">draft</option>
-                      <option value="review">review</option>
-                      <option value="active">active</option>
-                      <option value="rejected">rejected</option>
-                      <option value="appealed">appealed</option>
+                      {proposalStatusOptions.map(([value, key]) => (
+                        <option key={value} value={value}>
+                          {t(`governancePage.${key}`)}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -459,29 +482,33 @@ export default function GovernancePage() {
                       <span className="badge badge-info">{p.status}</span>
                     </button>
                   ))}
-                  {filteredProposals.length === 0 && <div style={{ color: "var(--text-muted)" }}>No proposals.</div>}
+                  {filteredProposals.length === 0 && (
+                    <div style={{ color: "var(--text-muted)" }}>{t("governancePage.noProposals")}</div>
+                  )}
                 </div>
               </div>
 
               <div className="card">
-                <h3 style={{ marginTop: 0, marginBottom: 10 }}>Selected proposal details</h3>
+                <h3 style={{ marginTop: 0, marginBottom: 10 }}>{t("governancePage.selectedDetails")}</h3>
                 {!selectedProposal ? (
-                  <div style={{ color: "var(--text-muted)" }}>Select a proposal.</div>
+                  <div style={{ color: "var(--text-muted)" }}>{t("governancePage.selectProposal")}</div>
                 ) : (
                   <div style={{ display: "grid", gap: 10 }}>
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
                       {selectedProposal.id} · {new Date(selectedProposal.created_at).toLocaleString()}
                     </div>
                     <div style={{ display: "grid", gap: 8 }}>
-                      <div style={{ fontWeight: 700 }}>Payload</div>
+                      <div style={{ fontWeight: 700 }}>{t("governancePage.payload")}</div>
                       <pre style={{ margin: 0, padding: 10, borderRadius: 10, border: "1px solid var(--border)", overflowX: "auto" }}>
                         {stableJson(selectedProposal.payload_json)}
                       </pre>
                     </div>
                     <div style={{ display: "grid", gap: 8 }}>
                       <div style={{ fontWeight: 700 }}>
-                        Payload diff
-                        {previousComparableProposal ? ` vs ${previousComparableProposal.id.slice(0, 8)}` : " (no baseline)"}
+                        {t("governancePage.payloadDiff")}
+                        {previousComparableProposal
+                          ? t("governancePage.diffVs").replace("{id}", previousComparableProposal.id.slice(0, 8))
+                          : t("governancePage.noBaseline")}
                       </div>
                       <div style={{ margin: 0, padding: 12, borderRadius: 12, border: "1px solid var(--border)", overflowX: "auto", fontFamily: "monospace", fontSize: 13, background: "rgba(255,255,255,0.01)" }}>
                         {selectedPayloadDiffLines.map((line, idx) => (
@@ -506,28 +533,28 @@ export default function GovernancePage() {
                     <div className="action-cluster">
                       {selectedProposal.status === "draft" && (
                         <button className="btn btn-primary" type="button" onClick={() => submitProposal(selectedProposal.id)}>
-                          Submit
+                          {t("governancePage.submit")}
                         </button>
                       )}
                       {selectedProposal.status === "review" && (
                         <>
                           <button className="btn btn-primary" type="button" onClick={() => voteProposal(selectedProposal.id, "approve")}>
-                            Vote approve
+                            {t("governancePage.voteApprove")}
                           </button>
                           <button className="btn btn-ghost" type="button" onClick={() => voteProposal(selectedProposal.id, "reject")}>
-                            Vote reject
+                            {t("governancePage.voteReject")}
                           </button>
                           <button className="btn btn-primary" type="button" onClick={() => decideProposal(selectedProposal.id, "active")}>
-                            Decide active
+                            {t("governancePage.decideActive")}
                           </button>
                           <button className="btn btn-ghost" type="button" onClick={() => decideProposal(selectedProposal.id, "rejected")}>
-                            Decide reject
+                            {t("governancePage.decideReject")}
                           </button>
                         </>
                       )}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Audit trail</div>
+                      <div style={{ fontWeight: 700, marginBottom: 8 }}>{t("governancePage.auditTrail")}</div>
                       <div style={{ display: "grid", gap: 10, maxHeight: 240, overflowY: "auto" }}>
                         {auditEvents.map((e) => (
                           <div key={e.id} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 10, background: "rgba(255,255,255,0.01)" }}>
@@ -538,14 +565,16 @@ export default function GovernancePage() {
                               </span>
                             </div>
                             <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                              actor: {e.actor_type} {e.actor_id || "-"}
+                              {t("governancePage.actor")}: {e.actor_type} {e.actor_id || "-"}
                             </div>
                             <pre style={{ margin: "6px 0 0", fontSize: 12, overflowX: "auto" }}>
                               {JSON.stringify(e.event_json || {}, null, 2)}
                             </pre>
                           </div>
                         ))}
-                        {auditEvents.length === 0 && <div style={{ color: "var(--text-muted)" }}>No audit events.</div>}
+                        {auditEvents.length === 0 && (
+                          <div style={{ color: "var(--text-muted)" }}>{t("governancePage.noAuditEvents")}</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -554,12 +583,12 @@ export default function GovernancePage() {
 
               <div className="card" style={{ gridColumn: "1 / -1" }}>
                 <div className="section-header" style={{ marginBottom: 10 }}>
-                  <h3 style={{ margin: 0 }}>Moderation cases</h3>
+                  <h3 style={{ margin: 0 }}>{t("governancePage.moderationCases")}</h3>
                   <div className="toolbar-row">
                     <input
                       className="input input-bordered"
                       style={{ minWidth: 220 }}
-                      placeholder="Search moderation cases"
+                      placeholder={t("governancePage.searchCases")}
                       value={caseSearch}
                       onChange={(e) => setCaseSearch(e.target.value)}
                     />
@@ -569,11 +598,11 @@ export default function GovernancePage() {
                       value={caseStatusFilter}
                       onChange={(e) => setCaseStatusFilter(e.target.value)}
                     >
-                      <option value="all">all</option>
-                      <option value="open">open</option>
-                      <option value="resolved">resolved</option>
-                      <option value="appealed">appealed</option>
-                      <option value="rejected">rejected</option>
+                      {caseStatusOptions.map(([value, key]) => (
+                        <option key={value} value={value}>
+                          {t(`governancePage.${key}`)}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -588,14 +617,16 @@ export default function GovernancePage() {
                         <span className="badge badge-warning">{c.status}</span>
                       </div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: 6 }}>
-                        Created: {new Date(c.created_at).toLocaleString()}
-                        {c.resolved_at ? ` · Resolved: ${new Date(c.resolved_at).toLocaleString()}` : ""}
+                        {t("governancePage.created")}: {new Date(c.created_at).toLocaleString()}
+                        {c.resolved_at
+                          ? ` · ${t("governancePage.resolved")}: ${new Date(c.resolved_at).toLocaleString()}`
+                          : ""}
                       </div>
                       {c.status === "open" && (
                         <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
                           <input
                             className="input input-bordered w-full"
-                            placeholder="Action reason (optional)"
+                            placeholder={t("governancePage.actionReasonPlaceholder")}
                             value={caseActionReason[c.id] || ""}
                             onChange={(e) =>
                               setCaseActionReason((p) => ({
@@ -605,30 +636,32 @@ export default function GovernancePage() {
                             }
                           />
                           <div className="action-cluster">
-                          <button className="btn btn-primary" type="button" onClick={() => applyCaseAction(c, "quarantine")}>
-                            Quarantine
-                          </button>
-                          <button className="btn btn-ghost" type="button" onClick={() => applyCaseAction(c, "unquarantine")}>
-                            Unquarantine
-                          </button>
-                          <button className="btn btn-ghost" type="button" onClick={() => applyCaseAction(c, "ban")}>
-                            Ban
-                          </button>
-                          <button className="btn btn-primary" type="button" onClick={() => resolveCase(c.id, "resolved")}>
-                            Resolve
-                          </button>
-                          <button className="btn btn-ghost" type="button" onClick={() => resolveCase(c.id, "rejected")}>
-                            Reject
-                          </button>
-                          <button className="btn btn-ghost" type="button" onClick={() => resolveCase(c.id, "appealed")}>
-                            Appeal
-                          </button>
+                            <button className="btn btn-primary" type="button" onClick={() => applyCaseAction(c, "quarantine")}>
+                              {t("governancePage.quarantine")}
+                            </button>
+                            <button className="btn btn-ghost" type="button" onClick={() => applyCaseAction(c, "unquarantine")}>
+                              {t("governancePage.unquarantine")}
+                            </button>
+                            <button className="btn btn-ghost" type="button" onClick={() => applyCaseAction(c, "ban")}>
+                              {t("governancePage.ban")}
+                            </button>
+                            <button className="btn btn-primary" type="button" onClick={() => resolveCase(c.id, "resolved")}>
+                              {t("governancePage.resolve")}
+                            </button>
+                            <button className="btn btn-ghost" type="button" onClick={() => resolveCase(c.id, "rejected")}>
+                              {t("governancePage.rejectCase")}
+                            </button>
+                            <button className="btn btn-ghost" type="button" onClick={() => resolveCase(c.id, "appealed")}>
+                              {t("governancePage.appeal")}
+                            </button>
                           </div>
                         </div>
                       )}
                     </div>
                   ))}
-                  {filteredCases.length === 0 && <div style={{ color: "var(--text-muted)" }}>No moderation cases.</div>}
+                  {filteredCases.length === 0 && (
+                    <div style={{ color: "var(--text-muted)" }}>{t("governancePage.noModerationCases")}</div>
+                  )}
                 </div>
               </div>
             </div>

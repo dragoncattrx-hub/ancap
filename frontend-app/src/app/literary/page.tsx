@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { literaryAuction } from "@/lib/api";
 import { ServiceReviewsPanel } from "@/components/ServiceReviewsPanel";
 
@@ -51,6 +52,7 @@ function formatAcp(value: string) {
 }
 
 export default function LiteraryAuctionPage() {
+  const { t } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
@@ -66,9 +68,9 @@ export default function LiteraryAuctionPage() {
       setCatalog(data);
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load literary auction");
+      setError(err instanceof Error ? err.message : t("deskCommon.loadError"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -76,7 +78,7 @@ export default function LiteraryAuctionPage() {
 
   const onBid = async (lot: Lot) => {
     if (!isAuthenticated) {
-      setError("Sign in to bid");
+      setError(t("literaryPage.signInToBid"));
       return;
     }
     const stake = amount.trim() || lot.min_next_acp;
@@ -87,11 +89,15 @@ export default function LiteraryAuctionPage() {
         tx_hash?: string;
         amount_acp: string;
       };
-      setInfo(`Bid ${formatAcp(bid.amount_acp)} anchored ${bid.tx_hash?.slice(0, 12) || ""}`);
+      setInfo(
+        t("literaryPage.bidAnchored")
+          .replace("{amount}", formatAcp(bid.amount_acp))
+          .replace("{hash}", bid.tx_hash?.slice(0, 12) || "")
+      );
       setSelectedId(lot.id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bid failed");
+      setError(err instanceof Error ? err.message : t("literaryPage.bidFailed"));
     } finally {
       setBusy(false);
     }
@@ -101,9 +107,9 @@ export default function LiteraryAuctionPage() {
     <main className="min-h-screen bg-[#0c1016] text-slate-100">
       <Navigation />
       <section className="mx-auto max-w-5xl px-4 py-10">
-        <p className="text-sm uppercase tracking-[0.2em] text-amber-400/80">Culture desk</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-amber-400/80">{t("literaryPage.kicker")}</p>
         <h1 className="mt-2 font-serif text-4xl text-white md:text-5xl">
-          {catalog?.title || "Literary Auction"}
+          {catalog?.title || t("literaryPage.titleFallback")}
         </h1>
         <p className="mt-3 max-w-2xl text-slate-300">{catalog?.tagline}</p>
         <p className="mt-4 text-sm text-slate-500">{catalog?.compliance_note}</p>
@@ -112,22 +118,22 @@ export default function LiteraryAuctionPage() {
         ) : null}
         <p className="mt-3 text-sm">
           <Link href="/cryo" className="text-amber-200 underline">
-            Cryopreservation desk
+            {t("literaryPage.cryoDesk")}
           </Link>
           {" · "}
           <Link href="/legal/cryo-constitution" className="text-amber-200 underline">
-            Legal notice
+            {t("deskCommon.legalNotice")}
           </Link>
         </p>
 
         <div className="mt-8 flex flex-wrap items-end gap-3">
           <label className="text-sm text-slate-400">
-            Bid amount (ACP)
+            {t("literaryPage.bidAmountLabel")}
             <input
               className="mt-1 block w-40 border border-white/15 bg-black/40 px-3 py-2 text-white"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="min next"
+              placeholder={t("literaryPage.bidPlaceholder")}
             />
           </label>
         </div>
@@ -148,19 +154,20 @@ export default function LiteraryAuctionPage() {
               <p className="mt-1 text-sm text-amber-200/80">{lot.author}</p>
               <p className="mt-2 text-slate-300">{lot.blurb}</p>
               <p className="mt-3 text-sm text-slate-400">
-                {formatAcp(lot.current_acp)} · next {formatAcp(lot.min_next_acp)} · {lot.bid_count} bids
+                {formatAcp(lot.current_acp)} · {t("literaryPage.next")} {formatAcp(lot.min_next_acp)} · {lot.bid_count}{" "}
+                {t("literaryPage.bids")}
                 {lot.genre_median_acp
-                  ? ` · genre median ${formatAcp(lot.genre_median_acp)}`
+                  ? ` · ${t("literaryPage.genreMedian")} ${formatAcp(lot.genre_median_acp)}`
                   : ""}
                 {lot.fair_band_low_acp && lot.fair_band_high_acp
-                  ? ` · fair band ${formatAcp(lot.fair_band_low_acp)}–${formatAcp(lot.fair_band_high_acp)}`
+                  ? ` · ${t("literaryPage.fairBand")} ${formatAcp(lot.fair_band_low_acp)}–${formatAcp(lot.fair_band_high_acp)}`
                   : ""}
               </p>
               {lot.speculation_flag && lot.speculation_flag !== "none" ? (
                 <p className="mt-1 text-xs uppercase tracking-wide text-rose-300/80">
                   {lot.speculation_flag === "blocked"
-                    ? "Pump cap — further bids fail closed"
-                    : "Elevated premium vs start / genre comparable"}
+                    ? t("literaryPage.pumpCap")
+                    : t("literaryPage.elevatedPremium")}
                 </p>
               ) : null}
               <div className="mt-3 flex flex-wrap gap-2">
@@ -170,7 +177,7 @@ export default function LiteraryAuctionPage() {
                   onClick={() => void onBid(lot)}
                   className="border border-amber-400/40 px-4 py-2 text-sm text-amber-100 hover:bg-amber-400/10 disabled:opacity-50"
                 >
-                  Bid ACP
+                  {t("literaryPage.bidAcp")}
                 </button>
                 {lot.review_target_id ? (
                   <button
@@ -178,7 +185,7 @@ export default function LiteraryAuctionPage() {
                     onClick={() => setReviewLot(lot)}
                     className="border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/5"
                   >
-                    Reviews
+                    {t("deskCommon.reviews")}
                   </button>
                 ) : null}
               </div>
