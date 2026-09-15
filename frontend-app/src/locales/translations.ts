@@ -10,6 +10,7 @@ import { darkMatterByLang } from "./darkMatter";
 import { insuranceByLang } from "./insurance";
 import { arenaByLang } from "./arena";
 import { entertainmentByLang } from "./entertainment";
+import { humanitarianByLang } from "./humanitarian";
 import { techByLang } from "./tech";
 import { billingByLang, creditsByLang, developersByLang, workflowsByLang } from "./desks";
 import { whitepaperByLang, acpWhitepaperByLang } from "./whitepaper";
@@ -19,6 +20,9 @@ import { proofCenterByLang } from "./proofCenter";
 import { searchByLang } from "./search";
 import { walletAcpByLang, walletSimpleByLang } from "./wallet";
 import { merchantByLang } from "./merchant";
+import { workflowRunDetailByLang, workflowRunPanelByLang } from "./runPanel";
+import { otcIntakeByLang } from "./otcIntake";
+import { dashboardHubByLang } from "./dashboardHub";
 
 export type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
 
@@ -475,6 +479,7 @@ export const translations: Record<Language, TranslationTree> = {
     insurancePage: insuranceByLang.en,
     arenaPage: arenaByLang.en,
     entertainmentPage: entertainmentByLang.en,
+    humanitarianPage: humanitarianByLang.en,
     techPage: techByLang.en,
     billingPage: billingByLang.en,
     creditsPage: creditsByLang.en,
@@ -489,6 +494,10 @@ export const translations: Record<Language, TranslationTree> = {
     walletAcpPage: walletAcpByLang.en,
     walletSimplePage: walletSimpleByLang.en,
     merchantPage: merchantByLang.en,
+    workflowRunDetail: workflowRunDetailByLang.en,
+    workflowRunPanel: workflowRunPanelByLang.en,
+    otcIntake: otcIntakeByLang.en,
+    dashboardHub: dashboardHubByLang.en,
     pricing: {
       eyebrow: "Pricing",
       title: "Buy AI execution, not abstract platform access",
@@ -999,6 +1008,7 @@ export const translations: Record<Language, TranslationTree> = {
     insurancePage: insuranceByLang.ru,
     arenaPage: arenaByLang.ru,
     entertainmentPage: entertainmentByLang.ru,
+    humanitarianPage: humanitarianByLang.ru,
     techPage: techByLang.ru,
     billingPage: billingByLang.ru,
     creditsPage: creditsByLang.ru,
@@ -1013,6 +1023,10 @@ export const translations: Record<Language, TranslationTree> = {
     walletAcpPage: walletAcpByLang.ru,
     walletSimplePage: walletSimpleByLang.ru,
     merchantPage: merchantByLang.ru,
+    workflowRunDetail: workflowRunDetailByLang.ru,
+    workflowRunPanel: workflowRunPanelByLang.ru,
+    otcIntake: otcIntakeByLang.ru,
+    dashboardHub: dashboardHubByLang.ru,
     pricing: {
       eyebrow: "Цены",
       title: "Покупайте AI-исполнение, а не абстрактный доступ к платформе",
@@ -1523,6 +1537,7 @@ export const translations: Record<Language, TranslationTree> = {
     insurancePage: insuranceByLang.uk,
     arenaPage: arenaByLang.uk,
     entertainmentPage: entertainmentByLang.uk,
+    humanitarianPage: humanitarianByLang.uk,
     techPage: techByLang.uk,
     billingPage: billingByLang.uk,
     creditsPage: creditsByLang.uk,
@@ -1537,6 +1552,10 @@ export const translations: Record<Language, TranslationTree> = {
     walletAcpPage: walletAcpByLang.uk,
     walletSimplePage: walletSimpleByLang.uk,
     merchantPage: merchantByLang.uk,
+    workflowRunDetail: workflowRunDetailByLang.uk,
+    workflowRunPanel: workflowRunPanelByLang.uk,
+    otcIntake: otcIntakeByLang.uk,
+    dashboardHub: dashboardHubByLang.uk,
     pricing: {
       eyebrow: "Ціни",
       title: "Купуйте AI-виконання, а не абстрактний доступ до платформи",
@@ -2047,6 +2066,7 @@ export const translations: Record<Language, TranslationTree> = {
     insurancePage: insuranceByLang.de,
     arenaPage: arenaByLang.de,
     entertainmentPage: entertainmentByLang.de,
+    humanitarianPage: humanitarianByLang.de,
     techPage: techByLang.de,
     billingPage: billingByLang.de,
     creditsPage: creditsByLang.de,
@@ -2061,6 +2081,10 @@ export const translations: Record<Language, TranslationTree> = {
     walletAcpPage: walletAcpByLang.de,
     walletSimplePage: walletSimpleByLang.de,
     merchantPage: merchantByLang.de,
+    workflowRunDetail: workflowRunDetailByLang.de,
+    workflowRunPanel: workflowRunPanelByLang.de,
+    otcIntake: otcIntakeByLang.de,
+    dashboardHub: dashboardHubByLang.de,
     pricing: {
       eyebrow: "Preise",
       title: "Kaufen Sie KI-Ausführung, nicht abstrakten Plattformzugang",
@@ -2571,6 +2595,7 @@ export const translations: Record<Language, TranslationTree> = {
     insurancePage: insuranceByLang["zh-Hant"],
     arenaPage: arenaByLang["zh-Hant"],
     entertainmentPage: entertainmentByLang["zh-Hant"],
+    humanitarianPage: humanitarianByLang["zh-Hant"],
     techPage: techByLang["zh-Hant"],
     billingPage: billingByLang["zh-Hant"],
     creditsPage: creditsByLang["zh-Hant"],
@@ -2585,6 +2610,10 @@ export const translations: Record<Language, TranslationTree> = {
     walletAcpPage: walletAcpByLang["zh-Hant"],
     walletSimplePage: walletSimpleByLang["zh-Hant"],
     merchantPage: merchantByLang["zh-Hant"],
+    workflowRunDetail: workflowRunDetailByLang["zh-Hant"],
+    workflowRunPanel: workflowRunPanelByLang["zh-Hant"],
+    otcIntake: otcIntakeByLang["zh-Hant"],
+    dashboardHub: dashboardHubByLang["zh-Hant"],
     pricing: {
       eyebrow: "價格",
       title: "購買 AI 執行，而非抽象平台權限",

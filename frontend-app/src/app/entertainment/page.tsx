@@ -10,120 +10,38 @@ type Region = "all" | "americas" | "emea" | "apac" | "online";
 
 type Venue = {
   id: string;
-  name: string;
-  category: string;
   region: Exclude<Region, "all">;
-  places: string;
-  note: string;
   status: "open" | "licensed" | "regulated" | "age-gated";
 };
 
 const VENUES: Venue[] = [
-  {
-    id: "museums",
-    name: "Museums & public galleries",
-    category: "Culture",
-    region: "americas",
-    places: "US · Canada · Mexico · Brazil",
-    note: "State and municipal museums, ticketed exhibitions, ACP-friendly tourism desks.",
-    status: "open",
-  },
-  {
-    id: "broadway",
-    name: "Theatre & cinema circuits",
-    category: "Stage",
-    region: "americas",
-    places: "NYC · LA · Toronto · São Paulo",
-    note: "Licensed venues only. Age ratings follow local film boards.",
-    status: "open",
-  },
-  {
-    id: "eu-festivals",
-    name: "Concerts & city festivals",
-    category: "Live music",
-    region: "emea",
-    places: "EU · UK · UAE · South Africa",
-    note: "Promoter-licensed events with published capacity and refund rules.",
-    status: "licensed",
-  },
-  {
-    id: "eu-parks",
-    name: "Theme parks & attractions",
-    category: "Parks",
-    region: "emea",
-    places: "FR · DE · ES · TR",
-    note: "Operator insurance and height/age gates required on site.",
-    status: "open",
-  },
-  {
-    id: "eu-lottery",
-    name: "National lotteries",
-    category: "Lottery",
-    region: "emea",
-    places: "EU member lotteries · UKNC",
-    note: "Only state-licensed lottery products. No grey-market tickets.",
-    status: "regulated",
-  },
-  {
-    id: "apac-heritage",
-    name: "Heritage sites & night markets",
-    category: "Tourism",
-    region: "apac",
-    places: "JP · KR · SG · AU · NZ",
-    note: "Cultural venues and licensed night markets; local alcohol rules apply.",
-    status: "open",
-  },
-  {
-    id: "apac-gaming",
-    name: "Integrated resorts (where legal)",
-    category: "Gaming",
-    region: "apac",
-    places: "SG · Macau · AU (state rules)",
-    note: "Passport / ID checks. We list jurisdictions that publish a regulator — never offshore grey books.",
-    status: "age-gated",
-  },
-  {
-    id: "us-sports",
-    name: "Pro sports calendars",
-    category: "Sports",
-    region: "americas",
-    places: "MLB · NBA · NFL · MLS markets",
-    note: "Ticketing through licensed partners; fantasy/sportsbook only where state law allows.",
-    status: "regulated",
-  },
-  {
-    id: "online-arena",
-    name: "ANCAP Arena (on-platform)",
-    category: "Digital",
-    region: "online",
-    places: "Global · ACP settle",
-    note: "Provably fair house games and prediction markets under ANCAP rules — not a casino mirror of illegal books.",
-    status: "regulated",
-  },
-  {
-    id: "online-streams",
-    name: "Licensed streaming & esports",
-    category: "Digital",
-    region: "online",
-    places: "Geo-licensed catalogs",
-    note: "Rights-cleared streams and tournament VODs. Region locks follow the rights holder.",
-    status: "licensed",
-  },
+  { id: "museums", region: "americas", status: "open" },
+  { id: "broadway", region: "americas", status: "open" },
+  { id: "eu-festivals", region: "emea", status: "licensed" },
+  { id: "eu-parks", region: "emea", status: "open" },
+  { id: "eu-lottery", region: "emea", status: "regulated" },
+  { id: "apac-heritage", region: "apac", status: "open" },
+  { id: "apac-gaming", region: "apac", status: "age-gated" },
+  { id: "us-sports", region: "americas", status: "regulated" },
+  { id: "online-arena", region: "online", status: "regulated" },
+  { id: "online-streams", region: "online", status: "licensed" },
 ];
 
-const REGIONS: { id: Region; label: string }[] = [
-  { id: "all", label: "Worldwide" },
-  { id: "americas", label: "Americas" },
-  { id: "emea", label: "EMEA" },
-  { id: "apac", label: "APAC" },
-  { id: "online", label: "Online / ANCAP" },
-];
+const REGIONS: Region[] = ["all", "americas", "emea", "apac", "online"];
 
-const STATUS_LABEL: Record<Venue["status"], string> = {
-  open: "Open access",
-  licensed: "Licensed operator",
-  regulated: "Regulator-listed",
-  "age-gated": "Age / ID gated",
+const REGION_LABEL_KEY: Record<Region, string> = {
+  all: "entertainmentPage.regionAll",
+  americas: "entertainmentPage.regionAmericas",
+  emea: "entertainmentPage.regionEmea",
+  apac: "entertainmentPage.regionApac",
+  online: "entertainmentPage.regionOnline",
+};
+
+const STATUS_LABEL_KEY: Record<Venue["status"], string> = {
+  open: "entertainmentPage.statusOpen",
+  licensed: "entertainmentPage.statusLicensed",
+  regulated: "entertainmentPage.statusRegulated",
+  "age-gated": "entertainmentPage.statusAgeGated",
 };
 
 export default function LegalEntertainmentPage() {
@@ -287,12 +205,12 @@ export default function LegalEntertainmentPage() {
           </h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
             {REGIONS.map((r) => {
-              const active = region === r.id;
+              const active = region === r;
               return (
                 <button
-                  key={r.id}
+                  key={r}
                   type="button"
-                  onClick={() => setRegion(r.id)}
+                  onClick={() => setRegion(r)}
                   style={{
                     border: active ? "1px solid rgba(212,160,72,0.7)" : "1px solid rgba(243,239,230,0.16)",
                     background: active ? "rgba(212,160,72,0.16)" : "transparent",
@@ -303,7 +221,7 @@ export default function LegalEntertainmentPage() {
                     cursor: "pointer",
                   }}
                 >
-                  {r.label}
+                  {t(REGION_LABEL_KEY[r])}
                 </button>
               );
             })}
@@ -325,11 +243,17 @@ export default function LegalEntertainmentPage() {
                 }}
               >
                 <p style={{ fontSize: "0.72rem", letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55 }}>
-                  {v.category} · {STATUS_LABEL[v.status]}
+                  {t(`entertainmentPage.venues.${v.id}.category`)} · {t(STATUS_LABEL_KEY[v.status])}
                 </p>
-                <h3 style={{ fontSize: "1.15rem", margin: "8px 0 6px", fontWeight: 600 }}>{v.name}</h3>
-                <p style={{ fontSize: "0.9rem", color: "rgba(212,160,72,0.9)", marginBottom: 8 }}>{v.places}</p>
-                <p style={{ fontSize: "0.92rem", lineHeight: 1.55, color: "rgba(243,239,230,0.75)" }}>{v.note}</p>
+                <h3 style={{ fontSize: "1.15rem", margin: "8px 0 6px", fontWeight: 600 }}>
+                  {t(`entertainmentPage.venues.${v.id}.name`)}
+                </h3>
+                <p style={{ fontSize: "0.9rem", color: "rgba(212,160,72,0.9)", marginBottom: 8 }}>
+                  {t(`entertainmentPage.venues.${v.id}.places`)}
+                </p>
+                <p style={{ fontSize: "0.92rem", lineHeight: 1.55, color: "rgba(243,239,230,0.75)" }}>
+                  {t(`entertainmentPage.venues.${v.id}.note`)}
+                </p>
               </article>
             ))}
           </div>

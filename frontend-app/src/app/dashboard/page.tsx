@@ -53,31 +53,31 @@ export default function DashboardPage() {
     return null;
   }
 
-  const shortcuts: Array<{ label: string; href: string; description?: string }> = [
-    { label: "Dashboard", href: "/dashboard", description: "Overview & shortcuts" },
-    { label: "Onboarding", href: "/onboarding", description: "Proof-of-Agent (L3)" },
-    { label: "Feed", href: "/feed", description: "Activity stream" },
-    { label: "Notifications", href: "/notifications", description: "Alerts & updates" },
-    { label: "Leaderboards", href: "/leaderboards", description: "Top agents & strategies" },
-    { label: "Analytics", href: "/dashboard/analytics", description: "Revenue, margins, SKUs" },
-    { label: "Growth", href: "/growth", description: "Acquisition & funnels" },
-    { label: "Agents", href: "/agents", description: "Register and manage agents" },
-    { label: "Strategies", href: "/strategies", description: "Create, version, publish" },
-    { label: "Verticals", href: "/verticals", description: "Specs & approvals" },
-    { label: "Pools", href: "/pools", description: "Capital pools" },
-    { label: "Funds", href: "/funds", description: "Fund containers" },
-    { label: "Ledger", href: "/ledger", description: "Double-entry events" },
-    { label: "Reputation", href: "/reputation", description: "Trust & scoring" },
-    { label: "Marketplace", href: "/marketplace", description: "Browse and buy access" },
-    { label: "Billing", href: "/billing", description: "Credits, spend, workflow monetization" },
-    { label: "Credits", href: "/wallet/credits", description: "User ledger balances and spend" },
-    { label: "Listings", href: "/listings", description: "Published strategy offers" },
-    { label: "Orders", href: "/orders", description: "Purchases & settlements" },
-    { label: "Access", href: "/access", description: "Grants & permissions" },
-    { label: "Seller", href: "/dashboard/seller", description: "Earnings dashboard" },
-    { label: "Flows", href: "/flows", description: "Workflow builder" },
-    { label: "Runs", href: "/runs", description: "Execution history" },
-    { label: "Contracts", href: "/contracts", description: "Agent hiring & milestones" },
+  const shortcuts: Array<{ key: string; href: string }> = [
+    { key: "dashboard", href: "/dashboard" },
+    { key: "onboarding", href: "/onboarding" },
+    { key: "feed", href: "/feed" },
+    { key: "notifications", href: "/notifications" },
+    { key: "leaderboards", href: "/leaderboards" },
+    { key: "analytics", href: "/dashboard/analytics" },
+    { key: "growth", href: "/growth" },
+    { key: "agents", href: "/agents" },
+    { key: "strategies", href: "/strategies" },
+    { key: "verticals", href: "/verticals" },
+    { key: "pools", href: "/pools" },
+    { key: "funds", href: "/funds" },
+    { key: "ledger", href: "/ledger" },
+    { key: "reputation", href: "/reputation" },
+    { key: "marketplace", href: "/marketplace" },
+    { key: "billing", href: "/billing" },
+    { key: "credits", href: "/wallet/credits" },
+    { key: "listings", href: "/listings" },
+    { key: "orders", href: "/orders" },
+    { key: "access", href: "/access" },
+    { key: "seller", href: "/dashboard/seller" },
+    { key: "flows", href: "/flows" },
+    { key: "runs", href: "/runs" },
+    { key: "contracts", href: "/contracts" },
   ];
 
   return (
@@ -93,7 +93,7 @@ export default function DashboardPage() {
           <div className="responsive-grid responsive-grid-3" style={{ marginBottom: "48px" }}>
             <div className="card">
               <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
-                {t("dashboard.agents") || "Agents"}
+                {t("dashboard.agents")}
               </div>
               <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text)" }}>
                 {stats.loading ? "..." : stats.agentsCount}
@@ -109,7 +109,7 @@ export default function DashboardPage() {
             </div>
             <div className="card">
               <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
-                {t("dashboard.runs") || "Runs"}
+                {t("dashboard.runs")}
               </div>
               <div style={{ fontSize: "2rem", fontWeight: 700, color: "var(--accent)" }}>
                 {stats.loading ? "..." : stats.runsCount}
@@ -121,13 +121,13 @@ export default function DashboardPage() {
             <div className="card-header">
               <div style={{ flex: 1 }}>
                 <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0, color: "var(--text)" }}>
-                  Navigation hub
+                  {t("dashboardHub.navHubTitle")}
                 </h2>
                 <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.95rem" }}>
-                  All core modules — evenly spaced, responsive, no overflow.
+                  {t("dashboardHub.navHubLead")}
                 </div>
               </div>
-              <span className="badge badge-active">MVP</span>
+              <span className="badge badge-active">{t("dashboardHub.mvpBadge")}</span>
             </div>
 
             <div
@@ -153,14 +153,14 @@ export default function DashboardPage() {
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ fontWeight: 800, color: "var(--text)", fontSize: "1rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {it.label}
+                      {t(`dashboardHub.shortcuts.${it.key}.label`)}
                     </div>
                     <span className="badge badge-inactive" style={{ flexShrink: 0 }}>
                       →
                     </span>
                   </div>
                   <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.25 }}>
-                    {it.description || "Open"}
+                    {t(`dashboardHub.shortcuts.${it.key}.description`) || t("dashboardHub.openFallback")}
                   </div>
                 </a>
               ))}

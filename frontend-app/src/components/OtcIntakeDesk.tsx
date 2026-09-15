@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import { walletAcp } from "@/lib/api";
 
 type OtcCatalog = {
@@ -32,6 +33,7 @@ type Props = {
 };
 
 export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<"metal" | "goods" | "commodity" | "real_estate" | "space" | "ip">("metal");
   const [catalog, setCatalog] = useState<OtcCatalog | null>(null);
   const [orders, setOrders] = useState<OtcOrder[]>([]);
@@ -113,7 +115,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
         setOrders(Array.isArray(list) ? list : []);
         if (list?.[0]?.id) setSelectedId(list[0].id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load OTC desk");
+        setError(err instanceof Error ? err.message : t("otcIntake.loadFailed"));
       }
     })();
   }, []);
@@ -169,7 +171,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
       }
       setQuote(q);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Quote failed");
+      setError(err instanceof Error ? err.message : t("otcIntake.quoteFailed"));
     } finally {
       setBusy(false);
     }
@@ -246,11 +248,11 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
           note: goodsForm.note || undefined,
         })) as OtcOrder;
       }
-      setInfo(`OTC order created · ref ${created.intake_reference}`);
+      setInfo(t("otcIntake.orderCreated").replace("{ref}", created.intake_reference));
       setSelectedId(created.id);
       await refreshOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Create OTC order failed");
+      setError(err instanceof Error ? err.message : t("otcIntake.createFailed"));
     } finally {
       setBusy(false);
     }
@@ -264,11 +266,11 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
       await walletAcp.confirmOtcOrder(selected.id, {
         proof_ref: proofRef.trim() || undefined,
       });
-      setInfo("Marked for desk review.");
+      setInfo(t("otcIntake.markedForReview"));
       setProofRef("");
       await refreshOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Confirm failed");
+      setError(err instanceof Error ? err.message : t("otcIntake.confirmFailed"));
     } finally {
       setBusy(false);
     }
@@ -280,10 +282,10 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
     setError("");
     try {
       await walletAcp.cancelOtcOrder(selected.id);
-      setInfo("Order cancelled.");
+      setInfo(t("otcIntake.orderCancelled"));
       await refreshOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Cancel failed");
+      setError(err instanceof Error ? err.message : t("otcIntake.cancelFailed"));
     } finally {
       setBusy(false);
     }
@@ -293,11 +295,11 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
     <div className="responsive-grid responsive-grid-2" id="otc-intake">
       <div className="card">
         <div className="card-header">
-          <h3 style={{ fontWeight: 800, margin: 0 }}>Metals, goods, antiques, real estate, space & IP</h3>
-          <span className="badge badge-info">OTC → ACP</span>
+          <h3 style={{ fontWeight: 800, margin: 0 }}>{t("otcIntake.title")}</h3>
+          <span className="badge badge-info">{t("otcIntake.badge")}</span>
         </div>
         <p style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-          Accept precious metals, goods/antiques, commodities, real-estate sale/rental title packages, space-object titles, and IP packages (patents / recipes) for ACP settlement after supervised intake and review. Issue an ACP ownership certificate after docs are hashed.
+          {t("otcIntake.lead")}
         </p>
 
         <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
@@ -313,7 +315,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "metal" ? "#34d399" : undefined,
             }}
           >
-            Precious metals
+            {t("otcIntake.tabMetals")}
           </button>
           <button
             type="button"
@@ -327,7 +329,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "goods" ? "#34d399" : undefined,
             }}
           >
-            Goods exchange
+            {t("otcIntake.tabGoods")}
           </button>
           <button
             type="button"
@@ -341,7 +343,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "commodity" ? "#34d399" : undefined,
             }}
           >
-            Commodities
+            {t("otcIntake.tabCommodity")}
           </button>
           <button
             type="button"
@@ -355,7 +357,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "real_estate" ? "#34d399" : undefined,
             }}
           >
-            Real estate
+            {t("otcIntake.tabRealEstate")}
           </button>
           <button
             type="button"
@@ -369,7 +371,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "space" ? "#34d399" : undefined,
             }}
           >
-            Space objects
+            {t("otcIntake.tabSpace")}
           </button>
           <button
             type="button"
@@ -383,7 +385,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
               color: tab === "ip" ? "#34d399" : undefined,
             }}
           >
-            Patents & recipes
+            {t("otcIntake.tabIp")}
           </button>
         </div>
 
@@ -401,7 +403,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
         <form onSubmit={createOrder} style={{ marginTop: 14, display: "grid", gap: 10 }}>
           {tab === "metal" ? (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Metal</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.metal")}</label>
               <select
                 className="input input-bordered w-full"
                 value={metalForm.metal}
@@ -416,12 +418,12 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   <option key={m.kind} value={m.kind}>
                     {m.label}
                     {"indicative_acp_per_gram" in m && m.indicative_acp_per_gram
-                      ? ` · ~${m.indicative_acp_per_gram} ACP/g`
+                      ? t("otcIntake.perGram").replace("{rate}", m.indicative_acp_per_gram)
                       : ""}
                   </option>
                 ))}
               </select>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Weight (grams)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.weightGrams")}</label>
               <input
                 className="input input-bordered w-full"
                 inputMode="decimal"
@@ -429,7 +431,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 onChange={(e) => setMetalForm((p) => ({ ...p, weight_grams: e.target.value }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Purity (‰)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.purityPpt")}</label>
               <input
                 className="input input-bordered w-full"
                 inputMode="numeric"
@@ -437,14 +439,14 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 onChange={(e) => setMetalForm((p) => ({ ...p, purity_ppt: e.target.value }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input
                 className="input input-bordered w-full"
                 value={metalForm.payout_acp_address}
                 onChange={(e) => setMetalForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.noteOptional")}</label>
               <input
                 className="input input-bordered w-full"
                 value={metalForm.note}
@@ -453,7 +455,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
             </>
           ) : tab === "commodity" ? (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Commodity</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.commodity")}</label>
               <select
                 className="input input-bordered w-full"
                 value={commodityForm.commodity}
@@ -468,13 +470,13 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   { kind: "uranium", label: "Uranium", unit: "kg", indicative_acp_per_unit: "220" },
                 ]).map((c) => (
                   <option key={c.kind} value={c.kind}>
-                    {c.label} · ~{c.indicative_acp_per_unit} ACP/{c.unit}
+                    {c.label}{t("otcIntake.perUnit").replace("{rate}", c.indicative_acp_per_unit).replace("{unit}", c.unit)}
                   </option>
                 ))}
               </select>
               <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                Quantity (
-                {(catalog?.commodities || []).find((c) => c.kind === commodityForm.commodity)?.unit || "unit"}
+                {t("otcIntake.quantity")} (
+                {(catalog?.commodities || []).find((c) => c.kind === commodityForm.commodity)?.unit || t("otcIntake.unitFallback")}
                 )
               </label>
               <input
@@ -484,21 +486,21 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 onChange={(e) => setCommodityForm((p) => ({ ...p, quantity: e.target.value }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Grade / spec (optional)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.gradeSpec")}</label>
               <input
                 className="input input-bordered w-full"
                 value={commodityForm.grade_note}
                 onChange={(e) => setCommodityForm((p) => ({ ...p, grade_note: e.target.value }))}
-                placeholder="e.g. Brent, moisture %, U3O8 assay"
+                placeholder={t("otcIntake.gradePlaceholder")}
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input
                 className="input input-bordered w-full"
                 value={commodityForm.payout_acp_address}
                 onChange={(e) => setCommodityForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.noteOptional")}</label>
               <input
                 className="input input-bordered w-full"
                 value={commodityForm.note}
@@ -507,7 +509,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
             </>
           ) : tab === "real_estate" ? (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Deal type</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.dealType")}</label>
               <select
                 className="input input-bordered w-full"
                 value={reForm.re_deal_type}
@@ -517,28 +519,28 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   <option key={r.deal_type} value={r.deal_type}>{r.label}</option>
                 ))}
               </select>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Address / parcel</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.addressParcel")}</label>
               <input className="input input-bordered w-full" value={reForm.re_address_or_parcel} onChange={(e) => setReForm((p) => ({ ...p, re_address_or_parcel: e.target.value }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Jurisdiction</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.jurisdiction")}</label>
               <input className="input input-bordered w-full" value={reForm.re_jurisdiction} onChange={(e) => setReForm((p) => ({ ...p, re_jurisdiction: e.target.value }))} />
               {reForm.re_deal_type === "rental" ? (
                 <>
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Lease months</label>
+                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.leaseMonths")}</label>
                   <input className="input input-bordered w-full" value={reForm.re_lease_months} onChange={(e) => setReForm((p) => ({ ...p, re_lease_months: e.target.value }))} />
                 </>
               ) : null}
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Estimated ACP</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.estimatedAcp")}</label>
               <input className="input input-bordered w-full" value={reForm.estimated_value_acp} onChange={(e) => setReForm((p) => ({ ...p, estimated_value_acp: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Document hash (optional sha256)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.documentHashOptional")}</label>
               <input className="input input-bordered w-full" value={reForm.document_hash} onChange={(e) => setReForm((p) => ({ ...p, document_hash: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input className="input input-bordered w-full" value={reForm.payout_acp_address} onChange={(e) => setReForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.note")}</label>
               <input className="input input-bordered w-full" value={reForm.note} onChange={(e) => setReForm((p) => ({ ...p, note: e.target.value }))} />
             </>
           ) : tab === "space" ? (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Object class</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.objectClass")}</label>
               <select
                 className="input input-bordered w-full"
                 value={spaceForm.space_object_class}
@@ -559,27 +561,27 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   </option>
                 ))}
               </select>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>NORAD / COSPAR / id</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.noradCospar")}</label>
               <input className="input input-bordered w-full" value={spaceForm.space_object_id} onChange={(e) => setSpaceForm((p) => ({ ...p, space_object_id: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Jurisdiction</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.jurisdiction")}</label>
               <input className="input input-bordered w-full" value={spaceForm.space_jurisdiction} onChange={(e) => setSpaceForm((p) => ({ ...p, space_jurisdiction: e.target.value }))} />
               <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                Estimated ACP
+                {t("otcIntake.estimatedAcp")}
                 {catalog?.space_objects?.find((s) => s.object_class === spaceForm.space_object_class)?.indicative_starting_acp
-                  ? ` (auction start ${catalog.space_objects.find((s) => s.object_class === spaceForm.space_object_class)?.indicative_starting_acp} ACP)`
+                  ? t("otcIntake.auctionStartHint").replace("{amount}", catalog.space_objects.find((s) => s.object_class === spaceForm.space_object_class)?.indicative_starting_acp || "")
                   : ""}
               </label>
               <input className="input input-bordered w-full" value={spaceForm.estimated_value_acp} onChange={(e) => setSpaceForm((p) => ({ ...p, estimated_value_acp: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Document hash (optional sha256)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.documentHashOptional")}</label>
               <input className="input input-bordered w-full" value={spaceForm.document_hash} onChange={(e) => setSpaceForm((p) => ({ ...p, document_hash: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input className="input input-bordered w-full" value={spaceForm.payout_acp_address} onChange={(e) => setSpaceForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.note")}</label>
               <input className="input input-bordered w-full" value={spaceForm.note} onChange={(e) => setSpaceForm((p) => ({ ...p, note: e.target.value }))} />
             </>
           ) : tab === "ip" ? (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>IP kind</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.ipKind")}</label>
               <select
                 className="input input-bordered w-full"
                 value={ipForm.ip_kind}
@@ -592,24 +594,24 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   <option key={i.kind} value={i.kind}>{i.label}</option>
                 ))}
               </select>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Title</label>
-              <input className="input input-bordered w-full" value={ipForm.ip_title} onChange={(e) => setIpForm((p) => ({ ...p, ip_title: e.target.value }))} placeholder="Invention or recipe name" required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Registration URI / application #</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.ipTitle")}</label>
+              <input className="input input-bordered w-full" value={ipForm.ip_title} onChange={(e) => setIpForm((p) => ({ ...p, ip_title: e.target.value }))} placeholder={t("otcIntake.ipTitlePlaceholder")} required />
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.registrationUri")}</label>
               <input className="input input-bordered w-full" value={ipForm.ip_registration_uri} onChange={(e) => setIpForm((p) => ({ ...p, ip_registration_uri: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Jurisdiction</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.jurisdiction")}</label>
               <input className="input input-bordered w-full" value={ipForm.ip_jurisdiction} onChange={(e) => setIpForm((p) => ({ ...p, ip_jurisdiction: e.target.value }))} />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Estimated ACP</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.estimatedAcp")}</label>
               <input className="input input-bordered w-full" value={ipForm.estimated_value_acp} onChange={(e) => setIpForm((p) => ({ ...p, estimated_value_acp: e.target.value }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Document hash (sha256, required)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.documentHashRequired")}</label>
               <input className="input input-bordered w-full" value={ipForm.document_hash} onChange={(e) => setIpForm((p) => ({ ...p, document_hash: e.target.value }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input className="input input-bordered w-full" value={ipForm.payout_acp_address} onChange={(e) => setIpForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))} required />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.note")}</label>
               <input className="input input-bordered w-full" value={ipForm.note} onChange={(e) => setIpForm((p) => ({ ...p, note: e.target.value }))} />
             </>
           ) : (
             <>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Category</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.category")}</label>
               <select
                 className="input input-bordered w-full"
                 value={goodsForm.goods_category}
@@ -627,23 +629,23 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                   </option>
                 ))}
               </select>
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Title</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.goodsTitle")}</label>
               <input
                 className="input input-bordered w-full"
                 value={goodsForm.goods_title}
                 onChange={(e) => setGoodsForm((p) => ({ ...p, goods_title: e.target.value }))}
-                placeholder="e.g. Sealed GPU lot / vintage watch"
+                placeholder={t("otcIntake.goodsTitlePlaceholder")}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Description</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.description")}</label>
               <textarea
                 className="input input-bordered w-full"
                 rows={3}
                 value={goodsForm.goods_description}
                 onChange={(e) => setGoodsForm((p) => ({ ...p, goods_description: e.target.value }))}
-                placeholder="Condition, serials, location…"
+                placeholder={t("otcIntake.goodsDescPlaceholder")}
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Estimated ACP value</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.estimatedAcpValue")}</label>
               <input
                 className="input input-bordered w-full"
                 inputMode="decimal"
@@ -651,14 +653,14 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 onChange={(e) => setGoodsForm((p) => ({ ...p, estimated_value_acp: e.target.value }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Payout ACP address</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.payoutAddress")}</label>
               <input
                 className="input input-bordered w-full"
                 value={goodsForm.payout_acp_address}
                 onChange={(e) => setGoodsForm((p) => ({ ...p, payout_acp_address: e.target.value.trim() }))}
                 required
               />
-              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Note (optional)</label>
+              <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("otcIntake.noteOptional")}</label>
               <input
                 className="input input-bordered w-full"
                 value={goodsForm.note}
@@ -669,10 +671,10 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button type="button" className="btn btn-ghost" onClick={() => void previewQuote()} disabled={busy}>
-              Preview quote
+              {t("otcIntake.previewQuote")}
             </button>
             <button type="submit" className="btn btn-primary" disabled={busy}>
-              {busy ? "Creating…" : "Create intake order"}
+              {busy ? t("otcIntake.creating") : t("otcIntake.createIntakeOrder")}
             </button>
           </div>
         </form>
@@ -691,7 +693,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
           >
             <div>{quote.rate_note}</div>
             <div>
-              Estimated payout: <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong>
+              {t("otcIntake.estimatedPayout")} <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong>
             </div>
           </div>
         )}
@@ -706,12 +708,12 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
 
       <div className="card">
         <div className="card-header">
-          <h3 style={{ fontWeight: 800, margin: 0 }}>OTC intake orders</h3>
-          <span className="badge badge-active">History</span>
+          <h3 style={{ fontWeight: 800, margin: 0 }}>{t("otcIntake.ordersTitle")}</h3>
+          <span className="badge badge-active">{t("otcIntake.history")}</span>
         </div>
 
         {orders.length === 0 ? (
-          <div style={{ marginTop: 12, color: "var(--text-muted)" }}>No metals/goods orders yet.</div>
+          <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("otcIntake.noOrders")}</div>
         ) : (
           <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
             {orders.map((o) => (
@@ -744,24 +746,24 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
             }}
           >
             <div>
-              <strong>Order:</strong> {selected.id}
+              <strong>{t("otcIntake.orderLabel")}</strong> {selected.id}
             </div>
             <div>
-              <strong>Status:</strong> {selected.status}
+              <strong>{t("otcIntake.statusLabel")}</strong> {selected.status}
             </div>
             <div>
-              <strong>Asset:</strong> {selected.asset_label}
+              <strong>{t("otcIntake.assetLabel")}</strong> {selected.asset_label}
             </div>
             <div>
-              <strong>Reference:</strong> {selected.intake_reference}
+              <strong>{t("otcIntake.referenceLabel")}</strong> {selected.intake_reference}
             </div>
             <div>
-              <strong>Payout:</strong> {selected.estimated_acp_amount} ACP → {selected.payout_acp_address}
+              <strong>{t("otcIntake.payoutLabel")}</strong> {selected.estimated_acp_amount} ACP → {selected.payout_acp_address}
             </div>
             <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.5 }}>{selected.handoff_instructions}</div>
             <input
               className="input input-bordered w-full"
-              placeholder="Proof / tracking / custody receipt (optional)"
+              placeholder={t("otcIntake.proofPlaceholder")}
               value={proofRef}
               onChange={(e) => setProofRef(e.target.value)}
             />
@@ -772,7 +774,7 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 disabled={busy || !(selected.status === "awaiting_handoff" || selected.status === "pending_review")}
                 onClick={() => void confirmSelected()}
               >
-                I handed off asset
+                {t("otcIntake.handedOff")}
               </button>
               <button
                 type="button"
@@ -780,14 +782,14 @@ export function OtcIntakeDesk({ defaultPayoutAddress = "" }: Props) {
                 disabled={busy || !(selected.status === "awaiting_handoff" || selected.status === "pending_review")}
                 onClick={() => void cancelSelected()}
               >
-                Cancel
+                {t("otcIntake.cancel")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => void navigator.clipboard.writeText(selected.intake_reference)}
               >
-                Copy reference
+                {t("otcIntake.copyReference")}
               </button>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { workflowStore } from "@/lib/api";
 import type { WorkflowTemplate } from "@/lib/workflowStore";
 
@@ -270,6 +271,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const [paymentCurrency, setPaymentCurrency] = useState(workflow.accepted_currencies[0] || "ACP");
   const [unlockFullResult, setUnlockFullResult] = useState(true);
   const [useStructuredForm, setUseStructuredForm] = useState(supportsStructuredWorkflow(workflow.slug));
@@ -384,7 +386,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
       return;
     }
     if (requiresAdultAttestation && !adultAttested) {
-      setError("Confirm you are of legal drinking age (18+/21+ by jurisdiction) before purchasing this adult hospitality desk brief.");
+      setError(t("workflowRunPanel.adultAttestationError"));
       return;
     }
 
@@ -415,13 +417,13 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   return (
     <div className="mt-6 space-y-4">
       <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
-        <div className="text-sm font-semibold text-white/90">Create workflow run</div>
+        <div className="text-sm font-semibold text-white/90">{t("workflowRunPanel.createRun")}</div>
         <div className="mt-3 grid gap-3 md:grid-cols-4">
           {[
-            ["Quote", pricePreview],
-            ["Payment", "ACP intent"],
-            ["Run", workflow.slug],
-            ["Receipt", "Proof-ready"],
+            [t("workflowRunPanel.stepQuote"), pricePreview],
+            [t("workflowRunPanel.stepPayment"), t("workflowRunPanel.acpIntent")],
+            [t("workflowRunPanel.stepRun"), workflow.slug],
+            [t("workflowRunPanel.stepReceipt"), t("workflowRunPanel.proofReady")],
           ].map(([label, value]) => (
             <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <div className="text-[11px] uppercase tracking-[0.18em] text-white/40">{label}</div>
@@ -431,12 +433,12 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
         </div>
         {searchParams?.get("prefill") === "1" && (
           <div className="mt-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-3 text-sm text-emerald-100/90">
-            Prefilled from an existing workflow run. Review and edit the inputs before creating the next run.
+            {t("workflowRunPanel.prefilledNotice")}
           </div>
         )}
         <div className="mt-4 grid gap-4">
           <div>
-            <div className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">Payment currency</div>
+            <div className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">{t("workflowRunPanel.paymentCurrency")}</div>
             <div className="flex flex-wrap gap-2">
               {workflow.accepted_currencies.map((currency) => (
                 <button
@@ -449,27 +451,27 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
                 </button>
               ))}
             </div>
-            <div className="mt-2 text-sm text-emerald-300">Quoted price: {pricePreview}</div>
+            <div className="mt-2 text-sm text-emerald-300">{t("workflowRunPanel.quotedPrice")} {pricePreview}</div>
           </div>
 
           <label className="flex items-center gap-3 text-sm text-white/75">
             <input type="checkbox" checked={unlockFullResult} onChange={(e) => setUnlockFullResult(e.target.checked)} />
-            <span>Unlock full result shell immediately</span>
+            <span>{t("workflowRunPanel.unlockFullResult")}</span>
           </label>
 
           {supportsStructuredForm && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white/90">Workflow input mode</div>
-                  <div className="mt-1 text-sm text-white/55">Use a structured form or edit raw JSON directly.</div>
+                  <div className="text-sm font-semibold text-white/90">{t("workflowRunPanel.inputMode")}</div>
+                  <div className="mt-1 text-sm text-white/55">{t("workflowRunPanel.inputModeLead")}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setUseStructuredForm((value) => !value)}
                   className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white"
                 >
-                  {useStructuredForm ? "Switch to raw JSON" : "Switch to structured form"}
+                  {useStructuredForm ? t("workflowRunPanel.switchToJson") : t("workflowRunPanel.switchToForm")}
                 </button>
               </div>
             </div>
@@ -477,69 +479,69 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
 
           {useStructuredForm && workflow.slug === "token-listing-pack" && (
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField label="Project name" value={listingPackForm.project_name} onChange={(value) => setListingPackForm((prev) => ({ ...prev, project_name: value }))} />
-              <InputField label="Token symbol" value={listingPackForm.token_symbol} onChange={(value) => setListingPackForm((prev) => ({ ...prev, token_symbol: value }))} />
-              <InputField label="Token type" value={listingPackForm.token_type} onChange={(value) => setListingPackForm((prev) => ({ ...prev, token_type: value }))} />
-              <InputField label="Audience" value={listingPackForm.audience} onChange={(value) => setListingPackForm((prev) => ({ ...prev, audience: value }))} />
-              <InputField label="Chain / network" value={listingPackForm.chain} onChange={(value) => setListingPackForm((prev) => ({ ...prev, chain: value }))} />
-              <InputField label="Market" value={listingPackForm.market} onChange={(value) => setListingPackForm((prev) => ({ ...prev, market: value }))} />
+              <InputField label={t("workflowRunPanel.projectName")} value={listingPackForm.project_name} onChange={(value) => setListingPackForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.tokenSymbol")} value={listingPackForm.token_symbol} onChange={(value) => setListingPackForm((prev) => ({ ...prev, token_symbol: value }))} />
+              <InputField label={t("workflowRunPanel.tokenType")} value={listingPackForm.token_type} onChange={(value) => setListingPackForm((prev) => ({ ...prev, token_type: value }))} />
+              <InputField label={t("workflowRunPanel.audience")} value={listingPackForm.audience} onChange={(value) => setListingPackForm((prev) => ({ ...prev, audience: value }))} />
+              <InputField label={t("workflowRunPanel.chainNetwork")} value={listingPackForm.chain} onChange={(value) => setListingPackForm((prev) => ({ ...prev, chain: value }))} />
+              <InputField label={t("workflowRunPanel.market")} value={listingPackForm.market} onChange={(value) => setListingPackForm((prev) => ({ ...prev, market: value }))} />
               <div className="md:col-span-2">
-                <InputField label="Liquidity model" value={listingPackForm.liquidity_model} onChange={(value) => setListingPackForm((prev) => ({ ...prev, liquidity_model: value }))} />
+                <InputField label={t("workflowRunPanel.liquidityModel")} value={listingPackForm.liquidity_model} onChange={(value) => setListingPackForm((prev) => ({ ...prev, liquidity_model: value }))} />
               </div>
             </div>
           )}
 
           {useStructuredForm && workflow.slug === "crypto-campaign-builder" && (
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField label="Project name" value={campaignBuilderForm.project_name} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, project_name: value }))} />
-              <InputField label="Audience" value={campaignBuilderForm.audience} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, audience: value }))} />
+              <InputField label={t("workflowRunPanel.projectName")} value={campaignBuilderForm.project_name} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.audience")} value={campaignBuilderForm.audience} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, audience: value }))} />
               <div className="md:col-span-2">
-                <InputField label="Primary CTA" value={campaignBuilderForm.primary_cta} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, primary_cta: value }))} />
+                <InputField label={t("workflowRunPanel.primaryCta")} value={campaignBuilderForm.primary_cta} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, primary_cta: value }))} />
               </div>
               <div className="md:col-span-2">
-                <InputField label="Posting style" value={campaignBuilderForm.posting_style} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, posting_style: value }))} />
+                <InputField label={t("workflowRunPanel.postingStyle")} value={campaignBuilderForm.posting_style} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, posting_style: value }))} />
               </div>
-              <TextareaField label="Goals (one per line)" value={campaignBuilderForm.goals_text} rows={5} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, goals_text: value }))} />
-              <TextareaField label="Channels (one per line)" value={campaignBuilderForm.channels_text} rows={5} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, channels_text: value }))} />
+              <TextareaField label={t("workflowRunPanel.goalsOnePerLine")} value={campaignBuilderForm.goals_text} rows={5} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, goals_text: value }))} />
+              <TextareaField label={t("workflowRunPanel.channelsOnePerLine")} value={campaignBuilderForm.channels_text} rows={5} onChange={(value) => setCampaignBuilderForm((prev) => ({ ...prev, channels_text: value }))} />
             </div>
           )}
 
           {useStructuredForm && workflow.slug === "telegram-growth-kit" && (
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField label="Project name" value={telegramGrowthForm.project_name} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, project_name: value }))} />
-              <InputField label="Audience" value={telegramGrowthForm.audience} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, audience: value }))} />
+              <InputField label={t("workflowRunPanel.projectName")} value={telegramGrowthForm.project_name} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.audience")} value={telegramGrowthForm.audience} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, audience: value }))} />
               <div className="md:col-span-2">
-                <InputField label="Posting style" value={telegramGrowthForm.posting_style} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, posting_style: value }))} />
+                <InputField label={t("workflowRunPanel.postingStyle")} value={telegramGrowthForm.posting_style} onChange={(value) => setTelegramGrowthForm((prev) => ({ ...prev, posting_style: value }))} />
               </div>
             </div>
           )}
 
           {useStructuredForm && workflow.slug === "airdrop-bounty-builder" && (
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField label="Project name" value={airdropBountyForm.project_name} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, project_name: value }))} />
-              <InputField label="Reward budget" value={airdropBountyForm.reward_budget} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, reward_budget: value }))} />
+              <InputField label={t("workflowRunPanel.projectName")} value={airdropBountyForm.project_name} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.rewardBudget")} value={airdropBountyForm.reward_budget} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, reward_budget: value }))} />
               <div className="md:col-span-2">
-                <TextareaField label="Constraints (one per line)" value={airdropBountyForm.constraints_text} rows={5} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, constraints_text: value }))} />
+                <TextareaField label={t("workflowRunPanel.constraintsOnePerLine")} value={airdropBountyForm.constraints_text} rows={5} onChange={(value) => setAirdropBountyForm((prev) => ({ ...prev, constraints_text: value }))} />
               </div>
             </div>
           )}
 
           {useStructuredForm && workflow.slug === "token-risk-report" && (
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField label="Project name" value={tokenRiskForm.project_name} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, project_name: value }))} />
-              <InputField label="Token symbol" value={tokenRiskForm.token_symbol} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, token_symbol: value }))} />
-              <InputField label="Token type" value={tokenRiskForm.token_type} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, token_type: value }))} />
-              <InputField label="Chain / network" value={tokenRiskForm.chain} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, chain: value }))} />
-              <InputField label="Liquidity model" value={tokenRiskForm.liquidity_model} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, liquidity_model: value }))} />
-              <InputField label="Geography" value={tokenRiskForm.geography} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, geography: value }))} />
+              <InputField label={t("workflowRunPanel.projectName")} value={tokenRiskForm.project_name} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.tokenSymbol")} value={tokenRiskForm.token_symbol} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, token_symbol: value }))} />
+              <InputField label={t("workflowRunPanel.tokenType")} value={tokenRiskForm.token_type} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, token_type: value }))} />
+              <InputField label={t("workflowRunPanel.chainNetwork")} value={tokenRiskForm.chain} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, chain: value }))} />
+              <InputField label={t("workflowRunPanel.liquidityModel")} value={tokenRiskForm.liquidity_model} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, liquidity_model: value }))} />
+              <InputField label={t("workflowRunPanel.geography")} value={tokenRiskForm.geography} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, geography: value }))} />
               <div className="md:col-span-2">
-                <TextareaField label="Competitors / peers (one per line)" value={tokenRiskForm.competitors_text} rows={5} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, competitors_text: value }))} />
+                <TextareaField label={t("workflowRunPanel.competitorsOnePerLine")} value={tokenRiskForm.competitors_text} rows={5} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, competitors_text: value }))} />
               </div>
             </div>
           )}
 
           <div>
-            <div className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">Inputs JSON</div>
+            <div className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">{t("workflowRunPanel.inputsJson")}</div>
             <textarea
               value={inputsText}
               onChange={(e) => {
@@ -550,7 +552,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               className="w-full rounded-2xl border border-white/10 bg-[var(--bg)] p-3 text-sm text-white outline-none"
               style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}
             />
-            <div className="mt-2 text-xs text-white/45">Structured form updates this JSON automatically. You can still override it manually.</div>
+            <div className="mt-2 text-xs text-white/45">{t("workflowRunPanel.inputsJsonHint")}</div>
           </div>
 
           {requiresAdultAttestation ? (
@@ -561,11 +563,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
                 onChange={(e) => setAdultAttested(e.target.checked)}
                 className="mt-1"
               />
-              <span>
-                I confirm I am of legal drinking / adult age for my jurisdiction (18+ or 21+) and understand
-                ANCAP does not sell alcohol or controlled substances — hospitality and Tesla-coil HV stay with
-                the licensed venue partner.
-              </span>
+              <span>{t("workflowRunPanel.adultAttestation")}</span>
             </label>
           ) : null}
 
@@ -578,10 +576,10 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               disabled={submitting || isLoading || (requiresAdultAttestation && !adultAttested)}
               className="rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
             >
-              {submitting ? "Creating run..." : isAuthenticated ? "Run workflow" : "Sign in to run workflow"}
+              {submitting ? t("workflowRunPanel.creatingRun") : isAuthenticated ? t("workflowRunPanel.runWorkflow") : t("workflowRunPanel.signInToRun")}
             </button>
             <Link href="/dashboard" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
-              Open dashboard
+              {t("workflowRunPanel.openDashboard")}
             </Link>
           </div>
         </div>
@@ -589,10 +587,10 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
 
       {createdRun && (
         <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-          <div className="text-sm font-semibold text-emerald-200">Run created</div>
-          <div className="mt-2 text-sm text-white/80">Status: {createdRun.status}</div>
-          <div className="text-sm text-white/80">Quoted price: {createdRun.price.amount} {createdRun.price.currency}</div>
-          <div className="text-sm text-white/80">Run ID: {createdRun.id}</div>
+          <div className="text-sm font-semibold text-emerald-200">{t("workflowRunPanel.runCreated")}</div>
+          <div className="mt-2 text-sm text-white/80">{t("workflowRunPanel.status")} {createdRun.status}</div>
+          <div className="text-sm text-white/80">{t("workflowRunPanel.quotedPriceLabel")} {createdRun.price.amount} {createdRun.price.currency}</div>
+          <div className="text-sm text-white/80">{t("workflowRunPanel.runId")} {createdRun.id}</div>
           {Array.isArray(createdRun.receipt.receipt_items) && createdRun.receipt.receipt_items.length > 0 && (
             <ul className="mt-3 space-y-2 text-sm text-white/75">
               {createdRun.receipt.receipt_items.map((item) => (
@@ -605,23 +603,23 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
           )}
           <div className="mt-4 flex flex-wrap gap-3">
             <Link href={`/proof-center?run=${createdRun.id}`} className="rounded-full border border-emerald-400/25 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">
-              Open proof URL
+              {t("workflowRunPanel.openProofUrl")}
             </Link>
             <Link href={`/ai/runs/${createdRun.id}`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
-              Open run detail
+              {t("workflowRunPanel.openRunDetail")}
             </Link>
           </div>
         </div>
       )}
 
       <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
-        <div className="text-sm font-semibold text-white/90">Recent runs for this workflow</div>
+        <div className="text-sm font-semibold text-white/90">{t("workflowRunPanel.recentRuns")}</div>
         {!isAuthenticated ? (
-          <div className="mt-3 text-sm text-white/55">Sign in to see your workflow run history.</div>
+          <div className="mt-3 text-sm text-white/55">{t("workflowRunPanel.signInForHistory")}</div>
         ) : historyLoading ? (
-          <div className="mt-3 text-sm text-white/55">Loading history...</div>
+          <div className="mt-3 text-sm text-white/55">{t("workflowRunPanel.loadingHistory")}</div>
         ) : history.length === 0 ? (
-          <div className="mt-3 text-sm text-white/55">No runs yet for this workflow.</div>
+          <div className="mt-3 text-sm text-white/55">{t("workflowRunPanel.noRuns")}</div>
         ) : (
           <div className="mt-3 space-y-3">
             {history.map((run) => (
@@ -630,11 +628,11 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
                   <div className="font-medium text-white/88">{run.title}</div>
                   <div className="text-emerald-300">{run.price.amount} {run.price.currency}</div>
                 </div>
-                <div className="mt-2 text-white/60">Status: {run.status}</div>
+                <div className="mt-2 text-white/60">{t("workflowRunPanel.status")} {run.status}</div>
                 <div className="text-white/45">{new Date(run.created_at).toLocaleString()}</div>
                 <div className="mt-3">
                   <Link href={`/ai/runs/${run.id}`} className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
-                    Open run
+                    {t("workflowRunPanel.openRun")}
                   </Link>
                 </div>
               </div>

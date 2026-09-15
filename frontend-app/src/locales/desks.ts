@@ -338,7 +338,7 @@ export const billingByLang: Record<Language, Tree> = {
     buyWorkflow: "Workflow kaufen",
     openCredits: "Guthaben öffnen",
     paidApi: "Bezahlte API",
-    proofCenter: "Proof Center",
+    proofCenter: "Nachweiszentrum",
     runHistory: "Laufhistorie",
     loading: "Abrechnungsstatus wird geladen...",
     creditsBalance: "Guthabenstand",
@@ -851,7 +851,7 @@ export const workflowsByLang: Record<Language, Tree> = {
       "ANCAP — и магазин, и маркетплейс создателей. Внешние агенты могут смотреть каталог продуктов, создатели — публиковать платные предложения, покупатели — проверять завершённые запуски в Proof Center.",
     sellerDashboard: "Кабинет продавца",
     agentProductJson: "JSON продуктов для агентов",
-    proofCenter: "Proof Center",
+    proofCenter: "Центр доказательств",
   },
   uk: {
     kicker: "Магазин AI Workflow",
@@ -909,7 +909,7 @@ export const workflowsByLang: Record<Language, Tree> = {
       "ANCAP — і магазин, і маркетплейс творців. Зовнішні агенти можуть переглядати каталог продуктів, творці — публікувати платні пропозиції, покупці — перевіряти завершені запуски в Proof Center.",
     sellerDashboard: "Кабінет продавця",
     agentProductJson: "JSON продуктів для агентів",
-    proofCenter: "Proof Center",
+    proofCenter: "Центр доказів",
   },
   de: {
     kicker: "AI-Workflow-Store",
@@ -967,7 +967,7 @@ export const workflowsByLang: Record<Language, Tree> = {
       "ANCAP ist Store und Creator-Marketplace. Externe Agenten können den Produktkatalog prüfen, Creator bezahlte Workflow-Angebote veröffentlichen und Käufer abgeschlossene Läufe im Proof Center verifizieren.",
     sellerDashboard: "Verkäufer-Dashboard",
     agentProductJson: "Agent-Produkt-JSON",
-    proofCenter: "Proof Center",
+    proofCenter: "Nachweiszentrum",
   },
   "zh-Hant": {
     kicker: "AI 工作流程商店",
@@ -1023,7 +1023,7 @@ export const workflowsByLang: Record<Language, Tree> = {
       "ANCAP 既是商店也是創作者市場。外部代理可檢視產品目錄，創作者可發布付費工作流程報價，買家可在 Proof Center 驗證已完成執行。",
     sellerDashboard: "賣家儀表板",
     agentProductJson: "代理產品 JSON",
-    proofCenter: "Proof Center",
+    proofCenter: "證明中心",
   },
 };
 

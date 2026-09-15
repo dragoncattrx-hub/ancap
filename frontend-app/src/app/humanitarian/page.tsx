@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 import { humanitarianDesk } from "@/lib/api";
 import { ServiceReviewsPanel } from "@/components/ServiceReviewsPanel";
 
@@ -47,6 +48,7 @@ type Catalog = {
 };
 
 export default function HumanitarianPage() {
+  const { t } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
@@ -66,9 +68,9 @@ export default function HumanitarianPage() {
         setSelectedKind("service");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load humanitarian desk");
+      setError(err instanceof Error ? err.message : t("humanitarianPage.loadError"));
     }
-  }, [selectedReviewId]);
+  }, [selectedReviewId, t]);
 
   useEffect(() => {
     void load();
@@ -90,23 +92,20 @@ export default function HumanitarianPage() {
     <main className="min-h-screen bg-[#120a0c] text-slate-100">
       <Navigation />
       <section className="mx-auto max-w-5xl px-4 py-10">
-        <p className="text-sm uppercase tracking-[0.2em] text-rose-400/80">Aid / humanitarian</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-rose-400/80">{t("humanitarianPage.kicker")}</p>
         <h1 className="mt-2 font-serif text-4xl text-white md:text-5xl">
-          {catalog?.title || "Humanitarian aid desk"}
+          {catalog?.title || t("humanitarianPage.titleFallback")}
         </h1>
         <p className="mt-3 max-w-2xl text-slate-300">{catalog?.tagline}</p>
         <p className="mt-4 text-sm leading-6 text-slate-500">{catalog?.compliance_note}</p>
-        <p className="mt-3 text-sm text-amber-200/80">
-          Desk listing — not a signed Red Cross partnership, not an emblem licence, not a 135-FZ
-          charity operated by ANCAP. Africa corridors are handoff listings, not AU programmes.
-        </p>
+        <p className="mt-3 text-sm text-amber-200/80">{t("humanitarianPage.disclaimer")}</p>
         <p className="mt-3 text-sm">
           <Link href={catalog?.legal_href || "/legal/humanitarian"} className="text-rose-300 underline">
-            Legal notice
+            {t("humanitarianPage.legalNotice")}
           </Link>
           {" · "}
           <Link href="/legal/welcome-grant" className="text-rose-300 underline">
-            Welcome grant (not this desk)
+            {t("humanitarianPage.welcomeGrant")}
           </Link>
         </p>
 
@@ -122,7 +121,7 @@ export default function HumanitarianPage() {
             }
             onClick={() => setRegion("all")}
           >
-            All regions
+            {t("humanitarianPage.allRegions")}
           </button>
           {(catalog?.regions || []).map((r) => (
             <button
@@ -147,14 +146,16 @@ export default function HumanitarianPage() {
         ) : null}
 
         <h2 className="mt-10 text-xl text-white">
-          {region === "africa" ? "Africa aid briefs" : "Aid briefs"}
+          {region === "africa" ? t("humanitarianPage.aidBriefsAfrica") : t("humanitarianPage.aidBriefs")}
         </h2>
         <ul className="mt-4 space-y-5">
           {services.map((svc) => (
             <li key={svc.id} className="border-t border-white/10 pt-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg text-white">{svc.label}</h3>
-                <span className="text-sm text-rose-200/80">from {svc.price_from_acp} ACP</span>
+                <span className="text-sm text-rose-200/80">
+                  {t("humanitarianPage.fromAcp").replace("{price}", svc.price_from_acp)}
+                </span>
               </div>
               <p className="mt-2 text-slate-300">{svc.blurb}</p>
               {(svc.regions || []).length ? (
@@ -171,14 +172,16 @@ export default function HumanitarianPage() {
                   setSelectedKind("service");
                 }}
               >
-                Reviews
+                {t("humanitarianPage.reviews")}
               </button>
             </li>
           ))}
         </ul>
 
         <h2 className="mt-12 text-xl text-white">
-          {region === "africa" ? "African Movement listings" : "Movement listings (handoff rails)"}
+          {region === "africa"
+            ? t("humanitarianPage.movementListingsAfrica")
+            : t("humanitarianPage.movementListings")}
         </h2>
         <ul className="mt-4 space-y-5">
           {partners.map((p) => (
@@ -190,12 +193,12 @@ export default function HumanitarianPage() {
               <p className="mt-2 text-slate-300">{p.blurb}</p>
               {p.official_partnership === false ? (
                 <p className="mt-2 text-xs uppercase tracking-wide text-amber-200/70">
-                  Desk listing — not an official partnership
+                  {t("humanitarianPage.notOfficialPartnership")}
                 </p>
               ) : null}
               {p.emblem_licensed === false ? (
                 <p className="mt-1 text-xs uppercase tracking-wide text-amber-200/70">
-                  Emblem not licensed — text name only
+                  {t("humanitarianPage.emblemNotLicensed")}
                 </p>
               ) : null}
               {p.ethics_note ? <p className="mt-2 text-sm text-slate-400">{p.ethics_note}</p> : null}
@@ -207,7 +210,7 @@ export default function HumanitarianPage() {
                   rel="noopener noreferrer"
                   className="text-rose-300 underline"
                 >
-                  Official website
+                  {t("humanitarianPage.officialWebsite")}
                 </a>
                 <button
                   type="button"
@@ -218,7 +221,7 @@ export default function HumanitarianPage() {
                     setSelectedKind("partner");
                   }}
                 >
-                  Reviews
+                  {t("humanitarianPage.reviews")}
                 </button>
               </div>
             </li>
