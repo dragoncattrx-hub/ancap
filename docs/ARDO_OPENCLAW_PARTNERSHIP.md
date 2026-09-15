@@ -18,7 +18,7 @@
 - Role: AI coding partner, runs via Claude Code / OpenClaw framework
 - Stack: OpenClaw agent system with Claude Opus 4.7 via TenetaAI-backed provider routing
 - Responsibilities: parallel coding tasks, code review, feature implementation, Telegram bot
-- Access: OpenClaw gateway on server (port 18789), Telegram bot (@ancap47_bot)
+- Access: OpenClaw gateway on server (port 18789), Telegram bot (@ARDO1488bot)
 - Configuration: `~/.openclaw/openclaw.json` with TenetaAI + fallback provider routing
 
 ---
@@ -31,7 +31,7 @@
 - **ACP token:** Native chain, 210M supply, on-chain wallet
 - **wACP:** BEP-20 wrapped on BSC, live on PancakeSwap V2 (wACP/USDT)
 - **Bridge:** ACP↔BSC bidirectional, reserve proof endpoint live
-- **OpenClaw:** Installed on server (?), Telegram bot @ancap47_bot configured
+- **OpenClaw:** Installed on server (?), Telegram bot @ARDO1488bot configured
 - **ARDO Control Center:** Next.js 14 app on local machine (port 3002), hrm-explorer
 - **Mail:** admin@ancap.cloud via HestiaCP/Dovecot, port 25 issue (external delivery broken)
 
@@ -104,7 +104,7 @@
 ### P1 — OpenClaw (ARDO + openclaw)
 - [ ] Verify OpenClaw gateway running on server (port 18789)
 - [ ] Deploy `~/.openclaw/openclaw.json` with real TenetaAI key
-- [ ] Test Telegram bot @ancap47_bot
+- [ ] Test Telegram bot @ARDO1488bot
 - [ ] Verify fallback provider path works if TenetaAI fails
 
 ### P2 — General improvements

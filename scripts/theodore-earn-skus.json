@@ -30,6 +30,21 @@
     "text": "AETERNA: поддержка при СДВГ\n\nПартнёрский бриф для лицензированного клинициста — 42 000 ACP.\nНе диагноз, не рецепт, не стимуляторы.\n\nhttps://ancap.cloud/aeterna#adhd-support"
   },
   {
+    "id": "aeterna-down-syndrome-support",
+    "channels": ["telegram", "site"],
+    "text": "AETERNA: поддержка при синдроме Дауна\n\nПартнёрский бриф для лицензированного клинициста — 42 000 ACP.\nНе излечение, не диагноз, не генная терапия от ANCAP.\n\nhttps://ancap.cloud/aeterna#down-syndrome-support"
+  },
+  {
+    "id": "aeterna-substance-coding",
+    "channels": ["telegram", "site"],
+    "text": "AETERNA: кодирование от веществ\n\nПартнёрский бриф (свет / клиника / гипноз) — 48 000 ACP.\nНе сеанс кодирования от ANCAP, не гарантия трезвости, не продажа контролируемых веществ.\n\nhttps://ancap.cloud/aeterna#substance-coding"
+  },
+  {
+    "id": "entertainment-tesla-coil-party",
+    "channels": ["telegram", "site"],
+    "text": "Развлечения: пати с катушкой Теслы\n\nDesk brief лицензированной площадки — 8 900 ACP.\nНе аффилировано с Jack Daniel's. ANCAP не продаёт алкоголь и контролируемые вещества. 18+/21+.\n\nhttps://ancap.cloud/entertainment#tesla-coil-party"
+  },
+  {
     "id": "aeterna-synthetic-blood-mamba",
     "channels": ["telegram", "site"],
     "text": "AETERNA: синтетическая кровь / Чёрная Мамба\n\nПартнёрский бриф архитектуры — 98 000 ACP.\nНе кровезаменитель, не компаундинг яда, не CE/FDA.\n\nhttps://ancap.cloud/aeterna#synthetic-blood-mamba"

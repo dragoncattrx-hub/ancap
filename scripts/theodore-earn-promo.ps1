@@ -35,6 +35,10 @@ if (Test-Path $statePath) {
   try {
     $state = Get-Content $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
     $index = [int]$state.nextIndex
+    # Repair corrupted state where lastSku was saved as an array of all ids.
+    if ($null -ne $state.lastSku -and $state.lastSku -is [System.Array]) {
+      $state.lastSku = [string]$state.lastSku[0]
+    }
   } catch {
     $index = 0
   }
@@ -61,7 +65,7 @@ $tg = Invoke-RestMethod -Uri $url -Method POST -Body $bytes -ContentType "applic
 $next = ($index + 1) % $skus.Count
 @{
   lastRun = (Get-Date).ToString("o")
-  lastSku = $sku.id
+  lastSku = [string]$sku.id
   lastMessageId = $tg.result.message_id
   nextIndex = $next
 } | ConvertTo-Json | Set-Content $statePath -Encoding UTF8
