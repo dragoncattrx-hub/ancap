@@ -23,6 +23,7 @@ CoverageClass = Literal[
     "perimeter_cleanup",
     "neonatal_install",
     "weather_control",
+    "antique_fire_restore",
     "custom",
 ]
 

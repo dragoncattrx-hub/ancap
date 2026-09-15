@@ -12,6 +12,7 @@ def test_insurance_catalog_and_quote(client):
     classes = {p["coverage_class"] for p in body["products"]}
     assert "neonatal_install" in classes
     assert "weather_control" in classes
+    assert "antique_fire_restore" in classes
     coverage = body["products"][0]["coverage_class"]
 
     quote = client.post(

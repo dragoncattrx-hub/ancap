@@ -42,10 +42,12 @@ test.describe("ANCAP Frontend - UI smoke", () => {
       "/legal/teleport-earphones",
       "/legal/humanitarian",
       "/legal/tesla-coil-party",
+      "/legal/antique-fire-restore",
       "/humanitarian",
       "/entertainment",
       "/aeterna",
       "/perimeter",
+      "/antique-fire-restore",
     ]) {
       const response = await page.goto(path, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${path} status`).toBe(200);

@@ -16,6 +16,7 @@ export const insuranceByLang: Record<Language, Tree> = {
     buyWithAcp: "Buy with ACP",
     wallet: "Wallet",
     quoteSummary: "Premium {premium} for {sum} · {days}d · hash {hash}…",
+    antiqueFireRestore: "Antique fire restore",
   },
   ru: {
     kicker: "Страхование ACP",
@@ -31,6 +32,7 @@ export const insuranceByLang: Record<Language, Tree> = {
     buyWithAcp: "Купить за ACP",
     wallet: "Кошелёк",
     quoteSummary: "Премия {premium} за {sum} · {days}д · хеш {hash}…",
+    antiqueFireRestore: "После пожара",
   },
   uk: {
     kicker: "Страхування ACP",
@@ -46,6 +48,7 @@ export const insuranceByLang: Record<Language, Tree> = {
     buyWithAcp: "Купити за ACP",
     wallet: "Гаманець",
     quoteSummary: "Премія {premium} за {sum} · {days}д · хеш {hash}…",
+    antiqueFireRestore: "Після пожежі",
   },
   de: {
     kicker: "ACP-Versicherung",
@@ -61,6 +64,7 @@ export const insuranceByLang: Record<Language, Tree> = {
     buyWithAcp: "Mit ACP kaufen",
     wallet: "Brieftasche",
     quoteSummary: "Prämie {premium} für {sum} · {days}T · Hash {hash}…",
+    antiqueFireRestore: "Brand-Restore",
   },
   "zh-Hant": {
     kicker: "ACP 保險",
@@ -76,5 +80,6 @@ export const insuranceByLang: Record<Language, Tree> = {
     buyWithAcp: "以 ACP 購買",
     wallet: "錢包",
     quoteSummary: "保費 {premium}，保額 {sum} · {days} 天 · 雜湊 {hash}…",
+    antiqueFireRestore: "火災修復",
   },
 };

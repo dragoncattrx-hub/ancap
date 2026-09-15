@@ -58,6 +58,7 @@ const explorePublicGroups: NavGroup[] = [
       { label: "Scale with agents", href: "/agency", i18nKey: "nav.agency" },
       { label: "DNA vault", href: "/dna-bank", i18nKey: "nav.dnaBank" },
       { label: "Clear perimeter", href: "/perimeter", i18nKey: "nav.perimeter" },
+      { label: "Fire restore", href: "/antique-fire-restore", i18nKey: "nav.antiqueFireRestore" },
       { label: "Cryo future", href: "/cryo", i18nKey: "nav.cryo" },
       { label: "Help now", href: "/humanitarian", i18nKey: "nav.humanitarian" },
       { label: "Saliva Rx", href: "/saliva-rx", i18nKey: "nav.salivaRx" },
@@ -110,6 +111,7 @@ const exploreAuthGroups: NavGroup[] = [
     items: [
       { label: "DNA vault", href: "/dna-bank", i18nKey: "nav.dnaBank" },
       { label: "Clear perimeter", href: "/perimeter", i18nKey: "nav.perimeter" },
+      { label: "Fire restore", href: "/antique-fire-restore", i18nKey: "nav.antiqueFireRestore" },
       { label: "Cryo future", href: "/cryo", i18nKey: "nav.cryo" },
       { label: "Help now", href: "/humanitarian", i18nKey: "nav.humanitarian" },
       { label: "Own the weather", href: "/stardust", i18nKey: "nav.stardust" },

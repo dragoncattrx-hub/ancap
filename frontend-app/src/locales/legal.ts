@@ -626,7 +626,42 @@ export const legalByLang: Record<Language, Tree> = {
     tcp10Body: "Questions: legal@ancap.cloud. Product: /entertainment#tesla-coil-party.",
     footerTeslaCoilParty: "Tesla coil party",
 
-
+    antiqueFireRestoreLink: "Antique fire restore",
+    hubCardAntiqueFireRestore:
+      "42,000 ACP licensed conservation / metallurgy partner brief using reverse-combustion literacy. Six-stage map is conservation analogy — not medical burn care.",
+    antiqueFireRestoreKicker: "Legal / conservation / antique fire restore",
+    antiqueFireRestoreTitle: "Antique fire restore — licensed conservation partner rail",
+    antiqueFireRestoreIntro:
+      "15 September 2026. ANCAP settles ACP for a licensed conservation / metallurgy partner handoff. Not DIY furnace work by ANCAP.",
+    afr1Title: "1. Platform role",
+    afr1Body:
+      "ANCAP sells a 42,000 ACP partner brief. ANCAP is not a restoration workshop and does not perform furnace or metallurgy work.",
+    afr2Title: "2. Reverse combustion literacy",
+    afr2Body:
+      "Reverse-combustion and reduction chemistry themes are literacy for licensed partners — not a DIY furnace kit sold by ANCAP.",
+    afr3Title: "3. Six-stage map",
+    afr3Body:
+      "The six-stage recovery map is a conservation protocol analogy for artifacts. It is not medical burn care and not emergency medicine.",
+    afr4Title: "4. No authenticity guarantee",
+    afr4Body:
+      "Paying ACP does not guarantee original finish, provenance authenticity, or full pre-fire condition.",
+    afr5Title: "5. No insurance payout by ANCAP",
+    afr5Body:
+      "ANCAP does not pay insurance claims for fire loss. Parametric cover on /insurance is a separate desk prototype — not a licensed insurer payout.",
+    afr6Title: "6. Licensed partner only",
+    afr6Body:
+      "Conservation and metallurgy work stays with a licensed partner. ANCAP issues a handoff brief only.",
+    afr7Title: "7. Human injuries",
+    afr7Body: "People injured in fires need licensed medical care — not this desk.",
+    afr8Title: "8. Hazardous materials",
+    afr8Body:
+      "Combustion toxins, asbestos, and heavy metals require local hazardous-materials compliance by the partner.",
+    afr9Title: "9. Payments",
+    afr9Body:
+      "42,000 ACP covers the desk brief and handoff. Workshop fees are billed by the licensed partner.",
+    afr10Title: "10. Contact",
+    afr10Body: "Questions: legal@ancap.cloud. Product: /antique-fire-restore.",
+    footerAntiqueFireRestore: "Antique fire restore",
 
     pulmopureLink: "PulmoPure",
     hubCardPulmopure:
@@ -1819,7 +1854,42 @@ export const legalByLang: Record<Language, Tree> = {
     tcp10Body: "legal@ancap.cloud · /entertainment#tesla-coil-party",
     footerTeslaCoilParty: "Пати с катушкой Теслы",
 
-
+    antiqueFireRestoreLink: "После пожара",
+    hubCardAntiqueFireRestore:
+      "Партнёрский бриф 42 000 ACP: реставрация антиквариата после пожара, грамотность reverse combustion / металлургии. Шесть стадий — аналогия консервации, не лечение ожогов.",
+    antiqueFireRestoreKicker: "Право / консервация / после пожара",
+    antiqueFireRestoreTitle: "После пожара — рельс лицензированного партнёра по консервации",
+    antiqueFireRestoreIntro:
+      "15 сентября 2026. ANCAP принимает ACP за handoff к лицензированному партнёру по консервации / металлургии. Не DIY-печь от ANCAP.",
+    afr1Title: "1. Роль платформы",
+    afr1Body:
+      "ANCAP продаёт бриф за 42 000 ACP. ANCAP не реставрационная мастерская и не выполняет печную или металлургическую работу.",
+    afr2Title: "2. Грамотность reverse combustion",
+    afr2Body:
+      "Темы обратного горения и восстановительной химии — грамотность для лицензированного партнёра, не DIY-печной набор от ANCAP.",
+    afr3Title: "3. Карта из шести стадий",
+    afr3Body:
+      "Шесть стадий — аналогия протокола консервации артефактов. Это не медицинская помощь при ожогах и не экстренная медицина.",
+    afr4Title: "4. Без гарантии подлинности",
+    afr4Body:
+      "Оплата ACP не гарантирует исходный финиш, подлинность провенанса или полное допожарное состояние.",
+    afr5Title: "5. ANCAP не выплачивает страховку",
+    afr5Body:
+      "ANCAP не выплачивает страховые претензии по пожару. Параметрическое покрытие на /insurance — отдельный прототип стола, не лицензированный страховщик.",
+    afr6Title: "6. Только лицензированный партнёр",
+    afr6Body:
+      "Работы по консервации и металлургии выполняет лицензированный партнёр. ANCAP выдаёт только handoff-бриф.",
+    afr7Title: "7. Травмы людей",
+    afr7Body: "Пострадавшим в пожаре нужна лицензированная медицинская помощь — не этот стол.",
+    afr8Title: "8. Опасные материалы",
+    afr8Body:
+      "Продукты горения, асбест и тяжёлые металлы требуют локального compliance по hazardous materials у партнёра.",
+    afr9Title: "9. Оплата",
+    afr9Body:
+      "42 000 ACP — бриф и handoff. Счета мастерской выставляет лицензированный партнёр.",
+    afr10Title: "10. Контакт",
+    afr10Body: "legal@ancap.cloud · /antique-fire-restore",
+    footerAntiqueFireRestore: "После пожара",
 
     pulmopureLink: "PulmoPure",
     hubCardPulmopure:
@@ -2991,7 +3061,42 @@ export const legalByLang: Record<Language, Tree> = {
     tcp10Body: "legal@ancap.cloud · /entertainment#tesla-coil-party",
     footerTeslaCoilParty: "Паті з котушкою Тесли",
 
-
+    antiqueFireRestoreLink: "Після пожежі",
+    hubCardAntiqueFireRestore:
+      "Партнерський бріф 42 000 ACP: реставрація антикваріату після пожежі, грамотність reverse combustion / металургії. Шість стадій — аналогія консервації, не лікування опіків.",
+    antiqueFireRestoreKicker: "Право / консервація / після пожежі",
+    antiqueFireRestoreTitle: "Після пожежі — рейка ліцензованого партнера з консервації",
+    antiqueFireRestoreIntro:
+      "15 вересня 2026. ANCAP приймає ACP за handoff до ліцензованого партнера з консервації / металургії. Не DIY-піч від ANCAP.",
+    afr1Title: "1. Роль платформи",
+    afr1Body:
+      "ANCAP продає бріф за 42 000 ACP. ANCAP не реставраційна майстерня і не виконує пічну чи металургійну роботу.",
+    afr2Title: "2. Грамотність reverse combustion",
+    afr2Body:
+      "Теми зворотного горіння та відновної хімії — грамотність для ліцензованого партнера, не DIY-пічний набір від ANCAP.",
+    afr3Title: "3. Карта з шести стадій",
+    afr3Body:
+      "Шість стадій — аналогія протоколу консервації артефактів. Це не медична допомога при опіках і не невідкладна медицина.",
+    afr4Title: "4. Без гарантії автентичності",
+    afr4Body:
+      "Оплата ACP не гарантує вихідний фініш, автентичність провенансу чи повний допожежний стан.",
+    afr5Title: "5. ANCAP не виплачує страховку",
+    afr5Body:
+      "ANCAP не виплачує страхові претензії за пожежу. Параметричне покриття на /insurance — окремий прототип столу, не ліцензований страховик.",
+    afr6Title: "6. Лише ліцензований партнер",
+    afr6Body:
+      "Роботи з консервації та металургії виконує ліцензований партнер. ANCAP видає лише handoff-бріф.",
+    afr7Title: "7. Травми людей",
+    afr7Body: "Постраждалим у пожежі потрібна ліцензована медична допомога — не цей стіл.",
+    afr8Title: "8. Небезпечні матеріали",
+    afr8Body:
+      "Продукти горіння, азбест і важкі метали вимагають локального compliance щодо hazardous materials у партнера.",
+    afr9Title: "9. Оплата",
+    afr9Body:
+      "42 000 ACP — бріф і handoff. Рахунки майстерні виставляє ліцензований партнер.",
+    afr10Title: "10. Контакт",
+    afr10Body: "legal@ancap.cloud · /antique-fire-restore",
+    footerAntiqueFireRestore: "Після пожежі",
 
     pulmopureLink: "PulmoPure",
     hubCardPulmopure:
@@ -4137,7 +4242,42 @@ export const legalByLang: Record<Language, Tree> = {
     tcp10Body: "Fragen: legal@ancap.cloud. Produkt: /entertainment#tesla-coil-party.",
     footerTeslaCoilParty: "Teslaspulen-Party",
 
-
+    antiqueFireRestoreLink: "Brand-Restore",
+    hubCardAntiqueFireRestore:
+      "42.000 ACP Partnerbrief: Antikrestaurierung nach Brand, Reverse-Combustion-/Metallurgie-Literacy. Sechs-Stufen-Karte ist Konservierungsanalogie — keine medizinische Brandversorgung.",
+    antiqueFireRestoreKicker: "Legal / Konservierung / Brand-Restore",
+    antiqueFireRestoreTitle: "Brand-Restore — Schiene des lizenzierten Konservierungspartners",
+    antiqueFireRestoreIntro:
+      "15. September 2026. ANCAP nimmt ACP fuer einen Handoff an einen lizenzierten Konservierungs-/Metallurgie-Partner entgegen. Keine DIY-Ofenarbeit durch ANCAP.",
+    afr1Title: "1. Plattformrolle",
+    afr1Body:
+      "ANCAP verkauft einen Partnerbrief fuer 42.000 ACP. ANCAP ist keine Restaurierungswerkstatt und fuehrt keine Ofen- oder Metallurgiearbeit aus.",
+    afr2Title: "2. Reverse-Combustion-Literacy",
+    afr2Body:
+      "Themen von Reverse Combustion und Reduktionschemie sind Literacy fuer lizenzierte Partner — kein DIY-Ofenkit von ANCAP.",
+    afr3Title: "3. Sechs-Stufen-Karte",
+    afr3Body:
+      "Die Sechs-Stufen-Karte ist eine Konservierungsprotokoll-Analogie fuer Artefakte. Keine medizinische Brandversorgung und keine Notfallmedizin.",
+    afr4Title: "4. Keine Authentizitaetsgarantie",
+    afr4Body:
+      "ACP-Zahlung garantiert keinen Originalfinish, keine Provenienz-Authentizitaet und keinen vollen Vorbrandzustand.",
+    afr5Title: "5. Keine Versicherungsauszahlung durch ANCAP",
+    afr5Body:
+      "ANCAP zahlt keine Versicherungsansprueche fuer Brandschaden. Parametrische Cover auf /insurance ist ein separates Desk-Prototyp — kein lizenzierter Versicherer.",
+    afr6Title: "6. Nur lizenzierter Partner",
+    afr6Body:
+      "Konservierungs- und Metallurgiearbeit bleibt beim lizenzierten Partner. ANCAP stellt nur den Handoff-Brief aus.",
+    afr7Title: "7. Verletzte Personen",
+    afr7Body: "Brandverletzte brauchen lizenzierte medizinische Hilfe — nicht diesen Desk.",
+    afr8Title: "8. Gefahrstoffe",
+    afr8Body:
+      "Verbrennungsprodukte, Asbest und Schwermetalle erfordern lokale Gefahrstoff-Compliance durch den Partner.",
+    afr9Title: "9. Zahlungen",
+    afr9Body:
+      "42.000 ACP decken Brief und Handoff. Werkstattgebuehren stellt der lizenzierte Partner.",
+    afr10Title: "10. Kontakt",
+    afr10Body: "Fragen: legal@ancap.cloud. Produkt: /antique-fire-restore.",
+    footerAntiqueFireRestore: "Brand-Restore",
 
     pulmopureLink: "PulmoPure",
     hubCardPulmopure:
@@ -5281,7 +5421,42 @@ export const legalByLang: Record<Language, Tree> = {
     tcp10Body: "問題：legal@ancap.cloud。產品：/entertainment#tesla-coil-party。",
     footerTeslaCoilParty: "特斯拉線圈派對",
 
-
+    antiqueFireRestoreLink: "火災修復",
+    hubCardAntiqueFireRestore:
+      "42,000 ACP 持照保存／冶金夥伴簡報：逆向燃燒素養。六階段圖為保存類比——非醫療燒燙傷照護。",
+    antiqueFireRestoreKicker: "法律／保存／火災修復",
+    antiqueFireRestoreTitle: "火災修復——持照保存夥伴軌道",
+    antiqueFireRestoreIntro:
+      "2026 年 9 月 15 日。ANCAP 以 ACP 結算向持照保存／冶金夥伴交接。非 ANCAP 自行 DIY 熔爐作業。",
+    afr1Title: "1. 平台角色",
+    afr1Body:
+      "ANCAP 販售 42,000 ACP 夥伴簡報。ANCAP 非修復工坊，亦不執行熔爐或冶金作業。",
+    afr2Title: "2. 逆向燃燒素養",
+    afr2Body:
+      "逆向燃燒與還原化學主題為持照夥伴素養——非 ANCAP 販售之 DIY 熔爐套件。",
+    afr3Title: "3. 六階段圖",
+    afr3Body:
+      "六階段復原圖為文物保存協議類比。非醫療燒燙傷照護，亦非急診醫學。",
+    afr4Title: "4. 無真偽保證",
+    afr4Body:
+      "支付 ACP 不保證原始表面、來源真偽或完全火災前狀態。",
+    afr5Title: "5. ANCAP 不支付保險理賠",
+    afr5Body:
+      "ANCAP 不就火災損失支付保險理賠。/insurance 上之參數化保障為獨立服務台原型——非持照保險人理賠。",
+    afr6Title: "6. 僅持照夥伴",
+    afr6Body:
+      "保存與冶金作業由持照夥伴執行。ANCAP 僅核發交接簡報。",
+    afr7Title: "7. 人員傷勢",
+    afr7Body: "火災傷者需持照醫療照護——非本服務台。",
+    afr8Title: "8. 危險物質",
+    afr8Body:
+      "燃燒產物、石棉與重金屬須由夥伴遵守當地危險物質法規。",
+    afr9Title: "9. 付款",
+    afr9Body:
+      "42,000 ACP 涵蓋簡報與交接。工坊費用由持照夥伴收取。",
+    afr10Title: "10. 聯絡",
+    afr10Body: "問題：legal@ancap.cloud。產品：/antique-fire-restore。",
+    footerAntiqueFireRestore: "火災修復",
 
     pulmopureLink: "PulmoPure",
     hubCardPulmopure:

@@ -12,6 +12,7 @@ import { arenaByLang } from "./arena";
 import { entertainmentByLang } from "./entertainment";
 import { humanitarianByLang } from "./humanitarian";
 import { perimeterByLang } from "./perimeter";
+import { antiqueFireRestoreByLang } from "./antiqueFireRestore";
 import { techByLang } from "./tech";
 import { billingByLang, creditsByLang, developersByLang, workflowsByLang } from "./desks";
 import { whitepaperByLang, acpWhitepaperByLang } from "./whitepaper";
@@ -162,6 +163,7 @@ export const translations: Record<Language, TranslationTree> = {
       groupTrust: "Trust & papers",
       dnaBank: "DNA vault",
       perimeter: "Clear perimeter",
+      antiqueFireRestore: "Fire restore",
       cryo: "Cryo future",
       salivaRx: "Saliva Rx",
       quantumSim: "Quantum SIM",
@@ -496,6 +498,7 @@ export const translations: Record<Language, TranslationTree> = {
     entertainmentPage: entertainmentByLang.en,
     humanitarianPage: humanitarianByLang.en,
     perimeterPage: perimeterByLang.en,
+    antiqueFireRestorePage: antiqueFireRestoreByLang.en,
     deskCommon: deskCommonByLang.en,
     cryoPage: cryoPageByLang.en,
     literaryPage: literaryPageByLang.en,
@@ -702,6 +705,7 @@ export const translations: Record<Language, TranslationTree> = {
       groupTrust: "Доверие и документы",
       dnaBank: "DNA-хранилище",
       perimeter: "Чистый периметр",
+      antiqueFireRestore: "После пожара",
       cryo: "Cryo-будущее",
       salivaRx: "Saliva Rx",
       quantumSim: "Quantum SIM",
@@ -1036,6 +1040,7 @@ export const translations: Record<Language, TranslationTree> = {
     entertainmentPage: entertainmentByLang.ru,
     humanitarianPage: humanitarianByLang.ru,
     perimeterPage: perimeterByLang.ru,
+    antiqueFireRestorePage: antiqueFireRestoreByLang.ru,
     deskCommon: deskCommonByLang.ru,
     cryoPage: cryoPageByLang.ru,
     literaryPage: literaryPageByLang.ru,
@@ -1242,6 +1247,7 @@ export const translations: Record<Language, TranslationTree> = {
       groupTrust: "Довіра і документи",
       dnaBank: "DNA-сховище",
       perimeter: "Чистий периметр",
+      antiqueFireRestore: "Після пожежі",
       cryo: "Cryo-майбутнє",
       salivaRx: "Saliva Rx",
       quantumSim: "Quantum SIM",
@@ -1576,6 +1582,7 @@ export const translations: Record<Language, TranslationTree> = {
     entertainmentPage: entertainmentByLang.uk,
     humanitarianPage: humanitarianByLang.uk,
     perimeterPage: perimeterByLang.uk,
+    antiqueFireRestorePage: antiqueFireRestoreByLang.uk,
     deskCommon: deskCommonByLang.uk,
     cryoPage: cryoPageByLang.uk,
     literaryPage: literaryPageByLang.uk,
@@ -1782,6 +1789,7 @@ export const translations: Record<Language, TranslationTree> = {
       groupTrust: "Vertrauen & Papers",
       dnaBank: "DNA-Tresor",
       perimeter: "Perimeter klären",
+      antiqueFireRestore: "Brand-Restore",
       cryo: "Cryo-Zukunft",
       salivaRx: "Saliva Rx",
       quantumSim: "Quantum SIM",
@@ -2116,6 +2124,7 @@ export const translations: Record<Language, TranslationTree> = {
     entertainmentPage: entertainmentByLang.de,
     humanitarianPage: humanitarianByLang.de,
     perimeterPage: perimeterByLang.de,
+    antiqueFireRestorePage: antiqueFireRestoreByLang.de,
     deskCommon: deskCommonByLang.de,
     cryoPage: cryoPageByLang.de,
     literaryPage: literaryPageByLang.de,
@@ -2322,6 +2331,7 @@ export const translations: Record<Language, TranslationTree> = {
       groupTrust: "信任與文件",
       dnaBank: "DNA 金庫",
       perimeter: "淨化邊界",
+      antiqueFireRestore: "火災修復",
       cryo: "冷凍未來",
       salivaRx: "Saliva Rx",
       quantumSim: "Quantum SIM",
@@ -2656,6 +2666,7 @@ export const translations: Record<Language, TranslationTree> = {
     entertainmentPage: entertainmentByLang["zh-Hant"],
     humanitarianPage: humanitarianByLang["zh-Hant"],
     perimeterPage: perimeterByLang["zh-Hant"],
+    antiqueFireRestorePage: antiqueFireRestoreByLang["zh-Hant"],
     deskCommon: deskCommonByLang["zh-Hant"],
     cryoPage: cryoPageByLang["zh-Hant"],
     literaryPage: literaryPageByLang["zh-Hant"],

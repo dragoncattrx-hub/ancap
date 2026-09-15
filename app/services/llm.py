@@ -24,6 +24,7 @@ _COMPLIANCE_LOCKED_SLUGS = frozenset(
         "aeterna-adhd-support",
         "aeterna-down-syndrome-support",
         "entertainment-tesla-coil-party",
+        "antique-fire-restore",
     }
 )
 

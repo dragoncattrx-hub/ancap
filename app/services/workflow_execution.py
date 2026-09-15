@@ -1245,6 +1245,38 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "architecture", "status_timeline"],
         tags=["entertainment", "tesla-coil", "party", "hospitality", "age-gated"],
     ),
+    WorkflowTemplatePublic(
+        slug="antique-fire-restore",
+        title="Antique Fire Restore Desk Brief",
+        category="Conservation",
+        summary=(
+            "Licensed conservation / metallurgy partner brief for antique restoration after "
+            "total fire using reverse-combustion literacy — 42,000 ACP."
+        ),
+        description=(
+            "Settles 42,000 ACP and issues a licensed conservation / metallurgy partner brief. "
+            "Reverse-combustion and reduction chemistry themes are partner literacy only — not a "
+            "DIY furnace kit. The six-stage recovery map is a conservation protocol analogy for "
+            "artifacts — not medical burn care. ANCAP does not guarantee authenticity or original "
+            "finish and does not pay insurance claims for fire loss."
+        ),
+        price=Money(amount="42000", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=40,
+        preview_items=[
+            "Reverse-combustion / metallurgy literacy map",
+            "Six-stage conservation protocol analogy",
+            "Partner handoff checklist",
+        ],
+        output_items=[
+            "Antique fire-restore intake brief",
+            "Licensed conservation / metallurgy partner handoff",
+            "Non-claim checklist (no DIY furnace / no medical burn care / no authenticity guarantee / no ANCAP insurance payout)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "architecture", "status_timeline"],
+        tags=["conservation", "antique", "fire-restore", "metallurgy", "reverse-combustion"],
+    ),
 
 ]
 
@@ -2643,6 +2675,40 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "entertainment_party",
             "sections_generated": len(template.output_items),
             "focus": ["venue handoff", "age gate", "hv safety literacy", "acp receipt"],
+        }
+    elif template.slug == "antique-fire-restore":
+        deliverable = {
+            "desk": "conservation",
+            "intent": "antique_fire_restore",
+            "compliance": (
+                "Licensed conservation / metallurgy partner only. Reverse-combustion literacy is not a "
+                "DIY furnace kit. Six-stage map is conservation analogy — not medical burn care. "
+                "No authenticity guarantee. ANCAP does not pay insurance claims for fire loss."
+            ),
+            "antique_fire_restore": {
+                "mode": "licensed_conservation_partner",
+                "architecture": "antique_fire_restore_partner_literacy",
+                "price_acp": "42000",
+                "literacy": [
+                    "reverse_combustion_reduction_chemistry",
+                    "six_stage_conservation_analogy_not_medical",
+                    "no_diy_furnace",
+                    "no_authenticity_guarantee",
+                    "no_ancap_insurance_payout",
+                ],
+                "note": (
+                    "ANCAP settles 42,000 ACP and issues a partner handoff brief. Workshop work "
+                    "stays with the licensed conservation / metallurgy partner."
+                ),
+            },
+            "summary": f"Antique fire-restore partner brief generated for {project_name}.",
+            "items": template.output_items,
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "conservation_fire_restore",
+            "sections_generated": len(template.output_items),
+            "focus": ["partner handoff", "reverse combustion literacy", "conservation stages", "acp receipt"],
         }
     elif template.slug.startswith("stardust-"):
         deliverable = {

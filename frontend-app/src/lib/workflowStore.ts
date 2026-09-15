@@ -281,6 +281,31 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     tags: ["entertainment", "tesla-coil", "party", "hospitality", "age-gated"],
   },
   {
+    slug: "antique-fire-restore",
+    title: "Antique Fire Restore Desk Brief",
+    category: "Conservation",
+    summary:
+      "Licensed conservation / metallurgy partner brief for antique restoration after total fire using reverse-combustion literacy — 42,000 ACP.",
+    description:
+      "Settles 42,000 ACP and issues a licensed conservation / metallurgy partner brief. Reverse-combustion literacy is not a DIY furnace kit. Six-stage map is conservation analogy — not medical burn care. No authenticity guarantee; ANCAP does not pay insurance claims for fire loss.",
+    price: { amount: "42000", currency: "ACP" },
+    accepted_currencies: ["ACP", "wACP"],
+    estimated_time_minutes: 40,
+    preview_items: [
+      "Reverse-combustion / metallurgy literacy map",
+      "Six-stage conservation protocol analogy",
+      "Partner handoff checklist",
+    ],
+    output_items: [
+      "Antique fire-restore intake brief",
+      "Licensed conservation / metallurgy partner handoff",
+      "Non-claim checklist (no DIY furnace / no medical burn care / no authenticity guarantee / no ANCAP insurance payout)",
+      "Proof receipt",
+    ],
+    receipt_items: ["workflow_slug", "price_snapshot", "architecture", "status_timeline"],
+    tags: ["conservation", "antique", "fire-restore", "metallurgy", "reverse-combustion"],
+  },
+  {
     slug: "aeterna-dna-wellness-report",
     title: "AETERNA DNA Wellness Report",
     category: "AETERNA",

@@ -216,6 +216,21 @@ _PRODUCTS: tuple[dict[str, Any], ...] = (
         ],
     },
     {
+        "coverage_class": "antique_fire_restore",
+        "label": "Antique fire restore / conservation",
+        "description": (
+            "Parametric cover for licensed antique fire-restore partner briefs booked via "
+            "/antique-fire-restore. Not a DIY furnace warranty, not medical burn care, not an "
+            "authenticity guarantee, and not a licensed insurer payout by ANCAP."
+        ),
+        "pool_id": "pool-antique-fire-restore",
+        "min": "500",
+        "max": "2000000",
+        "premium_bps": 110,
+        "term_days": 180,
+        "asset_ref_types": ["antique_fire_restore_brief"],
+    },
+    {
         "coverage_class": "custom",
         "label": "Custom everything desk",
         "description": "Catch-all parametric cover — underwriter review required before claim pay.",

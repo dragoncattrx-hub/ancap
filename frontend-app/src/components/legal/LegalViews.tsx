@@ -67,6 +67,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/down-syndrome-support", key: "downSyndromeSupportLink" },
     { href: "/legal/substance-coding", key: "substanceCodingLink" },
     { href: "/legal/tesla-coil-party", key: "teslaCoilPartyLink" },
+    { href: "/legal/antique-fire-restore", key: "antiqueFireRestoreLink" },
     { href: "/legal/pulmopure", key: "pulmopureLink" },
     { href: "/legal/barsuk", key: "barsukLink" },
     { href: "/legal/teleport-earphones", key: "teleportEarphonesLink" },
@@ -127,6 +128,7 @@ export function LegalHubView() {
     { href: "/legal/down-syndrome-support", title: "downSyndromeSupportLink", body: "hubCardDownSyndromeSupport" },
     { href: "/legal/substance-coding", title: "substanceCodingLink", body: "hubCardSubstanceCoding" },
     { href: "/legal/tesla-coil-party", title: "teslaCoilPartyLink", body: "hubCardTeslaCoilParty" },
+    { href: "/legal/antique-fire-restore", title: "antiqueFireRestoreLink", body: "hubCardAntiqueFireRestore" },
     { href: "/legal/pulmopure", title: "pulmopureLink", body: "hubCardPulmopure" },
     { href: "/legal/barsuk", title: "barsukLink", body: "hubCardBarsuk" },
     { href: "/legal/teleport-earphones", title: "teleportEarphonesLink", body: "hubCardTeleportEarphones" },
@@ -1328,6 +1330,39 @@ export function TeslaCoilPartyLegalView() {
   );
 }
 
+export function AntiqueFireRestoreLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/20 bg-amber-400/[0.06]"
+      kicker={t("legal.antiqueFireRestoreKicker")}
+      title={t("legal.antiqueFireRestoreTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.antiqueFireRestoreIntro")}`}
+      actions={<LegalNavPills current="/legal/antique-fire-restore" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.afr${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.afr${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/antique-fire-restore"
+            className="text-amber-200 underline decoration-amber-400/40 underline-offset-4"
+          >
+            /antique-fire-restore
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function PulmoPureLegalView() {
   const { t } = useLanguage();
   return (
@@ -1648,6 +1683,7 @@ export function SiteLegalFooter() {
     { href: "/legal/down-syndrome-support", label: "footerDownSyndromeSupport" },
     { href: "/legal/substance-coding", label: "footerSubstanceCoding" },
     { href: "/legal/tesla-coil-party", label: "footerTeslaCoilParty" },
+    { href: "/legal/antique-fire-restore", label: "footerAntiqueFireRestore" },
     { href: "/legal/pulmopure", label: "footerPulmopure" },
     { href: "/legal/barsuk", label: "footerBarsuk" },
     { href: "/legal/teleport-earphones", label: "footerTeleportEarphones" },
