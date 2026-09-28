@@ -57,6 +57,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Local Inter from @fontsource/inter — avoids next/font/google network at build. */
+.font-inter {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
 main,
 section,
 article,

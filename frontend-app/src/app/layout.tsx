@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
-import { Inter } from "next/font/google";
+// Local Inter (no Google Fonts fetch at build time — CI e2e was failing on next/font/google).
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/cyrillic-400.css";
+import "@fontsource/inter/cyrillic-500.css";
+import "@fontsource/inter/cyrillic-600.css";
+import "@fontsource/inter/cyrillic-700.css";
 import "./globals.css";
 import { ClientProviders } from "@/components/ClientProviders";
 import { ChunkErrorRecovery } from "@/components/ChunkErrorRecovery";
 import { NetworkBackground } from "@/components/NetworkBackground";
 import { detectPreferredLanguage } from "@/lib/language";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
 
 // Build a sane absolute base for canonical/OG links. Override via NEXT_PUBLIC_SITE_URL
 // in Docker/CI when serving from a different host, otherwise default to ancap.cloud.
@@ -80,7 +82,7 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLang} suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+      <body className="font-inter antialiased" suppressHydrationWarning>
         <ChunkErrorRecovery />
         <ClientProviders initialLang={initialLang}>
           <NetworkBackground />
