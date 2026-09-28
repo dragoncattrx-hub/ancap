@@ -82,6 +82,7 @@ export default function AcpWalletPage() {
   const passwordSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [depositAddress, setDepositAddress] = useState<string>("");
+  const [depositNote, setDepositNote] = useState<string>("");
   const [privacyAddress, setPrivacyAddress] = useState<string>("");
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [privacyPassword, setPrivacyPassword] = useState("");
@@ -188,8 +189,10 @@ export default function AcpWalletPage() {
       const addrRes = await Promise.allSettled([walletAcp.getDepositAddress()]);
       const addr = addrRes[0];
       if (addr.status === "fulfilled") {
-        resolvedDeposit = String((addr.value as { address?: string } | null)?.address || "").trim();
+        const payload = (addr.value || null) as { address?: string; note?: string | null } | null;
+        resolvedDeposit = String(payload?.address || "").trim();
         setDepositAddress(resolvedDeposit);
+        setDepositNote(String(payload?.note || "").trim());
       } else {
         warnings.push(
           t("walletAcpPage.depositAddressUnavailable").replace(
@@ -590,6 +593,9 @@ export default function AcpWalletPage() {
                 <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                   {busy && !singleWalletAddress ? t("walletAcpPage.loading") : (singleWalletAddress || t("walletAcpPage.dash"))}
                 </div>
+                {depositNote ? (
+                  <div style={{ marginTop: 8, color: "#f59e0b", fontSize: "0.85rem", lineHeight: 1.45 }}>{depositNote}</div>
+                ) : null}
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>{t("walletAcpPage.copy")}</button>
                 </div>

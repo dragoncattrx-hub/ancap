@@ -23,7 +23,7 @@ from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
-from app.services.acp_tokenomics import fetch_custodial_hot_breakdown
+from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 from app.services import acp_privacy as privacy_svc
 from app.services import otc_intake as otc_svc
 from app.schemas.otc_intake import (
@@ -572,30 +572,27 @@ async def _decorate_balance_for_user(
     platform_credits_s: str | None = None
     balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
 
-    if include_in_work and target_address:
-        try:
-            hot_breakdown = await fetch_custodial_hot_breakdown(target_address)
-        except Exception:
-            hot_breakdown = None
-        if hot_breakdown is not None:
-            display_acp = hot_breakdown.total_acp
-            display_units = _units_from_acp(hot_breakdown.total_acp)
-            display_utxo_count = hot_breakdown.total_utxo_count
-            tokenomics_buckets = [
-                AcpTokenomicsBucket(
-                    key=b.key,
-                    label=b.label,
-                    acp=_decimal_to_api_str(b.acp),
-                    utxo_count=b.utxo_count,
-                )
-                for b in hot_breakdown.buckets
-            ]
-            view_mode = "operator_hot"
-            platform_credits_s = _decimal_to_api_str(real_acp)
-            on_chain_s = None
-            balance_note = _format_operator_hot_balance_note(
-                hot_breakdown.total_acp, real_acp, available_acp
+    # Operator hot: use the already-loaded walletd/RPC snapshot. Never full-scan
+    # the tip here — `_scan_address_utxo_units` is tens of thousands of RPCs and
+    # was aborting the browser with "signal timed out".
+    if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
+        display_acp = on_chain_acp
+        display_units = _units_from_acp(on_chain_acp)
+        tokenomics_buckets = [
+            AcpTokenomicsBucket(
+                key="hot",
+                label="Operator pool",
+                acp=_decimal_to_api_str(on_chain_acp),
+                utxo_count=display_utxo_count,
             )
+        ]
+        view_mode = "operator_hot"
+        # Credits are ledger-backed; do not clamp them by a failed/empty on-chain probe.
+        platform_credits_s = _decimal_to_api_str(in_ledger)
+        on_chain_s = None
+        balance_note = _format_operator_hot_balance_note(
+            on_chain_acp, in_ledger, available_acp
+        )
 
     # Regular users: always expose ledger credits (welcome grant / faucet / etc.).
     # When the deposit address still has 0 UTXOs, surface those credits as the
@@ -1157,12 +1154,19 @@ async def get_deposit_address(
     addr = (wallet.address or "").strip()
     if not addr:
         raise HTTPException(status_code=500, detail="ACP wallet row has empty address")
+    deposit_note = None
+    if addr == CUSTODIAL_HOT_ADDRESS:
+        deposit_note = (
+            "This account is bound to the shared custodial hot wallet (operator pool). "
+            "Do not treat it as a personal one-user deposit address."
+        )
     return AcpDepositAddressResponse(
         address=addr,
         mode="standard",
         redacted=privacy_svc.redact_address(addr),
         privacy_profile=privacy_svc.PRIVACY_PROFILE,
         reuse_policy="reusable_primary",
+        note=deposit_note,
     )
 
 

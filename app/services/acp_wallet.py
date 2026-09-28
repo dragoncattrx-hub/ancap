@@ -286,7 +286,15 @@ async def create_wallet_for_user(
     password: str,
     derivation_path: str = DEFAULT_DERIVATION_PATH,
 ) -> tuple[UserAcpWallet, str]:
-    wallet_secret, mnemonic, address = generate_wallet_secret()
+    from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
+
+    wallet_secret = mnemonic = address = ""
+    for _ in range(5):
+        wallet_secret, mnemonic, address = generate_wallet_secret()
+        if (address or "").strip() != CUSTODIAL_HOT_ADDRESS:
+            break
+    else:
+        raise RuntimeError("ACP wallet generation collided with custodial hot address")
     fields = _build_recovery_ready_fields(wallet_secret, password)
     now = datetime.now(timezone.utc)
     wallet = UserAcpWallet(
