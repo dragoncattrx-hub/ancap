@@ -26,7 +26,11 @@ def main() -> int:
     args = parser.parse_args()
     url = args.base_url.rstrip("/") + "/wacp/reserve-proof"
     try:
-        with urllib.request.urlopen(url, timeout=20) as resp:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "ancap-wacp-reserve-preflight/1.0", "Accept": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         print(f"FAIL: could not fetch reserve proof: {exc}", file=sys.stderr)
@@ -41,6 +45,7 @@ def main() -> int:
     except (TypeError, ValueError):
         backing_ok = False
 
+    # Fail closed on degraded/unhealthy proofs — operator must not mint/LP.
     if health in ok_markers and backing_ok:
         print(json.dumps({"ok": True, "url": url, "proof": payload}, indent=2, default=str))
         print("PASS: reserve proof looks healthy. Human confirmation still required before mint/LP.")
