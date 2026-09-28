@@ -2,12 +2,15 @@ import { fallbackWorkflowBundles, fallbackWorkflowTemplates, type WorkflowBundle
 import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
 import { WorkflowsCatalog } from "./WorkflowsCatalog";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const API_BASE = getServerApiBase();
 
 async function getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
   try {
     const res = await serverApiFetch(`${API_BASE}/workflow-store/templates`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -24,7 +27,7 @@ async function getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
 async function getWorkflowBundles(): Promise<WorkflowBundle[]> {
   try {
     const res = await serverApiFetch(`${API_BASE}/workflow-store/bundles`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -39,7 +42,6 @@ async function getWorkflowBundles(): Promise<WorkflowBundle[]> {
 }
 
 export default async function WorkflowsPage() {
-  const workflows = await getWorkflowTemplates();
-  const bundles = await getWorkflowBundles();
+  const [workflows, bundles] = await Promise.all([getWorkflowTemplates(), getWorkflowBundles()]);
   return <WorkflowsCatalog workflows={workflows} bundles={bundles} />;
 }

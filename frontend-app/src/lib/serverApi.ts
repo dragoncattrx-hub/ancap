@@ -17,11 +17,20 @@ export function getServerApiBase(): string {
   return "https://ancap.cloud/api/v1";
 }
 
+const DEFAULT_SSR_TIMEOUT_MS = 8_000;
+
 /** SSR fetch with User-Agent (Cloudflare blocks bare Node fetch with 403). */
 export function serverApiFetch(input: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers);
   if (!headers.has("User-Agent")) {
     headers.set("User-Agent", "ancap-frontend-ssr/1.0");
   }
-  return fetch(input, { ...init, headers });
+  // Fail closed quickly during `next build` / SSR when API is slow or unreachable.
+  // Without a timeout, static generation can hang until Next's 180s page budget.
+  const signal =
+    init?.signal ??
+    (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+      ? AbortSignal.timeout(DEFAULT_SSR_TIMEOUT_MS)
+      : undefined);
+  return fetch(input, { ...init, headers, ...(signal ? { signal } : {}) });
 }
