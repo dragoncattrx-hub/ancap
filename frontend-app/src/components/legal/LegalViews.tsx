@@ -1730,6 +1730,10 @@ export function SiteLegalFooter() {
             support@ancap.cloud
           </a>
         </div>
+        <p style={{ marginTop: 10, fontSize: "0.72rem", opacity: 0.72, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+          Easter egg (not a product claim): any “time machine” or “time lighter” lore is a joke for the
+          footer — not a launch feature and not investment advice.
+        </p>
       </div>
     </footer>
   );

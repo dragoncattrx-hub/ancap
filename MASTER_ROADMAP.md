@@ -604,7 +604,7 @@ Verification (2026-05-26):
 - `frontend-app/src/lib/api.ts` centralizes raw authenticated fetch helpers (`apiFetchRaw` / shared headers), and the admin overview, funds create, vertical propose, profile loads, agent follow/unfollow, logout, and workflow revenue CSV export flows use that shared path instead of bespoke client-side fetch calls
 - repo scan of `frontend-app/src` shows no remaining auth-token writes to localStorage; `ancap_user` is kept only as non-secret UI bootstrap data while Playwright auth seeders stage `ancap_token` as a cookie
 - cookie-authenticated unsafe requests fail closed in `app/api/deps.py` unless `X-Requested-With` is present, while explicit Bearer-token clients remain allowed
-- auth cookie set/clear paths use `SameSite=strict`
+- auth cookie set/clear paths use `SameSite=lax` (required for ancap.cloud ↔ api.ancap.cloud subdomain cookie sharing)
 - local prod-like runtime truth on `http://127.0.0.1:8080` is healthy (`/api/v1/system/health` 200, `/api/v1/system/ready` ready, `/internal/frontend-build` matches build id `32b5d58`)
 - `pytest tests/test_auth.py tests/test_system.py tests/api/test_system_economy_health.py -q` passes
 - `npm run build` in `frontend-app` passes
@@ -613,12 +613,12 @@ Exit criteria: satisfied - no Bearer tokens are stored in localStorage for auth 
 
 ### 3.2 SameSite cookie + CORS hardening [MEDIUM]
 
-Status: [x] Done. Auth cookies are `SameSite=strict`, CORS is explicit, and live prod-like preflight checks confirm the intended same-origin browser path while rejecting disallowed origins.
+Status: [x] Done. Auth cookies are `SameSite=lax`, CORS is explicit, and live prod-like preflight checks confirm the intended same-site browser path while rejecting disallowed origins.
 
-Files: `app/main.py`, `app/api/routers/auth.py`, `infra/nginx/default.conf`
+Files: `app/main.py`, `app/api/routers/auth.py`, `infra/nginx/default.conf`, `docker-compose.prod.yml`
 
-Verification (2026-05-26):
-- auth cookie set/clear paths use `SameSite=strict`
+Verification (2026-05-26; docs aligned 2026-09-28):
+- auth cookie set/clear paths use `SameSite=lax`
 - `app.main` CORS middleware keeps explicit `allow_origins` and explicit allowed methods/headers (`Authorization`, `Content-Type`, `Idempotency-Key`, `X-API-Key`, `X-Bridge-Operator-Secret`, `X-Cron-Secret`, `X-Requested-With`, `X-Request-Id`)
 - `app.main` already injects `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and `Permissions-Policy`
 - `infra/nginx/default.conf` already matches `DENY` + HSTS across public locations

@@ -16,6 +16,7 @@ Especially important:
 - the official wrapped BSC asset is **`wACP`**, not an arbitrary token using similar branding;
 - verify the full address, not only the symbol, name, or logo;
 - cross-check contract source and runtime status before treating a surface as official.
+- MetaMask education (add official token / spot fakes): live page `/docs/wacp/metamask` — ANCAP cannot remotely delete tokens from a user’s wallet.
 
 ## Official identities
 

@@ -6,6 +6,8 @@ ANCAP is moving toward a GitHub-first model where public-safe components are eas
 
 **ANCAP will be open-source where transparency increases trust, integration and adoption — while security-critical infrastructure, private keys, bridge signer operations, wallet hot-key logic and production secrets remain protected.**
 
+Do **not** interpret “partial public surfaces” as hiding material product/token risk facts. Public docs must stay honest about wACP addresses, reserve/bridge risks, and free-distribution caps; only secrets and operator abuse thresholds stay private.
+
 ## Goals
 
 - increase trust in ACP / wACP

@@ -1545,6 +1545,87 @@ class FaucetClaim(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class RegistrationSignal(Base):
+    """Hashed IP/device signals for free-ACP anti-sybil quarantine."""
+
+    __tablename__ = "registration_signals"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    ip_hash = Column(String(64), nullable=False, index=True)
+    device_hash = Column(String(64), nullable=True, index=True)
+    free_grants_allowed = Column(Boolean, nullable=False, default=True)
+    risk_flags = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_registration_signals_ip_created", "ip_hash", "created_at"),
+        Index("ix_registration_signals_device_created", "device_hash", "created_at"),
+    )
+
+
+class ServerInstallBounty(Base):
+    """Crypto payout requests for verified server installations."""
+
+    __tablename__ = "server_install_bounties"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    host_label = Column(String(128), nullable=False)
+    proof_url = Column(Text, nullable=True)
+    proof_note = Column(Text, nullable=True)
+    payout_address = Column(String(128), nullable=False)
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="pending")
+    risk_flags = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class RobotTelemetryConsent(Base):
+    """Opt-in consent for shipping sold/rented robot telemetry to ANCAP servers."""
+
+    __tablename__ = "robot_telemetry_consents"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    robot_id = Column(String(128), nullable=False, index=True)
+    consent_active = Column(Boolean, nullable=False, default=True)
+    retention_days = Column(Integer, nullable=False, default=30)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class RobotTelemetryEvent(Base):
+    __tablename__ = "robot_telemetry_events"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    consent_id = Column(
+        UUID(as_uuid=False), ForeignKey("robot_telemetry_consents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    robot_id = Column(String(128), nullable=False, index=True)
+    event_type = Column(String(64), nullable=False)
+    payload_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class RobotDeliveryJob(Base):
+    """Uber-like food / courier jobs for delivery robots and cyborg agents."""
+
+    __tablename__ = "robot_delivery_jobs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    customer_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    robot_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
+    pickup_label = Column(String(255), nullable=False)
+    dropoff_label = Column(String(255), nullable=False)
+    amount_acp = Column(Numeric(38, 18), nullable=False)
+    status = Column(String(32), nullable=False, default="open")
+    delivery_proof = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 class StarterPack(Base):
     __tablename__ = "starter_packs"
 

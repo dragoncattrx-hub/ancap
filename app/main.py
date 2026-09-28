@@ -109,6 +109,7 @@ from app.api.routers import (
     social_network,
     startup_invest,
     stardust_srt,
+    robot_ops,
 )
 
 settings = get_settings()
@@ -310,6 +311,7 @@ ALL_ROUTERS = [
     social_network.router,
     startup_invest.router,
     stardust_srt.router,
+    robot_ops.router,
 ]
 
 for r in ALL_ROUTERS:

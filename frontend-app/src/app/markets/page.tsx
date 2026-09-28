@@ -123,6 +123,11 @@ export default function MarketsPage() {
           profiles. Below is every free surface we can verify or self-host for{" "}
           <strong>{WACP_SYMBOL}</strong>.
         </p>
+        <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 820, marginBottom: 12 }}>
+          Three different numbers people confuse: <strong>wACP DEX spot</strong> (GeckoTerminal / PancakeSwap),
+          the <strong>USDT→ACP desk quote</strong> inside the product, and <strong>promotional credit labels</strong>{" "}
+          (welcome grant / faucet — not a retail sale price). Dust LP depth is not an ACP unit price.
+        </p>
         <p
           style={{
             color: "var(--accent-strong)",
@@ -171,6 +176,9 @@ export default function MarketsPage() {
             </a>
             <Link href="/docs/wacp" className="btn btn-ghost">
               Docs
+            </Link>
+            <Link href="/docs/wacp/metamask" className="btn btn-ghost">
+              MetaMask guide
             </Link>
           </div>
         </div>

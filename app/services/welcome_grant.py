@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import LedgerEvent, LedgerEventTypeEnum
+from app.services.free_distribution import free_distribution_allows
 from app.services.ledger import append_event, get_or_create_account, is_ledger_invariant_halted
 
 
@@ -28,16 +29,26 @@ def welcome_grant_acp() -> Decimal:
         return Decimal("0")
 
 
-async def issue_welcome_grant_idempotent(session: AsyncSession, *, user_id: UUID) -> bool:
+async def issue_welcome_grant_idempotent(
+    session: AsyncSession,
+    *,
+    user_id: UUID,
+    free_grants_allowed: bool = True,
+) -> bool:
     """Credit the new user's ledger once. Returns True if a new event was written.
 
     Registration must still succeed if the grant is skipped (halted ledger, zero
-    amount, or a prior grant for the same user account).
+    amount, free-distribution closed, anti-sybil quarantine, or a prior grant).
     """
     amount = welcome_grant_acp()
     if amount <= 0:
         return False
+    if not free_grants_allowed:
+        return False
     if await is_ledger_invariant_halted(session):
+        return False
+    allowed, _reason = await free_distribution_allows(session, amount=amount)
+    if not allowed:
         return False
 
     dst_acc = await get_or_create_account(session, "user", user_id)

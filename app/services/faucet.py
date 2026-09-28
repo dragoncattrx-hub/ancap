@@ -10,6 +10,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Agent, FaucetClaim, LedgerEventTypeEnum
+from app.services.anti_sybil import user_free_grants_quarantined
+from app.services.free_distribution import faucet_max_amount, free_distribution_allows
 from app.services.ledger import get_or_create_account, append_event, is_ledger_invariant_halted
 
 
@@ -27,9 +29,18 @@ async def _basic_eligibility(
     *,
     user_id: UUID | None,
     agent_id: UUID | None,
+    amount_value: Decimal,
 ) -> FaucetDecision:
     if user_id is None and agent_id is None:
         return FaucetDecision(status="rejected", reason="missing_subject")
+
+    max_amount = faucet_max_amount()
+    if amount_value > max_amount:
+        return FaucetDecision(status="rejected", reason="amount_exceeds_cap")
+
+    allowed, dist_reason = await free_distribution_allows(session, amount=amount_value)
+    if not allowed:
+        return FaucetDecision(status="rejected", reason=dist_reason or "distribution_closed")
 
     # quarantine guardrail
     if agent_id is not None:
@@ -37,6 +48,9 @@ async def _basic_eligibility(
         ag = r.scalar_one_or_none()
         if ag and str(ag.status) == "quarantined":
             return FaucetDecision(status="held", reason="agent_quarantined")
+
+    if user_id is not None and await user_free_grants_quarantined(session, user_id=user_id):
+        return FaucetDecision(status="held", reason="registration_sybil_quarantine")
 
     # one granted claim per user (enforced by DB unique index as well)
     if user_id is not None:
@@ -61,8 +75,15 @@ async def claim_faucet(
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
     if amount_value <= 0:
         raise HTTPException(status_code=400, detail="amount must be positive")
+    if amount_value > faucet_max_amount():
+        raise HTTPException(
+            status_code=400,
+            detail=f"amount exceeds faucet cap of {faucet_max_amount()} ACP",
+        )
 
-    decision = await _basic_eligibility(session, user_id=user_id, agent_id=agent_id)
+    decision = await _basic_eligibility(
+        session, user_id=user_id, agent_id=agent_id, amount_value=amount_value
+    )
     claim_status = decision.status
 
     # Strong idempotency: if already granted, return the granted claim (do not create a new rejected row).
@@ -73,6 +94,23 @@ async def claim_faucet(
         existing = r.scalar_one_or_none()
         if existing is not None:
             return existing
+
+    # Idempotent held/rejected outcomes for the same user (avoid claim spam under quarantine).
+    if user_id is not None and claim_status in ("held", "rejected") and decision.reason:
+        r = await session.execute(
+            select(FaucetClaim)
+            .where(
+                FaucetClaim.user_id == user_id,
+                FaucetClaim.claim_status == claim_status,
+            )
+            .order_by(FaucetClaim.created_at.desc())
+            .limit(1)
+        )
+        existing = r.scalar_one_or_none()
+        if existing is not None:
+            flags = dict(existing.risk_flags or {})
+            if flags.get("reason") == decision.reason:
+                return existing
 
     claim = FaucetClaim(
         user_id=user_id,

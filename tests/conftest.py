@@ -52,6 +52,10 @@ os.environ.setdefault("RUN_FEE_AMOUNT", "0")
 # Welcome 100 ACP grant is a production growth expense. Exact-balance tests
 # assume a zero starting ledger, so disable it in pytest.
 os.environ["WELCOME_GRANT_ACP"] = "0"
+# Keep anti-sybil velocity high in the shared test suite so registration/faucet
+# flows stay deterministic; dedicated anti-sybil tests lower these via monkeypatch.
+os.environ["REGISTRATION_SIGNAL_MAX_PER_IP"] = "1000"
+os.environ["REGISTRATION_SIGNAL_MAX_PER_DEVICE"] = "1000"
 
 from app.config import get_settings
 from app.db.session import Base, get_db, async_session_maker

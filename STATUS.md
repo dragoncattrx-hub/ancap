@@ -1,6 +1,6 @@
 # ANCAP Status
 
-> Updated: 2026-09-12
+> Updated: 2026-09-28
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
@@ -9,9 +9,13 @@ ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
 **Work-stop blockers: none.**
 
+**ACP “mining” clarification:** there is **no PoW mining pool**. The lean-chain miner is a fee-packed block assembler (see `docs/ACP_LEAN_CHAIN.md`). Staking bootstrap emission is ledger staking, not hash mining. Do not market “mine ACP” as energy-intensive PoW.
+
+**Safe-launch controls (2026-09-28):** auth cookie policy is `SameSite=Lax` with prod `CORS_ORIGINS`; free ACP distribution has a 1M cap kill-switch; registration anti-sybil quarantines free grants; Theodore promo script is visible/portable with no spend keys; Terms §3 has a residency draft pending counsel; wACP mint preflight script + MetaMask education page shipped.
+
 Active remaining work (not blockers):
 1. **ACP mobile wallet** — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available.
-2. **Open-source follow-through** — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI. Phase 1 community files including root `README.md` are **present**. Do not report “absence of README.md”.
+2. **Open-source follow-through** — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI. Phase 1 community files including root `README.md` are **present**. Do not report “absence of README.md”. Public-safe vs private boundaries stay in `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md` (secrets stay private; do not hide material token/risk facts).
 3. **Monetization depth** — optional conversion/LTV after a **live** ACP-first loop. Stripe 4.1 is operator live verification only. Do **not** report “monetization after the first ACP cycle” as a blocker.
 
 Security / CI / prod-hardening baseline closed in the **2026-07-01** wave (`docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`); external upstream key revoke audit remains operator-open, not a freeze.

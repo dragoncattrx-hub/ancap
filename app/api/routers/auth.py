@@ -43,6 +43,7 @@ from app.services.auth_flows import (
     send_login_alert,
     send_password_reset_email,
 )
+from app.services.anti_sybil import evaluate_registration_signals
 from app.services.referrals import attribute_referral
 from app.services.turnstile import verify_turnstile
 from app.services.welcome_grant import issue_welcome_grant_idempotent
@@ -304,7 +305,17 @@ async def create_user(body: UserCreateRequest, request: Request, response: Respo
             referred_agent_id=None,
             source="signup",
         )
-    await issue_welcome_grant_idempotent(session, user_id=user.id)
+    sybil = await evaluate_registration_signals(
+        session,
+        request=request,
+        user_id=user.id,
+        device_fingerprint=body.device_fingerprint,
+    )
+    await issue_welcome_grant_idempotent(
+        session,
+        user_id=user.id,
+        free_grants_allowed=sybil.free_grants_allowed,
+    )
     await session.refresh(user)
     token = create_access_token(str(user.id))
     _set_auth_cookie(response, token, request)

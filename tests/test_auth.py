@@ -86,6 +86,8 @@ def test_login_sets_secure_cookie_for_https_origin(client, monkeypatch):
     set_cookie = r.headers.get("set-cookie", "")
     assert "ancap_token=" in set_cookie
     assert "Secure" in set_cookie
+    assert "SameSite=lax" in set_cookie
+    assert "Domain=.ancap.cloud" in set_cookie
 
 
 def test_login_does_not_set_secure_cookie_for_https_loopback_origin(client, monkeypatch):

@@ -304,6 +304,17 @@ class Settings(BaseSettings):
     # USD cash and not a charitable donation). Tests set this to "0".
     welcome_grant_acp: str = "100"
 
+    # Free ACP distribution kill-switch (welcome + faucet + referral signup bonus).
+    # When disabled or when cumulative free ACP reaches the cap, new grants stop.
+    free_acp_distribution_enabled: bool = True
+    free_acp_distribution_cap: str = "1000000"
+    # Onboarding faucet hard cap (server-side; clients must not exceed this).
+    faucet_max_amount_acp: str = "10"
+    # Anti-sybil: max distinct free-ACP registrations per hashed IP / device window.
+    registration_signal_max_per_ip: int = 2
+    registration_signal_max_per_device: int = 2
+    registration_signal_window_hours: int = 168
+
     # Referral (bonuses are minted from the platform account — keep them
     # below expected lifetime platform revenue per referred user)
     referral_signup_bonus_acp: str = "25"

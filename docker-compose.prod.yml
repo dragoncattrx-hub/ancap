@@ -38,6 +38,8 @@ services:
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set for docker-compose.prod.yml}       # required — no fallback; compose/app fail fast if missing
       CURSOR_SECRET: ${CURSOR_SECRET:?CURSOR_SECRET must be set for docker-compose.prod.yml} # required — no fallback; compose/app fail fast if missing
       CRON_SECRET: ${CRON_SECRET:?CRON_SECRET must be set for docker-compose.prod.yml}       # required — no fallback; compose/app fail fast if missing
+      # Browser origins for ancap.cloud ↔ api.ancap.cloud cookie credentials (SameSite=Lax).
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://ancap.cloud,https://www.ancap.cloud}
       # L3 chain anchors (mock | acp | ethereum | solana)
       CHAIN_ANCHOR_DRIVER: acp
       # Local prod-like runtime should use the host ACP node directly.

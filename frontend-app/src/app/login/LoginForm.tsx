@@ -55,7 +55,12 @@ export function LoginForm() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
+      const lower = message.toLowerCase();
+      setError(
+        lower.includes("failed to fetch") || lower.includes("could not reach the ancap api")
+          ? "Could not reach the ANCAP API. Check your connection or try again shortly."
+          : message,
+      );
       setTurnstileToken("");
       setTurnstileResetKey((v) => v + 1);
     } finally {

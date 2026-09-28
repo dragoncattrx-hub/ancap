@@ -88,6 +88,8 @@ export default function OnboardingPage() {
           <h1 className="section-title" style={{ marginBottom: 8 }}>Onboarding</h1>
           <p className="section-subtitle" style={{ marginBottom: 18 }}>
             Claim starter assets (ACP), activate a starter pack, and run a quickstart workflow.
+            Free ACP (faucet / welcome grant / referral signup) stops automatically after the global
+            1,000,000 ACP promotional cap — see <code>/v1/market/free-distribution</code>.
           </p>
 
           <div style={{ display: "grid", gap: 20 }}>

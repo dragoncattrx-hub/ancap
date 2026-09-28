@@ -264,6 +264,14 @@ async def issue_referral_reward_idempotent(
     if amount_value <= 0:
         raise HTTPException(status_code=400, detail="amount must be positive")
 
+    # Signup bonuses count toward the free-ACP distribution cap.
+    if trigger_type == "referral_signup_bonus":
+        from app.services.free_distribution import free_distribution_allows
+
+        allowed, reason = await free_distribution_allows(session, amount=amount_value)
+        if not allowed:
+            return ReferralRewardResult(created=False, reward_event_id=None)
+
     # Insert reward event with unique dedupe key (idempotency).
     stmt = (
         insert(ReferralRewardEvent)
@@ -294,7 +302,8 @@ async def issue_referral_reward_idempotent(
     else:
         dst_acc = await get_or_create_account(session, "user", beneficiary_user_id)  # type: ignore[arg-type]
 
-    meta = {"type": "referral_reward", "referral_attribution_id": str(referral_attribution_id)}
+    ledger_type = "referral_signup_bonus" if trigger_type == "referral_signup_bonus" else "referral_reward"
+    meta = {"type": ledger_type, "referral_attribution_id": str(referral_attribution_id)}
     if ledger_metadata:
         meta.update(ledger_metadata)
 

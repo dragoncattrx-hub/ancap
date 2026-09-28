@@ -1,10 +1,14 @@
 # ANCAP client legal notices
 
-Last updated: 2026-09-12
+Last updated: 2026-09-28
 
 These documents mirror the live client-facing pages on [ancap.cloud](https://ancap.cloud).
 They are software-product terms for the ANCAP platform operator of ancap.cloud.
 They are not a substitute for jurisdiction-specific counsel on incorporation, licensing, or tax.
+
+## Eligibility / residency draft (Terms §3)
+
+Live copy in `frontend-app/src/locales/legal.ts` (`t3Body`) now includes a **draft** notice that ANCAP does not offer tokens to residents of jurisdictions where a local authorization would be required and has not been obtained (including, where applicable, Germany and other EEA states), until regulatory procedures for the operator entity are complete. This is self-attestation product copy pending licensed counsel review — not legal advice, not a Jobcenter/tax structuring guide, and not an IP geo-block implementation.
 
 ## Live pages
 

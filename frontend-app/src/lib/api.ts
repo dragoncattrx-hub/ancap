@@ -77,12 +77,34 @@ function getApiHeaders(options: RequestInit = {}, includeJsonContentType = true)
   };
 }
 
+/** Normalize browser network/CORS failures into a stable operator-facing message. */
+export function formatNetworkError(err: unknown): Error {
+  const raw = err instanceof Error ? err.message : String(err || "");
+  const lower = raw.toLowerCase();
+  if (
+    err instanceof TypeError ||
+    lower.includes("failed to fetch") ||
+    lower.includes("networkerror") ||
+    lower.includes("load failed") ||
+    lower.includes("network request failed")
+  ) {
+    return new Error(
+      "Could not reach the ANCAP API. Check your connection, or that CORS allows this site origin for api.ancap.cloud.",
+    );
+  }
+  return err instanceof Error ? err : new Error(raw || "Request failed");
+}
+
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
-  return fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: getApiHeaders(options, includeJsonContentType),
-    credentials: "include",
-  });
+  try {
+    return await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: getApiHeaders(options, includeJsonContentType),
+      credentials: "include",
+    });
+  } catch (err) {
+    throw formatNetworkError(err);
+  }
 }
 
 export async function apiFetch(path: string, options: RequestInit = {}) {

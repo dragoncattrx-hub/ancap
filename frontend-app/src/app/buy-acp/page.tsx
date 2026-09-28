@@ -16,6 +16,12 @@ export default function BuyAcpPage() {
           ACP is the accounting unit for workflows, API spend, exchange tickets, and merchant checkout.
           Prefer crypto rails first — card (Stripe) is an optional adapter.
         </p>
+        <p className="mt-3 text-sm leading-7 text-white/55">
+          Rates are not a fixed &quot;$1 ACP sale&quot;. Use the live USDT→ACP swap desk quote for settlement,
+          GeckoTerminal for wACP DEX spot, and treat welcome-grant / faucet credits as promotional labels only —
+          see <Link href="/markets" className="underline">/markets</Link> and{" "}
+          <Link href="/legal/welcome-grant" className="underline">welcome-grant legal</Link>.
+        </p>
 
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">ACP-first (recommended)</h2>

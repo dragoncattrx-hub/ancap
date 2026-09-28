@@ -98,6 +98,8 @@ class UserCreateRequest(BaseModel):
     display_name: Optional[str] = Field(None, min_length=1, max_length=80)
     referral_code: Optional[str] = Field(None, min_length=3, max_length=64)
     turnstile_token: Optional[str] = Field(None, min_length=1, max_length=4096)
+    # Optional browser/device fingerprint for free-ACP anti-sybil (hashed server-side).
+    device_fingerprint: Optional[str] = Field(None, min_length=8, max_length=128)
 
 
 class UserPublic(BaseModel):
