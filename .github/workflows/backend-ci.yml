@@ -141,4 +141,14 @@ jobs:
           retention-days: 14
 
       - name: Docker build check
-        run: docker build -t ancap:build-check .
+        run: |
+          # Docker Hub occasional 502s should not fail an otherwise green backend job.
+          for attempt in 1 2 3 4 5; do
+            if docker build -t ancap:build-check .; then
+              exit 0
+            fi
+            echo "docker build failed (attempt ${attempt}/5); retrying in $((attempt * 15))s..."
+            sleep $((attempt * 15))
+          done
+          echo "docker build failed after 5 attempts"
+          exit 1
