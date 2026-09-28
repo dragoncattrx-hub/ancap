@@ -21,6 +21,7 @@ class AcpDepositAddressResponse(BaseModel):
     redacted: str | None = None
     privacy_profile: str | None = None
     reuse_policy: str | None = None
+    note: str | None = None
 
 
 class AcpPrivacyDepositRequest(BaseModel):
