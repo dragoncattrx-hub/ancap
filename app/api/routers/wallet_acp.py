@@ -68,7 +68,7 @@ _chain_scan_cache: dict[str, object] = {
     "data": None,
 }
 _chain_scan_lock = threading.Lock()
-_chain_scan_inflight = False
+_chain_scan_state: dict[str, bool] = {"inflight": False}
 
 _CHAIN_BALANCE_CACHE_TTL_S = 30.0
 _CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S = 5.0
@@ -1018,7 +1018,6 @@ def _build_chain_scan_data() -> tuple[int, dict[tuple[str, int], tuple[str, int]
 
 
 def _warm_chain_scan_cache() -> None:
-    global _chain_scan_inflight
     try:
         data = _build_chain_scan_data()
         _chain_scan_cache["data"] = data
@@ -1028,15 +1027,14 @@ def _warm_chain_scan_cache() -> None:
         pass
     finally:
         with _chain_scan_lock:
-            _chain_scan_inflight = False
+            _chain_scan_state["inflight"] = False
 
 
 def _schedule_chain_scan_warm() -> None:
-    global _chain_scan_inflight
     with _chain_scan_lock:
-        if _chain_scan_inflight:
+        if _chain_scan_state["inflight"]:
             return
-        _chain_scan_inflight = True
+        _chain_scan_state["inflight"] = True
     threading.Thread(target=_warm_chain_scan_cache, name="acp-chain-scan-warm", daemon=True).start()
 
 
