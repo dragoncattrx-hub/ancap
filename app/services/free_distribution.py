@@ -5,9 +5,10 @@ configured cap (default 1_000_000 ACP).
 """
 from __future__ import annotations
 
+import hashlib
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -20,6 +21,12 @@ FREE_DISTRIBUTION_TYPES = frozenset(
         "faucet",
         "referral_signup_bonus",
     }
+)
+
+_FREE_DISTRIBUTION_LOCK_KEY = int.from_bytes(
+    hashlib.sha256(b"ancap:free_acp_distribution_cap").digest()[:8],
+    "big",
+    signed=True,
 )
 
 
@@ -40,7 +47,12 @@ def faucet_max_amount() -> Decimal:
 
 
 async def total_free_acp_distributed(session: AsyncSession) -> Decimal:
-    """Sum ACP amounts for known free-distribution ledger metadata types."""
+    """Sum credited ACP for known free-distribution ledger metadata types.
+
+    Referral signup bonuses write a negative system-debit row and a positive
+    beneficiary-credit row with the same metadata type. Count only positive
+    amounts so each bonus contributes once toward the cap.
+    """
     total = Decimal("0")
     for dist_type in FREE_DISTRIBUTION_TYPES:
         row = (
@@ -48,6 +60,7 @@ async def total_free_acp_distributed(session: AsyncSession) -> Decimal:
                 select(func.coalesce(func.sum(LedgerEvent.amount_value), 0)).where(
                     LedgerEvent.amount_currency == "ACP",
                     LedgerEvent.metadata_["type"].astext == dist_type,
+                    LedgerEvent.amount_value > 0,
                 )
             )
         ).scalar_one()
@@ -75,9 +88,18 @@ async def free_distribution_status(session: AsyncSession) -> dict:
 
 
 async def free_distribution_allows(session: AsyncSession, *, amount: Decimal) -> tuple[bool, str | None]:
-    """Return (allowed, reason) for issuing `amount` more free ACP."""
+    """Return (allowed, reason) for issuing `amount` more free ACP.
+
+    Takes a transaction-scoped advisory lock so concurrent registrations /
+    faucet claims / referral bonuses cannot overshoot the cap under
+    read-committed isolation.
+    """
     if amount <= 0:
         return False, "non_positive_amount"
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(:k)"),
+        {"k": _FREE_DISTRIBUTION_LOCK_KEY},
+    )
     status = await free_distribution_status(session)
     if not status["open"]:
         return False, status["reason"]

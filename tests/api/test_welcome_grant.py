@@ -46,3 +46,30 @@ def test_welcome_grant_disabled_in_pytest_default(client):
     headers = {"Authorization": f"Bearer {token}"}
     user = client.get("/v1/users/me", headers=headers).json()
     assert _user_balance(client, user["id"], headers) == Decimal("0")
+
+
+def test_wallet_hot_balance_surfaces_welcome_grant_when_on_chain_empty(client, monkeypatch):
+    """/wallet/acp must not show 0 when the user only has ledger welcome credit."""
+    monkeypatch.setenv("WELCOME_GRANT_ACP", "100")
+    get_settings.cache_clear()
+    try:
+        email = f"welcome_wallet_{uuid4().hex[:12]}@test.com"
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": email, "password": "password123", "display_name": "Wallet Grant"},
+            headers={"Authorization": ""},
+        )
+        assert res.status_code in (200, 201), res.text
+        token = res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
+        assert hot.status_code == 200, hot.text
+        body = hot.json()
+        assert Decimal(body["platform_credits_acp"]) == Decimal("100")
+        assert Decimal(body["acp"]) == Decimal("100")
+        # On-chain withdraw stays 0 until UTXOs exist for this deposit address.
+        assert Decimal(body["available_acp"]) == Decimal("0")
+    finally:
+        monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+        get_settings.cache_clear()

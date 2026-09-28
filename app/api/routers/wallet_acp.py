@@ -528,6 +528,20 @@ async def _decorate_balance_for_user(
                 hot_breakdown.total_acp, real_acp, available_acp
             )
 
+    # Regular users: always expose ledger credits (welcome grant / faucet / etc.).
+    # When the deposit address still has 0 UTXOs, surface those credits as the
+    # primary balance so /wallet/acp is not stuck on 0 after registration.
+    if include_in_work and view_mode != "operator_hot":
+        platform_credits_s = _decimal_to_api_str(in_ledger)
+        if display_acp <= 0 and in_ledger > 0:
+            display_acp = in_ledger
+            display_units = _units_from_acp(in_ledger)
+            on_chain_s = _decimal_to_api_str(on_chain_acp)
+            balance_note = (
+                f"Platform credits: {_decimal_to_api_str(in_ledger)} ACP (ledger). "
+                f"On-chain withdrawable: {_decimal_to_api_str(available_acp)} ACP."
+            )
+
     return AcpBalanceResponse(
         address=str(raw.get("address") or ""),
         units=display_units,

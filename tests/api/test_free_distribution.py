@@ -1,6 +1,8 @@
 """Free ACP distribution cap + faucet amount cap."""
 from decimal import Decimal
+from uuid import uuid4
 
+from app.config import get_settings
 from app.services.free_distribution import faucet_max_amount, free_distribution_cap
 from tests.conftest import unique_email
 
@@ -22,6 +24,48 @@ def test_market_free_distribution_endpoint(client):
     assert "distributed_acp" in data
 
 
+def test_total_free_acp_counts_only_positive_credit_legs(client):
+    """Referral signup bonus writes ±legs; cap accounting must count credit once."""
+    from sqlalchemy import create_engine, text
+
+    before = Decimal(
+        client.get("/v1/market/free-distribution", headers={"Authorization": ""}).json()[
+            "distributed_acp"
+        ]
+    )
+    db_url = (
+        __import__("os").environ.get("DATABASE_URL", "")
+        .replace("+asyncpg", "")
+        .replace("postgresql+asyncpg", "postgresql")
+    )
+    engine = create_engine(db_url)
+    debit_id = str(uuid4())
+    credit_id = str(uuid4())
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                INSERT INTO ledger_events (id, ts, type, amount_currency, amount_value, metadata)
+                VALUES
+                  (:d, NOW(), 'transfer', 'ACP', -25, CAST(:meta_debit AS jsonb)),
+                  (:c, NOW(), 'transfer', 'ACP', 25, CAST(:meta_credit AS jsonb))
+                """
+            ),
+            {
+                "d": debit_id,
+                "c": credit_id,
+                "meta_debit": '{"type":"referral_signup_bonus","leg":"system_debit","test":"cap_positive_only"}',
+                "meta_credit": '{"type":"referral_signup_bonus","leg":"beneficiary_credit","test":"cap_positive_only"}',
+            },
+        )
+    after = Decimal(
+        client.get("/v1/market/free-distribution", headers={"Authorization": ""}).json()[
+            "distributed_acp"
+        ]
+    )
+    assert after - before == Decimal("25")
+
+
 def test_faucet_rejects_amount_above_cap(client, monkeypatch):
     email = unique_email()
     reg = client.post(
@@ -41,8 +85,6 @@ def test_faucet_rejects_amount_above_cap(client, monkeypatch):
 
 
 def test_faucet_held_when_distribution_disabled(client, monkeypatch):
-    from app.config import get_settings
-
     monkeypatch.setenv("FREE_ACP_DISTRIBUTION_ENABLED", "false")
     get_settings.cache_clear()
     email = unique_email()

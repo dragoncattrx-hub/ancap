@@ -95,12 +95,20 @@ export function formatNetworkError(err: unknown): Error {
   return err instanceof Error ? err : new Error(raw || "Request failed");
 }
 
+const DEFAULT_CLIENT_TIMEOUT_MS = 45_000;
+
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
   try {
+    const signal =
+      options.signal ??
+      (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+        ? AbortSignal.timeout(DEFAULT_CLIENT_TIMEOUT_MS)
+        : undefined);
     return await fetch(`${API_BASE}${path}`, {
       ...options,
       headers: getApiHeaders(options, includeJsonContentType),
       credentials: "include",
+      ...(signal ? { signal } : {}),
     });
   } catch (err) {
     throw formatNetworkError(err);
@@ -865,6 +873,15 @@ export const exponentialGrowth = {
   },
 };
 
+async function withBalanceRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch {
+    // One automatic retry — cold ACP RPC / edge paths sometimes stall once.
+    return await fn();
+  }
+}
+
 export const walletAcp = {
   async getDepositAddress() {
     // Prefer GET (cookie auth, no empty JSON body quirks). Fall back to POST for older gateways.
@@ -892,14 +909,16 @@ export const walletAcp = {
   },
 
   async getHotBalance() {
-    return apiFetch("/wallet/acp/hot/balance");
+    return withBalanceRetry(() => apiFetch("/wallet/acp/hot/balance"));
   },
 
   async getBalance(params?: { address?: string }) {
     const qp = new URLSearchParams();
     if (params?.address) qp.append("address", params.address);
     const suffix = qp.toString();
-    return apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`);
+    return withBalanceRetry(() =>
+      apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`),
+    );
   },
 
   async listTransactions(params?: { address?: string; limit?: number; privacy?: boolean }) {

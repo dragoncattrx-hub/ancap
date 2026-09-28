@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from app.api.deps import DbSession, require_auth
 from app.db.models import (
+    Agent,
     RobotDeliveryJob,
     RobotTelemetryConsent,
     RobotTelemetryEvent,
@@ -103,9 +104,35 @@ async def create_telemetry_consent(
     session: DbSession,
     user_id: str = Depends(require_auth),
 ):
+    robot_id = body.robot_id.strip()
+    existing = (
+        await session.execute(
+            select(RobotTelemetryConsent)
+            .where(
+                RobotTelemetryConsent.owner_user_id == UUID(user_id),
+                RobotTelemetryConsent.robot_id == robot_id,
+                RobotTelemetryConsent.consent_active.is_(True),
+            )
+            .order_by(RobotTelemetryConsent.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        existing.retention_days = body.retention_days
+        await session.flush()
+        return RobotTelemetryConsentPublic(
+            id=str(existing.id),
+            owner_user_id=str(existing.owner_user_id),
+            robot_id=existing.robot_id,
+            consent_active=existing.consent_active,
+            retention_days=existing.retention_days,
+            created_at=existing.created_at,
+            revoked_at=existing.revoked_at,
+        )
+
     row = RobotTelemetryConsent(
         owner_user_id=UUID(user_id),
-        robot_id=body.robot_id.strip(),
+        robot_id=robot_id,
         consent_active=True,
         retention_days=body.retention_days,
     )
@@ -160,11 +187,14 @@ async def ingest_telemetry(
 ):
     consent = (
         await session.execute(
-            select(RobotTelemetryConsent).where(
+            select(RobotTelemetryConsent)
+            .where(
                 RobotTelemetryConsent.owner_user_id == UUID(user_id),
                 RobotTelemetryConsent.robot_id == body.robot_id.strip(),
                 RobotTelemetryConsent.consent_active.is_(True),
             )
+            .order_by(RobotTelemetryConsent.created_at.desc())
+            .limit(1)
         )
     ).scalar_one_or_none()
     if consent is None:
@@ -218,6 +248,13 @@ async def list_open_delivery_jobs(session: DbSession, user_id: str = Depends(req
     return [_delivery_public(r) for r in rows]
 
 
+async def _agent_owned_by_user(session: DbSession, *, agent_id: UUID, user_id: str) -> bool:
+    agent = (
+        await session.execute(select(Agent).where(Agent.id == agent_id))
+    ).scalar_one_or_none()
+    return bool(agent and str(agent.owner_user_id or "") == user_id)
+
+
 @router.post("/delivery/jobs/{job_id}/assign", response_model=RobotDeliveryPublic)
 async def assign_delivery_job(
     job_id: str,
@@ -225,15 +262,19 @@ async def assign_delivery_job(
     session: DbSession,
     user_id: str = Depends(require_auth),
 ):
-    _ = user_id
     row = (
         await session.execute(select(RobotDeliveryJob).where(RobotDeliveryJob.id == UUID(job_id)))
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="job not found")
+    if str(row.customer_user_id) != user_id:
+        raise HTTPException(status_code=403, detail="only the job customer may assign a robot")
     if row.status not in ("open", "assigned"):
         raise HTTPException(status_code=400, detail="job not assignable")
-    row.robot_agent_id = UUID(body.robot_agent_id)
+    agent_id = UUID(body.robot_agent_id)
+    if not await _agent_owned_by_user(session, agent_id=agent_id, user_id=user_id):
+        raise HTTPException(status_code=403, detail="robot agent not owned by caller")
+    row.robot_agent_id = agent_id
     row.status = "assigned"
     await session.flush()
     return _delivery_public(row)
@@ -251,9 +292,15 @@ async def complete_delivery_job(
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="job not found")
-    if str(row.customer_user_id) != user_id and row.robot_agent_id is None:
-        # Customer or assigned fleet operator may complete; keep MVP permissive for owner.
-        pass
+    if row.status not in ("open", "assigned", "in_transit"):
+        raise HTTPException(status_code=400, detail="job not completable")
+    is_customer = str(row.customer_user_id) == user_id
+    is_assigned_owner = bool(
+        row.robot_agent_id
+        and await _agent_owned_by_user(session, agent_id=row.robot_agent_id, user_id=user_id)
+    )
+    if not (is_customer or is_assigned_owner):
+        raise HTTPException(status_code=403, detail="only customer or assigned robot owner may complete")
     row.delivery_proof = body.delivery_proof.strip()
     row.status = "completed"
     await session.flush()

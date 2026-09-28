@@ -629,7 +629,13 @@ export default function AcpWalletPage() {
                   <span className="badge badge-active">{t("walletAcpPage.live")}</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
-                  {busy && !balance ? t("walletAcpPage.loading") : (balance?.acp ?? t("walletAcpPage.dash"))} <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
+                  {busy && !balance
+                    ? t("walletAcpPage.loading")
+                    : (balance?.acp
+                      ?? balance?.platform_credits_acp
+                      ?? balance?.in_work_ledger_acp
+                      ?? t("walletAcpPage.dash"))}{" "}
+                  <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.utxoCount").replace("{n}", String(balance.utxo_count))}</div>}
 
@@ -685,14 +691,17 @@ export default function AcpWalletPage() {
                   <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     {isOperatorHotView ? t("walletAcpPage.yourPlatformCredits") : t("walletAcpPage.account")}
                   </div>
-                  {isOperatorHotView && balance?.platform_credits_acp != null && (
+                  {balance?.platform_credits_acp != null && balance.platform_credits_acp !== "" && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
                       {t("walletAcpPage.creditedBalance")} <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
                     </div>
                   )}
                   {!isOperatorHotView && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      {t("walletAcpPage.yourBalance")} <strong style={{ color: "var(--text)" }}>{balance?.acp ?? "0"} ACP</strong>
+                      {t("walletAcpPage.yourBalance")}{" "}
+                      <strong style={{ color: "var(--text)" }}>
+                        {balance?.acp ?? balance?.platform_credits_acp ?? balance?.in_work_ledger_acp ?? "0"} ACP
+                      </strong>
                     </div>
                   )}
                   <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
