@@ -94,6 +94,7 @@ export default function AcpWalletPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
 
   const [busy, setBusy] = useState(false);
+  const [balanceBusy, setBalanceBusy] = useState(false);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [error, setError] = useState("");
@@ -172,29 +173,47 @@ export default function AcpWalletPage() {
 
   async function refreshAll() {
     setBusy(true);
+    setBalanceBusy(true);
     setError("");
     setLoadWarnings([]);
+    const warnings: string[] = [];
+    const statusOf = (res: PromiseSettledResult<unknown>) =>
+      res.status === "rejected" && typeof (res.reason as { status?: unknown })?.status === "number"
+        ? Number((res.reason as { status: number }).status)
+        : 0;
+
+    // Load deposit address first so the page is usable even if balance RPC stalls.
+    let resolvedDeposit = "";
     try {
-      const [addrRes, balRes, ordersRes] = await Promise.allSettled([
-        walletAcp.getDepositAddress(),
+      const addrRes = await Promise.allSettled([walletAcp.getDepositAddress()]);
+      const addr = addrRes[0];
+      if (addr.status === "fulfilled") {
+        resolvedDeposit = String((addr.value as { address?: string } | null)?.address || "").trim();
+        setDepositAddress(resolvedDeposit);
+      } else {
+        warnings.push(
+          t("walletAcpPage.depositAddressUnavailable").replace(
+            "{error}",
+            addr.reason?.message || t("walletAcpPage.unknownError"),
+          ),
+        );
+        if (statusOf(addr) === 401) {
+          logout();
+          const nextTarget =
+            typeof window !== "undefined" ? `/wallet/acp${window.location.hash || ""}` : "/wallet/acp";
+          router.push(`/login?next=${encodeURIComponent(nextTarget)}`);
+          return;
+        }
+      }
+    } finally {
+      setBusy(false);
+    }
+
+    try {
+      const [balRes, ordersRes] = await Promise.allSettled([
         walletAcp.getHotBalance(),
         walletAcp.listSwapOrders(),
       ]);
-
-      const warnings: string[] = [];
-      const statusOf = (res: PromiseSettledResult<unknown>) =>
-        res.status === "rejected" && typeof (res.reason as { status?: unknown })?.status === "number"
-          ? Number((res.reason as { status: number }).status)
-          : 0;
-
-      let resolvedDeposit = "";
-
-      if (addrRes.status === "fulfilled") {
-        resolvedDeposit = String((addrRes.value as { address?: string } | null)?.address || "").trim();
-        setDepositAddress(resolvedDeposit);
-      } else {
-        warnings.push(t("walletAcpPage.depositAddressUnavailable").replace("{error}", addrRes.reason?.message || t("walletAcpPage.unknownError")));
-      }
 
       if (balRes.status === "fulfilled") {
         const bal = (balRes.value || null) as BalanceResponse | null;
@@ -240,7 +259,7 @@ export default function AcpWalletPage() {
         warnings.push(t("walletAcpPage.swapHistoryUnavailable").replace("{error}", ordersRes.reason?.message || t("walletAcpPage.unknownError")));
       }
 
-      const any401 = [addrRes, balRes, ordersRes].some((res) => statusOf(res) === 401);
+      const any401 = [balRes, ordersRes].some((res) => statusOf(res) === 401);
       if (any401) {
         logout();
         const nextTarget =
@@ -253,7 +272,7 @@ export default function AcpWalletPage() {
     } catch (e: any) {
       setError(e?.message || t("walletAcpPage.loadFailed"));
     } finally {
-      setBusy(false);
+      setBalanceBusy(false);
     }
   }
 
@@ -569,7 +588,7 @@ export default function AcpWalletPage() {
                 </div>
                 <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.9rem" }}>{t("walletAcpPage.sendAcpTo")}</div>
                 <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                  {busy && !singleWalletAddress ? t("walletAcpPage.loading") : singleWalletAddress || t("walletAcpPage.dash")}
+                  {busy && !singleWalletAddress ? t("walletAcpPage.loading") : (singleWalletAddress || t("walletAcpPage.dash"))}
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>{t("walletAcpPage.copy")}</button>
@@ -629,7 +648,7 @@ export default function AcpWalletPage() {
                   <span className="badge badge-active">{t("walletAcpPage.live")}</span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
-                  {busy && !balance
+                  {balanceBusy && !balance
                     ? t("walletAcpPage.loading")
                     : (balance?.acp
                       ?? balance?.platform_credits_acp

@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import re
+import threading
 import time
 import uuid
 from datetime import datetime, timezone
@@ -61,14 +62,22 @@ from app.schemas import (
 
 router = APIRouter(prefix="/wallet/acp", tags=["Wallet (ACP)"])
 
-_CHAIN_SCAN_CACHE_TTL_S = 15.0
+_CHAIN_SCAN_CACHE_TTL_S = 120.0
 _chain_scan_cache: dict[str, object] = {
     "expires_at": 0.0,
     "data": None,
 }
+_chain_scan_lock = threading.Lock()
+_chain_scan_inflight = False
 
-_CHAIN_BALANCE_CACHE_TTL_S = 15.0
+_CHAIN_BALANCE_CACHE_TTL_S = 30.0
+_CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S = 5.0
 _chain_balance_cache: dict[str, tuple[float, dict]] = {}
+
+# Interactive wallet UI must stay snappy. Full tip scans (~30k blocks) belong in
+# a background warmer, never on the request path.
+_INTERACTIVE_WALLETD_TIMEOUT_S = 5
+_INTERACTIVE_RPC_TIMEOUT_S = 5.0
 
 
 def _walletd_cmd() -> list[str]:
@@ -407,6 +416,14 @@ _UNITS_PER_ACP: int = 100_000_000
 _GENESIS_CREATOR_OUTPUT_UNITS: int = _GENESIS_ACP_CREATOR_AMOUNT_ACP * _UNITS_PER_ACP
 
 
+_creator_vesting_genesis_cache: dict[str, object] = {
+    "expires_at": 0.0,
+    "creator_address": None,
+    "genesis_time": 0,
+    "eligible": False,
+}
+
+
 def _creator_vesting_snapshot(address: str, now_ts: int | None = None) -> tuple[Decimal, Decimal] | None:
     """
     Return (unlocked_acp, locked_acp) for the canonical creator genesis vout, otherwise None.
@@ -415,28 +432,80 @@ def _creator_vesting_snapshot(address: str, now_ts: int | None = None) -> tuple[
     genesis payee as the vested creator (e.g. a 1,000,000 ACP dev allocation on vout 0).
     We only return fields when vout 0 is exactly 69,300,000 ACP to the queried address.
     """
+    target = (address or "").strip()
+    if not target:
+        return None
+
+    now_mono = time.monotonic()
+    cached_addr = _creator_vesting_genesis_cache.get("creator_address")
+    if now_mono < float(_creator_vesting_genesis_cache.get("expires_at") or 0.0):
+        if not _creator_vesting_genesis_cache.get("eligible"):
+            return None
+        if cached_addr != target:
+            return None
+        genesis_time = int(_creator_vesting_genesis_cache.get("genesis_time") or 0)
+        creator_total_acp = Decimal(_GENESIS_ACP_CREATOR_AMOUNT_ACP)
+        now = int(now_ts or datetime.now(timezone.utc).timestamp())
+        if now <= genesis_time:
+            return (Decimal(0), creator_total_acp)
+        elapsed = now - genesis_time
+        seconds_per_month = 30 * 24 * 60 * 60
+        cliff_months = 12
+        linear_months = 72
+        if elapsed <= cliff_months * seconds_per_month:
+            unlocked = Decimal(0)
+        else:
+            months_after_cliff = min(
+                (elapsed - cliff_months * seconds_per_month) // seconds_per_month,
+                linear_months,
+            )
+            unlocked = _creator_vesting_monthly_unlock_acp() * Decimal(months_after_cliff)
+            if unlocked > creator_total_acp:
+                unlocked = creator_total_acp
+        locked = creator_total_acp - unlocked
+        if locked < 0:
+            locked = Decimal(0)
+        return (unlocked, locked)
+
     rpc_url = _require_acp_rpc_url()
-    bh = _rpc_call(rpc_url, "getblockhash", {"height": 1})
-    block = _rpc_call(rpc_url, "getblock", {"blockhash": bh, "verbose": 2}) or {}
+    try:
+        bh = _rpc_call(rpc_url, "getblockhash", {"height": 1}, timeout_s=_INTERACTIVE_RPC_TIMEOUT_S)
+        block = _rpc_call(rpc_url, "getblock", {"blockhash": bh, "verbose": 2}, timeout_s=_INTERACTIVE_RPC_TIMEOUT_S) or {}
+    except HTTPException:
+        return None
     txs = block.get("tx") or []
     if not txs:
+        _creator_vesting_genesis_cache.update(
+            {"expires_at": now_mono + 300.0, "eligible": False, "creator_address": None, "genesis_time": 0}
+        )
         return None
     genesis_tx = txs[0] or {}
     outputs = genesis_tx.get("vout") or []
     if not outputs:
+        _creator_vesting_genesis_cache.update(
+            {"expires_at": now_mono + 300.0, "eligible": False, "creator_address": None, "genesis_time": 0}
+        )
         return None
     vout0 = outputs[0] or {}
-    if str(vout0.get("recipient_address") or "").strip() != (address or "").strip():
-        return None
+    creator_addr = str(vout0.get("recipient_address") or "").strip()
     try:
         creator_total_units = _json_chain_amount_to_int(vout0.get("amount"))
     except (TypeError, ValueError):
-        return None
-    if creator_total_units != _GENESIS_CREATOR_OUTPUT_UNITS:
+        creator_total_units = 0
+    eligible = bool(creator_addr) and creator_total_units == _GENESIS_CREATOR_OUTPUT_UNITS
+    genesis_time = int(block.get("time") or 0)
+    _creator_vesting_genesis_cache.update(
+        {
+            "expires_at": now_mono + 300.0,
+            "eligible": eligible,
+            "creator_address": creator_addr if eligible else None,
+            "genesis_time": genesis_time,
+        }
+    )
+    if not eligible or creator_addr != target:
         return None
 
     creator_total_acp = Decimal(creator_total_units) / Decimal(100_000_000)
-    genesis_time = int(block.get("time") or 0)
     now = int(now_ts or datetime.now(timezone.utc).timestamp())
 
     if now <= genesis_time:
@@ -561,12 +630,23 @@ async def _decorate_balance_for_user(
     )
 
 
-def _rpc_call(rpc_url: str, method: str, params: list | dict | None = None):
+def _rpc_call(
+    rpc_url: str,
+    method: str,
+    params: list | dict | None = None,
+    *,
+    timeout_s: float | None = None,
+):
     from app.services.acp_rpc import acp_rpc_headers
 
     body = {"jsonrpc": "2.0", "id": "wallet-acp-history", "method": method, "params": params or []}
     try:
-        r = httpx.post(rpc_url, json=body, headers=acp_rpc_headers(), timeout=30.0)
+        r = httpx.post(
+            rpc_url,
+            json=body,
+            headers=acp_rpc_headers(),
+            timeout=float(timeout_s if timeout_s is not None else 30.0),
+        )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ACP RPC request failed: {exc}")
     try:
@@ -642,17 +722,53 @@ def _rpc_balance_for_address(address: str) -> dict:
     return dict(payload)
 
 
-def _load_balance_result(address: str) -> dict:
+def _empty_balance_payload(address: str) -> dict:
+    return {"address": address, "units": "0", "acp": "0", "utxo_count": 0}
+
+
+def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
+    """Resolve on-chain balance for an address.
+
+    Interactive wallet requests must never fall back to a full tip UTXO scan
+    (tens of thousands of RPC calls). Prefer a short walletd probe, then cache
+    zeros so the UI can still show ledger/platform credits immediately.
+    """
     target = (address or "").strip()
     if not target:
         raise HTTPException(status_code=400, detail="address is required")
+
+    now = time.monotonic()
+    cached = _chain_balance_cache.get(target)
+    if cached is not None:
+        expires_at, payload = cached
+        if now < expires_at:
+            return dict(payload)
+
     rpc_url = _require_acp_rpc_url()
     try:
-        return _run_walletd(["balance", "--rpc", rpc_url, "--address", target], timeout_s=180)
+        result = _run_walletd(
+            ["balance", "--rpc", rpc_url, "--address", target],
+            timeout_s=_INTERACTIVE_WALLETD_TIMEOUT_S if interactive else 90,
+        )
+        if isinstance(result, dict):
+            # Normalize so callers always see the queried address.
+            if not str(result.get("address") or "").strip():
+                result = {**result, "address": target}
+            _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, dict(result))
+            return dict(result)
     except HTTPException as exc:
         if exc.status_code not in (502, 503, 504):
             raise
-        return _rpc_balance_for_address(target)
+        if not interactive:
+            return _rpc_balance_for_address(target)
+
+    # Fast fail-closed for wallet UI: ledger decoration still surfaces credits.
+    payload = _empty_balance_payload(target)
+    _chain_balance_cache[target] = (
+        time.monotonic() + _CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S,
+        payload,
+    )
+    return dict(payload)
 
 
 def _to_public_order(order: dict) -> AcpSwapOrderPublic:
@@ -827,20 +943,14 @@ def _load_existing_valid_hot_signer() -> tuple[list[str], str]:
     return (["--mnemonic", mnemonic], address)
 
 
-def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
-    now = time.monotonic()
-    cached = _chain_scan_cache.get("data")
-    expires_at = float(_chain_scan_cache.get("expires_at") or 0.0)
-    if cached is not None and now < expires_at:
-        return cached  # type: ignore[return-value]
-
+def _build_chain_scan_data() -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
+    """Full tip scan — expensive; only call from the background warmer."""
     rpc_url = _require_acp_rpc_url()
-    best_height = int(_rpc_call(rpc_url, "getblockcount", []) or 0)
+    best_height = int(
+        _rpc_call(rpc_url, "getblockcount", [], timeout_s=_INTERACTIVE_RPC_TIMEOUT_S) or 0
+    )
     if best_height <= 0:
-        data = (0, {}, {})
-        _chain_scan_cache["data"] = data
-        _chain_scan_cache["expires_at"] = now + _CHAIN_SCAN_CACHE_TTL_S
-        return data
+        return (0, {}, {})
 
     out_index: dict[tuple[str, int], tuple[str, int]] = {}
     tx_index: dict[str, dict] = {}
@@ -904,14 +1014,52 @@ def _scan_chain_transactions() -> tuple[int, dict[tuple[str, int], tuple[str, in
                 "fee_units": max(total_input_units - total_output_units, 0),
             }
 
-    data = (best_height, out_index, tx_index)
+    return (best_height, out_index, tx_index)
+
+
+def _warm_chain_scan_cache() -> None:
+    global _chain_scan_inflight
+    try:
+        data = _build_chain_scan_data()
+        _chain_scan_cache["data"] = data
+        _chain_scan_cache["expires_at"] = time.monotonic() + _CHAIN_SCAN_CACHE_TTL_S
+    except Exception:
+        # Keep previous cache if any; interactive callers already returned [].
+        pass
+    finally:
+        with _chain_scan_lock:
+            _chain_scan_inflight = False
+
+
+def _schedule_chain_scan_warm() -> None:
+    global _chain_scan_inflight
+    with _chain_scan_lock:
+        if _chain_scan_inflight:
+            return
+        _chain_scan_inflight = True
+    threading.Thread(target=_warm_chain_scan_cache, name="acp-chain-scan-warm", daemon=True).start()
+
+
+def _scan_chain_transactions(*, interactive: bool = True) -> tuple[int, dict[tuple[str, int], tuple[str, int]], dict[str, dict]]:
+    now = time.monotonic()
+    cached = _chain_scan_cache.get("data")
+    expires_at = float(_chain_scan_cache.get("expires_at") or 0.0)
+    if cached is not None and now < expires_at:
+        return cached  # type: ignore[return-value]
+
+    if interactive:
+        # Never block wallet history on a full tip scan; warm cache in background.
+        _schedule_chain_scan_warm()
+        raise HTTPException(status_code=503, detail="ACP chain history index is warming")
+
+    data = _build_chain_scan_data()
     _chain_scan_cache["data"] = data
     _chain_scan_cache["expires_at"] = time.monotonic() + _CHAIN_SCAN_CACHE_TTL_S
     return data
 
 
 def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
-    best_height, _out_index, tx_index = _scan_chain_transactions()
+    best_height, _out_index, tx_index = _scan_chain_transactions(interactive=True)
     if best_height <= 0:
         return []
 
@@ -953,7 +1101,8 @@ def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransac
 
 
 def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
-    _best_height, _out_index, tx_index = _scan_chain_transactions()
+    # Detail lookups may wait for a sync rebuild when cache is cold.
+    _best_height, _out_index, tx_index = _scan_chain_transactions(interactive=False)
     tx = tx_index.get(txid)
     if tx is None:
         return None
@@ -1149,10 +1298,10 @@ async def hot_balance(
     if not addr:
         raise HTTPException(status_code=500, detail="ACP wallet row has empty address")
     try:
-        res = _load_balance_result(addr)
+        res = _load_balance_result(addr, interactive=True)
     except HTTPException:
         # Keep wallet UI operational even when RPC is temporarily unavailable.
-        res = {"address": addr, "units": "0", "acp": "0", "utxo_count": 0}
+        res = _empty_balance_payload(addr)
     if not str(res.get("address") or "").strip():
         res["address"] = addr
     return await _decorate_balance_for_user(session, user_id, res, include_in_work=True)
@@ -1177,10 +1326,10 @@ async def balance(
         raise HTTPException(status_code=400, detail="address looks invalid")
     include_in_work = bool(wallet and wallet.address == target)
     try:
-        res = _load_balance_result(target)
+        res = _load_balance_result(target, interactive=True)
     except HTTPException:
         # Keep wallet UI operational when RPC/balance helper is temporarily unavailable.
-        res = {"address": target, "units": "0", "acp": "0", "utxo_count": 0}
+        res = _empty_balance_payload(target)
     return await _decorate_balance_for_user(
         session,
         user_id,

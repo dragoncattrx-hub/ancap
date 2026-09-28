@@ -96,6 +96,7 @@ export function formatNetworkError(err: unknown): Error {
 }
 
 const DEFAULT_CLIENT_TIMEOUT_MS = 45_000;
+const BALANCE_CLIENT_TIMEOUT_MS = 12_000;
 
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
   try {
@@ -873,13 +874,10 @@ export const exponentialGrowth = {
   },
 };
 
-async function withBalanceRetry<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch {
-    // One automatic retry — cold ACP RPC / edge paths sometimes stall once.
-    return await fn();
-  }
+function balanceSignal(): AbortSignal | undefined {
+  return typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+    ? AbortSignal.timeout(BALANCE_CLIENT_TIMEOUT_MS)
+    : undefined;
 }
 
 export const walletAcp = {
@@ -909,16 +907,16 @@ export const walletAcp = {
   },
 
   async getHotBalance() {
-    return withBalanceRetry(() => apiFetch("/wallet/acp/hot/balance"));
+    const signal = balanceSignal();
+    return apiFetch("/wallet/acp/hot/balance", signal ? { signal } : {});
   },
 
   async getBalance(params?: { address?: string }) {
     const qp = new URLSearchParams();
     if (params?.address) qp.append("address", params.address);
     const suffix = qp.toString();
-    return withBalanceRetry(() =>
-      apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`),
-    );
+    const signal = balanceSignal();
+    return apiFetch(`/wallet/acp/balance${suffix ? `?${suffix}` : ""}`, signal ? { signal } : {});
   },
 
   async listTransactions(params?: { address?: string; limit?: number; privacy?: boolean }) {
