@@ -58,6 +58,7 @@ class AeternaIntentKind(str, Enum):
     oxygen_carrier_brief = "oxygen_carrier_brief"
     synthetic_blood_mamba_brief = "synthetic_blood_mamba_brief"
     adhd_support_brief = "adhd_support_brief"
+    aurea_vita_brief = "aurea_vita_brief"
     down_syndrome_support_brief = "down_syndrome_support_brief"
     substance_coding_brief = "substance_coding_brief"
     pulmopure_subscription = "pulmopure_subscription"
@@ -317,6 +318,12 @@ class AeternaStatusPublic(BaseModel):
         "emotion, and school-adaptation literacy. Infographics are motivational architecture — not a "
         "diagnosis, not a prescription, not stimulant compounding, and not a guaranteed academic or "
         "financial outcome."
+    )
+    aurea_vita_note: str = (
+        "AUREA Vita is a licensed lifestyle / longevity partner brief for rapid quality-of-life literacy: "
+        "nutrition, sport, health hygiene, sleep, and longevity framing at 40 ACP. Infographics are "
+        "motivational — not medical advice, not a diagnosis, not a prescription, and not a guaranteed "
+        "lifespan or athletic outcome."
     )
     down_syndrome_support_note: str = (
         "The Down syndrome support rail is a licensed developmental pediatrics / genetics / child-neurology "

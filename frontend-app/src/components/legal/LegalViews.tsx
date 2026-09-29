@@ -64,6 +64,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/oxygen-carrier", key: "oxygenCarrierLink" },
     { href: "/legal/synthetic-blood-mamba", key: "syntheticBloodMambaLink" },
     { href: "/legal/adhd-support", key: "adhdSupportLink" },
+    { href: "/legal/aurea-vita", key: "aureaVitaLink" },
     { href: "/legal/down-syndrome-support", key: "downSyndromeSupportLink" },
     { href: "/legal/substance-coding", key: "substanceCodingLink" },
     { href: "/legal/tesla-coil-party", key: "teslaCoilPartyLink" },
@@ -125,6 +126,7 @@ export function LegalHubView() {
     { href: "/legal/oxygen-carrier", title: "oxygenCarrierLink", body: "hubCardOxygenCarrier" },
     { href: "/legal/synthetic-blood-mamba", title: "syntheticBloodMambaLink", body: "hubCardSyntheticBloodMamba" },
     { href: "/legal/adhd-support", title: "adhdSupportLink", body: "hubCardAdhdSupport" },
+    { href: "/legal/aurea-vita", title: "aureaVitaLink", body: "hubCardAureaVita" },
     { href: "/legal/down-syndrome-support", title: "downSyndromeSupportLink", body: "hubCardDownSyndromeSupport" },
     { href: "/legal/substance-coding", title: "substanceCodingLink", body: "hubCardSubstanceCoding" },
     { href: "/legal/tesla-coil-party", title: "teslaCoilPartyLink", body: "hubCardTeslaCoilParty" },
@@ -1231,6 +1233,36 @@ export function AdhdSupportLegalView() {
   );
 }
 
+export function AureaVitaLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-amber-300/25 bg-amber-400/[0.07]"
+      kicker={t("legal.aureaVitaKicker")}
+      title={t("legal.aureaVitaTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.aureaVitaIntro")}`}
+      actions={<LegalNavPills current="/legal/aurea-vita" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.av${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.av${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/aeterna#aurea-vita" className="text-amber-200 underline decoration-amber-400/40 underline-offset-4">
+            /aeterna#aurea-vita
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
 export function DownSyndromeSupportLegalView() {
   const { t } = useLanguage();
   return (
@@ -1680,6 +1712,7 @@ export function SiteLegalFooter() {
     { href: "/legal/oxygen-carrier", label: "footerOxygenCarrier" },
     { href: "/legal/synthetic-blood-mamba", label: "footerSyntheticBloodMamba" },
     { href: "/legal/adhd-support", label: "footerAdhdSupport" },
+    { href: "/legal/aurea-vita", label: "footerAureaVita" },
     { href: "/legal/down-syndrome-support", label: "footerDownSyndromeSupport" },
     { href: "/legal/substance-coding", label: "footerSubstanceCoding" },
     { href: "/legal/tesla-coil-party", label: "footerTeslaCoilParty" },

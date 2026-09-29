@@ -725,6 +725,39 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         tags=["aeterna", "adhd", "sdvg", "clinician", "consult"],
     ),
     WorkflowTemplatePublic(
+        slug="aeterna-aurea-vita",
+        title="AUREA Vita — quality of life & longevity brief",
+        category="AETERNA",
+        summary=(
+            "Licensed lifestyle / longevity partner brief for rapid quality-of-life literacy: "
+            "nutrition, sport, health, and longevity recommendations — 40 ACP."
+        ),
+        description=(
+            "Settles 40 ACP and issues a licensed lifestyle / longevity / nutrition-sport partner brief "
+            "for quality-of-life acceleration literacy: nutrition recommendations, sport and movement, "
+            "everyday health hygiene, sleep and recovery, and longevity framing. ANCAP does not diagnose, "
+            "does not prescribe, does not sell drugs or medical devices, and does not guarantee lifespan, "
+            "weight, athletic, or clinical outcomes. Physical coaching or clinical care occurs only under "
+            "a licensed partner after screening; the client retains decision rights with that partner."
+        ),
+        price=Money(amount="40", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=20,
+        preview_items=[
+            "Theme map (nutrition / sport / health / longevity)",
+            "Licensed lifestyle partner match",
+            "Non-claim protocol pack",
+        ],
+        output_items=[
+            "AUREA Vita quality-of-life intake brief",
+            "Licensed partner handoff",
+            "Non-claim checklist (no diagnosis / no prescription / no lifespan guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "intent_kind", "architecture", "status_timeline"],
+        tags=["aeterna", "aurea-vita", "longevity", "nutrition", "sport", "health", "consult"],
+    ),
+    WorkflowTemplatePublic(
         slug="aeterna-down-syndrome-support",
         title="AETERNA Down Syndrome Support Brief",
         category="AETERNA",
@@ -2475,6 +2508,31 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "ANCAP settles ACP and issues a partner handoff brief. Clinical care occurs only "
                     "under a licensed clinician. Infographic steps are motivational literacy, not a "
                     "product claim."
+                ),
+            }
+        if template.slug == "aeterna-aurea-vita":
+            deliverable["intent"] = str(payload.get("intent_kind") or "aurea_vita_brief")
+            deliverable["compliance"] = (
+                "Licensed lifestyle / longevity / nutrition-sport partner only. Not medical advice, "
+                "not a diagnosis, not a prescription, not a CE/FDA drug or device, and not a guaranteed "
+                "lifespan, weight, or athletic outcome."
+            )
+            deliverable["aurea_vita"] = {
+                "mode": "licensed_lifestyle_longevity_partner",
+                "architecture": "aurea_vita_quality_of_life_literacy",
+                "price_acp": "40",
+                "themes_literacy": [
+                    "quality_of_life_acceleration",
+                    "longevity_literacy",
+                    "nutrition_recommendations",
+                    "sport_and_movement",
+                    "everyday_health_hygiene",
+                    "sleep_and_recovery",
+                ],
+                "note": (
+                    "ANCAP settles ACP and issues a partner handoff brief. Coaching or clinical care "
+                    "occurs only under a licensed partner. Infographics are motivational literacy, "
+                    "not a product claim."
                 ),
             }
         if template.slug == "aeterna-down-syndrome-support":

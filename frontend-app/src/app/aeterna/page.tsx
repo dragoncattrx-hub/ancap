@@ -21,6 +21,7 @@ import { MReceptorPanel } from "@/components/aeterna/MReceptorPanel";
 import { OxygenCarrierPanel } from "@/components/aeterna/OxygenCarrierPanel";
 import { SyntheticBloodMambaPanel } from "@/components/aeterna/SyntheticBloodMambaPanel";
 import { AdhdSupportPanel } from "@/components/aeterna/AdhdSupportPanel";
+import { AureaVitaPanel } from "@/components/aeterna/AureaVitaPanel";
 import { DownSyndromeSupportPanel } from "@/components/aeterna/DownSyndromeSupportPanel";
 import { SubstanceCodingPanel } from "@/components/aeterna/SubstanceCodingPanel";
 import { PulmoPurePanel } from "@/components/aeterna/PulmoPurePanel";
@@ -64,6 +65,7 @@ type AeternaStatus = {
   oxygen_carrier_note?: string;
   synthetic_blood_mamba_note?: string;
   adhd_support_note?: string;
+  aurea_vita_note?: string;
   down_syndrome_support_note?: string;
   substance_coding_note?: string;
   pulmopure_note?: string;
@@ -355,6 +357,10 @@ export default function AeternaPage() {
 
         <section className="mt-16">
           <AdhdSupportPanel note={status?.adhd_support_note} />
+        </section>
+
+        <section className="mt-16">
+          <AureaVitaPanel note={status?.aurea_vita_note} />
         </section>
 
         <section className="mt-16">

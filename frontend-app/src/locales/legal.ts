@@ -547,6 +547,44 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "Legal notices: legal@ancap.cloud. Product: /aeterna#adhd-support. Related notices: /legal/terms, /legal/risk.",
     footerAdhdSupport: "ADHD / СДВГ support",
+    aureaVitaLink: "AUREA Vita",
+    hubCardAureaVita:
+      "Licensed lifestyle / longevity brief for nutrition, sport, and health literacy at 40 ACP. Not medical advice, not a diagnosis, not a lifespan guarantee.",
+    aureaVitaKicker: "Legal / lifestyle / longevity literacy",
+    aureaVitaTitle: "AUREA Vita — quality of life & longevity partner rail",
+    aureaVitaIntro:
+      "How ANCAP frames the AUREA Vita SKU as of 29 September 2026. These pages sell ACP-settled consult briefs (40 ACP), not diagnoses, prescriptions, drugs, devices, or guaranteed lifespan outcomes.",
+    av1Title: "1. Platform role",
+    av1Body:
+      "ANCAP provides ACP settlement, consult briefs, and licensed-partner matching for lifestyle / longevity literacy. ANCAP does not practice medicine, dietetics as a clinic, or physical therapy as a treating provider.",
+    av2Title: "2. Not medical advice",
+    av2Body:
+      "Catalog copy and partner briefs are informational literacy. They are not a diagnosis, treatment plan, prescription, or CE/FDA labeling.",
+    av3Title: "3. Forbidden outcome claims",
+    av3Body:
+      "ANCAP does not guarantee lifespan extension, weight change, athletic performance, disease prevention, or fertility outcomes.",
+    av4Title: "4. Licensed partners only",
+    av4Body:
+      "Any coaching, clinical screening, or medical decision is a licensed partner act after screening. Users must not treat these pages as a substitute for professional care.",
+    av5Title: "5. Nutrition, sport, health literacy",
+    av5Body:
+      "Icons and steps for nutrition, sport, sleep, and longevity hygiene are support literacy. ANCAP does not publish clinical dosing or therapy SOPs.",
+    av6Title: "6. Not a drug or device sold by ANCAP",
+    av6Body:
+      "This SKU does not sell pharmaceuticals, supplements as drugs, or medical devices. Partner products remain under the partner's license.",
+    av7Title: "7. Health data",
+    av7Body:
+      "Treat identifiers and health history as sensitive. Do not upload records without a lawful basis.",
+    av8Title: "8. Relationship to other rails",
+    av8Body:
+      "DNA vault, organ-print, and clinical specialty rails remain separate. AUREA Vita does not authorize unlicensed practice of medicine.",
+    av9Title: "9. Payments",
+    av9Body:
+      "ACP buys a consult brief and partner match at 40 ACP — not a guaranteed clinical or performance outcome. Refunds follow /legal/refunds.",
+    av10Title: "10. Contact",
+    av10Body:
+      "Legal notices: legal@ancap.cloud. Product: /aeterna#aurea-vita. Related notices: /legal/terms, /legal/risk.",
+    footerAureaVita: "AUREA Vita",
     downSyndromeSupportLink: "Down syndrome support",
     hubCardDownSyndromeSupport: "Licensed clinician partner brief for Down syndrome support literacy — not a cure or gene therapy sold by ANCAP.",
     downSyndromeSupportKicker: "Legal / clinician / Down syndrome support literacy",
@@ -1775,6 +1813,44 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "Юридические уведомления: legal@ancap.cloud. Продукт: /aeterna#adhd-support. Связанные тексты: /legal/terms, /legal/risk.",
     footerAdhdSupport: "Поддержка при СДВГ",
+    aureaVitaLink: "AUREA Vita",
+    hubCardAureaVita:
+      "Лицензированный lifestyle / longevity бриф по питанию, спорту и здоровью за 40 ACP. Не медсовет, не диагноз, не гарантия срока жизни.",
+    aureaVitaKicker: "Право / lifestyle / грамотность долголетия",
+    aureaVitaTitle: "AUREA Vita — качество жизни и партнёрский рейл долголетия",
+    aureaVitaIntro:
+      "Как ANCAP описывает SKU AUREA Vita на 29 сентября 2026. Страницы продают ACP-брифы (40 ACP), а не диагнозы, рецепты, препараты или гарантию срока жизни.",
+    av1Title: "1. Роль платформы",
+    av1Body:
+      "ANCAP обеспечивает расчёт ACP, брифы и матчинг лицензированных партнёров по lifestyle / longevity. ANCAP не является клиникой и не ведёт приём как лечащий врач.",
+    av2Title: "2. Не медицинский совет",
+    av2Body:
+      "Каталог и брифы — информационная грамотность. Это не диагноз, не план лечения, не рецепт и не маркировка CE/FDA.",
+    av3Title: "3. Запрещённые обещания результата",
+    av3Body:
+      "ANCAP не гарантирует продление жизни, изменение веса, спортивный результат, профилактику болезней или фертильность.",
+    av4Title: "4. Только лицензированные партнёры",
+    av4Body:
+      "Коучинг, скрининг или клинические решения — акт лицензированного партнёра после скрининга. Страницы не заменяют профессиональную помощь.",
+    av5Title: "5. Питание, спорт, здоровье",
+    av5Body:
+      "Иконки и шаги по питанию, спорту, сну и гигиене долголетия — поддержка грамотности. ANCAP не публикует клинические SOP дозировок.",
+    av6Title: "6. Не препарат и не изделие ANCAP",
+    av6Body:
+      "SKU не продаёт лекарства, БАДы как лекарства или медустройства. Продукты партнёра остаются под его лицензией.",
+    av7Title: "7. Данные о здоровье",
+    av7Body:
+      "Идентификаторы и историю здоровья считайте чувствительными. Не загружайте записи без законного основания.",
+    av8Title: "8. Связь с другими рейлами",
+    av8Body:
+      "DNA vault и клинические specialty-рейлы остаются отдельными. AUREA Vita не разрешает нелицензированную медицинскую практику.",
+    av9Title: "9. Оплата",
+    av9Body:
+      "ACP покупает бриф и матч партнёра за 40 ACP — не гарантированный клинический или спортивный результат. Возвраты: /legal/refunds.",
+    av10Title: "10. Контакты",
+    av10Body:
+      "Юр. уведомления: legal@ancap.cloud. Продукт: /aeterna#aurea-vita. Также: /legal/terms, /legal/risk.",
+    footerAureaVita: "AUREA Vita",
     downSyndromeSupportLink: "Поддержка при синдроме Дауна",
     hubCardDownSyndromeSupport: "Бриф для лицензированного клинициста по поддержке при синдроме Дауна — не излечение и не генная терапия от ANCAP.",
     downSyndromeSupportKicker: "Правовое / клиницист / грамотность поддержки при синдроме Дауна",
@@ -2982,6 +3058,34 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "Юридичні повідомлення: legal@ancap.cloud. Продукт: /aeterna#adhd-support.",
     footerAdhdSupport: "Підтримка при СДУГ",
+    aureaVitaLink: "AUREA Vita",
+    hubCardAureaVita:
+      "Ліцензований lifestyle / longevity бриф щодо харчування, спорту й здоровʼя за 40 ACP. Не медпорада, не діагноз, не гарантія строку життя.",
+    aureaVitaKicker: "Право / lifestyle / грамотність довголіття",
+    aureaVitaTitle: "AUREA Vita — якість життя та партнерський рейл довголіття",
+    aureaVitaIntro:
+      "Як ANCAP описує SKU AUREA Vita на 29 вересня 2026. Сторінки продають ACP-брифи (40 ACP), а не діагнози, рецепти чи гарантію строку життя.",
+    av1Title: "1. Роль платформи",
+    av1Body: "ANCAP забезпечує розрахунок ACP, брифи та матчинг ліцензованих партнерів. ANCAP не є клінікою.",
+    av2Title: "2. Не медична порада",
+    av2Body: "Каталог і брифи — інформаційна грамотність, не діагноз і не план лікування.",
+    av3Title: "3. Заборонені обіцянки",
+    av3Body: "ANCAP не гарантує строк життя, вагу, спортивний результат чи профілактику хвороб.",
+    av4Title: "4. Лише ліцензовані партнери",
+    av4Body: "Коучинг чи клінічні рішення — акт ліцензованого партнера після скринінгу.",
+    av5Title: "5. Харчування, спорт, здоровʼя",
+    av5Body: "Кроки — підтримка грамотності. ANCAP не публікує клінічні SOP.",
+    av6Title: "6. Не препарат ANCAP",
+    av6Body: "SKU не продає ліки чи медвироби від імені ANCAP.",
+    av7Title: "7. Дані про здоровʼя",
+    av7Body: "Ідентифікатори та історію здоровʼя вважайте чутливими.",
+    av8Title: "8. Інші рейли",
+    av8Body: "DNA vault і specialty-рейли залишаються окремими.",
+    av9Title: "9. Оплата",
+    av9Body: "ACP купує бриф і матч партнера за 40 ACP. Повернення: /legal/refunds.",
+    av10Title: "10. Контакти",
+    av10Body: "legal@ancap.cloud · /aeterna#aurea-vita · /legal/terms · /legal/risk.",
+    footerAureaVita: "AUREA Vita",
     downSyndromeSupportLink: "Підтримка при синдромі Дауна",
     hubCardDownSyndromeSupport: "Бріф для ліцензованого клініциста щодо підтримки при синдромі Дауна — не вилікування і не генна терапія від ANCAP.",
     downSyndromeSupportKicker: "Право / клініцист / грамотність підтримки при синдромі Дауна",
@@ -4163,6 +4267,34 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "Rechtliches: legal@ancap.cloud. Produkt: /aeterna#adhd-support.",
     footerAdhdSupport: "ADHS-Unterstützung",
+    aureaVitaLink: "AUREA Vita",
+    hubCardAureaVita:
+      "Lizenzierter Lifestyle-/Longevity-Brief zu Ernährung, Sport und Gesundheit für 40 ACP. Keine medizinische Beratung, keine Diagnose, keine Lebensspannen-Garantie.",
+    aureaVitaKicker: "Recht / Lifestyle / Longevity-Literalität",
+    aureaVitaTitle: "AUREA Vita — Lebensqualität & Longevity-Partnerschiene",
+    aureaVitaIntro:
+      "Stand 29. September 2026. Diese Seiten verkaufen ACP-Consult-Briefs (40 ACP), keine Diagnosen, Rezepte oder Lebensspannen-Garantien.",
+    av1Title: "1. Plattformrolle",
+    av1Body: "ANCAP bietet ACP-Settlement, Briefs und Partner-Matching. ANCAP ist keine Klinik.",
+    av2Title: "2. Keine medizinische Beratung",
+    av2Body: "Katalog und Briefs sind Informationsliteralität — keine Diagnose oder Behandlungsplan.",
+    av3Title: "3. Verbotene Ergebnisversprechen",
+    av3Body: "ANCAP garantiert keine Lebensspanne, kein Gewicht und kein Sportresultat.",
+    av4Title: "4. Nur lizenzierte Partner",
+    av4Body: "Coaching oder klinische Entscheidungen nur beim lizenzierten Partner nach Screening.",
+    av5Title: "5. Ernährung, Sport, Gesundheit",
+    av5Body: "Schritte sind Unterstützungsliteralität — keine klinischen SOPs von ANCAP.",
+    av6Title: "6. Kein Arzneimittel von ANCAP",
+    av6Body: "Diese SKU verkauft keine Arzneimittel oder Medizinprodukte als ANCAP-Produkt.",
+    av7Title: "7. Gesundheitsdaten",
+    av7Body: "Behandeln Sie Identifikatoren und Gesundheitsgeschichte als sensibel.",
+    av8Title: "8. Andere Schienen",
+    av8Body: "DNA-Vault und Specialty-Schienen bleiben getrennt.",
+    av9Title: "9. Zahlungen",
+    av9Body: "ACP kauft Brief und Partner-Match für 40 ACP. Erstattungen: /legal/refunds.",
+    av10Title: "10. Kontakt",
+    av10Body: "legal@ancap.cloud · /aeterna#aurea-vita · /legal/terms · /legal/risk.",
+    footerAureaVita: "AUREA Vita",
     downSyndromeSupportLink: "Down-Syndrom-Unterstuetzung",
     hubCardDownSyndromeSupport: "Partnerbrief eines lizenzierten Klinikers zur Down-Syndrom-Unterstuetzung — keine Heilung und keine Gentherapie durch ANCAP.",
     downSyndromeSupportKicker: "Recht / Kliniker / Down-Syndrom-Unterstuetzungsliteralitaet",
@@ -5342,6 +5474,34 @@ export const legalByLang: Record<Language, Tree> = {
     adhd10Body:
       "法律通知：legal@ancap.cloud。產品：/aeterna#adhd-support。",
     footerAdhdSupport: "ADHD 支援",
+    aureaVitaLink: "AUREA Vita",
+    hubCardAureaVita:
+      "持照 lifestyle／longevity 簡報：營養、運動與健康素養，40 ACP。非醫療建議、非診斷、非壽命保證。",
+    aureaVitaKicker: "法律／lifestyle／長壽素養",
+    aureaVitaTitle: "AUREA Vita — 生活品質與長壽夥伴軌道",
+    aureaVitaIntro:
+      "截至 2026 年 9 月 29 日。本頁銷售 ACP 諮詢簡報（40 ACP），非診斷、處方或壽命保證。",
+    av1Title: "1. 平台角色",
+    av1Body: "ANCAP 提供 ACP 結算、簡報與持照夥伴媒合。ANCAP 不是診所。",
+    av2Title: "2. 非醫療建議",
+    av2Body: "目錄與簡報為資訊素養，非診斷或治療計畫。",
+    av3Title: "3. 禁止結果承諾",
+    av3Body: "ANCAP 不保證壽命、體重或運動表現。",
+    av4Title: "4. 僅限持照夥伴",
+    av4Body: "教練或臨床決策僅由持照夥伴在篩選後進行。",
+    av5Title: "5. 營養、運動、健康",
+    av5Body: "步驟為支援素養；ANCAP 不發布臨床 SOP。",
+    av6Title: "6. 非 ANCAP 藥品",
+    av6Body: "本 SKU 不以 ANCAP 名義銷售藥品或醫療器材。",
+    av7Title: "7. 健康資料",
+    av7Body: "請將識別資訊與健康史視為敏感資料。",
+    av8Title: "8. 其他軌道",
+    av8Body: "DNA vault 與专科軌道保持分離。",
+    av9Title: "9. 付款",
+    av9Body: "ACP 以 40 ACP 購買簡報與夥伴媒合。退款見 /legal/refunds。",
+    av10Title: "10. 聯絡",
+    av10Body: "legal@ancap.cloud · /aeterna#aurea-vita · /legal/terms · /legal/risk。",
+    footerAureaVita: "AUREA Vita",
     downSyndromeSupportLink: "唐氏症支援",
     hubCardDownSyndromeSupport: "持照臨床醫師唐氏症支援素養簡報——非治癒、非 ANCAP 基因治療。",
     downSyndromeSupportKicker: "法律／臨床醫師／唐氏症支援素養",

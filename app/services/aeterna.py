@@ -53,6 +53,7 @@ AETERNA_WORKFLOW_SLUGS = [
     "aeterna-oxygen-carrier",
     "aeterna-synthetic-blood-mamba",
     "aeterna-adhd-support",
+    "aeterna-aurea-vita",
     "aeterna-down-syndrome-support",
     "aeterna-substance-coding",
     "aeterna-pulmopure-subscription",
@@ -94,6 +95,8 @@ SYNTHETIC_BLOOD_MAMBA_SLUG = "aeterna-synthetic-blood-mamba"
 SYNTHETIC_BLOOD_MAMBA_PRICE_ACP = Decimal("98000")
 ADHD_SUPPORT_SLUG = "aeterna-adhd-support"
 ADHD_SUPPORT_PRICE_ACP = Decimal("42000")
+AUREA_VITA_SLUG = "aeterna-aurea-vita"
+AUREA_VITA_PRICE_ACP = Decimal("40")
 DOWN_SYNDROME_SUPPORT_SLUG = "aeterna-down-syndrome-support"
 DOWN_SYNDROME_SUPPORT_PRICE_ACP = Decimal("42000")
 SUBSTANCE_CODING_SLUG = "aeterna-substance-coding"
@@ -229,6 +232,7 @@ AETERNA_INTENT_DEFAULT_SLUGS: dict[str, str] = {
     AeternaIntentKind.oxygen_carrier_brief.value: OXYGEN_CARRIER_SLUG,
     AeternaIntentKind.synthetic_blood_mamba_brief.value: SYNTHETIC_BLOOD_MAMBA_SLUG,
     AeternaIntentKind.adhd_support_brief.value: ADHD_SUPPORT_SLUG,
+    AeternaIntentKind.aurea_vita_brief.value: AUREA_VITA_SLUG,
     AeternaIntentKind.down_syndrome_support_brief.value: DOWN_SYNDROME_SUPPORT_SLUG,
     AeternaIntentKind.substance_coding_brief.value: SUBSTANCE_CODING_SLUG,
     AeternaIntentKind.pulmopure_subscription.value: PULMOPURE_SLUG,
@@ -492,6 +496,28 @@ ADHD_SUPPORT_META = {
         "not a CE/FDA drug, and not a guaranteed academic or financial outcome. Infographic "
         "'billionaire path' steps are motivational literacy, not a promise. Partner screening required; "
         "caregivers retain clinical decision rights with the licensed clinician."
+    ),
+}
+
+AUREA_VITA_META = {
+    "mode": "licensed_lifestyle_longevity_partner",
+    "unit": "vita_brief",
+    "price_acp": "40",
+    "architecture": "aurea_vita_quality_of_life_literacy",
+    "themes_literacy": [
+        "quality_of_life_acceleration",
+        "longevity_literacy",
+        "nutrition_recommendations",
+        "sport_and_movement",
+        "everyday_health_hygiene",
+        "sleep_and_recovery",
+    ],
+    "note": (
+        "AUREA Vita is a licensed lifestyle / longevity / nutrition-sport partner brief for rapid "
+        "quality-of-life literacy: nutrition, sport, health hygiene, sleep, and longevity framing. "
+        "ANCAP settles 40 ACP and issues a partner handoff. Not medical advice, not a diagnosis, "
+        "not a prescription, not a CE/FDA drug or device, not a guaranteed lifespan or performance "
+        "outcome. Partner screening required; clinical decisions stay with the licensed partner."
     ),
 }
 
@@ -848,6 +874,12 @@ async def division_status(session: AsyncSession) -> AeternaStatusPublic:
             "emotion, and school-adaptation literacy. Infographics are motivational — not a diagnosis, "
             "not a prescription, not stimulant compounding, and not a guaranteed financial outcome."
         ),
+        aurea_vita_note=(
+            "AUREA Vita listings are licensed lifestyle / longevity partner intakes for rapid quality-of-life "
+            "literacy: nutrition, sport, health hygiene, sleep, and longevity framing. Infographics are "
+            "motivational — not medical advice, not a diagnosis, not a prescription, and not a guaranteed "
+            "lifespan or performance outcome."
+        ),
         down_syndrome_support_note=(
             "Down syndrome support listings are licensed developmental pediatrics / genetics / "
             "child-neurology partner intakes for early intervention and family literacy. Infographics "
@@ -1169,6 +1201,20 @@ async def create_intent_order(
                 detail="adhd_support_brief budget_acp must be at least 42000 ACP",
             )
         for key, value in ADHD_SUPPORT_META.items():
+            meta.setdefault(key, value)
+    if body.intent_kind == AeternaIntentKind.aurea_vita_brief:
+        if slug and slug != AUREA_VITA_SLUG:
+            raise HTTPException(
+                status_code=400,
+                detail="aurea_vita_brief requires workflow_slug aeterna-aurea-vita",
+            )
+        slug = AUREA_VITA_SLUG
+        if body.budget_acp < AUREA_VITA_PRICE_ACP:
+            raise HTTPException(
+                status_code=400,
+                detail="aurea_vita_brief budget_acp must be at least 40 ACP",
+            )
+        for key, value in AUREA_VITA_META.items():
             meta.setdefault(key, value)
     if body.intent_kind == AeternaIntentKind.down_syndrome_support_brief:
         if slug and slug != DOWN_SYNDROME_SUPPORT_SLUG:
