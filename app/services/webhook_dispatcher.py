@@ -13,7 +13,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import WebhookEndpoint, WebhookDelivery
-from app.services.webhook_url_policy import UnsafeWebhookUrl, validate_webhook_url
+from app.services.webhook_url_policy import UnsafeWebhookUrl, validate_webhook_url_async
 
 
 MAX_RETRIES = 3
@@ -62,7 +62,7 @@ async def dispatch_webhook_event(
     response_body = None
     try:
         try:
-            target_url = validate_webhook_url(endpoint.url)
+            target = await validate_webhook_url_async(endpoint.url)
         except UnsafeWebhookUrl as exc:
             delivery_record.status = "failed"
             delivery_record.response_body = f"blocked_url:{exc}"[:500]
@@ -73,16 +73,23 @@ async def dispatch_webhook_event(
                 "response_status": None,
             }
 
+        # Connect to the DNS-pinned IP; keep original hostname for Host + SNI/TLS.
+        request_url = target.pinned_request_url()
+        headers = {
+            "Content-Type": "application/json",
+            "Host": target.hostname,
+            "X-ANCAP-Signature": signature,
+            "X-ANCAP-Event": event_type,
+            "X-ANCAP-Webhook-ID": str(endpoint.id),
+        }
+        extensions = {"sni_hostname": target.hostname} if target.scheme == "https" else None
+
         async with httpx.AsyncClient(**_HTTPX_CLIENT_KW) as client:
             resp = await client.post(
-                target_url,
+                request_url,
                 content=raw,
-                headers={
-                    "Content-Type": "application/json",
-                    "X-ANCAP-Signature": signature,
-                    "X-ANCAP-Event": event_type,
-                    "X-ANCAP-Webhook-ID": str(endpoint.id),
-                },
+                headers=headers,
+                extensions=extensions,
             )
             response_status = resp.status_code
             response_body = resp.text[:2000]
