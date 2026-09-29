@@ -26,7 +26,13 @@ function Write-StopLog {
   Write-Host $line
 }
 
-Write-StopLog "=== Theodore full stop begin repo=$RepoRoot ==="
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = New-Object Security.Principal.WindowsPrincipal($identity)
+$IsAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+Write-StopLog "=== Theodore full stop begin repo=$RepoRoot admin=$IsAdmin ==="
+if (-not $IsAdmin) {
+  Write-StopLog "WARN not elevated — task DELETE may Access Denied. Prefer: Right-click PowerShell -> Run as administrator"
+}
 
 # 1) Kill-switch so theodore-earn-promo.ps1 exits immediately if relaunched.
 $killLines = @(
@@ -54,30 +60,37 @@ function Remove-TaskForce {
     [string]$TaskPath = "\"
   )
   $full = $TaskPath + $TaskName
-  try {
-    Stop-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
-    Disable-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
-    Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
-  } catch {
-    # fall through to schtasks
-  }
-  # schtasks /Delete is more reliable than Unregister-ScheduledTask on some hosts.
   $tn = if ($TaskPath -and $TaskPath -ne "\") {
     ($TaskPath.TrimEnd("\") + "\" + $TaskName)
   } else {
     $TaskName
   }
+
+  try {
+    Stop-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
+  } catch { }
+
+  # Prefer disable first so the task cannot fire even if delete is denied.
+  try {
+    Disable-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
+  } catch { }
+  & schtasks.exe /Change /TN $tn /DISABLE 2>&1 | Out-Null
+
+  try {
+    Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
+  } catch { }
+
   $out = & schtasks.exe /Delete /TN $tn /F 2>&1 | Out-String
-  if ($LASTEXITCODE -eq 0) {
-    Write-StopLog ("Deleted scheduled task via schtasks: {0}" -f $tn)
-  } else {
-    $still = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue
-    if (-not $still) {
-      Write-StopLog ("Removed scheduled task: {0}" -f $full)
-    } else {
-      Write-StopLog ("WARN could not delete task {0}: {1}" -f $tn, $out.Trim())
-    }
+  $still = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue
+  if (-not $still) {
+    Write-StopLog ("Removed scheduled task: {0}" -f $full)
+    return
   }
+  if ($still.State -eq "Disabled") {
+    Write-StopLog ("Disabled scheduled task (delete denied): {0}" -f $full)
+    return
+  }
+  Write-StopLog ("WARN task still active {0} state={1} delete={2}" -f $tn, $still.State, $out.Trim())
 }
 
 foreach ($taskName in $exactTaskNames) {
@@ -129,14 +142,18 @@ foreach ($task in $tasks) {
   Remove-TaskForce -TaskName $task.TaskName -TaskPath $task.TaskPath
 }
 
-# Final hard delete for the two operator tasks even if Get-ScheduledTask is flaky.
+# Final hard stop for the two operator tasks.
 foreach ($tn in @("TheodoreACPEarnPromo", "OpenClaw Gateway")) {
+  & schtasks.exe /End /TN $tn 2>&1 | Out-Null
+  & schtasks.exe /Change /TN $tn /DISABLE 2>&1 | Out-Null
   & schtasks.exe /Delete /TN $tn /F 2>&1 | Out-Null
   $still = Get-ScheduledTask -TaskName $tn -ErrorAction SilentlyContinue
-  if ($still) {
-    Write-StopLog ("WARN task still present after schtasks /Delete: {0}" -f $tn)
-  } else {
+  if (-not $still) {
     Write-StopLog ("Confirmed absent: {0}" -f $tn)
+  } elseif ($still.State -eq "Disabled") {
+    Write-StopLog ("Confirmed disabled: {0}" -f $tn)
+  } else {
+    Write-StopLog ("WARN task still present: {0} state={1}" -f $tn, $still.State)
   }
 }
 
@@ -233,7 +250,6 @@ foreach ($cli in $cliNames) {
   if (-not $cmdInfo) { continue }
   $argSets = @(
     @("gateway", "stop", "--force"),
-    @("gateway", "stop", "--force", "--port", "18789"),
     @("daemon", "stop", "--force")
   )
   foreach ($argSet in $argSets) {
