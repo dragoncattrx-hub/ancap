@@ -906,6 +906,13 @@ export const walletAcp = {
     });
   },
 
+  async personalizeWallet(data: { wallet_password: string }) {
+    return apiFetch("/wallet/acp/personalize", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
   async getHotBalance() {
     const signal = balanceSignal();
     return apiFetch("/wallet/acp/hot/balance", signal ? { signal } : {});

@@ -83,6 +83,10 @@ export default function AcpWalletPage() {
 
   const [depositAddress, setDepositAddress] = useState<string>("");
   const [depositNote, setDepositNote] = useState<string>("");
+  const [needsPersonalize, setNeedsPersonalize] = useState(false);
+  const [personalizePassword, setPersonalizePassword] = useState("");
+  const [personalizeBusy, setPersonalizeBusy] = useState(false);
+  const [personalizeMnemonic, setPersonalizeMnemonic] = useState("");
   const [privacyAddress, setPrivacyAddress] = useState<string>("");
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [privacyPassword, setPrivacyPassword] = useState("");
@@ -189,10 +193,15 @@ export default function AcpWalletPage() {
       const addrRes = await Promise.allSettled([walletAcp.getDepositAddress()]);
       const addr = addrRes[0];
       if (addr.status === "fulfilled") {
-        const payload = (addr.value || null) as { address?: string; note?: string | null } | null;
+        const payload = (addr.value || null) as {
+          address?: string;
+          note?: string | null;
+          needs_personalize?: boolean;
+        } | null;
         resolvedDeposit = String(payload?.address || "").trim();
         setDepositAddress(resolvedDeposit);
         setDepositNote(String(payload?.note || "").trim());
+        setNeedsPersonalize(Boolean(payload?.needs_personalize));
       } else {
         warnings.push(
           t("walletAcpPage.depositAddressUnavailable").replace(
@@ -596,8 +605,62 @@ export default function AcpWalletPage() {
                 {depositNote ? (
                   <div style={{ marginTop: 8, color: "#f59e0b", fontSize: "0.85rem", lineHeight: 1.45 }}>{depositNote}</div>
                 ) : null}
+                {needsPersonalize ? (
+                  <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.45 }}>
+                      {t("walletAcpPage.personalizeLead")}
+                    </p>
+                    <input
+                      type="password"
+                      placeholder={t("walletAcpPage.walletPassword")}
+                      value={personalizePassword}
+                      onChange={(e) => setPersonalizePassword(e.target.value)}
+                      style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)" }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={personalizeBusy || personalizePassword.length < 8}
+                      onClick={() => {
+                        void (async () => {
+                          setPersonalizeBusy(true);
+                          setError("");
+                          try {
+                            const res = (await walletAcp.personalizeWallet({
+                              wallet_password: personalizePassword,
+                            })) as { address?: string; wallet_backup_mnemonic?: string };
+                            const next = String(res?.address || "").trim();
+                            const mnemonic = String(res?.wallet_backup_mnemonic || "").trim();
+                            if (next) {
+                              setDepositAddress(next);
+                              setNeedsPersonalize(false);
+                              setDepositNote("");
+                              setPersonalizePassword("");
+                              setPersonalizeMnemonic(mnemonic);
+                              setSwapInfo(t("walletAcpPage.personalizeSuccess"));
+                              await refreshAll();
+                            }
+                          } catch (e: any) {
+                            setError(e?.message || t("walletAcpPage.personalizeFailed"));
+                          } finally {
+                            setPersonalizeBusy(false);
+                          }
+                        })();
+                      }}
+                    >
+                      {personalizeBusy ? t("walletAcpPage.generating") : t("walletAcpPage.personalizeWallet")}
+                    </button>
+                    {personalizeMnemonic ? (
+                      <div style={{ marginTop: 4, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                        <div style={{ color: "#f59e0b", fontSize: "0.85rem", marginBottom: 8 }}>{t("walletAcpPage.personalizeMnemonicLead")}</div>
+                        <div style={{ overflowWrap: "anywhere", fontFamily: "ui-monospace, monospace", fontSize: "0.85rem" }}>{personalizeMnemonic}</div>
+                        <button type="button" className="btn btn-ghost" style={{ marginTop: 8 }} onClick={() => copy(personalizeMnemonic)}>{t("walletAcpPage.copy")}</button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress}>{t("walletAcpPage.copy")}</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => copy(singleWalletAddress)} disabled={!singleWalletAddress || needsPersonalize}>{t("walletAcpPage.copy")}</button>
                 </div>
                 <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
                   <h4 style={{ margin: "0 0 8px", fontWeight: 800 }}>{t("walletAcpPage.privacyReceive")}</h4>

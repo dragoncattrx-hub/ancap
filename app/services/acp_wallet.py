@@ -280,21 +280,24 @@ async def get_wallet_for_user(session: AsyncSession, user_id: str) -> UserAcpWal
     return row.scalar_one_or_none()
 
 
-async def create_wallet_for_user(
-    session: AsyncSession,
-    user_id: str,
-    password: str,
-    derivation_path: str = DEFAULT_DERIVATION_PATH,
-) -> tuple[UserAcpWallet, str]:
+def _generate_non_hot_wallet_secret() -> tuple[str, str, str]:
     from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 
     wallet_secret = mnemonic = address = ""
     for _ in range(5):
         wallet_secret, mnemonic, address = generate_wallet_secret()
         if (address or "").strip() != CUSTODIAL_HOT_ADDRESS:
-            break
-    else:
-        raise RuntimeError("ACP wallet generation collided with custodial hot address")
+            return wallet_secret, mnemonic, address
+    raise RuntimeError("ACP wallet generation collided with custodial hot address")
+
+
+async def create_wallet_for_user(
+    session: AsyncSession,
+    user_id: str,
+    password: str,
+    derivation_path: str = DEFAULT_DERIVATION_PATH,
+) -> tuple[UserAcpWallet, str]:
+    wallet_secret, mnemonic, address = _generate_non_hot_wallet_secret()
     fields = _build_recovery_ready_fields(wallet_secret, password)
     now = datetime.now(timezone.utc)
     wallet = UserAcpWallet(
@@ -317,6 +320,42 @@ async def create_wallet_for_user(
         updated_at=now,
     )
     session.add(wallet)
+    await session.flush()
+    return wallet, mnemonic
+
+
+async def personalize_hot_bound_wallet(
+    session: AsyncSession,
+    user_id: str,
+    password: str,
+    *,
+    derivation_path: str = DEFAULT_DERIVATION_PATH,
+) -> tuple[UserAcpWallet, str] | None:
+    """Replace a user row that still points at the shared custodial hot address.
+
+    Custodial hot must live in server secrets / operator tooling — never as a
+    personal deposit address. Verifies the account password against the old
+    ciphertext first, then mints a fresh personal wallet in-place.
+    """
+    from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
+
+    wallet = await get_wallet_for_user(session, user_id)
+    if wallet is None:
+        return None
+    if (wallet.address or "").strip() != CUSTODIAL_HOT_ADDRESS:
+        return None
+
+    # Prove the caller knows the account wallet password before discarding the row binding.
+    decrypt_wallet_secret_with_password(wallet, password)
+
+    wallet_secret, mnemonic, address = _generate_non_hot_wallet_secret()
+    fields = _build_recovery_ready_fields(wallet_secret, password)
+    wallet.address = address
+    _apply_wallet_secret_fields(wallet, fields)
+    wallet.view_pubkey_wire_hex = None
+    wallet.privacy_next_index = 1
+    wallet.derivation_path = derivation_path
+    wallet.updated_at = datetime.now(timezone.utc)
     await session.flush()
     return wallet, mnemonic
 

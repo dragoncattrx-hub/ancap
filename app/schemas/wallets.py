@@ -22,6 +22,7 @@ class AcpDepositAddressResponse(BaseModel):
     privacy_profile: str | None = None
     reuse_policy: str | None = None
     note: str | None = None
+    needs_personalize: bool = False
 
 
 class AcpPrivacyDepositRequest(BaseModel):
@@ -31,6 +32,23 @@ class AcpPrivacyDepositRequest(BaseModel):
         description="Required once if view key not cached yet — unlocks keystore to bind privacy receive set",
     )
     label: str | None = Field(default=None, max_length=120)
+
+
+class AcpPersonalizeWalletRequest(BaseModel):
+    wallet_password: str = Field(
+        ...,
+        min_length=8,
+        description="Account password used to decrypt the current wallet binding and encrypt the new personal wallet",
+    )
+
+
+class AcpPersonalizeWalletResponse(BaseModel):
+    address: str
+    wallet_backup_mnemonic: str
+    note: str = (
+        "Personal ACP deposit address created. Save the mnemonic offline; "
+        "the shared custodial hot address is no longer bound to this account."
+    )
 
 
 class AcpPrivacyStatusPublic(BaseModel):

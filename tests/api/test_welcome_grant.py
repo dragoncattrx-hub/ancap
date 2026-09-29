@@ -166,22 +166,113 @@ def test_custodial_hot_deposit_skips_utxo_full_scan(client, monkeypatch):
             assert wallet is not None
             wallet.address = CUSTODIAL_HOT_ADDRESS
             session.commit()
-        sync_engine.dispose()
 
         deposit = client.get("/v1/wallet/acp/deposit_address", headers=headers)
         assert deposit.status_code == 200, deposit.text
         dep = deposit.json()
         assert dep["address"] == CUSTODIAL_HOT_ADDRESS
         assert dep.get("note")
+        assert dep.get("needs_personalize") is True
 
         hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
         assert hot.status_code == 200, hot.text
         body = hot.json()
         assert scan_calls["n"] == 0
-        assert body["view_mode"] == "operator_hot"
+        # Shared hot must not masquerade as personal operator pool balance.
+        assert body.get("view_mode") in (None, "user")
         assert Decimal(body["platform_credits_acp"]) == Decimal("100")
-        # On-chain snapshot may be 0 when walletd times out; UI still gets credits.
-        assert Decimal(body["acp"]) >= 0
+        assert Decimal(body["acp"]) == Decimal("100")
+        assert Decimal(body["available_acp"]) == Decimal("0")
+
+        # Free the unique hot address for other tests in this suite.
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            assert wallet is not None
+            wallet.address = f"acp1qcleanup{uuid4().hex[:28]}"
+            session.commit()
+        sync_engine.dispose()
+    finally:
+        monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+        get_settings.cache_clear()
+
+
+def test_personalize_replaces_hot_bound_deposit_address(client, monkeypatch):
+    """Personalize endpoint mints a unique deposit address off shared custodial hot."""
+    import os
+
+    from sqlalchemy import create_engine, select as sync_select
+    from sqlalchemy.orm import Session
+
+    from app.api.routers import wallet_acp as wallet_acp_router
+    from app.db.models import User, UserAcpWallet
+    from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
+
+    monkeypatch.setenv("WELCOME_GRANT_ACP", "100")
+    get_settings.cache_clear()
+
+    monkeypatch.setattr(
+        wallet_acp_router,
+        "_load_balance_result",
+        lambda address, interactive=True: {
+            "address": address,
+            "units": "0",
+            "acp": "0",
+            "utxo_count": 0,
+        },
+    )
+
+    try:
+        email = f"hot_fix_{uuid4().hex[:12]}@test.com"
+        password = "password123"
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": email, "password": password, "display_name": "Hot Fix"},
+            headers={"Authorization": ""},
+        )
+        assert res.status_code == 201, res.text
+        token = res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        db_url = os.environ["DATABASE_URL"].replace("+asyncpg", "").replace(
+            "postgresql+asyncpg", "postgresql"
+        )
+        sync_engine = create_engine(db_url, pool_pre_ping=True)
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            assert wallet is not None
+            wallet.address = CUSTODIAL_HOT_ADDRESS
+            session.commit()
+        sync_engine.dispose()
+
+        before = client.get("/v1/wallet/acp/deposit_address", headers=headers).json()
+        assert before["address"] == CUSTODIAL_HOT_ADDRESS
+        assert before.get("needs_personalize") is True
+
+        fixed = client.post(
+            "/v1/wallet/acp/personalize",
+            json={"wallet_password": password},
+            headers=headers,
+        )
+        assert fixed.status_code == 200, fixed.text
+        body = fixed.json()
+        assert body["address"]
+        assert body["address"] != CUSTODIAL_HOT_ADDRESS
+        assert body["wallet_backup_mnemonic"]
+        assert len(body["wallet_backup_mnemonic"].split()) >= 12
+
+        after = client.get("/v1/wallet/acp/deposit_address", headers=headers).json()
+        assert after["address"] == body["address"]
+        assert after.get("needs_personalize") is False
+        assert not after.get("note")
+
+        bal = client.get("/v1/wallet/acp/hot/balance", headers=headers)
+        assert bal.status_code == 200, bal.text
+        bal_body = bal.json()
+        assert bal_body["address"] == body["address"]
+        assert Decimal(bal_body["acp"]) == Decimal("100")
+        assert Decimal(bal_body["platform_credits_acp"]) == Decimal("100")
     finally:
         monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
         get_settings.cache_clear()
