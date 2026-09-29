@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 
 export const metadata = {
   title: "Buy ACP | Crypto-first top-up",
-  description: "Get ACP via USDT swap desk, wACP bridge, credits invoice, or optional Stripe card top-up.",
+  description: "Get ACP via wACP bridge, credits invoice, mobile Exchange, or optional Stripe card top-up.",
 };
 
 export default function BuyAcpPage() {
@@ -17,19 +17,16 @@ export default function BuyAcpPage() {
           Prefer crypto rails first — card (Stripe) is an optional adapter.
         </p>
         <p className="mt-3 text-sm leading-7 text-white/55">
-          Rates are not a fixed &quot;$1 ACP sale&quot;. Use the live USDT→ACP swap desk quote for settlement,
-          GeckoTerminal for wACP DEX spot, and treat welcome-grant / faucet credits as promotional labels only —
-          see <Link href="/markets" className="underline">/markets</Link> and{" "}
+          There is no fixed web &quot;$1 ACP / USDT TRC-20&quot; sale. Use bridge or credits on web; USDT→ACP
+          tickets remain available in the mobile wallet Exchange tab. See{" "}
+          <Link href="/markets" className="underline">/markets</Link> and{" "}
           <Link href="/legal/welcome-grant" className="underline">welcome-grant legal</Link>.
         </p>
 
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">ACP-first (recommended)</h2>
           <div className="flex flex-wrap gap-3">
-            <Link href="/wallet/acp" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950">
-              USDT TRC-20 → ACP swap desk
-            </Link>
-            <Link href="/bridge" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+            <Link href="/bridge" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950">
               Bridge wACP ↔ ACP
             </Link>
             <Link href="/wallet/credits" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
@@ -38,9 +35,12 @@ export default function BuyAcpPage() {
             <Link href="/ai/workflows" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
               Spend on workflows
             </Link>
+            <Link href="/wallet/acp" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+              ACP wallet
+            </Link>
           </div>
           <p className="text-xs leading-6 text-white/50">
-            Mobile wallet Exchange tab opens the same hub quotes and can auth-settle a USDT→ACP ticket into the swap desk rail.
+            Mobile wallet Exchange tab can quote and auth-settle USDT→ACP tickets (not the retired web desk).
           </p>
         </section>
 

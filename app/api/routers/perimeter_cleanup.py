@@ -102,6 +102,7 @@ async def create_perimeter_job(
     payload = perimeter_crypto.decrypt_payload(
         ciphertext_b64=rec.ciphertext_b64,
         nonce_b64=rec.nonce_b64,
+        cipher_id=getattr(rec, "cipher_id", None),
     )
     return PerimeterJobPublic(**_summary(rec).model_dump(), payload=payload)
 

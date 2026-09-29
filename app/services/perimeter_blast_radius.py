@@ -56,6 +56,7 @@ def _namespace_snapshot() -> dict[str, Any]:
         },
         "perimeter": {
             "cipher_id": perimeter_crypto.CIPHER_ID,
+            "legacy_cipher_id": perimeter_crypto.LEGACY_CIPHER_ID,
             "kdf": "HKDF-SHA384",
             "aad": perimeter_crypto.KEY_INFO.decode("ascii"),
             "salt": "ancap-perimeter-abrams-suiteb-salt-v1",
@@ -145,7 +146,8 @@ def _public_snapshot(snap: dict[str, Any]) -> dict[str, Any]:
 def run_canary_proof() -> dict[str, Any]:
     snap = _namespace_snapshot()
     plaintext = json.dumps(CANARY, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
-    ct_b64, nonce_b64, chash, cipher_id = perimeter_crypto.encrypt_payload(CANARY)
+    # Namespace separation proof stays on the AES Suite-B key plane (legacy dual-read).
+    ct_b64, nonce_b64, chash, cipher_id = perimeter_crypto.encrypt_legacy_payload(CANARY)
     attempts = _run_attempts(ciphertext_b64=ct_b64, nonce_b64=nonce_b64, keys=snap["keys"])
     held = _held(attempts) and bool(snap["fingerprints_distinct"])
     return {
@@ -173,10 +175,41 @@ def run_canary_proof() -> dict[str, Any]:
 
 def run_captured_brief_proof(*, ciphertext_b64: str, nonce_b64: str, content_hash: str, cipher_id: str) -> dict[str, Any]:
     snap = _namespace_snapshot()
-    attempts = _run_attempts(ciphertext_b64=ciphertext_b64, nonce_b64=nonce_b64, keys=snap["keys"])
-    held = _held(attempts) and bool(snap["fingerprints_distinct"])
+    cid = (cipher_id or "").strip()
+    if cid == perimeter_crypto.CIPHER_ID or nonce_b64 == perimeter_crypto.PQC_NONCE_MARKER:
+        # New X-Wing jobs: prove control open with perimeter PQC context; foreign AES attempts must fail.
+        attempts = _run_attempts(ciphertext_b64=ciphertext_b64, nonce_b64=nonce_b64, keys=snap["keys"])
+        control_opened = False
+        control_err = None
+        try:
+            perimeter_crypto.decrypt_payload(
+                ciphertext_b64=ciphertext_b64,
+                nonce_b64=nonce_b64,
+                cipher_id=cid,
+            )
+            control_opened = True
+        except Exception as exc:  # noqa: BLE001
+            control_err = type(exc).__name__
+        attempts = [a for a in attempts if a["role"] != "control_perimeter"]
+        attempts.append(
+            _attempt(
+                role="control_perimeter",
+                aead="X-Wing",
+                aad_label="ACP/perimeter-abrams/v1",
+                opened=control_opened,
+                error=control_err,
+            )
+        )
+        held = _held(attempts) and bool(snap["fingerprints_distinct"])
+    else:
+        attempts = _run_attempts(ciphertext_b64=ciphertext_b64, nonce_b64=nonce_b64, keys=snap["keys"])
+        held = _held(attempts) and bool(snap["fingerprints_distinct"])
     ct = base64.urlsafe_b64decode(ciphertext_b64.encode("ascii"))
-    nonce = base64.urlsafe_b64decode(nonce_b64.encode("ascii"))
+    # X-Wing nonce marker is not b64; skip nonce fingerprint for PQC
+    try:
+        nonce_fp = _fp(base64.urlsafe_b64decode(nonce_b64.encode("ascii")))
+    except Exception:
+        nonce_fp = "n/a"
     return {
         "subject": "captured_owner_brief",
         "proof_status": "held" if held else "failed",
@@ -187,7 +220,7 @@ def run_captured_brief_proof(*, ciphertext_b64: str, nonce_b64: str, content_has
             "cipher_id": cipher_id,
             "content_hash": content_hash,
             "ciphertext_sha384": _fp(ct),
-            "nonce_sha384": _fp(nonce),
+            "nonce_sha384": nonce_fp,
         },
         "attempts": attempts,
         "note": (

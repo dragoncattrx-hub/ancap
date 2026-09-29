@@ -86,6 +86,7 @@ services:
       FF_AETERNA: ${FF_AETERNA:-true}
       # Lunar land parcel desk (public /lunar + interests)
       FF_LUNAR_LAND: ${FF_LUNAR_LAND:-true}
+      FF_WEB_USDT_TRC20_SWAP: ${FF_WEB_USDT_TRC20_SWAP:-false}
       LLM_PROVIDER: ${LLM_PROVIDER:-teneta_claude}
       LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.tenetauniversity.com}

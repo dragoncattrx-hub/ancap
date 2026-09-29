@@ -65,6 +65,8 @@ class AcpBalanceResponse(BaseModel):
     acp: str
     utxo_count: int = 0
     on_chain_acp: str | None = None
+    ledger_credits_acp: str | None = None
+    headline_acp: str | None = None
     in_work_acp: str | None = None
     in_work_staked_acp: str | None = None
     in_work_ledger_acp: str | None = None
@@ -72,6 +74,7 @@ class AcpBalanceResponse(BaseModel):
     platform_credits_acp: str | None = None
     tokenomics_buckets: list[AcpTokenomicsBucket] | None = None
     view_mode: Literal["user", "operator_hot"] | None = None
+    balance_status: Literal["live", "degraded", "warming"] | None = None
     vested_unlocked_acp: str | None = None
     vested_locked_acp: str | None = None
     balance_note: str | None = None

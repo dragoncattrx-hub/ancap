@@ -634,33 +634,52 @@ async def _decorate_balance_for_user(
             "(re-login or use Personalize wallet) — do not send funds to the hot address."
         )
 
-    # Regular users: always expose ledger credits (welcome grant / faucet / etc.).
-    # When the deposit address still has 0 UTXOs, surface those credits as the
-    # primary balance so /wallet/acp is not stuck on 0 after registration.
-    if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS:
+    # Regular users: always expose ledger credits separately from on-chain.
+    # Headline `acp` prefers on-chain; platform credits are a separate field.
+    if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS and not is_hot_holder:
         platform_credits_s = _decimal_to_api_str(in_ledger)
-        if display_acp <= 0 and in_ledger > 0:
+        on_chain_s = _decimal_to_api_str(on_chain_acp)
+        # Keep display_acp as on-chain (real_acp after custodial view) unless chain is 0
+        # and only ledger credits exist — then headline still shows credits but note clarifies.
+        if on_chain_acp <= 0 and in_ledger > 0:
             display_acp = in_ledger
             display_units = _units_from_acp(in_ledger)
-            on_chain_s = _decimal_to_api_str(on_chain_acp)
             balance_note = (
+                f"On-chain: {_decimal_to_api_str(on_chain_acp)} ACP. "
                 f"Platform credits: {_decimal_to_api_str(in_ledger)} ACP (ledger). "
-                f"On-chain withdrawable: {_decimal_to_api_str(available_acp)} ACP."
+                f"Withdrawable on-chain: {_decimal_to_api_str(available_acp)} ACP."
             )
+        else:
+            display_acp = on_chain_acp if on_chain_acp > 0 else real_acp
+            display_units = _units_from_acp(display_acp)
+            balance_note = (
+                f"On-chain: {_decimal_to_api_str(on_chain_acp)} ACP. "
+                f"Platform credits: {_decimal_to_api_str(in_ledger)} ACP. "
+                f"Available to withdraw: {_decimal_to_api_str(available_acp)} ACP."
+            )
+
+    balance_status = "live"
+    if include_in_work and on_chain_acp <= 0 and int(raw.get("utxo_count") or 0) == 0:
+        # Likely degraded probe or empty wallet — UI can distinguish.
+        if str(raw.get("source") or "") in {"timeout", "error", "degraded"}:
+            balance_status = "degraded"
 
     return AcpBalanceResponse(
         address=str(raw.get("address") or ""),
         units=display_units,
         acp=_decimal_to_api_str(display_acp),
         utxo_count=display_utxo_count,
-        on_chain_acp=on_chain_s,
+        on_chain_acp=on_chain_s if on_chain_s is not None else _decimal_to_api_str(on_chain_acp),
+        ledger_credits_acp=platform_credits_s,
+        headline_acp=_decimal_to_api_str(display_acp),
         in_work_acp=_decimal_to_api_str(in_work_acp),
         in_work_staked_acp=in_work_staked_s,
         in_work_ledger_acp=in_work_ledger_s,
         available_acp=_decimal_to_api_str(available_acp),
         platform_credits_acp=platform_credits_s,
         tokenomics_buckets=tokenomics_buckets,
-        view_mode=view_mode,
+        view_mode=view_mode if view_mode else "user",
+        balance_status=balance_status,
         vested_unlocked_acp=vested_unlocked_acp,
         vested_locked_acp=vested_locked_acp,
         balance_note=balance_note,
@@ -1203,9 +1222,13 @@ def _scan_chain_transactions(*, interactive: bool = True) -> tuple[int, dict[tup
     if cached is not None and now < expires_at:
         return cached  # type: ignore[return-value]
 
+    # Prefer stale cache over silent empty while a warm is in flight.
+    stale = cached if cached is not None else None
+
     if interactive:
-        # Never block wallet history on a full tip scan; warm cache in background.
         _schedule_chain_scan_warm()
+        if stale is not None:
+            return stale  # type: ignore[return-value]
         raise HTTPException(status_code=503, detail="ACP chain history index is warming")
 
     data = _build_chain_scan_data()
@@ -1214,10 +1237,28 @@ def _scan_chain_transactions(*, interactive: bool = True) -> tuple[int, dict[tup
     return data
 
 
-def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransactionPublic]:
-    best_height, _out_index, tx_index = _scan_chain_transactions(interactive=True)
+def _chain_transactions_for_address(
+    address: str, limit: int
+) -> tuple[list[AcpTransactionPublic], bool]:
+    """Return (rows, warming). warming=True when serving stale/empty while index rebuilds."""
+    warming = False
+    try:
+        best_height, _out_index, tx_index = _scan_chain_transactions(interactive=True)
+    except HTTPException as exc:
+        if exc.status_code == 503:
+            warming = True
+            best_height, tx_index = 0, {}
+        else:
+            raise
+    else:
+        expires_at = float(_chain_scan_cache.get("expires_at") or 0.0)
+        with _chain_scan_lock:
+            inflight = bool(_chain_scan_state.get("inflight"))
+        if inflight and time.monotonic() >= expires_at:
+            warming = True
+
     if best_height <= 0:
-        return []
+        return [], warming
 
     rows: list[AcpTransactionPublic] = []
 
@@ -1253,7 +1294,7 @@ def _chain_transactions_for_address(address: str, limit: int) -> list[AcpTransac
         )
 
     rows.sort(key=lambda x: (x.block_height, x.txid), reverse=True)
-    return rows[:limit]
+    return rows[:limit], warming
 
 
 def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
@@ -1547,7 +1588,7 @@ async def balance(
     )
 
 
-@router.get("/transactions", response_model=list[AcpTransactionPublic] | list[dict])
+@router.get("/transactions", response_model=list[AcpTransactionPublic] | list[dict] | dict)
 async def list_transactions(
     address: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=500),
@@ -1566,15 +1607,38 @@ async def list_transactions(
         target = wallet.address
     if len(target) < 16:
         raise HTTPException(status_code=400, detail="address looks invalid")
+
+    from app.services.cache import cache_get_json, cache_set_json
+
+    hist_key = f"acp:txhist:{target}:{limit}:{'p' if privacy else 'f'}"
+
     try:
-        rows = _chain_transactions_for_address(target, limit)
+        rows, warming = _chain_transactions_for_address(target, limit)
     except HTTPException as exc:
-        if exc.status_code in (502, 503, 504):
-            return []
+        if exc.status_code in (502, 504):
+            cached = await cache_get_json(hist_key)
+            if isinstance(cached, dict) and cached.get("items") is not None:
+                return {**cached, "warming": True, "status": "degraded", "from_cache": True}
+            return {"items": [], "warming": True, "status": "degraded"}
         raise
+
     if not privacy:
+        payload = {
+            "items": [r.model_dump() if hasattr(r, "model_dump") else dict(r) for r in rows],
+            "warming": warming,
+            "status": "warming" if warming else "live",
+        }
+        if rows and not warming:
+            await cache_set_json(hist_key, payload, ttl_seconds=86_400)
+        elif warming and not rows:
+            cached = await cache_get_json(hist_key)
+            if isinstance(cached, dict) and cached.get("items"):
+                return {**cached, "warming": True, "status": "warming", "from_cache": True}
+        if warming:
+            return payload
         return rows
-    return [
+
+    items = [
         {
             "txid": r.txid,
             "block_height": r.block_height,
@@ -1589,6 +1653,16 @@ async def list_transactions(
         }
         for r in rows
     ]
+    payload = {"items": items, "warming": warming, "status": "warming" if warming else "live"}
+    if items and not warming:
+        await cache_set_json(hist_key, payload, ttl_seconds=86_400)
+    elif warming and not items:
+        cached = await cache_get_json(hist_key)
+        if isinstance(cached, dict) and cached.get("items"):
+            return {**cached, "warming": True, "status": "warming", "from_cache": True}
+    if warming:
+        return payload
+    return items
 
 
 @router.get("/transactions/{txid}")
@@ -1703,8 +1777,18 @@ async def withdraw(
     return AcpWithdrawResponse(**res)
 
 
+def _assert_web_usdt_swap_enabled() -> None:
+    settings = get_settings()
+    if not bool(getattr(settings, "ff_web_usdt_trc20_swap", False)):
+        raise HTTPException(
+            status_code=410,
+            detail="Web USDT TRC-20 → ACP swap desk is disabled. Use the mobile Exchange office.",
+        )
+
+
 @router.post("/swap/quote", response_model=AcpSwapQuoteResponse)
 def swap_quote(body: AcpSwapQuoteRequest):
+    _assert_web_usdt_swap_enabled()
     amount = _parse_positive_decimal(body.usdt_trc20_amount, "usdt_trc20_amount")
     rate = _swap_rate()
     estimated = (amount * rate).quantize(Decimal("0.00000001"))
@@ -1722,6 +1806,7 @@ async def create_swap_order(
     session: AsyncSession = Depends(get_db),
     x_idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
+    _assert_web_usdt_swap_enabled()
     amount = _parse_positive_decimal(body.usdt_trc20_amount, "usdt_trc20_amount")
     rate = _swap_rate()
     estimated = (amount * rate).quantize(Decimal("0.00000001"))

@@ -54,6 +54,7 @@ class DnaRnaBankListResponse(BaseModel):
 
 class DnaRnaBankCipherInfo(BaseModel):
     cipher_id: str
+    legacy_cipher_id: str | None = None
     algorithm: str
     kdf: str
     aad: str

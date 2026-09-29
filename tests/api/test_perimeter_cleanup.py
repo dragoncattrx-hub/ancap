@@ -22,9 +22,9 @@ def test_perimeter_catalog_and_cipher(client):
     c = client.get("/v1/perimeter-cleanup/cipher")
     assert c.status_code == 200, c.text
     body = c.json()
-    assert body["algorithm"] == "AES-256-GCM"
-    assert body["kdf"] == "HKDF-SHA384"
-    assert "abrams-suiteb" in body["cipher_id"]
+    assert "X-Wing" in body["algorithm"] or "AES-256-GCM" in body["algorithm"]
+    assert "xwing" in body["cipher_id"]
+    assert "abrams-suiteb" in str(body.get("legacy_cipher_id") or body.get("note") or "")
 
     cat = client.get("/v1/perimeter-cleanup/catalog")
     assert cat.status_code == 200, cat.text

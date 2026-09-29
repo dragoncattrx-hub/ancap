@@ -74,6 +74,7 @@ async def create_bank_entry(
     payload = dna_rna_crypto.decrypt_payload(
         ciphertext_b64=rec.ciphertext_b64,
         nonce_b64=rec.nonce_b64,
+        cipher_id=getattr(rec, "cipher_id", None),
     )
     return DnaRnaBankPublic(**_summary(rec).model_dump(), payload=payload)
 

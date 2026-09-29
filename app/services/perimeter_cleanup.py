@@ -108,13 +108,14 @@ _SERVICES: tuple[dict[str, Any], ...] = (
 def cipher_info() -> dict[str, str]:
     return {
         "cipher_id": perimeter_crypto.CIPHER_ID,
-        "algorithm": "AES-256-GCM",
-        "kdf": "HKDF-SHA384",
+        "legacy_cipher_id": perimeter_crypto.LEGACY_CIPHER_ID,
+        "algorithm": "X-Wing-draft10 / AES-256-GCM (legacy dual-read)",
+        "kdf": "HKDF-SHA256 (X-Wing) + HKDF-SHA384 (legacy)",
         "aad": perimeter_crypto.KEY_INFO.decode("ascii"),
         "note": (
-            "Abrams Suite-B style at-rest vault (v1): AES-256-GCM + HKDF-SHA384. "
-            "Public algorithms in the same class as Abrams Type-1 radio stacks; "
-            "not classified Type 1 keying. Distinct key namespace from DNA/passport vaults. "
+            "New briefs sealed with X-Wing draft-10 hybrid PQC. "
+            "Legacy Abrams Suite-B AES-256-GCM dual-read retained. "
+            "Distinct key namespace from DNA/passport vaults. "
             "Blast-radius proof: GET /perimeter-cleanup/blast-radius."
         ),
         "blast_radius_href": "/perimeter-cleanup/blast-radius",
@@ -246,5 +247,6 @@ async def get_job(
         payload = perimeter_crypto.decrypt_payload(
             ciphertext_b64=row.ciphertext_b64,
             nonce_b64=row.nonce_b64,
+            cipher_id=getattr(row, "cipher_id", None),
         )
     return row, payload

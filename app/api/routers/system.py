@@ -496,6 +496,13 @@ async def _run_all_jobs(session: DbSession) -> dict:
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     bridge_rail = await bridge_rail_tick(session)
     mobile_indexer = await mobile_acp_indexer_tick(session)
+    try:
+        from app.api.routers.wallet_acp import _schedule_chain_scan_warm
+
+        _schedule_chain_scan_warm()
+        chain_scan_warm = {"scheduled": True}
+    except Exception as exc:
+        chain_scan_warm = {"scheduled": False, "error": str(exc)}
     return {
         "ok": True,
         "edges_daily_orders_processed": processed,
@@ -518,6 +525,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
         "bridge_rail": bridge_rail,
         "mobile_indexer": mobile_indexer,
+        "chain_scan_warm": chain_scan_warm,
     }
 
 

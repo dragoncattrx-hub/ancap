@@ -1550,6 +1550,19 @@ export const platformAdmin = {
       `/platform-admin/forecast?metric=${encodeURIComponent(metric)}&days=${encodeURIComponent(String(days))}&horizon=${encodeURIComponent(String(horizon))}`,
     );
   },
+  acpReconcile: (limit = 500, onlyGaps = true) => {
+    const search = new URLSearchParams({
+      limit: String(limit),
+      only_gaps: String(onlyGaps),
+    });
+    return apiFetch(`/platform-admin/acp-reconcile?${search.toString()}`);
+  },
+  acpReconcileExecute: (body: { confirm: boolean; user_ids?: string[]; max_transfers?: number }) => {
+    return apiFetch("/platform-admin/acp-reconcile/execute", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
 };
 
 export const referrals = {

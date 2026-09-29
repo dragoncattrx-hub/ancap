@@ -1391,7 +1391,8 @@ async def acp_address_transactions(
 ):
     target = wallet_acp._validate_acp_address(address, "address")
     try:
-        return wallet_acp._chain_transactions_for_address(target, limit)
+        rows, _warming = wallet_acp._chain_transactions_for_address(target, limit)
+        return rows
     except HTTPException as exc:
         if exc.status_code in (502, 503, 504):
             return []

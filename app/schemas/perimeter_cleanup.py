@@ -46,6 +46,7 @@ class PerimeterCatalogPublic(BaseModel):
 
 class PerimeterCipherInfo(BaseModel):
     cipher_id: str
+    legacy_cipher_id: str | None = None
     algorithm: str
     kdf: str
     aad: str

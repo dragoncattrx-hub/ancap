@@ -175,6 +175,7 @@ async def create_education_doc(
     payload = passport_crypto.decrypt_payload(
         ciphertext_b64=rec.ciphertext_b64,
         nonce_b64=rec.nonce_b64,
+        cipher_id=getattr(rec, "cipher_id", None),
     )
     return PassportEducationDocPublic(**_edu_summary(rec).model_dump(), payload=payload)
 

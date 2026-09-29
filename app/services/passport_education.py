@@ -29,10 +29,11 @@ ALLOWED_DOC_TYPES = frozenset(
 def cipher_info() -> dict[str, str]:
     return {
         "cipher_id": passport_crypto.CIPHER_ID,
-        "algorithm": "ChaCha20-Poly1305",
+        "legacy_cipher_id": passport_crypto.LEGACY_CIPHER_ID,
+        "algorithm": "X-Wing-draft10 / ChaCha20-Poly1305 (legacy dual-read)",
         "kdf": "HKDF-SHA256",
         "aad": passport_crypto.KEY_INFO.decode("ascii"),
-        "note": "Education document payloads are encrypted at rest (v2). Distinct from wallet/mail AES-GCM.",
+        "note": "New education docs sealed with X-Wing; legacy ChaCha20-Poly1305 dual-read retained.",
     }
 
 
@@ -149,6 +150,7 @@ async def get_doc(
         payload = passport_crypto.decrypt_payload(
             ciphertext_b64=rec.ciphertext_b64,
             nonce_b64=rec.nonce_b64,
+            cipher_id=getattr(rec, "cipher_id", None),
         )
     return rec, payload
 

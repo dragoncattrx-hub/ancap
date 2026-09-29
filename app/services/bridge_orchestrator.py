@@ -66,7 +66,7 @@ def _hot_wallet_transfer(acp_address: str, acp_smallest: int) -> dict:
     if txid:
         return transfer
     if from_address:
-        best_height, _out_index, tx_index = _scan_chain_transactions()
+        best_height, _out_index, tx_index = _scan_chain_transactions(interactive=False)
         if best_height > 0:
             candidates: list[tuple[int, str]] = []
             for candidate_txid, tx in tx_index.items():

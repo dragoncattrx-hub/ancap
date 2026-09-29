@@ -17,6 +17,14 @@ from app.db.models import (
     UserEvmWallet,
     WorkflowRunRecord,
 )
+from app.schemas.acp_reconcile import (
+    AcpReconcileExecuteRequest,
+    AcpReconcileExecuteResponse,
+    AcpReconcileGapItem,
+    AcpReconcileReport,
+    AcpReconcileTransferResult,
+)
+from app.services.acp_fund_reconcile import build_reconcile_report, execute_restore_gaps
 from app.services.cache import redis_ping
 from app.services.ledger import is_ledger_invariant_halted
 
@@ -383,4 +391,56 @@ async def admin_forecast(
         points=points,
         slope_per_day=round(slope, 6),
         method="linear_ols",
+    )
+
+
+@router.get("/acp-reconcile", response_model=AcpReconcileReport)
+async def admin_acp_reconcile_report(
+    session: DbSession,
+    limit: int = Query(500, ge=1, le=2000),
+    only_gaps: bool = Query(True),
+    _admin: str = Depends(require_platform_admin),
+):
+    raw = await build_reconcile_report(session, limit=limit, only_gaps=only_gaps)
+    return AcpReconcileReport(
+        dry_run=True,
+        scanned=int(raw["scanned"]),
+        gap_count=int(raw["gap_count"]),
+        items=[AcpReconcileGapItem(**item) for item in raw["items"]],
+        note=raw.get("note"),
+    )
+
+
+@router.post("/acp-reconcile/execute", response_model=AcpReconcileExecuteResponse)
+async def admin_acp_reconcile_execute(
+    body: AcpReconcileExecuteRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
+    try:
+        raw = await execute_restore_gaps(
+            session,
+            user_ids=body.user_ids or None,
+            confirm=bool(body.confirm),
+            max_transfers=int(body.max_transfers),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    transfers = []
+    for t in raw.get("transfers") or []:
+        transfers.append(
+            AcpReconcileTransferResult(
+                user_id=str(t.get("user_id")),
+                address=str(t.get("address")),
+                amount_acp=str(t.get("amount_acp")),
+                ok=bool(t.get("ok")),
+                txid=(str(t["txid"]) if t.get("txid") else None),
+                error=(str(t["error"]) if t.get("error") else None),
+            )
+        )
+    return AcpReconcileExecuteResponse(
+        dry_run=False,
+        attempted=int(raw.get("attempted") or 0),
+        skipped=int(raw.get("skipped") or 0),
+        transfers=transfers,
     )

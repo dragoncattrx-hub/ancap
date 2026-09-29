@@ -2208,7 +2208,7 @@ class DigitalPassportEducationDoc(Base):
     doc_type = Column(String(64), nullable=False, index=True)
     title_hint = Column(String(200), nullable=False)
     institution_hint = Column(String(200), nullable=True)
-    cipher_id = Column(String(64), nullable=False)
+    cipher_id = Column(String(96), nullable=False)
     nonce_b64 = Column(Text, nullable=False)
     ciphertext_b64 = Column(Text, nullable=False)
     content_hash = Column(String(80), nullable=False, index=True)
@@ -2236,7 +2236,7 @@ class DnaRnaBankEntry(Base):
     entry_type = Column(String(64), nullable=False, index=True)
     title_hint = Column(String(200), nullable=False)
     species_hint = Column(String(120), nullable=True)
-    cipher_id = Column(String(80), nullable=False)
+    cipher_id = Column(String(96), nullable=False)
     nonce_b64 = Column(Text, nullable=False)
     ciphertext_b64 = Column(Text, nullable=False)
     content_hash = Column(String(120), nullable=False, index=True)
@@ -2263,7 +2263,7 @@ class PerimeterCleanupJob(Base):
     contamination = Column(String(32), nullable=False, index=True)
     site_label_hint = Column(String(200), nullable=False)
     status = Column(String(32), nullable=False, default="draft", index=True)
-    cipher_id = Column(String(80), nullable=False)
+    cipher_id = Column(String(96), nullable=False)
     nonce_b64 = Column(Text, nullable=False)
     ciphertext_b64 = Column(Text, nullable=False)
     content_hash = Column(String(120), nullable=False, index=True)
@@ -2361,7 +2361,7 @@ class MobileAcpTx(Base):
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     address = Column(String(64), nullable=False, index=True)
-    txid = Column(String(128), nullable=False, unique=True, index=True)
+    txid = Column(String(128), nullable=False, index=True)
     block_height = Column(Integer, nullable=True)
     block_time = Column(String(32), nullable=True)
     direction = Column(String(8), nullable=False)
@@ -2376,6 +2376,7 @@ class MobileAcpTx(Base):
     __table_args__ = (
         Index("ix_mobile_acp_txs_address_height", "address", "block_height"),
         Index("ix_mobile_acp_txs_address_created", "address", "scanned_at"),
+        Index("uq_mobile_acp_txs_address_txid", "address", "txid", unique=True),
     )
 
 

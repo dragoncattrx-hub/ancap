@@ -120,6 +120,12 @@ logger = get_logger("api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        from app.api.routers.wallet_acp import _schedule_chain_scan_warm
+
+        _schedule_chain_scan_warm()
+    except Exception:
+        logger.exception("Failed to schedule ACP chain-scan warm on startup")
     yield
     # shutdown if needed
 

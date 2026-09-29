@@ -34,9 +34,10 @@ async def mobile_acp_indexer_tick(session: AsyncSession) -> dict:
         await session.flush()
 
     # 2. Poll chain for new blocks from last_scanned_height + 1
+    # Non-interactive: build/refresh cache synchronously so the indexer can progress.
     from app.api.routers import wallet_acp as wa
     try:
-        best_height, _, tx_index = wa._scan_chain_transactions()
+        best_height, _, tx_index = wa._scan_chain_transactions(interactive=False)
     except Exception as exc:
         logger.warning("mobile_acp_indexer_tick: chain scan failed: %s", exc)
         return {"indexed": 0, "skipped": 0, "error": str(exc)}

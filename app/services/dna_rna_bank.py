@@ -29,12 +29,13 @@ ALLOWED_TYPES = frozenset(
 def cipher_info() -> dict[str, str]:
     return {
         "cipher_id": dna_rna_crypto.CIPHER_ID,
-        "algorithm": "AES-256-GCM",
-        "kdf": "HKDF-SHA384",
+        "legacy_cipher_id": dna_rna_crypto.LEGACY_CIPHER_ID,
+        "algorithm": "X-Wing-draft10 / AES-256-GCM (legacy dual-read)",
+        "kdf": "HKDF-SHA256 (X-Wing) + HKDF-SHA384 (legacy)",
         "aad": dna_rna_crypto.KEY_INFO.decode("ascii"),
         "note": (
-            "DNA/RNA bank payloads encrypted at rest (v1). "
-            "Distinct from passport ChaCha20-Poly1305 and wallet/mail AES-GCM."
+            "New DNA/RNA bank payloads sealed with X-Wing. "
+            "Legacy AES-256-GCM dual-read retained. Distinct from passport/wallet vaults."
         ),
     }
 
@@ -122,6 +123,7 @@ async def get_entry(
         payload = dna_rna_crypto.decrypt_payload(
             ciphertext_b64=rec.ciphertext_b64,
             nonce_b64=rec.nonce_b64,
+            cipher_id=getattr(rec, "cipher_id", None),
         )
     return rec, payload
 

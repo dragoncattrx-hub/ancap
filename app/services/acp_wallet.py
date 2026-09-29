@@ -19,6 +19,9 @@ from app.db.models import User, UserAcpWallet
 DEFAULT_DERIVATION_PATH = "m/44'/0'/0'/0/0"
 SECRET_BOX_VERSION_LEGACY = 1
 SECRET_BOX_VERSION_RECOVERY_READY = 2
+SECRET_BOX_VERSION_PQC = 3
+PQC_WRAP_NONCE_MARKER = "xwing-v1"
+PQC_WALLET_CONTEXT = b"ACP/custodial-wallet-wrap/v1"
 
 
 def _walletd_cmd() -> list[str]:
@@ -209,7 +212,17 @@ def _build_recovery_ready_fields(wallet_secret: str, password: str) -> dict[str,
         }
 
     secret_key = os.urandom(32)
-    secret_wrapped_b64, secret_wrap_nonce_b64 = _encrypt_bytes(wallet_secret.encode("utf-8"), secret_key)
+    from app.services import pqc_envelope
+
+    secret_wrapped_b64, _chash, _cid = pqc_envelope.seal_bytes(
+        wallet_secret.encode("utf-8"),
+        context=PQC_WALLET_CONTEXT,
+        dedicated=None,
+        secret_key_suffix=b"|custodial-wallet-wrap|xwing-v1",
+        development_fallback=b"ancap-dev-wallet-wrap|xwing-v1",
+        purpose="Custodial wallet wrap",
+    )
+    secret_wrap_nonce_b64 = PQC_WRAP_NONCE_MARKER
 
     wrap_salt = os.urandom(16)
     password_key = _derive_key(password, wrap_salt)
@@ -217,7 +230,7 @@ def _build_recovery_ready_fields(wallet_secret: str, password: str) -> dict[str,
     encrypted_mnemonic, nonce_b64 = _encrypt_bytes(secret_key, password_key)
 
     return {
-        "secret_box_version": SECRET_BOX_VERSION_RECOVERY_READY,
+        "secret_box_version": SECRET_BOX_VERSION_PQC,
         "encrypted_mnemonic": encrypted_mnemonic,
         "salt_b64": base64.b64encode(wrap_salt).decode("ascii"),
         "nonce_b64": nonce_b64,
@@ -254,12 +267,35 @@ def password_recovery_ready(wallet: UserAcpWallet) -> bool:
     )
 
 
+def _open_secret_wrapped(wallet: UserAcpWallet, secret_key: bytes) -> str:
+    wrapped = wallet.secret_wrapped_b64 or ""
+    nonce = wallet.secret_wrap_nonce_b64 or ""
+    if (
+        nonce == PQC_WRAP_NONCE_MARKER
+        or int(getattr(wallet, "secret_box_version", 0) or 0) >= SECRET_BOX_VERSION_PQC
+        or __import__("app.services.pqc_envelope", fromlist=["looks_like_envelope"]).looks_like_envelope(wrapped)
+    ):
+        from app.services import pqc_envelope
+
+        # Password/recovery AES of secret_key authenticates the caller; payload is platform X-Wing.
+        _ = secret_key
+        pt = pqc_envelope.open_bytes(
+            envelope_b64=wrapped,
+            context=PQC_WALLET_CONTEXT,
+            dedicated=None,
+            secret_key_suffix=b"|custodial-wallet-wrap|xwing-v1",
+            development_fallback=b"ancap-dev-wallet-wrap|xwing-v1",
+            purpose="Custodial wallet wrap",
+        )
+        return pt.decode("utf-8")
+    return _decrypt_bytes(wrapped, nonce, secret_key).decode("utf-8")
+
+
 def decrypt_wallet_secret_with_password(wallet: UserAcpWallet, password: str) -> str:
     if password_recovery_ready(wallet):
         password_key = _derive_key(password, base64.b64decode(wallet.salt_b64))
         secret_key = _decrypt_bytes(wallet.encrypted_mnemonic, wallet.nonce_b64, password_key)
-        wallet_secret = _decrypt_bytes(wallet.secret_wrapped_b64, wallet.secret_wrap_nonce_b64, secret_key)
-        return wallet_secret.decode("utf-8")
+        return _open_secret_wrapped(wallet, secret_key)
     return decrypt_mnemonic(wallet.encrypted_mnemonic, wallet.salt_b64, wallet.nonce_b64, password)
 
 
@@ -270,8 +306,7 @@ def decrypt_wallet_secret_with_recovery_key(wallet: UserAcpWallet) -> str:
     if master_key is None:
         raise RuntimeError("ACP wallet recovery master key is not configured")
     secret_key = _decrypt_bytes(wallet.recovery_secret_box_b64, wallet.recovery_secret_nonce_b64, master_key)
-    wallet_secret = _decrypt_bytes(wallet.secret_wrapped_b64, wallet.secret_wrap_nonce_b64, secret_key)
-    return wallet_secret.decode("utf-8")
+    return _open_secret_wrapped(wallet, secret_key)
 
 
 async def get_wallet_for_user(session: AsyncSession, user_id: str) -> UserAcpWallet | None:

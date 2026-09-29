@@ -262,6 +262,7 @@ class Settings(BaseSettings):
     staking_rewards_min_stake_for_rewards: str = "25"
 
     # Wallet swap MVP
+    ff_web_usdt_trc20_swap: bool = False
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     usdt_trc20_to_acp_rate: str = "1"
     # OTC metals/goods desk (indicative ACP per gram; override via env JSON map if needed)

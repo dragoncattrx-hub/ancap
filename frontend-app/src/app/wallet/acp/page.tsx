@@ -25,6 +25,9 @@ type BalanceResponse = {
   acp: string;
   utxo_count?: number;
   on_chain_acp?: string | null;
+  ledger_credits_acp?: string | null;
+  headline_acp?: string | null;
+  balance_status?: string | null;
   in_work_acp?: string;
   in_work_staked_acp?: string;
   in_work_ledger_acp?: string;
@@ -719,12 +722,17 @@ export default function AcpWalletPage() {
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
                   {balanceBusy && !balance
                     ? t("walletAcpPage.loading")
-                    : (balance?.acp
-                      ?? balance?.platform_credits_acp
-                      ?? balance?.in_work_ledger_acp
+                    : (balance?.on_chain_acp
+                      ?? balance?.headline_acp
+                      ?? balance?.acp
                       ?? t("walletAcpPage.dash"))}{" "}
                   <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
+                {balance?.balance_status && balance.balance_status !== "live" && (
+                  <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                    Status: {balance.balance_status}
+                  </div>
+                )}
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.utxoCount").replace("{n}", String(balance.utxo_count))}</div>}
 
                 {isOperatorHotView && balance?.tokenomics_buckets && balance.tokenomics_buckets.length > 0 ? (
@@ -784,11 +792,18 @@ export default function AcpWalletPage() {
                       {t("walletAcpPage.creditedBalance")} <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
                     </div>
                   )}
+                  {balance?.ledger_credits_acp != null
+                    && balance.ledger_credits_acp !== ""
+                    && balance.ledger_credits_acp !== balance.platform_credits_acp && (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                      Ledger credits: <strong style={{ color: "var(--text)" }}>{balance.ledger_credits_acp} ACP</strong>
+                    </div>
+                  )}
                   {!isOperatorHotView && (
                     <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
                       {t("walletAcpPage.yourBalance")}{" "}
                       <strong style={{ color: "var(--text)" }}>
-                        {balance?.acp ?? balance?.platform_credits_acp ?? balance?.in_work_ledger_acp ?? "0"} ACP
+                        {balance?.available_acp ?? balance?.acp ?? "0"} ACP
                       </strong>
                     </div>
                   )}
@@ -910,82 +925,19 @@ export default function AcpWalletPage() {
               </form>
             </div>
 
-            <div className="responsive-grid responsive-grid-2">
-              <div className="card">
-                <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.internalSwapDesk")}</h3>
-                  <span className="badge badge-info">Tether TRC-20 {"->"} ACP</span>
-                </div>
-
-                <form onSubmit={createSwapOrder} style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.tetherAmountLabel")}</label>
-                  <input className="input input-bordered w-full" value={swapForm.usdt_trc20_amount} onChange={(e) => { const value = e.target.value; setSwapForm((p) => ({ ...p, usdt_trc20_amount: value })); setSwapFormErrors((prev) => ({ ...prev, usdt_trc20_amount: undefined })); }} inputMode="decimal" required />
-                  {swapFormErrors.usdt_trc20_amount && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.usdt_trc20_amount}</div>}
-
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.payoutAcpAddress")}</label>
-                  <input className="input input-bordered w-full" value={swapForm.payout_acp_address} onChange={(e) => { const value = e.target.value.trim(); setSwapForm((p) => ({ ...p, payout_acp_address: value })); setSwapFormErrors((prev) => ({ ...prev, payout_acp_address: undefined })); }} required />
-                  {swapFormErrors.payout_acp_address && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{swapFormErrors.payout_acp_address}</div>}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("walletAcpPage.useLowercaseAcp1Before")} <code>acp1</code>{t("walletAcpPage.useLowercaseAcp1After")}</div>
-
-                  <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.noteOptional")}</label>
-                  <input className="input input-bordered w-full" value={swapForm.note} onChange={(e) => setSwapForm((p) => ({ ...p, note: e.target.value }))} />
-
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    <button type="button" className="btn btn-ghost" onClick={refreshQuote} disabled={busy}>{t("walletAcpPage.previewQuote")}</button>
-                    <button type="submit" className="btn btn-primary" disabled={busy || !isSwapFormValid}>{busy ? t("walletAcpPage.creating") : t("walletAcpPage.createOrder")}</button>
-                  </div>
-                </form>
-
-                {quote && (
-                  <div style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7, border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg)" }}>
-                    <div>{t("walletAcpPage.quoteRate").replace("{rate}", quote.rate_acp_per_usdt)}</div>
-                    <div>{t("walletAcpPage.estimatedPayout")} <strong style={{ color: "var(--text)" }}>{quote.estimated_acp_amount} ACP</strong></div>
-                  </div>
-                )}
-
-                <div style={{ marginTop: 16, padding: 10, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                  {t("walletAcpPage.swapDeskHint")}
-                </div>
+            <div className="card" style={{ border: "1px solid rgba(52, 211, 153, 0.2)" }}>
+              <div className="card-header">
+                <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.internalSwapDesk")}</h3>
+                <span className="badge badge-info">Mobile Exchange</span>
               </div>
-
-              <div className="card">
-                <div className="card-header">
-                  <h3 style={{ fontWeight: 800, margin: 0 }}>{t("walletAcpPage.swapOrders")}</h3>
-                  <span className="badge badge-active">{t("walletAcpPage.history")}</span>
-                </div>
-
-                {swapOrders.length === 0 ? (
-                  <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.noSwapOrders")}</div>
-                ) : (
-                  <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                    {swapOrders.map((o) => (
-                      <button key={o.id} type="button" className="btn btn-ghost" style={{ justifyContent: "space-between" }} onClick={() => setSelectedOrderId(o.id)}>
-                        <span>{o.usdt_trc20_amount} Tether TRC-20 {"->"} {o.estimated_acp_amount} ACP</span>
-                        <span>{o.status}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {selectedOrder && (
-                  <div style={{ marginTop: 14, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", display: "grid", gap: 8 }}>
-                    <div><strong>{t("walletAcpPage.orderLabel")}</strong> {selectedOrder.id}</div>
-                    <div><strong>{t("walletAcpPage.statusLabel")}</strong> {selectedOrder.status}</div>
-                    <div><strong>{t("walletAcpPage.depositTether")}</strong> <span style={{ overflowWrap: "anywhere" }}>{selectedOrder.deposit_trc20_address}</span></div>
-                    <div><strong>{t("walletAcpPage.referenceLabel")}</strong> {selectedOrder.deposit_reference}</div>
-                    <div><strong>{t("walletAcpPage.payoutLabel")}</strong> {selectedOrder.estimated_acp_amount} ACP {"->"} {selectedOrder.payout_acp_address}</div>
-                    {selectedOrder.payout_txid && <div><strong>{t("walletAcpPage.payoutTx")}</strong> {selectedOrder.payout_txid}</div>}
-
-                    <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
-                      <input className="input input-bordered w-full" placeholder={t("walletAcpPage.tronTxidOptional")} value={swapForm.tron_txid} onChange={(e) => setSwapForm((p) => ({ ...p, tron_txid: e.target.value }))} />
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <button type="button" className="btn btn-primary" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={confirmSelectedOrder}>{t("walletAcpPage.iSentTether")}</button>
-                        <button type="button" className="btn btn-ghost" disabled={busy || !(selectedOrder.status === "awaiting_deposit" || selectedOrder.status === "pending_review")} onClick={cancelSelectedOrder}>{t("walletAcpPage.cancelOrder")}</button>
-                        <button type="button" className="btn btn-ghost" onClick={() => copy(selectedOrder.deposit_reference)}>{t("walletAcpPage.copyReference")}</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              <p style={{ marginTop: 12, color: "var(--text-muted)", lineHeight: 1.7, fontSize: "0.95rem" }}>
+                Web USDT TRC-20 → ACP desk sale is disabled. Use the ANCAP mobile wallet Exchange tab for USDT→ACP
+                tickets, or buy via bridge / credits below.
+              </p>
+              <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <a className="btn btn-primary" href="/bridge">Bridge wACP ↔ ACP</a>
+                <a className="btn btn-ghost" href="/wallet/credits">Credits</a>
+                <a className="btn btn-ghost" href="/buy-acp">Buy ACP options</a>
               </div>
             </div>
 
