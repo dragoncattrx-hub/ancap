@@ -19,7 +19,9 @@ const securityHeaders = [
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
-      "connect-src 'self' https: wss:",
+      // http://127.0.0.1:* / localhost:* keep local + GitHub E2E (API on :8001) unblocked;
+      // production browsers still talk HTTPS (covered by https:).
+      "connect-src 'self' https: wss: http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*",
       "frame-src https://challenges.cloudflare.com",
     ].join("; "),
   },

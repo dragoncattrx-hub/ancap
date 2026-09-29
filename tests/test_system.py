@@ -110,7 +110,8 @@ def test_jobs_tick_async_requires_matching_cron_secret_when_configured(client, m
     monkeypatch.setenv("CRON_SECRET", "cron-secret-test")
     get_settings.cache_clear()
     try:
-        missing = client.post("/v1/system/jobs/tick/async")
+        # Opt out of AuthedTestClient cron injection to assert missing-header behavior.
+        missing = client.post("/v1/system/jobs/tick/async", headers={"X-Cron-Secret": ""})
         assert missing.status_code == 403, missing.text
         assert missing.json()["detail"] == "Invalid or missing cron secret"
 
@@ -122,7 +123,7 @@ def test_jobs_tick_async_requires_matching_cron_secret_when_configured(client, m
         assert ok.status_code == 202, ok.text
         assert ok.json()["status"] == "queued"
     finally:
-        monkeypatch.setenv("CRON_SECRET", "")
+        monkeypatch.setenv("CRON_SECRET", "test-cron-secret")
         get_settings.cache_clear()
 
 

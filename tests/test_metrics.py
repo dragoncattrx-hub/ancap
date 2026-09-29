@@ -19,6 +19,9 @@ BASE_WORKFLOW = {
 }
 
 
+_METRICS_HEADERS = {"X-Metrics-Token": "test-metrics-token", "Authorization": ""}
+
+
 def test_metrics_for_run(client, base_vertical_id):
     agent = client.post(
         "/v1/agents",
@@ -40,13 +43,13 @@ def test_metrics_for_run(client, base_vertical_id):
         headers={"Idempotency-Key": unique_name("idk_met_run")},
     )
     run_id = run.json()["id"]
-    r = client.get("/v1/metrics", params={"run_id": run_id})
+    r = client.get("/v1/metrics", params={"run_id": run_id}, headers=_METRICS_HEADERS)
     assert r.status_code == 200
     assert "items" in r.json()
 
 
 def test_prometheus_metrics_and_full_health(client):
-    metrics = client.get("/v1/metrics")
+    metrics = client.get("/v1/metrics", headers=_METRICS_HEADERS)
     assert metrics.status_code == 200, metrics.text
     assert metrics.headers["content-type"].startswith("text/plain")
     assert "ancap_workflow_runs_total" in metrics.text

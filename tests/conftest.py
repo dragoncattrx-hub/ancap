@@ -36,10 +36,12 @@ os.environ["REGISTRATION_MAX_AGENTS_PER_DAY"] = "0"
 os.environ["PARTICIPATION_GATES_ENABLED"] = "false"
 os.environ["TURNSTILE_SECRET_KEY"] = ""
 os.environ["TURNSTILE_SITE_KEY"] = ""
-os.environ["CRON_SECRET"] = ""
+# Fail-closed cron/metrics auth is production-correct; tests inject these values
+# via _AuthedTestClient (or explicit headers) so jobs tick / scrape stay covered.
+os.environ["CRON_SECRET"] = "test-cron-secret"
 os.environ["PLATFORM_ADMIN_USER_IDS"] = ""
 os.environ["PLATFORM_ADMIN_EMAILS"] = ""
-os.environ["METRICS_SCRAPE_TOKEN"] = ""
+os.environ["METRICS_SCRAPE_TOKEN"] = "test-metrics-token"
 os.environ["ALLOW_INSECURE_CRON"] = "false"
 # New-agent order limits: force defaults so developer shell/.env cannot disable or
 # widen quarantine (e.g. QUARANTINE_HOURS—0 skips the guardrail; a huge max prevents 403).
@@ -178,8 +180,8 @@ class _AuthedTestClient(TestClient):
     default_token: str | None = None
 
     def request(self, method: str, url: str, **kwargs: Any):  # type: ignore[override]
+        headers = dict(kwargs.get("headers") or {})
         if self.default_token:
-            headers = dict(kwargs.get("headers") or {})
             # Use `in` rather than `.get(...) or ...` so empty-string opt-outs
             # are not confused with "header not provided".
             has_auth = "Authorization" in headers or "authorization" in headers
@@ -199,7 +201,23 @@ class _AuthedTestClient(TestClient):
                     headers.pop("authorization", None)
                     if kwargs.get("cookies") is None and "Cookie" not in headers and "cookie" not in headers:
                         headers["Cookie"] = ""
-            kwargs["headers"] = headers
+
+        # Jobs tick is fail-closed without CRON_SECRET; inject the configured secret
+        # unless the test opts out with X-Cron-Secret: "".
+        has_cron = "X-Cron-Secret" in headers or "x-cron-secret" in headers
+        if has_cron:
+            cron_value = headers.get("X-Cron-Secret")
+            if cron_value is None:
+                cron_value = headers.get("x-cron-secret")
+            if cron_value == "":
+                headers.pop("X-Cron-Secret", None)
+                headers.pop("x-cron-secret", None)
+        else:
+            cron = (get_settings().cron_secret or "").strip()
+            if cron:
+                headers["X-Cron-Secret"] = cron
+
+        kwargs["headers"] = headers
         return super().request(method, url, **kwargs)
 
 

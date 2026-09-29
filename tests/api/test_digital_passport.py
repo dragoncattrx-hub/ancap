@@ -160,7 +160,9 @@ def test_passport_education_docs_encrypt_roundtrip(client):
 
     cipher = client.get("/v1/passports/education/cipher")
     assert cipher.status_code == 200, cipher.text
-    assert cipher.json()["cipher_id"] == "chacha20poly1305-hkdf-sha256-v2"
+    cipher_body = cipher.json()
+    assert cipher_body["cipher_id"] == "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1"
+    assert cipher_body["legacy_cipher_id"] == "chacha20poly1305-hkdf-sha256-v2"
 
     created = client.post(
         f"/v1/passports/{pid}/education-docs",
@@ -178,7 +180,7 @@ def test_passport_education_docs_encrypt_roundtrip(client):
     assert created.status_code == 201, created.text
     body = created.json()
     assert body["title_hint"] == "MSc Cryptography"
-    assert body["cipher_id"] == "chacha20poly1305-hkdf-sha256-v2"
+    assert body["cipher_id"] == "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1"
     assert body["payload"]["institution"] == "ANCAP Academy"
     assert body["content_hash"].startswith("sha256:")
 

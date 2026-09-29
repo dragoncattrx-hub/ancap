@@ -51,7 +51,7 @@ def test_metrics_scrape_token(client, monkeypatch):
         )
         assert ok.status_code == 200, ok.text
     finally:
-        monkeypatch.setenv("METRICS_SCRAPE_TOKEN", "")
+        monkeypatch.setenv("METRICS_SCRAPE_TOKEN", "test-metrics-token")
         get_settings.cache_clear()
 
 

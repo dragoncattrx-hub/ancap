@@ -132,6 +132,7 @@ def test_aeterna_workflow_templates_catalogued():
         "aeterna-vascular-care": "58000",
         "aeterna-dpsc-biomaterial": "65000",
         "aeterna-biofusion-micromanipulation": "88000",
+        "aeterna-aurea-vita": "40",
     }
     for tpl in aeterna:
         assert tpl.price.currency == "ACP"

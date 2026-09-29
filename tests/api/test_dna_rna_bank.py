@@ -8,8 +8,10 @@ def test_dna_rna_bank_encrypt_roundtrip(client):
 
     cipher = client.get("/v1/dna-rna-bank/cipher")
     assert cipher.status_code == 200, cipher.text
-    assert cipher.json()["cipher_id"] == "aes256-gcm-hkdf-sha384-dna-rna-v1"
-    assert cipher.json()["kdf"] == "HKDF-SHA384"
+    cipher_body = cipher.json()
+    assert cipher_body["cipher_id"] == "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1"
+    assert cipher_body["legacy_cipher_id"] == "aes256-gcm-hkdf-sha384-dna-rna-v1"
+    assert cipher_body["kdf"] == "HKDF-SHA256 (X-Wing) + HKDF-SHA384 (legacy)"
 
     created = client.post(
         "/v1/dna-rna-bank/entries",
@@ -27,7 +29,7 @@ def test_dna_rna_bank_encrypt_roundtrip(client):
     assert created.status_code == 201, created.text
     body = created.json()
     assert body["molecule"] == "rna"
-    assert body["cipher_id"] == "aes256-gcm-hkdf-sha384-dna-rna-v1"
+    assert body["cipher_id"] == "xwing-draft10-ml-kem-768-x25519-hkdf-sha256-xchacha20poly1305-v1"
     assert body["content_hash"].startswith("sha384:")
     assert body["payload"]["sample_id"] == "RNA-001"
 

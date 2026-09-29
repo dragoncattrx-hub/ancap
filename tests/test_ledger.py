@@ -53,8 +53,8 @@ def test_ledger_events(client):
     assert "items" in r.json()
 
 
-def test_allocate_allows_unowned_pool_for_authenticated_user(client):
-    """POST /v1/ledger/allocate allows backward-compatible access when pool has no owner_agent_id."""
+def test_allocate_blocks_unowned_pool_for_authenticated_user(client):
+    """POST /v1/ledger/allocate rejects pools without owner_agent_id (fail-closed ownership)."""
     pool = client.post(
         "/v1/pools",
         json={"name": unique_name("alloc_pool"), "risk_profile": "high"},
@@ -107,10 +107,8 @@ def test_allocate_allows_unowned_pool_for_authenticated_user(client):
             "amount": {"amount": "100", "currency": "VUSD"},
         },
     )
-    assert r.status_code == 201, f"expected 201 for unowned pool backward-compat allocate, got {r.status_code}: {r.text}"
-    payload = r.json()
-    assert payload["type"] == "allocate"
-    assert payload["src_account_id"] is not None
+    assert r.status_code == 403, r.text
+    assert "no owner" in (r.json().get("detail") or "").lower()
 
 
 def test_allocate_requires_matching_pool_owner(client):
