@@ -86,8 +86,11 @@ _chain_balance_cache: dict[str, tuple[float, dict]] = {}
 # Interactive wallet UI must stay snappy. Full tip scans (~30k blocks) belong in
 # a background warmer, never on the request path.
 _INTERACTIVE_WALLETD_TIMEOUT_S = 5
-# Operator role wallets (hot/treasury/bridge) need a longer probe than retail UI.
-_OPERATOR_ROLE_WALLETD_TIMEOUT_S = 40
+# Operator role wallets need a longer probe than retail UI, but aggregate
+# probes must stay inside the frontend balance AbortSignal (~45s).
+_OPERATOR_ROLE_WALLETD_TIMEOUT_S = 15
+_OPERATOR_AGGREGATE_BUDGET_S = 30.0
+_OPERATOR_AGGREGATE_PER_ROLE_S = 10
 _INTERACTIVE_RPC_TIMEOUT_S = 5.0
 
 
@@ -575,7 +578,8 @@ async def _decorate_balance_for_user(
 
     if is_hot_holder:
         # Designated operator: aggregate ALL role-wallet funds into the headline balance.
-        slices, live_ok, hot_live = _operator_controlled_balance_slices()
+        seed = {target_address: raw} if target_address else None
+        slices, live_ok, hot_live = _operator_controlled_balance_slices(seed_by_address=seed)
         total = sum((s[2] for s in slices), Decimal(0))
         display_acp = total
         display_units = _units_from_acp(total)
@@ -596,7 +600,11 @@ async def _decorate_balance_for_user(
         available_acp = hot_live if hot_live > 0 else (
             on_chain_acp if target_address == CUSTODIAL_HOT_ADDRESS else Decimal(0)
         )
-        source = "live UTXO probes" if live_ok else "design alloc (live probe timed out / empty)"
+        source = (
+            "live UTXO probes (zeros preserved; design only for unavailable probes)"
+            if live_ok
+            else "design alloc (all live probes unavailable)"
+        )
         balance_note = (
             f"Operator-controlled total: {_decimal_to_api_str(total)} ACP ({source}). "
             f"Includes genesis treasury, custodial hot, project treasury, bridge reserve. "
@@ -755,30 +763,106 @@ def _empty_balance_payload(address: str) -> dict:
     return {"address": address, "units": "0", "acp": "0", "utxo_count": 0}
 
 
-def _operator_controlled_balance_slices() -> tuple[list[tuple[str, str, Decimal, int]], bool, Decimal]:
-    """Probe operator role wallets; fall back to design allocs when live is empty.
+def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, bool]:
+    """Return (acp, utxo_count, probe_ok). probe_ok=False means timeout/unavailable."""
+    target = (address or "").strip()
+    if not target:
+        return Decimal(0), 0, False
 
-    Returns (slices, used_live_data, hot_live_acp).
+    now = time.monotonic()
+    cached = _chain_balance_cache.get(target)
+    if cached is not None:
+        expires_at, payload = cached
+        if now < expires_at:
+            return (
+                _parse_decimal_or_zero(payload.get("acp")),
+                int(payload.get("utxo_count") or 0),
+                True,
+            )
+
+    rpc_url = _require_acp_rpc_url()
+    try:
+        result = _run_walletd(
+            ["balance", "--rpc", rpc_url, "--address", target],
+            timeout_s=max(1, int(timeout_s)),
+        )
+    except HTTPException as exc:
+        if exc.status_code in (502, 503, 504):
+            return Decimal(0), 0, False
+        raise
+
+    if not isinstance(result, dict):
+        return Decimal(0), 0, False
+    if not str(result.get("address") or "").strip():
+        result = {**result, "address": target}
+    _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, dict(result))
+    return (
+        _parse_decimal_or_zero(result.get("acp")),
+        int(result.get("utxo_count") or 0),
+        True,
+    )
+
+
+def _operator_controlled_balance_slices(
+    *,
+    seed_by_address: dict[str, dict] | None = None,
+) -> tuple[list[tuple[str, str, Decimal, int]], bool, Decimal]:
+    """Probe operator role wallets in parallel within a shared time budget.
+
+    Confirmed live zeros are preserved. Design alloc is used only when a probe
+    is unavailable (timeout / transport error), never when walletd reports 0.
+
+    Returns (slices, used_any_live_probe, hot_live_acp).
     """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    seed_by_address = seed_by_address or {}
+    deadline = time.monotonic() + _OPERATOR_AGGREGATE_BUDGET_S
+    probed: dict[str, tuple[Decimal, int, bool]] = {}
+
+    for address, raw in seed_by_address.items():
+        if not address or not isinstance(raw, dict):
+            continue
+        probed[address] = (
+            _parse_decimal_or_zero(raw.get("acp")),
+            int(raw.get("utxo_count") or 0),
+            True,
+        )
+
+    pending = [addr for _, _, addr, _ in OPERATOR_ROLE_WALLETS if addr not in probed]
+    if pending:
+        remaining = max(1.0, deadline - time.monotonic())
+        per_role = max(1, min(_OPERATOR_AGGREGATE_PER_ROLE_S, int(remaining)))
+
+        def _one(addr: str) -> tuple[str, Decimal, int, bool]:
+            left = max(1, int(deadline - time.monotonic()))
+            acp, utxos, ok = _probe_role_wallet(addr, timeout_s=min(per_role, left))
+            return addr, acp, utxos, ok
+
+        with ThreadPoolExecutor(max_workers=min(4, len(pending))) as pool:
+            futures = [pool.submit(_one, addr) for addr in pending]
+            for fut in as_completed(futures, timeout=max(1.0, deadline - time.monotonic() + 1.0)):
+                try:
+                    addr, acp, utxos, ok = fut.result()
+                except Exception:
+                    continue
+                probed[addr] = (acp, utxos, ok)
+
     slices: list[tuple[str, str, Decimal, int]] = []
     live_hits = 0
     hot_live = Decimal(0)
     for key, label, address, design_acp in OPERATOR_ROLE_WALLETS:
-        try:
-            raw = _load_balance_result(address, interactive=True)
-            live_acp = _parse_decimal_or_zero(raw.get("acp"))
-            utxos = int(raw.get("utxo_count") or 0)
-        except Exception:
-            live_acp = Decimal(0)
-            utxos = 0
-        if live_acp > 0 or utxos > 0:
+        live_acp, utxos, ok = probed.get(address, (Decimal(0), 0, False))
+        if ok:
             live_hits += 1
             acp = live_acp
         else:
             acp = design_acp
             utxos = 0
-        if address == CUSTODIAL_HOT_ADDRESS:
+        if address == CUSTODIAL_HOT_ADDRESS and ok:
             hot_live = live_acp
+        elif address == CUSTODIAL_HOT_ADDRESS:
+            hot_live = Decimal(0)
         slices.append((key, label, acp, utxos))
     return slices, live_hits > 0, hot_live
 
