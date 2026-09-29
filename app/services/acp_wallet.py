@@ -5,6 +5,7 @@ import os
 import secrets
 import shutil
 import subprocess
+import uuid
 from datetime import datetime, timezone
 
 from argon2.low_level import Type, hash_secret_raw
@@ -13,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.db.models import User, UserAcpWallet
+from app.db.models import User, UserAcpAddressBinding, UserAcpWallet
 
 
 DEFAULT_DERIVATION_PATH = "m/44'/0'/0'/0/0"
@@ -22,6 +23,11 @@ SECRET_BOX_VERSION_RECOVERY_READY = 2
 SECRET_BOX_VERSION_PQC = 3
 PQC_WRAP_NONCE_MARKER = "xwing-v1"
 PQC_WALLET_CONTEXT = b"ACP/custodial-wallet-wrap/v1"
+
+BINDING_KIND_DEPOSIT = "deposit"
+BINDING_KIND_PRIVACY = "privacy"
+BINDING_KIND_PREVIOUS_DEPOSIT = "previous_deposit"
+BINDING_KIND_IMPORTED = "imported"
 
 
 def _walletd_cmd() -> list[str]:
@@ -315,6 +321,79 @@ async def get_wallet_for_user(session: AsyncSession, user_id: str) -> UserAcpWal
     return row.scalar_one_or_none()
 
 
+def _is_custodial_hot_address(address: str) -> bool:
+    from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
+
+    return (address or "").strip() == CUSTODIAL_HOT_ADDRESS
+
+
+async def upsert_address_binding(
+    session: AsyncSession,
+    user_id: str,
+    address: str,
+    kind: str,
+) -> UserAcpAddressBinding | None:
+    """Insert or reactivate a (user_id, address) binding row. Skips custodial hot."""
+    addr = (address or "").strip()
+    if not addr or _is_custodial_hot_address(addr):
+        return None
+    kind_norm = (kind or BINDING_KIND_DEPOSIT).strip() or BINDING_KIND_DEPOSIT
+    existing = await session.execute(
+        select(UserAcpAddressBinding).where(
+            UserAcpAddressBinding.user_id == str(user_id),
+            UserAcpAddressBinding.address == addr,
+        )
+    )
+    row = existing.scalar_one_or_none()
+    now = datetime.now(timezone.utc)
+    if row is None:
+        row = UserAcpAddressBinding(
+            id=str(uuid.uuid4()),
+            user_id=str(user_id),
+            address=addr,
+            kind=kind_norm,
+            bound_at=now,
+            unbound_at=None,
+        )
+        session.add(row)
+    else:
+        if row.unbound_at is not None:
+            row.unbound_at = None
+            row.bound_at = now
+        row.kind = kind_norm
+    await session.flush()
+    return row
+
+
+async def unbind_address_binding(
+    session: AsyncSession,
+    user_id: str,
+    address: str,
+    *,
+    mark_previous_deposit: bool = False,
+) -> UserAcpAddressBinding | None:
+    """Set unbound_at on an existing binding (e.g. after personalize)."""
+    addr = (address or "").strip()
+    if not addr:
+        return None
+    existing = await session.execute(
+        select(UserAcpAddressBinding).where(
+            UserAcpAddressBinding.user_id == str(user_id),
+            UserAcpAddressBinding.address == addr,
+        )
+    )
+    row = existing.scalar_one_or_none()
+    if row is None:
+        return None
+    now = datetime.now(timezone.utc)
+    if row.unbound_at is None:
+        row.unbound_at = now
+    if mark_previous_deposit and row.kind == BINDING_KIND_DEPOSIT:
+        row.kind = BINDING_KIND_PREVIOUS_DEPOSIT
+    await session.flush()
+    return row
+
+
 def _generate_non_hot_wallet_secret() -> tuple[str, str, str]:
     from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 
@@ -356,6 +435,7 @@ async def create_wallet_for_user(
     )
     session.add(wallet)
     await session.flush()
+    await upsert_address_binding(session, user_id, address, BINDING_KIND_DEPOSIT)
     return wallet, mnemonic
 
 
@@ -398,8 +478,16 @@ async def personalize_hot_bound_wallet(
     # Prove the caller knows the account wallet password before discarding the row binding.
     decrypt_wallet_secret_with_password(wallet, password)
 
+    old_address = (wallet.address or "").strip()
     wallet_secret, mnemonic, address = _generate_non_hot_wallet_secret()
     fields = _build_recovery_ready_fields(wallet_secret, password)
+    if old_address and old_address != address and not _is_custodial_hot_address(old_address):
+        await unbind_address_binding(
+            session,
+            user_id,
+            old_address,
+            mark_previous_deposit=True,
+        )
     wallet.address = address
     _apply_wallet_secret_fields(wallet, fields)
     wallet.view_pubkey_wire_hex = None
@@ -407,6 +495,7 @@ async def personalize_hot_bound_wallet(
     wallet.derivation_path = derivation_path
     wallet.updated_at = datetime.now(timezone.utc)
     await session.flush()
+    await upsert_address_binding(session, user_id, address, BINDING_KIND_DEPOSIT)
     return wallet, mnemonic
 
 

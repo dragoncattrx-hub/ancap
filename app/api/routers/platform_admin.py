@@ -11,6 +11,7 @@ from sqlalchemy import cast, Date, func, or_, select
 from app.api.deps import DbSession, require_platform_admin
 from app.db.models import (
     GrowthMetricRollup,
+    MobileAddressIndexerState,
     PaymentIntent,
     User,
     UserAcpWallet,
@@ -18,6 +19,8 @@ from app.db.models import (
     WorkflowRunRecord,
 )
 from app.schemas.acp_reconcile import (
+    AcpHistoryRescanRequest,
+    AcpHistoryRescanResponse,
     AcpReconcileExecuteRequest,
     AcpReconcileExecuteResponse,
     AcpReconcileGapItem,
@@ -27,6 +30,7 @@ from app.schemas.acp_reconcile import (
 from app.services.acp_fund_reconcile import build_reconcile_report, execute_restore_gaps
 from app.services.cache import redis_ping
 from app.services.ledger import is_ledger_invariant_halted
+from app.jobs.mobile_acp_indexer_tick import mobile_acp_indexer_tick
 
 router = APIRouter(prefix="/platform-admin", tags=["Platform Admin"])
 
@@ -443,4 +447,56 @@ async def admin_acp_reconcile_execute(
         attempted=int(raw.get("attempted") or 0),
         skipped=int(raw.get("skipped") or 0),
         transfers=transfers,
+    )
+
+
+@router.post("/acp-history/rescan", response_model=AcpHistoryRescanResponse)
+async def admin_acp_history_rescan(
+    body: AcpHistoryRescanRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
+    """Force an indexer tick; optionally clear the global watermark for a full rescan."""
+    target = (body.address or "").strip() or None
+    if target and len(target) < 16:
+        raise HTTPException(status_code=400, detail="address looks invalid")
+
+    state_row = await session.execute(
+        select(MobileAddressIndexerState).where(MobileAddressIndexerState.id == 1)
+    )
+    state = state_row.scalar_one_or_none()
+    if state is None:
+        state = MobileAddressIndexerState(id=1, last_scanned_height=0, indexed_addresses=[])
+        session.add(state)
+        await session.flush()
+
+    previous_height = int(state.last_scanned_height or 0)
+    watermark_reset = False
+    note_parts: list[str] = []
+
+    if body.reset_watermark:
+        # Cautious: resets the global indexer watermark for ALL watched addresses.
+        state.last_scanned_height = 0
+        watermark_reset = True
+        note_parts.append(
+            "last_scanned_height cleared to 0; tick rescans from genesis for all watched addresses"
+        )
+        await session.flush()
+
+    extra = [target] if target else None
+    tick = await mobile_acp_indexer_tick(session, extra_addresses=extra)
+    if tick.get("error"):
+        note_parts.append(f"indexer: {tick['error']}")
+
+    return AcpHistoryRescanResponse(
+        ok=not bool(tick.get("error")),
+        address=target,
+        watermark_reset=watermark_reset,
+        previous_last_scanned_height=previous_height,
+        last_scanned_height=int(tick.get("last_scanned_height") or state.last_scanned_height or 0),
+        addresses_watched=int(tick.get("addresses_watched") or len(state.indexed_addresses or [])),
+        indexed=int(tick.get("indexed") or 0),
+        best_height=(int(tick["best_height"]) if tick.get("best_height") is not None else None),
+        error=(str(tick["error"]) if tick.get("error") else None),
+        note="; ".join(note_parts) if note_parts else None,
     )

@@ -180,6 +180,25 @@ class UserAcpWallet(Base):
     user = relationship("User", foreign_keys=[user_id])
 
 
+class UserAcpAddressBinding(Base):
+    """Historical + active ACP address bindings for indexer watchlists / history restore."""
+
+    __tablename__ = "user_acp_address_bindings"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    address = Column(String(128), nullable=False, index=True)
+    kind = Column(String(32), nullable=False)  # deposit|privacy|previous_deposit|imported
+    bound_at = Column(DateTime(timezone=True), nullable=False)
+    unbound_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("uq_user_acp_address_bindings_user_address", "user_id", "address", unique=True),
+    )
+
+
 class UserAcpPrivacyAddress(Base):
     __tablename__ = "user_acp_privacy_addresses"
 

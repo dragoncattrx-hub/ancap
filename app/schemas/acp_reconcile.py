@@ -44,3 +44,32 @@ class AcpReconcileExecuteResponse(BaseModel):
     attempted: int
     skipped: int = 0
     transfers: list[AcpReconcileTransferResult]
+
+
+class AcpHistoryRescanRequest(BaseModel):
+    """Force mobile ACP indexer refresh; optionally reset the global watermark."""
+
+    address: str | None = Field(
+        default=None,
+        description="Optional ACP address to ensure is on the indexer watchlist",
+    )
+    reset_watermark: bool = Field(
+        default=False,
+        description=(
+            "When true, clears last_scanned_height to 0 so the next tick rescans "
+            "from genesis for all watched addresses. Use sparingly."
+        ),
+    )
+
+
+class AcpHistoryRescanResponse(BaseModel):
+    ok: bool = True
+    address: str | None = None
+    watermark_reset: bool = False
+    previous_last_scanned_height: int | None = None
+    last_scanned_height: int | None = None
+    addresses_watched: int = 0
+    indexed: int = 0
+    best_height: int | None = None
+    error: str | None = None
+    note: str | None = None

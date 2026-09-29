@@ -18,13 +18,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
-from app.db.models import Agent, Stake, StakeStatusEnum, Account, LedgerEvent, AcpSwapOrder, UserAcpPrivacyAddress, AcpOtcIntakeOrder
+from app.db.models import (
+    Agent,
+    Stake,
+    StakeStatusEnum,
+    Account,
+    LedgerEvent,
+    AcpSwapOrder,
+    UserAcpPrivacyAddress,
+    AcpOtcIntakeOrder,
+    MobileAcpTx,
+)
 from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_wallet import personalize_hot_bound_wallet
 from app.services.acp_wallet import user_is_custodial_hot_holder
+from app.services.acp_wallet import upsert_address_binding, BINDING_KIND_PRIVACY
 from app.services.acp_tokenomics import (
     CUSTODIAL_HOT_ADDRESS,
     OPERATOR_ROLE_ADDRESSES,
@@ -531,6 +542,22 @@ def _creator_vesting_snapshot(address: str, now_ts: int | None = None) -> tuple[
     return (unlocked, locked)
 
 
+def _probe_source_failed(raw: dict | None) -> bool:
+    return str((raw or {}).get("source") or "") in {"timeout", "error", "degraded", "unavailable"}
+
+
+def _chain_height_from_raw(raw: dict) -> int | None:
+    for key in ("chain_height", "height", "block_height"):
+        val = raw.get(key)
+        if val is None or val == "":
+            continue
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 async def _decorate_balance_for_user(
     session: AsyncSession,
     user_id: str,
@@ -539,6 +566,10 @@ async def _decorate_balance_for_user(
     include_in_work: bool,
 ) -> AcpBalanceResponse:
     on_chain_acp = _parse_decimal_or_zero(raw.get("acp"))
+    deposit_probe_failed = _probe_source_failed(raw)
+    if deposit_probe_failed:
+        # Never treat a failed probe empty payload as a confirmed live zero.
+        on_chain_acp = Decimal(0)
     if include_in_work:
         in_work_acp, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
         real_acp, in_work_acp, available_acp = _custodial_balance_view(
@@ -568,22 +599,30 @@ async def _decorate_balance_for_user(
     )
     display_acp = real_acp
     display_units = _units_from_acp(real_acp)
-    display_utxo_count = int(raw.get("utxo_count") or 0)
+    display_utxo_count = int(raw.get("utxo_count") or 0) if not deposit_probe_failed else 0
     tokenomics_buckets: list[AcpTokenomicsBucket] | None = None
     view_mode: str | None = None
     platform_credits_s: str | None = None
     balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
 
+    operator_hot_live: Decimal | None = None
+    operator_controlled_live: Decimal | None = None
+    primary_kind: str | None = None
+    primary_acp_val: Decimal | None = None
+    withdraw_source: str | None = None
+    probe_status: str | None = "live"
+
     is_hot_holder = bool(include_in_work and await user_is_custodial_hot_holder(session, user_id))
 
     if is_hot_holder:
-        # Designated operator: aggregate ALL role-wallet funds into the headline balance.
+        # Designated operator: live probes only for hero totals; design stays in buckets.
         seed = {target_address: raw} if target_address else None
-        slices, live_ok, hot_live = _operator_controlled_balance_slices(seed_by_address=seed)
-        total = sum((s[2] for s in slices), Decimal(0))
-        display_acp = total
-        display_units = _units_from_acp(total)
-        display_utxo_count = sum(s[3] for s in slices)
+        slices, live_ok, hot_live, live_total, live_hits, role_total = (
+            _operator_controlled_balance_slices(seed_by_address=seed)
+        )
+        operator_hot_live = hot_live
+        operator_controlled_live = live_total
+        display_utxo_count = sum(s[3] for s in slices if s[4])
         tokenomics_buckets = [
             AcpTokenomicsBucket(
                 key=key,
@@ -591,22 +630,42 @@ async def _decorate_balance_for_user(
                 acp=_decimal_to_api_str(acp),
                 utxo_count=utxos,
             )
-            for key, label, acp, utxos in slices
+            for key, label, acp, utxos, _live in slices
         ]
         view_mode = "operator_hot"
         platform_credits_s = _decimal_to_api_str(in_ledger)
-        on_chain_s = _decimal_to_api_str(on_chain_acp) if target_address != CUSTODIAL_HOT_ADDRESS else None
-        # Only custodial hot is spendable from this login keystore (when rebound).
-        available_acp = hot_live if hot_live > 0 else (
-            on_chain_acp if target_address == CUSTODIAL_HOT_ADDRESS else Decimal(0)
+        # Deposit address probe only — never the operator aggregate.
+        on_chain_s = (
+            None
+            if deposit_probe_failed
+            else _decimal_to_api_str(on_chain_acp)
         )
-        source = (
-            "live UTXO probes (zeros preserved; design only for unavailable probes)"
-            if live_ok
-            else "design alloc (all live probes unavailable)"
-        )
+        # Only custodial hot is spendable from this login keystore.
+        available_acp = hot_live
+        withdraw_source = "custodial_hot"
+        primary_kind = "operator_total"
+        if live_ok:
+            primary_acp_val = live_total
+            display_acp = live_total
+            display_units = _units_from_acp(live_total)
+            if live_hits < role_total:
+                probe_status = "degraded"
+            else:
+                probe_status = "live"
+            source_note = (
+                f"live UTXO probes ({live_hits}/{role_total}; "
+                "zeros preserved; design only in buckets for unavailable probes)"
+            )
+        else:
+            primary_acp_val = None
+            display_acp = Decimal(0)
+            display_units = _units_from_acp(Decimal(0))
+            probe_status = "unavailable"
+            source_note = "all live probes unavailable — design alloc shown in buckets only"
         balance_note = (
-            f"Operator-controlled total: {_decimal_to_api_str(total)} ACP ({source}). "
+            f"Operator-controlled live total: "
+            f"{_decimal_to_api_str(live_total) if live_ok else 'unavailable'} ACP "
+            f"({source_note}). "
             f"Includes genesis treasury, custodial hot, project treasury, bridge reserve. "
             f"Withdraw from this login uses custodial hot float "
             f"({_decimal_to_api_str(available_acp)} ACP available). "
@@ -625,9 +684,18 @@ async def _decorate_balance_for_user(
         display_utxo_count = 0
         available_acp = Decimal(0)
         in_work_acp = in_staked + in_ledger
-        on_chain_s = "0"
+        on_chain_s = "0" if not deposit_probe_failed else None
         view_mode = None
         tokenomics_buckets = None
+        withdraw_source = "none"
+        if in_ledger > 0:
+            primary_kind = "platform_credits"
+            primary_acp_val = in_ledger
+        else:
+            primary_kind = "on_chain"
+            primary_acp_val = Decimal(0) if not deposit_probe_failed else None
+        if deposit_probe_failed:
+            probe_status = "unavailable"
         balance_note = (
             "This account was incorrectly bound to the shared custodial hot wallet. "
             "Showing platform ledger credits only. Create a personal deposit address "
@@ -635,47 +703,84 @@ async def _decorate_balance_for_user(
         )
 
     # Regular users: always expose ledger credits separately from on-chain.
-    # Headline `acp` prefers on-chain; platform credits are a separate field.
+    # Hero prefers platform credits when on-chain is 0 and ledger > 0.
     if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS and not is_hot_holder:
         platform_credits_s = _decimal_to_api_str(in_ledger)
-        on_chain_s = _decimal_to_api_str(on_chain_acp)
-        # Keep display_acp as on-chain (real_acp after custodial view) unless chain is 0
-        # and only ledger credits exist — then headline still shows credits but note clarifies.
+        on_chain_s = None if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)
+        if deposit_probe_failed:
+            probe_status = "unavailable" if str(raw.get("source") or "") in {
+                "timeout",
+                "error",
+                "unavailable",
+            } else "degraded"
         if on_chain_acp <= 0 and in_ledger > 0:
             display_acp = in_ledger
             display_units = _units_from_acp(in_ledger)
+            primary_kind = "platform_credits"
+            primary_acp_val = in_ledger
             balance_note = (
-                f"On-chain: {_decimal_to_api_str(on_chain_acp)} ACP. "
+                f"On-chain: {'unavailable' if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)} ACP. "
                 f"Platform credits: {_decimal_to_api_str(in_ledger)} ACP (ledger). "
                 f"Withdrawable on-chain: {_decimal_to_api_str(available_acp)} ACP."
             )
         else:
             display_acp = on_chain_acp if on_chain_acp > 0 else real_acp
             display_units = _units_from_acp(display_acp)
+            primary_kind = "on_chain"
+            primary_acp_val = (
+                None if deposit_probe_failed and on_chain_acp <= 0 and in_ledger <= 0 else display_acp
+            )
             balance_note = (
-                f"On-chain: {_decimal_to_api_str(on_chain_acp)} ACP. "
+                f"On-chain: {'unavailable' if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)} ACP. "
                 f"Platform credits: {_decimal_to_api_str(in_ledger)} ACP. "
                 f"Available to withdraw: {_decimal_to_api_str(available_acp)} ACP."
             )
+        if available_acp > 0:
+            withdraw_source = "personal_utxo"
+        else:
+            withdraw_source = "none"
+
+    if primary_kind is None:
+        # Non-include_in_work path (foreign address probe).
+        primary_kind = "on_chain"
+        primary_acp_val = None if deposit_probe_failed else display_acp
+        withdraw_source = "personal_utxo" if available_acp > 0 else "none"
+        if deposit_probe_failed:
+            probe_status = "unavailable"
+
+    if probe_status is None:
+        probe_status = "live"
 
     balance_status = "live"
-    if include_in_work and on_chain_acp <= 0 and int(raw.get("utxo_count") or 0) == 0:
-        # Likely degraded probe or empty wallet — UI can distinguish.
-        if str(raw.get("source") or "") in {"timeout", "error", "degraded"}:
+    if probe_status in {"degraded", "unavailable"}:
+        balance_status = "degraded"
+    elif include_in_work and on_chain_acp <= 0 and int(raw.get("utxo_count") or 0) == 0:
+        if deposit_probe_failed:
             balance_status = "degraded"
+
+    on_chain_at_deposit_s = (
+        None if deposit_probe_failed else (on_chain_s if on_chain_s is not None else _decimal_to_api_str(on_chain_acp))
+    )
+    platform_ledger_s = platform_credits_s
+    staked_s = in_work_staked_s
+    reserved_s = _decimal_to_api_str(in_work_acp) if include_in_work else None
+    withdrawable_s = _decimal_to_api_str(available_acp)
+    primary_s = _decimal_to_api_str(primary_acp_val) if primary_acp_val is not None else None
 
     return AcpBalanceResponse(
         address=str(raw.get("address") or ""),
         units=display_units,
         acp=_decimal_to_api_str(display_acp),
         utxo_count=display_utxo_count,
-        on_chain_acp=on_chain_s if on_chain_s is not None else _decimal_to_api_str(on_chain_acp),
+        on_chain_acp=on_chain_at_deposit_s if on_chain_at_deposit_s is not None else (
+            None if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)
+        ),
         ledger_credits_acp=platform_credits_s,
-        headline_acp=_decimal_to_api_str(display_acp),
+        headline_acp=_decimal_to_api_str(display_acp) if primary_acp_val is not None or not is_hot_holder else None,
         in_work_acp=_decimal_to_api_str(in_work_acp),
         in_work_staked_acp=in_work_staked_s,
         in_work_ledger_acp=in_work_ledger_s,
-        available_acp=_decimal_to_api_str(available_acp),
+        available_acp=withdrawable_s,
         platform_credits_acp=platform_credits_s,
         tokenomics_buckets=tokenomics_buckets,
         view_mode=view_mode if view_mode else "user",
@@ -683,6 +788,24 @@ async def _decorate_balance_for_user(
         vested_unlocked_acp=vested_unlocked_acp,
         vested_locked_acp=vested_locked_acp,
         balance_note=balance_note,
+        on_chain_at_deposit_acp=on_chain_at_deposit_s,
+        platform_ledger_acp=platform_ledger_s,
+        staked_acp=staked_s,
+        reserved_total_acp=reserved_s,
+        withdrawable_now_acp=withdrawable_s,
+        withdraw_source=withdraw_source,  # type: ignore[arg-type]
+        operator_hot_live_acp=(
+            _decimal_to_api_str(operator_hot_live) if operator_hot_live is not None else None
+        ),
+        operator_controlled_live_acp=(
+            _decimal_to_api_str(operator_controlled_live)
+            if operator_controlled_live is not None
+            else None
+        ),
+        primary_acp=primary_s,
+        primary_kind=primary_kind,  # type: ignore[arg-type]
+        probe_status=probe_status,  # type: ignore[arg-type]
+        chain_height=_chain_height_from_raw(raw),
     )
 
 
@@ -778,8 +901,14 @@ def _rpc_balance_for_address(address: str) -> dict:
     return dict(payload)
 
 
-def _empty_balance_payload(address: str) -> dict:
-    return {"address": address, "units": "0", "acp": "0", "utxo_count": 0}
+def _empty_balance_payload(address: str, *, source: str = "error") -> dict:
+    return {
+        "address": address,
+        "units": "0",
+        "acp": "0",
+        "utxo_count": 0,
+        "source": source,
+    }
 
 
 def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, bool]:
@@ -793,6 +922,8 @@ def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, b
     if cached is not None:
         expires_at, payload = cached
         if now < expires_at:
+            if _probe_source_failed(payload):
+                return Decimal(0), 0, False
             return (
                 _parse_decimal_or_zero(payload.get("acp")),
                 int(payload.get("utxo_count") or 0),
@@ -825,13 +956,20 @@ def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, b
 def _operator_controlled_balance_slices(
     *,
     seed_by_address: dict[str, dict] | None = None,
-) -> tuple[list[tuple[str, str, Decimal, int]], bool, Decimal]:
+) -> tuple[list[tuple[str, str, Decimal, int, bool]], bool, Decimal, Decimal, int, int]:
     """Probe operator role wallets in parallel within a shared time budget.
 
-    Confirmed live zeros are preserved. Design alloc is used only when a probe
-    is unavailable (timeout / transport error), never when walletd reports 0.
+    Confirmed live zeros are preserved. Design alloc is used only in bucket
+    display when a probe is unavailable — never mixed into the live total.
 
-    Returns (slices, used_any_live_probe, hot_live_acp).
+    Returns
+    -------
+    slices : list of (key, label, acp, utxo_count, is_live)
+    used_any_live_probe : bool
+    hot_live_acp : Decimal
+    live_total_acp : Decimal  (sum of successful probes only)
+    live_hits : int
+    role_total : int
     """
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -841,6 +979,9 @@ def _operator_controlled_balance_slices(
 
     for address, raw in seed_by_address.items():
         if not address or not isinstance(raw, dict):
+            continue
+        # Failed/empty probe payloads must not seed as live zeros — re-probe instead.
+        if _probe_source_failed(raw):
             continue
         probed[address] = (
             _parse_decimal_or_zero(raw.get("acp")),
@@ -868,26 +1009,31 @@ def _operator_controlled_balance_slices(
                         continue
                     probed[addr] = (acp, utxos, ok)
             except TimeoutError:
-                # Shared budget exhausted — unfinished roles fall back to design alloc.
+                # Shared budget exhausted — unfinished roles fall back to design alloc in buckets only.
                 pass
 
-    slices: list[tuple[str, str, Decimal, int]] = []
+    slices: list[tuple[str, str, Decimal, int, bool]] = []
     live_hits = 0
     hot_live = Decimal(0)
+    live_total = Decimal(0)
+    role_total = len(OPERATOR_ROLE_WALLETS)
     for key, label, address, design_acp in OPERATOR_ROLE_WALLETS:
         live_acp, utxos, ok = probed.get(address, (Decimal(0), 0, False))
         if ok:
             live_hits += 1
             acp = live_acp
+            live_total += live_acp
+            bucket_label = label
         else:
             acp = design_acp
             utxos = 0
+            bucket_label = f"{label} (design; probe unavailable)"
         if address == CUSTODIAL_HOT_ADDRESS and ok:
             hot_live = live_acp
         elif address == CUSTODIAL_HOT_ADDRESS:
             hot_live = Decimal(0)
-        slices.append((key, label, acp, utxos))
-    return slices, live_hits > 0, hot_live
+        slices.append((key, bucket_label, acp, utxos, ok))
+    return slices, live_hits > 0, hot_live, live_total, live_hits, role_total
 
 
 def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
@@ -927,6 +1073,8 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
             # Normalize so callers always see the queried address.
             if not str(result.get("address") or "").strip():
                 result = {**result, "address": target}
+            # Successful probe — strip any stale failure source.
+            result = {k: v for k, v in result.items() if k != "source"}
             _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, dict(result))
             return dict(result)
     except HTTPException as exc:
@@ -939,7 +1087,8 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
     # Fast fail-closed for wallet UI: ledger decoration still surfaces credits.
     # Do not sticky-cache empty results after a timeout — that made real hot
     # floats look like 0 / tiny until the process restarted.
-    payload = _empty_balance_payload(target)
+    # Mark source so decorate never treats empty error payloads as live zeros.
+    payload = _empty_balance_payload(target, source="timeout" if timed_out else "error")
     if not timed_out:
         _chain_balance_cache[target] = (
             time.monotonic() + _CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S,
@@ -1297,6 +1446,41 @@ def _chain_transactions_for_address(
     return rows[:limit], warming
 
 
+def _mobile_acp_tx_to_public(row: MobileAcpTx) -> AcpTransactionPublic:
+    sent = int(row.sent_units or 0)
+    received = int(row.received_units or 0)
+    net = int(row.net_units if row.net_units is not None else (received - sent))
+    direction = str(row.direction or "in")
+    if direction not in ("in", "out", "self"):
+        direction = "in"
+    return AcpTransactionPublic(
+        txid=str(row.txid),
+        block_height=int(row.block_height or 0),
+        block_time=str(row.block_time or ""),
+        confirmations=int(row.confirmations or 0),
+        direction=direction,  # type: ignore[arg-type]
+        sent_units=str(sent),
+        sent_acp=_units_to_acp_str(sent),
+        received_units=str(received),
+        received_acp=_units_to_acp_str(received),
+        net_units=str(net),
+        net_acp=_units_to_acp_str(net),
+    )
+
+
+async def _indexed_transactions_for_address(
+    session: AsyncSession, address: str, limit: int
+) -> list[AcpTransactionPublic]:
+    """Prefer DB-backed MobileAcpTx history when the indexer has rows for this address."""
+    result = await session.execute(
+        select(MobileAcpTx)
+        .where(MobileAcpTx.address == address)
+        .order_by(MobileAcpTx.block_height.desc().nullslast(), MobileAcpTx.txid.desc())
+        .limit(limit)
+    )
+    return [_mobile_acp_tx_to_public(r) for r in result.scalars().all()]
+
+
 def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
     # Detail lookups may wait for a sync rebuild when cache is cold.
     _best_height, _out_index, tx_index = _scan_chain_transactions(interactive=False)
@@ -1517,6 +1701,7 @@ async def privacy_receive_address(
     session.add(row)
     wallet.privacy_next_index = idx + 1
     await session.flush()
+    await upsert_address_binding(session, user_id, address, BINDING_KIND_PRIVACY)
     return AcpDepositAddressResponse(
         address=address,
         mode="privacy",
@@ -1612,15 +1797,24 @@ async def list_transactions(
 
     hist_key = f"acp:txhist:{target}:{limit}:{'p' if privacy else 'f'}"
 
-    try:
-        rows, warming = _chain_transactions_for_address(target, limit)
-    except HTTPException as exc:
-        if exc.status_code in (502, 504):
-            cached = await cache_get_json(hist_key)
-            if isinstance(cached, dict) and cached.get("items") is not None:
-                return {**cached, "warming": True, "status": "degraded", "from_cache": True}
-            return {"items": [], "warming": True, "status": "degraded"}
-        raise
+    # Prefer DB-backed indexer history when rows exist; fall back to chain scan
+    # when empty (not yet indexed) or when the live scan reports warming.
+    indexed_rows = await _indexed_transactions_for_address(session, target, limit)
+    warming = False
+    rows: list[AcpTransactionPublic] = indexed_rows
+    if not indexed_rows:
+        try:
+            rows, warming = _chain_transactions_for_address(target, limit)
+        except HTTPException as exc:
+            if exc.status_code in (502, 504):
+                cached = await cache_get_json(hist_key)
+                if isinstance(cached, dict) and cached.get("items") is not None:
+                    return {**cached, "warming": True, "status": "degraded", "from_cache": True}
+                return {"items": [], "warming": True, "status": "degraded"}
+            raise
+        if warming and not rows:
+            # Still empty while warming — keep degraded/warming shape for clients.
+            pass
 
     if not privacy:
         payload = {

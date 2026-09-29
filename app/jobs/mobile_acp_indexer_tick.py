@@ -11,9 +11,13 @@ from datetime import datetime, UTC
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import get_settings
-from app.db.models import MobileAcpTx, MobileAddressIndexerState
-from app.api.routers import wallet_acp
+from app.db.models import (
+    MobileAcpTx,
+    MobileAddressIndexerState,
+    UserAcpAddressBinding,
+    UserAcpPrivacyAddress,
+    UserAcpWallet,
+)
 
 logger = logging.getLogger("mobile_acp_indexer")
 
@@ -22,7 +26,34 @@ logger = logging.getLogger("mobile_acp_indexer")
 _CHAIN_SCAN_CACHE_TTL_S = 300
 
 
-async def mobile_acp_indexer_tick(session: AsyncSession) -> dict:
+async def build_address_watchlist(session: AsyncSession) -> list[str]:
+    """Union of active wallets, privacy receives, and historical bindings."""
+    addrs: set[str] = set()
+
+    for (addr,) in (await session.execute(select(UserAcpWallet.address))).all():
+        cleaned = (addr or "").strip()
+        if cleaned:
+            addrs.add(cleaned)
+
+    for (addr,) in (await session.execute(select(UserAcpPrivacyAddress.address))).all():
+        cleaned = (addr or "").strip()
+        if cleaned:
+            addrs.add(cleaned)
+
+    # Active + historical bindings (unbound_at may be set)
+    for (addr,) in (await session.execute(select(UserAcpAddressBinding.address))).all():
+        cleaned = (addr or "").strip()
+        if cleaned:
+            addrs.add(cleaned)
+
+    return sorted(addrs)
+
+
+async def mobile_acp_indexer_tick(
+    session: AsyncSession,
+    *,
+    extra_addresses: list[str] | None = None,
+) -> dict:
     """Scan ACP chain from last watermark and upsert tx history for watched addresses."""
 
     # 1. Load or create watermark state
@@ -33,20 +64,38 @@ async def mobile_acp_indexer_tick(session: AsyncSession) -> dict:
         session.add(state)
         await session.flush()
 
-    # 2. Poll chain for new blocks from last_scanned_height + 1
+    # 2. Always refresh watchlist from wallets + privacy + bindings (active + historical)
+    addresses_to_watch = await build_address_watchlist(session)
+    for raw in extra_addresses or []:
+        cleaned = (raw or "").strip()
+        if cleaned and cleaned not in addresses_to_watch:
+            addresses_to_watch.append(cleaned)
+    addresses_to_watch = sorted(set(addresses_to_watch))
+    state.indexed_addresses = addresses_to_watch
+    await session.flush()
+
+    # 3. Poll chain for new blocks from last_scanned_height + 1
     # Non-interactive: build/refresh cache synchronously so the indexer can progress.
     from app.api.routers import wallet_acp as wa
     try:
         best_height, _, tx_index = wa._scan_chain_transactions(interactive=False)
     except Exception as exc:
         logger.warning("mobile_acp_indexer_tick: chain scan failed: %s", exc)
-        return {"indexed": 0, "skipped": 0, "error": str(exc)}
+        return {
+            "indexed": 0,
+            "skipped": 0,
+            "error": str(exc),
+            "addresses_watched": len(addresses_to_watch),
+        }
 
     if best_height <= state.last_scanned_height:
-        return {"indexed": 0, "skipped": len(state.indexed_addresses), "best_height": best_height}
-
-    # 3. Get addresses to watch from indexed_addresses + recently active mobile users
-    addresses_to_watch = list(state.indexed_addresses or [])
+        return {
+            "indexed": 0,
+            "skipped": len(addresses_to_watch),
+            "best_height": best_height,
+            "last_scanned_height": state.last_scanned_height,
+            "addresses_watched": len(addresses_to_watch),
+        }
 
     indexed = 0
     errors = 0
@@ -115,8 +164,7 @@ async def mobile_acp_indexer_tick(session: AsyncSession) -> dict:
     await session.flush()
 
     logger.info(
-        "mobile_acp_indexer_tick: scanned from %s to %s, indexed=%s errors=%s addresses=%s",
-        state.last_scanned_height,
+        "mobile_acp_indexer_tick: scanned to %s, indexed=%s errors=%s addresses=%s",
         best_height,
         indexed,
         errors,
