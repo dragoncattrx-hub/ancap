@@ -136,7 +136,10 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
   }
 
   // Leaderboards render (ensure snapshots computed)
-  const jt = await request.post(`${apiBase}/system/jobs/tick`);
+  const cronSecret = process.env.PLAYWRIGHT_CRON_SECRET || process.env.CRON_SECRET || "e2e-dev-cron-secret";
+  const jt = await request.post(`${apiBase}/system/jobs/tick`, {
+    headers: { "X-Cron-Secret": cronSecret },
+  });
   if (!jt.ok()) throw new Error(`jobs tick failed: ${jt.status()} ${await jt.text()}`);
   await page.goto(`${baseUrl}/leaderboards`);
   await expect(page.getByRole("heading", { name: /leaderboards/i })).toBeVisible({ timeout: 15000 });

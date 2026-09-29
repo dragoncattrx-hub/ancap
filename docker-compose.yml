@@ -38,9 +38,12 @@ services:
       # Generate with: python -c "import secrets; print(secrets.token_urlsafe(64))"
       SECRET_KEY: ${SECRET_KEY:-dev-insecure-only-local}
       CURSOR_SECRET: ${CURSOR_SECRET:-}
+      # Local/GitHub E2E: fail-closed cron needs a known secret (tests send X-Cron-Secret).
+      CRON_SECRET: ${CRON_SECRET:-e2e-dev-cron-secret}
       # Keep local/GitHub E2E deterministic: do not inherit host Turnstile secrets into dev compose.
       TURNSTILE_SECRET_KEY: ""
       TURNSTILE_SITE_KEY: ""
+      METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-e2e-dev-metrics-token}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://ancap.cloud,https://www.ancap.cloud,http://localhost:3000,http://localhost:3001,http://localhost:3201,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3201}
       PARTICIPATION_GATES_ENABLED: ${PARTICIPATION_GATES_ENABLED:-true}
       # L3 chain anchors (mock | acp | ethereum | solana)
