@@ -49,6 +49,9 @@ services:
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)
       ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-walletd}
+      # Operator emails allowed to remain bound to custodial hot (comma-separated).
+      # Override in host .env; fallback keeps the known operator account on hot after deploy.
+      ACP_CUSTODIAL_HOT_HOLDER_EMAILS: ${ACP_CUSTODIAL_HOT_HOLDER_EMAILS:-dragon.cat.trx@gmail.com}
       # IMPORTANT: keep bridge runtime pinned to bridge-scoped signer material.
       # If this is sourced from project .env, Docker Compose can override the bridge secret
       # with a generic ACP hot-wallet path and reverse payouts will derive from the wrong wallet.
