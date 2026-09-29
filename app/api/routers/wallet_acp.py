@@ -26,15 +26,9 @@ from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_wallet import personalize_hot_bound_wallet
 from app.services.acp_wallet import user_is_custodial_hot_holder
 from app.services.acp_tokenomics import (
-    BRIDGE_RESERVE_ADDRESS,
     CUSTODIAL_HOT_ADDRESS,
-    CUSTODIAL_HOT_DESIGN_ACP,
-    GENESIS_SUPPLY_ACP,
-    GENESIS_TREASURY_ADDRESS,
-    GENESIS_TREASURY_DESIGN_ACP,
     OPERATOR_ROLE_ADDRESSES,
     OPERATOR_ROLE_WALLETS,
-    PROJECT_TREASURY_ADDRESS,
     acp_supply_layout,
 )
 from app.services import acp_privacy as privacy_svc
