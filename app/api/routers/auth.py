@@ -31,6 +31,7 @@ from app.services.acp_wallet import (
     get_wallet_for_user,
     migrate_wallet_to_recovery_ready,
     password_recovery_ready,
+    personalize_hot_bound_wallet,
     rewrap_wallet_secret_for_password_change,
     set_wallet_secret_for_password,
 )
@@ -152,7 +153,18 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
             password=body.password,
         )
     else:
-        await migrate_wallet_to_recovery_ready(session, str(user.id), body.password)
+        try:
+            personalized = await personalize_hot_bound_wallet(
+                session=session,
+                user_id=str(user.id),
+                password=body.password,
+            )
+        except Exception:
+            personalized = None
+        if personalized is not None:
+            _, wallet_backup_mnemonic = personalized
+        else:
+            await migrate_wallet_to_recovery_ready(session, str(user.id), body.password)
 
     token = create_access_token(str(user.id))
     try:
@@ -483,6 +495,13 @@ async def password_change(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
 
     try:
+        # If this account still points at shared custodial hot, mint a personal wallet
+        # first (encrypted with current_password), then re-wrap under the new password.
+        await personalize_hot_bound_wallet(
+            session=session,
+            user_id=str(user.id),
+            password=body.current_password,
+        )
         await rewrap_wallet_secret_for_password_change(
             session=session,
             user_id=str(user.id),

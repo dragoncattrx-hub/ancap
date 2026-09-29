@@ -23,6 +23,7 @@ from app.db.session import get_db
 from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
+from app.services.acp_wallet import personalize_hot_bound_wallet
 from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 from app.services import acp_privacy as privacy_svc
 from app.services import otc_intake as otc_svc
@@ -42,6 +43,8 @@ from app.schemas.otc_intake import (
 from app.schemas import (
     AcpBalanceResponse,
     AcpDepositAddressResponse,
+    AcpPersonalizeWalletRequest,
+    AcpPersonalizeWalletResponse,
     AcpPrivacyDepositRequest,
     AcpPrivacyStatusPublic,
     AcpTokenomicsBucket,
@@ -370,18 +373,6 @@ def _format_balance_note(real_acp: Decimal, in_work_acp: Decimal, available_acp:
     )
 
 
-def _format_operator_hot_balance_note(
-    tokenomics_total_acp: Decimal,
-    platform_credits_acp: Decimal,
-    available_acp: Decimal,
-) -> str:
-    return (
-        f"Operator hot on-chain total: {_decimal_to_api_str(tokenomics_total_acp)} ACP "
-        f"(operator pool). Platform credits: {_decimal_to_api_str(platform_credits_acp)} ACP; "
-        f"available for withdraw: {_decimal_to_api_str(available_acp)} ACP."
-    )
-
-
 def _units_from_acp(acp: Decimal) -> str:
     return str(int((acp * Decimal(100_000_000)).to_integral_value()))
 
@@ -572,32 +563,29 @@ async def _decorate_balance_for_user(
     platform_credits_s: str | None = None
     balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
 
-    # Operator hot: use the already-loaded walletd/RPC snapshot. Never full-scan
-    # the tip here — `_scan_address_utxo_units` is tens of thousands of RPCs and
-    # was aborting the browser with "signal timed out".
+    # Shared custodial hot must never look like a personal on-chain balance.
+    # Until the account is reminted off hot, show ledger credits only and block
+    # withdraw-from-hot as "available".
     if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
-        display_acp = on_chain_acp
-        display_units = _units_from_acp(on_chain_acp)
-        tokenomics_buckets = [
-            AcpTokenomicsBucket(
-                key="hot",
-                label="Operator pool",
-                acp=_decimal_to_api_str(on_chain_acp),
-                utxo_count=display_utxo_count,
-            )
-        ]
-        view_mode = "operator_hot"
-        # Credits are ledger-backed; do not clamp them by a failed/empty on-chain probe.
         platform_credits_s = _decimal_to_api_str(in_ledger)
-        on_chain_s = None
-        balance_note = _format_operator_hot_balance_note(
-            on_chain_acp, in_ledger, available_acp
+        display_acp = in_ledger if in_ledger > 0 else Decimal(0)
+        display_units = _units_from_acp(display_acp)
+        display_utxo_count = 0
+        available_acp = Decimal(0)
+        in_work_acp = in_staked + in_ledger
+        on_chain_s = "0"
+        view_mode = None
+        tokenomics_buckets = None
+        balance_note = (
+            "This account was incorrectly bound to the shared custodial hot wallet. "
+            "Showing platform ledger credits only. Create a personal deposit address "
+            "(re-login or use Personalize wallet) — do not send funds to the hot address."
         )
 
     # Regular users: always expose ledger credits (welcome grant / faucet / etc.).
     # When the deposit address still has 0 UTXOs, surface those credits as the
     # primary balance so /wallet/acp is not stuck on 0 after registration.
-    if include_in_work and view_mode != "operator_hot":
+    if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS:
         platform_credits_s = _decimal_to_api_str(in_ledger)
         if display_acp <= 0 and in_ledger > 0:
             display_acp = in_ledger
@@ -1155,10 +1143,12 @@ async def get_deposit_address(
     if not addr:
         raise HTTPException(status_code=500, detail="ACP wallet row has empty address")
     deposit_note = None
+    needs_personalize = False
     if addr == CUSTODIAL_HOT_ADDRESS:
+        needs_personalize = True
         deposit_note = (
-            "This account is bound to the shared custodial hot wallet (operator pool). "
-            "Do not treat it as a personal one-user deposit address."
+            "Shared custodial hot wallet — not a personal deposit address. "
+            "Use Personalize wallet (account password) or sign in again to mint your own ACP address."
         )
     return AcpDepositAddressResponse(
         address=addr,
@@ -1167,6 +1157,7 @@ async def get_deposit_address(
         privacy_profile=privacy_svc.PRIVACY_PROFILE,
         reuse_policy="reusable_primary",
         note=deposit_note,
+        needs_personalize=needs_personalize,
     )
 
 
@@ -1214,6 +1205,36 @@ async def _bind_view_wire(session: AsyncSession, wallet, wallet_password: str | 
         wallet.privacy_next_index = 1
     await session.flush()
     return bytes.fromhex(view_hex)
+
+
+@router.post("/personalize", response_model=AcpPersonalizeWalletResponse)
+async def personalize_wallet(
+    body: AcpPersonalizeWalletRequest,
+    user_id: str = Depends(require_auth),
+    session: AsyncSession = Depends(get_db),
+):
+    """Mint a personal deposit address when the account is still bound to shared hot."""
+    try:
+        result = await personalize_hot_bound_wallet(
+            session=session,
+            user_id=user_id,
+            password=body.wallet_password,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="invalid wallet password") from exc
+    if result is None:
+        wallet = await get_wallet_for_user(session, user_id)
+        if wallet is None:
+            raise HTTPException(status_code=409, detail="ACP wallet is not initialized for this account.")
+        raise HTTPException(
+            status_code=409,
+            detail="Wallet is already personalized (not bound to shared custodial hot).",
+        )
+    wallet, mnemonic = result
+    return AcpPersonalizeWalletResponse(
+        address=str(wallet.address),
+        wallet_backup_mnemonic=mnemonic,
+    )
 
 
 @router.get("/privacy/status", response_model=AcpPrivacyStatusPublic)
