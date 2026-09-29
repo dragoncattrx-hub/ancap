@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select, desc
 
-from app.api.deps import DbSession
+from app.api.deps import DbSession, require_platform_admin
 from app.db.models import GrowthMetricRollup
 from app.schemas import GrowthMetricItemPublic
 
@@ -15,6 +15,7 @@ router = APIRouter(prefix="/system", tags=["Growth Metrics"])
 async def get_growth_metrics(
     session: DbSession,
     days: int = Query(7, ge=1, le=90),
+    _admin: str = Depends(require_platform_admin),
 ):
     since = date.today() - timedelta(days=days)
     q = (
@@ -35,4 +36,3 @@ async def get_growth_metrics(
             )
         )
     return out
-

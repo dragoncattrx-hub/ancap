@@ -38,6 +38,9 @@ os.environ["TURNSTILE_SECRET_KEY"] = ""
 os.environ["TURNSTILE_SITE_KEY"] = ""
 os.environ["CRON_SECRET"] = ""
 os.environ["PLATFORM_ADMIN_USER_IDS"] = ""
+os.environ["PLATFORM_ADMIN_EMAILS"] = ""
+os.environ["METRICS_SCRAPE_TOKEN"] = ""
+os.environ["ALLOW_INSECURE_CRON"] = "false"
 # New-agent order limits: force defaults so developer shell/.env cannot disable or
 # widen quarantine (e.g. QUARANTINE_HOURS—0 skips the guardrail; a huge max prevents 403).
 os.environ["QUARANTINE_HOURS"] = "24"

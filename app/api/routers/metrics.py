@@ -1,20 +1,45 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Response
-from sqlalchemy import func
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+from sqlalchemy import func, select
 
+from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.config import get_settings
+from app.db.models import (
+    ApiUsageEvent,
+    LlmUsageEvent,
+    MetricRecord as MetricRecordModel,
+    PaymentIntent,
+    WorkflowRunRecord,
+)
 from app.schemas import MetricRecordPublic
-from app.api.deps import DbSession
-from app.db.models import ApiUsageEvent, LlmUsageEvent, MetricRecord as MetricRecordModel, PaymentIntent, WorkflowRunRecord
-from sqlalchemy import select
 from app.services.cache import redis_ping
 from app.services.observability import render_http_metrics
 
 router = APIRouter(prefix="/metrics", tags=["Metrics"])
 
 
+async def require_metrics_or_admin(
+    session: DbSession,
+    user_id: str | None = Depends(get_current_user_id),
+    x_metrics_token: str | None = Header(default=None, alias="X-Metrics-Token"),
+) -> str:
+    settings = get_settings()
+    scrape = (settings.metrics_scrape_token or "").strip()
+    provided = (x_metrics_token or "").strip()
+    if scrape and provided and provided == scrape:
+        return "scrape-token"
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return await require_platform_admin(user_id=user_id, session=session)
+
+
 @router.get("", response_model=dict)
-async def list_metrics_for_run(session: DbSession, run_id: UUID | None = None):
+async def list_metrics_for_run(
+    session: DbSession,
+    run_id: UUID | None = None,
+    _auth: str = Depends(require_metrics_or_admin),
+):
     if run_id is None:
         workflow_count = (await session.execute(select(func.count(WorkflowRunRecord.id)))).scalar_one()
         captured_count = (
@@ -61,5 +86,3 @@ async def list_metrics_for_run(session: DbSession, run_id: UUID | None = None):
             for m in rows
         ]
     }
-
-

@@ -24,12 +24,16 @@ NONCE_LEN = 12
 
 
 def _master_material() -> bytes:
+    from app.services.crypto_secrets import resolve_secret_material
+
     settings = get_settings()
     dedicated = (getattr(settings, "dna_rna_bank_master_key", None) or "").strip()
-    if dedicated:
-        return dedicated.encode("utf-8")
-    secret = (settings.secret_key or "ancap-dev-dna-rna-bank").encode("utf-8")
-    return secret + b"|dna-rna-bank-v1"
+    return resolve_secret_material(
+        dedicated=dedicated,
+        secret_key_suffix=b"|dna-rna-bank-v1",
+        development_fallback=b"ancap-dev-dna-rna-bank|dna-rna-bank-v1",
+        purpose="DNA/RNA bank crypto",
+    )
 
 
 def derive_bank_key() -> bytes:

@@ -146,6 +146,16 @@ jobs:
               echo "== Stripe GitHub secrets incomplete; card top-up stays fail-closed (503)"
             fi
 
+            echo "== ensure PLATFORM_ADMIN_EMAILS includes operator"
+            touch .env
+            if grep -q '^PLATFORM_ADMIN_EMAILS=' .env; then
+              if ! grep -qi 'dragon.cat.trx@gmail.com' .env; then
+                sed -i 's|^PLATFORM_ADMIN_EMAILS=.*|PLATFORM_ADMIN_EMAILS=dragon.cat.trx@gmail.com|' .env
+              fi
+            else
+              printf 'PLATFORM_ADMIN_EMAILS=dragon.cat.trx@gmail.com\n' >> .env
+            fi
+
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull

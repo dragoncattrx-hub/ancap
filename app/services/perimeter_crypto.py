@@ -29,12 +29,16 @@ NONCE_LEN = 12
 
 
 def _master_material() -> bytes:
+    from app.services.crypto_secrets import resolve_secret_material
+
     settings = get_settings()
     dedicated = (getattr(settings, "perimeter_cleanup_master_key", None) or "").strip()
-    if dedicated:
-        return dedicated.encode("utf-8")
-    secret = (settings.secret_key or "ancap-dev-perimeter-abrams").encode("utf-8")
-    return secret + b"|perimeter-abrams-suiteb-v1"
+    return resolve_secret_material(
+        dedicated=dedicated,
+        secret_key_suffix=b"|perimeter-abrams-suiteb-v1",
+        development_fallback=b"ancap-dev-perimeter-abrams|perimeter-abrams-suiteb-v1",
+        purpose="Perimeter crypto",
+    )
 
 
 def derive_vault_key() -> bytes:

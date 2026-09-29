@@ -33,8 +33,8 @@ export function LoginForm() {
     () => nextHref.startsWith("/wallet/acp") && nextHref.includes("#password-security"),
     [nextHref],
   );
-  const submitLabel = recoveryTarget ? "Continue to wallet recovery" : t("nav.login");
-  const submitLoadingLabel = recoveryTarget ? "Opening wallet recovery..." : t("auth.loggingIn");
+  const submitLabel = recoveryTarget ? t("auth.continueToWalletRecovery") : t("nav.login");
+  const submitLoadingLabel = recoveryTarget ? t("auth.openingWalletRecovery") : t("auth.loggingIn");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export function LoginForm() {
 
     try {
       if (TURNSTILE_ENABLED && !turnstileToken) {
-        throw new Error("Complete the captcha first");
+        throw new Error(t("auth.completeCaptcha"));
       }
       const mnemonic = await login(email, password, turnstileToken);
       if (mnemonic) {
@@ -75,16 +75,16 @@ export function LoginForm() {
     setForgotLoading(true);
     try {
       if (!email.trim()) {
-        throw new Error("Enter your email first");
+        throw new Error(t("auth.enterEmailFirst"));
       }
       if (TURNSTILE_ENABLED && !turnstileToken) {
-        throw new Error("Complete the captcha first");
+        throw new Error(t("auth.completeCaptcha"));
       }
       await requestPasswordReset(email.trim(), turnstileToken);
-      setInfo("If this email exists, a reset link was sent. If nothing arrives and this account uses an ACP wallet, use wallet sign-in or your current password to log in, then change it on the ACP wallet page.");
+      setInfo(t("auth.resetLinkSent"));
       setRecoveryHint("forgot-password");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Password reset request failed";
+      const message = err instanceof Error ? err.message : t("auth.resetFailed");
       setError(message);
       setTurnstileToken("");
       setTurnstileResetKey((v) => v + 1);

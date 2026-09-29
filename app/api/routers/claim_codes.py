@@ -63,7 +63,9 @@ async def create_claim_code(
         raise HTTPException(status_code=402, detail="Insufficient balance to lock claim code funds")
 
     settings = get_settings()
-    pepper = settings.secret_key or "ancap-claim-pepper"
+    from app.services.crypto_secrets import resolve_pepper
+
+    pepper = resolve_pepper(purpose="Claim code pepper", development_fallback="ancap-claim-pepper")
     plain_code = _generate_code()
     secret_hash = _hash_secret(plain_code, pepper)
     expires_at = None
@@ -118,7 +120,9 @@ async def redeem_claim_code(body: ClaimCodeRedeemRequest, session: DbSession, us
         raise HTTPException(status_code=429, detail="Too many redeem attempts")
 
     settings = get_settings()
-    pepper = settings.secret_key or "ancap-claim-pepper"
+    from app.services.crypto_secrets import resolve_pepper
+
+    pepper = resolve_pepper(purpose="Claim code pepper", development_fallback="ancap-claim-pepper")
     secret_hash = _hash_secret(body.code, pepper)
     row = await session.scalar(select(ClaimCode).where(ClaimCode.secret_hash == secret_hash))
     if row is None:

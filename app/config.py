@@ -167,6 +167,9 @@ class Settings(BaseSettings):
     public_app_url: str = "https://ancap.cloud"
     acp_wallet_recovery_master_key: str = ""
     platform_admin_user_ids: str = ""
+    platform_admin_emails: str = ""
+    metrics_scrape_token: str = ""
+    allow_insecure_cron: bool = False
 
     # Opaque cursor -- required in production
     cursor_secret: str = ""        # required in production -- no insecure default
@@ -175,6 +178,11 @@ class Settings(BaseSettings):
     def platform_admin_user_ids_allowlist(self) -> tuple[str, ...]:
         raw = self.platform_admin_user_ids or ""
         return tuple(item.strip() for item in raw.split(",") if item.strip())
+
+    @property
+    def platform_admin_emails_allowlist(self) -> tuple[str, ...]:
+        raw = self.platform_admin_emails or ""
+        return tuple(item.strip().lower() for item in raw.split(",") if item.strip())
 
     # Mail / alerts
     mail_enabled: bool = False

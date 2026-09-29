@@ -144,10 +144,9 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
-    wallet_backup_mnemonic = None
     wallet = await get_wallet_for_user(session, str(user.id))
     if wallet is None:
-        _, wallet_backup_mnemonic = await create_wallet_for_user(
+        await create_wallet_for_user(
             session=session,
             user_id=str(user.id),
             password=body.password,
@@ -161,9 +160,7 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
             )
         except Exception:
             personalized = None
-        if personalized is not None:
-            _, wallet_backup_mnemonic = personalized
-        else:
+        if personalized is None:
             await migrate_wallet_to_recovery_ready(session, str(user.id), body.password)
 
     token = create_access_token(str(user.id))
@@ -172,11 +169,12 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
     except Exception:
         pass
     _set_auth_cookie(response, token, request)
+    # Never return mnemonics on login — register (or explicit recover) is the one-shot path.
     return AuthLoginResponse(
         access_token=token,
         token_type="bearer",
         expires_in=3600,
-        wallet_backup_mnemonic=wallet_backup_mnemonic,
+        wallet_backup_mnemonic=None,
     )
 
 

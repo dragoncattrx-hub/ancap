@@ -33,9 +33,16 @@ def _utcnow() -> datetime:
 
 
 def _secret_key_bytes() -> bytes:
+    from app.services.crypto_secrets import resolve_secret_material
+
     settings = get_settings()
-    raw = (settings.secret_key or "ancap-dev-mail-account-key").encode("utf-8")
-    return hashlib.sha256(raw + b"|mail-provider-accounts-v1").digest()
+    material = resolve_secret_material(
+        dedicated=None,
+        secret_key_suffix=b"|mail-provider-accounts-v1",
+        development_fallback=b"ancap-dev-mail-account-key|mail-provider-accounts-v1",
+        purpose="Mail account crypto",
+    )
+    return hashlib.sha256(material).digest()
 
 
 def _encrypt_secret(plaintext: str) -> str:

@@ -14,6 +14,12 @@ async def verify_turnstile(request: Request, token: str | None, action: str) -> 
     settings = get_settings()
     secret = (settings.turnstile_secret_key or "").strip()
     if not secret:
+        env = (settings.environment or "").strip().lower()
+        if env == "production":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Turnstile is not configured",
+            )
         return
 
     token_value = (token or "").strip()

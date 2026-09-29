@@ -23,12 +23,16 @@ NONCE_LEN = 12
 
 
 def _master_material() -> bytes:
+    from app.services.crypto_secrets import resolve_secret_material
+
     settings = get_settings()
     dedicated = (getattr(settings, "passport_docs_master_key", None) or "").strip()
-    if dedicated:
-        return dedicated.encode("utf-8")
-    secret = (settings.secret_key or "ancap-dev-passport-docs").encode("utf-8")
-    return secret + b"|passport-edu-docs"
+    return resolve_secret_material(
+        dedicated=dedicated,
+        secret_key_suffix=b"|passport-edu-docs",
+        development_fallback=b"ancap-dev-passport-docs|passport-edu-docs",
+        purpose="Passport docs crypto",
+    )
 
 
 def derive_docs_key() -> bytes:

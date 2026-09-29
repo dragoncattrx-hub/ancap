@@ -84,22 +84,43 @@ def require_agent_id(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid agent")
 
 
+async def is_platform_admin_user(session: AsyncSession, user_id: str) -> bool:
+    """True if user_id is on the UUID allowlist or their email is on the email allowlist."""
+    settings = get_settings()
+    allowed_ids = set(settings.platform_admin_user_ids_allowlist)
+    allowed_emails = set(settings.platform_admin_emails_allowlist)
+    if not allowed_ids and not allowed_emails:
+        return False
+    if user_id in allowed_ids:
+        return True
+    if not allowed_emails:
+        return False
+    from sqlalchemy import select
+
+    from app.db.models import User
+
+    row = await session.execute(select(User.email).where(User.id == user_id))
+    email = row.scalar_one_or_none()
+    return bool(email and email.strip().lower() in allowed_emails)
+
+
 async def require_platform_admin(
     user_id: Annotated[str, Depends(require_auth)],
+    session: DbSession,
 ) -> str:
     """Require a platform operator account for admin-only actions.
 
-    Production must explicitly configure PLATFORM_ADMIN_USER_IDS. If the
-    allowlist is empty, fail closed instead of exposing admin surfaces to any
-    authenticated user.
+    Production must configure PLATFORM_ADMIN_USER_IDS and/or PLATFORM_ADMIN_EMAILS.
+    If both allowlists are empty, fail closed.
     """
     settings = get_settings()
-    allowed = set(settings.platform_admin_user_ids_allowlist)
-    if not allowed:
+    allowed_ids = set(settings.platform_admin_user_ids_allowlist)
+    allowed_emails = set(settings.platform_admin_emails_allowlist)
+    if not allowed_ids and not allowed_emails:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Platform admin access is not configured",
         )
-    if user_id in allowed:
+    if await is_platform_admin_user(session, user_id):
         return user_id
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform admin required")

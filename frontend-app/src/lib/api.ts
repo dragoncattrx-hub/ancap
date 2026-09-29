@@ -1526,6 +1526,32 @@ export const growthDashboard = {
   },
 };
 
+export const platformAdmin = {
+  async overview() {
+    return apiFetch("/platform-admin/overview");
+  },
+  async listUsers(params: { q?: string; limit?: number; offset?: number } = {}) {
+    const search = new URLSearchParams();
+    if (params.q) search.set("q", params.q);
+    search.set("limit", String(params.limit ?? 50));
+    search.set("offset", String(params.offset ?? 0));
+    return apiFetch(`/platform-admin/users?${search.toString()}`);
+  },
+  async getUser(id: string) {
+    return apiFetch(`/platform-admin/users/${encodeURIComponent(id)}`);
+  },
+  async timeseries(metric = "signups", days = 30) {
+    return apiFetch(
+      `/platform-admin/timeseries?metric=${encodeURIComponent(metric)}&days=${encodeURIComponent(String(days))}`,
+    );
+  },
+  async forecast(metric = "signups", days = 30, horizon = 7) {
+    return apiFetch(
+      `/platform-admin/forecast?metric=${encodeURIComponent(metric)}&days=${encodeURIComponent(String(days))}&horizon=${encodeURIComponent(String(horizon))}`,
+    );
+  },
+};
+
 export const referrals = {
   async createCode(owner_agent_id?: string) {
     return apiFetch("/referrals/codes/create", {
@@ -2135,7 +2161,13 @@ export const system = {
     return apiFetch("/system/health");
   },
   async ledgerInvariantStatus() {
-    return apiFetch("/system/ledger-invariant-status");
+    return apiFetch("/internal/ops/ledger-invariant-status");
+  },
+  async deepHealth() {
+    return apiFetch("/internal/ops/deep-health");
+  },
+  async economyHealth() {
+    return apiFetch("/internal/ops/economy-health");
   },
 };
 
@@ -2418,6 +2450,7 @@ export const api = {
   growthLeaderboards,
   growthTasks,
   growthDashboard,
+  platformAdmin,
   referrals,
   payments,
   pay,

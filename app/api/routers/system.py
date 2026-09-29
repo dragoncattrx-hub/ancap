@@ -635,15 +635,16 @@ async def _process_system_jobs_tick_queue(job_run_id: str) -> None:
 
 
 def _enforce_cron_secret(request: Request) -> None:
-    """Fail closed: outside development, jobs tick always requires a configured CRON_SECRET."""
+    """Fail closed: jobs tick requires CRON_SECRET unless ALLOW_INSECURE_CRON is explicitly enabled."""
     settings = get_settings()
     if settings.cron_secret:
         provided_secret = request.headers.get("X-Cron-Secret")
         if provided_secret != settings.cron_secret:
             raise HTTPException(status_code=403, detail="Invalid or missing cron secret")
         return
-    if settings.environment != "development":
-        raise HTTPException(status_code=403, detail="Cron secret is not configured; jobs tick is disabled")
+    if settings.allow_insecure_cron and settings.environment == "development":
+        return
+    raise HTTPException(status_code=403, detail="Cron secret is not configured; jobs tick is disabled")
 
 
 @router.post("/jobs/tick/async", status_code=202)

@@ -39,6 +39,7 @@ import {
   quantumSimPageByLang,
   salivaRxPageByLang,
 } from "./waveC";
+import { opsConsoleByLang } from "./opsConsole";
 
 export type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
 
@@ -463,7 +464,13 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyMode: "Wallet session mode",
       walletOnlyModeDesc: "You can enter the interface with a connected wallet now. Backend wallet-sign auth can be added next.",
       walletSignInDesc: "Connect your EVM wallet, sign the login message, and continue into ANCAP with wallet-based authentication.",
-      continueToDashboard: "Continue to dashboard"
+      continueToDashboard: "Continue to dashboard",
+      continueToWalletRecovery: "Continue to wallet recovery",
+      openingWalletRecovery: "Opening wallet recovery...",
+      completeCaptcha: "Complete the captcha first",
+      enterEmailFirst: "Enter your email first",
+      resetLinkSent: "If this email exists, a reset link was sent. If nothing arrives and this account uses an ACP wallet, use wallet sign-in or your current password to log in, then change it on the ACP wallet page.",
+      resetFailed: "Password reset request failed"
     },
     cookies: {
       badge: "Privacy",
@@ -527,6 +534,7 @@ export const translations: Record<Language, TranslationTree> = {
     growthPage: growthPageByLang.en,
     feedPage: feedPageByLang.en,
     explorerPage: explorerPageByLang.en,
+    opsConsole: opsConsoleByLang.en,
     pricing: {
       eyebrow: "Pricing",
       title: "Buy AI execution, not abstract platform access",
@@ -1005,7 +1013,13 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyMode: "Режим wallet session",
       walletOnlyModeDesc: "Сейчас в интерфейс уже можно входить через подключенный кошелек. Полный backend auth по подписи можно добавить следующим шагом.",
       walletSignInDesc: "Подключи EVM-кошелек, подпиши login-сообщение и продолжай в ANCAP через wallet-based аутентификацию.",
-      continueToDashboard: "Перейти в dashboard"
+      continueToDashboard: "Перейти в dashboard",
+      continueToWalletRecovery: "Продолжить к восстановлению кошелька",
+      openingWalletRecovery: "Открываем восстановление кошелька...",
+      completeCaptcha: "Сначала пройдите капчу",
+      enterEmailFirst: "Сначала введите email",
+      resetLinkSent: "Если такой email есть, ссылка для сброса отправлена. Если письмо не пришло и у аккаунта есть ACP-кошелёк — войдите через кошелёк или текущий пароль, затем смените пароль на странице ACP.",
+      resetFailed: "Не удалось запросить сброс пароля"
     },
     cookies: {
       badge: "Конфиденциальность",
@@ -1069,6 +1083,7 @@ export const translations: Record<Language, TranslationTree> = {
     growthPage: growthPageByLang.ru,
     feedPage: feedPageByLang.ru,
     explorerPage: explorerPageByLang.ru,
+    opsConsole: opsConsoleByLang.ru,
     pricing: {
       eyebrow: "Цены",
       title: "Покупайте AI-исполнение, а не абстрактный доступ к платформе",
@@ -1547,7 +1562,13 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyMode: "Режим wallet session",
       walletOnlyModeDesc: "Зараз в інтерфейс уже можна входити через підключений гаманець. Повний backend auth через підпис можна додати наступним кроком.",
       walletSignInDesc: "Підключи EVM-гаманець, підпиши login-повідомлення й продовжуй в ANCAP через wallet-based автентифікацію.",
-      continueToDashboard: "Перейти в dashboard"
+      continueToDashboard: "Перейти в dashboard",
+      continueToWalletRecovery: "Continue to wallet recovery",
+      openingWalletRecovery: "Opening wallet recovery...",
+      completeCaptcha: "Complete the captcha first",
+      enterEmailFirst: "Enter your email first",
+      resetLinkSent: "If this email exists, a reset link was sent.",
+      resetFailed: "Password reset request failed"
     },
     cookies: {
       badge: "Конфіденційність",
@@ -1611,6 +1632,7 @@ export const translations: Record<Language, TranslationTree> = {
     growthPage: growthPageByLang.uk,
     feedPage: feedPageByLang.uk,
     explorerPage: explorerPageByLang.uk,
+    opsConsole: opsConsoleByLang.uk,
     pricing: {
       eyebrow: "Ціни",
       title: "Купуйте AI-виконання, а не абстрактний доступ до платформи",
@@ -2089,7 +2111,13 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyMode: "Wallet-Session-Modus",
       walletOnlyModeDesc: "Du kannst die Oberfläche bereits mit verbundener Wallet betreten. Backend Wallet-Sign-Auth kann als nächster Schritt ergänzt werden.",
       walletSignInDesc: "Verbinde deine EVM-Wallet, signiere die Login-Nachricht und fahre mit wallet-basierter Authentifizierung in ANCAP fort.",
-      continueToDashboard: "Zum Dashboard"
+      continueToDashboard: "Zum Dashboard",
+      continueToWalletRecovery: "Continue to wallet recovery",
+      openingWalletRecovery: "Opening wallet recovery...",
+      completeCaptcha: "Complete the captcha first",
+      enterEmailFirst: "Enter your email first",
+      resetLinkSent: "If this email exists, a reset link was sent.",
+      resetFailed: "Password reset request failed"
     },
     cookies: {
       badge: "Datenschutz",
@@ -2153,6 +2181,7 @@ export const translations: Record<Language, TranslationTree> = {
     growthPage: growthPageByLang.de,
     feedPage: feedPageByLang.de,
     explorerPage: explorerPageByLang.de,
+    opsConsole: opsConsoleByLang.de,
     pricing: {
       eyebrow: "Preise",
       title: "Kaufen Sie KI-Ausführung, nicht abstrakten Plattformzugang",
@@ -2631,7 +2660,13 @@ export const translations: Record<Language, TranslationTree> = {
       walletOnlyMode: "錢包工作階段模式",
       walletOnlyModeDesc: "你現在可用已連接錢包進入介面。後端錢包簽名驗證可下一步加入。",
       walletSignInDesc: "連接你的 EVM 錢包、簽署登入訊息，並以錢包驗證繼續進入 ANCAP。",
-      continueToDashboard: "前往儀表板"
+      continueToDashboard: "前往儀表板",
+      continueToWalletRecovery: "Continue to wallet recovery",
+      openingWalletRecovery: "Opening wallet recovery...",
+      completeCaptcha: "Complete the captcha first",
+      enterEmailFirst: "Enter your email first",
+      resetLinkSent: "If this email exists, a reset link was sent.",
+      resetFailed: "Password reset request failed"
     },
     cookies: {
       badge: "隱私",
@@ -2695,6 +2730,7 @@ export const translations: Record<Language, TranslationTree> = {
     growthPage: growthPageByLang["zh-Hant"],
     feedPage: feedPageByLang["zh-Hant"],
     explorerPage: explorerPageByLang["zh-Hant"],
+    opsConsole: opsConsoleByLang["zh-Hant"],
     pricing: {
       eyebrow: "價格",
       title: "購買 AI 執行，而非抽象平台權限",

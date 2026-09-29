@@ -34,12 +34,16 @@ MAX_PLAINTEXT = 1_048_576
 
 
 def _master_material() -> bytes:
+    from app.services.crypto_secrets import resolve_secret_material
+
     settings = get_settings()
     dedicated = (getattr(settings, "auction_deal_master_key", None) or "").strip()
-    if dedicated:
-        return dedicated.encode("utf-8")
-    secret = (settings.secret_key or "ancap-dev-auction-deal").encode("utf-8")
-    return secret + b"|auction-deal-xwing-v1"
+    return resolve_secret_material(
+        dedicated=dedicated,
+        secret_key_suffix=b"|auction-deal-xwing-v1",
+        development_fallback=b"ancap-dev-auction-deal|auction-deal-xwing-v1",
+        purpose="Auction deal crypto",
+    )
 
 
 def _hkdf(length: int, *, salt: bytes, info: bytes) -> bytes:

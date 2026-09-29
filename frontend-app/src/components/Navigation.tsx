@@ -162,7 +162,6 @@ const exploreAuthGroups: NavGroup[] = [
       { label: "Bounties", href: "/bounties", i18nKey: "nav.bounties" },
       { label: "Free Snapshot", href: "/token-snapshot", i18nKey: "nav.freeSnapshot" },
       { label: "Operations NOC", href: "/operations-noc", i18nKey: "nav.operationsNoc" },
-      { label: "Audit Log", href: "/admin/audit", i18nKey: "nav.auditLog" },
       { label: "AI Council", href: "/ai-council", i18nKey: "nav.aiCouncil" },
       { label: "Strategy Compiler", href: "/strategy-compiler", i18nKey: "nav.strategyCompiler" },
       { label: "Governance", href: "/governance", i18nKey: "nav.governance" },

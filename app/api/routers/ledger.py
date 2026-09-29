@@ -15,7 +15,7 @@ from app.schemas import (
     Pagination,
     BalanceItem,
 )
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, is_platform_admin_user
 from app.config import get_settings
 from app.db.models import LedgerEvent, LedgerEventTypeEnum, Account, Agent
 from app.services.ledger import get_or_create_account, append_event, balance_for_account, is_ledger_invariant_halted
@@ -24,17 +24,12 @@ from sqlalchemy import select
 router = APIRouter(prefix="/ledger", tags=["Ledger"])
 
 
-def _is_platform_admin(user_id: str) -> bool:
-    allowed = set(get_settings().platform_admin_user_ids_allowlist)
-    return bool(allowed) and user_id in allowed
-
-
-def _assert_deposit_allowed(user_id: str) -> None:
+async def _assert_deposit_allowed(session: DbSession, user_id: str) -> None:
     """Production deposits are operator-only. Non-prod keeps the test faucet."""
     settings = get_settings()
     if settings.environment != "production":
         return
-    if _is_platform_admin(user_id):
+    if await is_platform_admin_user(session, user_id):
         return
     raise HTTPException(
         status_code=403,
@@ -50,11 +45,11 @@ async def _assert_owner_access(
 ) -> None:
     ot = (owner_type or "").strip().lower()
     if ot == "user":
-        if str(owner_id) != user_id and not _is_platform_admin(user_id):
+        if str(owner_id) != user_id and not await is_platform_admin_user(session, user_id):
             raise HTTPException(status_code=403, detail="Forbidden account owner")
         return
     if ot == "agent":
-        if _is_platform_admin(user_id):
+        if await is_platform_admin_user(session, user_id):
             return
         agent = await session.get(Agent, owner_id)
         if not agent or str(agent.owner_user_id or "") != user_id:
@@ -67,7 +62,7 @@ async def _assert_owner_access(
             raise HTTPException(status_code=404, detail="Pool not found")
         # Non-prod keeps open pool access for the ledger faucet / pool tests.
         # Production restricts pool treasury ledger ops to platform operators.
-        if get_settings().environment != "production" or _is_platform_admin(user_id):
+        if get_settings().environment != "production" or await is_platform_admin_user(session, user_id):
             return
         raise HTTPException(status_code=403, detail="Forbidden account owner")
     raise HTTPException(status_code=403, detail="Unsupported owner_type for user access")
@@ -94,10 +89,11 @@ async def list_accounts(
         await _assert_owner_access(session, user_id, owner_type, owner_id)
         q = q.where(Account.owner_type == owner_type, Account.owner_id == owner_id)
     elif owner_type:
-        if owner_type.strip().lower() != "user" and not _is_platform_admin(user_id):
+        is_admin = await is_platform_admin_user(session, user_id)
+        if owner_type.strip().lower() != "user" and not is_admin:
             raise HTTPException(status_code=403, detail="Forbidden account owner filter")
         q = q.where(Account.owner_type == owner_type)
-        if owner_type.strip().lower() == "user" and not _is_platform_admin(user_id):
+        if owner_type.strip().lower() == "user" and not is_admin:
             q = q.where(Account.owner_id == UUID(user_id))
     else:
         q = q.where((Account.owner_type == "user") & (Account.owner_id == UUID(user_id)))
@@ -139,7 +135,7 @@ async def get_account(account_id: UUID, session: DbSession, user_id: str = Depen
 async def deposit(body: DepositRequest, session: DbSession, user_id: str = Depends(require_auth)):
     if await is_ledger_invariant_halted(session):
         raise HTTPException(status_code=503, detail="Ledger invariant violated; operations temporarily blocked")
-    _assert_deposit_allowed(user_id)
+    await _assert_deposit_allowed(session, user_id)
     owner_id = UUID(body.account_owner_id)
     await _assert_owner_access(
         session,
@@ -214,8 +210,9 @@ async def allocate(body: AllocateRequest, session: DbSession, user_id: str = Dep
     if not pool:
         raise HTTPException(status_code=404, detail="Pool not found")
     pool_owner_agent_id = getattr(pool, "owner_agent_id", None)
-    if pool_owner_agent_id:
-        await _assert_owner_access(session, user_id, "agent", UUID(str(pool_owner_agent_id)))
+    if not pool_owner_agent_id:
+        raise HTTPException(status_code=403, detail="Pool has no owner; allocate is blocked")
+    await _assert_owner_access(session, user_id, "agent", UUID(str(pool_owner_agent_id)))
     pool_acc = await get_or_create_account(session, "pool_treasury", pool.id)
     value = Decimal(body.amount.amount)
     ev = await append_event(
