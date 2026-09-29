@@ -59,7 +59,7 @@ export function isSupportedLanguage(value: string | null | undefined): value is 
   );
 }
 
-export function t(lang: Language, key: string): string {
+function resolveTranslation(lang: Language, key: string): string | undefined {
   const keys = key.split(".");
   let value: string | TranslationTree | undefined = translations[lang];
 
@@ -67,11 +67,25 @@ export function t(lang: Language, key: string): string {
     if (value && typeof value === "object") {
       value = value[k];
     } else {
-      return key;
+      return undefined;
     }
   }
 
-  return typeof value === "string" ? value : key;
+  return typeof value === "string" ? value : undefined;
+}
+
+export function t(lang: Language, key: string): string {
+  const direct = resolveTranslation(lang, key);
+  if (direct !== undefined) {
+    return direct;
+  }
+  if (lang !== "en") {
+    const fallback = resolveTranslation("en", key);
+    if (fallback !== undefined) {
+      return fallback;
+    }
+  }
+  return key;
 }
 
 export const translations: Record<Language, TranslationTree> = {

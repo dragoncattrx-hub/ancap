@@ -308,9 +308,13 @@ docker compose -f "$COMPOSE" up -d --force-recreate proxy
 docker compose -f "$COMPOSE" exec -T proxy nginx -t
 docker compose -f "$COMPOSE" exec -T proxy nginx -s reload || true
 
-echo "Ensuring host nginx routes acp1.ancap.cloud → compose :8080 (Cloudflare Full SSL origin)..."
-sed -i 's/\r$//' "$ROOT/scripts/ensure-acp1-host-proxy.sh" 2>/dev/null || true
-bash "$ROOT/scripts/ensure-acp1-host-proxy.sh"
+if [[ -f "$ROOT/scripts/ensure-acp1-host-proxy.sh" ]]; then
+  echo "Ensuring host nginx routes acp1.ancap.cloud → compose :8080 (Cloudflare Full SSL origin)..."
+  sed -i 's/\r$//' "$ROOT/scripts/ensure-acp1-host-proxy.sh" 2>/dev/null || true
+  bash "$ROOT/scripts/ensure-acp1-host-proxy.sh"
+else
+  echo "Skipping host acp1 proxy ensure (scripts/ensure-acp1-host-proxy.sh not present)."
+fi
 
 if [[ "$SKIP_MIG" -eq 0 ]]; then
   docker compose -f "$COMPOSE" exec -T api alembic upgrade head
@@ -347,6 +351,9 @@ print(payload.get("NEXT_PUBLIC_APP_BUILD_ID", ""))
 PY
 )"
 
+if [[ "${ANCAP_SKIP_ACP1_DEPLOY_SMOKE:-}" == "1" ]]; then
+  echo "Skipping acp1 RPC edge smoke (ANCAP_SKIP_ACP1_DEPLOY_SMOKE=1)."
+else
 echo "Verifying public ACP RPC host routing (compose Host + optional public edge)..."
 acp1_local="$(curl -sS -m 15 -o /tmp/acp1_deploy_rpc.json -w '%{http_code}' \
   -H 'Content-Type: application/json' \
@@ -382,6 +389,7 @@ if [[ "$acp1_public_code" != "200" ]]; then
 fi
 if ! echo "$acp1_public_hdr" | grep -qi 'x-ancap-upstream: *acp-rpc'; then
   echo "WARN: public /healthz missing X-Ancap-Upstream: acp-rpc (routing may still be wrong)" >&2
+fi
 fi
 
 echo "Done. Open https://ancap.cloud/bridge/acp-bsc — if still 404, first confirm the verified build id at https://ancap.cloud/internal/frontend-build before blaming cache."

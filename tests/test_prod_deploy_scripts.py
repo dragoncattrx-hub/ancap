@@ -135,6 +135,10 @@ def _stage_minimal_prod_repo(
     shutil.copy2(REPO_ROOT / "docker-compose.prod.yml", repo_root / "docker-compose.prod.yml")
     for script_name in script_names:
         shutil.copy2(REPO_ROOT / "scripts" / script_name, repo_root / "scripts" / script_name)
+    if "deploy-ancap-cloud.sh" in script_names:
+        ensure = REPO_ROOT / "scripts" / "ensure-acp1-host-proxy.sh"
+        if ensure.is_file():
+            shutil.copy2(ensure, repo_root / "scripts" / "ensure-acp1-host-proxy.sh")
     if dotenv_text is not None:
         (repo_root / ".env").write_text(dotenv_text, encoding="utf-8", newline="")
     if bridge_env_text is not None:
@@ -238,6 +242,8 @@ def _env_without_prod_secrets() -> dict[str, str]:
     env = os.environ.copy()
     for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN"]:
         env.pop(name, None)
+    # Deploy script acp1 edge smoke needs live curl + host nginx; unit tests use fake docker only.
+    env["ANCAP_SKIP_ACP1_DEPLOY_SMOKE"] = "1"
     return env
 
 
@@ -616,6 +622,7 @@ def test_prod_compose_config_quiet_fails_fast_without_printing_other_secret_valu
             "POSTGRES_PASSWORD": "compose-pass",
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "ACP_RPC_TOKEN": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
         }
     )
 
