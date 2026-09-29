@@ -12,9 +12,29 @@ import { FloatingEarthSupportWidget } from "./FloatingEarthSupportWidget";
 
 function ServiceWorkerRegister() {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
+    if (!("serviceWorker" in navigator)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        // Drop legacy cache bags that stored HTML / Next chunks (ancap-v1/v2).
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(
+            keys
+              .filter((k) => k === "ancap-v1" || k === "ancap-v2" || k.startsWith("ancap-v"))
+              .map((k) => caches.delete(k))
+          );
+        }
+        if (cancelled) return;
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await reg.update();
+      } catch {
+        /* ignore registration failures */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return null;
 }
