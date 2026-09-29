@@ -841,12 +841,16 @@ def _operator_controlled_balance_slices(
 
         with ThreadPoolExecutor(max_workers=min(4, len(pending))) as pool:
             futures = [pool.submit(_one, addr) for addr in pending]
-            for fut in as_completed(futures, timeout=max(1.0, deadline - time.monotonic() + 1.0)):
-                try:
-                    addr, acp, utxos, ok = fut.result()
-                except Exception:
-                    continue
-                probed[addr] = (acp, utxos, ok)
+            try:
+                for fut in as_completed(futures, timeout=max(1.0, deadline - time.monotonic() + 1.0)):
+                    try:
+                        addr, acp, utxos, ok = fut.result()
+                    except Exception:
+                        continue
+                    probed[addr] = (acp, utxos, ok)
+            except TimeoutError:
+                # Shared budget exhausted — unfinished roles fall back to design alloc.
+                pass
 
     slices: list[tuple[str, str, Decimal, int]] = []
     live_hits = 0
