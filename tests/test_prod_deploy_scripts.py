@@ -22,6 +22,7 @@ VALID_PROD_ENV = {
     "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
     "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "ACP_RPC_TOKEN": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
 }
 
 
@@ -82,7 +83,7 @@ def _run_deploy_bash(
 ) -> subprocess.CompletedProcess[str]:
     export_pairs = " ".join(
         f"{name}={shlex.quote(env[name])}"
-        for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET"]
+        for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN"]
         if name in env
     )
     bootstrap = f"export {export_pairs}; " if export_pairs else ""
@@ -235,7 +236,7 @@ def _make_fake_tool_dir(tmp_path: Path, *, app_build_id: str = "deadbee") -> tup
 
 def _env_without_prod_secrets() -> dict[str, str]:
     env = os.environ.copy()
-    for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET"]:
+    for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN"]:
         env.pop(name, None)
     return env
 
@@ -467,6 +468,11 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
         ),
         pytest.param(
             Path("docker-compose.prod.yml"),
+            'ACP_RPC_TOKEN: ${ACP_RPC_TOKEN:?ACP_RPC_TOKEN must be set for acp-node}',
+            id="compose-requires-acp-rpc-token",
+        ),
+        pytest.param(
+            Path("docker-compose.prod.yml"),
             'STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}',
             id="compose-passes-stripe-secret-key-through-to-api-service",
         ),
@@ -502,17 +508,17 @@ def test_deploy_bash_script_rejects_invalid_production_preflight(env: dict[str, 
         ),
         pytest.param(
             Path("scripts/deploy-ancap-cloud.ps1"),
-            '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")',
+            '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN")',
             id="powershell-deploy-requires-all-critical-secrets",
         ),
         pytest.param(
             Path("scripts/rebuild-prod.ps1"),
-            '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")',
+            '$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN")',
             id="powershell-rebuild-requires-all-critical-secrets",
         ),
         pytest.param(
             Path("scripts/deploy-ancap-cloud.sh"),
-            'REQUIRED_PROD_SECRETS=(DATABASE_URL POSTGRES_PASSWORD SECRET_KEY CURSOR_SECRET CRON_SECRET)',
+            'REQUIRED_PROD_SECRETS=(DATABASE_URL POSTGRES_PASSWORD SECRET_KEY CURSOR_SECRET CRON_SECRET ACP_RPC_TOKEN)',
             id="bash-deploy-requires-all-critical-secrets",
         ),
     ],
@@ -535,6 +541,7 @@ def test_prod_compose_config_quiet_succeeds_with_valid_required_env(tmp_path: Pa
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
             "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "ACP_RPC_TOKEN": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
         }
     )
 
@@ -557,6 +564,7 @@ def test_prod_compose_config_passes_runtime_env_through_to_api_service(tmp_path:
             "SECRET_KEY": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
             "CURSOR_SECRET": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
             "CRON_SECRET": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "ACP_RPC_TOKEN": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
             "STRIPE_SECRET_KEY": "stripe_secret_runtime_test",
             "STRIPE_PUBLISHABLE_KEY": "stripe_publishable_runtime_test",
             "STRIPE_WEBHOOK_SECRET": "stripe_webhook_runtime_test",
@@ -632,7 +640,7 @@ def test_deploy_powershell_loads_repo_root_dotenv_before_running_docker(tmp_path
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path)
@@ -663,7 +671,7 @@ def test_rebuild_powershell_loads_repo_root_dotenv_before_running_docker(tmp_pat
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path)
@@ -693,7 +701,7 @@ def test_deploy_powershell_runs_live_post_deploy_verification_by_default(tmp_pat
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path, app_build_id="deadbee")
@@ -817,7 +825,7 @@ def test_prod_deploy_helpers_accept_urlencoded_bundled_postgres_password_variant
             f"POSTGRES_PASSWORD={postgres_password}{dotenv_line_ending}"
             f"SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef{dotenv_line_ending}"
             f"CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789{dotenv_line_ending}"
-            f"CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210{dotenv_line_ending}"
+            f"CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210{dotenv_line_ending}ACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210{dotenv_line_ending}"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path)
@@ -848,7 +856,7 @@ def test_deploy_bash_loads_crlf_repo_root_dotenv_before_running_docker(tmp_path:
             "POSTGRES_PASSWORD=from-dotenv\r\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\r\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\r\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path)
@@ -879,7 +887,7 @@ def test_deploy_bash_accepts_urlencoded_bundled_postgres_password(tmp_path: Path
             "POSTGRES_PASSWORD=p@ss:word\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path)
@@ -909,7 +917,7 @@ def test_deploy_bash_runs_live_post_deploy_verification_by_default(tmp_path: Pat
             "POSTGRES_PASSWORD=from-dotenv\n"
             "SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
             "CURSOR_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789\n"
-            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\n"
+            "CRON_SECRET=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\nACP_RPC_TOKEN=fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\n"
         ),
     )
     tool_dir, log_path = _make_fake_tool_dir(tmp_path, app_build_id="unknown")

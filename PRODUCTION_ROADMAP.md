@@ -23,6 +23,12 @@ Fixed decisions:
 
 Reality note: this section is a capability snapshot, not a claim that the whole project is release-complete. The main remaining tails are security / CI / prod-hardening, finishing the mobile wallet to a real device-ready release, and monetization depth beyond the first ACP-first loop.
 
+### ACP web wallet launch recovery (2026-09-29)
+- Balance API/UI partitioned into on-chain / platform ledger / staked / withdrawable / operator live (never design-as-live).
+- Address binding history + mobile indexer watchlist + DB-backed tx history + admin rescan.
+- ACP RPC admin surface fail-closed without token; prod requires `ACP_RPC_TOKEN`; `/rpc` rate-limited.
+- Deposit address `acp1qpj54…` live probe: 0 UTXO / empty txs — no hot→user coin mint without proven reconcile gap.
+
 | Phase | Component | Status |
 | --- | --- | --- |
 | P0 | Auth rate limiting | DONE |

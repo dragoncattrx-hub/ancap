@@ -5,10 +5,12 @@ on:
     branches: ["master"]
     paths:
       - "ACP-crypto/**"
+      - "contracts/bridge-bsc/**"
       - ".github/workflows/crypto-ci.yml"
   pull_request:
     paths:
       - "ACP-crypto/**"
+      - "contracts/bridge-bsc/**"
       - ".github/workflows/crypto-ci.yml"
   schedule:
     - cron: "17 4 * * 1"
@@ -49,8 +51,14 @@ jobs:
       - name: Test classical-only compatibility
         run: cargo test -p acp-crypto --no-default-features --locked
 
-      - name: Compile node integration
-        run: cargo check -p acp-node --locked
+      - name: Test acp-node (RPC auth + unit suite)
+        run: cargo test -p acp-node --locked
+
+      - name: Test acp-mobile-ffi
+        run: cargo test -p acp-mobile-ffi --locked
+
+      - name: Check acp-wallet
+        run: cargo check -p acp-wallet --locked
 
   audit:
     runs-on: ubuntu-latest
@@ -72,3 +80,21 @@ jobs:
 
       - name: Audit Rust dependencies
         run: cargo audit --file Cargo.lock
+
+  bridge-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: contracts/bridge-bsc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Forge test bridge contracts
+        run: forge test -vv
