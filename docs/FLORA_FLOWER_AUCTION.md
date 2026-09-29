@@ -13,7 +13,7 @@ ACP escrow desk for selling **any flower in any form** (cut, bouquet, potted, se
 
 ## Featured ad
 
-**Black Beauty** (`flower-black-beauty`) — rose × daisy CRISPR-themed **literacy** lot. Hero art: `/flora/black-beauty.jpg`.
+**Black Beauty** (`flower-black-beauty`) — rose × daisy CRISPR-themed **literacy** lot, quantity **1,000,000**. Hero art: `/flora/black-beauty.jpg`.
 
 Not a CE/FDA plant variety, not a live GMO release sold by ANCAP. Physical plants / seeds / cuttings stay with licensed growers and florists under phytosanitary and local trade law.
 

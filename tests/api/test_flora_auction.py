@@ -43,7 +43,7 @@ def test_flora_auction_catalog_has_black_beauty_and_forms(client):
     assert any(lot["id"] == "flower-black-beauty" for lot in lots)
     beauty = next(lot for lot in lots if lot["id"] == "flower-black-beauty")
     assert beauty["starting_acp"] == "12000"
-    assert beauty["quantity"] is None
+    assert beauty["quantity"] == 1000000
     assert beauty["image_href"] == "/flora/black-beauty.jpg"
     assert Decimal(beauty["current_acp"]) >= Decimal(beauty["starting_acp"])
 

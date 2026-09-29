@@ -57,10 +57,10 @@ _SEED: tuple[dict[str, Any], ...] = (
         "form": "hybrid_literacy",
         "name": "Black Beauty",
         "variety": "Rose × Daisy hybrid (CRISPR literacy)",
-        "quantity": None,
+        "quantity": 1000000,
         "blurb": (
             "Featured ad lot: roses + daisies = Black Beauty. Anthocyanin / melanin petal literacy "
-            "(DFR) + daisy floral-meristem themes — partner brief, qty ∞. Nature + science."
+            "(DFR) + daisy floral-meristem themes — partner brief, qty 1,000,000. Nature + science."
         ),
         "starting_acp": "12000",
         "image_href": _HERO,
