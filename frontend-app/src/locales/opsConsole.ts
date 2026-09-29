@@ -125,8 +125,8 @@ const ru: Tree = {
   errorConfig: "Доступ администратора не настроен.",
 };
 
-function copy(base: Tree, overlay: Partial<Tree> = {}): Tree {
-  return { ...base, ...overlay };
+function copy(base: Tree, overlay: Record<string, string> = {}): Tree {
+  return { ...base, ...overlay } as Tree;
 }
 
 export const opsConsoleByLang: Record<Language, Tree> = {
