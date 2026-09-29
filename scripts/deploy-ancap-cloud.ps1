@@ -21,7 +21,7 @@ if (-not (Test-Path $compose)) { Write-Error "Missing docker-compose.prod.yml in
 $composeArgs = @("-f", $compose)
 $dotenv = Join-Path $root ".env"
 $bridgeEnv = Join-Path $root "Sicret\bridge-bsc\bridge.env"
-$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET")
+$requiredProdSecrets = @("DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN")
 $bundledPostgresDefaultUser = ("post" + "gres")
 $bundledPostgresDefaultPassword = ("post" + "gres")
 $bundledPostgresDefaultDatabase = "ancap"

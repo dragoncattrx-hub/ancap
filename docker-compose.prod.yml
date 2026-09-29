@@ -109,6 +109,8 @@ services:
       COINGECKO_BASE_URL: ${COINGECKO_BASE_URL:-}
       COINGECKO_CACHE_TTL_SECONDS: ${COINGECKO_CACHE_TTL_SECONDS:-60}
       COINGECKO_WACP_COIN_ID: ${COINGECKO_WACP_COIN_ID:-}
+      # Shared with acp-node for authenticated JSON-RPC (optional on api; empty disables client auth header).
+      ACP_RPC_TOKEN: ${ACP_RPC_TOKEN:-}
       # AccuWeather Earth widget (https://www.accuweather.com/) — key on host .env only.
       ACCUWEATHER_ENABLED: ${ACCUWEATHER_ENABLED:-true}
       ACCUWEATHER_API_KEY: ${ACCUWEATHER_API_KEY:-}
@@ -173,6 +175,8 @@ services:
       ACP_MINER_HEARTBEAT_ENABLED: "true"
       ACP_MINER_HEARTBEAT_EVERY_N: "12"
       ACP_MINER_MAX_TXS_PER_BLOCK: "512"
+      # Required in prod — acp-node fail-closes all non-public RPC methods without a token.
+      ACP_RPC_TOKEN: ${ACP_RPC_TOKEN:?ACP_RPC_TOKEN must be set for acp-node}
     volumes:
       - ./Sicret/acp:/var/lib/acp-node
     restart: unless-stopped
