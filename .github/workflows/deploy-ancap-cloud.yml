@@ -156,6 +156,23 @@ jobs:
               printf 'PLATFORM_ADMIN_EMAILS=dragon.cat.trx@gmail.com\n' >> .env
             fi
 
+            echo "== ensure ACP_RPC_TOKEN is set (required for acp-node fail-closed auth)"
+            touch .env
+            if ! grep -q '^ACP_RPC_TOKEN=.\+' .env; then
+              # Generate once on host; do not overwrite an existing production token.
+              token="$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | xxd -p -c 64)"
+              if grep -q '^ACP_RPC_TOKEN=' .env; then
+                sed -i "s|^ACP_RPC_TOKEN=.*|ACP_RPC_TOKEN=${token}|" .env
+              else
+                printf 'ACP_RPC_TOKEN=%s\n' "$token" >> .env
+              fi
+              echo "== generated ACP_RPC_TOKEN on host (value redacted)"
+            else
+              echo "== ACP_RPC_TOKEN already present on host"
+            fi
+            # Propagate into api container env as well when compose interpolates from .env
+            export ACP_RPC_TOKEN="$(grep -E '^ACP_RPC_TOKEN=' .env | head -1 | cut -d= -f2-)"
+
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               bash scripts/deploy-ancap-cloud.sh --skip-git-pull
