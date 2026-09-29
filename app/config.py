@@ -230,7 +230,8 @@ class Settings(BaseSettings):
     solana_rpc_url: str = ""
     # Comma-separated emails allowed to keep UserAcpWallet.address = custodial hot.
     # Everyone else is auto-reminted off the shared hot on login/personalize.
-    acp_custodial_hot_holder_emails: str = "dragon.cat.trx@gmail.com"
+    # Default empty — set ACP_CUSTODIAL_HOT_HOLDER_EMAILS in the environment.
+    acp_custodial_hot_holder_emails: str = ""
 
     @property
     def acp_custodial_hot_holder_emails_allowlist(self) -> tuple[str, ...]:

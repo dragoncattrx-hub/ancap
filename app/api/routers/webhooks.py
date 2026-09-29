@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import DbSession, get_current_user_id
 from app.db.models import WebhookEndpoint, WebhookDelivery
 from app.config import get_settings
+from app.services.webhook_url_policy import UnsafeWebhookUrl, validate_webhook_url
 
 
 def _dispatch():
@@ -105,12 +106,14 @@ async def create_webhook(
         raise HTTPException(status_code=401, detail="Not authenticated")
     if not body.event_types:
         raise HTTPException(status_code=400, detail="At least one event type is required")
-    if not (body.url.startswith("http://") or body.url.startswith("https://")):
-        raise HTTPException(status_code=400, detail="URL must be http or https")
+    try:
+        safe_url = validate_webhook_url(body.url)
+    except UnsafeWebhookUrl as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     endpoint = WebhookEndpoint(
         owner_user_id=uuid.UUID(user_id),
-        url=body.url,
+        url=safe_url,
         secret=generate_webhook_secret(),
         event_types=body.event_types,
         description=body.description,

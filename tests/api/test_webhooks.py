@@ -99,7 +99,18 @@ def test_webhook_validation_requires_http_and_event_types(client):
         },
     )
     assert bad_scheme.status_code == 400, bad_scheme.text
-    assert bad_scheme.json()["detail"] == "URL must be http or https"
+    assert "http" in bad_scheme.json()["detail"].lower()
+
+    private_target = client.post(
+        "/v1/webhooks",
+        headers=headers,
+        json={
+            "url": "http://127.0.0.1/hook",
+            "event_types": ["run.completed"],
+        },
+    )
+    assert private_target.status_code == 400, private_target.text
+    assert "blocked" in private_target.json()["detail"].lower() or "not allowed" in private_target.json()["detail"].lower()
 
 
 def test_webhook_replay_endpoint_routes_correctly(client, monkeypatch):

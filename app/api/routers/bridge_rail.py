@@ -605,6 +605,8 @@ async def bridge_reserve_summary(session: AsyncSession = Depends(get_db)):
 )
 async def list_reserve_snapshots(
     session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
     limit: int = 24,
 ):
     """List recent bridge reserve snapshots (operator use).
@@ -612,6 +614,9 @@ async def list_reserve_snapshots(
     Returns the most recent N snapshot records, newest first.
     Use to observe reserve health history and detect stale periods.
     """
+    _ = admin_user_id
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
     from sqlalchemy import desc, select as sa_select
 
     rows = await session.execute(
@@ -644,12 +649,19 @@ async def list_reserve_snapshots(
     "/admin/alerts",
     response_model=BridgeAlertsResponse,
 )
-async def get_bridge_alerts(session: AsyncSession = Depends(get_db)):
+async def get_bridge_alerts(
+    session: AsyncSession = Depends(get_db),
+    admin_user_id: str = Depends(require_platform_admin),
+    x_bridge_operator_secret: str | None = Header(None, alias="X-Bridge-Operator-Secret"),
+):
     """Run stale-snapshot and reconciliation-mismatch checks.
 
     Returns any active alerts. Call after /admin/reconcile to confirm
     the latest snapshot is healthy.
     """
+    _ = admin_user_id
+    s = get_settings()
+    _require_bridge_operator_secret(s.bridge_operator_secret, x_bridge_operator_secret)
     stale = await check_stale_snapshots(session)
     mismatch = await check_reconciliation_mismatch_alert(session)
     return BridgeAlertsResponse(

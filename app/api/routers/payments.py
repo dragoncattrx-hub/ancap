@@ -260,7 +260,14 @@ async def approve_refund_request(
     row.processed_at = datetime.now(UTC)
     row.updated_at = datetime.now(UTC)
     try:
-        await emit_payment_refunded(session, str(intent.id), str(intent.amount_value), intent.amount_currency, "refund_request_approved")
+        await emit_payment_refunded(
+            session,
+            str(intent.id),
+            str(intent.amount_value),
+            intent.amount_currency,
+            "refund_request_approved",
+            owner_user_id=str(row.user_id),
+        )
     except Exception:
         pass
     await session.flush()

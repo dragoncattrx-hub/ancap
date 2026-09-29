@@ -251,11 +251,16 @@ async def health_full(session: DbSession):
     try:
         await session.execute(select(func.count()).select_from(DecisionLog))
         checks["database"] = {"ok": True}
-    except Exception as exc:
-        checks["database"] = {"ok": False, "error": str(exc)}
+    except Exception:
+        # Never return raw exception / stack details on public health surfaces.
+        checks["database"] = {"ok": False, "error": "unavailable"}
 
-    redis_ok, redis_error = await redis_ping()
-    checks["redis"] = {"ok": redis_ok, "configured": bool(settings.redis_url), "error": redis_error}
+    redis_ok, _redis_error = await redis_ping()
+    checks["redis"] = {
+        "ok": redis_ok,
+        "configured": bool(settings.redis_url),
+        "error": None if redis_ok else "unavailable",
+    }
     checks["llm"] = _build_llm_check(settings)
     checks["mail"] = {
         "ok": (not settings.mail_enabled) or bool(settings.smtp_host and settings.smtp_from_email),
@@ -310,17 +315,23 @@ async def deep_health(session: DbSession, admin_user_id: str = Depends(require_p
     try:
         await session.execute(select(func.count()).select_from(DecisionLog))
         checks["database"] = {"ok": True}
-    except Exception as exc:
-        checks["database"] = {"ok": False, "error": str(exc)}
+    except Exception:
+        checks["database"] = {"ok": False, "error": "unavailable"}
 
-    redis_ok, redis_error = await redis_ping()
-    checks["redis"] = {"ok": redis_ok, "configured": bool(settings.redis_url), "error": redis_error}
+    redis_ok, _redis_error = await redis_ping()
+    checks["redis"] = {
+        "ok": redis_ok,
+        "configured": bool(settings.redis_url),
+        "error": None if redis_ok else "unavailable",
+    }
     checks["llm"] = _build_llm_check(settings, _get_or_schedule_llm_probe(), require_probe_success=True)
     acp_rpc_probe = _get_or_schedule_acp_rpc_probe()
+    probe_error = acp_rpc_probe.get("error")
     checks["acp_rpc"] = {
         "ok": bool(acp_rpc_probe.get("ok")),
         "status": acp_rpc_probe.get("status", "unknown"),
-        "error": acp_rpc_probe.get("error"),
+        # Keep detail for admins but avoid raw stack/connection strings.
+        "error": ("unavailable" if probe_error else None),
         "probe_cached": bool(acp_rpc_probe.get("checked_at")),
         "probe_checked_at": acp_rpc_probe.get("checked_at"),
     }

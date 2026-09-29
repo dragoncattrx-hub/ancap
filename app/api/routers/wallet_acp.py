@@ -1635,6 +1635,14 @@ async def withdraw(
             status_code=409,
             detail="ACP wallet is not initialized for this account. Please sign in again.",
         )
+    if str(wallet.address or "").strip() == CUSTODIAL_HOT_ADDRESS:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Custodial hot wallet withdrawals are disabled on the user API. "
+                "Use the operator/bridge signer path for hot spends."
+            ),
+        )
     signer = await _get_user_wallet_signer(session, user_id, body.wallet_password)
     if signer.get("keystore_json"):
         derived = _run_walletd(["address", "--keystore-json", signer["keystore_json"]], timeout_s=60)

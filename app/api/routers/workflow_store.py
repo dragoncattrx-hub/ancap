@@ -1974,8 +1974,16 @@ async def update_workflow_run_status(
     if target_status == WorkflowRunStatus.completed:
         await _capture_reserved_workflow_payment(session, row)
         try:
-            await emit_run_completed(session, str(row.id), row.title, str(row.owner_user_id))
-            await emit_payment_captured(session, str(row.id), str(row.quoted_amount), row.payment_currency, str(row.id))
+            owner_id = str(row.owner_user_id)
+            await emit_run_completed(session, str(row.id), row.title, owner_id)
+            await emit_payment_captured(
+                session,
+                str(row.id),
+                str(row.quoted_amount),
+                row.payment_currency,
+                str(row.id),
+                owner_user_id=owner_id,
+            )
         except Exception:
             pass
     elif target_status in {WorkflowRunStatus.failed, WorkflowRunStatus.cancelled}:
@@ -1983,7 +1991,14 @@ async def update_workflow_run_status(
         try:
             intent = await _latest_payment_intent(session, row, {PaymentIntentStatusEnum.reserved.value})
             if intent:
-                await emit_payment_refunded(session, str(intent.id), str(intent.amount_value), intent.amount_currency, target_status.value)
+                await emit_payment_refunded(
+                    session,
+                    str(intent.id),
+                    str(intent.amount_value),
+                    intent.amount_currency,
+                    target_status.value,
+                    owner_user_id=str(row.owner_user_id),
+                )
         except Exception:
             pass
 
@@ -2100,10 +2115,18 @@ async def execute_workflow_run(
     try:
         captured_intent = await _latest_payment_intent(session, row, {PaymentIntentStatusEnum.captured.value})
         payment_id = str(captured_intent.id) if captured_intent else str(row.id)
-        await emit_run_completed(session, str(row.id), row.title, user_id)
-        await emit_payment_captured(session, payment_id, str(row.quoted_amount), row.payment_currency, str(row.id))
+        owner_id = str(user_id)
+        await emit_run_completed(session, str(row.id), row.title, owner_id)
+        await emit_payment_captured(
+            session,
+            payment_id,
+            str(row.quoted_amount),
+            row.payment_currency,
+            str(row.id),
+            owner_user_id=owner_id,
+        )
         proof_url = f"{get_settings().public_app_url.rstrip('/')}/proof-center?run={row.id}"
-        await emit_receipt_ready(session, str(row.id), proof_url)
+        await emit_receipt_ready(session, str(row.id), proof_url, owner_user_id=owner_id)
     except Exception:
         pass  # webhooks are non-blocking
 

@@ -13,11 +13,14 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import WebhookEndpoint, WebhookDelivery
+from app.services.webhook_url_policy import UnsafeWebhookUrl, validate_webhook_url
 
 
 MAX_RETRIES = 3
 RETRY_DELAYS = [60, 300, 900]  # seconds: 1m, 5m, 15m
 REQUEST_TIMEOUT = 10
+# Do not follow redirects — prevents open-redirect SSRF pivots after URL validation.
+_HTTPX_CLIENT_KW = {"timeout": REQUEST_TIMEOUT, "follow_redirects": False}
 
 
 def sign_webhook_payload(payload: str, secret: str) -> str:
@@ -58,9 +61,21 @@ async def dispatch_webhook_event(
     response_status = None
     response_body = None
     try:
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        try:
+            target_url = validate_webhook_url(endpoint.url)
+        except UnsafeWebhookUrl as exc:
+            delivery_record.status = "failed"
+            delivery_record.response_body = f"blocked_url:{exc}"[:500]
+            await session.commit()
+            return {
+                "delivery_id": str(delivery_record.id),
+                "status": delivery_record.status,
+                "response_status": None,
+            }
+
+        async with httpx.AsyncClient(**_HTTPX_CLIENT_KW) as client:
             resp = await client.post(
-                endpoint.url,
+                target_url,
                 content=raw,
                 headers={
                     "Content-Type": "application/json",
@@ -212,51 +227,105 @@ async def retry_pending_webhook_deliveries(session: AsyncSession, *, max_items: 
     return {"retried": retried, "total": len(deliveries)}
 
 
-# Convenience helpers for triggering events from business logic
+# Convenience helpers for triggering events from business logic.
+# Always owner-scoped — never fan out user events to every subscriber.
 async def emit_run_completed(session: AsyncSession, run_id: str, title: str, user_id: str) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "run.completed", {
-        "run_id": run_id,
-        "title": title,
-        "user_id": user_id,
-    })
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=user_id,
+        event_type="run.completed",
+        payload={"run_id": run_id, "title": title, "user_id": user_id},
+    )
 
 
-async def emit_payment_captured(session: AsyncSession, payment_id: str, amount: str, currency: str, run_id: str) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "payment.captured", {
-        "payment_id": payment_id,
-        "amount": amount,
-        "currency": currency,
-        "run_id": run_id,
-    })
+async def emit_payment_captured(
+    session: AsyncSession,
+    payment_id: str,
+    amount: str,
+    currency: str,
+    run_id: str,
+    *,
+    owner_user_id: str,
+) -> dict[str, int]:
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=owner_user_id,
+        event_type="payment.captured",
+        payload={
+            "payment_id": payment_id,
+            "amount": amount,
+            "currency": currency,
+            "run_id": run_id,
+            "user_id": owner_user_id,
+        },
+    )
 
 
-async def emit_payment_refunded(session: AsyncSession, payment_id: str, amount: str, currency: str, reason: str) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "payment.refunded", {
-        "payment_id": payment_id,
-        "amount": amount,
-        "currency": currency,
-        "reason": reason,
-    })
+async def emit_payment_refunded(
+    session: AsyncSession,
+    payment_id: str,
+    amount: str,
+    currency: str,
+    reason: str,
+    *,
+    owner_user_id: str,
+) -> dict[str, int]:
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=owner_user_id,
+        event_type="payment.refunded",
+        payload={
+            "payment_id": payment_id,
+            "amount": amount,
+            "currency": currency,
+            "reason": reason,
+            "user_id": owner_user_id,
+        },
+    )
 
 
-async def emit_receipt_ready(session: AsyncSession, run_id: str, receipt_url: str) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "receipt.ready", {
-        "run_id": run_id,
-        "receipt_url": receipt_url,
-    })
+async def emit_receipt_ready(
+    session: AsyncSession,
+    run_id: str,
+    receipt_url: str,
+    *,
+    owner_user_id: str,
+) -> dict[str, int]:
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=owner_user_id,
+        event_type="receipt.ready",
+        payload={"run_id": run_id, "receipt_url": receipt_url, "user_id": owner_user_id},
+    )
 
 
-async def emit_api_usage(session: AsyncSession, usage_id: str, agent_id: str, product: str, amount: str) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "api.usage.created", {
-        "usage_id": usage_id,
-        "agent_id": agent_id,
-        "product": product,
-        "amount": amount,
-    })
+async def emit_api_usage(
+    session: AsyncSession,
+    usage_id: str,
+    agent_id: str,
+    product: str,
+    amount: str,
+    *,
+    owner_user_id: str,
+) -> dict[str, int]:
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=owner_user_id,
+        event_type="api.usage.created",
+        payload={
+            "usage_id": usage_id,
+            "agent_id": agent_id,
+            "product": product,
+            "amount": amount,
+            "user_id": owner_user_id,
+        },
+    )
 
 
 async def emit_user_registered(session: AsyncSession, user_id: str, email: str | None = None) -> dict[str, int]:
-    return await dispatch_event_to_subscribers(session, "user.registered", {
-        "user_id": user_id,
-        "email": email,
-    })
+    return await dispatch_event_to_owner_subscribers(
+        session,
+        owner_user_id=user_id,
+        event_type="user.registered",
+        payload={"user_id": user_id, "email": email},
+    )
