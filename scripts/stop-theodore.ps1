@@ -48,18 +48,42 @@ $exactTaskNames = @(
   "ANCAP-Earn"
 )
 
+function Remove-TaskForce {
+  param(
+    [Parameter(Mandatory = $true)][string]$TaskName,
+    [string]$TaskPath = "\"
+  )
+  $full = $TaskPath + $TaskName
+  try {
+    Stop-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
+    Disable-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue | Out-Null
+    Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
+  } catch {
+    # fall through to schtasks
+  }
+  # schtasks /Delete is more reliable than Unregister-ScheduledTask on some hosts.
+  $tn = if ($TaskPath -and $TaskPath -ne "\") {
+    ($TaskPath.TrimEnd("\") + "\" + $TaskName)
+  } else {
+    $TaskName
+  }
+  $out = & schtasks.exe /Delete /TN $tn /F 2>&1 | Out-String
+  if ($LASTEXITCODE -eq 0) {
+    Write-StopLog ("Deleted scheduled task via schtasks: {0}" -f $tn)
+  } else {
+    $still = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue
+    if (-not $still) {
+      Write-StopLog ("Removed scheduled task: {0}" -f $full)
+    } else {
+      Write-StopLog ("WARN could not delete task {0}: {1}" -f $tn, $out.Trim())
+    }
+  }
+}
+
 foreach ($taskName in $exactTaskNames) {
   $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
   if (-not $task) { continue }
-  $full = $task.TaskPath + $task.TaskName
-  try {
-    Stop-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction SilentlyContinue
-    Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction SilentlyContinue
-    Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false -ErrorAction SilentlyContinue
-    Write-StopLog "Removed scheduled task: $full"
-  } catch {
-    Write-StopLog ("WARN could not remove task {0} : {1}" -f $full, $_.Exception.Message)
-  }
+  Remove-TaskForce -TaskName $task.TaskName -TaskPath $task.TaskPath
 }
 
 # Also catch wildcard / action-based matches.
@@ -102,14 +126,17 @@ try {
 }
 
 foreach ($task in $tasks) {
-  $full = $task.TaskPath + $task.TaskName
-  try {
-    Stop-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction SilentlyContinue
-    Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction SilentlyContinue
-    Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false -ErrorAction SilentlyContinue
-    Write-StopLog "Removed scheduled task: $full"
-  } catch {
-    Write-StopLog ("WARN could not remove task {0} : {1}" -f $full, $_.Exception.Message)
+  Remove-TaskForce -TaskName $task.TaskName -TaskPath $task.TaskPath
+}
+
+# Final hard delete for the two operator tasks even if Get-ScheduledTask is flaky.
+foreach ($tn in @("TheodoreACPEarnPromo", "OpenClaw Gateway")) {
+  & schtasks.exe /Delete /TN $tn /F 2>&1 | Out-Null
+  $still = Get-ScheduledTask -TaskName $tn -ErrorAction SilentlyContinue
+  if ($still) {
+    Write-StopLog ("WARN task still present after schtasks /Delete: {0}" -f $tn)
+  } else {
+    Write-StopLog ("Confirmed absent: {0}" -f $tn)
   }
 }
 
@@ -205,11 +232,9 @@ foreach ($cli in $cliNames) {
   $cmdInfo = Get-Command $cli -ErrorAction SilentlyContinue
   if (-not $cmdInfo) { continue }
   $argSets = @(
-    @("gateway", "stop"),
-    @("stop"),
-    @("daemon", "stop"),
-    @("agent", "stop", "Theodore"),
-    @("agents", "stop", "Theodore")
+    @("gateway", "stop", "--force"),
+    @("gateway", "stop", "--force", "--port", "18789"),
+    @("daemon", "stop", "--force")
   )
   foreach ($argSet in $argSets) {
     try {
