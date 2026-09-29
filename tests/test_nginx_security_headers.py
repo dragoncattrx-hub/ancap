@@ -70,3 +70,13 @@ def test_api_locations_mark_upstream_for_debug():
     config = _read_nginx_conf()
     assert "add_header X-Ancap-Upstream api always;" in config
     assert "add_header X-Ancap-Upstream frontend always;" in config
+    assert "add_header X-Ancap-Upstream acp-rpc always;" in config
+
+
+def test_acp1_rpc_host_and_ancap_fallback_are_wired():
+    config = _read_nginx_conf()
+    assert "server_name acp1.ancap.cloud;" in config
+    assert "location = /healthz {" in config
+    assert '"service":"acp-rpc"' in config or '"service": "acp-rpc"' in config
+    # Main site exposes the same RPC upstream when Host is ancap.cloud.
+    assert config.count("proxy_pass http://acp-node:8545/rpc;") >= 2

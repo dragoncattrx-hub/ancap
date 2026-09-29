@@ -303,6 +303,14 @@ docker compose -f "$COMPOSE" config --quiet
 
 docker compose -f "$COMPOSE" build
 docker compose -f "$COMPOSE" up -d
+# Bind-mounted nginx conf updates need a reload / recreate so acp1 + /rpc land.
+docker compose -f "$COMPOSE" up -d --force-recreate proxy
+docker compose -f "$COMPOSE" exec -T proxy nginx -t
+docker compose -f "$COMPOSE" exec -T proxy nginx -s reload || true
+
+echo "Ensuring host nginx routes acp1.ancap.cloud → compose :8080 (Cloudflare Full SSL origin)..."
+sed -i 's/\r$//' "$ROOT/scripts/ensure-acp1-host-proxy.sh" 2>/dev/null || true
+bash "$ROOT/scripts/ensure-acp1-host-proxy.sh"
 
 if [[ "$SKIP_MIG" -eq 0 ]]; then
   docker compose -f "$COMPOSE" exec -T api alembic upgrade head
@@ -338,5 +346,42 @@ payload = json.loads(sys.argv[1])
 print(payload.get("NEXT_PUBLIC_APP_BUILD_ID", ""))
 PY
 )"
+
+echo "Verifying public ACP RPC host routing (compose Host + optional public edge)..."
+acp1_local="$(curl -sS -m 15 -o /tmp/acp1_deploy_rpc.json -w '%{http_code}' \
+  -H 'Content-Type: application/json' \
+  -H 'Host: acp1.ancap.cloud' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' \
+  http://127.0.0.1:8080/rpc || true)"
+echo "compose Host acp1 /rpc -> HTTP ${acp1_local} body=$(head -c 160 /tmp/acp1_deploy_rpc.json 2>/dev/null || true)"
+if [[ "$acp1_local" != "200" ]]; then
+  echo "compose acp1.ancap.cloud/rpc did not return 200 after deploy." >&2
+  exit 1
+fi
+# Admin surface must fail closed without ACP_RPC_TOKEN (token never printed).
+acp1_admin="$(curl -sS -m 15 -o /tmp/acp1_deploy_admin.json -w '%{http_code}' \
+  -H 'Content-Type: application/json' \
+  -H 'Host: acp1.ancap.cloud' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"stop","params":[]}' \
+  http://127.0.0.1:8080/rpc || true)"
+echo "compose Host acp1 admin deny -> HTTP ${acp1_admin} body=$(head -c 160 /tmp/acp1_deploy_admin.json 2>/dev/null || true)"
+if grep -qiE 'ok|stopped|stopping' /tmp/acp1_deploy_admin.json 2>/dev/null; then
+  echo "admin RPC appears open without token — fail closed." >&2
+  exit 1
+fi
+acp1_public_code="$(curl -sS -m 20 -o /tmp/acp1_public_rpc.json -w '%{http_code}' \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' \
+  https://acp1.ancap.cloud/rpc || true)"
+acp1_public_hdr="$(curl -sSI -m 20 https://acp1.ancap.cloud/healthz 2>/dev/null | tr -d '\r' || true)"
+echo "public https://acp1.ancap.cloud/rpc -> HTTP ${acp1_public_code} body=$(head -c 160 /tmp/acp1_public_rpc.json 2>/dev/null || true)"
+echo "public /healthz headers: $(echo "$acp1_public_hdr" | grep -iE 'HTTP/|x-ancap-upstream' | tr '\n' ' ')"
+if [[ "$acp1_public_code" != "200" ]]; then
+  echo "public acp1.ancap.cloud/rpc still not 200 — host/Cloudflare routing not fixed." >&2
+  exit 1
+fi
+if ! echo "$acp1_public_hdr" | grep -qi 'x-ancap-upstream: *acp-rpc'; then
+  echo "WARN: public /healthz missing X-Ancap-Upstream: acp-rpc (routing may still be wrong)" >&2
+fi
 
 echo "Done. Open https://ancap.cloud/bridge/acp-bsc — if still 404, first confirm the verified build id at https://ancap.cloud/internal/frontend-build before blaming cache."
