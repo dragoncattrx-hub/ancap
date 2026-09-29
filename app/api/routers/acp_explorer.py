@@ -163,6 +163,14 @@ async def tokenomics_snapshot():
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
+@router.get("/supply-layout")
+async def supply_layout():
+    """Static regenesis v2 supply map (no chain scan — always fast)."""
+    from app.services.acp_tokenomics import acp_supply_layout
+
+    return {"status": "ok", **acp_supply_layout()}
+
+
 @router.get("/address/{address}")
 async def get_address_summary(address: str):
     target = address.strip()

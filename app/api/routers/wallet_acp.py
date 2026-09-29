@@ -24,7 +24,15 @@ from app.services.acp_wallet import get_wallet_for_user
 from app.services.acp_wallet import decrypt_mnemonic
 from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_wallet import personalize_hot_bound_wallet
-from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
+from app.services.acp_wallet import user_is_custodial_hot_holder
+from app.services.acp_tokenomics import (
+    CUSTODIAL_HOT_ADDRESS,
+    CUSTODIAL_HOT_DESIGN_ACP,
+    GENESIS_TREASURY_ADDRESS,
+    GENESIS_TREASURY_DESIGN_ACP,
+    GENESIS_SUPPLY_ACP,
+    acp_supply_layout,
+)
 from app.services import acp_privacy as privacy_svc
 from app.services import otc_intake as otc_svc
 from app.schemas.otc_intake import (
@@ -80,6 +88,9 @@ _chain_balance_cache: dict[str, tuple[float, dict]] = {}
 # Interactive wallet UI must stay snappy. Full tip scans (~30k blocks) belong in
 # a background warmer, never on the request path.
 _INTERACTIVE_WALLETD_TIMEOUT_S = 5
+# Custodial hot has a denser UTXO history; allow a longer probe so operator UI
+# does not stick on a cached empty balance after a 5s abort.
+_OPERATOR_HOT_WALLETD_TIMEOUT_S = 40
 _INTERACTIVE_RPC_TIMEOUT_S = 5.0
 
 
@@ -563,10 +574,35 @@ async def _decorate_balance_for_user(
     platform_credits_s: str | None = None
     balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
 
-    # Shared custodial hot must never look like a personal on-chain balance.
-    # Until the account is reminted off hot, show ledger credits only and block
-    # withdraw-from-hot as "available".
+    is_hot_holder = False
     if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
+        is_hot_holder = await user_is_custodial_hot_holder(session, user_id)
+
+    if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS and is_hot_holder:
+        # Designated operator account: show hot on-chain float + supply truth.
+        display_acp = on_chain_acp
+        display_units = _units_from_acp(on_chain_acp)
+        tokenomics_buckets = [
+            AcpTokenomicsBucket(
+                key="hot",
+                label="Operator pool (custodial hot)",
+                acp=_decimal_to_api_str(on_chain_acp),
+                utxo_count=display_utxo_count,
+            )
+        ]
+        view_mode = "operator_hot"
+        platform_credits_s = _decimal_to_api_str(in_ledger)
+        on_chain_s = None
+        balance_note = (
+            f"Custodial hot on-chain float: {_decimal_to_api_str(on_chain_acp)} ACP "
+            f"(design alloc ~{_decimal_to_api_str(CUSTODIAL_HOT_DESIGN_ACP)} ACP). "
+            f"~{_decimal_to_api_str(GENESIS_TREASURY_DESIGN_ACP)} ACP of the "
+            f"{_decimal_to_api_str(GENESIS_SUPPLY_ACP)} ACP genesis supply lives on "
+            f"genesis treasury {GENESIS_TREASURY_ADDRESS} — not on this login wallet. "
+            f"PQC KeystoreV3 (hybrid Ed25519+Dilithium2) secures spending; amounts stay transparent."
+        )
+    elif include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
+        # Accidental hot binding for a normal user: never show operator pool as theirs.
         platform_credits_s = _decimal_to_api_str(in_ledger)
         display_acp = in_ledger if in_ledger > 0 else Decimal(0)
         display_units = _units_from_acp(display_acp)
@@ -730,10 +766,19 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
             return dict(payload)
 
     rpc_url = _require_acp_rpc_url()
+    if interactive:
+        timeout_s = (
+            _OPERATOR_HOT_WALLETD_TIMEOUT_S
+            if target == CUSTODIAL_HOT_ADDRESS
+            else _INTERACTIVE_WALLETD_TIMEOUT_S
+        )
+    else:
+        timeout_s = 90
+    timed_out = False
     try:
         result = _run_walletd(
             ["balance", "--rpc", rpc_url, "--address", target],
-            timeout_s=_INTERACTIVE_WALLETD_TIMEOUT_S if interactive else 90,
+            timeout_s=timeout_s,
         )
         if isinstance(result, dict):
             # Normalize so callers always see the queried address.
@@ -744,15 +789,19 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
     except HTTPException as exc:
         if exc.status_code not in (502, 503, 504):
             raise
+        timed_out = exc.status_code == 504
         if not interactive:
             return _rpc_balance_for_address(target)
 
     # Fast fail-closed for wallet UI: ledger decoration still surfaces credits.
+    # Do not sticky-cache empty results after a timeout — that made real hot
+    # floats look like 0 / tiny until the process restarted.
     payload = _empty_balance_payload(target)
-    _chain_balance_cache[target] = (
-        time.monotonic() + _CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S,
-        payload,
-    )
+    if not timed_out:
+        _chain_balance_cache[target] = (
+            time.monotonic() + _CHAIN_BALANCE_NEGATIVE_CACHE_TTL_S,
+            payload,
+        )
     return dict(payload)
 
 
@@ -1145,11 +1194,16 @@ async def get_deposit_address(
     deposit_note = None
     needs_personalize = False
     if addr == CUSTODIAL_HOT_ADDRESS:
-        needs_personalize = True
-        deposit_note = (
-            "Shared custodial hot wallet — not a personal deposit address. "
-            "Use Personalize wallet (account password) or sign in again to mint your own ACP address."
-        )
+        if await user_is_custodial_hot_holder(session, user_id):
+            layout = acp_supply_layout()
+            deposit_note = str(layout.get("note") or "")
+            needs_personalize = False
+        else:
+            needs_personalize = True
+            deposit_note = (
+                "Shared custodial hot wallet — not a personal deposit address. "
+                "Use Personalize wallet (account password) or sign in again to mint your own ACP address."
+            )
     return AcpDepositAddressResponse(
         address=addr,
         mode="standard",
@@ -1214,6 +1268,14 @@ async def personalize_wallet(
     session: AsyncSession = Depends(get_db),
 ):
     """Mint a personal deposit address when the account is still bound to shared hot."""
+    if await user_is_custodial_hot_holder(session, user_id):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "This operator account is designated to hold custodial hot. "
+                "Most of the ~210M ACP supply is on genesis treasury, not hot."
+            ),
+        )
     try:
         result = await personalize_hot_bound_wallet(
             session=session,

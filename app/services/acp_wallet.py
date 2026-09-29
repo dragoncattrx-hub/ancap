@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.db.models import UserAcpWallet
+from app.db.models import User, UserAcpWallet
 
 
 DEFAULT_DERIVATION_PATH = "m/44'/0'/0'/0/0"
@@ -324,18 +324,31 @@ async def create_wallet_for_user(
     return wallet, mnemonic
 
 
+async def user_is_custodial_hot_holder(session: AsyncSession, user_id: str) -> bool:
+    allow = set(get_settings().acp_custodial_hot_holder_emails_allowlist)
+    if not allow:
+        return False
+    email = (
+        await session.execute(select(User.email).where(User.id == str(user_id)))
+    ).scalar_one_or_none()
+    return str(email or "").strip().lower() in allow
+
+
 async def personalize_hot_bound_wallet(
     session: AsyncSession,
     user_id: str,
     password: str,
     *,
     derivation_path: str = DEFAULT_DERIVATION_PATH,
+    force: bool = False,
 ) -> tuple[UserAcpWallet, str] | None:
     """Replace a user row that still points at the shared custodial hot address.
 
     Custodial hot must live in server secrets / operator tooling — never as a
     personal deposit address. Verifies the account password against the old
     ciphertext first, then mints a fresh personal wallet in-place.
+
+    Designated hot-holder emails are left bound unless ``force=True``.
     """
     from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 
@@ -343,6 +356,8 @@ async def personalize_hot_bound_wallet(
     if wallet is None:
         return None
     if (wallet.address or "").strip() != CUSTODIAL_HOT_ADDRESS:
+        return None
+    if not force and await user_is_custodial_hot_holder(session, user_id):
         return None
 
     # Prove the caller knows the account wallet password before discarding the row binding.
