@@ -197,6 +197,173 @@ def test_custodial_hot_deposit_skips_utxo_full_scan(client, monkeypatch):
         get_settings.cache_clear()
 
 
+def test_hot_holder_balance_aggregates_all_role_wallets(client, monkeypatch):
+    """Operator holder headline balance sums genesis+hot+project+bridge."""
+    import os
+
+    from sqlalchemy import create_engine, select as sync_select
+    from sqlalchemy.orm import Session
+
+    from app.api.routers import wallet_acp as wallet_acp_router
+    from app.db.models import User, UserAcpWallet
+    from app.services.acp_tokenomics import (
+        BRIDGE_RESERVE_ADDRESS,
+        CUSTODIAL_HOT_ADDRESS,
+        GENESIS_TREASURY_ADDRESS,
+        PROJECT_TREASURY_ADDRESS,
+    )
+
+    email = f"holder_{uuid4().hex[:12]}@test.com"
+    monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+    monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", email)
+    get_settings.cache_clear()
+
+    amounts = {
+        GENESIS_TREASURY_ADDRESS: (Decimal("207643979.999998"), 1, True),
+        CUSTODIAL_HOT_ADDRESS: (Decimal("108713.62657522"), 3, True),
+        PROJECT_TREASURY_ADDRESS: (Decimal("1000000"), 1, True),
+        BRIDGE_RESERVE_ADDRESS: (Decimal("301000"), 1, True),
+    }
+
+    def fake_probe(address: str, *, timeout_s: int = 10):
+        acp, utxos, ok = amounts.get(address, (Decimal("0"), 0, True))
+        return acp, utxos, ok
+
+    def fake_balance(address: str, interactive: bool = True):
+        acp, utxos, _ok = amounts.get(address, (Decimal("0"), 0, True))
+        units = str(int(acp * Decimal("100000000")))
+        return {"address": address, "units": units, "acp": str(acp), "utxo_count": utxos}
+
+    monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
+    monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+
+    try:
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": email, "password": "password123", "display_name": "Holder"},
+            headers={"Authorization": ""},
+        )
+        assert res.status_code == 201, res.text
+        token = res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        db_url = os.environ["DATABASE_URL"].replace("+asyncpg", "").replace(
+            "postgresql+asyncpg", "postgresql"
+        )
+        sync_engine = create_engine(db_url, pool_pre_ping=True)
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            assert wallet is not None
+            wallet.address = CUSTODIAL_HOT_ADDRESS
+            session.commit()
+
+        hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
+        assert hot.status_code == 200, hot.text
+        body = hot.json()
+        assert body["view_mode"] == "operator_hot"
+        assert Decimal(body["acp"]) == Decimal("209053693.62657322")
+        assert Decimal(body["available_acp"]) == Decimal("108713.62657522")
+        keys = {b["key"] for b in body["tokenomics_buckets"]}
+        assert keys == {"genesis_treasury", "custodial_hot", "project_treasury", "bridge_reserve"}
+
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            assert wallet is not None
+            wallet.address = f"acp1qcleanup{uuid4().hex[:28]}"
+            session.commit()
+        sync_engine.dispose()
+    finally:
+        monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+        monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", "dragon.cat.trx@gmail.com")
+        get_settings.cache_clear()
+
+
+def test_operator_aggregate_preserves_confirmed_zero_role_balance(client, monkeypatch):
+    """A successful live zero must not be replaced by design alloc."""
+    import os
+
+    from sqlalchemy import create_engine, select as sync_select
+    from sqlalchemy.orm import Session
+
+    from app.api.routers import wallet_acp as wallet_acp_router
+    from app.db.models import User, UserAcpWallet
+    from app.services.acp_tokenomics import (
+        BRIDGE_RESERVE_ADDRESS,
+        BRIDGE_RESERVE_DESIGN_ACP,
+        CUSTODIAL_HOT_ADDRESS,
+        GENESIS_TREASURY_ADDRESS,
+        PROJECT_TREASURY_ADDRESS,
+    )
+
+    email = f"holder_zero_{uuid4().hex[:10]}@test.com"
+    monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+    monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", email)
+    get_settings.cache_clear()
+
+    # Bridge reserve confirmed empty; genesis probe unavailable → design fallback.
+    probes = {
+        GENESIS_TREASURY_ADDRESS: (Decimal("0"), 0, False),
+        CUSTODIAL_HOT_ADDRESS: (Decimal("108713.62657522"), 3, True),
+        PROJECT_TREASURY_ADDRESS: (Decimal("1000000"), 1, True),
+        BRIDGE_RESERVE_ADDRESS: (Decimal("0"), 0, True),
+    }
+
+    def fake_probe(address: str, *, timeout_s: int = 10):
+        return probes.get(address, (Decimal("0"), 0, False))
+
+    def fake_balance(address: str, interactive: bool = True):
+        acp, utxos, ok = probes.get(address, (Decimal("0"), 0, True))
+        if not ok:
+            acp, utxos = Decimal("0"), 0
+        units = str(int(acp * Decimal("100000000")))
+        return {"address": address, "units": units, "acp": str(acp), "utxo_count": utxos}
+
+    monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
+    monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+
+    try:
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": email, "password": "password123", "display_name": "Zero Bridge"},
+            headers={"Authorization": ""},
+        )
+        assert res.status_code == 201, res.text
+        token = res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        db_url = os.environ["DATABASE_URL"].replace("+asyncpg", "").replace(
+            "postgresql+asyncpg", "postgresql"
+        )
+        sync_engine = create_engine(db_url, pool_pre_ping=True)
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            wallet.address = CUSTODIAL_HOT_ADDRESS
+            session.commit()
+
+        hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
+        assert hot.status_code == 200, hot.text
+        body = hot.json()
+        by_key = {b["key"]: b for b in body["tokenomics_buckets"]}
+        assert Decimal(by_key["bridge_reserve"]["acp"]) == Decimal("0")
+        assert Decimal(by_key["bridge_reserve"]["acp"]) != BRIDGE_RESERVE_DESIGN_ACP
+        # Genesis unavailable → design; hot+project live; bridge confirmed 0.
+        expected = Decimal("207643979.999998") + Decimal("108713.62657522") + Decimal("1000000")
+        assert Decimal(body["acp"]) == expected
+
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            wallet.address = f"acp1qcleanup{uuid4().hex[:28]}"
+            session.commit()
+        sync_engine.dispose()
+    finally:
+        monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", "dragon.cat.trx@gmail.com")
+        get_settings.cache_clear()
+
+
 def test_personalize_replaces_hot_bound_deposit_address(client, monkeypatch):
     """Personalize endpoint mints a unique deposit address off shared custodial hot."""
     import os

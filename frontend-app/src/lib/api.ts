@@ -96,7 +96,8 @@ export function formatNetworkError(err: unknown): Error {
 }
 
 const DEFAULT_CLIENT_TIMEOUT_MS = 45_000;
-const BALANCE_CLIENT_TIMEOUT_MS = 12_000;
+// Operator hot UTXO probes can exceed 12s; keep below server 40s hot timeout.
+const BALANCE_CLIENT_TIMEOUT_MS = 45_000;
 
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
   try {

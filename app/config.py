@@ -228,6 +228,14 @@ class Settings(BaseSettings):
     acp_rpc_url: str = "https://acp1.ancap.cloud/rpc"
     ethereum_rpc_url: str = ""
     solana_rpc_url: str = ""
+    # Comma-separated emails allowed to keep UserAcpWallet.address = custodial hot.
+    # Everyone else is auto-reminted off the shared hot on login/personalize.
+    acp_custodial_hot_holder_emails: str = "dragon.cat.trx@gmail.com"
+
+    @property
+    def acp_custodial_hot_holder_emails_allowlist(self) -> tuple[str, ...]:
+        raw = self.acp_custodial_hot_holder_emails or ""
+        return tuple(sorted({p.strip().lower() for p in raw.split(",") if p.strip()}))
 
     # L3: Slashing
     moderation_slash_amount: str = "0"

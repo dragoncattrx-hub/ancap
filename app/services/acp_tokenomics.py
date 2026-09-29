@@ -17,8 +17,25 @@ ECOSYSTEM_BUCKET_ADDRESS = "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf"
 CREATOR_BUCKET_ADDRESS = "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl"
 VALIDATOR_BUCKET_ADDRESS = "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um"
 PUBLIC_BUCKET_ADDRESS = "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm"
+GENESIS_TREASURY_ADDRESS = "acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl"
+PROJECT_TREASURY_ADDRESS = "acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902"
+BRIDGE_RESERVE_ADDRESS = "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz"
 GENESIS_SUPPLY_ACP = Decimal("210000000")
+# Regenesis v2 design allocs (see build_and_submit_genesis_v2.rs / docs/FINANCE_MODEL.md).
+GENESIS_TREASURY_DESIGN_ACP = Decimal("207643979.999998")
+CUSTODIAL_HOT_DESIGN_ACP = Decimal("1000000")
+PROJECT_TREASURY_DESIGN_ACP = Decimal("1000000")
+BRIDGE_RESERVE_DESIGN_ACP = Decimal("301000")
 ACP_UNITS_PER_ACP = 100_000_000
+
+# Operator-controlled role wallets (regenesis v2). Shown aggregated for hot holders.
+OPERATOR_ROLE_WALLETS: tuple[tuple[str, str, str, Decimal], ...] = (
+    ("genesis_treasury", "Genesis treasury", GENESIS_TREASURY_ADDRESS, GENESIS_TREASURY_DESIGN_ACP),
+    ("custodial_hot", "Custodial hot", CUSTODIAL_HOT_ADDRESS, CUSTODIAL_HOT_DESIGN_ACP),
+    ("project_treasury", "Project treasury", PROJECT_TREASURY_ADDRESS, PROJECT_TREASURY_DESIGN_ACP),
+    ("bridge_reserve", "Bridge reserve", BRIDGE_RESERVE_ADDRESS, BRIDGE_RESERVE_DESIGN_ACP),
+)
+OPERATOR_ROLE_ADDRESSES: frozenset[str] = frozenset(addr for _, _, addr, _ in OPERATOR_ROLE_WALLETS)
 
 TOKENOMICS_BUCKET_DEFS: tuple[tuple[str, str, int, Decimal, str], ...] = (
     ("creator", "Creator", 33, Decimal("69300000"), CREATOR_BUCKET_ADDRESS),
@@ -159,6 +176,47 @@ async def fetch_custodial_hot_breakdown(address: str) -> CustodialHotBreakdown |
 def _decimal_to_api_str(value: Decimal) -> str:
     s = format(value.quantize(Decimal("0.00000001")), "f").rstrip("0").rstrip(".")
     return s or "0"
+
+
+def acp_supply_layout() -> dict[str, object]:
+    """Static supply map — does not scan the chain."""
+    return {
+        "genesis_supply_acp": _decimal_to_api_str(GENESIS_SUPPLY_ACP),
+        "signing_security": "hybrid-ed25519-dilithium2",
+        "keystore": "KeystoreV3 (PQC); mnemonic alone cannot spend",
+        "note": (
+            "Most of the ~210M ACP supply is on the genesis treasury address, not the "
+            "custodial hot / login wallet. Hot is a ~1M ACP operating float (plus later "
+            "transfers). Post-quantum signatures protect spend authority; they do not "
+            "hide or shrink on-chain amounts."
+        ),
+        "roles": [
+            {
+                "key": "genesis_treasury",
+                "label": "Genesis treasury",
+                "address": GENESIS_TREASURY_ADDRESS,
+                "design_acp": _decimal_to_api_str(GENESIS_TREASURY_DESIGN_ACP),
+            },
+            {
+                "key": "custodial_hot",
+                "label": "Custodial hot",
+                "address": CUSTODIAL_HOT_ADDRESS,
+                "design_acp": _decimal_to_api_str(CUSTODIAL_HOT_DESIGN_ACP),
+            },
+            {
+                "key": "project_treasury",
+                "label": "Project treasury",
+                "address": PROJECT_TREASURY_ADDRESS,
+                "design_acp": _decimal_to_api_str(PROJECT_TREASURY_DESIGN_ACP),
+            },
+            {
+                "key": "bridge_reserve",
+                "label": "Bridge reserve",
+                "address": BRIDGE_RESERVE_ADDRESS,
+                "design_acp": _decimal_to_api_str(BRIDGE_RESERVE_DESIGN_ACP),
+            },
+        ],
+    }
 
 
 def _bucket_status(actual: Decimal, target: Decimal) -> str:
