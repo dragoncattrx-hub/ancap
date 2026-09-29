@@ -14,7 +14,7 @@ EXPECTED_PROXY_HIDE_HEADERS = [
 
 PROXIED_LOCATION_SNIPPETS = [
     """location / {\n        proxy_pass http://ancap_api;""",
-    """location = /rpc {\n        proxy_pass http://acp-node:8545/rpc;""",
+    """location = /rpc {\n        limit_req zone=acp_rpc burst=20 nodelay;\n        proxy_pass http://acp-node:8545/rpc;""",
     """location = /openapi.json {\n        proxy_pass http://ancap_api/openapi.json;""",
     """location ^~ /api/ {\n        proxy_pass http://ancap_api/;""",
     """location = /api {\n        proxy_pass http://ancap_api/;""",
