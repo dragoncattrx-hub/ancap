@@ -43,7 +43,8 @@ for p in [
         files.append(p)
 
 if not files:
-    raise SystemExit("no Hestia/domain acp1 nginx confs found")
+    print("skip: no Hestia/domain acp1 nginx confs found (not the production VPS?)")
+    raise SystemExit(0)
 
 block = """
     # ANCAP_ACP1_HOST_PROXY: /rpc + /healthz → compose nginx :8080
@@ -147,6 +148,24 @@ reload_nginx() {
 
 if [[ ! -d /etc/nginx/conf.d ]]; then
   echo "No /etc/nginx/conf.d — skipping (not the VPS host?)"
+  exit 0
+fi
+
+acp1_vhost_present=0
+for candidate in \
+  /etc/nginx/conf.d/domains/acp1.ancap.cloud.conf \
+  /etc/nginx/conf.d/domains/acp1.ancap.cloud.ssl.conf \
+  /home/admin/conf/web/acp1.ancap.cloud/nginx.conf \
+  /home/admin/conf/web/acp1.ancap.cloud/nginx.ssl.conf
+do
+  if [[ -f "$candidate" ]]; then
+    acp1_vhost_present=1
+    break
+  fi
+done
+
+if [[ "$acp1_vhost_present" -eq 0 ]]; then
+  echo "No acp1.ancap.cloud Hestia vhost on this host — skipping host nginx patch/smoke."
   exit 0
 fi
 
