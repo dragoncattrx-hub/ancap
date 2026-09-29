@@ -26,11 +26,15 @@ from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_wallet import personalize_hot_bound_wallet
 from app.services.acp_wallet import user_is_custodial_hot_holder
 from app.services.acp_tokenomics import (
+    BRIDGE_RESERVE_ADDRESS,
     CUSTODIAL_HOT_ADDRESS,
     CUSTODIAL_HOT_DESIGN_ACP,
+    GENESIS_SUPPLY_ACP,
     GENESIS_TREASURY_ADDRESS,
     GENESIS_TREASURY_DESIGN_ACP,
-    GENESIS_SUPPLY_ACP,
+    OPERATOR_ROLE_ADDRESSES,
+    OPERATOR_ROLE_WALLETS,
+    PROJECT_TREASURY_ADDRESS,
     acp_supply_layout,
 )
 from app.services import acp_privacy as privacy_svc
@@ -88,9 +92,8 @@ _chain_balance_cache: dict[str, tuple[float, dict]] = {}
 # Interactive wallet UI must stay snappy. Full tip scans (~30k blocks) belong in
 # a background warmer, never on the request path.
 _INTERACTIVE_WALLETD_TIMEOUT_S = 5
-# Custodial hot has a denser UTXO history; allow a longer probe so operator UI
-# does not stick on a cached empty balance after a 5s abort.
-_OPERATOR_HOT_WALLETD_TIMEOUT_S = 40
+# Operator role wallets (hot/treasury/bridge) need a longer probe than retail UI.
+_OPERATOR_ROLE_WALLETD_TIMEOUT_S = 40
 _INTERACTIVE_RPC_TIMEOUT_S = 5.0
 
 
@@ -574,33 +577,44 @@ async def _decorate_balance_for_user(
     platform_credits_s: str | None = None
     balance_note = _format_balance_note(real_acp, in_work_acp, available_acp)
 
-    is_hot_holder = False
-    if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
-        is_hot_holder = await user_is_custodial_hot_holder(session, user_id)
+    is_hot_holder = bool(include_in_work and await user_is_custodial_hot_holder(session, user_id))
 
-    if include_in_work and target_address == CUSTODIAL_HOT_ADDRESS and is_hot_holder:
-        # Designated operator account: show hot on-chain float + supply truth.
-        display_acp = on_chain_acp
-        display_units = _units_from_acp(on_chain_acp)
+    if is_hot_holder:
+        # Designated operator: aggregate ALL role-wallet funds into the headline balance.
+        slices, live_ok, hot_live = _operator_controlled_balance_slices()
+        total = sum((s[2] for s in slices), Decimal(0))
+        display_acp = total
+        display_units = _units_from_acp(total)
+        display_utxo_count = sum(s[3] for s in slices)
         tokenomics_buckets = [
             AcpTokenomicsBucket(
-                key="hot",
-                label="Operator pool (custodial hot)",
-                acp=_decimal_to_api_str(on_chain_acp),
-                utxo_count=display_utxo_count,
+                key=key,
+                label=label,
+                acp=_decimal_to_api_str(acp),
+                utxo_count=utxos,
             )
+            for key, label, acp, utxos in slices
         ]
         view_mode = "operator_hot"
         platform_credits_s = _decimal_to_api_str(in_ledger)
-        on_chain_s = None
-        balance_note = (
-            f"Custodial hot on-chain float: {_decimal_to_api_str(on_chain_acp)} ACP "
-            f"(design alloc ~{_decimal_to_api_str(CUSTODIAL_HOT_DESIGN_ACP)} ACP). "
-            f"~{_decimal_to_api_str(GENESIS_TREASURY_DESIGN_ACP)} ACP of the "
-            f"{_decimal_to_api_str(GENESIS_SUPPLY_ACP)} ACP genesis supply lives on "
-            f"genesis treasury {GENESIS_TREASURY_ADDRESS} — not on this login wallet. "
-            f"PQC KeystoreV3 (hybrid Ed25519+Dilithium2) secures spending; amounts stay transparent."
+        on_chain_s = _decimal_to_api_str(on_chain_acp) if target_address != CUSTODIAL_HOT_ADDRESS else None
+        # Only custodial hot is spendable from this login keystore (when rebound).
+        available_acp = hot_live if hot_live > 0 else (
+            on_chain_acp if target_address == CUSTODIAL_HOT_ADDRESS else Decimal(0)
         )
+        source = "live UTXO probes" if live_ok else "design alloc (live probe timed out / empty)"
+        balance_note = (
+            f"Operator-controlled total: {_decimal_to_api_str(total)} ACP ({source}). "
+            f"Includes genesis treasury, custodial hot, project treasury, bridge reserve. "
+            f"Withdraw from this login uses custodial hot float "
+            f"({_decimal_to_api_str(available_acp)} ACP available). "
+            f"PQC KeystoreV3 (Ed25519+Dilithium2); amounts are transparent on-chain."
+        )
+        if target_address != CUSTODIAL_HOT_ADDRESS:
+            balance_note += (
+                " Deposit address is not custodial hot — re-bind hot from server keystore "
+                "to spend the hot float from this account."
+            )
     elif include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
         # Accidental hot binding for a normal user: never show operator pool as theirs.
         platform_credits_s = _decimal_to_api_str(in_ledger)
@@ -747,6 +761,34 @@ def _empty_balance_payload(address: str) -> dict:
     return {"address": address, "units": "0", "acp": "0", "utxo_count": 0}
 
 
+def _operator_controlled_balance_slices() -> tuple[list[tuple[str, str, Decimal, int]], bool, Decimal]:
+    """Probe operator role wallets; fall back to design allocs when live is empty.
+
+    Returns (slices, used_live_data, hot_live_acp).
+    """
+    slices: list[tuple[str, str, Decimal, int]] = []
+    live_hits = 0
+    hot_live = Decimal(0)
+    for key, label, address, design_acp in OPERATOR_ROLE_WALLETS:
+        try:
+            raw = _load_balance_result(address, interactive=True)
+            live_acp = _parse_decimal_or_zero(raw.get("acp"))
+            utxos = int(raw.get("utxo_count") or 0)
+        except Exception:
+            live_acp = Decimal(0)
+            utxos = 0
+        if live_acp > 0 or utxos > 0:
+            live_hits += 1
+            acp = live_acp
+        else:
+            acp = design_acp
+            utxos = 0
+        if address == CUSTODIAL_HOT_ADDRESS:
+            hot_live = live_acp
+        slices.append((key, label, acp, utxos))
+    return slices, live_hits > 0, hot_live
+
+
 def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
     """Resolve on-chain balance for an address.
 
@@ -768,8 +810,8 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
     rpc_url = _require_acp_rpc_url()
     if interactive:
         timeout_s = (
-            _OPERATOR_HOT_WALLETD_TIMEOUT_S
-            if target == CUSTODIAL_HOT_ADDRESS
+            _OPERATOR_ROLE_WALLETD_TIMEOUT_S
+            if target in OPERATOR_ROLE_ADDRESSES
             else _INTERACTIVE_WALLETD_TIMEOUT_S
         )
     else:

@@ -28,6 +28,15 @@ PROJECT_TREASURY_DESIGN_ACP = Decimal("1000000")
 BRIDGE_RESERVE_DESIGN_ACP = Decimal("301000")
 ACP_UNITS_PER_ACP = 100_000_000
 
+# Operator-controlled role wallets (regenesis v2). Shown aggregated for hot holders.
+OPERATOR_ROLE_WALLETS: tuple[tuple[str, str, str, Decimal], ...] = (
+    ("genesis_treasury", "Genesis treasury", GENESIS_TREASURY_ADDRESS, GENESIS_TREASURY_DESIGN_ACP),
+    ("custodial_hot", "Custodial hot", CUSTODIAL_HOT_ADDRESS, CUSTODIAL_HOT_DESIGN_ACP),
+    ("project_treasury", "Project treasury", PROJECT_TREASURY_ADDRESS, PROJECT_TREASURY_DESIGN_ACP),
+    ("bridge_reserve", "Bridge reserve", BRIDGE_RESERVE_ADDRESS, BRIDGE_RESERVE_DESIGN_ACP),
+)
+OPERATOR_ROLE_ADDRESSES: frozenset[str] = frozenset(addr for _, _, addr, _ in OPERATOR_ROLE_WALLETS)
+
 TOKENOMICS_BUCKET_DEFS: tuple[tuple[str, str, int, Decimal, str], ...] = (
     ("creator", "Creator", 33, Decimal("69300000"), CREATOR_BUCKET_ADDRESS),
     ("validator", "Validator Reserve", 50, Decimal("105000000"), VALIDATOR_BUCKET_ADDRESS),
