@@ -27,7 +27,7 @@ Reality note: this section is a capability snapshot, not a claim that the whole 
 - Balance API/UI partitioned into on-chain / platform ledger / staked / withdrawable / operator live (never design-as-live).
 - Address binding history + mobile indexer watchlist + DB-backed tx history + admin rescan.
 - ACP RPC admin surface fail-closed without token; prod requires `ACP_RPC_TOKEN`; `/rpc` rate-limited.
-- Public `acp1.ancap.cloud` host routing: Hestia/conf.d `:80`+`:443` → compose `:8080` (`scripts/ensure-acp1-host-proxy.sh` on every deploy); docker nginx serves `/rpc` + `/healthz` with `X-Ancap-Upstream: acp-rpc`.
+- Public `acp1.ancap.cloud` host routing: Hestia IP-bound vhosts rewrite exact `/rpc` (was dead `:18080`) → compose `:8080` via `scripts/ensure-acp1-host-proxy.sh` on every deploy; docker nginx serves `/rpc` + `/healthz` with `X-Ancap-Upstream: acp-rpc`.
 - Deposit address `acp1qpj54…` live probe: 0 UTXO / empty txs — no hot→user coin mint without proven reconcile gap.
 
 | Phase | Component | Status |
