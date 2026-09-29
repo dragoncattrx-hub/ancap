@@ -264,6 +264,10 @@ def test_hot_holder_balance_aggregates_all_role_wallets(client, monkeypatch):
         assert body["view_mode"] == "operator_hot"
         assert Decimal(body["acp"]) == Decimal("209053693.62657322")
         assert Decimal(body["available_acp"]) == Decimal("108713.62657522")
+        assert Decimal(body["withdrawable_now_acp"]) == Decimal("108713.62657522")
+        assert Decimal(body["operator_hot_live_acp"]) == Decimal("108713.62657522")
+        assert body["primary_kind"] == "operator_total"
+        assert body["withdraw_source"] == "custodial_hot"
         keys = {b["key"] for b in body["tokenomics_buckets"]}
         assert keys == {"genesis_treasury", "custodial_hot", "project_treasury", "bridge_reserve"}
 
@@ -349,9 +353,13 @@ def test_operator_aggregate_preserves_confirmed_zero_role_balance(client, monkey
         by_key = {b["key"]: b for b in body["tokenomics_buckets"]}
         assert Decimal(by_key["bridge_reserve"]["acp"]) == Decimal("0")
         assert Decimal(by_key["bridge_reserve"]["acp"]) != BRIDGE_RESERVE_DESIGN_ACP
-        # Genesis unavailable → design; hot+project live; bridge confirmed 0.
-        expected = Decimal("207643979.999998") + Decimal("108713.62657522") + Decimal("1000000")
+        # Genesis unavailable → design in labeled bucket only; hot+project live; bridge confirmed 0.
+        expected = Decimal("108713.62657522") + Decimal("1000000")
         assert Decimal(body["acp"]) == expected
+        assert Decimal(body["primary_acp"]) == expected
+        assert body["probe_status"] == "degraded"
+        assert "design" in by_key["genesis_treasury"]["label"].lower()
+        assert Decimal(by_key["genesis_treasury"]["acp"]) == Decimal("207643979.999998")
 
         with Session(sync_engine) as session:
             user = session.execute(sync_select(User).where(User.email == email)).scalar_one()

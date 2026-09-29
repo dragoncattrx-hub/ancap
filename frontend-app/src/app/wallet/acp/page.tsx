@@ -11,6 +11,12 @@ import { OwnershipProofDesk } from "@/components/OwnershipProofDesk";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { walletAcp } from "@/lib/api";
+import {
+  selectHeroAcp,
+  selectOnChainAtDeposit,
+  selectPlatformLedger,
+  selectWithdrawableNow,
+} from "@/lib/acpBalanceDisplay";
 
 type TokenomicsBucket = {
   key: string;
@@ -25,19 +31,31 @@ type BalanceResponse = {
   acp: string;
   utxo_count?: number;
   on_chain_acp?: string | null;
+  on_chain_at_deposit_acp?: string | null;
   ledger_credits_acp?: string | null;
+  platform_ledger_acp?: string | null;
   headline_acp?: string | null;
+  primary_acp?: string | null;
+  primary_kind?: "on_chain" | "platform_credits" | "operator_total" | null;
   balance_status?: string | null;
+  probe_status?: "live" | "degraded" | "unavailable" | null;
   in_work_acp?: string;
   in_work_staked_acp?: string;
   in_work_ledger_acp?: string;
+  staked_acp?: string | null;
+  reserved_total_acp?: string | null;
   available_acp?: string;
+  withdrawable_now_acp?: string | null;
+  withdraw_source?: "personal_utxo" | "custodial_hot" | "none" | null;
   platform_credits_acp?: string | null;
+  operator_hot_live_acp?: string | null;
+  operator_controlled_live_acp?: string | null;
   tokenomics_buckets?: TokenomicsBucket[] | null;
   view_mode?: "user" | "operator_hot" | null;
   vested_unlocked_acp?: string;
   vested_locked_acp?: string;
   balance_note?: string;
+  chain_height?: number | null;
 };
 
 type SwapOrder = {
@@ -536,7 +554,9 @@ export default function AcpWalletPage() {
 
   const singleWalletAddress = (depositAddress || balance?.address || "").trim();
   const isSwapFormValid = validateSwapForm(swapForm).valid;
-  const withdrawAvailableNum = Number(balance?.available_acp ?? balance?.acp ?? "0");
+  const withdrawAvailableNum = Number(
+    balance?.withdrawable_now_acp ?? balance?.available_acp ?? "0",
+  );
   const withdrawAmountNum = Number(withdrawForm.amount_acp);
   const withdrawAmountValid =
     withdrawForm.amount_acp.trim() !== "" &&
@@ -549,6 +569,12 @@ export default function AcpWalletPage() {
     withdrawAmountValid &&
     withdrawAmountNum > withdrawAvailableNum;
   const isOperatorHotView = balance?.view_mode === "operator_hot";
+  const heroAcp = selectHeroAcp(balance);
+  const onChainAtDeposit = selectOnChainAtDeposit(balance);
+  const platformLedger = selectPlatformLedger(balance);
+  const stakedAcp = balance?.staked_acp ?? balance?.in_work_staked_acp ?? null;
+  const reservedTotal = balance?.reserved_total_acp ?? balance?.in_work_acp ?? null;
+  const withdrawableNow = selectWithdrawableNow(balance);
   const withdrawDisabled =
     busy ||
     !withdrawAddressValid ||
@@ -717,26 +743,46 @@ export default function AcpWalletPage() {
               <div className="card">
                 <div className="card-header">
                   <h3 style={{ fontWeight: 800, margin: 0 }}>{isOperatorHotView ? t("walletAcpPage.operatorHotWallet") : t("walletAcpPage.walletBalance")}</h3>
-                  <span className="badge badge-active">{t("walletAcpPage.live")}</span>
+                  <span className="badge badge-active">
+                    {balance?.probe_status === "unavailable"
+                      ? t("walletAcpPage.probeUnavailable")
+                      : balance?.probe_status === "degraded" || (balance?.balance_status && balance.balance_status !== "live")
+                        ? t("walletAcpPage.probeDegraded")
+                        : t("walletAcpPage.live")}
+                  </span>
                 </div>
                 <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
                   {balanceBusy && !balance
                     ? t("walletAcpPage.loading")
-                    : (balance?.on_chain_acp
-                      ?? balance?.headline_acp
-                      ?? balance?.acp
-                      ?? t("walletAcpPage.dash"))}{" "}
+                    : (heroAcp ?? t("walletAcpPage.dash"))}{" "}
                   <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
+                {balance?.primary_kind && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem" }}>
+                    {balance.primary_kind === "operator_total"
+                      ? t("walletAcpPage.primaryKindOperator")
+                      : balance.primary_kind === "platform_credits"
+                        ? t("walletAcpPage.primaryKindCredits")
+                        : t("walletAcpPage.primaryKindOnChain")}
+                  </div>
+                )}
                 {balance?.balance_status && balance.balance_status !== "live" && (
                   <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                    Status: {balance.balance_status}
+                    {t("walletAcpPage.statusLabel").replace("{status}", balance.balance_status)}
                   </div>
                 )}
                 {balance?.utxo_count != null && <div style={{ marginTop: 10, color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.utxoCount").replace("{n}", String(balance.utxo_count))}</div>}
+                {balance?.chain_height != null && (
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem" }}>
+                    {t("walletAcpPage.chainHeight").replace("{n}", String(balance.chain_height))}
+                  </div>
+                )}
 
                 {isOperatorHotView && balance?.tokenomics_buckets && balance.tokenomics_buckets.length > 0 ? (
                   <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                      {t("walletAcpPage.operatorBucketsLiveNote")}
+                    </div>
                     {balance.tokenomics_buckets.map((bucket) => (
                       <div
                         key={bucket.key}
@@ -758,6 +804,18 @@ export default function AcpWalletPage() {
                         </span>
                       </div>
                     ))}
+                    {balance.operator_controlled_live_acp != null && (
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                        {t("walletAcpPage.operatorLiveTotal")}{" "}
+                        <strong style={{ color: "var(--text)" }}>{balance.operator_controlled_live_acp} ACP</strong>
+                      </div>
+                    )}
+                    {balance.operator_hot_live_acp != null && (
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                        {t("walletAcpPage.operatorHotLive")}{" "}
+                        <strong style={{ color: "var(--text)" }}>{balance.operator_hot_live_acp} ACP</strong>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <>
@@ -765,11 +823,6 @@ export default function AcpWalletPage() {
                       <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
                         {t("walletAcpPage.smallestUnits")} <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
                         <span style={{ opacity: 0.85 }}> {t("walletAcpPage.smallestUnitsHint")}</span>
-                      </div>
-                    )}
-                    {balance?.on_chain_acp != null && balance.on_chain_acp !== "" && (
-                      <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                        {t("walletAcpPage.totalOnChain")} <strong style={{ color: "var(--text)" }}>{balance.on_chain_acp} ACP</strong>
                       </div>
                     )}
                   </>
@@ -781,49 +834,47 @@ export default function AcpWalletPage() {
                     paddingTop: 12,
                     borderTop: "1px solid var(--border)",
                     display: "grid",
-                    gap: 6,
+                    gap: 8,
                   }}
                 >
                   <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    {isOperatorHotView ? t("walletAcpPage.yourPlatformCredits") : t("walletAcpPage.account")}
+                    {t("walletAcpPage.balanceBreakdown")}
                   </div>
-                  {balance?.platform_credits_acp != null && balance.platform_credits_acp !== "" && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      {t("walletAcpPage.creditedBalance")} <strong style={{ color: "var(--text)" }}>{balance.platform_credits_acp} ACP</strong>
+                  <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionOnChain")}</div>
+                      <strong style={{ color: "var(--text)" }}>{onChainAtDeposit ?? t("walletAcpPage.dash")} ACP</strong>
                     </div>
-                  )}
-                  {balance?.ledger_credits_acp != null
-                    && balance.ledger_credits_acp !== ""
-                    && balance.ledger_credits_acp !== balance.platform_credits_acp && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      Ledger credits: <strong style={{ color: "var(--text)" }}>{balance.ledger_credits_acp} ACP</strong>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionLedger")}</div>
+                      <strong style={{ color: "var(--text)" }}>{platformLedger ?? "0"} ACP</strong>
                     </div>
-                  )}
-                  {!isOperatorHotView && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      {t("walletAcpPage.yourBalance")}{" "}
-                      <strong style={{ color: "var(--text)" }}>
-                        {balance?.available_acp ?? balance?.acp ?? "0"} ACP
-                      </strong>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionReserved")}</div>
+                      <strong style={{ color: "var(--text)" }}>{reservedTotal ?? stakedAcp ?? "0"} ACP</strong>
+                      {(stakedAcp != null || balance?.in_work_ledger_acp != null) && (
+                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem", lineHeight: 1.4 }}>
+                          {t("walletAcpPage.stakesLedger").replace("{stakes}", stakedAcp ?? "—").replace("{ledger}", balance?.in_work_ledger_acp ?? platformLedger ?? "—")}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    <span title={t("walletAcpPage.inWorkTitle")}>
-                      {t("walletAcpPage.inWork")}
-                    </span>
-                    : <strong style={{ color: "var(--text)" }}>{balance?.in_work_acp ?? "0"} ACP</strong>
-                  </div>
-                  {(balance?.in_work_staked_acp != null || balance?.in_work_ledger_acp != null) && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
-                      {t("walletAcpPage.stakesLedger").replace("{stakes}", balance?.in_work_staked_acp ?? "—").replace("{ledger}", balance?.in_work_ledger_acp ?? "—")}
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionWithdrawable")}</div>
+                      <strong style={{ color: "var(--text)" }}>{withdrawableNow} ACP</strong>
+                      {balance?.withdraw_source && (
+                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem" }}>
+                          {balance.withdraw_source === "custodial_hot"
+                            ? t("walletAcpPage.withdrawSourceHot")
+                            : balance.withdraw_source === "personal_utxo"
+                              ? t("walletAcpPage.withdrawSourceUtxo")
+                              : t("walletAcpPage.withdrawSourceNone")}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    {t("walletAcpPage.availableForWithdraw")} <strong style={{ color: "var(--text)" }}>{balance?.available_acp ?? balance?.acp ?? "0"} ACP</strong>
                   </div>
                 </div>
                 {balance?.vested_unlocked_acp != null && (
-                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
                     {t("walletAcpPage.vestedUnlocked")} <strong style={{ color: "var(--text)" }}>{balance.vested_unlocked_acp} ACP</strong>
                   </div>
                 )}
@@ -844,7 +895,7 @@ export default function AcpWalletPage() {
                   <input placeholder={t("walletAcpPage.toAddressPlaceholder")} value={withdrawForm.to_address} onChange={(e) => setWithdrawForm((p) => ({ ...p, to_address: e.target.value.trim() }))} className="input input-bordered w-full" required aria-invalid={withdrawForm.to_address.length > 0 && !withdrawAddressValid} autoComplete="off" />
                   {withdrawForm.to_address.length > 0 && !withdrawAddressValid && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{t("walletAcpPage.addressMustStartAcp1Before")} <code>acp1</code>{t("walletAcpPage.addressMustStartAcp1After")}</div>}
                   <input placeholder={t("walletAcpPage.amountAcpPlaceholder")} value={withdrawForm.amount_acp} onChange={(e) => setWithdrawForm((p) => ({ ...p, amount_acp: e.target.value }))} className="input input-bordered w-full" inputMode="decimal" required aria-invalid={withdrawForm.amount_acp.length > 0 && (!withdrawAmountValid || withdrawExceedsBalance)} />
-                  {withdrawExceedsBalance && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{t("walletAcpPage.amountExceedsBalance").replace("{amount}", balance?.available_acp ?? balance?.acp ?? "0")}</div>}
+                  {withdrawExceedsBalance && <div style={{ color: "#ef4444", fontSize: "0.85rem" }}>{t("walletAcpPage.amountExceedsBalance").replace("{amount}", balance?.withdrawable_now_acp ?? balance?.available_acp ?? balance?.acp ?? "0")}</div>}
                   <div style={{ display: "grid", gap: 8 }}>
                     <label style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.feeMode")}</label>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

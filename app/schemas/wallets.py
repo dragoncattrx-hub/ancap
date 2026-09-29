@@ -78,6 +78,19 @@ class AcpBalanceResponse(BaseModel):
     vested_unlocked_acp: str | None = None
     vested_locked_acp: str | None = None
     balance_note: str | None = None
+    # Non-overlapping breakdown (compat fields above retained).
+    on_chain_at_deposit_acp: str | None = None
+    platform_ledger_acp: str | None = None
+    staked_acp: str | None = None
+    reserved_total_acp: str | None = None
+    withdrawable_now_acp: str | None = None
+    withdraw_source: Literal["personal_utxo", "custodial_hot", "none"] | None = None
+    operator_hot_live_acp: str | None = None
+    operator_controlled_live_acp: str | None = None
+    primary_acp: str | None = None
+    primary_kind: Literal["on_chain", "platform_credits", "operator_total"] | None = None
+    probe_status: Literal["live", "degraded", "unavailable"] | None = None
+    chain_height: int | None = None
 
 
 class AcpWithdrawRequest(BaseModel):
