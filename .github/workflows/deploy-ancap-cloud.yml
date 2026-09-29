@@ -56,8 +56,10 @@ jobs:
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
           envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY,STRIPE_WEBHOOK_SECRET
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
-          timeout: 600s
-          command_timeout: 70m
+          # acp-node release cargo build routinely exceeds 45–60m on the VPS when cold;
+          # keep command_timeout high enough for api+frontend+acp-node in one compose build.
+          timeout: 900s
+          command_timeout: 150m
           script_stop: false
           script: |
             set -euo pipefail
