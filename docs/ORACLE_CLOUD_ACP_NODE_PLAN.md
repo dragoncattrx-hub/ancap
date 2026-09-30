@@ -71,6 +71,11 @@ In OCI: **Compute → instance → Primary VNIC → Public IP**. Ensure NSG/secu
 
 Or set `$env:ORACLE_ACP_HOST_IP` and omit `-HostIp`. Do **not** commit the private SSH key. Rotate the key if it was shared in chat.
 
+**Preferred when local outbound SSH/22 is blocked:** GitHub Actions workflow [`Deploy Oracle ACP node`](../.github/workflows/deploy-oracle-acp-node.yml) (`workflow_dispatch`). Prerequisites:
+
+1. Repo secret `ORACLE_ACP_SSH_KEY` = private key for the instance (never commit the key file)
+2. Run the workflow with input `host_ip` = OCI Primary VNIC **Public IP**, `user` = `ubuntu` or `opc`
+
 ---
 
 ## ARM64 requirement (critical)

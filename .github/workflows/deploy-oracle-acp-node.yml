@@ -1,0 +1,119 @@
+name: Deploy Oracle ACP node
+
+# Secondary Always Free Ampere A1 full node (eu-zurich-1).
+# Requires repo secret ORACLE_ACP_SSH_KEY (private key; never commit).
+# Pass the OCI Primary VNIC Public IP via workflow_dispatch input.
+# Plan: docs/ORACLE_CLOUD_ACP_NODE_PLAN.md
+
+on:
+  workflow_dispatch:
+    inputs:
+      host_ip:
+        description: "OCI instance Public IP (Primary VNIC)"
+        required: true
+        type: string
+      user:
+        description: "SSH user (ubuntu for Ubuntu images, opc for Oracle Linux)"
+        required: false
+        default: ubuntu
+        type: string
+      peer_rpc:
+        description: "Primary peer JSON-RPC URL"
+        required: false
+        default: https://acp1.ancap.cloud/rpc
+        type: string
+
+concurrency:
+  group: deploy-oracle-acp-node
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'dragoncattrx-hub/ancap'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Validate Oracle deploy secrets
+        env:
+          ORACLE_ACP_SSH_KEY: ${{ secrets.ORACLE_ACP_SSH_KEY }}
+        run: |
+          if [ -z "${ORACLE_ACP_SSH_KEY}" ]; then
+            echo "::error::Missing secret ORACLE_ACP_SSH_KEY (paste the Oracle instance private SSH key)."
+            exit 1
+          fi
+          if [ -z "${{ inputs.host_ip }}" ]; then
+            echo "::error::host_ip input is required (OCI Public IP)."
+            exit 1
+          fi
+
+      - name: Bootstrap ARM64 acp-node over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ inputs.host_ip }}
+          username: ${{ inputs.user }}
+          key: ${{ secrets.ORACLE_ACP_SSH_KEY }}
+          timeout: 120s
+          command_timeout: 150m
+          script_stop: true
+          script: |
+            set -euo pipefail
+            echo "== host arch / memory"
+            uname -m
+            free -h | head -n 2
+            if [ "$(uname -m)" != "aarch64" ]; then
+              echo "::error::Expected aarch64 Ampere host, got $(uname -m)"
+              exit 1
+            fi
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends ca-certificates curl git docker.io
+            sudo systemctl enable --now docker
+            sudo usermod -aG docker "${USER}" || true
+            mkdir -p "$HOME/ancap-src"
+            if [ ! -d "$HOME/ancap-src/.git" ]; then
+              git clone --depth 1 https://github.com/dragoncattrx-hub/ancap.git "$HOME/ancap-src"
+            else
+              git -C "$HOME/ancap-src" fetch --depth 1 origin master
+              git -C "$HOME/ancap-src" reset --hard origin/master
+            fi
+            cd "$HOME/ancap-src/ACP-crypto"
+            sudo docker build -f acp-node/Dockerfile -t ancap/acp-node:arm64 .
+            sudo mkdir -p /var/lib/acp-node /etc/acp
+            if [ ! -f /etc/acp/acp-node.toml ]; then
+              PEER_RPC='${{ inputs.peer_rpc }}'
+              printf '%s\n' \
+                'role = "full"' \
+                '' \
+                '[p2p]' \
+                'listen = "0.0.0.0:30333"' \
+                'max_peers = 50' \
+                '' \
+                '[rpc]' \
+                'listen = "0.0.0.0:8545"' \
+                '' \
+                '[metrics]' \
+                'listen = "127.0.0.1:9101"' \
+                '' \
+                '[storage]' \
+                'data_dir = "/var/lib/acp-node"' \
+                'pruning = true' \
+                'db_cache_mb = 512' \
+                '' \
+                "peer_rpc_urls = [\"${PEER_RPC}\"]" \
+                | sudo tee /etc/acp/acp-node.toml >/dev/null
+            fi
+            sudo docker rm -f acp-node 2>/dev/null || true
+            sudo docker run -d --name acp-node --restart unless-stopped \
+              -v /var/lib/acp-node:/var/lib/acp-node \
+              -v /etc/acp/acp-node.toml:/etc/acp/acp-node.toml:ro \
+              -e ACP_DATA_DIR=/var/lib/acp-node \
+              -e ACP_RPC_LISTEN=0.0.0.0:8545 \
+              -p 127.0.0.1:8545:8545 \
+              -p 30333:30333 \
+              ancap/acp-node:arm64
+            sleep 5
+            sudo docker ps --filter name=acp-node
+            curl -sS -X POST http://127.0.0.1:8545/rpc \
+              -H 'Content-Type: application/json' \
+              -d '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' || true
+            echo
+            echo "Oracle ACP node bootstrap finished on $(hostname) ($(uname -m))"
