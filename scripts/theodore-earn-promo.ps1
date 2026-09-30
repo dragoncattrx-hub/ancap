@@ -23,10 +23,17 @@ Set-Location $RepoRoot
 $LogDir = Join-Path $RepoRoot "memory"
 New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 $LogPath = Join-Path $LogDir "theodore-earn.log"
+$KillSwitch = Join-Path $LogDir "theodore.disabled"
 function Write-TheoLog([string]$Message) {
   $line = "[{0}] {1}" -f (Get-Date).ToString("o"), $Message
   Add-Content -Path $LogPath -Value $line -Encoding UTF8
   Write-Host $line
+}
+
+# Operator kill-switch: stop-theodore.ps1 writes memory/theodore.disabled.
+if (($env:ANCAP_THEODORE_DISABLED -eq "1") -or (Test-Path -LiteralPath $KillSwitch)) {
+  Write-TheoLog "Theodore disabled (kill-switch or ANCAP_THEODORE_DISABLED=1) — exiting"
+  exit 0
 }
 
 Write-TheoLog "Theodore promo start (visible operator run) repo=$RepoRoot"

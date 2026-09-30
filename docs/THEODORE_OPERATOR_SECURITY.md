@@ -24,6 +24,24 @@ It is **not**:
 - On-chain mint, LP, bridge, and payouts require a **separate human-confirmed** operator path (reserve-proof gate + treasury/multisig).
 - Paid-API spend caps in the product remain independent of Theodore.
 
+## Stop / remove from Windows autostart
+
+On the operator Windows host (elevated PowerShell recommended):
+
+```powershell
+cd $env:ANCAP_REPO_ROOT   # or the ANCAP repo root
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stop-theodore.ps1
+```
+
+This:
+- writes `memory/theodore.disabled` (promo script exits immediately even if relaunched)
+- stops/disables/unregisters Theodore / OpenClaw / `ANCAP-*` Scheduled Tasks
+- removes Startup-folder and Run-registry autostart entries
+- kills matching Theodore / OpenClaw / ANCAP daemon processes
+- disables matching Windows services and renames Theodore OpenClaw agent configs under `~/.openclaw`
+
+To re-enable later: delete `memory/theodore.disabled` and recreate only the tasks you intentionally want (never with `-WindowStyle Hidden`).
+
 ## Related controls
 
 - Embodied / tool deny list: `docs/EMBODIED_AI_SECURITY_CONTROLS.md`

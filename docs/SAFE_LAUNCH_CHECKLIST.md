@@ -28,6 +28,8 @@ Evidence refreshed: 2026-09-28 (cloud agent pre-deploy pass on `cursor/ancap-saf
 
 - [x] `scripts/theodore-earn-promo.ps1` runs visibly; no `-WindowStyle Hidden`
 - [x] Script refuses wallet/signer env vars
+- [x] `scripts/stop-theodore.ps1` stops Theodore and removes Windows autostart / Scheduled Tasks
+- [x] Promo script honors `memory/theodore.disabled` / `ANCAP_THEODORE_DISABLED=1` kill-switch
 - [x] `python scripts/check_secret_hygiene.py` clean for pending push
 - [x] Skim `docs/AUDIT_CHECKLIST.md` + `docs/CISCO_SECURITY_APPENDIX.md`
 
