@@ -2073,11 +2073,22 @@ async def withdraw(
     transfer_signer_args: list[str] | None = None
 
     if is_hot_holder:
-        hot_res = _load_balance_result(CUSTODIAL_HOT_ADDRESS, interactive=True)
-        if _probe_source_failed(hot_res):
-            hot_live = Decimal(0)
+        # Prefer indexed balance — interactive walletd tip-scan can burn the client timeout
+        # before transfer even starts.
+        try:
+            from app.services import acp_utxo_index as utxo_idx
+
+            indexed = utxo_idx.get_indexed_balance(CUSTODIAL_HOT_ADDRESS)
+        except Exception:
+            indexed = None
+        if indexed is not None and not _probe_source_failed(indexed):
+            hot_live = _parse_decimal_or_zero(indexed.get("acp"))
         else:
-            hot_live = _parse_decimal_or_zero(hot_res.get("acp"))
+            hot_res = _load_balance_result(CUSTODIAL_HOT_ADDRESS, interactive=True)
+            if _probe_source_failed(hot_res):
+                hot_live = Decimal(0)
+            else:
+                hot_live = _parse_decimal_or_zero(hot_res.get("acp"))
         # Prefer hot float for operator spends when it covers the request.
         if hot_live >= required_total:
             try:

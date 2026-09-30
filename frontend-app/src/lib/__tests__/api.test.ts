@@ -1,9 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { api, bridgeRail, organizations, payments, subscriptions, walletAcp, webhooks } from '../api';
+import { api, bridgeRail, formatNetworkError, organizations, payments, subscriptions, walletAcp, webhooks } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
     expect(api).toBeDefined();
+  });
+
+  it('maps AbortSignal timeout to a readable chain-write message', () => {
+    const err = new DOMException('signal timed out', 'TimeoutError');
+    const mapped = formatNetworkError(err);
+    expect(mapped.message.toLowerCase()).toContain('timed out');
+    expect(mapped.message.toLowerCase()).toContain('acp');
   });
 
   it('should have agents methods', () => {

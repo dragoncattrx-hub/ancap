@@ -81,6 +81,18 @@ function getApiHeaders(options: RequestInit = {}, includeJsonContentType = true)
 export function formatNetworkError(err: unknown): Error {
   const raw = err instanceof Error ? err.message : String(err || "");
   const lower = raw.toLowerCase();
+  const name = err instanceof Error ? err.name : "";
+  if (
+    name === "TimeoutError" ||
+    name === "AbortError" ||
+    lower.includes("signal timed out") ||
+    lower.includes("the operation was aborted") ||
+    lower.includes("aborted due to timeout")
+  ) {
+    return new Error(
+      "Request timed out waiting for the ACP chain. Wait a moment and retry — signed spends can take up to a few minutes.",
+    );
+  }
   if (
     err instanceof TypeError ||
     lower.includes("failed to fetch") ||
@@ -98,6 +110,14 @@ export function formatNetworkError(err: unknown): Error {
 const DEFAULT_CLIENT_TIMEOUT_MS = 45_000;
 // Operator hot UTXO probes can exceed 12s; keep below server 40s hot timeout.
 const BALANCE_CLIENT_TIMEOUT_MS = 45_000;
+// Signed ACP transfers wait on walletd (server timeout 180s) + RPC confirmation.
+const CHAIN_WRITE_CLIENT_TIMEOUT_MS = 210_000;
+
+function chainWriteSignal(): AbortSignal | undefined {
+  return typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+    ? AbortSignal.timeout(CHAIN_WRITE_CLIENT_TIMEOUT_MS)
+    : undefined;
+}
 
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
   try {
@@ -945,6 +965,7 @@ export const walletAcp = {
   async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string; fee_acp?: string }) {
     return apiFetch("/wallet/acp/withdraw", {
       method: "POST",
+      signal: chainWriteSignal(),
       body: JSON.stringify({
         to_address: data.to_address,
         amount_acp: data.amount_acp,
