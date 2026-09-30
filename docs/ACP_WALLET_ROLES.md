@@ -20,7 +20,7 @@ Annual validator payout: **10.5M ACP/year** from the 105M reserve (not new mint)
 | Role | Address | Keystore | Never use for |
 |---|---|---|---|
 | **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` | `Sicret/bridge-bsc/acp-reserve-keystore.json` | Custodial sweep, genesis dumps |
-| **Custodial hot** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` | `Sicret/custodial-hot.keystore.json` (required; not on server today) | wACP backing |
+| **Custodial hot** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` | `Sicret/custodial-hot.keystore.json` → `/run/secrets/custodial-hot.keystore.json` (`ACP_CUSTODIAL_HOT_KEYSTORE_FILE`) | wACP backing / bridge reserve spends |
 | **Genesis treasury** | `acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl` | `Sicret/genesis-v2/genesis-treasury.keystore.json` | Bridge reserve |
 | **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` | `Sicret/project-treasury-keystore.json` | Bridge reserve |
 | **Bridge release hot** | `acp1qq805ke8uggeszjcnyeru8wcjded7qt7g5sescpc` | `Sicret/bridge-bsc/acp-release-hot-mnemonic.txt` | wACP backing |

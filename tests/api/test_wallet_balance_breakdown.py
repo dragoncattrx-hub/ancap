@@ -302,3 +302,94 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
         monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", "dragon.cat.trx@gmail.com")
         get_settings.cache_clear()
         _free_custodial_hot_bindings()
+
+
+def test_operator_all_probes_unavailable_shows_design_plus_ledger(client, monkeypatch):
+    """When every role probe fails, hero still shows design alloc + platform ledger."""
+    import os
+
+    from sqlalchemy import create_engine, select as sync_select
+    from sqlalchemy.orm import Session
+
+    from app.api.routers import wallet_acp as wallet_acp_router
+    from app.db.models import User, UserAcpWallet
+    from app.services.acp_tokenomics import (
+        BRIDGE_RESERVE_ADDRESS,
+        BRIDGE_RESERVE_DESIGN_ACP,
+        CUSTODIAL_HOT_ADDRESS,
+        CUSTODIAL_HOT_DESIGN_ACP,
+        GENESIS_TREASURY_ADDRESS,
+        GENESIS_TREASURY_DESIGN_ACP,
+        PROJECT_TREASURY_ADDRESS,
+        PROJECT_TREASURY_DESIGN_ACP,
+    )
+
+    _free_custodial_hot_bindings()
+
+    email = f"op_allfail_{uuid4().hex[:10]}@test.com"
+    monkeypatch.setenv("WELCOME_GRANT_ACP", "250")
+    monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", email)
+    get_settings.cache_clear()
+
+    def fake_probe(address: str, *, timeout_s: int = 10):
+        return Decimal("0"), 0, False
+
+    def fake_balance(address: str, interactive: bool = True):
+        return {
+            "address": address,
+            "units": "0",
+            "acp": "0",
+            "utxo_count": 0,
+            "source": "timeout",
+        }
+
+    monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
+    monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+
+    try:
+        res = client.post(
+            "/v1/auth/users",
+            json={"email": email, "password": "password123", "display_name": "Op All Fail"},
+            headers={"Authorization": ""},
+        )
+        assert res.status_code == 201, res.text
+        headers = {"Authorization": f"Bearer {res.json()['access_token']}"}
+
+        db_url = os.environ["DATABASE_URL"].replace("+asyncpg", "").replace(
+            "postgresql+asyncpg", "postgresql"
+        )
+        sync_engine = create_engine(db_url, pool_pre_ping=True)
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            wallet.address = f"acp1qpersonal{uuid4().hex[:26]}"
+            session.commit()
+
+        hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
+        assert hot.status_code == 200, hot.text
+        body = hot.json()
+        design = (
+            GENESIS_TREASURY_DESIGN_ACP
+            + CUSTODIAL_HOT_DESIGN_ACP
+            + PROJECT_TREASURY_DESIGN_ACP
+            + BRIDGE_RESERVE_DESIGN_ACP
+        )
+        assert body["probe_status"] == "unavailable"
+        assert body["view_mode"] == "operator_hot"
+        assert Decimal(body["primary_acp"]) == design + Decimal("250")
+        assert Decimal(body["acp"]) == design + Decimal("250")
+        assert Decimal(body["platform_ledger_acp"]) == Decimal("250")
+        assert Decimal(body["withdrawable_now_acp"]) == Decimal("0")
+        assert body["withdraw_source"] == "none"
+
+        with Session(sync_engine) as session:
+            user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
+            wallet = session.get(UserAcpWallet, user.id)
+            wallet.address = f"acp1qcleanup{uuid4().hex[:28]}"
+            session.commit()
+        sync_engine.dispose()
+    finally:
+        monkeypatch.setenv("WELCOME_GRANT_ACP", "0")
+        monkeypatch.setenv("ACP_CUSTODIAL_HOT_HOLDER_EMAILS", "dragon.cat.trx@gmail.com")
+        get_settings.cache_clear()
+        _free_custodial_hot_bindings()

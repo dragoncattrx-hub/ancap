@@ -52,6 +52,8 @@ services:
       # Operator emails allowed to remain bound to custodial hot (comma-separated).
       # Override in host .env; fallback keeps the known operator account on hot after deploy.
       ACP_CUSTODIAL_HOT_HOLDER_EMAILS: ${ACP_CUSTODIAL_HOT_HOLDER_EMAILS:-dragon.cat.trx@gmail.com}
+      # Custodial hot spend keystore (operator withdraw). Distinct from ACP_HOT_* bridge reserve.
+      ACP_CUSTODIAL_HOT_KEYSTORE_FILE: ${ACP_CUSTODIAL_HOT_KEYSTORE_FILE:-/run/secrets/custodial-hot.keystore.json}
       # IMPORTANT: keep bridge runtime pinned to bridge-scoped signer material.
       # If this is sourced from project .env, Docker Compose can override the bridge secret
       # with a generic ACP hot-wallet path and reverse payouts will derive from the wrong wallet.

@@ -616,13 +616,14 @@ async def _decorate_balance_for_user(
     is_hot_holder = bool(include_in_work and await user_is_custodial_hot_holder(session, user_id))
 
     if is_hot_holder:
-        # Designated operator: live probes only for hero totals; design stays in buckets.
+        # Designated operator: live probes for hero when available; design total when all fail.
         seed = {target_address: raw} if target_address else None
         slices, live_ok, hot_live, live_total, live_hits, role_total = (
             _operator_controlled_balance_slices(seed_by_address=seed)
         )
         operator_hot_live = hot_live
         operator_controlled_live = live_total
+        design_total = sum((s[2] for s in slices), Decimal(0))
         display_utxo_count = sum(s[3] for s in slices if s[4])
         tokenomics_buckets = [
             AcpTokenomicsBucket(
@@ -641,9 +642,20 @@ async def _decorate_balance_for_user(
             if deposit_probe_failed
             else _decimal_to_api_str(on_chain_acp)
         )
-        # Only custodial hot is spendable from this login keystore.
-        available_acp = hot_live
-        withdraw_source = "custodial_hot"
+        # Personal deposit UTXOs remain spendable with the account keystore.
+        personal_available = Decimal(0)
+        if target_address and target_address != CUSTODIAL_HOT_ADDRESS and not deposit_probe_failed:
+            _, _, personal_available = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
+        # Custodial hot float is spendable via server custodial-hot keystore (hot holders only).
+        if hot_live > 0:
+            available_acp = hot_live
+            withdraw_source = "custodial_hot"
+        elif personal_available > 0:
+            available_acp = personal_available
+            withdraw_source = "personal_utxo"
+        else:
+            available_acp = Decimal(0)
+            withdraw_source = "none"
         primary_kind = "operator_total"
         if live_ok:
             primary_acp_val = live_total
@@ -658,24 +670,33 @@ async def _decorate_balance_for_user(
                 "zeros preserved; design only in buckets for unavailable probes)"
             )
         else:
-            primary_acp_val = None
-            display_acp = Decimal(0)
-            display_units = _units_from_acp(Decimal(0))
+            # All probes unavailable: still surface the full operator claim immediately
+            # (design buckets + platform ledger) so the wallet never looks empty.
+            claim_total = design_total + in_ledger
+            primary_acp_val = claim_total
+            display_acp = claim_total
+            display_units = _units_from_acp(claim_total)
             probe_status = "unavailable"
-            source_note = "all live probes unavailable — design alloc shown in buckets only"
+            source_note = (
+                "all live probes unavailable — showing design alloc + platform ledger; "
+                "confirm live floats when RPC recovers"
+            )
         balance_note = (
-            f"Operator-controlled live total: "
-            f"{_decimal_to_api_str(live_total) if live_ok else 'unavailable'} ACP "
+            f"Operator-controlled total: "
+            f"{_decimal_to_api_str(live_total) if live_ok else _decimal_to_api_str(display_acp)} ACP "
             f"({source_note}). "
-            f"Includes genesis treasury, custodial hot, project treasury, bridge reserve. "
+            f"Includes genesis treasury, custodial hot, project treasury, bridge reserve"
+            f"{f' + platform ledger {_decimal_to_api_str(in_ledger)} ACP' if (not live_ok and in_ledger > 0) else ''}. "
             f"Withdraw from this login uses custodial hot float "
-            f"({_decimal_to_api_str(available_acp)} ACP available). "
+            f"({_decimal_to_api_str(hot_live)} ACP hot"
+            f"{f'; + {_decimal_to_api_str(personal_available)} ACP personal UTXO' if personal_available > 0 else ''}"
+            f"; {_decimal_to_api_str(available_acp)} ACP available now). "
             f"PQC KeystoreV3 (Ed25519+Dilithium2); amounts are transparent on-chain."
         )
-        if target_address != CUSTODIAL_HOT_ADDRESS:
+        if target_address != CUSTODIAL_HOT_ADDRESS and hot_live > 0:
             balance_note += (
-                " Deposit address is not custodial hot — re-bind hot from server keystore "
-                "to spend the hot float from this account."
+                " Deposit address is personal — hot float spends use the server custodial-hot keystore "
+                "after wallet-password auth (no re-bind required)."
             )
     elif include_in_work and target_address == CUSTODIAL_HOT_ADDRESS:
         # Accidental hot binding for a normal user: never show operator pool as theirs.
@@ -777,7 +798,7 @@ async def _decorate_balance_for_user(
             None if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)
         ),
         ledger_credits_acp=platform_credits_s,
-        headline_acp=_decimal_to_api_str(display_acp) if primary_acp_val is not None or not is_hot_holder else None,
+        headline_acp=_decimal_to_api_str(display_acp) if primary_acp_val is not None else None,
         in_work_acp=_decimal_to_api_str(in_work_acp),
         in_work_staked_acp=in_work_staked_s,
         in_work_ledger_acp=in_work_ledger_s,
@@ -1151,6 +1172,81 @@ def _hot_mnemonic_path() -> Path:
 def _hot_keystore_path() -> Path:
     p = os.getenv("ACP_HOT_KEYSTORE_FILE", "/run/secrets/acp_hot_keystore.json")
     return Path(p)
+
+
+def _custodial_hot_keystore_candidates() -> list[Path]:
+    """Paths for the custodial hot signer — never bridge-reserve ACP_HOT_* material."""
+    env_file = (os.getenv("ACP_CUSTODIAL_HOT_KEYSTORE_FILE") or "").strip()
+    paths: list[Path] = []
+    if env_file:
+        paths.append(Path(env_file))
+    paths.extend(
+        [
+            Path("/run/secrets/custodial-hot.keystore.json"),
+            Path("/run/secrets/wallets-canonical/custodial-hot.keystore.json"),
+        ]
+    )
+    # Deduplicate while preserving order.
+    seen: set[str] = set()
+    out: list[Path] = []
+    for p in paths:
+        key = str(p)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(p)
+    return out
+
+
+def _load_custodial_hot_signer() -> tuple[list[str], str]:
+    """
+    Strict signer for CUSTODIAL_HOT_ADDRESS only.
+
+    Must not fall back to ACP_HOT_* (bridge reserve). Returns (walletd_args, address).
+    """
+    env_json = (os.getenv("ACP_CUSTODIAL_HOT_KEYSTORE_JSON") or "").strip()
+    if env_json:
+        derived = _run_walletd(["address", "--keystore-json", env_json], timeout_s=60)
+        address = str(derived.get("address") or "").strip()
+        if address != CUSTODIAL_HOT_ADDRESS:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"ACP_CUSTODIAL_HOT_KEYSTORE_JSON derives {address or 'empty'}, "
+                    f"expected {CUSTODIAL_HOT_ADDRESS}"
+                ),
+            )
+        return (["--keystore-json", env_json], address)
+
+    last_missing: str | None = None
+    for path in _custodial_hot_keystore_candidates():
+        if not path.exists():
+            last_missing = str(path)
+            continue
+        keystore_json = path.read_text(encoding="utf-8").strip()
+        if not keystore_json:
+            continue
+        derived = _run_walletd(["address", "--keystore-json", keystore_json], timeout_s=60)
+        address = str(derived.get("address") or "").strip()
+        if address != CUSTODIAL_HOT_ADDRESS:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"Custodial hot keystore at {path} derives {address or 'empty'}, "
+                    f"expected {CUSTODIAL_HOT_ADDRESS}"
+                ),
+            )
+        return (["--keystore-json", keystore_json], address)
+
+    raise HTTPException(
+        status_code=503,
+        detail=(
+            "Custodial hot keystore is not configured on this host "
+            f"(tried ACP_CUSTODIAL_HOT_KEYSTORE_FILE / default secrets"
+            f"{f'; last missing {last_missing}' if last_missing else ''}). "
+            "Place KeystoreV3 for acp1qzfdkq… at /run/secrets/custodial-hot.keystore.json."
+        ),
+    )
 
 
 def _normalize_mnemonic_text(raw: str) -> str:
@@ -1904,62 +2000,107 @@ async def withdraw(
             status_code=409,
             detail="ACP wallet is not initialized for this account. Please sign in again.",
         )
-    if str(wallet.address or "").strip() == CUSTODIAL_HOT_ADDRESS:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Custodial hot wallet withdrawals are disabled on the user API. "
-                "Use the operator/bridge signer path for hot spends."
-            ),
+    wallet_address = str(wallet.address or "").strip()
+    is_hot_holder = await user_is_custodial_hot_holder(session, user_id)
+    # Always authenticate with the account wallet password first.
+    user_signer = await _get_user_wallet_signer(session, user_id, body.wallet_password)
+    if user_signer.get("keystore_json"):
+        derived = _run_walletd(
+            ["address", "--keystore-json", user_signer["keystore_json"]], timeout_s=60
         )
-    signer = await _get_user_wallet_signer(session, user_id, body.wallet_password)
-    if signer.get("keystore_json"):
-        derived = _run_walletd(["address", "--keystore-json", signer["keystore_json"]], timeout_s=60)
     else:
-        derived = _run_walletd(["address", "--mnemonic", signer["mnemonic"]], timeout_s=60)
+        derived = _run_walletd(["address", "--mnemonic", user_signer["mnemonic"]], timeout_s=60)
     derived_address = str(derived.get("address") or "").strip()
-    if not derived_address or derived_address != wallet.address:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Wallet key mismatch for this address. "
-                "This wallet was created with a legacy non-deterministic key flow and cannot sign spends for the stored address. "
-                "Please create/migrate to a new wallet."
-            ),
-        )
+
     to_address = _validate_acp_address(body.to_address, "to_address")
     amount = _parse_positive_decimal(body.amount_acp, "amount_acp")
     fee: Decimal | None = None
     if body.fee_acp is not None and str(body.fee_acp).strip():
         fee = _parse_positive_decimal(body.fee_acp, "fee_acp")
-    balance_res = _load_balance_result(wallet.address)
-    on_chain_acp = _parse_decimal_or_zero(balance_res.get("acp"))
-    _, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
-    _, _, available_acp = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
-    in_work_acp = in_staked + in_ledger
     fee_for_check = fee if fee is not None else (Decimal(1) / Decimal(100_000_000))
     required_total = amount + fee_for_check
-    if required_total > available_acp:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Requested {_decimal_to_api_str(amount)} ACP + fee {_decimal_to_api_str(fee_for_check)} ACP "
-                f"exceeds available {_decimal_to_api_str(available_acp)} ACP "
-                f"(in work: {_decimal_to_api_str(in_work_acp)} ACP)."
-            ),
-        )
+    _, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
+    in_work_acp = in_staked + in_ledger
 
+    use_custodial_hot = False
+    transfer_signer_args: list[str] | None = None
+
+    if is_hot_holder:
+        hot_res = _load_balance_result(CUSTODIAL_HOT_ADDRESS, interactive=True)
+        if _probe_source_failed(hot_res):
+            hot_live = Decimal(0)
+        else:
+            hot_live = _parse_decimal_or_zero(hot_res.get("acp"))
+        # Prefer hot float for operator spends when it covers the request.
+        if hot_live >= required_total:
+            try:
+                transfer_signer_args, hot_addr = _load_custodial_hot_signer()
+                if hot_addr != CUSTODIAL_HOT_ADDRESS:
+                    raise HTTPException(status_code=500, detail="Custodial hot signer address mismatch")
+                use_custodial_hot = True
+            except HTTPException as ks_exc:
+                if derived_address == CUSTODIAL_HOT_ADDRESS and user_signer.get("keystore_json"):
+                    transfer_signer_args = ["--keystore-json", user_signer["keystore_json"]]
+                    use_custodial_hot = True
+                elif derived_address == CUSTODIAL_HOT_ADDRESS:
+                    transfer_signer_args = ["--mnemonic", user_signer["mnemonic"]]
+                    use_custodial_hot = True
+                else:
+                    raise HTTPException(
+                        status_code=503,
+                        detail=(
+                            f"Operator hot float is {_decimal_to_api_str(hot_live)} ACP but "
+                            f"custodial hot keystore is unavailable ({ks_exc.detail}). "
+                            "Upload KeystoreV3 for acp1qzfdkq… to /run/secrets/custodial-hot.keystore.json."
+                        ),
+                    ) from ks_exc
+
+    if not use_custodial_hot:
+        if wallet_address == CUSTODIAL_HOT_ADDRESS and not is_hot_holder:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Custodial hot wallet withdrawals are disabled on the user API. "
+                    "Use the operator/bridge signer path for hot spends."
+                ),
+            )
+        if not derived_address or derived_address != wallet_address:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Wallet key mismatch for this address. "
+                    "This wallet was created with a legacy non-deterministic key flow and cannot sign spends for the stored address. "
+                    "Please create/migrate to a new wallet."
+                ),
+            )
+        balance_res = _load_balance_result(wallet_address)
+        if _probe_source_failed(balance_res):
+            on_chain_acp = Decimal(0)
+        else:
+            on_chain_acp = _parse_decimal_or_zero(balance_res.get("acp"))
+        _, _, available_acp = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
+        if required_total > available_acp:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Requested {_decimal_to_api_str(amount)} ACP + fee {_decimal_to_api_str(fee_for_check)} ACP "
+                    f"exceeds available {_decimal_to_api_str(available_acp)} ACP "
+                    f"(in work: {_decimal_to_api_str(in_work_acp)} ACP)."
+                ),
+            )
+        if user_signer.get("keystore_json"):
+            transfer_signer_args = ["--keystore-json", user_signer["keystore_json"]]
+        else:
+            transfer_signer_args = ["--mnemonic", user_signer["mnemonic"]]
+
+    assert transfer_signer_args is not None
     res = _run_walletd(
         (
             [
                 "transfer",
                 "--rpc",
                 rpc_url,
-                *(
-                    ["--keystore-json", signer["keystore_json"]]
-                    if signer.get("keystore_json")
-                    else ["--mnemonic", signer["mnemonic"]]
-                ),
+                *transfer_signer_args,
                 "--to",
                 to_address,
                 "--amount-acp",
@@ -1970,6 +2111,7 @@ async def withdraw(
         timeout_s=180,
     )
     return AcpWithdrawResponse(**res)
+
 
 
 def _assert_web_usdt_swap_enabled() -> None:

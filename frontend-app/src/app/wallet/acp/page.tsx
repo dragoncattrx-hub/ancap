@@ -302,6 +302,21 @@ export default function AcpWalletPage() {
       }
 
       setLoadWarnings(warnings);
+
+      // Auto-load on-chain history for the deposit (and custodial hot when operator).
+      const historyTarget =
+        (resolvedDeposit || String((balRes.status === "fulfilled" ? (balRes.value as BalanceResponse)?.address : "") || "").trim() || "").trim();
+      if (historyTarget) {
+        setTxAddressInput((prev) => (prev ? prev : historyTarget));
+        void refreshTransactionsByAddress(historyTarget, { silent: true, skipBalance: true });
+        const bal = balRes.status === "fulfilled" ? ((balRes.value || null) as BalanceResponse | null) : null;
+        if (bal?.view_mode === "operator_hot") {
+          const hotAddr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
+          if (historyTarget !== hotAddr) {
+            void refreshTransactionsByAddress(hotAddr, { silent: true, skipBalance: true, merge: true });
+          }
+        }
+      }
     } catch (e: any) {
       setError(e?.message || t("walletAcpPage.loadFailed"));
     } finally {
@@ -341,7 +356,16 @@ export default function AcpWalletPage() {
     return { valid: Object.keys(errors).length === 0, errors };
   }
 
-  async function refreshTransactionsByAddress(address: string, options?: { silent?: boolean; skipBalance?: boolean }) {
+  function normalizeTxList(value: unknown): AcpTransaction[] {
+    if (Array.isArray(value)) return value as AcpTransaction[];
+    if (value && typeof value === "object") {
+      const items = (value as { items?: unknown }).items;
+      if (Array.isArray(items)) return items as AcpTransaction[];
+    }
+    return [];
+  }
+
+  async function refreshTransactionsByAddress(address: string, options?: { silent?: boolean; skipBalance?: boolean; merge?: boolean }) {
     const target = address.trim();
     if (!target) return;
     if (!options?.silent) {
@@ -349,19 +373,30 @@ export default function AcpWalletPage() {
       setError("");
     }
     try {
-      const requests: Promise<any>[] = [walletAcp.listTransactions({ address: target, limit: 20 })];
+      const requests: Promise<any>[] = [walletAcp.listTransactions({ address: target, limit: 20, privacy: false })];
       if (!options?.skipBalance) {
         requests.push(walletAcp.getBalance({ address: target }));
       }
       const [txRes, balRes] = await Promise.allSettled(requests);
       if (txRes.status === "fulfilled") {
-        setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
+        const next = normalizeTxList(txRes.value);
+        if (options?.merge) {
+          setTransactions((prev) => {
+            const byId = new Map<string, AcpTransaction>();
+            for (const row of [...prev, ...next]) {
+              byId.set(`${row.txid}-${row.block_height}`, row);
+            }
+            return Array.from(byId.values()).sort((a, b) => b.block_height - a.block_height).slice(0, 40);
+          });
+        } else {
+          setTransactions(next);
+        }
       } else {
         const txErr = String(txRes.reason?.message || "");
         if (!txErr.includes("API error 502") && !txErr.includes("API error 503") && !txErr.includes("API error 504")) {
           throw txRes.reason;
         }
-        setTransactions([]);
+        if (!options?.merge) setTransactions([]);
       }
       if (!options?.skipBalance) {
         if (balRes && balRes.status === "fulfilled") {
@@ -1040,7 +1075,9 @@ export default function AcpWalletPage() {
               </div>
 
               {!historyLoaded ? (
-                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.historyOnDemandBefore")} <strong style={{ color: "var(--text)" }}>{t("walletAcpPage.loadHistory")}</strong> {t("walletAcpPage.historyOnDemandAfter")}</div>
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.historyLoading")}</div>
+              ) : historyBusy ? (
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.historyLoading")}</div>
               ) : transactions.length === 0 ? (
                 <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.noTransactions")}</div>
               ) : (
