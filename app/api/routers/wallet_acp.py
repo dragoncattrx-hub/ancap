@@ -1131,9 +1131,9 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
             _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, dict(result))
             return dict(result)
     except HTTPException as exc:
-        if tip.status_code not in (502, 503, 504):
+        if exc.status_code not in (502, 503, 504):
             raise
-        timed_out = tip.status_code == 504
+        timed_out = exc.status_code == 504
         if not interactive:
             return _rpc_balance_for_address(target)
 
