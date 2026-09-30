@@ -11,7 +11,7 @@
 # Opens 8545 only on localhost; put Cloudflare Tunnel / nginx in front later.
 
 param(
-  [Parameter(Mandatory = $true)][string]$HostIp,
+  [string]$HostIp = $env:ORACLE_ACP_HOST_IP,
   [Parameter(Mandatory = $true)][string]$KeyPath,
   [string]$User = "ubuntu",
   [string]$PeerRpc = "https://acp1.ancap.cloud/rpc",
@@ -19,6 +19,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ([string]::IsNullOrWhiteSpace($HostIp)) {
+  throw "HostIp required (pass -HostIp or set ORACLE_ACP_HOST_IP to the OCI Primary VNIC Public IP)."
+}
 if (-not (Test-Path -LiteralPath $KeyPath)) {
   throw "SSH key not found: $KeyPath"
 }

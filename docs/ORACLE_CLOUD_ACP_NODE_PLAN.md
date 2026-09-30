@@ -1,7 +1,9 @@
 # Oracle Cloud Free Tier — ACP node plan
 
-**Status:** `[~]` Operator account registered; VM / ARM64 image / peer join still open.  
+**Status:** `[~]` **New ACP node host provisioned** (Oracle Always Free Ampere A1, `eu-zurich-1`). ARM64 `acp-node` image build + peer sync + public hostname still open pending operator Public IP / security-list SSH.  
 **Goal:** Run a public-facing **Always Free** ACP full/validator-class node on Oracle Cloud Ampere A1 so the network has a second home besides the primary `ancap.cloud` stack, and so contributors can see the exact action plan on GitHub.
+
+**Network role:** secondary full node (peer of primary `https://acp1.ancap.cloud/rpc`). Not a cutover away from `ancap.cloud`.
 
 This document is the **public plan of action**. It does **not** contain OCI tenancy IDs, SSH keys, RPC tokens, or miner reward secrets.
 
@@ -45,26 +47,29 @@ Oracle Cloud Always Free (Ampere A1)
 | Item | State |
 |------|--------|
 | Oracle Cloud registration | **[x] Done** (operator registered) |
-| Ampere A1 VM created | **[x] Done** — region `eu-zurich-1`, instance OCID `ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a` ([OCI console](https://cloud.oracle.com/compute/instances/ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a?region=eu-zurich-1)) |
-| Ubuntu ARM64 + Docker | `[~]` Pending SSH bootstrap (needs public IP + security-list SSH) |
+| Ampere A1 VM created | **[x] Done** (2026-09-30) — region `eu-zurich-1`, instance OCID `ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a` ([OCI console](https://cloud.oracle.com/compute/instances/ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a?region=eu-zurich-1)) |
+| Ubuntu ARM64 + Docker | `[~]` Pending SSH bootstrap (needs **Public IP** from Primary VNIC + security-list SSH `22`) |
 | `linux/arm64` `acp-node` image / binary | `[~]` Build via [`scripts/deploy-oracle-acp-node.ps1`](../scripts/deploy-oracle-acp-node.ps1) |
 | Chain data dir + snapshot / sync from tip | `[ ]` Open |
 | Peer `peer_rpc_urls` → primary network | `[ ]` Open — primary peer `https://acp1.ancap.cloud/rpc` |
-| Public hostname + TLS + rate limit | `[ ]` Open |
-| Document live peer URL in public status | `[~]` This page; hostname TBD after bootstrap |
+| Public hostname + TLS + rate limit | `[ ]` Open — planned `acp2.ancap.cloud` after health green |
+| Document live peer URL in public status | `[~]` This page + [`STATUS.md`](../STATUS.md); hostname TBD after bootstrap |
 
 Primary production node today remains the Docker `acp-node` service behind `acp1.ancap.cloud` on the ANCAP host (`docker-compose.prod.yml`). Oracle is a **parallel / secondary** node track, not a cutover away from `ancap.cloud`.
 
 ### Operator bootstrap (after Public IP is known)
 
+In OCI: **Compute → instance → Primary VNIC → Public IP**. Ensure NSG/security list allows SSH `22` from the operator IP. Then:
+
 ```powershell
+# Ubuntu image → ubuntu; Oracle Linux image → opc
 .\scripts\deploy-oracle-acp-node.ps1 `
   -HostIp <PUBLIC_IP> `
   -KeyPath $env:USERPROFILE\Downloads\ssh-key-2026-09-30.key `
   -User ubuntu
 ```
 
-Do **not** commit the private SSH key. Rotate the key if it was shared in chat.
+Or set `$env:ORACLE_ACP_HOST_IP` and omit `-HostIp`. Do **not** commit the private SSH key. Rotate the key if it was shared in chat.
 
 ---
 
@@ -119,7 +124,7 @@ If a dependency later fails on aarch64, fix that crate / feature flag before mar
 - [ ] Enable MFA on the Oracle account
 - [ ] Create a dedicated compartment (e.g. `ancap-acp`) — no secrets in GitHub
 
-### Phase O1 — Ampere VM `[ ]`
+### Phase O1 — Ampere VM `[x]` (instance created 2026-09-30)
 
 Suggested shape (fits Free Tier when capacity allows):
 
@@ -131,6 +136,8 @@ Suggested shape (fits Free Tier when capacity allows):
   - SSH `22` from operator IP only
   - ACP P2P if used (`30333` or configured listen)
   - JSON-RPC `8545` only via reverse proxy / Cloudflare later — not wide-open without token + rate limit
+
+Live instance: `ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a` in `eu-zurich-1`.
 
 ### Phase O2 — Host baseline `[ ]`
 
@@ -190,8 +197,9 @@ Oracle Free Tier is **first** a resilient full node + public read peer. Validato
 ### Phase O6 — GitHub transparency `[~]`
 
 - [x] This plan file in the monorepo
-- [ ] Link from root README / crypto README (same PR)
-- [ ] After go-live: short STATUS note with public peer URL + ARM64 evidence (no secrets)
+- [x] Link from root README / crypto README
+- [x] STATUS note that a **new Oracle Always Free ACP node** exists in `eu-zurich-1` (bootstrap / public peer URL still pending)
+- [ ] After go-live: public peer URL (`acp2.ancap.cloud` or equivalent) + ARM64 evidence (no secrets)
 - [ ] Optional: CI job `docker buildx --platform linux/arm64` smoke for `acp-node` (build-only, no deploy keys)
 
 ---

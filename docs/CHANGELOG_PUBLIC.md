@@ -4,6 +4,12 @@ Curated public-facing changelog for major ANCAP repository milestones.
 
 For exhaustive implementation detail, see [LOG.md](../LOG.md).
 
+## 2026-09-30 — new Oracle Always Free ACP node + wallet send hardening
+
+- announced a **new ACP node** host on Oracle Cloud Always Free Ampere A1 in `eu-zurich-1` (secondary peer beside primary `acp1.ancap.cloud`); public plan: [`docs/ORACLE_CLOUD_ACP_NODE_PLAN.md`](ORACLE_CLOUD_ACP_NODE_PLAN.md)
+- added operator bootstrap helper [`scripts/deploy-oracle-acp-node.ps1`](../scripts/deploy-oracle-acp-node.ps1) for native ARM64 `acp-node` Docker build on the VM
+- wallet ACP withdraw path now prefers indexed UTXOs and an async job queue so personal sends no longer hang on full tip scans
+
 ## 2026-09-12 — startup investment desk (IT gazelle literacy)
 
 - added public `/startups` desk with ACP-paid screens of AI/ML, retail/e-commerce B2B ops, SECaaS, and agrotech/production software
