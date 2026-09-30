@@ -282,11 +282,13 @@ fi
 SKIP_PULL=0
 SKIP_MIG=0
 SKIP_POST_DEPLOY_CHECKS=0
+WITH_ACP_NODE=0
 for a in "$@"; do
   case "$a" in
     --skip-git-pull) SKIP_PULL=1 ;;
     --skip-migrations) SKIP_MIG=1 ;;
     --skip-post-deploy-checks) SKIP_POST_DEPLOY_CHECKS=1 ;;
+    --with-acp-node|--full) WITH_ACP_NODE=1 ;;
   esac
 done
 
@@ -301,7 +303,15 @@ echo "APP_BUILD_ID=$APP_BUILD_ID (must match https://ancap.cloud/internal/fronte
 echo "Validating docker-compose.prod.yml interpolation and required vars without printing resolved secrets..."
 docker compose -f "$COMPOSE" config --quiet
 
-docker compose -f "$COMPOSE" build
+# Default push/recover builds only api+frontend. Full/acp-node cargo rebuilds routinely
+# overload the VPS (load 90+) and cancel mid-session — use --with-acp-node explicitly.
+if [[ "$WITH_ACP_NODE" -eq 1 ]]; then
+  echo "Building full compose stack (includes acp-node / Rust)..."
+  docker compose -f "$COMPOSE" build
+else
+  echo "Building api + frontend only (pass --with-acp-node for Rust node rebuild)..."
+  docker compose -f "$COMPOSE" build api frontend
+fi
 docker compose -f "$COMPOSE" up -d
 # Bind-mounted nginx conf updates need a reload / recreate so acp1 + /rpc land.
 docker compose -f "$COMPOSE" up -d --force-recreate proxy

@@ -177,16 +177,17 @@ jobs:
 
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "full" ]; then
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
-              bash scripts/deploy-ancap-cloud.sh --skip-git-pull
+              bash scripts/deploy-ancap-cloud.sh --skip-git-pull --with-acp-node
             else
               echo "== rebuild api + frontend images (code on disk is useless without image rebuild)"
               # Push deploys previously only restarted containers → new routes (e.g. /stardust) stayed 404.
+              # Default path skips acp-node cargo rebuild (use workflow_dispatch mode=full for that).
               sed -i 's/\r$//' scripts/deploy-ancap-cloud.sh 2>/dev/null || true
               if [ -f scripts/deploy-ancap-cloud.sh ]; then
                 bash scripts/deploy-ancap-cloud.sh --skip-git-pull
               else
                 timeout 1200 $COMPOSE build api frontend
-                timeout 180 $COMPOSE up -d --force-recreate api frontend proxy acp-node || true
+                timeout 180 $COMPOSE up -d --force-recreate api frontend proxy || true
                 timeout 120 $COMPOSE exec -T api alembic upgrade head 2>&1 | tail -20 || true
               fi
               echo "== smoke: stardust + gateway"
@@ -215,5 +216,5 @@ jobs:
                 echo "::error::Frontend /stardust did not return 200 after rebuild."
                 exit 1
               fi
-              $COMPOSE ps api acp-node frontend proxy
+              $COMPOSE ps api frontend proxy
             fi
