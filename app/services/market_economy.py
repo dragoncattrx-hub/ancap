@@ -207,7 +207,19 @@ def quote_catalog_acp(
     payment_currency: str = "ACP",
     wacp_usd: Decimal | None = None,
 ) -> tuple[Decimal, Decimal, Decimal]:
-    """Return (acp_amount, usd_sticker, oracle_spot) for a catalog face amount."""
+    """Return (acp_amount, usd_sticker, oracle_spot) for a catalog face amount.
+
+    When WACP_ORACLE_PIN_DESK is true (tests / emergency), catalog faces are treated
+    as ACP at a $1 accounting spot so existing credit balances stay meaningful.
+    """
+    settings = get_settings()
+    if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
+        amount = _to_dec(catalog_amount) or Decimal("0")
+        acp = amount.quantize(_Q_ACP, rounding=ROUND_HALF_UP)
+        if (payment_currency or "ACP").upper() == "WACP":
+            acp = (acp * Decimal("0.9")).quantize(_Q_ACP, rounding=ROUND_CEILING)
+        return acp, amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), Decimal("1")
+
     sticker = catalog_amount_to_usd_sticker(catalog_amount)
     spot = wacp_usd or get_cached_wacp_usd(allow_stale=True) or _FALLBACK_WACP_USD
     acp = usd_to_acp(sticker, wacp_usd=spot)

@@ -54,6 +54,11 @@ os.environ.setdefault("LISTING_FEE_PERCENT", "0")
 os.environ.setdefault("LISTING_FEE_AMOUNT", "0")
 os.environ.setdefault("RUN_FEE_PERCENT", "0")
 os.environ.setdefault("RUN_FEE_AMOUNT", "0")
+# Preserve prior marketplace take (5%) for golden-path balance assertions.
+os.environ.setdefault("ORDER_FEE_PERCENT", "5")
+# Pin desk so workflow catalog faces stay 1 ACP≈$1 in tests (live DEX spot is microcents).
+os.environ["WACP_ORACLE_PIN_DESK"] = "true"
+os.environ.setdefault("USDT_TRC20_TO_ACP_RATE", "1")
 # Welcome 100 ACP grant is a production growth expense. Exact-balance tests
 # assume a zero starting ledger, so disable it in pytest.
 os.environ["WELCOME_GRANT_ACP"] = "0"
