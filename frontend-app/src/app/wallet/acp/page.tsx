@@ -12,6 +12,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { walletAcp } from "@/lib/api";
 import {
+  formatAcpDisplay,
   selectHeroAcp,
   selectOnChainAtDeposit,
   selectPlatformLedger,
@@ -786,10 +787,22 @@ export default function AcpWalletPage() {
                         : t("walletAcpPage.live")}
                   </span>
                 </div>
-                <div style={{ marginTop: 12, fontSize: "2rem", fontWeight: 900, color: "var(--text)", overflowWrap: "anywhere" }}>
+                <div
+                  style={{
+                    marginTop: 12,
+                    fontSize: "clamp(1.25rem, 4vw, 2rem)",
+                    fontWeight: 900,
+                    color: "var(--text)",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
+                    lineHeight: 1.15,
+                    maxWidth: "100%",
+                  }}
+                  title={heroAcp ? `${heroAcp} ACP` : undefined}
+                >
                   {balanceBusy && !balance
                     ? t("walletAcpPage.loading")
-                    : (heroAcp ?? t("walletAcpPage.dash"))}{" "}
+                    : (heroAcp != null ? formatAcpDisplay(heroAcp) : t("walletAcpPage.dash"))}{" "}
                   <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-muted)" }}>ACP</span>
                 </div>
                 {balance?.primary_kind && (
@@ -830,32 +843,41 @@ export default function AcpWalletPage() {
                           justifyContent: "space-between",
                           gap: 12,
                           flexWrap: "wrap",
+                          minWidth: 0,
+                          overflow: "hidden",
                         }}
                       >
-                        <strong style={{ color: "var(--text)" }}>{bucket.label}</strong>
-                        <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                          <strong style={{ color: "var(--text)" }}>{bucket.acp} ACP</strong>
+                        <strong style={{ color: "var(--text)", minWidth: 0, overflowWrap: "anywhere" }}>{bucket.label}</strong>
+                        <span
+                          style={{ color: "var(--text-muted)", fontSize: "0.9rem", minWidth: 0, overflowWrap: "anywhere", textAlign: "right" }}
+                          title={`${bucket.acp} ACP`}
+                        >
+                          <strong style={{ color: "var(--text)" }}>{formatAcpDisplay(bucket.acp)} ACP</strong>
                           {t(bucket.utxo_count === 1 ? "walletAcpPage.utxoOne" : "walletAcpPage.utxoMany").replace("{n}", String(bucket.utxo_count))}
                         </span>
                       </div>
                     ))}
                     {balance.operator_controlled_live_acp != null && (
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                         {t("walletAcpPage.operatorLiveTotal")}{" "}
-                        <strong style={{ color: "var(--text)" }}>{balance.operator_controlled_live_acp} ACP</strong>
+                        <strong style={{ color: "var(--text)" }} title={`${balance.operator_controlled_live_acp} ACP`}>
+                          {formatAcpDisplay(balance.operator_controlled_live_acp)} ACP
+                        </strong>
                       </div>
                     )}
                     {balance.operator_hot_live_acp != null && (
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                         {t("walletAcpPage.operatorHotLive")}{" "}
-                        <strong style={{ color: "var(--text)" }}>{balance.operator_hot_live_acp} ACP</strong>
+                        <strong style={{ color: "var(--text)" }} title={`${balance.operator_hot_live_acp} ACP`}>
+                          {formatAcpDisplay(balance.operator_hot_live_acp)} ACP
+                        </strong>
                       </div>
                     )}
                   </div>
                 ) : (
                   <>
                     {balance?.units != null && balance.units !== "" && (
-                      <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                      <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.45, overflowWrap: "anywhere", wordBreak: "break-word" }}>
                         {t("walletAcpPage.smallestUnits")} <strong style={{ color: "var(--text)", fontWeight: 700 }}>{balance.units}</strong>
                         <span style={{ opacity: 0.85 }}> {t("walletAcpPage.smallestUnitsHint")}</span>
                       </div>
@@ -870,34 +892,46 @@ export default function AcpWalletPage() {
                     borderTop: "1px solid var(--border)",
                     display: "grid",
                     gap: 8,
+                    minWidth: 0,
+                    maxWidth: "100%",
                   }}
                 >
                   <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     {t("walletAcpPage.balanceBreakdown")}
                   </div>
-                  <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
-                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                  <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", minWidth: 0 }}>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", minWidth: 0, overflow: "hidden" }}>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionOnChain")}</div>
-                      <strong style={{ color: "var(--text)" }}>{onChainAtDeposit ?? t("walletAcpPage.dash")} ACP</strong>
+                      <strong style={{ color: "var(--text)", display: "block", overflowWrap: "anywhere", wordBreak: "break-word" }} title={onChainAtDeposit ? `${onChainAtDeposit} ACP` : undefined}>
+                        {onChainAtDeposit != null ? formatAcpDisplay(onChainAtDeposit) : t("walletAcpPage.dash")} ACP
+                      </strong>
                     </div>
-                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", minWidth: 0, overflow: "hidden" }}>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionLedger")}</div>
-                      <strong style={{ color: "var(--text)" }}>{platformLedger ?? "0"} ACP</strong>
+                      <strong style={{ color: "var(--text)", display: "block", overflowWrap: "anywhere", wordBreak: "break-word" }} title={`${platformLedger ?? "0"} ACP`}>
+                        {formatAcpDisplay(platformLedger ?? "0")} ACP
+                      </strong>
                     </div>
-                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", minWidth: 0, overflow: "hidden" }}>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionReserved")}</div>
-                      <strong style={{ color: "var(--text)" }}>{reservedTotal ?? stakedAcp ?? "0"} ACP</strong>
+                      <strong style={{ color: "var(--text)", display: "block", overflowWrap: "anywhere", wordBreak: "break-word" }} title={`${reservedTotal ?? stakedAcp ?? "0"} ACP`}>
+                        {formatAcpDisplay(reservedTotal ?? stakedAcp ?? "0")} ACP
+                      </strong>
                       {(stakedAcp != null || balance?.in_work_ledger_acp != null) && (
-                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem", lineHeight: 1.4 }}>
-                          {t("walletAcpPage.stakesLedger").replace("{stakes}", stakedAcp ?? "—").replace("{ledger}", balance?.in_work_ledger_acp ?? platformLedger ?? "—")}
+                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem", lineHeight: 1.4, overflowWrap: "anywhere", wordBreak: "break-word" }}>
+                          {t("walletAcpPage.stakesLedger")
+                            .replace("{stakes}", stakedAcp != null ? formatAcpDisplay(stakedAcp) : "—")
+                            .replace("{ledger}", formatAcpDisplay(balance?.in_work_ledger_acp ?? platformLedger ?? "—"))}
                         </div>
                       )}
                     </div>
-                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)" }}>
+                    <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", minWidth: 0, overflow: "hidden" }}>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: 4 }}>{t("walletAcpPage.partitionWithdrawable")}</div>
-                      <strong style={{ color: "var(--text)" }}>{withdrawableNow} ACP</strong>
+                      <strong style={{ color: "var(--text)", display: "block", overflowWrap: "anywhere", wordBreak: "break-word" }} title={`${withdrawableNow} ACP`}>
+                        {formatAcpDisplay(withdrawableNow)} ACP
+                      </strong>
                       {balance?.withdraw_source && (
-                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem" }}>
+                        <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.72rem", overflowWrap: "anywhere" }}>
                           {balance.withdraw_source === "custodial_hot"
                             ? t("walletAcpPage.withdrawSourceHot")
                             : balance.withdraw_source === "personal_utxo"
@@ -909,16 +943,26 @@ export default function AcpWalletPage() {
                   </div>
                 </div>
                 {balance?.vested_unlocked_acp != null && (
-                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    {t("walletAcpPage.vestedUnlocked")} <strong style={{ color: "var(--text)" }}>{balance.vested_unlocked_acp} ACP</strong>
+                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.85rem", overflowWrap: "anywhere" }}>
+                    {t("walletAcpPage.vestedUnlocked")}{" "}
+                    <strong style={{ color: "var(--text)" }} title={`${balance.vested_unlocked_acp} ACP`}>
+                      {formatAcpDisplay(balance.vested_unlocked_acp)} ACP
+                    </strong>
                   </div>
                 )}
                 {balance?.vested_locked_acp != null && (
-                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    {t("walletAcpPage.vestedLocked")} <strong style={{ color: "var(--text)" }}>{balance.vested_locked_acp} ACP</strong>
+                  <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.85rem", overflowWrap: "anywhere" }}>
+                    {t("walletAcpPage.vestedLocked")}{" "}
+                    <strong style={{ color: "var(--text)" }} title={`${balance.vested_locked_acp} ACP`}>
+                      {formatAcpDisplay(balance.vested_locked_acp)} ACP
+                    </strong>
                   </div>
                 )}
-                {balance?.balance_note ? <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>{balance.balance_note}</div> : null}
+                {balance?.balance_note ? (
+                  <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5, overflowWrap: "anywhere", wordBreak: "break-word", maxWidth: "100%" }}>
+                    {balance.balance_note}
+                  </div>
+                ) : null}
               </div>
 
               <div className="card">

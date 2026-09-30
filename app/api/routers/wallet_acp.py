@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
+from app.services.cache import cache_get_json, cache_get_json_sync, cache_set_json, cache_set_json_sync
 from app.db.models import (
     Agent,
     Stake,
@@ -67,6 +68,7 @@ from app.schemas import (
     AcpTokenomicsBucket,
     AcpWithdrawRequest,
     AcpWithdrawResponse,
+    AcpWithdrawJobResponse,
     AcpTransactionPublic,
     AcpTransactionDetailsPublic,
     AcpTransactionIoPublic,
@@ -2034,6 +2036,120 @@ async def get_transaction_details(
     return details
 
 
+_WITHDRAW_JOB_TTL_S = 900
+_withdraw_jobs_lock = threading.Lock()
+_withdraw_jobs: dict[str, dict] = {}
+
+
+def _withdraw_job_key(job_id: str) -> str:
+    return f"acp:withdraw_job:{job_id}"
+
+
+def _store_withdraw_job(job_id: str, payload: dict) -> None:
+    with _withdraw_jobs_lock:
+        _withdraw_jobs[job_id] = dict(payload)
+    try:
+        cache_set_json_sync(_withdraw_job_key(job_id), payload, ttl_seconds=_WITHDRAW_JOB_TTL_S)
+    except Exception:
+        pass
+
+
+def _read_withdraw_job(job_id: str) -> dict | None:
+    with _withdraw_jobs_lock:
+        local = _withdraw_jobs.get(job_id)
+        if local is not None:
+            return dict(local)
+    return None
+
+
+async def _load_withdraw_job(job_id: str) -> dict | None:
+    local = _read_withdraw_job(job_id)
+    if local is not None:
+        return local
+    try:
+        remote = await cache_get_json(_withdraw_job_key(job_id))
+    except Exception:
+        remote = None
+    if remote is None:
+        try:
+            remote = cache_get_json_sync(_withdraw_job_key(job_id))
+        except Exception:
+            remote = None
+    if isinstance(remote, dict):
+        with _withdraw_jobs_lock:
+            _withdraw_jobs[job_id] = dict(remote)
+        return dict(remote)
+    return None
+
+
+def _run_withdraw_transfer_job(
+    *,
+    job_id: str,
+    user_id: str,
+    rpc_url: str,
+    transfer_signer_args: list[str],
+    to_address: str,
+    amount_acp: str,
+    fee_acp: str | None,
+) -> None:
+    try:
+        res = _run_walletd(
+            (
+                [
+                    "transfer",
+                    "--rpc",
+                    rpc_url,
+                    *transfer_signer_args,
+                    "--to",
+                    to_address,
+                    "--amount-acp",
+                    amount_acp,
+                ]
+                + (["--fee-acp", fee_acp] if fee_acp is not None else [])
+            ),
+            timeout_s=180,
+        )
+        _store_withdraw_job(
+            job_id,
+            {
+                "job_id": job_id,
+                "user_id": user_id,
+                "status": "completed",
+                "accepted": bool(res.get("accepted", True)),
+                "txid": res.get("txid"),
+                "reason": res.get("reason"),
+                "error": None,
+            },
+        )
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+        _store_withdraw_job(
+            job_id,
+            {
+                "job_id": job_id,
+                "user_id": user_id,
+                "status": "failed",
+                "accepted": False,
+                "txid": None,
+                "reason": None,
+                "error": detail,
+            },
+        )
+    except Exception as exc:
+        _store_withdraw_job(
+            job_id,
+            {
+                "job_id": job_id,
+                "user_id": user_id,
+                "status": "failed",
+                "accepted": False,
+                "txid": None,
+                "reason": None,
+                "error": str(exc) or "withdraw failed",
+            },
+        )
+
+
 @router.post("/withdraw", response_model=AcpWithdrawResponse)
 async def withdraw(
     body: AcpWithdrawRequest,
@@ -2152,23 +2268,71 @@ async def withdraw(
             transfer_signer_args = ["--mnemonic", user_signer["mnemonic"]]
 
     assert transfer_signer_args is not None
-    res = _run_walletd(
-        (
-            [
-                "transfer",
-                "--rpc",
-                rpc_url,
-                *transfer_signer_args,
-                "--to",
-                to_address,
-                "--amount-acp",
-                _decimal_to_api_str(amount),
-            ]
-            + (["--fee-acp", _decimal_to_api_str(fee)] if fee is not None else [])
-        ),
-        timeout_s=180,
+
+    # Queue chain transfer off the request path so Cloudflare/browser do not cut a long tip-scan.
+    job_id = str(uuid4())
+    _store_withdraw_job(
+        job_id,
+        {
+            "job_id": job_id,
+            "user_id": str(user_id),
+            "status": "pending",
+            "accepted": None,
+            "txid": None,
+            "reason": None,
+            "error": None,
+            "to_address": to_address,
+            "amount_acp": _decimal_to_api_str(amount),
+        },
     )
-    return AcpWithdrawResponse(**res)
+    fee_s = _decimal_to_api_str(fee) if fee is not None else None
+    threading.Thread(
+        target=_run_withdraw_transfer_job,
+        kwargs={
+            "job_id": job_id,
+            "user_id": str(user_id),
+            "rpc_url": rpc_url,
+            "transfer_signer_args": list(transfer_signer_args),
+            "to_address": to_address,
+            "amount_acp": _decimal_to_api_str(amount),
+            "fee_acp": fee_s,
+        },
+        daemon=True,
+        name=f"acp-withdraw-{job_id[:8]}",
+    ).start()
+    return AcpWithdrawResponse(
+        accepted=None,
+        txid=None,
+        reason="Transfer queued; poll GET /wallet/acp/withdraw/jobs/{job_id}",
+        status="pending",
+        job_id=job_id,
+    )
+
+
+@router.get("/withdraw/jobs/{job_id}", response_model=AcpWithdrawJobResponse)
+async def withdraw_job_status(
+    job_id: str,
+    user_id: str = Depends(require_auth),
+):
+    cleaned = (job_id or "").strip()
+    if not cleaned or len(cleaned) > 80:
+        raise HTTPException(status_code=400, detail="Invalid job_id")
+    job = await _load_withdraw_job(cleaned)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Withdraw job not found")
+    if str(job.get("user_id") or "") != str(user_id):
+        raise HTTPException(status_code=404, detail="Withdraw job not found")
+    status = str(job.get("status") or "pending")
+    if status not in {"pending", "completed", "failed"}:
+        status = "pending"
+    return AcpWithdrawJobResponse(
+        job_id=cleaned,
+        status=status,  # type: ignore[arg-type]
+        accepted=job.get("accepted"),
+        txid=job.get("txid"),
+        reason=job.get("reason"),
+        error=job.get("error"),
+    )
 
 
 

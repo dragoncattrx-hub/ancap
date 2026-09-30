@@ -59,3 +59,57 @@ async def cache_set_json(key: str, value: Any, *, ttl_seconds: int) -> None:
         await client.set(key, json.dumps(value, default=str), ex=ttl_seconds)
     finally:
         await client.aclose()
+
+
+@lru_cache
+def _redis_sync_module():
+    try:
+        import redis as redis_sync  # type: ignore
+
+        return redis_sync
+    except Exception:
+        return None
+
+
+def cache_set_json_sync(key: str, value: Any, *, ttl_seconds: int) -> None:
+    """Thread-safe Redis write for background workers (no event loop required)."""
+    settings = get_settings()
+    if not settings.redis_url:
+        return
+    mod = _redis_sync_module()
+    if mod is None:
+        return
+    client = None
+    try:
+        client = mod.from_url(settings.redis_url, decode_responses=True)
+        client.set(key, json.dumps(value, default=str), ex=ttl_seconds)
+    except Exception:
+        return
+    finally:
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                pass
+
+
+def cache_get_json_sync(key: str) -> Any | None:
+    settings = get_settings()
+    if not settings.redis_url:
+        return None
+    mod = _redis_sync_module()
+    if mod is None:
+        return None
+    client = None
+    try:
+        client = mod.from_url(settings.redis_url, decode_responses=True)
+        raw = client.get(key)
+        return json.loads(raw) if raw else None
+    except Exception:
+        return None
+    finally:
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                pass

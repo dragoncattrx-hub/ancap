@@ -118,9 +118,21 @@ class AcpWithdrawRequest(BaseModel):
 
 
 class AcpWithdrawResponse(BaseModel):
-    accepted: bool
+    accepted: bool | None = None
     txid: str | None = None
     reason: str | None = None
+    # Async withdraw (avoids Cloudflare ~100s edge cutoffs on tip-scan transfers).
+    status: Literal["pending", "completed", "failed"] | None = None
+    job_id: str | None = None
+
+
+class AcpWithdrawJobResponse(BaseModel):
+    job_id: str
+    status: Literal["pending", "completed", "failed"]
+    accepted: bool | None = None
+    txid: str | None = None
+    reason: str | None = None
+    error: str | None = None
 
 
 class AcpSwapQuoteRequest(BaseModel):

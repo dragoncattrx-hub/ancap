@@ -101,7 +101,7 @@ export function formatNetworkError(err: unknown): Error {
     lower.includes("network request failed")
   ) {
     return new Error(
-      "Could not reach the ANCAP API. Check your connection, or that CORS allows this site origin for api.ancap.cloud.",
+      "Could not reach the ANCAP API (network cut or edge timeout). Retry — long ACP chain spends are queued server-side and polled until done.",
     );
   }
   return err instanceof Error ? err : new Error(raw || "Request failed");
@@ -112,12 +112,6 @@ const DEFAULT_CLIENT_TIMEOUT_MS = 45_000;
 const BALANCE_CLIENT_TIMEOUT_MS = 45_000;
 // Signed ACP transfers wait on walletd (server timeout 180s) + RPC confirmation.
 const CHAIN_WRITE_CLIENT_TIMEOUT_MS = 210_000;
-
-function chainWriteSignal(): AbortSignal | undefined {
-  return typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
-    ? AbortSignal.timeout(CHAIN_WRITE_CLIENT_TIMEOUT_MS)
-    : undefined;
-}
 
 async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonContentType = true) {
   try {
@@ -963,9 +957,13 @@ export const walletAcp = {
   },
 
   async withdraw(data: { to_address: string; amount_acp: string; wallet_password: string; fee_acp?: string }) {
-    return apiFetch("/wallet/acp/withdraw", {
+    const queued = await apiFetch("/wallet/acp/withdraw", {
       method: "POST",
-      signal: chainWriteSignal(),
+      // Queue ack is fast; chain work continues server-side.
+      signal:
+        typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+          ? AbortSignal.timeout(60_000)
+          : undefined,
       body: JSON.stringify({
         to_address: data.to_address,
         amount_acp: data.amount_acp,
@@ -973,6 +971,44 @@ export const walletAcp = {
         wallet_password: data.wallet_password,
       }),
     });
+    if (!queued || typeof queued !== "object") return queued;
+    const jobId = typeof queued.job_id === "string" ? queued.job_id : "";
+    if (queued.status !== "pending" || !jobId) return queued;
+
+    const started = Date.now();
+    const maxWaitMs = CHAIN_WRITE_CLIENT_TIMEOUT_MS;
+    while (Date.now() - started < maxWaitMs) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const job = await apiFetch(`/wallet/acp/withdraw/jobs/${encodeURIComponent(jobId)}`, {
+        signal:
+          typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+            ? AbortSignal.timeout(30_000)
+            : undefined,
+      });
+      if (!job || typeof job !== "object") continue;
+      if (job.status === "completed") {
+        return {
+          accepted: job.accepted ?? true,
+          txid: job.txid ?? null,
+          reason: job.reason ?? null,
+          status: "completed",
+          job_id: jobId,
+        };
+      }
+      if (job.status === "failed") {
+        throw new ApiError(String(job.error || job.reason || "Withdraw failed"), 502, {
+          code: "withdraw_failed",
+          detail: job,
+        });
+      }
+    }
+    throw new Error(
+      "Withdraw is still processing on the ACP chain. Wait a minute, refresh history, and avoid resubmitting the same spend.",
+    );
+  },
+
+  async getWithdrawJob(jobId: string) {
+    return apiFetch(`/wallet/acp/withdraw/jobs/${encodeURIComponent(jobId)}`);
   },
 
   async swapQuote(data: { usdt_trc20_amount: string }) {

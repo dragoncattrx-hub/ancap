@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatAcpDisplay,
   selectHeroAcp,
   selectOnChainAtDeposit,
   selectPlatformLedger,
@@ -40,5 +41,12 @@ describe("acpBalanceDisplay", () => {
         ledger_credits_acp: "30",
       }),
     ).toBe("50");
+  });
+
+  it("formatAcpDisplay compacts large balances", () => {
+    expect(formatAcpDisplay("205036960.66474406")).toMatch(/205,036,960/);
+    expect(formatAcpDisplay("108726.00465741")).toMatch(/108,726/);
+    expect(formatAcpDisplay("0")).toBe("0");
+    expect(formatAcpDisplay(null)).toBe("0");
   });
 });
