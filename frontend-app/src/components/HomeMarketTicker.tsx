@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { marketData } from "@/lib/api";
+import { formatUsdMicro } from "@/lib/formatUsd";
 
 type MarketRow = {
   id?: string;
@@ -11,33 +12,6 @@ type MarketRow = {
   price?: string | null;
   vs_currency?: string;
 };
-
-function formatUsd(raw: string | null | undefined): string {
-  if (!raw) return "—";
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return `$${raw}`;
-  if (n >= 1000) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n);
-  }
-  if (n >= 1) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(n);
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-  }).format(n);
-}
 
 export function HomeMarketTicker() {
   const { t } = useLanguage();
@@ -95,7 +69,7 @@ export function HomeMarketTicker() {
                 className="home-market-ticker__item"
               >
                 <strong>{row.symbol}</strong>
-                <span>{formatUsd(row.price)}</span>
+                <span>{formatUsdMicro(row.price)}</span>
               </span>
             ))}
           </div>

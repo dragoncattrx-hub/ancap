@@ -5,6 +5,9 @@ export type WorkflowTemplate = {
   summary: string;
   description: string;
   price: { amount: string; currency: string };
+  usd_sticker?: { amount: string; currency: string } | null;
+  price_acp?: { amount: string; currency: string } | null;
+  oracle_wacp_usd?: string | null;
   accepted_currencies: string[];
   estimated_time_minutes: number;
   preview_items: string[];
@@ -26,6 +29,9 @@ export type WorkflowBundle = {
   description: string;
   workflow_slugs: string[];
   price: { amount: string; currency: string };
+  usd_sticker?: { amount: string; currency: string } | null;
+  price_acp?: { amount: string; currency: string } | null;
+  oracle_wacp_usd?: string | null;
   accepted_currencies: string[];
   discount_percent: number;
   estimated_time_minutes: number;

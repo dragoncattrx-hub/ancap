@@ -59,12 +59,18 @@ def test_pairs_include_cross_and_direct():
     assert cross.rail == "hub_cross"
 
 
-def test_quote_usdt_into_acp():
+def test_quote_usdt_into_acp(monkeypatch):
+    monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "true")
+    monkeypatch.setenv("USDT_TRC20_TO_ACP_RATE", "1")
+    from app.config import get_settings
+
+    get_settings.cache_clear()
     q = quote(ExchangeQuoteRequest(from_asset="usdt_trc20", to_asset="acp", from_amount="100"))
-    assert Decimal(q.to_amount) == Decimal("100")  # default desk rate 1
+    assert Decimal(q.to_amount) == Decimal("100")  # pinned desk rate 1
     assert q.rail == "swap_desk"
     assert len(q.legs) == 1
     assert q.quote_id
+    get_settings.cache_clear()
 
 
 def test_quote_metal_into_acp_with_purity():

@@ -1,0 +1,226 @@
+"""Market-aligned ACP/wACP economy helpers.
+
+Official wACP/USDT pool (PancakeSwap V2 / GeckoTerminal):
+https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601
+
+ACP is 1:1 with wACP on the bridge. USD stickers are the retail face;
+ACP checkout amounts = usd_sticker / wacp_usd (oracle).
+"""
+
+from __future__ import annotations
+
+import time
+from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_HALF_UP
+from typing import Any
+
+import httpx
+
+from app.config import get_settings
+
+OFFICIAL_WACP_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
+_GT_POOL_URL = (
+    f"https://api.geckoterminal.com/api/v2/networks/bsc/pools/{OFFICIAL_WACP_POOL}"
+)
+_GT_TOKEN = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
+_GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_GT_TOKEN}"
+
+_ORACLE: dict[str, Any] = {"at": 0.0, "price": None, "source": "none"}
+_Q_SPOT = Decimal("0.00000000000001")
+_Q_RATE = Decimal("0.00000001")
+_Q_ACP = Decimal("0.01")
+# Soft fallback when GT is unreachable (order-of-magnitude of thin-pool spot).
+_FALLBACK_WACP_USD = Decimal("0.0000023189")
+
+
+def _to_dec(raw: Any) -> Decimal | None:
+    try:
+        if raw is None:
+            return None
+        v = Decimal(str(raw))
+        if v <= 0:
+            return None
+        return v
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
+def _ttl() -> int:
+    return int(getattr(get_settings(), "coingecko_cache_ttl_seconds", 60) or 60)
+
+
+def _stale_ttl() -> int:
+    return int(getattr(get_settings(), "wacp_oracle_stale_ttl_seconds", 3600) or 3600)
+
+
+def _clamp_spot(spot: Decimal) -> Decimal:
+    settings = get_settings()
+    lo = _to_dec(getattr(settings, "wacp_oracle_min_usd", None) or "0.00000001") or Decimal(
+        "0.00000001"
+    )
+    hi = _to_dec(getattr(settings, "wacp_oracle_max_usd", None) or "1") or Decimal("1")
+    if spot < lo:
+        return lo
+    if spot > hi:
+        return hi
+    return spot
+
+
+def clear_oracle_cache() -> None:
+    _ORACLE["at"] = 0.0
+    _ORACLE["price"] = None
+    _ORACLE["source"] = "none"
+
+
+def get_cached_wacp_usd(*, allow_stale: bool = True) -> Decimal | None:
+    """Sync read of last good oracle spot (fresh or stale)."""
+    raw = _ORACLE.get("price")
+    if raw is None:
+        return None
+    spot = _to_dec(raw)
+    if spot is None:
+        return None
+    age = time.time() - float(_ORACLE.get("at") or 0)
+    if age <= _ttl():
+        return spot
+    if allow_stale and age <= _stale_ttl():
+        return spot
+    return None if not allow_stale else spot
+
+
+def oracle_meta() -> dict[str, Any]:
+    return {
+        "pool": OFFICIAL_WACP_POOL,
+        "source": _ORACLE.get("source") or "none",
+        "price_usd": _ORACLE.get("price"),
+        "cached_at": _ORACLE.get("at"),
+        "pool_url": f"https://www.geckoterminal.com/bsc/pools/{OFFICIAL_WACP_POOL}",
+    }
+
+
+async def fetch_official_pool_wacp_usd() -> Decimal | None:
+    """Fetch base_token_price_usd from the official GeckoTerminal pool."""
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            resp = await client.get(_GT_POOL_URL, headers={"accept": "application/json"})
+            if resp.status_code < 400:
+                attrs = ((resp.json() or {}).get("data") or {}).get("attributes") or {}
+                price = _to_dec(attrs.get("base_token_price_usd"))
+                if price is not None:
+                    return price
+            token = await client.get(_GT_TOKEN_URL, headers={"accept": "application/json"})
+            if token.status_code < 400:
+                attrs = ((token.json() or {}).get("data") or {}).get("attributes") or {}
+                return _to_dec(attrs.get("price_usd"))
+    except Exception:  # noqa: BLE001 — soft fallback
+        return None
+    return None
+
+
+async def get_wacp_usd_oracle() -> tuple[Decimal, str]:
+    """Return clamped wACP USD spot and source label.
+
+    Preference: fresh cache → live GT pool → stale cache → soft fallback.
+    """
+    now = time.time()
+    cached = get_cached_wacp_usd(allow_stale=False)
+    if cached is not None:
+        return cached, str(_ORACLE.get("source") or "cache")
+
+    live = await fetch_official_pool_wacp_usd()
+    if live is not None:
+        spot = _clamp_spot(live)
+        _ORACLE["at"] = now
+        _ORACLE["price"] = format(spot, "f")
+        _ORACLE["source"] = "geckoterminal"
+        return spot, "geckoterminal"
+
+    stale = get_cached_wacp_usd(allow_stale=True)
+    if stale is not None:
+        return stale, f"stale:{_ORACLE.get('source') or 'cache'}"
+
+    fallback = _clamp_spot(_FALLBACK_WACP_USD)
+    _ORACLE["at"] = now
+    _ORACLE["price"] = format(fallback, "f")
+    _ORACLE["source"] = "fallback"
+    return fallback, "fallback"
+
+
+def usdt_to_acp_desk_rate(*, wacp_usd: Decimal | None = None) -> Decimal:
+    """ACP per 1 USDT for desk/exchange quotes.
+
+    Emergency pin: set WACP_ORACLE_PIN_DESK=true and keep USDT_TRC20_TO_ACP_RATE.
+    Otherwise rate = 1 / wacp_usd (1 ACP ≈ 1 wACP ≈ spot USD).
+    """
+    settings = get_settings()
+    if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
+        pinned = _to_dec(getattr(settings, "usdt_trc20_to_acp_rate", None) or "1") or Decimal("1")
+        return pinned if pinned > 0 else Decimal("1")
+
+    spot = wacp_usd or get_cached_wacp_usd(allow_stale=True)
+    if spot is None or spot <= 0:
+        pinned = _to_dec(getattr(settings, "usdt_trc20_to_acp_rate", None) or "1") or Decimal("1")
+        if pinned > 1:
+            return pinned
+        spot = _FALLBACK_WACP_USD
+
+    rate = (Decimal("1") / spot).quantize(_Q_RATE, rounding=ROUND_HALF_UP)
+    min_rate = _to_dec(getattr(settings, "usdt_trc20_acp_rate_min", None) or "1") or Decimal("1")
+    max_rate = _to_dec(getattr(settings, "usdt_trc20_acp_rate_max", None) or "1000000000000") or Decimal(
+        "1000000000000"
+    )
+    if rate < min_rate:
+        return min_rate
+    if rate > max_rate:
+        return max_rate
+    return rate
+
+
+def catalog_amount_to_usd_sticker(catalog_amount: Decimal | str) -> Decimal:
+    """Map historical catalog ACP figures (desk fiction ACP≈USD) to retail USD stickers.
+
+    Small SKUs keep their face value as USD. Mid desks (≤10k) stay as USD.
+    Larger AETERNA-style figures scale by /1000 so 1_000_000 → $1000, 250_000 → $250.
+    """
+    amount = _to_dec(catalog_amount) or Decimal("0")
+    if amount <= 0:
+        return Decimal("0")
+    if amount <= Decimal("10000"):
+        return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return (amount / Decimal("1000")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+
+def usd_to_acp(usd: Decimal | str, *, wacp_usd: Decimal | None = None) -> Decimal:
+    """Convert USD sticker to ACP amount (ceil to 0.01 ACP)."""
+    sticker = _to_dec(usd) or Decimal("0")
+    if sticker <= 0:
+        return Decimal("0")
+    spot = wacp_usd or get_cached_wacp_usd(allow_stale=True) or _FALLBACK_WACP_USD
+    if spot <= 0:
+        spot = _FALLBACK_WACP_USD
+    raw = sticker / spot
+    return raw.quantize(_Q_ACP, rounding=ROUND_CEILING)
+
+
+def quote_catalog_acp(
+    catalog_amount: Decimal | str,
+    *,
+    payment_currency: str = "ACP",
+    wacp_usd: Decimal | None = None,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Return (acp_amount, usd_sticker, oracle_spot) for a catalog face amount."""
+    sticker = catalog_amount_to_usd_sticker(catalog_amount)
+    spot = wacp_usd or get_cached_wacp_usd(allow_stale=True) or _FALLBACK_WACP_USD
+    acp = usd_to_acp(sticker, wacp_usd=spot)
+    if (payment_currency or "ACP").upper() == "WACP":
+        acp = (acp * Decimal("0.9")).quantize(_Q_ACP, rounding=ROUND_CEILING)
+    return acp, sticker, spot
+
+
+def workflow_platform_fee_percent() -> Decimal:
+    settings = get_settings()
+    raw = _to_dec(getattr(settings, "workflow_platform_fee_percent", None) or "10") or Decimal("10")
+    if raw < 0:
+        return Decimal("0")
+    if raw > 50:
+        return Decimal("50")
+    return raw

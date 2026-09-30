@@ -65,8 +65,9 @@ def _ttl_seconds() -> int:
 
 
 def _usdt_trc20_acp_rate() -> Decimal:
-    settings = get_settings()
-    return Decimal(str(settings.usdt_trc20_to_acp_rate or "1"))
+    from app.services.market_economy import usdt_to_acp_desk_rate
+
+    return usdt_to_acp_desk_rate()
 
 
 def _fiat_acp_rate(asset_id: str) -> Decimal | None:

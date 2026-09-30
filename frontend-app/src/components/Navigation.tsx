@@ -7,6 +7,7 @@ import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
 import { useWallet } from "./WalletProvider";
 import { useTheme } from "./ThemeProvider";
+import { MarketRateBar } from "./MarketRateBar";
 import { getPreferredEvmProvider } from "@/lib/evmProvider";
 import type { Language } from "@/locales/translations";
 
@@ -481,6 +482,7 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-[100] border-b border-white/[0.06] bg-[#070b16]/78 backdrop-blur-2xl supports-[backdrop-filter]:bg-[#070b16]/65">
+      <MarketRateBar />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent"
         aria-hidden

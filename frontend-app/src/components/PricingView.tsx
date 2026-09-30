@@ -4,12 +4,16 @@ import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 
+type Money = { amount: string; currency: string };
+
 type PricingBundle = {
   slug: string;
   category: string;
   title: string;
   summary: string;
-  price: { amount: string; currency: string };
+  price: Money;
+  usd_sticker?: Money | null;
+  price_acp?: Money | null;
   output_items: string[];
 };
 
@@ -18,7 +22,9 @@ type PricingWorkflow = {
   category: string;
   title: string;
   description: string;
-  price: { amount: string; currency: string };
+  price: Money;
+  usd_sticker?: Money | null;
+  price_acp?: Money | null;
 };
 
 const TIERS = [
@@ -29,6 +35,26 @@ const TIERS = [
   ["pricing.tierDeveloper", "pricing.tierDeveloperPrice", "pricing.tierDeveloperText"],
   ["pricing.tierEnterprise", "pricing.tierEnterprisePrice", "pricing.tierEnterpriseText"],
 ] as const;
+
+function PriceFace({ item }: { item: { price: Money; usd_sticker?: Money | null; price_acp?: Money | null } }) {
+  const sticker = item.usd_sticker;
+  const acp = item.price_acp || item.price;
+  if (sticker?.amount) {
+    return (
+      <div>
+        <div className="text-3xl font-black text-emerald-300">${sticker.amount}</div>
+        <div className="mt-1 text-xs text-white/50">
+          ≈ {acp.amount} ACP
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="text-3xl font-black text-emerald-300">
+      {item.price.amount} {item.price.currency}
+    </div>
+  );
+}
 
 export function PricingView({
   bundles,
@@ -79,7 +105,9 @@ export function PricingView({
             <article key={bundle.slug} className="rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.06] p-6">
               <div className="text-xs uppercase tracking-[0.18em] text-emerald-200/75">{bundle.category}</div>
               <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">{bundle.title}</h2>
-              <div className="mt-3 text-3xl font-black text-emerald-300">{bundle.price.amount} {bundle.price.currency}</div>
+              <div className="mt-3">
+                <PriceFace item={bundle} />
+              </div>
               <p className="mt-4 text-sm leading-6 text-white/70">{bundle.summary}</p>
               <ul className="mt-5 space-y-2 text-sm text-white/75">
                 {bundle.output_items.slice(0, 5).map((item) => (
@@ -111,7 +139,16 @@ export function PricingView({
               <article key={workflow.slug} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="flex items-start justify-between gap-3">
                   <span className="rounded-full border border-white/12 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55">{workflow.category}</span>
-                  <strong className="text-emerald-300">{workflow.price.amount} {workflow.price.currency}</strong>
+                  <div className="text-right">
+                    {workflow.usd_sticker?.amount ? (
+                      <>
+                        <strong className="text-emerald-300">${workflow.usd_sticker.amount}</strong>
+                        <div className="text-[11px] text-white/45">≈ {(workflow.price_acp || workflow.price).amount} ACP</div>
+                      </>
+                    ) : (
+                      <strong className="text-emerald-300">{workflow.price.amount} {workflow.price.currency}</strong>
+                    )}
+                  </div>
                 </div>
                 <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-white/68">{workflow.description}</p>

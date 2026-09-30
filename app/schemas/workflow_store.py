@@ -28,6 +28,10 @@ class WorkflowTemplatePublic(BaseModel):
     subscription_price_monthly: Optional[Money] = None
     subscription_price_quarterly: Optional[Money] = None
     subscription_price_annual: Optional[Money] = None
+    # Market-aligned retail face (USD) + live ACP checkout amount when enriched.
+    usd_sticker: Optional[Money] = None
+    price_acp: Optional[Money] = None
+    oracle_wacp_usd: Optional[str] = None
     # Phase 4: AI system card for governance workflows
     ai_system_card: Optional[dict[str, Any]] = Field(
         default=None,
@@ -52,6 +56,9 @@ class WorkflowBundlePublic(BaseModel):
     estimated_time_minutes: int
     output_items: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    usd_sticker: Optional[Money] = None
+    price_acp: Optional[Money] = None
+    oracle_wacp_usd: Optional[str] = None
 
 
 class WorkflowBundlesResponse(BaseModel):

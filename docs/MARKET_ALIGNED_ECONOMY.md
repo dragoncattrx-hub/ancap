@@ -1,0 +1,40 @@
+# Market-aligned ACP / wACP economy
+
+Status: **live on ancap.cloud** after deploy of this doc's companion code.
+
+## Doctrine
+
+- Bridge: **1 ACP ↔ 1 wACP**.
+- USD spot for both: official PancakeSwap V2 pool via GeckoTerminal  
+  `0xf391ca2bcbab93afa23326ebf1e35db950841601`  
+  https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601
+- Catalog sells **pleasant USD stickers**; checkout charges **ACP = ceil(usd_sticker / wacp_usd)**.
+- High historical ACP faces (&gt; 10_000) scale to USD by `/1000` (e.g. 1_000_000 → $1000).
+
+## Oracle
+
+- Service: `app/services/market_economy.py`
+- Endpoint preference: official pool `base_token_price_usd`, then token price, then stale cache, then soft fallback.
+- Clamp: `WACP_ORACLE_MIN_USD` / `WACP_ORACLE_MAX_USD`
+- Desk USDT→ACP: `1 / wacp_usd` unless `WACP_ORACLE_PIN_DESK=true` (then `USDT_TRC20_TO_ACP_RATE`)
+
+## Earnings
+
+| Rail | Take |
+|------|------|
+| Marketplace orders | `ORDER_FEE_PERCENT` default **10%** |
+| Agent runs | `RUN_FEE_PERCENT` default **10%** |
+| Workflow capture | `WORKFLOW_PLATFORM_FEE_PERCENT` default **10%** (stamped on receipt) |
+| Listings | `LISTING_FEE_PERCENT` default **1%** |
+
+Platform ledger + project treasury see captured fees. Thin DEX liquidity (~tens of USD) makes the spot noisy — deepen LP for stable retail UX.
+
+## UI
+
+- Sitewide `MarketRateBar` in `Navigation` (60s poll)
+- Home ticker uses micro USD formatting (up to 8 decimals)
+- Pricing / workflow catalog prefer `$sticker` with `≈ ACP` secondary
+
+## Legal
+
+See `/legal/market-data`. Spots are indicative; not investment advice.

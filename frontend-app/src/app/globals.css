@@ -1141,6 +1141,60 @@ textarea {
   color: var(--text-muted);
 }
 
+.market-rate-bar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(6, 12, 24, 0.92);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.market-rate-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.75rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0.35rem 1rem;
+}
+
+.market-rate-bar__label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(110, 231, 183, 0.85);
+  font-weight: 600;
+}
+
+.market-rate-bar__pair {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.market-rate-bar__pair strong {
+  font-weight: 700;
+  margin-right: 0.25rem;
+}
+
+.market-rate-bar__hint {
+  margin-left: 0.35rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.68rem;
+}
+
+.market-rate-bar__sep {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.market-rate-bar__link {
+  color: rgba(110, 231, 183, 0.9);
+  text-decoration: none;
+}
+
+.market-rate-bar__link:hover {
+  text-decoration: underline;
+}
+
 @keyframes home-market-marquee {
   from {
     transform: translateX(0);

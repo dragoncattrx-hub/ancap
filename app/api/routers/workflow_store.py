@@ -275,13 +275,21 @@ async def _capture_reserved_workflow_payment(session: DbSession, row: WorkflowRu
     if intent is None or intent.capture_ledger_event_id:
         return intent
 
+    from app.services.market_economy import workflow_platform_fee_percent
+
     escrow_acc = await get_or_create_account(session, "workflow_run", UUID(str(row.id)))
     platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
+    gross = Decimal(intent.amount_value)
+    fee_pct = workflow_platform_fee_percent()
+    platform_fee = (gross * fee_pct / Decimal("100")).quantize(Decimal("0.00000001"))
+    operator_share = (gross - platform_fee).quantize(Decimal("0.00000001"))
+
+    # Single ledger move of gross → platform; fee split is recorded in metadata for treasury.
     ev = await append_event(
         session,
         LedgerEventTypeEnum.fee,
         intent.amount_currency,
-        Decimal(intent.amount_value),
+        gross,
         src_account_id=escrow_acc.id,
         dst_account_id=platform_acc.id,
         metadata={
@@ -289,11 +297,21 @@ async def _capture_reserved_workflow_payment(session: DbSession, row: WorkflowRu
             "payment_intent_id": str(intent.id),
             "workflow_run_id": str(row.id),
             "workflow_slug": row.workflow_slug,
+            "platform_fee_percent": str(fee_pct),
+            "platform_fee_amount": str(platform_fee),
+            "operator_share_amount": str(operator_share),
+            "gross_amount": str(gross),
         },
     )
     intent.status = PaymentIntentStatusEnum.captured.value
     intent.capture_ledger_event_id = ev.id
     intent.updated_at = datetime.now(UTC)
+    intent.provider_payload_json = {
+        **(intent.provider_payload_json or {}),
+        "platform_fee_percent": str(fee_pct),
+        "platform_fee_amount": str(platform_fee),
+        "operator_share_amount": str(operator_share),
+    }
     referral_result: dict[str, str] | None = None
     try:
         referral_result = await issue_referral_rewards_for_order(
@@ -315,11 +333,34 @@ async def _capture_reserved_workflow_payment(session: DbSession, row: WorkflowRu
             **(intent.provider_payload_json or {}),
             "referral_rewards": referral_result,
         }
-    _set_receipt_payment_intent_proof(row, intent, proof_status="captured", ledger_event_id=str(ev.id), note="Workflow payment captured to platform fees.")
+    _set_receipt_payment_intent_proof(
+        row,
+        intent,
+        proof_status="captured",
+        ledger_event_id=str(ev.id),
+        note=f"Workflow payment captured (platform fee {fee_pct}%).",
+    )
     if referral_result is not None:
         receipt_json = row.receipt_json or {}
         proof = receipt_json.get("proof") or {}
         proof["referral_rewards"] = referral_result
+        proof["platform_fee"] = {
+            "percent": str(fee_pct),
+            "amount": str(platform_fee),
+            "currency": intent.amount_currency,
+            "operator_share": str(operator_share),
+        }
+        receipt_json["proof"] = proof
+        row.receipt_json = receipt_json
+    else:
+        receipt_json = row.receipt_json or {}
+        proof = receipt_json.get("proof") or {}
+        proof["platform_fee"] = {
+            "percent": str(fee_pct),
+            "amount": str(platform_fee),
+            "currency": intent.amount_currency,
+            "operator_share": str(operator_share),
+        }
         receipt_json["proof"] = proof
         row.receipt_json = receipt_json
     return intent
@@ -576,14 +617,21 @@ def _build_workflow_run_record(
     repeated_from_run_id: str | None = None,
     repeated_from_status: str | None = None,
 ) -> WorkflowRunRecord:
-    quoted_amount = quote_workflow_amount(template, payment_currency)
+    from app.services.market_economy import quote_catalog_acp
+
+    quoted_amount, usd_sticker, oracle_spot = quote_catalog_acp(
+        template.price.amount,
+        payment_currency=payment_currency,
+    )
     created_at = datetime.now(UTC)
     estimated_provider_cost = (quoted_amount * Decimal("0.18")).quantize(Decimal("0.01"))
     estimated_margin = (quoted_amount - estimated_provider_cost).quantize(Decimal("0.01"))
     proof: dict[str, object] = {
         "pricing_basis": template.price.model_dump(),
+        "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+        "oracle_wacp_usd": format(oracle_spot, "f"),
         "accepted_currencies": template.accepted_currencies,
-        "billing_mode": "persistent_quote",
+        "billing_mode": "market_aligned_quote",
         "template_slug": template.slug,
         "provider_cost_estimate": {
             "amount": str(estimated_provider_cost),
@@ -594,6 +642,8 @@ def _build_workflow_run_record(
             "gross": {"amount": str(quoted_amount), "currency": payment_currency},
             "estimated_cost": {"amount": str(estimated_provider_cost), "currency": payment_currency},
             "estimated_margin": {"amount": str(estimated_margin), "currency": payment_currency},
+            "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+            "oracle_wacp_usd": format(oracle_spot, "f"),
         },
         "status_timeline": [
             {
@@ -615,6 +665,8 @@ def _build_workflow_run_record(
             "amount": str(quoted_amount),
             "currency": payment_currency,
         },
+        "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+        "oracle_wacp_usd": format(oracle_spot, "f"),
         "status": WorkflowRunStatus.quoted.value,
         "receipt_items": template.receipt_items,
         "proof": proof,
@@ -698,6 +750,9 @@ async def list_workflow_templates(
     category: str | None = Query(None),
     q: str | None = Query(None),
 ):
+    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+
+    spot, _src = await get_wacp_usd_oracle()
     items = WORKFLOW_TEMPLATES
     if category:
         category_l = category.strip().lower()
@@ -712,28 +767,79 @@ async def list_workflow_templates(
             or ql in item.summary.lower()
             or any(ql in tag.lower() for tag in item.tags)
         ]
-    return WorkflowTemplatesResponse(items=items)
+    enriched: list[WorkflowTemplatePublic] = []
+    for item in items:
+        acp, sticker, _ = quote_catalog_acp(item.price.amount, wacp_usd=spot)
+        enriched.append(
+            item.model_copy(
+                update={
+                    "usd_sticker": Money(amount=str(sticker), currency="USD"),
+                    "price_acp": Money(amount=str(acp), currency="ACP"),
+                    "oracle_wacp_usd": format(spot, "f"),
+                    "price": Money(amount=str(acp), currency="ACP"),
+                }
+            )
+        )
+    return WorkflowTemplatesResponse(items=enriched)
 
 
 @router.get("/templates/{workflow_slug}", response_model=WorkflowTemplatePublic)
 async def get_workflow_template(workflow_slug: str):
+    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+
     item = find_workflow_template(workflow_slug)
-    if item:
-        return item
-    raise HTTPException(status_code=404, detail="Workflow template not found")
+    if not item:
+        raise HTTPException(status_code=404, detail="Workflow template not found")
+    spot, _src = await get_wacp_usd_oracle()
+    acp, sticker, _ = quote_catalog_acp(item.price.amount, wacp_usd=spot)
+    return item.model_copy(
+        update={
+            "usd_sticker": Money(amount=str(sticker), currency="USD"),
+            "price_acp": Money(amount=str(acp), currency="ACP"),
+            "oracle_wacp_usd": format(spot, "f"),
+            "price": Money(amount=str(acp), currency="ACP"),
+        }
+    )
 
 
 @router.get("/bundles", response_model=WorkflowBundlesResponse)
 async def list_workflow_bundles():
-    return WorkflowBundlesResponse(items=WORKFLOW_BUNDLES)
+    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+
+    spot, _src = await get_wacp_usd_oracle()
+    enriched: list[WorkflowBundlePublic] = []
+    for item in WORKFLOW_BUNDLES:
+        acp, sticker, _ = quote_catalog_acp(item.price.amount, wacp_usd=spot)
+        enriched.append(
+            item.model_copy(
+                update={
+                    "usd_sticker": Money(amount=str(sticker), currency="USD"),
+                    "price_acp": Money(amount=str(acp), currency="ACP"),
+                    "oracle_wacp_usd": format(spot, "f"),
+                    "price": Money(amount=str(acp), currency="ACP"),
+                }
+            )
+        )
+    return WorkflowBundlesResponse(items=enriched)
 
 
 @router.get("/bundles/{bundle_slug}", response_model=WorkflowBundlePublic)
 async def get_workflow_bundle(bundle_slug: str):
+    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+
     item = find_workflow_bundle(bundle_slug)
-    if item:
-        return item
-    raise HTTPException(status_code=404, detail="Workflow bundle not found")
+    if not item:
+        raise HTTPException(status_code=404, detail="Workflow bundle not found")
+    spot, _src = await get_wacp_usd_oracle()
+    acp, sticker, _ = quote_catalog_acp(item.price.amount, wacp_usd=spot)
+    return item.model_copy(
+        update={
+            "usd_sticker": Money(amount=str(sticker), currency="USD"),
+            "price_acp": Money(amount=str(acp), currency="ACP"),
+            "oracle_wacp_usd": format(spot, "f"),
+            "price": Money(amount=str(acp), currency="ACP"),
+        }
+    )
 
 
 @router.get("/credit-packages", response_model=WorkflowCreditPackagesResponse)
@@ -2201,6 +2307,10 @@ async def create_workflow_run(
                 "accepted_currencies": template.accepted_currencies,
             },
         )
+
+    from app.services.market_economy import get_wacp_usd_oracle
+
+    await get_wacp_usd_oracle()
 
     row = _build_workflow_run_record(
         owner_user_id=user_id,

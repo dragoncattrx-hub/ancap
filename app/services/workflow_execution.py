@@ -1617,30 +1617,24 @@ def find_credit_package(package_slug: str) -> WorkflowCreditPackagePublic | None
 
 
 def quote_workflow_amount(template: WorkflowTemplatePublic, payment_currency: str) -> Decimal:
-    quoted_amount = Decimal(template.price.amount)
-    if payment_currency == "wACP":
-        return (quoted_amount * Decimal("0.9")).quantize(Decimal("0.01"))
-    if payment_currency == "ACP":
-        return (quoted_amount * Decimal("1.0")).quantize(Decimal("0.01"))
-    return quoted_amount.quantize(Decimal("0.01"))
+    from app.services.market_economy import quote_catalog_acp
+
+    acp, _sticker, _spot = quote_catalog_acp(template.price.amount, payment_currency=payment_currency)
+    return acp
 
 
 def quote_bundle_amount(bundle: WorkflowBundlePublic, payment_currency: str) -> Decimal:
-    quoted_amount = Decimal(bundle.price.amount)
-    if payment_currency == "wACP":
-        return (quoted_amount * Decimal("0.9")).quantize(Decimal("0.01"))
-    if payment_currency == "ACP":
-        return (quoted_amount * Decimal("1.0")).quantize(Decimal("0.01"))
-    return quoted_amount.quantize(Decimal("0.01"))
+    from app.services.market_economy import quote_catalog_acp
+
+    acp, _sticker, _spot = quote_catalog_acp(bundle.price.amount, payment_currency=payment_currency)
+    return acp
 
 
 def quote_credit_package_amount(package: WorkflowCreditPackagePublic, payment_currency: str) -> Decimal:
-    quoted_amount = Decimal(package.price.amount)
-    if payment_currency == "wACP":
-        return (quoted_amount * Decimal("0.9")).quantize(Decimal("0.01"))
-    if payment_currency == "ACP":
-        return quoted_amount.quantize(Decimal("0.01"))
-    return quoted_amount.quantize(Decimal("0.01"))
+    from app.services.market_economy import quote_catalog_acp
+
+    acp, _sticker, _spot = quote_catalog_acp(package.price.amount, payment_currency=payment_currency)
+    return acp
 
 
 

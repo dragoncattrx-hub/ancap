@@ -25,9 +25,11 @@ _SYMBOLS = {
     "binancecoin": "BNB",
     "solana": "SOL",
 }
-# Official wACP on BSC — already indexed by GeckoTerminal; CoinGecko coin id assigned later.
+# Official wACP on BSC + canonical PancakeSwap V2 pool (GeckoTerminal).
 _WACP_BSC = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
+_OFFICIAL_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
 _GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}"
+_GT_POOL_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/pools/{_OFFICIAL_POOL}"
 _GT_POOLS_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}/pools"
 
 
@@ -175,32 +177,14 @@ async def usdt_usd_price() -> Decimal | None:
 
 
 async def fetch_wacp_usd_geckoterminal() -> Decimal | None:
-    """DEX spot for official wACP (CoinGecko's GeckoTerminal). Not settlement."""
+    """DEX spot for official wACP/USDT pool on GeckoTerminal. Not legal settlement advice."""
+    from app.services import market_economy as me
+
+    spot, _source = await me.get_wacp_usd_oracle()
     now = time.time()
-    if _GT_CACHE.get("price") is not None and now - float(_GT_CACHE.get("at") or 0) < _ttl():
-        return _to_dec(_GT_CACHE["price"])
-
-    price: Decimal | None = None
-    try:
-        async with httpx.AsyncClient(timeout=12.0) as client:
-            pools = await client.get(_GT_POOLS_URL, headers={"accept": "application/json"})
-            if pools.status_code < 400:
-                rows = (pools.json() or {}).get("data") or []
-                if rows:
-                    attrs = (rows[0] or {}).get("attributes") or {}
-                    price = _to_dec(attrs.get("base_token_price_usd") or attrs.get("token_price_usd"))
-            if price is None:
-                token = await client.get(_GT_TOKEN_URL, headers={"accept": "application/json"})
-                if token.status_code < 400:
-                    attrs = ((token.json() or {}).get("data") or {}).get("attributes") or {}
-                    price = _to_dec(attrs.get("price_usd"))
-    except Exception:  # noqa: BLE001 — soft fallback to desk rate
-        return None
-
-    if price is not None and price > 0:
-        _GT_CACHE["at"] = now
-        _GT_CACHE["price"] = format(price, "f")
-    return price
+    _GT_CACHE["at"] = now
+    _GT_CACHE["price"] = format(spot, "f")
+    return spot
 
 
 async def fetch_wacp_usd_coingecko() -> Decimal | None:
@@ -222,18 +206,24 @@ def platform_indicative_rows(
     usdt_usd: Decimal | None = None,
     wacp_usd: Decimal | None = None,
 ) -> list[dict[str, Any]]:
-    """ACP / wACP / sACP indicative USD context (not settlement)."""
+    """ACP / wACP / sACP indicative USD context (not settlement).
+
+    When a live/oracle wACP spot exists, ACP tracks it 1:1 (bridge doctrine).
+    """
     if (vs or "usd").lower() != "usd":
         return []
+    from app.services import market_economy as me
+
     settings = get_settings()
-    acp_per_usdt = _to_dec(getattr(settings, "usdt_trc20_to_acp_rate", None) or "1") or Decimal("1")
+    acp_per_usdt = me.usdt_to_acp_desk_rate(wacp_usd=wacp_usd)
     if acp_per_usdt <= 0:
         acp_per_usdt = Decimal("1")
     usdt = usdt_usd if usdt_usd is not None else Decimal("1")
     desk_acp_usd = (usdt / acp_per_usdt).quantize(Decimal("0.00000001"))
-    # Prefer live DEX/CoinGecko wACP spot; native ACP desk remains accounting reference.
-    acp_usd = desk_acp_usd
     wacp_price = wacp_usd if wacp_usd is not None and wacp_usd > 0 else desk_acp_usd
+    # Bridge doctrine: 1 ACP ↔ 1 wACP — display the same USD spot when oracle is live.
+    acp_usd = wacp_price if wacp_usd is not None and wacp_usd > 0 else desk_acp_usd
+    _ = settings  # reserved for future desk flags
     vs_u = "USD"
     return [
         {"id": "acp", "symbol": "ACP", "vs_currency": vs_u, "price": format(acp_usd, "f"), "last_updated_at": None},
@@ -263,9 +253,10 @@ async def fetch_market_board(*, vs: str = "usd") -> dict[str, Any]:
         status = "partial"
     notes = list(cg.get("notes") or [])
     notes = [
-        "ACP desk rate from USDT rail; wACP prefers CoinGecko coin id or GeckoTerminal DEX spot; "
-        "sACP soft-peg target ≈ 1 USD. Not settlement prices.",
-        f"wACP spot source: {wacp_source}. Listing pack: docs/COINGECKO_LISTING_PLAYBOOK.md",
+        "ACP tracks official wACP DEX spot 1:1 (bridge doctrine) when oracle is live; "
+        "USDT→ACP desk uses 1/wacp_usd. sACP soft-peg target ≈ 1 USD. Indicative only — not investment advice.",
+        f"wACP spot source: {wacp_source}. Official pool: {_OFFICIAL_POOL}. "
+        "See docs/MARKET_ALIGNED_ECONOMY.md and /legal/market-data.",
         *notes,
     ]
     attribution = cg.get("attribution")

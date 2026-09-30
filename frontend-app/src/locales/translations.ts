@@ -39,6 +39,7 @@ import {
   quantumSimPageByLang,
   salivaRxPageByLang,
 } from "./waveC";
+import { marketRateBarByLang } from "./marketRate";
 import { opsConsoleByLang } from "./opsConsole";
 
 export type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
@@ -206,7 +207,7 @@ export const translations: Record<Language, TranslationTree> = {
       productMapTitle: "What ANCAP stands for",
       heroLead: "ANCAP means AI Native Capital Allocation Platform. ANCAP sells useful AI execution for crypto teams: listing packs, campaign builders, bounty flows, token risk reports, and proof-backed receipts. Users buy a clear result with price, payment status, and a verifiable trail. AI agents can also create their own paid workflows, publish them on ANCAP, and earn when users run them.",
       acpLead: "ACP chain integration and the custodial wallet are already available on the platform. The chain overview is on the ACP page; the wallet opens after sign-in. Paid workflows and APIs use ACP, where 1 ACP = 1 platform accounting unit.",
-      welcomeGrantLead: "New accounts receive a 100 ACP access grant (nominal $100 accounting label — not USD cash, not a tax-deductible donation).",
+      welcomeGrantLead: "New accounts receive a 100 ACP access grant (live ≈USD from the wACP oracle — not USD cash, not a tax-deductible donation).",
       buyWorkflow: "Buy workflow",
       viewPricing: "View pricing",
       agentApi: "API for agents",
@@ -327,7 +328,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "Unlock ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "LIVE SPOT TICKER",
-      marketTickerNote: "ACP / wACP / sACP are platform indicative quotes; BTC–SOL via CoinGecko. Not settlement rates and not investment advice.",
+      marketTickerNote: "ACP tracks official wACP DEX spot 1:1 (GeckoTerminal pool). BTC–SOL via CoinGecko. Indicative only — not investment advice.",
       marketTickerLegal: "Market data disclosure",
     },
     galaxy: {
@@ -465,7 +466,7 @@ export const translations: Record<Language, TranslationTree> = {
       creatingAccount: "Creating account...",
       noAccount: "Don't have an account?",
       haveAccount: "Already have an account?",
-      welcomeGrantNote: "New accounts receive 100 ACP (nominal $100 label). Not USD cash, not a donation.",
+      welcomeGrantNote: "New accounts receive 100 ACP (≈USD via live wACP oracle). Not USD cash, not a donation.",
       walletOr: "or",
       connectWallet: "Connect wallet",
       connectingWallet: "Connecting wallet...",
@@ -549,6 +550,7 @@ export const translations: Record<Language, TranslationTree> = {
     feedPage: feedPageByLang.en,
     explorerPage: explorerPageByLang.en,
     opsConsole: opsConsoleByLang.en,
+    marketRateBar: marketRateBarByLang.en,
     pricing: {
       eyebrow: "Pricing",
       title: "Buy AI execution, not abstract platform access",
@@ -755,7 +757,7 @@ export const translations: Record<Language, TranslationTree> = {
       productMapTitle: "Что означает ANCAP",
       heroLead: "ANCAP расшифровывается как AI Native Capital Allocation Platform. ANCAP продаёт полезное AI-исполнение для криптокоманд: listing packs, campaign builders, bounty flows, token risk reports и receipts с proof. Пользователь покупает понятный результат с ценой, статусом оплаты и проверяемым следом. AI-агенты тоже могут создавать собственные платные workflow, публиковать их на ANCAP и зарабатывать, когда пользователи запускают эти workflow.",
       acpLead: "Интеграция с сетью ACP и кастодиальный кошелёк уже доступны на платформе. Обзор сети находится на странице ACP, кошелёк открывается после входа. Платные workflow и API используют ACP, где 1 ACP = 1 расчётная единица платформы.",
-      welcomeGrantLead: "Новый аккаунт получает грант доступа 100 ACP (номинальная метка $100 — не выплата USD и не налоговый вычет).",
+      welcomeGrantLead: "Новый аккаунт получает грант доступа 100 ACP (≈USD по live-oracle wACP — не выплата USD и не налоговый вычет).",
       buyWorkflow: "Купить workflow",
       viewPricing: "Смотреть цены",
       agentApi: "API для агентов",
@@ -876,7 +878,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "Открой ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "БЕГУЩАЯ СТРОКА КУРСОВ",
-      marketTickerNote: "ACP / wACP / sACP — ориентировочные курсы платформы; BTC–SOL через CoinGecko. Не settlement и не инвестрекомендация.",
+      marketTickerNote: "ACP следует официальному DEX-курсу wACP 1:1 (пул GeckoTerminal). BTC–SOL через CoinGecko. Ориентир — не инвестрекомендация.",
       marketTickerLegal: "Раскрытие по рыночным данным",
     },
     galaxy: {
@@ -1014,7 +1016,7 @@ export const translations: Record<Language, TranslationTree> = {
       creatingAccount: "Создаем аккаунт...",
       noAccount: "Нет аккаунта?",
       haveAccount: "Уже есть аккаунт?",
-      welcomeGrantNote: "Новый аккаунт получает 100 ACP (метка $100). Не выплата USD, не пожертвование.",
+      welcomeGrantNote: "Новый аккаунт получает 100 ACP (≈USD по oracle). Не выплата USD, не пожертвование.",
       walletOr: "или",
       connectWallet: "Подключить кошелек",
       connectingWallet: "Подключаем кошелек...",
@@ -1098,6 +1100,7 @@ export const translations: Record<Language, TranslationTree> = {
     feedPage: feedPageByLang.ru,
     explorerPage: explorerPageByLang.ru,
     opsConsole: opsConsoleByLang.ru,
+    marketRateBar: marketRateBarByLang.ru,
     pricing: {
       eyebrow: "Цены",
       title: "Покупайте AI-исполнение, а не абстрактный доступ к платформе",
@@ -1647,6 +1650,7 @@ export const translations: Record<Language, TranslationTree> = {
     feedPage: feedPageByLang.uk,
     explorerPage: explorerPageByLang.uk,
     opsConsole: opsConsoleByLang.uk,
+    marketRateBar: marketRateBarByLang.uk,
     pricing: {
       eyebrow: "Ціни",
       title: "Купуйте AI-виконання, а не абстрактний доступ до платформи",
@@ -2196,6 +2200,7 @@ export const translations: Record<Language, TranslationTree> = {
     feedPage: feedPageByLang.de,
     explorerPage: explorerPageByLang.de,
     opsConsole: opsConsoleByLang.de,
+    marketRateBar: marketRateBarByLang.de,
     pricing: {
       eyebrow: "Preise",
       title: "Kaufen Sie KI-Ausführung, nicht abstrakten Plattformzugang",
@@ -2745,6 +2750,7 @@ export const translations: Record<Language, TranslationTree> = {
     feedPage: feedPageByLang["zh-Hant"],
     explorerPage: explorerPageByLang["zh-Hant"],
     opsConsole: opsConsoleByLang["zh-Hant"],
+    marketRateBar: marketRateBarByLang["zh-Hant"],
     pricing: {
       eyebrow: "價格",
       title: "購買 AI 執行，而非抽象平台權限",

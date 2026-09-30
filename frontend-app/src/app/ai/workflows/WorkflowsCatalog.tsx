@@ -98,7 +98,20 @@ export function WorkflowsCatalog({
                         {t("workflowsPage.verifiedByAncap")}
                       </span>
                     </div>
-                    <span className="text-sm font-semibold text-emerald-300">{workflow.price.amount} {workflow.price.currency}</span>
+                    <span className="text-right text-sm font-semibold text-emerald-300">
+                      {workflow.usd_sticker?.amount ? (
+                        <>
+                          <span>${workflow.usd_sticker.amount}</span>
+                          <span className="mt-0.5 block text-[11px] font-normal text-white/45">
+                            ≈ {(workflow.price_acp || workflow.price).amount} ACP
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          {workflow.price.amount} {workflow.price.currency}
+                        </>
+                      )}
+                    </span>
                   </div>
                   <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-white/68">{workflow.summary}</p>

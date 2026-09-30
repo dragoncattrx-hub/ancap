@@ -160,6 +160,9 @@ async def treasury_status(session: AsyncSession, *, currency: str = "ACP") -> di
             "order_fee_percent": str(settings.order_fee_percent),
             "run_fee_percent": str(settings.run_fee_percent),
             "listing_fee_percent": str(settings.listing_fee_percent),
+            "workflow_platform_fee_percent": str(
+                getattr(settings, "workflow_platform_fee_percent", "10") or "10"
+            ),
             "merchant_default_fee_bps": "100",
             "referral_signup_bonus_acp": str(settings.referral_signup_bonus_acp),
             "referral_commission_share_rate": str(settings.referral_commission_share_rate),

@@ -221,15 +221,15 @@ class Settings(BaseSettings):
     stake_to_activate_amount: str = "0"
     stake_to_activate_currency: str = "ACP"
 
-    # L3: Fees (platform revenue model — see docs/FINANCE_MODEL.md)
-    run_fee_percent: str = "2.5"
+    # L3: Fees (platform revenue model — see docs/FINANCE_MODEL.md / docs/MARKET_ALIGNED_ECONOMY.md)
+    run_fee_percent: str = "10"
     run_fee_amount: str = "0"
     run_fee_currency: str = "ACP"
     listing_fee_percent: str = "1"
     listing_fee_amount: str = "0"
     listing_fee_currency: str = "ACP"
     # Marketplace take rate: % of each paid order routed to the platform account.
-    order_fee_percent: str = "5"
+    order_fee_percent: str = "10"
 
     # L3: On-chain
     chain_anchor_driver: str = "mock"
@@ -264,7 +264,16 @@ class Settings(BaseSettings):
     # Wallet swap MVP
     ff_web_usdt_trc20_swap: bool = False
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
+    # Emergency pin only when wacp_oracle_pin_desk=true; otherwise desk = 1 / wACP oracle.
     usdt_trc20_to_acp_rate: str = "1"
+    wacp_oracle_pin_desk: bool = False
+    wacp_oracle_min_usd: str = "0.00000001"
+    wacp_oracle_max_usd: str = "1"
+    wacp_oracle_stale_ttl_seconds: int = 3600
+    usdt_trc20_acp_rate_min: str = "1"
+    usdt_trc20_acp_rate_max: str = "1000000000000"
+    # Platform take on workflow payment capture (percent of gross ACP)
+    workflow_platform_fee_percent: str = "10"
     # OTC metals/goods desk (indicative ACP per gram; override via env JSON map if needed)
     otc_handoff_instructions: str = ""
     otc_metal_acp_per_gram: dict = {

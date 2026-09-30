@@ -239,8 +239,9 @@ def _require_acp_rpc_url() -> str:
 
 
 def _swap_rate() -> Decimal:
-    settings = get_settings()
-    return _parse_positive_decimal(settings.usdt_trc20_to_acp_rate, "USDT/ACP rate")
+    from app.services.market_economy import usdt_to_acp_desk_rate
+
+    return usdt_to_acp_desk_rate()
 
 
 def _decimal_to_api_str(value: Decimal, scale: str = "0.00000001") -> str:
