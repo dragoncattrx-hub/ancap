@@ -497,6 +497,18 @@ async def _run_all_jobs(session: DbSession) -> dict:
     bridge_rail = await bridge_rail_tick(session)
     mobile_indexer = await mobile_acp_indexer_tick(session)
     try:
+        from app.jobs.mobile_acp_indexer_tick import build_address_watchlist
+        from app.services.acp_utxo_index import acp_utxo_index_tick
+
+        extras = await build_address_watchlist(session)
+        utxo_index = await acp_utxo_index_tick(
+            extra_addresses=extras,
+            chunk=500,
+            max_chunks=4,
+        )
+    except Exception as exc:
+        utxo_index = {"ok": False, "error": str(exc)[:200]}
+    try:
         from app.api.routers.wallet_acp import _schedule_chain_scan_warm
 
         _schedule_chain_scan_warm()
@@ -525,6 +537,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
         "bridge_rail": bridge_rail,
         "mobile_indexer": mobile_indexer,
+        "acp_utxo_index": utxo_index,
         "chain_scan_warm": chain_scan_warm,
     }
 

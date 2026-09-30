@@ -952,6 +952,24 @@ def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, b
                 True,
             )
 
+    # Prefer incremental UTXO index (instant) over full-tip walletd scans.
+    try:
+        from app.services import acp_utxo_index as utxo_idx
+
+        indexed = utxo_idx.get_indexed_balance(target)
+        if indexed is not None:
+            _chain_balance_cache[target] = (
+                time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S,
+                dict(indexed),
+            )
+            return (
+                _parse_decimal_or_zero(indexed.get("acp")),
+                int(indexed.get("utxo_count") or 0),
+                True,
+            )
+    except Exception:
+        pass
+
     rpc_url = _require_acp_rpc_url()
     try:
         result = _run_walletd(
@@ -1078,6 +1096,19 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
 
     rpc_url = _require_acp_rpc_url()
     if interactive:
+        # Prefer incremental UTXO index before any walletd tip-scan.
+        try:
+            from app.services import acp_utxo_index as utxo_idx
+
+            indexed = utxo_idx.get_indexed_balance(target)
+            if indexed is not None:
+                _chain_balance_cache[target] = (
+                    time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S,
+                    dict(indexed),
+                )
+                return dict(indexed)
+        except Exception:
+            pass
         timeout_s = (
             _OPERATOR_ROLE_WALLETD_TIMEOUT_S
             if target in OPERATOR_ROLE_ADDRESSES
@@ -1100,13 +1131,22 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
             _chain_balance_cache[target] = (time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S, dict(result))
             return dict(result)
     except HTTPException as exc:
-        if exc.status_code not in (502, 503, 504):
+        if tip.status_code not in (502, 503, 504):
             raise
-        timed_out = exc.status_code == 504
+        timed_out = tip.status_code == 504
         if not interactive:
             return _rpc_balance_for_address(target)
 
     # Fast fail-closed for wallet UI: ledger decoration still surfaces credits.
+    # Prefer durable indexed balances over empty timeout payloads.
+    try:
+        from app.services import acp_utxo_index as utxo_idx
+
+        indexed = utxo_idx.get_indexed_balance(target)
+        if indexed is not None:
+            return dict(indexed)
+    except Exception:
+        pass
     # Do not sticky-cache empty results after a timeout — that made real hot
     # floats look like 0 / tiny until the process restarted.
     # Mark source so decorate never treats empty error payloads as live zeros.
@@ -1445,6 +1485,13 @@ def _warm_chain_scan_cache() -> None:
         data = _build_chain_scan_data()
         _chain_scan_cache["data"] = data
         _chain_scan_cache["expires_at"] = time.monotonic() + _CHAIN_SCAN_CACHE_TTL_S
+        try:
+            from app.services import acp_utxo_index as utxo_idx
+
+            best_height, out_index, _tx_index = data
+            utxo_idx.seed_from_out_index(out_index, height=int(best_height or 0))
+        except Exception:
+            pass
     except Exception:
         # Keep previous cache if any; interactive callers already returned [].
         pass

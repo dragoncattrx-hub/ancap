@@ -122,6 +122,7 @@ async def test_wacp_geckoterminal_official_pool(monkeypatch):
     coingecko.clear_cache()
     market_economy.clear_oracle_cache()
     monkeypatch.setenv("COINGECKO_API_KEY", "")
+    monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "false")
     from app.config import get_settings
 
     get_settings.cache_clear()
@@ -165,6 +166,10 @@ async def test_wacp_geckoterminal_official_pool(monkeypatch):
 @pytest.mark.asyncio
 async def test_quote_catalog_acp_from_usd_sticker(monkeypatch):
     market_economy.clear_oracle_cache()
+    monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "false")
+    from app.config import get_settings
+
+    get_settings.cache_clear()
     # Seed oracle cache
     market_economy._ORACLE["at"] = __import__("time").time()
     market_economy._ORACLE["price"] = "0.000002"
@@ -173,6 +178,8 @@ async def test_quote_catalog_acp_from_usd_sticker(monkeypatch):
     assert sticker == Decimal("349.00")
     assert spot == Decimal("0.000002")
     assert acp == Decimal("174500000.00")  # ceil(349 / 0.000002)
+    monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "true")
+    get_settings.cache_clear()
 
 
 @pytest.mark.asyncio

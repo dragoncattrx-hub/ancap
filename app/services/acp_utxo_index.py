@@ -1,0 +1,375 @@
+"""Incremental ACP UTXO index for fast wallet balance probes.
+
+Interactive wallet UI must not tip-scan ~30k blocks via walletd. This module
+keeps a per-process + Redis-backed unspent map for watched addresses and advances
+it in chunks from jobs/tick (and a startup catch-up thread).
+"""
+from __future__ import annotations
+
+import json
+import logging
+import threading
+import time
+from decimal import Decimal
+from typing import Any, Iterable
+
+import httpx
+
+from app.services.acp_rpc import acp_rpc_headers
+from app.services.acp_tokenomics import OPERATOR_ROLE_ADDRESSES
+from app.config import get_settings
+
+logger = logging.getLogger("acp_utxo_index")
+
+_UNITS_PER_ACP = Decimal(100_000_000)
+_REDIS_WM_KEY = "acp:utxo_idx:wm"
+_REDIS_UNSPENT_KEY = "acp:utxo_idx:unspent"
+_REDIS_BAL_PREFIX = "acp:utxo_idx:bal:"
+_REDIS_BAL_TTL_S = 86_400
+_CHUNK_DEFAULT = 400
+_RPC_TIMEOUT_S = 20.0
+
+# Process-local state (API workers each maintain their own; Redis is shared truth).
+_lock = threading.Lock()
+_state: dict[str, Any] = {
+    "wm": 0,
+    "unspent": {},  # outpoint -> (address, units)
+    "watch": set(OPERATOR_ROLE_ADDRESSES),
+    "catchup_inflight": False,
+}
+
+
+def _units_to_acp_str(units: int) -> str:
+    acp = (Decimal(units) / _UNITS_PER_ACP).quantize(Decimal("0.00000001"))
+    return format(acp, "f")
+
+
+def _amount_to_units(raw: object) -> int:
+    if raw is None:
+        return 0
+    if isinstance(raw, bool):
+        return 0
+    if isinstance(raw, int):
+        return int(raw)
+    try:
+        return int((Decimal(str(raw)) * _UNITS_PER_ACP).to_integral_value())
+    except Exception:
+        return 0
+
+
+def _rpc(rpc_url: str, method: str, params: list | dict | None = None) -> Any:
+    body = {"jsonrpc": "2.0", "id": "acp-utxo-index", "method": method, "params": params or []}
+    r = httpx.post(rpc_url, json=body, headers=acp_rpc_headers(), timeout=_RPC_TIMEOUT_S)
+    payload = r.json()
+    if r.status_code != 200 or payload.get("error"):
+        raise RuntimeError(str(payload.get("error") or f"status={r.status_code}"))
+    return payload.get("result")
+
+
+def _require_rpc_url() -> str:
+    url = (get_settings().acp_rpc_url or "").strip()
+    if not url:
+        raise RuntimeError("ACP RPC URL is not configured")
+    return url
+
+
+def set_watch_addresses(addresses: Iterable[str]) -> None:
+    cleaned = {str(a).strip() for a in addresses if str(a or "").strip()}
+    cleaned |= set(OPERATOR_ROLE_ADDRESSES)
+    with _lock:
+        _state["watch"] = cleaned
+
+
+def watched_addresses() -> set[str]:
+    with _lock:
+        return set(_state["watch"] or set(OPERATOR_ROLE_ADDRESSES))
+
+
+def _balance_payload(address: str, units: int, utxo_count: int, *, source: str, height: int) -> dict[str, Any]:
+    return {
+        "address": address,
+        "units": str(int(units)),
+        "acp": _units_to_acp_str(int(units)),
+        "utxo_count": int(utxo_count),
+        "source": source,
+        "chain_height": int(height),
+        "indexed": True,
+    }
+
+
+def _aggregate_locked(address: str) -> tuple[int, int]:
+    units = 0
+    count = 0
+    for addr, amt in (_state.get("unspent") or {}).values():
+        if addr == address:
+            units += int(amt)
+            count += 1
+    return units, count
+
+
+def get_indexed_balance(address: str) -> dict[str, Any] | None:
+    """Return balance from local index when watermark > 0; else None."""
+    target = (address or "").strip()
+    if not target:
+        return None
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        if wm <= 0:
+            return None
+        units, count = _aggregate_locked(target)
+        return _balance_payload(target, units, count, source="utxo_index", height=wm)
+
+
+def index_status() -> dict[str, Any]:
+    with _lock:
+        return {
+            "watermark": int(_state.get("wm") or 0),
+            "unspent_outs": len(_state.get("unspent") or {}),
+            "watch_count": len(_state.get("watch") or {}),
+            "catchup_inflight": bool(_state.get("catchup_inflight")),
+        }
+
+
+async def _redis_load() -> None:
+    from app.services.cache import cache_get_json, get_redis_client
+
+    wm_raw = await cache_get_json(_REDIS_WM_KEY)
+    client = await get_redis_client()
+    unspent: dict[str, tuple[str, int]] = {}
+    if client is not None:
+        try:
+            raw_map = await client.hgetall(_REDIS_UNSPENT_KEY)
+            for outpoint, val in (raw_map or {}).items():
+                try:
+                    addr, units_s = str(val).split("|", 1)
+                    unspent[str(outpoint)] = (addr, int(units_s))
+                except Exception:
+                    continue
+        finally:
+            await client.aclose()
+    wm = int(wm_raw or 0) if not isinstance(wm_raw, dict) else int(wm_raw.get("height") or 0)
+    if isinstance(wm_raw, dict):
+        wm = int(wm_raw.get("height") or 0)
+    elif wm_raw is not None:
+        try:
+            wm = int(wm_raw)
+        except Exception:
+            wm = 0
+    with _lock:
+        if wm > int(_state.get("wm") or 0) or (wm > 0 and not _state.get("unspent")):
+            _state["wm"] = wm
+            _state["unspent"] = unspent
+
+
+async def _redis_save() -> None:
+    from app.services.cache import cache_set_json, get_redis_client
+
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        unspent = dict(_state.get("unspent") or {})
+        watch = set(_state.get("watch") or set())
+
+    await cache_set_json(_REDIS_WM_KEY, wm, ttl_seconds=_REDIS_BAL_TTL_S)
+    client = await get_redis_client()
+    if client is None:
+        return
+    try:
+        pipe = client.pipeline()
+        pipe.delete(_REDIS_UNSPENT_KEY)
+        if unspent:
+            mapping = {k: f"{addr}|{units}" for k, (addr, units) in unspent.items()}
+            pipe.hset(_REDIS_UNSPENT_KEY, mapping=mapping)
+        pipe.expire(_REDIS_UNSPENT_KEY, _REDIS_BAL_TTL_S)
+        # Publish per-address balances for other workers / fast path.
+        for addr in watch | set(OPERATOR_ROLE_ADDRESSES):
+            units = 0
+            count = 0
+            for a, amt in unspent.values():
+                if a == addr:
+                    units += int(amt)
+                    count += 1
+            payload = _balance_payload(addr, units, count, source="utxo_index", height=wm)
+            pipe.set(_REDIS_BAL_PREFIX + addr, json.dumps(payload), ex=_REDIS_BAL_TTL_S)
+        await pipe.execute()
+    finally:
+        await client.aclose()
+
+
+async def get_balance_fast(address: str) -> dict[str, Any] | None:
+    """Prefer local index, then Redis published balance."""
+    local = get_indexed_balance(address)
+    if local is not None:
+        return local
+    from app.services.cache import cache_get_json
+
+    cached = await cache_get_json(_REDIS_BAL_PREFIX + (address or "").strip())
+    if isinstance(cached, dict) and cached.get("address"):
+        return cached
+    return None
+
+
+def _apply_block(unspent: dict[str, tuple[str, int]], watch: set[str], block: dict) -> None:
+    txs = block.get("tx") or []
+    for tx in txs:
+        txid = str(tx.get("txid") or "")
+        if not txid:
+            continue
+        for vin in tx.get("vin") or []:
+            prev_txid = vin.get("prev_txid")
+            prev_vout = vin.get("vout")
+            if prev_txid is None or prev_vout is None:
+                continue
+            unspent.pop(f"{prev_txid}:{int(prev_vout)}", None)
+        for idx, vout in enumerate(tx.get("vout") or []):
+            addr = str(vout.get("recipient_address") or "").strip()
+            if not addr or addr not in watch:
+                continue
+            units = _amount_to_units(vout.get("amount"))
+            if units <= 0:
+                continue
+            unspent[f"{txid}:{idx}"] = (addr, units)
+
+
+def advance_index_sync(*, chunk: int = _CHUNK_DEFAULT) -> dict[str, Any]:
+    """Scan up to `chunk` new blocks into the local unspent map. Sync (jobs/thread)."""
+    rpc_url = _require_rpc_url()
+    tip = int(_rpc(rpc_url, "getblockcount", []) or 0)
+    if tip <= 0:
+        return {"ok": False, "error": "tip_unavailable", "tip": tip}
+
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        unspent = dict(_state.get("unspent") or {})
+        watch = set(_state.get("watch") or set(OPERATOR_ROLE_ADDRESSES))
+
+    if not watch:
+        watch = set(OPERATOR_ROLE_ADDRESSES)
+
+    start = wm + 1
+    if start > tip:
+        return {"ok": True, "tip": tip, "watermark": wm, "scanned": 0, "caught_up": True}
+
+    end = min(tip, wm + max(1, int(chunk)))
+    scanned = 0
+    for height in range(start, end + 1):
+        bh = _rpc(rpc_url, "getblockhash", {"height": height})
+        block = _rpc(rpc_url, "getblock", {"blockhash": bh, "verbose": 2}) or {}
+        _apply_block(unspent, watch, block)
+        scanned += 1
+        wm = height
+
+    with _lock:
+        _state["wm"] = wm
+        _state["unspent"] = unspent
+        _state["watch"] = watch
+
+    return {
+        "ok": True,
+        "tip": tip,
+        "watermark": wm,
+        "scanned": scanned,
+        "caught_up": wm >= tip,
+        "unspent_outs": len(unspent),
+        "watch_count": len(watch),
+    }
+
+
+async def acp_utxo_index_tick(
+    *,
+    extra_addresses: list[str] | None = None,
+    chunk: int = _CHUNK_DEFAULT,
+    max_chunks: int = 3,
+) -> dict[str, Any]:
+    """Advance the UTXO index and publish balances. Called from jobs/tick."""
+    try:
+        await _redis_load()
+    except Exception as exc:
+        logger.warning("acp_utxo_index redis load failed: %s", exc)
+
+    watch = set(OPERATOR_ROLE_ADDRESSES)
+    if extra_addresses:
+        watch |= {str(a).strip() for a in extra_addresses if str(a or "").strip()}
+    set_watch_addresses(watch)
+
+    summary = {"chunks": [], "ok": True}
+    caught_up = False
+    try:
+        for _ in range(max(1, int(max_chunks))):
+            step = advance_index_sync(chunk=chunk)
+            summary["chunks"].append(step)
+            if not step.get("ok"):
+                summary["ok"] = False
+                break
+            if step.get("caught_up"):
+                caught_up = True
+                break
+        await _redis_save()
+    except Exception as exc:
+        logger.warning("acp_utxo_index tick failed: %s", exc)
+        summary["ok"] = False
+        summary["error"] = str(exc)[:200]
+    summary["caught_up"] = caught_up
+    summary["status"] = index_status()
+    return summary
+
+
+def _catchup_loop() -> None:
+    try:
+        # Best-effort bootstrap without Redis await in a plain thread:
+        # keep scanning until caught up or too many errors.
+        errors = 0
+        while errors < 8:
+            try:
+                step = advance_index_sync(chunk=_CHUNK_DEFAULT)
+            except Exception as exc:
+                errors += 1
+                logger.warning("acp_utxo_index catchup error: %s", exc)
+                time.sleep(2.0)
+                continue
+            if not step.get("ok"):
+                errors += 1
+                time.sleep(2.0)
+                continue
+            errors = 0
+            if step.get("caught_up"):
+                break
+            # Yield briefly so request threads stay responsive.
+            time.sleep(0.05)
+        # Persist via a short-lived event loop if possible.
+        try:
+            import asyncio
+
+            asyncio.run(_redis_save())
+        except Exception:
+            pass
+    finally:
+        with _lock:
+            _state["catchup_inflight"] = False
+
+
+def schedule_utxo_index_catchup() -> bool:
+    with _lock:
+        if _state.get("catchup_inflight"):
+            return False
+        _state["catchup_inflight"] = True
+    threading.Thread(target=_catchup_loop, name="acp-utxo-index-catchup", daemon=True).start()
+    return True
+
+
+def seed_from_out_index(
+    out_index: dict[tuple[str, int], tuple[str, int]],
+    *,
+    height: int,
+) -> None:
+    """Optional bridge: hydrate from wallet_acp chain-scan out_index when warm."""
+    if height <= 0 or not out_index:
+        return
+    watch = watched_addresses()
+    unspent: dict[str, tuple[str, int]] = {}
+    for (txid, vout), (addr, units) in out_index.items():
+        if addr in watch and int(units) > 0:
+            unspent[f"{txid}:{int(vout)}"] = (str(addr), int(units))
+    with _lock:
+        if height >= int(_state.get("wm") or 0):
+            _state["wm"] = int(height)
+            _state["unspent"] = unspent

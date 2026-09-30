@@ -126,6 +126,12 @@ async def lifespan(app: FastAPI):
         _schedule_chain_scan_warm()
     except Exception:
         logger.exception("Failed to schedule ACP chain-scan warm on startup")
+    try:
+        from app.services.acp_utxo_index import schedule_utxo_index_catchup
+
+        schedule_utxo_index_catchup()
+    except Exception:
+        logger.exception("Failed to schedule ACP UTXO index catch-up on startup")
     yield
     # shutdown if needed
 
