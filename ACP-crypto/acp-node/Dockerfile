@@ -1,5 +1,9 @@
 # Build ACP node (Rust) with acp-crypto. Build context = ACP-crypto repo root.
 # docker build -f acp-node/Dockerfile -t ancap/acp-node:latest .
+#
+# Architecture: this Dockerfile is host-native. On Ampere / aarch64 (Oracle Cloud
+# Always Free A1) or `docker buildx --platform linux/arm64`, the release binary is
+# linux/arm64 — required for Oracle Free Tier. See docs/ORACLE_CLOUD_ACP_NODE_PLAN.md.
 
 FROM rust:1.88-bookworm AS builder
 

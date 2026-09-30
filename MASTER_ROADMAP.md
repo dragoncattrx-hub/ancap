@@ -47,6 +47,7 @@ Active remaining work (not blockers):
 1. ACP mobile wallet — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available (`docs/mobile/ANDROID_TEST_ENV.md`).
 2. Open-source follow-through — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI; project-board auth. Phase 1 community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are **in the repo root** and on the public GitHub repo.
 3. Monetization depth — optional conversion/LTV. The first ACP-first revenue loop is **live**. Stripe 4.1 is operator live verification only.
+4. **Oracle Cloud Always Free ACP node** — secondary Ampere A1 (ARM64) full node / public peer. Account registered; VM + `linux/arm64` image + peer sync open. Plan: [`docs/ORACLE_CLOUD_ACP_NODE_PLAN.md`](docs/ORACLE_CLOUD_ACP_NODE_PLAN.md).
 
 Humanitarian aid desk (`/humanitarian`, `/legal/humanitarian`, `GET /v1/humanitarian/catalog`) shipped 2026-09-12: ACP briefs for food, water, nutrition, warm clothing, medical supplies (partner channel), and livelihood matching, with IFRC / national Red Cross listings as **desk handoffs**. **Not** a 135-FZ charity, **not** a signed ICRC/IFRC partnership, **not** an emblem licence, **not** a tax-deductible donation receipt, and **distinct** from the 100 ACP welcome grant.
 

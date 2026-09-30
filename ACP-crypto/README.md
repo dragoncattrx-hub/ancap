@@ -58,3 +58,11 @@ Cryptocurrency and network protocol for the **ANCAP** (AI-Native Capital Allocat
 ## Integration with ANCAP
 
 In the main ANCAP project (Python/FastAPI), the **Chain anchors** (L3) layer can anchor hashes of artifacts and events (stake, slash, settlement) to the ACP network - through a separate service or RPC calls to the acp-node. The ACP token is planned to be used for stake, fee and governance in ANCAP v2.
+
+## Hosting — Oracle Cloud Always Free (ARM64)
+
+Public plan to run a secondary `acp-node` on Oracle Ampere A1 (Always Free: up to 2 OCPU + 12 GB RAM aarch64):
+
+→ **[docs/ORACLE_CLOUD_ACP_NODE_PLAN.md](../docs/ORACLE_CLOUD_ACP_NODE_PLAN.md)**
+
+Dockerfile builds natively for the host arch; use an Ampere VM or `docker buildx --platform linux/arm64`.

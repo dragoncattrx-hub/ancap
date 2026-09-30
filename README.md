@@ -24,6 +24,7 @@
 | Public integrations | [examples/](examples/README.md) · [docs/PUBLIC_INTEGRATION_EXAMPLES.md](docs/PUBLIC_INTEGRATION_EXAMPLES.md) |
 | Bridge / wACP contracts | [contracts/bridge-bsc/](contracts/bridge-bsc/README.md) |
 | ACP crypto crate | [ACP-crypto/](ACP-crypto/README.md) · [docs/ACP_CRYPTO.md](docs/ACP_CRYPTO.md) |
+| Oracle Free Tier ACP node plan | [docs/ORACLE_CLOUD_ACP_NODE_PLAN.md](docs/ORACLE_CLOUD_ACP_NODE_PLAN.md) |
 | Mobile wallet | [ancap-mobile/](ancap-mobile/README.md) |
 | Open-source track | [docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md](docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md) |
 
