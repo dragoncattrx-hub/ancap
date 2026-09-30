@@ -346,15 +346,18 @@ function ExploreMenu({
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-[120] w-[min(92vw,42rem)] animate-[navSheetIn_180ms_ease-out] rounded-2xl border border-white/12 bg-[#0a1020]/96 p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+          className="absolute right-0 top-[calc(100%+8px)] z-[120] w-[min(calc(100vw-1.5rem),52rem)] max-h-[min(75vh,42rem)] animate-[navSheetIn_180ms_ease-out] overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-white/14 bg-[#0c1424] p-3.5 shadow-[0_28px_80px_rgba(0,0,0,0.72)] sm:p-4 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.22)_transparent]"
         >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {groups.map((group) => (
-              <div key={group.titleKey} className="min-w-0">
-                <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200/55">
+              <div
+                key={group.titleKey}
+                className="min-w-0 rounded-xl border border-white/[0.08] bg-[#101a2e] p-2.5 sm:p-3"
+              >
+                <div className="mb-2 break-words text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-200/70">
                   {t(group.titleKey)}
                 </div>
-                <div className="flex flex-col gap-0.5">
+                <div className="flex min-w-0 flex-col gap-0.5">
                   {group.items.map((item) => {
                     const active = !item.href.startsWith("/#") && pathname === item.href;
                     return (
@@ -364,10 +367,10 @@ function ExploreMenu({
                         href={item.href}
                         onClick={() => onOpenChange(false)}
                         className={cn(
-                          "rounded-lg px-2.5 py-1.5 text-[13px] transition duration-150",
+                          "min-w-0 break-words rounded-lg px-2 py-1.5 text-[13px] leading-snug transition duration-150",
                           active
-                            ? "bg-white/[0.1] text-white"
-                            : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                            ? "bg-white/[0.12] text-white"
+                            : "text-white/75 hover:bg-white/[0.07] hover:text-white"
                         )}
                       >
                         {navItemLabel(item, t)}
@@ -400,10 +403,10 @@ function MobileNavRow({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "group flex min-h-[44px] items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-[14px] leading-snug transition duration-200 active:scale-[0.99]",
+        "group flex min-h-[44px] min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border px-3.5 py-2.5 text-[14px] leading-snug transition duration-200 active:scale-[0.99]",
         active
           ? "border-emerald-400/30 bg-emerald-400/[0.08] text-white"
-          : "border-white/[0.06] bg-white/[0.02] text-white/70 hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
+          : "border-white/[0.08] bg-[#0a1222] text-white/80 hover:border-white/14 hover:bg-white/[0.06] hover:text-white"
       )}
     >
       <span className="min-w-0 break-words font-medium">{label}</span>
@@ -455,13 +458,13 @@ export function Navigation() {
   }, [pathname]);
 
   React.useEffect(() => {
-    if (!mobileMenuOpen) return;
+    if (!mobileMenuOpen && !exploreOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, exploreOpen]);
 
   const userLabel = user?.display_name || user?.email || "";
 
@@ -648,8 +651,8 @@ export function Navigation() {
             aria-label="Close menu"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="relative z-[95] animate-[navSheetIn_220ms_ease-out] border-t border-white/[0.08] bg-[#080d1a]/96 shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl lg:hidden">
-            <div className="mx-auto max-h-[min(78dvh,32rem)] max-w-[1440px] overflow-y-auto overscroll-y-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.18)_transparent]">
+          <div className="relative z-[95] animate-[navSheetIn_220ms_ease-out] border-t border-white/[0.1] bg-[#0c1424] shadow-[0_24px_80px_rgba(0,0,0,0.72)] lg:hidden">
+            <div className="mx-auto max-h-[min(85dvh,calc(100dvh-5.5rem))] max-w-[1440px] overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.22)_transparent]">
               <div className="mb-4 min-[390px]:hidden">
                 <LangSwitcher lang={lang} setLang={setLang} />
               </div>
@@ -676,14 +679,17 @@ export function Navigation() {
                   </div>
 
                   {exploreGroups.map((group) => (
-                    <div key={group.titleKey}>
-                      <div className="mb-2.5 flex items-center gap-2">
-                        <span className="h-px w-4 bg-cyan-400/60" />
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                    <div
+                      key={group.titleKey}
+                      className="min-w-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#101a2e] p-3"
+                    >
+                      <div className="mb-2.5 flex min-w-0 items-center gap-2">
+                        <span className="h-px w-4 shrink-0 bg-cyan-400/60" />
+                        <span className="min-w-0 break-words text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
                           {t(group.titleKey)}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex min-w-0 flex-col gap-1.5">
                         {group.items.map((item) => (
                           <MobileNavRow
                             key={item.href}
@@ -744,14 +750,17 @@ export function Navigation() {
                   </div>
 
                   {exploreGroups.map((group) => (
-                    <div key={group.titleKey}>
-                      <div className="mb-2.5 flex items-center gap-2">
-                        <span className="h-px w-4 bg-cyan-400/60" />
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                    <div
+                      key={group.titleKey}
+                      className="min-w-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#101a2e] p-3"
+                    >
+                      <div className="mb-2.5 flex min-w-0 items-center gap-2">
+                        <span className="h-px w-4 shrink-0 bg-cyan-400/60" />
+                        <span className="min-w-0 break-words text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
                           {t(group.titleKey)}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex min-w-0 flex-col gap-1.5">
                         {group.items.map((item) => (
                           <MobileNavRow
                             key={item.href}
