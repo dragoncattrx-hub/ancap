@@ -335,6 +335,34 @@ fn cmd_submit(rpc_url: &str, raw_tx: &str) -> anyhow::Result<Value> {
     }
 }
 
+fn parse_utxo_spec(spec: &str) -> anyhow::Result<Utxo> {
+    // Format: txid:vout:units  (txid hex, vout u32, amount in smallest units)
+    let parts: Vec<&str> = spec.trim().split(':').collect();
+    if parts.len() != 3 {
+        anyhow::bail!("--utxo expects txid:vout:units, got {spec}");
+    }
+    let txid_hex = parts[0].trim().to_string();
+    if txid_hex.len() < 16 {
+        anyhow::bail!("invalid --utxo txid");
+    }
+    let vout: u32 = parts[1]
+        .trim()
+        .parse()
+        .context("invalid --utxo vout")?;
+    let amount_units: u64 = parts[2]
+        .trim()
+        .parse()
+        .context("invalid --utxo units")?;
+    if amount_units == 0 {
+        anyhow::bail!("--utxo units must be > 0");
+    }
+    Ok(Utxo {
+        txid_hex,
+        vout,
+        amount_units,
+    })
+}
+
 fn cmd_transfer(
     rpc_url: &str,
     mnemonic: Option<&str>,
@@ -342,6 +370,7 @@ fn cmd_transfer(
     to: &str,
     amount_acp: &str,
     fee_acp: Option<&str>,
+    preloaded_utxos: Option<Vec<Utxo>>,
 ) -> anyhow::Result<Value> {
     let transfer_units = acp_decimal_str_to_units(amount_acp)?;
     if transfer_units == 0 {
@@ -370,20 +399,26 @@ fn cmd_transfer(
     } else {
         anyhow::bail!("either --mnemonic or --keystore-json is required")
     };
-    let from_address = id.receive_address_v0()?;
+    let _from_address = id.receive_address_v0()?;
     let scan_window = acp_crypto::DEFAULT_SUBADDR_SCAN_WINDOW;
 
-    let mut utxos: Vec<Utxo> = vec![];
-    let mut seen = std::collections::HashSet::<String>::new();
-    for idx in 0..=scan_window {
-        let addr = id.receive_subaddress_v0(idx)?;
-        for u in scan_utxos(&client, rpc_url, &addr)? {
-            let key = format!("{}:{}", u.txid_hex, u.vout);
-            if seen.insert(key) {
-                utxos.push(u);
+    // Prefer preloaded UTXOs (from ANCAP UTXO index) to avoid O(tip) tip-scans (~30k blocks).
+    let mut utxos: Vec<Utxo> = if let Some(pre) = preloaded_utxos.filter(|v| !v.is_empty()) {
+        pre
+    } else {
+        let mut scanned: Vec<Utxo> = vec![];
+        let mut seen = std::collections::HashSet::<String>::new();
+        for idx in 0..=scan_window {
+            let addr = id.receive_subaddress_v0(idx)?;
+            for u in scan_utxos(&client, rpc_url, &addr)? {
+                let key = format!("{}:{}", u.txid_hex, u.vout);
+                if seen.insert(key) {
+                    scanned.push(u);
+                }
             }
         }
-    }
+        scanned
+    };
     // simple greedy: largest-first to minimize inputs
     utxos.sort_by_key(|u| std::cmp::Reverse(u.amount_units));
 
@@ -503,6 +538,7 @@ fn real_main() -> anyhow::Result<()> {
             let mut to: Option<String> = None;
             let mut amount_acp: Option<String> = None;
             let mut fee_acp: Option<String> = None;
+            let mut preloaded: Vec<Utxo> = vec![];
             while let Some(a) = args.next() {
                 match a.as_str() {
                     "--rpc" => rpc_url = args.next(),
@@ -512,6 +548,12 @@ fn real_main() -> anyhow::Result<()> {
                     "--to" => to = args.next(),
                     "--amount-acp" => amount_acp = args.next(),
                     "--fee-acp" => fee_acp = args.next(),
+                    "--utxo" => {
+                        let spec = args
+                            .next()
+                            .ok_or_else(|| anyhow!("--utxo requires txid:vout:units"))?;
+                        preloaded.push(parse_utxo_spec(&spec)?);
+                    }
                     _ => {}
                 }
             }
@@ -530,6 +572,11 @@ fn real_main() -> anyhow::Result<()> {
                 &to,
                 &amount_acp,
                 fee_acp.as_deref(),
+                if preloaded.is_empty() {
+                    None
+                } else {
+                    Some(preloaded)
+                },
             )?
         }
         "sign-transfer" => {

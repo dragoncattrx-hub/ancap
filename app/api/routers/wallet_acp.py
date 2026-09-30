@@ -2091,8 +2091,37 @@ def _run_withdraw_transfer_job(
     to_address: str,
     amount_acp: str,
     fee_acp: str | None,
+    from_address: str | None = None,
 ) -> None:
     try:
+        # Prefer indexed UTXOs so walletd skips O(tip) tip-scan (~30k blocks).
+        utxo_args: list[str] = []
+        src = (from_address or "").strip()
+        if src:
+            try:
+                from app.services import acp_utxo_index as utxo_idx
+
+                indexed_outs = utxo_idx.list_indexed_utxos(src)
+            except Exception:
+                indexed_outs = []
+            need_units = int(
+                (_parse_decimal_or_zero(amount_acp) + _parse_decimal_or_zero(fee_acp or "0.00000001"))
+                * Decimal(100_000_000)
+            )
+            picked_units = 0
+            for row in indexed_outs:
+                txid = str(row.get("txid") or "").strip()
+                vout = int(row.get("vout") or 0)
+                units = int(row.get("units") or 0)
+                if not txid or units <= 0:
+                    continue
+                utxo_args.extend(["--utxo", f"{txid}:{vout}:{units}"])
+                picked_units += units
+                if picked_units >= need_units:
+                    break
+            if picked_units < need_units:
+                utxo_args = []  # fall back to tip-scan if index incomplete
+
         res = _run_walletd(
             (
                 [
@@ -2106,8 +2135,9 @@ def _run_withdraw_transfer_job(
                     amount_acp,
                 ]
                 + (["--fee-acp", fee_acp] if fee_acp is not None else [])
+                + utxo_args
             ),
-            timeout_s=180,
+            timeout_s=180 if not utxo_args else 90,
         )
         _store_withdraw_job(
             job_id,
@@ -2119,6 +2149,7 @@ def _run_withdraw_transfer_job(
                 "txid": res.get("txid"),
                 "reason": res.get("reason"),
                 "error": None,
+                "utxo_mode": "indexed" if utxo_args else "tip_scan",
             },
         )
     except HTTPException as exc:
@@ -2271,6 +2302,7 @@ async def withdraw(
 
     # Queue chain transfer off the request path so Cloudflare/browser do not cut a long tip-scan.
     job_id = str(uuid4())
+    spend_from = CUSTODIAL_HOT_ADDRESS if use_custodial_hot else wallet_address
     _store_withdraw_job(
         job_id,
         {
@@ -2283,6 +2315,7 @@ async def withdraw(
             "error": None,
             "to_address": to_address,
             "amount_acp": _decimal_to_api_str(amount),
+            "from_address": spend_from,
         },
     )
     fee_s = _decimal_to_api_str(fee) if fee is not None else None
@@ -2296,6 +2329,7 @@ async def withdraw(
             "to_address": to_address,
             "amount_acp": _decimal_to_api_str(amount),
             "fee_acp": fee_s,
+            "from_address": spend_from,
         },
         daemon=True,
         name=f"acp-withdraw-{job_id[:8]}",

@@ -45,15 +45,26 @@ Oracle Cloud Always Free (Ampere A1)
 | Item | State |
 |------|--------|
 | Oracle Cloud registration | **[x] Done** (operator registered) |
-| Ampere A1 VM created | `[ ]` Open |
-| Ubuntu ARM64 + Docker | `[ ]` Open |
-| `linux/arm64` `acp-node` image / binary | `[ ]` Open — Dockerfile is architecture-native (see below) |
+| Ampere A1 VM created | **[x] Done** — region `eu-zurich-1`, instance OCID `ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a` ([OCI console](https://cloud.oracle.com/compute/instances/ocid1.instance.oc1.eu-zurich-1.an5heljrk5swcsqcw3oxkmxyh4fhhct2sxdodjipljfiprqrtvj32loxj46a?region=eu-zurich-1)) |
+| Ubuntu ARM64 + Docker | `[~]` Pending SSH bootstrap (needs public IP + security-list SSH) |
+| `linux/arm64` `acp-node` image / binary | `[~]` Build via [`scripts/deploy-oracle-acp-node.ps1`](../scripts/deploy-oracle-acp-node.ps1) |
 | Chain data dir + snapshot / sync from tip | `[ ]` Open |
-| Peer `peer_rpc_urls` → primary network | `[ ]` Open |
+| Peer `peer_rpc_urls` → primary network | `[ ]` Open — primary peer `https://acp1.ancap.cloud/rpc` |
 | Public hostname + TLS + rate limit | `[ ]` Open |
-| Document live peer URL in public status | `[ ]` Open |
+| Document live peer URL in public status | `[~]` This page; hostname TBD after bootstrap |
 
 Primary production node today remains the Docker `acp-node` service behind `acp1.ancap.cloud` on the ANCAP host (`docker-compose.prod.yml`). Oracle is a **parallel / secondary** node track, not a cutover away from `ancap.cloud`.
+
+### Operator bootstrap (after Public IP is known)
+
+```powershell
+.\scripts\deploy-oracle-acp-node.ps1 `
+  -HostIp <PUBLIC_IP> `
+  -KeyPath $env:USERPROFILE\Downloads\ssh-key-2026-09-30.key `
+  -User ubuntu
+```
+
+Do **not** commit the private SSH key. Rotate the key if it was shared in chat.
 
 ---
 

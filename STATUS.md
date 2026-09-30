@@ -1,6 +1,6 @@
 # ANCAP Status
 
-> Updated: 2026-09-28
+> Updated: 2026-09-30
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
@@ -17,6 +17,7 @@ Active remaining work (not blockers):
 1. **ACP mobile wallet** — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available.
 2. **Open-source follow-through** — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI. Phase 1 community files including root `README.md` are **present**. Do not report “absence of README.md”. Public-safe vs private boundaries stay in `docs/OPEN_SOURCE_GITHUB_TRANSPARENCY.md` (secrets stay private; do not hide material token/risk facts).
 3. **Monetization depth** — optional conversion/LTV after a **live** ACP-first loop. Stripe 4.1 is operator live verification only. Do **not** report “monetization after the first ACP cycle” as a blocker.
+4. **Oracle Cloud Always Free ACP node (eu-zurich-1)** — Ampere A1 instance provisioned; bootstrap script ready (`scripts/deploy-oracle-acp-node.ps1`). Plan + status: [`docs/ORACLE_CLOUD_ACP_NODE_PLAN.md`](docs/ORACLE_CLOUD_ACP_NODE_PLAN.md). Secondary peer alongside primary `acp1.ancap.cloud`.
 
 Security / CI / prod-hardening baseline closed in the **2026-07-01** wave (`docs/SECURITY_CLOSURE_EVIDENCE_2026-07-01.md`); external upstream key revoke audit remains operator-open, not a freeze.
 

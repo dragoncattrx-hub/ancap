@@ -120,6 +120,81 @@ def get_indexed_balance(address: str) -> dict[str, Any] | None:
         return _balance_payload(target, units, count, source="utxo_index", height=wm)
 
 
+def _redis_load_sync() -> None:
+    """Best-effort sync hydrate from Redis (safe to call from withdraw worker threads)."""
+    try:
+        from app.services.cache import cache_get_json_sync, _redis_sync_module
+        from app.config import get_settings
+    except Exception:
+        return
+    settings = get_settings()
+    if not settings.redis_url:
+        return
+    mod = _redis_sync_module()
+    if mod is None:
+        return
+    client = None
+    try:
+        wm_raw = cache_get_json_sync(_REDIS_WM_KEY)
+        wm = 0
+        if isinstance(wm_raw, dict):
+            wm = int(wm_raw.get("height") or 0)
+        elif wm_raw is not None:
+            try:
+                wm = int(wm_raw)
+            except Exception:
+                wm = 0
+        client = mod.from_url(settings.redis_url, decode_responses=True)
+        raw_map = client.hgetall(_REDIS_UNSPENT_KEY) or {}
+        unspent: dict[str, tuple[str, int]] = {}
+        for outpoint, val in raw_map.items():
+            try:
+                addr, units_s = str(val).split("|", 1)
+                unspent[str(outpoint)] = (addr, int(units_s))
+            except Exception:
+                continue
+        with _lock:
+            if wm > int(_state.get("wm") or 0) or (wm > 0 and not _state.get("unspent")):
+                _state["wm"] = wm
+                _state["unspent"] = unspent
+    except Exception:
+        return
+    finally:
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                pass
+
+
+def list_indexed_utxos(address: str) -> list[dict[str, Any]]:
+    """Return indexed unspent outs for address as [{txid,vout,units}, ...] largest-first."""
+    target = (address or "").strip()
+    if not target:
+        return []
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        local_n = len(_state.get("unspent") or {})
+    if wm <= 0 or local_n == 0:
+        _redis_load_sync()
+    rows: list[tuple[str, int, int]] = []
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        if wm <= 0:
+            return []
+        for outpoint, (addr, units) in (_state.get("unspent") or {}).items():
+            if addr != target:
+                continue
+            try:
+                txid, vout_s = str(outpoint).rsplit(":", 1)
+                vout = int(vout_s)
+                rows.append((txid, vout, int(units)))
+            except Exception:
+                continue
+    rows.sort(key=lambda r: r[2], reverse=True)
+    return [{"txid": t, "vout": v, "units": u} for t, v, u in rows]
+
+
 def index_status() -> dict[str, Any]:
     with _lock:
         return {
