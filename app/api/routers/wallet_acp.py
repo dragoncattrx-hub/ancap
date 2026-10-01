@@ -1102,8 +1102,8 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
         try:
             from app.services import acp_utxo_index as utxo_idx
 
-            indexed = utxo_idx.get_indexed_balance(target)
-            if indexed is not None:
+            indexed = utxo_idx.get_indexed_balance_sync_prefer_redis(target)
+            if indexed is not None and not _probe_source_failed(indexed):
                 _chain_balance_cache[target] = (
                     time.monotonic() + _CHAIN_BALANCE_CACHE_TTL_S,
                     dict(indexed),
@@ -1144,8 +1144,8 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
     try:
         from app.services import acp_utxo_index as utxo_idx
 
-        indexed = utxo_idx.get_indexed_balance(target)
-        if indexed is not None:
+        indexed = utxo_idx.get_indexed_balance_sync_prefer_redis(target)
+        if indexed is not None and not _probe_source_failed(indexed):
             return dict(indexed)
     except Exception:
         pass

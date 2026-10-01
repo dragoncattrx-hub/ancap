@@ -108,16 +108,54 @@ def _aggregate_locked(address: str) -> tuple[int, int]:
 
 
 def get_indexed_balance(address: str) -> dict[str, Any] | None:
-    """Return balance from local index when watermark > 0; else None."""
+    """Return balance from local/Redis index when watermark > 0; else None."""
     target = (address or "").strip()
     if not target:
         return None
+    with _lock:
+        wm = int(_state.get("wm") or 0)
+        local_n = len(_state.get("unspent") or {})
+    if wm <= 0 or local_n == 0:
+        _redis_load_sync()
+    # Prefer published per-address Redis balance (multi-worker safe, cheap).
+    try:
+        from app.services.cache import cache_get_json_sync
+
+        cached = cache_get_json_sync(_REDIS_BAL_PREFIX + target)
+        if isinstance(cached, dict) and str(cached.get("address") or "").strip() == target:
+            # Prefer cached when it has a height at least as fresh as local wm.
+            try:
+                cached_h = int(cached.get("chain_height") or 0)
+            except Exception:
+                cached_h = 0
+            with _lock:
+                local_wm = int(_state.get("wm") or 0)
+            if cached_h > 0 and cached_h >= local_wm:
+                return dict(cached)
+    except Exception:
+        pass
     with _lock:
         wm = int(_state.get("wm") or 0)
         if wm <= 0:
             return None
         units, count = _aggregate_locked(target)
         return _balance_payload(target, units, count, source="utxo_index", height=wm)
+
+
+def get_indexed_balance_sync_prefer_redis(address: str) -> dict[str, Any] | None:
+    """Sync helper for balance probes: Redis bal key first, then local aggregate."""
+    target = (address or "").strip()
+    if not target:
+        return None
+    try:
+        from app.services.cache import cache_get_json_sync
+
+        cached = cache_get_json_sync(_REDIS_BAL_PREFIX + target)
+        if isinstance(cached, dict) and str(cached.get("address") or "").strip() == target:
+            return dict(cached)
+    except Exception:
+        pass
+    return get_indexed_balance(target)
 
 
 def _redis_load_sync() -> None:
@@ -307,6 +345,14 @@ def _apply_block(unspent: dict[str, tuple[str, int]], watch: set[str], block: di
 
 def advance_index_sync(*, chunk: int = _CHUNK_DEFAULT) -> dict[str, Any]:
     """Scan up to `chunk` new blocks into the local unspent map. Sync (jobs/thread)."""
+    # Always hydrate from Redis first so a cold worker does not restart from height 0
+    # and clobber a healthy shared watermark on the next save.
+    with _lock:
+        wm0 = int(_state.get("wm") or 0)
+        n0 = len(_state.get("unspent") or {})
+    if wm0 <= 0 or n0 == 0:
+        _redis_load_sync()
+
     rpc_url = _require_rpc_url()
     tip = int(_rpc(rpc_url, "getblockcount", []) or 0)
     if tip <= 0:
