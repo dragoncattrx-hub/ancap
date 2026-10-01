@@ -19,6 +19,8 @@ import {
   selectWithdrawableNow,
 } from "@/lib/acpBalanceDisplay";
 
+const CUSTODIAL_HOT_ADDRESS = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
+
 type TokenomicsBucket = {
   key: string;
   label: string;
@@ -312,9 +314,8 @@ export default function AcpWalletPage() {
         void refreshTransactionsByAddress(historyTarget, { silent: true, skipBalance: true });
         const bal = balRes.status === "fulfilled" ? ((balRes.value || null) as BalanceResponse | null) : null;
         if (bal?.view_mode === "operator_hot") {
-          const hotAddr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
-          if (historyTarget !== hotAddr) {
-            void refreshTransactionsByAddress(hotAddr, { silent: true, skipBalance: true, merge: true });
+          if (historyTarget !== CUSTODIAL_HOT_ADDRESS) {
+            void refreshTransactionsByAddress(CUSTODIAL_HOT_ADDRESS, { silent: true, skipBalance: true, merge: true });
           }
         }
       }
@@ -366,6 +367,30 @@ export default function AcpWalletPage() {
     return [];
   }
 
+  function explorerBalanceForAddress(target: string, bal: BalanceResponse | null | undefined): BalanceResponse | null {
+    if (!bal) return null;
+    // Operator hero `acp`/`utxo_count` is an aggregate across role wallets. Never paste that
+    // onto the personal deposit address in the explorer panel.
+    if (
+      bal.view_mode === "operator_hot" &&
+      singleWalletAddress &&
+      target === singleWalletAddress &&
+      target !== CUSTODIAL_HOT_ADDRESS
+    ) {
+      const depositAcp = selectOnChainAtDeposit(bal) ?? "0";
+      return {
+        address: target,
+        acp: depositAcp,
+        units: String(Math.round(Number(depositAcp) * 1e8) || 0),
+        utxo_count: Number(depositAcp) > 0 ? bal.utxo_count : 0,
+        on_chain_at_deposit_acp: depositAcp,
+        on_chain_acp: depositAcp,
+        view_mode: "user",
+      };
+    }
+    return bal;
+  }
+
   async function refreshTransactionsByAddress(address: string, options?: { silent?: boolean; skipBalance?: boolean; merge?: boolean }) {
     const target = address.trim();
     if (!target) return;
@@ -401,7 +426,7 @@ export default function AcpWalletPage() {
       }
       if (!options?.skipBalance) {
         if (balRes && balRes.status === "fulfilled") {
-          setTxAddressBalance((balRes.value as BalanceResponse) || null);
+          setTxAddressBalance(explorerBalanceForAddress(target, (balRes.value as BalanceResponse) || null));
         } else {
           const balErr = String((balRes as PromiseRejectedResult | undefined)?.reason?.message || "");
           if (!balErr.includes("API error 502") && !balErr.includes("API error 503") && !balErr.includes("API error 504")) {
@@ -410,7 +435,7 @@ export default function AcpWalletPage() {
           setTxAddressBalance({ address: target, units: "0", acp: "0", utxo_count: 0 });
         }
       } else if (singleWalletAddress && target === singleWalletAddress && balance) {
-        setTxAddressBalance(balance);
+        setTxAddressBalance(explorerBalanceForAddress(target, balance));
       }
       setTxAddressActive(target);
       setHistoryLoaded(true);
@@ -1108,13 +1133,31 @@ export default function AcpWalletPage() {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <input className="input input-bordered w-full" value={txAddressInput} onChange={(e) => setTxAddressInput(e.target.value)} placeholder="acp1..." />
                   <button type="button" className="btn btn-ghost" onClick={() => refreshTransactionsByAddress(txAddressInput)} disabled={historyBusy || !txAddressInput.trim()}>{t("walletAcpPage.loadHistory")}</button>
-                  <button type="button" className="btn btn-ghost" onClick={() => { const walletAddress = (singleWalletAddress || "").trim(); if (!walletAddress) return; setTxAddressInput(walletAddress); refreshTransactionsByAddress(walletAddress, { skipBalance: !!balance }); }} disabled={historyBusy || !singleWalletAddress}>{t("walletAcpPage.useMyWallet")}</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => { const walletAddress = (singleWalletAddress || "").trim(); if (!walletAddress) return; setTxAddressInput(walletAddress); refreshTransactionsByAddress(walletAddress, { skipBalance: false }); }} disabled={historyBusy || !singleWalletAddress}>{t("walletAcpPage.useMyWallet")}</button>
+                  {isOperatorHotView ? (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setTxAddressInput(CUSTODIAL_HOT_ADDRESS);
+                        refreshTransactionsByAddress(CUSTODIAL_HOT_ADDRESS, { skipBalance: false });
+                      }}
+                      disabled={historyBusy}
+                    >
+                      {t("walletAcpPage.useCustodialHot")}
+                    </button>
+                  ) : null}
                 </div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{t("walletAcpPage.showing")} <span style={{ color: "var(--text)" }}>{txAddressActive || t("walletAcpPage.dash")}</span></div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
                   {t("walletAcpPage.balanceLabel")} <strong style={{ color: "var(--text)" }}>{txAddressBalance?.acp ?? "0"} ACP</strong>
                   {txAddressBalance?.utxo_count != null ?  t("walletAcpPage.utxoOne").replace("{n}", String(txAddressBalance.utxo_count)) : ""}
                   {txAddressBalance?.units != null && txAddressBalance.units !== "" ? <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>{t("walletAcpPage.unitsLine").replace("{units}", txAddressBalance.units)}</span> : null}
+                  {isOperatorHotView && txAddressActive === singleWalletAddress ? (
+                    <span style={{ fontSize: "0.78rem", display: "block", marginTop: 4, opacity: 0.9 }}>
+                      {t("walletAcpPage.explorerDepositNote")}
+                    </span>
+                  ) : null}
                 </div>
               </div>
 
@@ -1123,7 +1166,11 @@ export default function AcpWalletPage() {
               ) : historyBusy ? (
                 <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.historyLoading")}</div>
               ) : transactions.length === 0 ? (
-                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>{t("walletAcpPage.noTransactions")}</div>
+                <div style={{ marginTop: 12, color: "var(--text-muted)" }}>
+                  {isOperatorHotView && txAddressActive === singleWalletAddress
+                    ? t("walletAcpPage.noTransactionsOperatorDeposit")
+                    : t("walletAcpPage.noTransactions")}
+                </div>
               ) : (
                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                   {transactions.map((tx) => (
