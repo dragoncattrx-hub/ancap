@@ -105,15 +105,21 @@ fi
 cp "$MIGRATION_FILE" "$BACKUP_DIR/migration-allocations.json"
 
 echo "== Size bridge reserve from live BSC wACP totalSupply"
-LIVE_WACP_WEI="$("${COMPOSE[@]}" exec -T api python - <<'PY'
-import json
-import os
-import urllib.request
-
-rpc = (os.environ.get("BRIDGE_BSC_RPC_URL") or "").strip()
-contract = (os.environ.get("BRIDGE_WACP_CONTRACT") or "").strip()
-if not rpc or not contract:
-    raise SystemExit("BRIDGE_BSC_RPC_URL / BRIDGE_WACP_CONTRACT is not configured")
+BSC_RPC="$("${COMPOSE[@]}" exec -T api printenv BRIDGE_BSC_RPC_URL | tr -d '\r')"
+WACP_CONTRACT="$("${COMPOSE[@]}" exec -T api printenv BRIDGE_WACP_CONTRACT | tr -d '\r')"
+test -n "$BSC_RPC" || { echo "BRIDGE_BSC_RPC_URL is not configured" >&2; exit 1; }
+test -n "$WACP_CONTRACT" || { echo "BRIDGE_WACP_CONTRACT is not configured" >&2; exit 1; }
+BRIDGE_SPLIT="$(
+  BSC_RPC="$BSC_RPC" WACP_CONTRACT="$WACP_CONTRACT" \
+  PUBLIC_HINT="$BRIDGE_PUBLIC_ACP" ECOSYSTEM_HINT="$BRIDGE_ECOSYSTEM_ACP" \
+  FEE_BUFFER="$BRIDGE_BUFFER_ACP" python3 -c '
+import json, os, urllib.request
+from decimal import Decimal, ROUND_UP
+rpc = os.environ["BSC_RPC"].strip()
+contract = os.environ["WACP_CONTRACT"].strip()
+public_hint = Decimal(os.environ["PUBLIC_HINT"])
+ecosystem_hint = Decimal(os.environ["ECOSYSTEM_HINT"])
+fee_buffer = Decimal(os.environ["FEE_BUFFER"])
 body = json.dumps({
     "jsonrpc": "2.0",
     "id": 1,
@@ -123,48 +129,34 @@ body = json.dumps({
 req = urllib.request.Request(rpc, body, {"content-type": "application/json"})
 payload = json.load(urllib.request.urlopen(req, timeout=20))
 if payload.get("error"):
-    raise SystemExit(f"BSC totalSupply RPC failed: {payload['error']}")
-print(int(payload["result"], 16))
-PY
-)"
-BRIDGE_SPLIT="$(python3 - \
-  "$LIVE_WACP_WEI" "$BRIDGE_PUBLIC_ACP" "$BRIDGE_ECOSYSTEM_ACP" \
-  "$BRIDGE_BUFFER_ACP" <<'PY'
-import sys
-from decimal import Decimal, ROUND_UP
-
-total_wei = int(sys.argv[1])
-public_hint = Decimal(sys.argv[2])
-ecosystem_hint = Decimal(sys.argv[3])
-buffer = Decimal(sys.argv[4])
+    raise SystemExit("BSC totalSupply RPC failed: %s" % (payload["error"],))
+total_wei = int(payload["result"], 16)
 quantum = Decimal("0.00000001")
-wei_per_acp = Decimal(10) ** 18
-liability = (Decimal(total_wei) / wei_per_acp).quantize(quantum, rounding=ROUND_UP)
-needed = liability + buffer
+liability = (Decimal(total_wei) / (Decimal(10) ** 18)).quantize(quantum, rounding=ROUND_UP)
+needed = liability + fee_buffer
 public = min(public_hint, needed)
 ecosystem = needed - public
 if ecosystem < 0:
     raise SystemExit("bridge reserve split underflow")
 hint = public_hint + ecosystem_hint
 if needed > hint:
-    print(
-        f"live wACP {liability} + buffer {buffer} = {needed} ACP exceeds "
-        f"planned Public+Ecosystem split {hint}",
-        file=sys.stderr,
+    raise SystemExit(
+        "live wACP %s + fee buffer %s = %s ACP exceeds planned split %s"
+        % (liability, fee_buffer, needed, hint)
     )
-    raise SystemExit(2)
 print(public)
 print(ecosystem)
 print(
-    f"wACP totalSupply={total_wei} wei; liability={liability} ACP; "
-    f"buffer={buffer} ACP; fund Public={public} Ecosystem={ecosystem}",
-    file=sys.stderr,
+    "wACP totalSupply=%s wei; liability=%s ACP; fee_buffer=%s ACP; fund Public=%s Ecosystem=%s"
+    % (total_wei, liability, fee_buffer, public, ecosystem),
+    flush=True,
 )
-PY
+'
 )"
 BRIDGE_PUBLIC_ACP="$(printf '%s\n' "$BRIDGE_SPLIT" | sed -n '1p')"
 BRIDGE_ECOSYSTEM_ACP="$(printf '%s\n' "$BRIDGE_SPLIT" | sed -n '2p')"
 test -n "$BRIDGE_PUBLIC_ACP" && test -n "$BRIDGE_ECOSYSTEM_ACP"
+echo "$BRIDGE_SPLIT" | sed -n '3p'
 
 echo "== Build strict node/API images before stopping the old chain"
 "${COMPOSE[@]}" build acp-node api
