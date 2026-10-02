@@ -1,3 +1,5 @@
-Wired a weather-control literacy rail today.
+Secondary ACP full node on Oracle Always Free (Zurich).
 
-Monitoring and partner briefs only. No claim that anyone steers storms from orbit.
+It peers acp1 over JSON-RPC and serves a public read endpoint so the chain is not a single-home stack. Tip matched the 210M hard-cap regenesis at go-live.
+
+https://github.com/dragoncattrx-hub/ancap/blob/master/docs/ORACLE_CLOUD_ACP_NODE_PLAN.md

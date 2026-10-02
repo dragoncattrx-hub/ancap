@@ -1,5 +1,8 @@
-﻿Stardust desk на ANCAP
+ANCAP — secondary ACP node is live
 
-Собрал /stardust — ACP-брифы по мониторингу и weather-control грамотности. Переключатели на странице — UI, не живая консоль геоинженерии.
+Independent Always Free full node in Oracle eu-zurich-1, peering the primary network.
 
-https://ancap.cloud/stardust
+Public read RPC: http://152.67.79.206:8545/rpc
+Synced to regenesis v3 / 210M hard cap (same tip family as acp1.ancap.cloud).
+
+Plan: https://github.com/dragoncattrx-hub/ancap/blob/master/docs/ORACLE_CLOUD_ACP_NODE_PLAN.md

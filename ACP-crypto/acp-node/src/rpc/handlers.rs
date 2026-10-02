@@ -4442,7 +4442,6 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
                     if let Some(ref urls) = ctx.config.peer_rpc_urls {
                         let block_hex_relay = block_hex.to_string();
                         let urls_relay = urls.clone();
-                        let token = ctx.config.rpc_token.clone();
                         tokio::spawn(async move {
                             let client = reqwest::Client::builder()
                                 .timeout(std::time::Duration::from_secs(10))
@@ -4455,10 +4454,11 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
                                     "params": { "block": block_hex_relay },
                                     "id": 1
                                 });
-                                let mut req = client.post(&url).json(&body);
-                                if let Some(t) = token.as_deref() {
-                                    req = req.header("x-acp-rpc-token", t);
-                                }
+                                let req = client
+                                    .post(&url)
+                                    .header("User-Agent", "ancap-acp-node/1.0")
+                                    .json(&body);
+                                // Do not forward this node's admin RPC token to peers.
                                 if let Err(e) = req.send().await {
                                     tracing::warn!(%url, "block relay failed: {}", e);
                                 }

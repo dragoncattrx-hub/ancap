@@ -31,7 +31,11 @@ async fn rpc_call<T: serde::de::DeserializeOwned>(
         "params": params
     });
 
-    let mut req = client.post(url).json(&body);
+    // Cloudflare and some reverse proxies reject POSTs without a User-Agent.
+    let mut req = client
+        .post(url)
+        .header("User-Agent", "ancap-acp-node/1.0")
+        .json(&body);
     if let Some(t) = token {
         req = req.header("x-acp-rpc-token", t);
     }
@@ -49,7 +53,9 @@ async fn rpc_call<T: serde::de::DeserializeOwned>(
 
 async fn sync_from_peer(client: &reqwest::Client, peer_url: &str, ctx: &RpcCtx) -> anyhow::Result<()> {
     let local_best: u64 = ctx.chain.storage.best_height()?;
-    let token = ctx.config.rpc_token.as_deref();
+    // Never forward this node's own RPC token to remote peers — public peers
+    // either need no token for reads or their own peer credential.
+    let token = None;
     let peer_best: u64 = rpc_call(client, peer_url, "getblockcount", json!([]), token).await?;
 
     if peer_best <= local_best {

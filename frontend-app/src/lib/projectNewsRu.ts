@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "oracle-acp-secondary-node",
+    date: "2026-10-02",
+    title: "Вторая нода ACP на Oracle Cloud",
+    summary:
+      "Независимый full node ACP в eu-zurich-1 на Always Free: публичный JSON-RPC peer рядом с acp1.ancap.cloud, sync на regenesis v3 / hard cap 210M. План и peer URL: /docs путь ORACLE_CLOUD_ACP_NODE_PLAN на GitHub. Hostname acp2.ancap.cloud — следующий шаг (TLS).",
+    href: "https://github.com/dragoncattrx-hub/ancap/blob/master/docs/ORACLE_CLOUD_ACP_NODE_PLAN.md",
+  },
+  {
     id: "dark-matter-auction",
     date: "2026-09-14",
     title: "Аукцион тёмной материи",
