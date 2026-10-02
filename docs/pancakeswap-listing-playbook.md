@@ -285,7 +285,8 @@ Use this as your working draft:
 - Docs: `https://ancap.cloud/docs/wacp`
 - Reserve proof: `https://ancap.cloud/api/v1/wacp/reserve-proof`
 - Risks: `https://ancap.cloud/docs/wacp/risks`
-- Logo: `https://ancap.cloud/.../wacp-logo.png`
+- Logo PNG: `https://ancap.cloud/wacp-logo.png`
+- **BscScan 32×32 SVG (required for token update form):** `https://ancap.cloud/wacp-logo-32.svg`
 - Pair: `wACP/USDT`
 
 ---

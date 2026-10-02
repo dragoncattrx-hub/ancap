@@ -45,6 +45,10 @@ Official wrapped token:
 - address: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
 - explorer: <https://bscscan.com/address/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
 - source: [contracts/bridge-bsc/src/WACP.sol](../contracts/bridge-bsc/src/WACP.sol)
+- **BscScan token-update icon (32×32 SVG, direct download URL):** <https://ancap.cloud/wacp-logo-32.svg>
+- alias (same file): <https://ancap.cloud/icons/wacp-32.svg>
+- PNG fallback (not for the BscScan SVG field): <https://ancap.cloud/wacp-logo.png>
+- BscScan update form: <https://bscscan.com/tokenupdate/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
 
 ### BSC mainnet — bridge gateway contract
 

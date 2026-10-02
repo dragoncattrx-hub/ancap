@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="wACP">
+  <circle cx="16" cy="16" r="14.25" fill="none" stroke="#19c38a" stroke-width="3.5"/>
+  <circle cx="16" cy="16" r="3.25" fill="#19c38a"/>
+  <circle cx="16" cy="4.75" r="2.35" fill="#19c38a"/>
+  <circle cx="16" cy="27.25" r="2.35" fill="#19c38a"/>
+  <circle cx="4.75" cy="16" r="2.35" fill="#19c38a"/>
+  <circle cx="27.25" cy="16" r="2.35" fill="#19c38a"/>
+</svg>
