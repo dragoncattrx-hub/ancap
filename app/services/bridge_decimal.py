@@ -24,5 +24,13 @@ def wacp_wei_to_acp_smallest_floor(wacp_wei: int) -> tuple[int, int]:
     return floored, remainder
 
 
+def wacp_wei_to_acp_smallest_ceil(wacp_wei: int) -> int:
+    """Return the ACP units required to fully back an aggregate wACP supply."""
+    if wacp_wei < 0:
+        raise ValueError("wacp_wei must be non-negative")
+    scale = int(_SCALE)
+    return (wacp_wei + scale - 1) // scale
+
+
 def display_acp_from_smallest(acp_smallest: int) -> Decimal:
     return Decimal(acp_smallest) / (Decimal(10) ** ACP_DECIMALS)

@@ -39,7 +39,7 @@ type BalanceResponse = {
   platform_ledger_acp?: string | null;
   headline_acp?: string | null;
   primary_acp?: string | null;
-  primary_kind?: "on_chain" | "platform_credits" | "operator_total" | null;
+  primary_kind?: "on_chain" | "platform_credits" | "operator_total" | "chain_supply" | null;
   balance_status?: string | null;
   probe_status?: "live" | "degraded" | "unavailable" | null;
   in_work_acp?: string;
@@ -53,6 +53,9 @@ type BalanceResponse = {
   platform_credits_acp?: string | null;
   operator_hot_live_acp?: string | null;
   operator_controlled_live_acp?: string | null;
+  chain_supply_acp?: string | null;
+  supply_cap_acp?: string | null;
+  supply_invariant_ok?: boolean | null;
   tokenomics_buckets?: TokenomicsBucket[] | null;
   view_mode?: "user" | "operator_hot" | null;
   vested_unlocked_acp?: string;
@@ -832,7 +835,9 @@ export default function AcpWalletPage() {
                 </div>
                 {balance?.primary_kind && (
                   <div style={{ marginTop: 4, color: "var(--text-muted)", fontSize: "0.78rem" }}>
-                    {balance.primary_kind === "operator_total"
+                    {balance.primary_kind === "chain_supply"
+                      ? t("walletAcpPage.primaryKindSupply")
+                      : balance.primary_kind === "operator_total"
                       ? t("walletAcpPage.primaryKindOperator")
                       : balance.primary_kind === "platform_credits"
                         ? t("walletAcpPage.primaryKindCredits")

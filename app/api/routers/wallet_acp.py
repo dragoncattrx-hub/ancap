@@ -37,6 +37,7 @@ from app.services.acp_wallet import decode_wallet_secret
 from app.services.acp_wallet import personalize_hot_bound_wallet
 from app.services.acp_wallet import user_is_custodial_hot_holder
 from app.services.acp_wallet import upsert_address_binding, BINDING_KIND_PRIVACY
+from app.services.acp_amounts import rpc_amount_units
 from app.services.acp_tokenomics import (
     CUSTODIAL_HOT_ADDRESS,
     OPERATOR_ROLE_ADDRESSES,
@@ -105,6 +106,7 @@ _OPERATOR_ROLE_WALLETD_TIMEOUT_S = 15
 _OPERATOR_AGGREGATE_BUDGET_S = 30.0
 _OPERATOR_AGGREGATE_PER_ROLE_S = 10
 _INTERACTIVE_RPC_TIMEOUT_S = 5.0
+_ACP_SUPPLY_CAP_UNITS = 210_000_000 * 100_000_000
 
 
 def _walletd_cmd() -> list[str]:
@@ -264,30 +266,8 @@ def _acp_timestamp(ts: int) -> str:
 
 
 def _json_chain_amount_to_int(value: object) -> int:
-    """Parse RPC getblock vout/vin amounts without silent float precision loss."""
-    if value is None:
-        return 0
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, int):
-        return value
-    if isinstance(value, str):
-        s = value.strip()
-        if not s:
-            return 0
-        try:
-            return int(Decimal(s))
-        except (InvalidOperation, ValueError):
-            return 0
-    if isinstance(value, float):
-        try:
-            return int(Decimal(str(value)))
-        except (InvalidOperation, ValueError):
-            return 0
-    try:
-        return int(Decimal(str(value)))
-    except (InvalidOperation, ValueError):
-        return 0
+    """Parse exact integer units from ACP node JSON-RPC."""
+    return rpc_amount_units(value)
 
 
 def _parse_decimal_or_zero(value: str | int | float | Decimal | None) -> Decimal:
@@ -610,6 +590,9 @@ async def _decorate_balance_for_user(
 
     operator_hot_live: Decimal | None = None
     operator_controlled_live: Decimal | None = None
+    chain_supply_acp: Decimal | None = None
+    supply_cap_acp: Decimal | None = None
+    supply_invariant_ok: bool | None = None
     primary_kind: str | None = None
     primary_acp_val: Decimal | None = None
     withdraw_source: str | None = None
@@ -658,8 +641,22 @@ async def _decorate_balance_for_user(
         else:
             available_acp = Decimal(0)
             withdraw_source = "none"
-        primary_kind = "operator_total"
-        if live_ok:
+        supply_state = _chain_supply_info()
+        if supply_state is not None:
+            chain_supply_acp = Decimal(str(supply_state["utxo_supply_acp"]))
+            supply_cap_acp = Decimal(str(supply_state["max_supply_acp"]))
+            supply_invariant_ok = True
+            primary_kind = "chain_supply"
+            primary_acp_val = chain_supply_acp
+            display_acp = chain_supply_acp
+            display_units = str(supply_state["utxo_supply_units"])
+            probe_status = "live" if live_hits == role_total else "degraded"
+            source_note = (
+                f"stateful node invariant verified at height "
+                f"{int(supply_state.get('height') or 0)}"
+            )
+        elif live_ok:
+            primary_kind = "operator_total"
             primary_acp_val = live_total
             display_acp = live_total
             display_units = _units_from_acp(live_total)
@@ -672,23 +669,29 @@ async def _decorate_balance_for_user(
                 "zeros preserved; design only in buckets for unavailable probes)"
             )
         else:
-            # All probes unavailable: still surface the full operator claim immediately
-            # (design buckets + platform ledger) so the wallet never looks empty.
-            claim_total = design_total + in_ledger
-            primary_acp_val = claim_total
-            display_acp = claim_total
-            display_units = _units_from_acp(claim_total)
+            primary_kind = "operator_total"
+            # Ledger balances are claims on the existing supply, never additive
+            # issuance. Keep them separate even while live RPC is unavailable.
+            primary_acp_val = design_total
+            display_acp = design_total
+            display_units = _units_from_acp(design_total)
             probe_status = "unavailable"
             source_note = (
-                "all live probes unavailable — showing design alloc + platform ledger; "
+                "all live probes unavailable — showing the 210M design allocation; "
                 "confirm live floats when RPC recovers"
             )
         balance_note = (
-            f"Operator-controlled total: "
-            f"{_decimal_to_api_str(live_total) if live_ok else _decimal_to_api_str(display_acp)} ACP "
-            f"({source_note}). "
-            f"Includes genesis treasury, custodial hot, project treasury, bridge reserve"
-            f"{f' + platform ledger {_decimal_to_api_str(in_ledger)} ACP' if (not live_ok and in_ledger > 0) else ''}. "
+            (
+                f"On-chain UTXO supply: {_decimal_to_api_str(chain_supply_acp)} ACP "
+                f"of {_decimal_to_api_str(supply_cap_acp)} ACP hard cap ({source_note}). "
+                f"Visible operator role wallets: {_decimal_to_api_str(live_total)} ACP. "
+                if chain_supply_acp is not None and supply_cap_acp is not None
+                else
+                f"Operator-controlled total: "
+                f"{_decimal_to_api_str(live_total) if live_ok else _decimal_to_api_str(display_acp)} ACP "
+                f"({source_note}). "
+            )
+            +
             f"Withdraw from this login uses custodial hot float "
             f"({_decimal_to_api_str(hot_live)} ACP hot"
             f"{f'; + {_decimal_to_api_str(personal_available)} ACP personal UTXO' if personal_available > 0 else ''}"
@@ -826,6 +829,13 @@ async def _decorate_balance_for_user(
             if operator_controlled_live is not None
             else None
         ),
+        chain_supply_acp=(
+            _decimal_to_api_str(chain_supply_acp) if chain_supply_acp is not None else None
+        ),
+        supply_cap_acp=(
+            _decimal_to_api_str(supply_cap_acp) if supply_cap_acp is not None else None
+        ),
+        supply_invariant_ok=supply_invariant_ok,
         primary_acp=primary_s,
         primary_kind=primary_kind,  # type: ignore[arg-type]
         probe_status=probe_status,  # type: ignore[arg-type]
@@ -862,6 +872,49 @@ def _rpc_call(
     if payload.get("error"):
         raise HTTPException(status_code=502, detail=f"ACP RPC error: {payload['error']}")
     return payload.get("result")
+
+
+def _chain_supply_info(*, required: bool = False) -> dict | None:
+    """Load and independently verify the node's stateful supply counters."""
+    try:
+        raw = _rpc_call(
+            _require_acp_rpc_url(),
+            "gettxoutsetinfo",
+            [],
+            timeout_s=_INTERACTIVE_RPC_TIMEOUT_S,
+        )
+        if not isinstance(raw, dict):
+            raise ValueError("missing gettxoutsetinfo result")
+        maximum = int(str(raw.get("max_supply_units") or ""))
+        issued = int(str(raw.get("issued_supply_units") or ""))
+        unspent = int(str(raw.get("utxo_supply_units") or ""))
+        initialized = bool(raw.get("initialized"))
+        reported_ok = raw.get("supply_invariant_ok") is True
+        valid = (
+            initialized
+            and reported_ok
+            and maximum == _ACP_SUPPLY_CAP_UNITS
+            and issued == maximum
+            and 0 <= unspent <= issued
+        )
+        if not valid:
+            raise ValueError(
+                f"invalid ACP supply state (initialized={initialized}, max={maximum}, "
+                f"issued={issued}, unspent={unspent}, reported_ok={reported_ok})"
+            )
+        return {
+            **raw,
+            "max_supply_units": maximum,
+            "issued_supply_units": issued,
+            "utxo_supply_units": unspent,
+        }
+    except Exception as exc:
+        if required:
+            raise HTTPException(
+                status_code=503,
+                detail=f"ACP transfers are paused: supply invariant unavailable or invalid ({exc})",
+            ) from exc
+        return None
 
 
 def _rpc_balance_for_address(address: str) -> dict:
@@ -1835,6 +1888,14 @@ async def privacy_receive_address(
     idx = int(getattr(wallet, "privacy_next_index", 1) or 1)
     if idx < 1:
         idx = 1
+    if idx > privacy_svc.DEFAULT_SUBADDR_SCAN_WINDOW:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Privacy receive-index exceeds the consensus scan window "
+                f"({privacy_svc.DEFAULT_SUBADDR_SCAN_WINDOW})."
+            ),
+        )
     address = privacy_svc.subaddress_bech32(view_wire, idx)
     row = UserAcpPrivacyAddress(
         id=str(uuid.uuid4()),
@@ -2188,6 +2249,7 @@ async def withdraw(
     session: AsyncSession = Depends(get_db),
 ):
     rpc_url = _require_acp_rpc_url()
+    _chain_supply_info(required=True)
     wallet = await get_wallet_for_user(session, user_id)
     if wallet is None:
         raise HTTPException(

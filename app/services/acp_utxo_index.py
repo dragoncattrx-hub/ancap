@@ -16,6 +16,7 @@ from typing import Any, Iterable
 import httpx
 
 from app.services.acp_rpc import acp_rpc_headers
+from app.services.acp_amounts import rpc_amount_units
 from app.services.acp_tokenomics import OPERATOR_ROLE_ADDRESSES
 from app.config import get_settings
 
@@ -33,6 +34,7 @@ _RPC_TIMEOUT_S = 20.0
 _lock = threading.Lock()
 _state: dict[str, Any] = {
     "wm": 0,
+    "tip_hash": None,
     "unspent": {},  # outpoint -> (address, units)
     "watch": set(OPERATOR_ROLE_ADDRESSES),
     "catchup_inflight": False,
@@ -45,16 +47,8 @@ def _units_to_acp_str(units: int) -> str:
 
 
 def _amount_to_units(raw: object) -> int:
-    if raw is None:
-        return 0
-    if isinstance(raw, bool):
-        return 0
-    if isinstance(raw, int):
-        return int(raw)
-    try:
-        return int((Decimal(str(raw)) * _UNITS_PER_ACP).to_integral_value())
-    except Exception:
-        return 0
+    """Parse node RPC amounts, which are always integer base units."""
+    return rpc_amount_units(raw)
 
 
 def _rpc(rpc_url: str, method: str, params: list | dict | None = None) -> Any:
@@ -175,8 +169,10 @@ def _redis_load_sync() -> None:
     try:
         wm_raw = cache_get_json_sync(_REDIS_WM_KEY)
         wm = 0
+        tip_hash: str | None = None
         if isinstance(wm_raw, dict):
             wm = int(wm_raw.get("height") or 0)
+            tip_hash = str(wm_raw.get("blockhash") or "").strip() or None
         elif wm_raw is not None:
             try:
                 wm = int(wm_raw)
@@ -194,6 +190,7 @@ def _redis_load_sync() -> None:
         with _lock:
             if wm > int(_state.get("wm") or 0) or (wm > 0 and not _state.get("unspent")):
                 _state["wm"] = wm
+                _state["tip_hash"] = tip_hash
                 _state["unspent"] = unspent
     except Exception:
         return
@@ -237,6 +234,7 @@ def index_status() -> dict[str, Any]:
     with _lock:
         return {
             "watermark": int(_state.get("wm") or 0),
+            "tip_hash": _state.get("tip_hash"),
             "unspent_outs": len(_state.get("unspent") or {}),
             "watch_count": len(_state.get("watch") or {}),
             "catchup_inflight": bool(_state.get("catchup_inflight")),
@@ -260,9 +258,11 @@ async def _redis_load() -> None:
                     continue
         finally:
             await client.aclose()
+    tip_hash: str | None = None
     wm = int(wm_raw or 0) if not isinstance(wm_raw, dict) else int(wm_raw.get("height") or 0)
     if isinstance(wm_raw, dict):
         wm = int(wm_raw.get("height") or 0)
+        tip_hash = str(wm_raw.get("blockhash") or "").strip() or None
     elif wm_raw is not None:
         try:
             wm = int(wm_raw)
@@ -271,6 +271,7 @@ async def _redis_load() -> None:
     with _lock:
         if wm > int(_state.get("wm") or 0) or (wm > 0 and not _state.get("unspent")):
             _state["wm"] = wm
+            _state["tip_hash"] = tip_hash
             _state["unspent"] = unspent
 
 
@@ -279,10 +280,15 @@ async def _redis_save() -> None:
 
     with _lock:
         wm = int(_state.get("wm") or 0)
+        tip_hash = str(_state.get("tip_hash") or "").strip() or None
         unspent = dict(_state.get("unspent") or {})
         watch = set(_state.get("watch") or set())
 
-    await cache_set_json(_REDIS_WM_KEY, wm, ttl_seconds=_REDIS_BAL_TTL_S)
+    await cache_set_json(
+        _REDIS_WM_KEY,
+        {"height": wm, "blockhash": tip_hash},
+        ttl_seconds=_REDIS_BAL_TTL_S,
+    )
     client = await get_redis_client()
     if client is None:
         return
@@ -360,15 +366,40 @@ def advance_index_sync(*, chunk: int = _CHUNK_DEFAULT) -> dict[str, Any]:
 
     with _lock:
         wm = int(_state.get("wm") or 0)
+        checkpoint_hash = str(_state.get("tip_hash") or "").strip() or None
         unspent = dict(_state.get("unspent") or {})
         watch = set(_state.get("watch") or set(OPERATOR_ROLE_ADDRESSES))
 
     if not watch:
         watch = set(OPERATOR_ROLE_ADDRESSES)
 
+    # A numeric height alone cannot identify a chain. Reset on regenesis/reorg,
+    # and rebuild once for legacy Redis watermarks that had no block hash.
+    reset_reason: str | None = None
+    if wm > tip:
+        reset_reason = "tip_behind_watermark"
+    elif wm > 0 and not checkpoint_hash:
+        reset_reason = "checkpoint_hash_missing"
+    elif wm > 0:
+        live_checkpoint = str(_rpc(rpc_url, "getblockhash", {"height": wm}) or "")
+        if live_checkpoint != checkpoint_hash:
+            reset_reason = "checkpoint_hash_mismatch"
+    if reset_reason:
+        logger.warning("acp_utxo_index reset: %s", reset_reason)
+        wm = 0
+        checkpoint_hash = None
+        unspent = {}
+
     start = wm + 1
     if start > tip:
-        return {"ok": True, "tip": tip, "watermark": wm, "scanned": 0, "caught_up": True}
+        return {
+            "ok": True,
+            "tip": tip,
+            "watermark": wm,
+            "tip_hash": checkpoint_hash,
+            "scanned": 0,
+            "caught_up": True,
+        }
 
     end = min(tip, wm + max(1, int(chunk)))
     scanned = 0
@@ -378,9 +409,11 @@ def advance_index_sync(*, chunk: int = _CHUNK_DEFAULT) -> dict[str, Any]:
         _apply_block(unspent, watch, block)
         scanned += 1
         wm = height
+        checkpoint_hash = str(bh)
 
     with _lock:
         _state["wm"] = wm
+        _state["tip_hash"] = checkpoint_hash
         _state["unspent"] = unspent
         _state["watch"] = watch
 
@@ -388,6 +421,7 @@ def advance_index_sync(*, chunk: int = _CHUNK_DEFAULT) -> dict[str, Any]:
         "ok": True,
         "tip": tip,
         "watermark": wm,
+        "tip_hash": checkpoint_hash,
         "scanned": scanned,
         "caught_up": wm >= tip,
         "unspent_outs": len(unspent),
@@ -493,4 +527,5 @@ def seed_from_out_index(
     with _lock:
         if height >= int(_state.get("wm") or 0):
             _state["wm"] = int(height)
+            _state["tip_hash"] = None
             _state["unspent"] = unspent

@@ -43,7 +43,11 @@ from app.schemas.bridge_rail import (
     WacpPublicStatusResponse,
     WacpReserveProofResponse,
 )
-from app.services.bridge_decimal import acp_smallest_to_wacp_wei, wacp_wei_to_acp_smallest_floor
+from app.services.bridge_decimal import (
+    acp_smallest_to_wacp_wei,
+    wacp_wei_to_acp_smallest_ceil,
+    wacp_wei_to_acp_smallest_floor,
+)
 from app.services.bridge_reconciliation import (
     PUBLIC_SNAPSHOT_FRESH_MINUTES,
     check_reconciliation_mismatch_alert,
@@ -55,6 +59,7 @@ from app.services.bridge_reconciliation import (
     check_stale_snapshots,
     run_reconciliation,
 )
+from app.services.wacp_supply import erc20_total_supply_wei
 
 logger = logging.getLogger(__name__)
 
@@ -233,9 +238,10 @@ async def _get_operation_or_404(session: AsyncSession, operation_id: str) -> Bri
 async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProofResponse:
     s = get_settings()
 
-    total_wacp = 0
+    notes: list[str] = []
+    completed_wacp_wei = 0
     try:
-        total_wacp = int(
+        completed_wacp_wei = int(
             await session.scalar(
                 select(func.coalesce(func.sum(BridgeOperation.amount_wacp_wei), 0)).where(
                     BridgeOperation.direction == "acp_to_bsc",
@@ -248,6 +254,31 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         logger.warning("live_reserve_proof total supply summary skipped: %s", exc)
         await session.rollback()
 
+    total_wacp = completed_wacp_wei
+    supply_source = "completed_operations_fallback"
+    if s.bridge_bsc_rpc_url and s.bridge_wacp_contract:
+        try:
+            total_wacp = await erc20_total_supply_wei(
+                s.bridge_bsc_rpc_url,
+                s.bridge_wacp_contract,
+            )
+            supply_source = "bsc_totalSupply"
+            if total_wacp != completed_wacp_wei:
+                notes.append(
+                    "BSC totalSupply differs from completed bridge-operation accounting "
+                    f"(on-chain={total_wacp}, operations={completed_wacp_wei})."
+                )
+        except Exception as exc:
+            notes.append(
+                "Authoritative BSC totalSupply lookup failed; completed-operation "
+                f"accounting is shown as a degraded fallback ({exc})."
+            )
+    else:
+        notes.append(
+            "BSC RPC or wACP contract is not configured; completed-operation "
+            "accounting is shown as a degraded fallback."
+        )
+
     cp_acp = None
     cp_bsc = None
     try:
@@ -257,9 +288,25 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         logger.warning("live_reserve_proof checkpoints skipped: %s", exc)
         await session.rollback()
 
-    notes: list[str] = []
     reserve_balance_smallest_int: int | None = None
-    total_supply_acp_smallest = total_wacp // (10**10)
+    # ACP has 8 decimals and wACP has 18. Round the aggregate liability up,
+    # otherwise a fractional remainder can make reserve proof understate debt.
+    total_supply_acp_smallest = wacp_wei_to_acp_smallest_ceil(total_wacp)
+    try:
+        buffer_acp = Decimal(str(s.bridge_operational_buffer_acp))
+        scaled_buffer = buffer_acp * (Decimal(10) ** 8)
+        if (
+            not buffer_acp.is_finite()
+            or buffer_acp < 0
+            or scaled_buffer != scaled_buffer.to_integral_value()
+        ):
+            raise ValueError("must be non-negative with at most 8 decimals")
+        operational_buffer_smallest = int(scaled_buffer)
+        buffer_config_valid = True
+    except Exception as exc:
+        operational_buffer_smallest = 0
+        buffer_config_valid = False
+        notes.append(f"Operational reserve buffer configuration is invalid ({exc}).")
     backing_ratio: str | None = None
     status = "pending"
     reserve_health = "pending"
@@ -285,13 +332,21 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
             if total_wacp > 0:
                 backing_ratio_dec = Decimal(reserve_balance_smallest_int) / Decimal(total_supply_acp_smallest or 1)
                 backing_ratio = format(backing_ratio_dec, "f")
-                if backing_ratio_dec >= Decimal("1"):
+                required_with_buffer = total_supply_acp_smallest + operational_buffer_smallest
+                if reserve_balance_smallest_int >= required_with_buffer:
                     status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
                     reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                elif reserve_balance_smallest_int >= total_supply_acp_smallest:
+                    status = "degraded" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "degraded" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                    notes.append(
+                        "Reserve covers wACP supply but is below the configured "
+                        "reverse-payout fee buffer."
+                    )
                 else:
                     status = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
                     reserve_health = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
-                    notes.append("Reserve balance is below implied completed wACP supply.")
+                    notes.append("Reserve balance is below on-chain wACP supply.")
             else:
                 status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
                 reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
@@ -323,21 +378,30 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
     if latest_snapshot is not None:
         snap_age_minutes = (_utc_now() - latest_snapshot.snapshot_at).total_seconds() / 60.0
         if snap_age_minutes <= PUBLIC_SNAPSHOT_FRESH_MINUTES:
-            if int(latest_snapshot.reserve_balance_acp_smallest or 0) > 0:
+            if (
+                reserve_balance_smallest_int is None
+                and int(latest_snapshot.reserve_balance_acp_smallest or 0) > 0
+            ):
                 reserve_balance_smallest_int = int(latest_snapshot.reserve_balance_acp_smallest)
-            if latest_snapshot.backing_ratio is not None and total_wacp > 0:
-                backing_ratio_dec = Decimal(str(latest_snapshot.backing_ratio))
-                backing_ratio = format(backing_ratio_dec, "f")
                 last_updated_at = latest_snapshot.snapshot_at
-                if backing_ratio_dec >= Decimal("1"):
+                notes.append(
+                    f"Reserve balance sourced from fresh snapshot ({round(snap_age_minutes, 1)} min old)."
+                )
+            if reserve_balance_smallest_int is not None and total_wacp > 0:
+                backing_ratio_dec = Decimal(reserve_balance_smallest_int) / Decimal(
+                    total_supply_acp_smallest or 1
+                )
+                backing_ratio = format(backing_ratio_dec, "f")
+                required_with_buffer = total_supply_acp_smallest + operational_buffer_smallest
+                if reserve_balance_smallest_int >= required_with_buffer:
                     status = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
                     reserve_health = "healthy" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
+                elif reserve_balance_smallest_int >= total_supply_acp_smallest:
+                    status = "degraded" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
+                    reserve_health = "degraded" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
                 else:
                     status = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else status
                     reserve_health = "critical" if s.bridge_rail_enabled and not s.bridge_rail_paused else reserve_health
-                notes.append(
-                    f"Backing ratio sourced from fresh reserve snapshot ({round(snap_age_minutes, 1)} min old)."
-                )
             if latest_snapshot.last_acp_block_height is not None:
                 cp_acp_height = int(latest_snapshot.last_acp_block_height)
             else:
@@ -372,6 +436,15 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         if hasattr(session, "rollback"):
             await session.rollback()
 
+    notes.append(f"wACP supply source: {supply_source}.")
+    if s.bridge_rail_enabled and not s.bridge_rail_paused:
+        if supply_source != "bsc_totalSupply" and reserve_health == "healthy":
+            reserve_health = "degraded"
+            status = "degraded"
+        if not buffer_config_valid and reserve_health not in {"critical"}:
+            reserve_health = "degraded"
+            status = "degraded"
+
     return WacpReserveProofResponse(
         status=status,
         bridge_enabled=s.bridge_rail_enabled,
@@ -381,7 +454,7 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         wacp_contract=s.bridge_wacp_contract,
         wacp_total_supply_wei=str(total_wacp),
         wacp_total_supply_acp_smallest=str(total_supply_acp_smallest),
-        operational_buffer_smallest="0",
+        operational_buffer_smallest=str(operational_buffer_smallest),
         backing_ratio=backing_ratio,
         reserve_health=reserve_health,
         last_acp_block_height=cp_acp_height,

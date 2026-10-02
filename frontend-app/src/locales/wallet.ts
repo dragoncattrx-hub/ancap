@@ -78,6 +78,7 @@ export const walletAcpByLang: Record<Language, Tree> = {
     partitionWithdrawable: "Withdrawable now",
     primaryKindOnChain: "Primary: on-chain at deposit",
     primaryKindCredits: "Primary: platform credits",
+    primaryKindSupply: "Primary: verified on-chain supply",
     primaryKindOperator: "Primary: operator live total",
     operatorBucketsLiveNote:
       "Role wallets below. Live probes feed the hero total; design alloc appears only when a probe is unavailable.",
@@ -259,6 +260,7 @@ export const walletAcpByLang: Record<Language, Tree> = {
     partitionWithdrawable: "Доступно к выводу сейчас",
     primaryKindOnChain: "Основное: on-chain на депозите",
     primaryKindCredits: "Основное: платформенные кредиты",
+    primaryKindSupply: "Основное: проверенный объём ACP в цепи",
     primaryKindOperator: "Основное: live-итог оператора",
     operatorBucketsLiveNote:
       "Ролевые кошельки ниже. Live-пробы формируют hero-итог; design-аллок только если проба недоступна.",
@@ -440,6 +442,7 @@ export const walletAcpByLang: Record<Language, Tree> = {
     partitionWithdrawable: "Доступно до виводу зараз",
     primaryKindOnChain: "Основне: on-chain на депозиті",
     primaryKindCredits: "Основне: платформені кредити",
+    primaryKindSupply: "Основне: перевірений обсяг ACP у ланцюзі",
     primaryKindOperator: "Основне: live-підсумок оператора",
     operatorBucketsLiveNote:
       "Рольові гаманці нижче. Live-проби формують hero-підсумок; design-алок лише якщо проба недоступна.",
@@ -621,6 +624,7 @@ export const walletAcpByLang: Record<Language, Tree> = {
     partitionWithdrawable: "Jetzt abhebbar",
     primaryKindOnChain: "Primär: on-chain am Deposit",
     primaryKindCredits: "Primär: Plattform-Credits",
+    primaryKindSupply: "Primär: verifizierter On-Chain-Bestand",
     primaryKindOperator: "Primär: Operator-Live-Summe",
     operatorBucketsLiveNote:
       "Rollen-Wallets unten. Live-Probes speisen die Hero-Summe; Design-Allok nur wenn eine Probe fehlt.",
@@ -800,6 +804,7 @@ export const walletAcpByLang: Record<Language, Tree> = {
     partitionWithdrawable: "目前可提領",
     primaryKindOnChain: "主要：入金地址鏈上",
     primaryKindCredits: "主要：平台點數",
+    primaryKindSupply: "主要：已驗證鏈上供應量",
     primaryKindOperator: "主要：營運即時合計",
     operatorBucketsLiveNote:
       "下方為角色錢包。即時探測構成主餘額；設計配置僅在探測失敗時顯示。",

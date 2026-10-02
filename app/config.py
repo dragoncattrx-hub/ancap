@@ -399,6 +399,8 @@ class Settings(BaseSettings):
     bridge_token_metadata_live: bool = False
     bridge_bsc_private_key: str | None = None
     bridge_reserve_acp_address: str = ""
+    # Extra reserve retained for ACP transaction fees on reverse payouts.
+    bridge_operational_buffer_acp: str = "999"
     acp_hot_keystore_file: str = ""
     bridge_acp_confirmations: int = 30
     # Incremental ACP deposit scan (avoid full 1..tip walk every tick).

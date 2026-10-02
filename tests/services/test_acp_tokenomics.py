@@ -26,12 +26,16 @@ def test_bucket_status_helpers():
     assert _bucket_status(Decimal("25200001"), Decimal("25200000")) == "excess"
 
 
-def test_acp_supply_layout_points_bulk_to_genesis_treasury():
+def test_acp_supply_layout_has_exact_canonical_genesis_buckets():
     layout = acp_supply_layout()
     assert Decimal(layout["genesis_supply_acp"]) == Decimal("210000000")
     roles = {r["key"]: r for r in layout["roles"]}
-    assert roles["genesis_treasury"]["address"] == GENESIS_TREASURY_ADDRESS
-    assert Decimal(roles["genesis_treasury"]["design_acp"]) > Decimal("200000000")
+    assert roles["public"]["address"] == GENESIS_TREASURY_ADDRESS
+    canonical = sum(
+        Decimal(roles[key]["design_acp"])
+        for key in ("creator", "validator", "public", "ecosystem")
+    )
+    assert canonical == Decimal("210000000")
     assert roles["custodial_hot"]["address"] == CUSTODIAL_HOT_ADDRESS
-    assert Decimal(roles["custodial_hot"]["design_acp"]) == Decimal("1000000")
+    assert Decimal(roles["custodial_hot"]["design_acp"]) == Decimal("0")
     assert "Dilithium" in layout["signing_security"] or "dilithium" in layout["signing_security"]

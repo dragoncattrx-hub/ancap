@@ -107,14 +107,18 @@ def test_wacp_reserve_proof_live_balance_path(client, monkeypatch):
     monkeypatch.setenv("BRIDGE_RAIL_ENABLED", "true")
     monkeypatch.setenv("BRIDGE_RAIL_PAUSED", "false")
     monkeypatch.setenv("BRIDGE_RESERVE_ACP_ADDRESS", "acp1qreserve0000000000000000000000000000000")
+    monkeypatch.setenv("BRIDGE_BSC_RPC_URL", "https://bsc.example.invalid")
     monkeypatch.setenv("BRIDGE_WACP_CONTRACT", "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402")
+    monkeypatch.setenv("BRIDGE_OPERATIONAL_BUFFER_ACP", "0")
     from app.config import get_settings
     get_settings.cache_clear()
 
     import app.api.routers.bridge_rail as bridge_rail
 
-    async def fake_scalar(*args, **kwargs):
+    async def fake_total_supply(*args, **kwargs):
         return 1000000000000000000
+
+    monkeypatch.setattr(bridge_rail, "erc20_total_supply_wei", fake_total_supply)
 
     class _FakeSession:
         async def scalar(self, *args, **kwargs):

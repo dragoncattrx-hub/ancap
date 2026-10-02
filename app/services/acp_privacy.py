@@ -77,6 +77,8 @@ def hkdf_32(ikm: bytes, info: bytes) -> bytes:
 def subaddress_hash20(view_pubkey_wire: bytes, index: int) -> bytes:
     if index < 0:
         raise ValueError("index must be >= 0")
+    if index > DEFAULT_SUBADDR_SCAN_WINDOW:
+        raise ValueError("index exceeds DEFAULT_SUBADDR_SCAN_WINDOW")
     if index == 0:
         return hashlib.sha256(view_pubkey_wire).digest()[:20]
     info = SUBADDR_INFO_PREFIX + int(index).to_bytes(4, "little")

@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from app.config import get_settings
+from app.services.acp_amounts import rpc_amount_units
 from app.schemas.tokenomics import (
     AcpTokenomicsBucketSnapshot,
     AcpTokenomicsHotPool,
@@ -17,20 +18,27 @@ ECOSYSTEM_BUCKET_ADDRESS = "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf"
 CREATOR_BUCKET_ADDRESS = "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl"
 VALIDATOR_BUCKET_ADDRESS = "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um"
 PUBLIC_BUCKET_ADDRESS = "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm"
-GENESIS_TREASURY_ADDRESS = "acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl"
+# Compatibility alias: regenesis v3 restores the canonical Public & Liquidity
+# bucket; the inflated v2 "genesis treasury" is no longer a protocol role.
+GENESIS_TREASURY_ADDRESS = PUBLIC_BUCKET_ADDRESS
 PROJECT_TREASURY_ADDRESS = "acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902"
 BRIDGE_RESERVE_ADDRESS = "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz"
 GENESIS_SUPPLY_ACP = Decimal("210000000")
-# Regenesis v2 design allocs (see build_and_submit_genesis_v2.rs / docs/FINANCE_MODEL.md).
-GENESIS_TREASURY_DESIGN_ACP = Decimal("207643979.999998")
-CUSTODIAL_HOT_DESIGN_ACP = Decimal("1000000")
-PROJECT_TREASURY_DESIGN_ACP = Decimal("1000000")
-BRIDGE_RESERVE_DESIGN_ACP = Decimal("301000")
+GENESIS_TREASURY_DESIGN_ACP = Decimal("25200000")
+# Operational wallets are funded from Public & Liquidity; they are not extra
+# genesis allocations and therefore have zero additive design supply.
+CUSTODIAL_HOT_DESIGN_ACP = Decimal("0")
+PROJECT_TREASURY_DESIGN_ACP = Decimal("0")
+BRIDGE_RESERVE_DESIGN_ACP = Decimal("0")
 ACP_UNITS_PER_ACP = 100_000_000
 
-# Operator-controlled role wallets (regenesis v2). Shown aggregated for hot holders.
+# Canonical genesis buckets plus operational destinations. Live sums do not
+# double count: spends reduce a bucket before increasing an operational wallet.
 OPERATOR_ROLE_WALLETS: tuple[tuple[str, str, str, Decimal], ...] = (
-    ("genesis_treasury", "Genesis treasury", GENESIS_TREASURY_ADDRESS, GENESIS_TREASURY_DESIGN_ACP),
+    ("creator", "Creator vesting", CREATOR_BUCKET_ADDRESS, Decimal("69300000")),
+    ("validator", "Validator reserve", VALIDATOR_BUCKET_ADDRESS, Decimal("105000000")),
+    ("public", "Public & liquidity", PUBLIC_BUCKET_ADDRESS, Decimal("25200000")),
+    ("ecosystem", "Ecosystem grants", ECOSYSTEM_BUCKET_ADDRESS, Decimal("10500000")),
     ("custodial_hot", "Custodial hot", CUSTODIAL_HOT_ADDRESS, CUSTODIAL_HOT_DESIGN_ACP),
     ("project_treasury", "Project treasury", PROJECT_TREASURY_ADDRESS, PROJECT_TREASURY_DESIGN_ACP),
     ("bridge_reserve", "Bridge reserve", BRIDGE_RESERVE_ADDRESS, BRIDGE_RESERVE_DESIGN_ACP),
@@ -61,48 +69,11 @@ class CustodialHotBreakdown:
 
 
 def _json_chain_amount_to_int(value: object) -> int:
-    if value is None:
-        return 0
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, int):
-        return value
-    if isinstance(value, str):
-        s = value.strip()
-        if not s:
-            return 0
-        try:
-            return int(Decimal(s))
-        except (InvalidOperation, ValueError):
-            return 0
-    if isinstance(value, float):
-        try:
-            return int(Decimal(str(value)))
-        except (InvalidOperation, ValueError):
-            return 0
-    try:
-        return int(Decimal(str(value)))
-    except (InvalidOperation, ValueError):
-        return 0
+    return rpc_amount_units(value)
 
 
 def _units_to_acp(units: int) -> Decimal:
     return Decimal(units) / Decimal(ACP_UNITS_PER_ACP)
-
-
-def _utxo_units(item: dict) -> int:
-    if not isinstance(item, dict):
-        return 0
-    raw_units = item.get("amount_units")
-    if raw_units is not None:
-        try:
-            return int(raw_units)
-        except (TypeError, ValueError):
-            return 0
-    try:
-        return int((Decimal(str(item.get("amount", 0))) * Decimal(ACP_UNITS_PER_ACP)).to_integral_value())
-    except Exception:
-        return 0
 
 
 def breakdown_custodial_hot_utxos(utxo_units: list[int]) -> CustodialHotBreakdown:
@@ -185,18 +156,19 @@ def acp_supply_layout() -> dict[str, object]:
         "signing_security": "hybrid-ed25519-dilithium2",
         "keystore": "KeystoreV3 (PQC); mnemonic alone cannot spend",
         "note": (
-            "Most of the ~210M ACP supply is on the genesis treasury address, not the "
-            "custodial hot / login wallet. Hot is a ~1M ACP operating float (plus later "
-            "transfers). Post-quantum signatures protect spend authority; they do not "
-            "hide or shrink on-chain amounts."
+            "Exactly 210M ACP is allocated in four canonical genesis buckets. "
+            "Operational hot/project/bridge wallets are funded by ordinary spends "
+            "from canonical buckets and never add supply."
         ),
         "roles": [
             {
-                "key": "genesis_treasury",
-                "label": "Genesis treasury",
-                "address": GENESIS_TREASURY_ADDRESS,
-                "design_acp": _decimal_to_api_str(GENESIS_TREASURY_DESIGN_ACP),
-            },
+                "key": key,
+                "label": label,
+                "address": address,
+                "design_acp": _decimal_to_api_str(target),
+            }
+            for key, label, _share, target, address in TOKENOMICS_BUCKET_DEFS
+        ] + [
             {
                 "key": "custodial_hot",
                 "label": "Custodial hot",

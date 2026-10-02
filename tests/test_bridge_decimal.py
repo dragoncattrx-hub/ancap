@@ -1,6 +1,7 @@
 from app.services.bridge_decimal import (
     acp_smallest_to_wacp_wei,
     display_acp_from_smallest,
+    wacp_wei_to_acp_smallest_ceil,
     wacp_wei_to_acp_smallest_floor,
 )
 
@@ -19,6 +20,7 @@ def test_remainder_on_partial_wei():
     back, rem = wacp_wei_to_acp_smallest_floor(w)
     assert rem == 123
     assert back == 10**8
+    assert wacp_wei_to_acp_smallest_ceil(w) == 10**8 + 1
 
 
 def test_display():

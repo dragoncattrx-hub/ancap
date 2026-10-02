@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import BridgeAuditEvent, BridgeOperation, BridgeWatcherCheckpoint
+from app.services.acp_amounts import rpc_amount_units
 from app.services.acp_rpc import acp_rpc_headers
 from app.services.bridge_orchestrator import append_transition
 
@@ -33,15 +34,7 @@ def _norm_txid(txid: str) -> str:
 
 
 def _json_chain_amount_to_int(value: object) -> int:
-    if value is None:
-        return 0
-    try:
-        return int(str(value).strip())
-    except Exception:
-        try:
-            return int(float(value))
-        except Exception:
-            return 0
+    return rpc_amount_units(value)
 
 
 async def _json_rpc(

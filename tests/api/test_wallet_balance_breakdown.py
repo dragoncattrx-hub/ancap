@@ -134,8 +134,11 @@ def test_operator_withdrawable_is_hot_live_only(client, monkeypatch):
     from app.services.acp_tokenomics import (
         BRIDGE_RESERVE_ADDRESS,
         CUSTODIAL_HOT_ADDRESS,
-        GENESIS_TREASURY_ADDRESS,
+        CREATOR_BUCKET_ADDRESS,
+        ECOSYSTEM_BUCKET_ADDRESS,
         PROJECT_TREASURY_ADDRESS,
+        PUBLIC_BUCKET_ADDRESS,
+        VALIDATOR_BUCKET_ADDRESS,
     )
 
     _free_custodial_hot_bindings()
@@ -146,10 +149,13 @@ def test_operator_withdrawable_is_hot_live_only(client, monkeypatch):
     get_settings.cache_clear()
 
     amounts = {
-        GENESIS_TREASURY_ADDRESS: (Decimal("207643979.999998"), 1, True),
-        CUSTODIAL_HOT_ADDRESS: (Decimal("108713.62657522"), 3, True),
+        CREATOR_BUCKET_ADDRESS: (Decimal("69300000"), 1, True),
+        VALIDATOR_BUCKET_ADDRESS: (Decimal("105000000"), 1, True),
+        PUBLIC_BUCKET_ADDRESS: (Decimal("200000"), 1, True),
+        ECOSYSTEM_BUCKET_ADDRESS: (Decimal("7500000"), 1, True),
+        CUSTODIAL_HOT_ADDRESS: (Decimal("1000000"), 1, True),
         PROJECT_TREASURY_ADDRESS: (Decimal("1000000"), 1, True),
-        BRIDGE_RESERVE_ADDRESS: (Decimal("301000"), 1, True),
+        BRIDGE_RESERVE_ADDRESS: (Decimal("26000000"), 1, True),
     }
 
     def fake_probe(address: str, *, timeout_s: int = 10):
@@ -162,6 +168,7 @@ def test_operator_withdrawable_is_hot_live_only(client, monkeypatch):
 
     monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
     monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+    monkeypatch.setattr(wallet_acp_router, "_chain_supply_info", lambda **_kwargs: None)
 
     try:
         res = client.post(
@@ -189,14 +196,14 @@ def test_operator_withdrawable_is_hot_live_only(client, monkeypatch):
         assert body["primary_kind"] == "operator_total"
         assert body["withdraw_source"] == "custodial_hot"
         assert body["probe_status"] == "live"
-        expected_live = Decimal("209053693.62657322")
+        expected_live = Decimal("210000000")
         assert Decimal(body["primary_acp"]) == expected_live
         assert Decimal(body["operator_controlled_live_acp"]) == expected_live
-        assert Decimal(body["operator_hot_live_acp"]) == Decimal("108713.62657522")
-        assert Decimal(body["withdrawable_now_acp"]) == Decimal("108713.62657522")
-        assert Decimal(body["available_acp"]) == Decimal("108713.62657522")
+        assert Decimal(body["operator_hot_live_acp"]) == Decimal("1000000")
+        assert Decimal(body["withdrawable_now_acp"]) == Decimal("1000000")
+        assert Decimal(body["available_acp"]) == Decimal("1000000")
         # Deposit address probe only (hot), not aggregate.
-        assert Decimal(body["on_chain_at_deposit_acp"]) == Decimal("108713.62657522")
+        assert Decimal(body["on_chain_at_deposit_acp"]) == Decimal("1000000")
 
         with Session(sync_engine) as session:
             user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
@@ -223,9 +230,12 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
         BRIDGE_RESERVE_ADDRESS,
         BRIDGE_RESERVE_DESIGN_ACP,
         CUSTODIAL_HOT_ADDRESS,
-        GENESIS_TREASURY_ADDRESS,
+        CREATOR_BUCKET_ADDRESS,
+        ECOSYSTEM_BUCKET_ADDRESS,
         GENESIS_TREASURY_DESIGN_ACP,
         PROJECT_TREASURY_ADDRESS,
+        PUBLIC_BUCKET_ADDRESS,
+        VALIDATOR_BUCKET_ADDRESS,
     )
 
     _free_custodial_hot_bindings()
@@ -236,10 +246,13 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
     get_settings.cache_clear()
 
     probes = {
-        GENESIS_TREASURY_ADDRESS: (Decimal("0"), 0, False),
-        CUSTODIAL_HOT_ADDRESS: (Decimal("108713.62657522"), 3, True),
+        CREATOR_BUCKET_ADDRESS: (Decimal("69300000"), 1, True),
+        VALIDATOR_BUCKET_ADDRESS: (Decimal("105000000"), 1, True),
+        PUBLIC_BUCKET_ADDRESS: (Decimal("0"), 0, False),
+        ECOSYSTEM_BUCKET_ADDRESS: (Decimal("7500000"), 1, True),
+        CUSTODIAL_HOT_ADDRESS: (Decimal("1000000"), 1, True),
         PROJECT_TREASURY_ADDRESS: (Decimal("1000000"), 1, True),
-        BRIDGE_RESERVE_ADDRESS: (Decimal("0"), 0, True),
+        BRIDGE_RESERVE_ADDRESS: (Decimal("26000000"), 1, True),
     }
 
     def fake_probe(address: str, *, timeout_s: int = 10):
@@ -254,6 +267,7 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
 
     monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
     monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+    monkeypatch.setattr(wallet_acp_router, "_chain_supply_info", lambda **_kwargs: None)
 
     try:
         res = client.post(
@@ -278,19 +292,19 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
         assert hot.status_code == 200, hot.text
         body = hot.json()
         by_key = {b["key"]: b for b in body["tokenomics_buckets"]}
-        assert "design" in by_key["genesis_treasury"]["label"].lower()
-        assert Decimal(by_key["genesis_treasury"]["acp"]) == GENESIS_TREASURY_DESIGN_ACP
-        assert Decimal(by_key["bridge_reserve"]["acp"]) == Decimal("0")
+        assert "design" in by_key["public"]["label"].lower()
+        assert Decimal(by_key["public"]["acp"]) == GENESIS_TREASURY_DESIGN_ACP
+        assert Decimal(by_key["bridge_reserve"]["acp"]) == Decimal("26000000")
         assert Decimal(by_key["bridge_reserve"]["acp"]) != BRIDGE_RESERVE_DESIGN_ACP
 
-        # Live total excludes genesis design.
-        expected_live = Decimal("108713.62657522") + Decimal("1000000") + Decimal("0")
+        # Live total excludes the unavailable Public bucket's design amount.
+        expected_live = Decimal("209800000")
         assert Decimal(body["primary_acp"]) == expected_live
         assert Decimal(body["operator_controlled_live_acp"]) == expected_live
         assert Decimal(body["acp"]) == expected_live
         assert body["probe_status"] == "degraded"
         assert body["balance_status"] == "degraded"
-        assert Decimal(body["withdrawable_now_acp"]) == Decimal("108713.62657522")
+        assert Decimal(body["withdrawable_now_acp"]) == Decimal("1000000")
 
         with Session(sync_engine) as session:
             user = session.execute(sync_select(User).where(User.email == email)).scalar_one()
@@ -304,8 +318,8 @@ def test_operator_excludes_design_from_live_total_when_probe_fails(client, monke
         _free_custodial_hot_bindings()
 
 
-def test_operator_all_probes_unavailable_shows_design_plus_ledger(client, monkeypatch):
-    """When every role probe fails, hero still shows design alloc + platform ledger."""
+def test_operator_all_probes_unavailable_does_not_add_ledger_to_supply(client, monkeypatch):
+    """When probes fail, ledger claims remain separate from the 210M supply."""
     import os
 
     from sqlalchemy import create_engine, select as sync_select
@@ -314,14 +328,7 @@ def test_operator_all_probes_unavailable_shows_design_plus_ledger(client, monkey
     from app.api.routers import wallet_acp as wallet_acp_router
     from app.db.models import User, UserAcpWallet
     from app.services.acp_tokenomics import (
-        BRIDGE_RESERVE_ADDRESS,
-        BRIDGE_RESERVE_DESIGN_ACP,
-        CUSTODIAL_HOT_ADDRESS,
-        CUSTODIAL_HOT_DESIGN_ACP,
-        GENESIS_TREASURY_ADDRESS,
-        GENESIS_TREASURY_DESIGN_ACP,
-        PROJECT_TREASURY_ADDRESS,
-        PROJECT_TREASURY_DESIGN_ACP,
+        GENESIS_SUPPLY_ACP,
     )
 
     _free_custodial_hot_bindings()
@@ -345,6 +352,7 @@ def test_operator_all_probes_unavailable_shows_design_plus_ledger(client, monkey
 
     monkeypatch.setattr(wallet_acp_router, "_probe_role_wallet", fake_probe)
     monkeypatch.setattr(wallet_acp_router, "_load_balance_result", fake_balance)
+    monkeypatch.setattr(wallet_acp_router, "_chain_supply_info", lambda **_kwargs: None)
 
     try:
         res = client.post(
@@ -368,16 +376,11 @@ def test_operator_all_probes_unavailable_shows_design_plus_ledger(client, monkey
         hot = client.get("/v1/wallet/acp/hot/balance", headers=headers)
         assert hot.status_code == 200, hot.text
         body = hot.json()
-        design = (
-            GENESIS_TREASURY_DESIGN_ACP
-            + CUSTODIAL_HOT_DESIGN_ACP
-            + PROJECT_TREASURY_DESIGN_ACP
-            + BRIDGE_RESERVE_DESIGN_ACP
-        )
+        design = GENESIS_SUPPLY_ACP
         assert body["probe_status"] == "unavailable"
         assert body["view_mode"] == "operator_hot"
-        assert Decimal(body["primary_acp"]) == design + Decimal("250")
-        assert Decimal(body["acp"]) == design + Decimal("250")
+        assert Decimal(body["primary_acp"]) == design
+        assert Decimal(body["acp"]) == design
         assert Decimal(body["platform_ledger_acp"]) == Decimal("250")
         assert Decimal(body["withdrawable_now_acp"]) == Decimal("0")
         assert body["withdraw_source"] == "none"
