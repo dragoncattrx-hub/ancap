@@ -34,6 +34,11 @@ import type {
   DigitalPassportRecord,
   NfcCredentialRegisterInput,
   NfcCredentialRecord,
+  DatingCatalog,
+  DatingAccessPoint,
+  DatingAccessPointCreateInput,
+  DatingProfile,
+  DatingProfileUpsertInput,
 } from "./types.js";
 
 export type AcpApiClientOptions = {
@@ -307,5 +312,31 @@ export class AcpApiClient {
 
   explorerTxUrl(config: MobileConfig, txid: string): string {
     return `${config.acpExplorerTxBase}/${txid}`;
+  }
+
+  getDatingCatalog(): Promise<DatingCatalog> {
+    return this.request<DatingCatalog>("/dating/catalog");
+  }
+
+  listDatingAccessPoints(limit = 100): Promise<DatingAccessPoint[]> {
+    return this.request<DatingAccessPoint[]>(`/dating/access-points?limit=${limit}`);
+  }
+
+  createDatingAccessPoint(body: DatingAccessPointCreateInput): Promise<DatingAccessPoint> {
+    return this.request<DatingAccessPoint>("/dating/access-points", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  getDatingProfile(): Promise<DatingProfile | null> {
+    return this.request<DatingProfile | null>("/dating/profile");
+  }
+
+  upsertDatingProfile(body: DatingProfileUpsertInput): Promise<DatingProfile> {
+    return this.request<DatingProfile>("/dating/profile", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
   }
 }

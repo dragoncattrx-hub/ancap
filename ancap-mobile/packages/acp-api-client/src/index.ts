@@ -74,4 +74,9 @@ export type {
   DigitalPassportIssueInput,
   NfcCredentialRegisterInput,
   NfcCredentialRecord,
+  DatingCatalog,
+  DatingAccessPoint,
+  DatingAccessPointCreateInput,
+  DatingProfile,
+  DatingProfileUpsertInput,
 } from "./types.js";

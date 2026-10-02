@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "ancap-dating-mesh",
+    date: "2026-10-02",
+    title: "ANCAP Dating: proximity mesh (18+)",
+    summary:
+      "Новый контур знакомств в кошельке: BLE-пиры видны как «ANCAP Dating», карта точек доступа на /dating, offline mesh по мотивам bitchat. Только 18+. Юр.: /legal/dating.",
+    href: "/dating",
+  },
+  {
     id: "wacp-v3-liquidity-playbook",
     date: "2026-10-02",
     title: "wACP: V3 liquidity playbook на PancakeSwap",

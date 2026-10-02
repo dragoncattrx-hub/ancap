@@ -248,6 +248,18 @@ ancap-mobile/                   # mobile monorepo (sibling or submodule)
 
 ---
 
+## Phase D — ANCAP Dating Mesh (proximity + bitchat-inspired)
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| D-1 | Spec `docs/mobile/ANCAP_DATING_MESH.md` | [x] | BLE UUID + 18+ + access points |
+| D-2 | Cloud API `/v1/dating/*` + migration `085` | [x] | profiles, APs, matches, messages |
+| D-3 | Web `/dating` + `/legal/dating` | [x] | catalog + legal + news card |
+| D-4 | Expo Dating tab (BLE advertise/scan as ANCAP Dating) | [x] | age gate + mesh UI |
+| D-5 | Offline multi-hop relay MVP | [x] | hop limit 5 + sim/BLE adapter |
+
+---
+
 ## Critical difference: web vs mobile
 
 | | Web `/wallet/acp` | Mobile ACP Wallet |

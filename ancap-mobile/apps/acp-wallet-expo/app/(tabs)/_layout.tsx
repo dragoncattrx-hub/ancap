@@ -16,6 +16,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: t("tabs.wallet"), headerTitle: t("tabs.walletHeader") }} />
       <Tabs.Screen name="exchange" options={{ title: t("tabs.exchange"), headerTitle: t("tabs.exchangeHeader") }} />
+      <Tabs.Screen name="dating" options={{ title: t("tabs.dating"), headerTitle: t("tabs.datingHeader") }} />
       <Tabs.Screen
         name="authenticity"
         options={{ title: t("tabs.authenticity"), headerTitle: t("tabs.authenticityHeader") }}

@@ -9,7 +9,17 @@ process.env.EXPO_NO_METRO_WORKSPACE_ROOT ??= "1";
 
 const expo = appJson.expo;
 const androidPermissions = Array.from(
-  new Set([...(expo.android?.permissions ?? []), "android.permission.NFC"]),
+  new Set([
+    ...(expo.android?.permissions ?? []),
+    "android.permission.NFC",
+    "android.permission.BLUETOOTH",
+    "android.permission.BLUETOOTH_ADMIN",
+    "android.permission.BLUETOOTH_SCAN",
+    "android.permission.BLUETOOTH_CONNECT",
+    "android.permission.BLUETOOTH_ADVERTISE",
+    "android.permission.ACCESS_FINE_LOCATION",
+    "android.permission.ACCESS_COARSE_LOCATION",
+  ]),
 );
 
 /** @type {import('expo/config').ConfigContext} */
@@ -25,6 +35,12 @@ module.exports = () => ({
       ...(expo.ios?.infoPlist ?? {}),
       NFCReaderUsageDescription:
         "Allow ANCAP ACP Wallet to read your enrolled Biohax NFC implant for wallet unlock.",
+      NSBluetoothAlwaysUsageDescription:
+        "ANCAP Dating uses Bluetooth to discover nearby ANCAP Dating peers and relay mesh messages without internet.",
+      NSBluetoothPeripheralUsageDescription:
+        "ANCAP Dating advertises this phone as an ANCAP Dating device for proximity discovery.",
+      NSLocationWhenInUseUsageDescription:
+        "ANCAP Dating uses location only when you create or view access-point pins on the map.",
     },
   },
   plugins: expo.plugins,

@@ -3343,3 +3343,80 @@ class WacpV3Position(Base):
     stage = relationship("WacpLiquidityStage", back_populates="positions")
 
     __table_args__ = (Index("ix_wacp_v3_positions_stage", "stage_id"),)
+
+
+# --- ANCAP Dating (proximity + optional cloud) ---
+
+
+class DatingProfile(Base):
+    __tablename__ = "dating_profiles"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    display_name = Column(String(80), nullable=False)
+    bio = Column(Text, nullable=True)
+    age_attested_18 = Column(Boolean, nullable=False, default=False)
+    visibility = Column(String(24), nullable=False, default="nearby")  # nearby | public | hidden
+    lat = Column(Numeric(10, 7), nullable=True)
+    lon = Column(Numeric(10, 7), nullable=True)
+    mesh_peer_id = Column(String(64), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class DatingAccessPoint(Base):
+    __tablename__ = "dating_access_points"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    creator_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    title = Column(String(120), nullable=False)
+    description = Column(Text, nullable=True)
+    lat = Column(Numeric(10, 7), nullable=False)
+    lon = Column(Numeric(10, 7), nullable=False)
+    ble_service_hint = Column(String(64), nullable=False, default="a11c0001-a11c-4a7e-9c01-444154494e47")
+    status = Column(String(24), nullable=False, default="active")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class DatingLike(Base):
+    __tablename__ = "dating_likes"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    from_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    to_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_dating_likes_from_to", "from_user_id", "to_user_id", unique=True),
+    )
+
+
+class DatingMatch(Base):
+    __tablename__ = "dating_matches"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    user_a_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_b_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (Index("ix_dating_matches_users", "user_a_id", "user_b_id", unique=True),)
+
+
+class DatingMessage(Base):
+    __tablename__ = "dating_messages"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    match_id = Column(UUID(as_uuid=False), ForeignKey("dating_matches.id", ondelete="CASCADE"), nullable=False, index=True)
+    sender_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class DatingReport(Base):
+    __tablename__ = "dating_reports"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    reporter_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    target_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    reason = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)

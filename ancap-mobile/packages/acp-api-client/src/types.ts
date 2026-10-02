@@ -649,3 +649,55 @@ export type NumismaticValueResult = {
   next_step: string;
   disclaimer: string;
 };
+
+export type DatingCatalog = {
+  title: string;
+  device_name_prefix: string;
+  ble_service_uuid: string;
+  max_hop: number;
+  age_gate: string;
+  docs_url: string;
+  legal_url: string;
+  notes: string[];
+};
+
+export type DatingAccessPoint = {
+  id: string;
+  title: string;
+  description: string | null;
+  lat: number;
+  lon: number;
+  ble_service_hint: string;
+  status: string;
+  created_at: string;
+};
+
+export type DatingAccessPointCreateInput = {
+  title: string;
+  description?: string | null;
+  lat: number;
+  lon: number;
+};
+
+export type DatingProfile = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  bio: string | null;
+  age_attested_18: boolean;
+  visibility: string;
+  lat: number | null;
+  lon: number | null;
+  mesh_peer_id: string | null;
+  updated_at: string;
+};
+
+export type DatingProfileUpsertInput = {
+  display_name: string;
+  bio?: string | null;
+  age_attested_18: boolean;
+  visibility?: string;
+  lat?: number | null;
+  lon?: number | null;
+  mesh_peer_id?: string | null;
+};
