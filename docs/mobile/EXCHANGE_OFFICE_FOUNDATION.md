@@ -25,6 +25,7 @@ Settlement still uses existing rails; this layer unifies catalog, quotes, and ti
 | Title / intangibles | real estate, antiques, space, patents, recipes → ACP; ownership certificates | see `docs/mobile/TITLE_OWNERSHIP_RAILS.md` |
 | `bridge` | ACP ↔ wACP BSC | live/beta by bridge flags |
 | `dex_deep_link` | USDT BSC via Pancake / smart-pay | beta |
+| OTC vs DEX | orders &gt; ~25% active V3 depth → ticket desk | see `docs/WACP_LIQUIDITY_V3_PLAYBOOK.md` |
 | `fiat_onramp` | USD/EUR | planned placeholders |
 | `hub_cross` | any listed cross pair | synthetic quote |
 

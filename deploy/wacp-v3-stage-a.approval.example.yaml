@@ -1,0 +1,29 @@
+# Copy to wacp-v3-stage-a.approval.yaml (gitignored locally) before Stage A mint.
+stage_id: stage-a-YYYY-MM-DD-001
+operator: "name-or-handle"
+approved_at_utc: "2026-10-02T00:00:00Z"
+network: bsc-mainnet
+chain_id: 56
+
+# Mint envelope (human units unless noted)
+approved_stage_a_cap_wacp: "5000"
+mint_envelope_reference_block: null
+
+pricing:
+  p0_usdt_per_wacp: "0.001"
+  range_fraction: 0.20
+  fee_tier: 2500
+
+budgets:
+  approved_usdt_budget: "500"
+  approved_wacp_for_v3: "1750"
+
+allocation:
+  f_v3: 0.35
+  f_mm: 0.35
+  f_otc: 0.30
+
+reserve_proof_snapshot_url: "https://ancap.cloud/api/v1/wacp/reserve-proof"
+reason: "Stage A controlled inventory for V3 concentrated liquidity"
+
+sign_off: "Andrew / treasury operator initial"

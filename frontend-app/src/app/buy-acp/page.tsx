@@ -22,6 +22,11 @@ export default function BuyAcpPage() {
           <Link href="/markets" className="underline">/markets</Link> and{" "}
           <Link href="/legal/welcome-grant" className="underline">welcome-grant legal</Link>.
         </p>
+        <p className="mt-3 text-sm leading-7 text-white/55">
+          For wACP size above roughly <strong>25%</strong> of active PancakeSwap V3 depth, use the mobile Exchange
+          office or desk-assisted OTC instead of hitting the public pool — see{" "}
+          <Link href="/docs/wacp/pancakeswap" className="underline">wACP liquidity playbook</Link>.
+        </p>
 
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">ACP-first (recommended)</h2>

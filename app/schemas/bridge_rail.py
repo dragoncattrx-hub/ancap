@@ -115,6 +115,8 @@ class WacpReserveProofResponse(BaseModel):
     last_bsc_block_number: int | None = None
     last_updated_at: datetime | None = None
     notes: list[str] = Field(default_factory=list)
+    max_additional_mint_acp_smallest: str | None = None
+    mint_envelope_notes: list[str] = Field(default_factory=list)
 
 
 class WacpPublicStatusResponse(BaseModel):

@@ -9,6 +9,14 @@ export type ProjectNewsItem = {
 /** Последние новости проекта ANCAP (RU). */
 export const PROJECT_NEWS_RU: ProjectNewsItem[] = [
   {
+    id: "wacp-v3-liquidity-playbook",
+    date: "2026-10-02",
+    title: "wACP: V3 liquidity playbook на PancakeSwap",
+    summary:
+      "Новый операционный контур Stage A/B/C: V2 остаётся тонким reference-рынком, новая scarce-ликвидность идёт в concentrated V3 wACP/USDT. Reserve invariant, mint envelope, калькулятор тиков и OTC-порог ~25% глубины. Infinity — только после устойчивого объёма. Docs: /docs/wacp/pancakeswap.",
+    href: "/docs/wacp/pancakeswap",
+  },
+  {
     id: "oracle-acp-secondary-node",
     date: "2026-10-02",
     title: "Вторая нода ACP на Oracle Cloud",

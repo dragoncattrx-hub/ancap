@@ -1,9 +1,12 @@
 # wACP 100000 rollout plan
 
+> Superseded for **new liquidity deployment** by [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md) (V3 primary, V2 thin reference).  
+> Keep this doc for historical 100k mint envelope planning.
+
 ## Objective
 Execute a controlled scale-up from the current live state to:
 - reserve-backed supply of `100000 wACP`
-- staged PancakeSwap V2 liquidity on `wACP/USDT`
+- staged liquidity on `wACP/USDT` (V3 concentrated + thin V2 reference)
 - public trust links for reserve proof and pair discovery
 
 ## Live starting point on 2026-05-07

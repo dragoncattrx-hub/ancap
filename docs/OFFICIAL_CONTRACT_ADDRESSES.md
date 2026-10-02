@@ -73,6 +73,12 @@ Use these together with the addresses above:
 - reserve summary API: <https://ancap.cloud/api/v1/bridge/reserve-summary>
 - reserve proof API: <https://ancap.cloud/api/v1/wacp/reserve-proof>
 
+### PancakeSwap markets (wACP / USDT)
+
+- **V2 canonical (thin reference):** `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601` — [pool UI](https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601)
+- **V3 primary:** set in production env `WACP_V3_POOL` after deployment; playbook [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md)
+- wACP on BSC uses **18 decimals** ([WACP.sol](../contracts/bridge-bsc/src/WACP.sol))
+
 ## Fast verification flow
 
 1. Confirm the address matches this page exactly.

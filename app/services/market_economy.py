@@ -9,6 +9,7 @@ ACP checkout amounts = usd_sticker / wacp_usd (oracle).
 
 from __future__ import annotations
 
+import re
 import time
 from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_HALF_UP
 from typing import Any
@@ -17,10 +18,20 @@ import httpx
 
 from app.config import get_settings
 
-OFFICIAL_WACP_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
-_GT_POOL_URL = (
-    f"https://api.geckoterminal.com/api/v2/networks/bsc/pools/{OFFICIAL_WACP_POOL}"
-)
+OFFICIAL_WACP_POOL_V2 = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
+OFFICIAL_WACP_POOL = OFFICIAL_WACP_POOL_V2  # backward-compatible alias
+
+
+def _official_pool_for_oracle() -> str:
+    s = get_settings()
+    v3 = (getattr(s, "wacp_v3_pool", None) or "").strip().lower()
+    if v3 and re.fullmatch(r"0x[a-f0-9]{40}", v3):
+        return v3
+    return OFFICIAL_WACP_POOL_V2
+
+
+def _gt_pool_url(pool: str) -> str:
+    return f"https://api.geckoterminal.com/api/v2/networks/bsc/pools/{pool.lower()}"
 _GT_TOKEN = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
 _GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_GT_TOKEN}"
 
@@ -88,20 +99,24 @@ def get_cached_wacp_usd(*, allow_stale: bool = True) -> Decimal | None:
 
 
 def oracle_meta() -> dict[str, Any]:
+    pool = _official_pool_for_oracle()
     return {
-        "pool": OFFICIAL_WACP_POOL,
+        "pool": pool,
+        "pool_v2_reference": OFFICIAL_WACP_POOL_V2,
         "source": _ORACLE.get("source") or "none",
         "price_usd": _ORACLE.get("price"),
         "cached_at": _ORACLE.get("at"),
-        "pool_url": f"https://www.geckoterminal.com/bsc/pools/{OFFICIAL_WACP_POOL}",
+        "pool_url": f"https://www.geckoterminal.com/bsc/pools/{pool}",
     }
 
 
 async def fetch_official_pool_wacp_usd() -> Decimal | None:
     """Fetch base_token_price_usd from the official GeckoTerminal pool."""
+    pool = _official_pool_for_oracle()
+    gt_url = _gt_pool_url(pool)
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
-            resp = await client.get(_GT_POOL_URL, headers={"accept": "application/json"})
+            resp = await client.get(gt_url, headers={"accept": "application/json"})
             if resp.status_code < 400:
                 attrs = ((resp.json() or {}).get("data") or {}).get("attributes") or {}
                 price = _to_dec(attrs.get("base_token_price_usd"))

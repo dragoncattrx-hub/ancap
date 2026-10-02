@@ -1,5 +1,8 @@
 # PancakeSwap wACP liquidity
 
+> **Primary playbook (V3 Stage A/B/C):** [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md).  
+> This page retains **V2 bootstrap context** and historical references.
+
 ## Purpose
 This document covers the DEX side after the ACP <-> BSC rail is already working live.
 It is about how to scale `wACP` liquidity without doing something stupid with reserve-backed inventory.

@@ -9,6 +9,8 @@
     "address": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
     "decimals": 18,
     "pool_wacp_usdt_v2": "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601",
+    "pool_wacp_usdt_v3": null,
+    "liquidity_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
     "gateway": "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b",
     "logo": "https://ancap.cloud/wacp-logo.png",
     "website": "https://ancap.cloud",
@@ -19,12 +21,20 @@
   },
   "placements": [
     {
+      "id": "pancakeswap_v3",
+      "name": "PancakeSwap V3 (primary LP)",
+      "status": "pending_deploy",
+      "fee": "free",
+      "url": "https://ancap.cloud/docs/wacp/pancakeswap",
+      "how": "Concentrated wACP/USDT after Stage C deployment"
+    },
+    {
       "id": "pancakeswap",
-      "name": "PancakeSwap V2",
+      "name": "PancakeSwap V2 (reference)",
       "status": "live",
       "fee": "free",
       "url": "https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "Permissionless trade-by-address"
+      "how": "Thin canonical micro-market"
     },
     {
       "id": "dextools",

@@ -393,6 +393,9 @@ class Settings(BaseSettings):
     bridge_dry_run: bool = True
     bridge_bsc_rpc_url: str = ""
     bridge_wacp_contract: str = ""
+    wacp_v3_pool: str = ""
+    wacp_v3_pool_url: str = ""
+    wacp_v3_position_nft: str = ""
     bridge_gateway_contract: str = ""
     # Public transparency flags (do not hardcode true in API responses).
     bridge_bsc_contract_verified: bool = True

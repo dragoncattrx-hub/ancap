@@ -3288,3 +3288,58 @@ class MailProviderAccount(Base):
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     owner = relationship("User", foreign_keys=[owner_user_id])
+
+
+class WacpLiquidityStage(Base):
+    """Operator-recorded Stage A/B/C deployment envelope."""
+
+    __tablename__ = "wacp_liquidity_stages"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    stage_id = Column(String(64), nullable=False, unique=True, index=True)
+    operator_label = Column(String(128), nullable=True)
+    mint_wacp_wei = Column(Numeric(38, 0), nullable=True)
+    approval_json = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    status = Column(String(32), nullable=False, default="planned")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    allocations = relationship("WacpTreasuryAllocation", back_populates="stage", cascade="all, delete-orphan")
+    positions = relationship("WacpV3Position", back_populates="stage", cascade="all, delete-orphan")
+
+
+class WacpTreasuryAllocation(Base):
+    __tablename__ = "wacp_treasury_allocations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    stage_id = Column(UUID(as_uuid=False), ForeignKey("wacp_liquidity_stages.id", ondelete="CASCADE"), nullable=False)
+    bucket = Column(String(16), nullable=False)
+    fraction = Column(Numeric(8, 6), nullable=True)
+    wacp_wei = Column(Numeric(38, 0), nullable=True)
+    usdt_wei = Column(Numeric(38, 0), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    stage = relationship("WacpLiquidityStage", back_populates="allocations")
+
+    __table_args__ = (Index("ix_wacp_treasury_alloc_stage", "stage_id"),)
+
+
+class WacpV3Position(Base):
+    __tablename__ = "wacp_v3_positions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    stage_id = Column(UUID(as_uuid=False), ForeignKey("wacp_liquidity_stages.id", ondelete="CASCADE"), nullable=False)
+    pool_address = Column(String(64), nullable=False)
+    position_token_id = Column(String(78), nullable=True)
+    tick_lower = Column(Integer, nullable=True)
+    tick_upper = Column(Integer, nullable=True)
+    amount0_wei = Column(Numeric(38, 0), nullable=True)
+    amount1_wei = Column(Numeric(38, 0), nullable=True)
+    mint_tx_hash = Column(String(80), nullable=True)
+    pool_url = Column(String(512), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    stage = relationship("WacpLiquidityStage", back_populates="positions")
+
+    __table_args__ = (Index("ix_wacp_v3_positions_stage", "stage_id"),)

@@ -495,6 +495,12 @@ async def _run_all_jobs(session: DbSession) -> dict:
     ledger_violations = await check_ledger_invariant(session)
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     bridge_rail = await bridge_rail_tick(session)
+    try:
+        from app.services.wacp_liquidity_monitor import wacp_liquidity_monitor_tick
+
+        wacp_liquidity = await wacp_liquidity_monitor_tick(session)
+    except Exception as exc:
+        wacp_liquidity = {"ok": False, "error": str(exc)[:200]}
     mobile_indexer = await mobile_acp_indexer_tick(session)
     try:
         from app.jobs.mobile_acp_indexer_tick import build_address_watchlist
@@ -536,6 +542,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "staking_rewards": staking_rewards,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
         "bridge_rail": bridge_rail,
+        "wacp_liquidity": wacp_liquidity,
         "mobile_indexer": mobile_indexer,
         "acp_utxo_index": utxo_index,
         "chain_scan_warm": chain_scan_warm,

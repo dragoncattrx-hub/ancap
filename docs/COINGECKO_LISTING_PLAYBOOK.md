@@ -59,7 +59,7 @@ GeckoTerminal already indexes the token (not yet linked to a CoinGecko coin id):
 
 **Do not submit an Active Listing until** the PancakeSwap pool has meaningful depth and recurring trades (practical floor: at least several thousand USD reserves and non-zero daily volume over multiple days). CoinGecko rejects idle / dust pools.
 
-Bootstrap liquidity playbook: [pancakeswap-listing-playbook.md](./pancakeswap-listing-playbook.md), [pancakeswap-wacp-liquidity.md](./pancakeswap-wacp-liquidity.md).
+Bootstrap liquidity playbook: [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md), [pancakeswap-listing-playbook.md](./pancakeswap-listing-playbook.md).
 
 ---
 
@@ -79,7 +79,7 @@ Copy into the CoinGecko Partners form.
 - Source (repo): `contracts/bridge-bsc/src/WACP.sol`
 
 ### Markets
-- Primary market: PancakeSwap V2 `wACP/USDT`
+- Primary market: PancakeSwap V3 `wACP/USDT` (after deployment); V2 pair remains reference
 - Pair / pool: `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601`
 - Swap deep-link: <https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
 - Liquidity pool UI: <https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601>

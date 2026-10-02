@@ -35,21 +35,19 @@ Current reality: a technical PancakeSwap bootstrap pair already exists. That is 
 
 ---
 
-## Recommended first market structure
+## Recommended market structure (2026+)
 
-Start with:
-- **DEX:** PancakeSwap V2
-- **First pair:** `wACP / USDT`
-- **Fallback pair:** `wACP / ACP`
+**Current state:** V2 bootstrap pair is live (smoke / reference). **New scarce liquidity** goes to **PancakeSwap V3** concentrated `wACP / USDT` per [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md).
 
-Avoid first launch on:
-- `wACP / WBNB`
-- V3 / Infinity
+- **Primary venue:** PancakeSwap V3 (Stage A/B/C)
+- **Canonical reference:** PancakeSwap V2 pair `0xF391…1601` — keep thin
+- **Quote:** `wACP / USDT` (not WBNB first)
+- **Infinity:** later, after sustained V3 volume
 
-Reason:
-- V2 is operationally simpler
-- stablecoin quote pair is easier for price discovery
-- avoids extra volatility noise during first launch
+Avoid:
+- pouring scarce USDT into fat V2 full-range LP while V3 is active
+- `wACP / WBNB` as the first deep market
+- minting wACP directly into any pool
 
 ---
 

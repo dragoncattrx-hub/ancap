@@ -83,14 +83,24 @@ WACP_FIRST_SWAP_SELL_TX = "0x02ff5659d584aabf7bfe19c508c7673ba449ff89c1df07069cc
 
 
 def _public_docs() -> dict[str, str]:
-    return {
+    s = get_settings()
+    docs = {
         "overview": "https://ancap.cloud/docs/wacp",
         "bridge": "https://ancap.cloud/docs/wacp/bridge",
         "reserve": "https://ancap.cloud/docs/wacp/reserve",
         "risks": "https://ancap.cloud/docs/wacp/risks",
         "contracts": "https://ancap.cloud/docs/wacp/contracts",
         "listing_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
+        "liquidity_v3_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
+        "v2_pair": WACP_PAIR_URL,
     }
+    v3_url = (s.wacp_v3_pool_url or "").strip()
+    if v3_url:
+        docs["v3_pool"] = v3_url
+    elif (s.wacp_v3_pool or "").strip():
+        pool = (s.wacp_v3_pool or "").strip().lower()
+        docs["v3_pool"] = f"https://pancakeswap.finance/liquidity/pool/bsc/{pool}"
+    return docs
 
 
 def _norm_bsc(addr: str) -> str:
@@ -437,6 +447,19 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
             await session.rollback()
 
     notes.append(f"wACP supply source: {supply_source}.")
+
+    from app.services.wacp_mint_envelope import compute_mint_envelope
+
+    envelope = compute_mint_envelope(
+        acp_reserve_balance_smallest=str(reserve_balance_smallest_int or 0),
+        wacp_total_supply_acp_smallest=str(total_supply_acp_smallest),
+        operational_buffer_smallest=str(operational_buffer_smallest),
+    )
+    mint_envelope_notes = list(envelope.notes)
+    if not envelope.gate_a_pass:
+        mint_envelope_notes.append("Gate A: no additional mint headroom under current reserve proof.")
+    max_additional_mint_acp_smallest = str(envelope.max_additional_mint_acp_smallest)
+
     if s.bridge_rail_enabled and not s.bridge_rail_paused:
         if supply_source != "bsc_totalSupply" and reserve_health == "healthy":
             reserve_health = "degraded"
@@ -461,6 +484,8 @@ async def _live_reserve_proof_payload(session: AsyncSession) -> WacpReserveProof
         last_bsc_block_number=cp_bsc_height,
         last_updated_at=last_updated_at,
         notes=notes,
+        max_additional_mint_acp_smallest=max_additional_mint_acp_smallest,
+        mint_envelope_notes=mint_envelope_notes,
     )
 
 
