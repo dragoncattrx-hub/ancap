@@ -112,51 +112,13 @@ test -n "$WACP_CONTRACT" || { echo "BRIDGE_WACP_CONTRACT is not configured" >&2;
 BRIDGE_SPLIT="$(
   BSC_RPC="$BSC_RPC" WACP_CONTRACT="$WACP_CONTRACT" \
   PUBLIC_HINT="$BRIDGE_PUBLIC_ACP" ECOSYSTEM_HINT="$BRIDGE_ECOSYSTEM_ACP" \
-  FEE_BUFFER="$BRIDGE_BUFFER_ACP" python3 -c '
-import json, os, urllib.request
-from decimal import Decimal, ROUND_UP
-rpc = os.environ["BSC_RPC"].strip()
-contract = os.environ["WACP_CONTRACT"].strip()
-public_hint = Decimal(os.environ["PUBLIC_HINT"])
-ecosystem_hint = Decimal(os.environ["ECOSYSTEM_HINT"])
-fee_buffer = Decimal(os.environ["FEE_BUFFER"])
-body = json.dumps({
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "eth_call",
-    "params": [{"to": contract, "data": "0x18160ddd"}, "latest"],
-}).encode()
-req = urllib.request.Request(rpc, body, {"content-type": "application/json"})
-payload = json.load(urllib.request.urlopen(req, timeout=20))
-if payload.get("error"):
-    raise SystemExit("BSC totalSupply RPC failed: %s" % (payload["error"],))
-total_wei = int(payload["result"], 16)
-quantum = Decimal("0.00000001")
-liability = (Decimal(total_wei) / (Decimal(10) ** 18)).quantize(quantum, rounding=ROUND_UP)
-needed = liability + fee_buffer
-public = min(public_hint, needed)
-ecosystem = needed - public
-if ecosystem < 0:
-    raise SystemExit("bridge reserve split underflow")
-hint = public_hint + ecosystem_hint
-if needed > hint:
-    raise SystemExit(
-        "live wACP %s + fee buffer %s = %s ACP exceeds planned split %s"
-        % (liability, fee_buffer, needed, hint)
-    )
-print(public)
-print(ecosystem)
-print(
-    "wACP totalSupply=%s wei; liability=%s ACP; fee_buffer=%s ACP; fund Public=%s Ecosystem=%s"
-    % (total_wei, liability, fee_buffer, public, ecosystem),
-    flush=True,
-)
-'
+  FEE_BUFFER="$BRIDGE_BUFFER_ACP" \
+  python3 scripts/regenesis_v3_bridge_split.py
 )"
 BRIDGE_PUBLIC_ACP="$(printf '%s\n' "$BRIDGE_SPLIT" | sed -n '1p')"
 BRIDGE_ECOSYSTEM_ACP="$(printf '%s\n' "$BRIDGE_SPLIT" | sed -n '2p')"
 test -n "$BRIDGE_PUBLIC_ACP" && test -n "$BRIDGE_ECOSYSTEM_ACP"
-echo "$BRIDGE_SPLIT" | sed -n '3p'
+echo "bridge split Public=${BRIDGE_PUBLIC_ACP} Ecosystem=${BRIDGE_ECOSYSTEM_ACP}"
 
 echo "== Build strict node/API images before stopping the old chain"
 "${COMPOSE[@]}" build acp-node api
