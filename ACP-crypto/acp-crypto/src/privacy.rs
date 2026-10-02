@@ -1,8 +1,9 @@
 //! ACP privacy primitives: unlinkable receive subaddresses (v1).
 //!
 //! Subaddresses are derived from the wallet **view public key wire** so each
-//! receive looks like a fresh `acp1…` address on-chain. Spend authority remains
-//! the spend key; wallets must scan index ranges to discover UTXOs.
+//! receive looks like a fresh `acp1…` address on-chain. AddressV0 therefore
+//! commits to the view public key: the matching view secret is the current
+//! spend authority. Wallets must scan `0..=DEFAULT_SUBADDR_SCAN_WINDOW`.
 //!
 //! This is user unlinkability / data minimization — not a mixer or tumbler.
 

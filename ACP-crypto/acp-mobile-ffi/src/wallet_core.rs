@@ -409,7 +409,9 @@ pub fn acp_sign_transfer(
         .collect();
 
     let mut tx = Transaction::new_unsigned(chain_id, inputs, outputs);
-    tx.sign(&id.spend).map_err(|e| AcpWalletException::Internal {
+    // AddressV0 is derived from the view public key; stateful ownership
+    // validation therefore requires its matching signature.
+    tx.sign(&id.view).map_err(|e| AcpWalletException::Internal {
         message: e.to_string(),
     })?;
     let raw_tx = TxHex::encode_tx(&tx).map_err(|e| AcpWalletException::Internal {

@@ -172,10 +172,10 @@ services:
       ACP_RPC_LISTEN: 0.0.0.0:8545
       ACP_CHAIN_ID: 1001
       ACP_DISABLE_CREATOR_VESTING: "1"
-      ACP_MINER_REWARD_ADDRESS: acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902
       ACP_MINER_INTERVAL_SECS: "5"
-      ACP_MINER_HEARTBEAT_ENABLED: "true"
-      ACP_MINER_HEARTBEAT_EVERY_N: "12"
+      # Hard-cap consensus: validators are paid by signed spends from the
+      # genesis reserve; the assembler must never mint heartbeat rewards.
+      ACP_MINER_HEARTBEAT_ENABLED: "false"
       ACP_MINER_MAX_TXS_PER_BLOCK: "512"
       # Required in prod — acp-node fail-closes all non-public RPC methods without a token.
       ACP_RPC_TOKEN: ${ACP_RPC_TOKEN:?ACP_RPC_TOKEN must be set for acp-node}

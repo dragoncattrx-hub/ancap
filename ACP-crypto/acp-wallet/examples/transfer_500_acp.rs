@@ -109,7 +109,7 @@ fn main() -> anyhow::Result<()> {
                 TxOutput::to_address_v0(change, &ecosystem_addr),
             ],
         );
-        t.sign(&ecosystem_id.spend)?;
+        t.sign(&ecosystem_id.view)?;
         t
     };
     let tx_hex = TxHex::encode_tx(&tx)?;

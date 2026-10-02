@@ -442,9 +442,9 @@ fn cmd_transfer(
     let to_addr_decoded = AddressV0::decode(to.trim()).context("invalid 'to' address")?;
     let mut outputs = vec![TxOutput::to_address_v0(transfer_units, &to_addr_decoded)];
     if change > 0 {
-        // Change back to a fresh subaddress (index 1+) when possible for unlinkability;
-        // fall back to primary if only index 0 is used.
-        let change_addr = id.receive_subaddress_v0(1)?;
+        // Keep change on the indexed primary address. Rotating operator change
+        // without registering it made role balances incomplete.
+        let change_addr = id.receive_address_v0()?;
         let change_decoded = AddressV0::decode(&change_addr)?;
         outputs.push(TxOutput::to_address_v0(change, &change_decoded));
     }
@@ -459,7 +459,8 @@ fn cmd_transfer(
         .collect();
 
     let mut tx = Transaction::new_unsigned(chain_id, inputs, outputs);
-    tx.sign(&id.spend)?;
+    // AddressV0 commits to the view public key, so that key authorizes spends.
+    tx.sign(&id.view)?;
     let tx_hex = TxHex::encode_tx(&tx)?;
     let txid = TxHex::encode_txid(&tx.txid()?);
 
@@ -507,6 +508,12 @@ fn real_main() -> anyhow::Result<()> {
                         .ok_or_else(|| anyhow!("--index requires a value"))?
                         .parse()
                         .context("invalid --index")?;
+                    if index > acp_crypto::DEFAULT_SUBADDR_SCAN_WINDOW {
+                        anyhow::bail!(
+                            "--index must be <= {}",
+                            acp_crypto::DEFAULT_SUBADDR_SCAN_WINDOW
+                        );
+                    }
                 }
             }
             if keystore_json.is_none() {

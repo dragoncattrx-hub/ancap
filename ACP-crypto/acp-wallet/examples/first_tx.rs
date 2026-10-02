@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }],
             vec![TxOutput::to_address_v0(GENESIS_AMOUNT - FEE, &addr)],
         );
-        tx.sign(&id.spend)?;
+        tx.sign(&id.view)?;
         tx
     };
     let genesis_txid = genesis_tx.txid()?;
@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }],
             vec![TxOutput::to_address_v0(GENESIS_AMOUNT - FEE - FEE, &addr)],
         );
-        tx.sign(&id.spend)?;
+        tx.sign(&id.view)?;
         tx
     };
     let tx2_hex = TxHex::encode_tx(&tx2)?;

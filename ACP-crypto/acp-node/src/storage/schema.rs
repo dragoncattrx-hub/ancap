@@ -5,6 +5,10 @@ pub const CF_BLOCKS: &str = "blocks";
 pub const CF_HEADERS: &str = "headers";
 pub const CF_TXS: &str = "txs";
 pub const CF_TX_META: &str = "txmeta";
+/// outpoint (txid || vout LE) -> spending txid. Consensus-critical.
+pub const CF_SPENT_OUTPOINTS: &str = "spent";
+/// outpoint (txid || vout LE) -> locked genesis role (1=creator, 2=validator).
+pub const CF_UTXO_ROLES: &str = "urole";
 pub const CF_BLOCK_META: &str = "blockmeta"; // blockhash -> [height(u64)][time(u64)]
 pub const CF_HEIGHT_TO_HASH: &str = "h2h";
 
@@ -39,3 +43,10 @@ pub const CF_HEADER_ACTIVE_BANKEY: &str = "hbkey";
 
 pub const KEY_BEST_HEIGHT: &[u8] = b"best_height";
 pub const KEY_BEST_HASH: &[u8] = b"best_hash";
+pub const KEY_CHAIN_ID: &[u8] = b"chain_id_v1";
+pub const KEY_GENESIS_HASH: &[u8] = b"genesis_hash_v1";
+pub const KEY_UTXO_SUPPLY_UNITS: &[u8] = b"utxo_supply_units_v1";
+pub const KEY_ISSUED_SUPPLY_UNITS: &[u8] = b"issued_supply_units_v1";
+pub const KEY_UTXO_COUNT: &[u8] = b"utxo_count_v1";
+pub const KEY_CREATOR_RELEASED_UNITS: &[u8] = b"creator_released_units_v1";
+pub const KEY_VALIDATOR_RELEASED_UNITS: &[u8] = b"validator_released_units_v1";

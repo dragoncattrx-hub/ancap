@@ -10,8 +10,11 @@ pub const UNITS_PER_ACP: u64 = 100_000_000; // 10^8
 /// Base supply at the time of Genesis (ACP).
 pub const BASE_SUPPLY_ACP: u64 = 210_000_000;
 
-/// Nominal annual distribution rate (5% of base supply). Not mint: payments from Validator Emission Reserve.
-pub const ANNUAL_INFLATION_PCT: u8 = 5;
+/// Annual release rate (5% of base supply) from the already-issued Validator
+/// Reserve. Net protocol inflation is zero.
+pub const ANNUAL_RESERVE_RELEASE_PCT: u8 = 5;
+/// Backward-compatible name; this is reserve release, not inflation/minting.
+pub const ANNUAL_INFLATION_PCT: u8 = ANNUAL_RESERVE_RELEASE_PCT;
 
 /// Annual payment from the reserve to validators/delegators (ACP). Not a new mint; after ~10 years the reserve is exhausted, income comes from commissions.
 pub const ANNUAL_EMISSION_ACP: u64 = 10_500_000;
@@ -33,6 +36,17 @@ pub const GENESIS_ACP_CREATOR: u64 = 69_300_000;
 pub const GENESIS_ACP_VALIDATOR_RESERVE: u64 = 105_000_000;
 pub const GENESIS_ACP_PUBLIC: u64 = 25_200_000;
 pub const GENESIS_ACP_ECOSYSTEM: u64 = 10_500_000;
+
+// Canonical mainnet genesis recipients. A fresh mainnet node rejects a
+// same-amount genesis that redirects any allocation to different keys.
+pub const GENESIS_ADDRESS_CREATOR: &str =
+    "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl";
+pub const GENESIS_ADDRESS_VALIDATOR_RESERVE: &str =
+    "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um";
+pub const GENESIS_ADDRESS_PUBLIC: &str =
+    "acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm";
+pub const GENESIS_ADDRESS_ECOSYSTEM: &str =
+    "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf";
 
 // --- Creator's Vesting ---
 
@@ -166,8 +180,8 @@ mod tests {
     }
 
     #[test]
-    fn annual_emission_is_5_pct_of_base() {
-        let expected = BASE_SUPPLY_ACP * ANNUAL_INFLATION_PCT as u64 / 100;
+    fn annual_reserve_release_is_5_pct_of_base() {
+        let expected = BASE_SUPPLY_ACP * ANNUAL_RESERVE_RELEASE_PCT as u64 / 100;
         assert_eq!(ANNUAL_EMISSION_ACP, expected, "Annual emission must be 5% of base supply");
     }
 

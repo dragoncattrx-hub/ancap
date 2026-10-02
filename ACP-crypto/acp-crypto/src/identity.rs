@@ -1,6 +1,7 @@
 //! Wallet identity: spend / view / audit keys derived from master seed.
 
 use crate::address::{address_v0_from_pubkey_wire, AddressV0};
+use crate::error::CryptoError;
 use crate::hybrid::{HybridPublicKey, HybridSecretKey};
 use crate::keystore::{Keystore, KeystoreV3};
 use crate::kdf;
@@ -79,6 +80,11 @@ impl WalletIdentity {
 
     /// Unlinkable receive subaddress for `index` (0 = primary).
     pub fn receive_subaddress_v0(&self, index: u32) -> Result<String> {
+        if index > crate::privacy::DEFAULT_SUBADDR_SCAN_WINDOW {
+            return Err(CryptoError::Serialization(
+                "subaddress index exceeds DEFAULT_SUBADDR_SCAN_WINDOW".into(),
+            ));
+        }
         let view_wire = self.public().view.to_wire_bytes()?;
         crate::privacy::subaddress_bech32(&view_wire, index)
     }

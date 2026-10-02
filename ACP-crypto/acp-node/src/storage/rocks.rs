@@ -22,6 +22,8 @@ impl Rocks {
             ColumnFamilyDescriptor::new(CF_HEADERS, Options::default()),
             ColumnFamilyDescriptor::new(CF_TXS, Options::default()),
             ColumnFamilyDescriptor::new(CF_TX_META, Options::default()),
+            ColumnFamilyDescriptor::new(CF_SPENT_OUTPOINTS, Options::default()),
+            ColumnFamilyDescriptor::new(CF_UTXO_ROLES, Options::default()),
             ColumnFamilyDescriptor::new(CF_BLOCK_META, Options::default()),
             ColumnFamilyDescriptor::new(CF_HEIGHT_TO_HASH, Options::default()),
             ColumnFamilyDescriptor::new(CF_HEADER_PREV, Options::default()),

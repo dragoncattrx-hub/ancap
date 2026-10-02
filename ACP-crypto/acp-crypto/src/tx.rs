@@ -121,7 +121,8 @@ impl Transaction {
                 "tx: outputs exceed inputs".into(),
             ));
         }
-        Ok((in_sum - out_sum) as u64)
+        u64::try_from(in_sum - out_sum)
+            .map_err(|_| CryptoError::Serialization("tx: fee overflow".into()))
     }
 
     /// Bytes that are signed (signature not included).

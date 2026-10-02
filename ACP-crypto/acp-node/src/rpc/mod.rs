@@ -24,6 +24,7 @@ const PUBLIC_METHODS: &[&str] = &[
     "getblockhash",
     "getblock",
     "getrawtransaction",
+    "gettxoutsetinfo",
     "ancap_status",
     "ancap_info",
 ];

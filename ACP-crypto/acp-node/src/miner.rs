@@ -1,8 +1,7 @@
-//! Automatic miner: packs fee-prioritized mempool txs into blocks and optionally
-//! emits energy-efficient heartbeat (emission-only) blocks when idle.
+//! Automatic assembler: packs fee-prioritized mempool transactions into blocks.
 //!
-//! Controlled by config: miner_enabled, miner_interval_secs, miner_heartbeat_*,
-//! miner_max_txs_per_block (env: ACP_MINER_*).
+//! Validator rewards are ordinary spends from the 105M genesis reserve. This
+//! module never creates zero-prevout emission transactions.
 
 use std::sync::Arc;
 
@@ -36,6 +35,11 @@ fn pack_mempool_txs(ctx: &RpcCtx, chain_id: u32, reserve_bytes: usize) -> Vec<Pa
             }
         };
         if tx.chain_id != chain_id {
+            let _ = ctx.mempool.remove(&txid);
+            continue;
+        }
+        if let Err(e) = ctx.chain.storage.validate_mempool_transaction(&tx) {
+            warn!("miner: evicting transaction that no longer passes consensus: {}", e);
             let _ = ctx.mempool.remove(&txid);
             continue;
         }
@@ -101,15 +105,11 @@ async fn relay_block(ctx: &RpcCtx, block_hex: String) {
 pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
     let interval_secs = ctx.config.miner_interval_secs.max(1);
     let chain_id = ctx.config.chain_id;
-    let heartbeat_every = ctx.config.miner_heartbeat_every_n_ticks.max(1);
-    let mut idle_ticks: u64 = 0;
 
     info!(
-        "miner started (lean packer: interval_secs={}, max_txs={}, heartbeat={}, every_n={}, chain_id={})",
+        "miner started (stateful packer: interval_secs={}, max_txs={}, synthetic_emission=false, chain_id={})",
         interval_secs,
         ctx.config.miner_max_txs_per_block,
-        ctx.config.miner_heartbeat_enabled,
-        heartbeat_every,
         chain_id
     );
 
@@ -139,21 +139,9 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
             }
         };
 
-        let packed = pack_mempool_txs(&ctx, chain_id, 512);
-        let heartbeat_due = ctx.config.miner_heartbeat_enabled
-            && packed.is_empty()
-            && {
-                idle_ticks = idle_ticks.saturating_add(1);
-                idle_ticks >= heartbeat_every
-            };
-
-        if packed.is_empty() && !heartbeat_due {
+        let packed = pack_mempool_txs(&ctx, chain_id, 256);
+        if packed.is_empty() {
             continue;
-        }
-        if heartbeat_due {
-            idle_ticks = 0;
-        } else {
-            idle_ticks = 0;
         }
 
         let now = std::time::SystemTime::now()
@@ -161,37 +149,12 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
             .unwrap_or_default()
             .as_secs();
 
-        let mut txs: Vec<Transaction> = Vec::with_capacity(packed.len() + 1);
+        let mut txs: Vec<Transaction> = Vec::with_capacity(packed.len());
         let mut included_ids: Vec<[u8; 32]> = Vec::with_capacity(packed.len());
-
-        if let Some(ref payout_address) = ctx.config.miner_reward_address {
-            match crate::emission::emission_available_now_units(&ctx.chain.storage, now) {
-                Ok(available) if available > 0 => {
-                    let target_per_block = (protocol_params::ANNUAL_EMISSION_ACP as u128)
-                        .saturating_mul(acp_crypto::UNITS_PER_ACP as u128)
-                        / ((365u128 * 24 * 60 * 60)
-                            / (protocol_params::TARGET_BLOCK_TIME_SEC as u128).max(1));
-                    let reward_units = available.min(target_per_block.max(1) as u64);
-                    match crate::emission::build_miner_emission_tx(chain_id, payout_address, reward_units)
-                    {
-                        Ok(reward_tx) => txs.push(reward_tx),
-                        Err(e) => warn!("miner: emission tx build failed: {}", e),
-                    }
-                }
-                Ok(_) => {}
-                Err(e) => warn!("miner: emission availability failed: {}", e),
-            }
-        }
 
         for item in packed {
             included_ids.push(item.txid);
             txs.push(item.tx);
-        }
-
-        // Blocks require ≥1 tx; skip empty heartbeat when no emission payout configured.
-        if txs.is_empty() {
-            debug!("miner: skip empty assemble (no mempool txs and no emission tx)");
-            continue;
         }
 
         let header = BlockHeader {
@@ -223,18 +186,15 @@ pub async fn run_miner_loop(ctx: Arc<RpcCtx>) {
         let block_hex = hex::encode(block_wire);
         let tx_count = block.txs.len();
 
-        match ctx.chain.submit_block(&block) {
+        match ctx.chain.submit_block_and_evict(&ctx.mempool, &block) {
             Ok(_) => {
                 let _ = ctx.chain.storage.recompute_best_header_tip_v52();
-                for txid in &included_ids {
-                    let _ = ctx.mempool.remove(txid);
-                }
                 info!(
                     "miner: block height {} accepted (txs={}, packed={}, heartbeat={})",
                     best_height + 1,
                     tx_count,
                     included_ids.len(),
-                    included_ids.is_empty()
+                    false
                 );
                 relay_block(&ctx, block_hex).await;
             }

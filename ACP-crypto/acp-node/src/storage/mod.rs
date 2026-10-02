@@ -355,9 +355,6 @@ impl Storage<Rocks> {
     /// Atomic store for a new tip block with strict tip rules.
     pub fn put_block_as_tip(&self, block: &Block) -> Result<BlockHash> {
         block.validate().map_err(anyhow::Error::msg)?;
-        #[cfg(feature = "enforced-creator-vesting")]
-        crate::vesting::validate_block_creator_vesting(self, block)?;
-        crate::emission::validate_block_emission(self, block)?;
 
         let best_h = self.best_height()?;
         let best_hash = self.best_hash()?;
@@ -391,6 +388,9 @@ impl Storage<Rocks> {
             anyhow::bail!("block already known");
         }
 
+        // Stateful validation happens before any write. Its metadata and the
+        // block/transaction indexes are committed in the same RocksDB batch.
+        let consensus = self.validate_block_consensus(block)?;
         let wire = block.to_wire().map_err(anyhow::Error::msg)?;
 
         let mut batch = rocksdb::WriteBatch::default();
@@ -446,6 +446,64 @@ impl Storage<Rocks> {
             meta.extend_from_slice(&block.header.height.to_le_bytes());
             meta.extend_from_slice(&bh);
             Rocks::batch_put_cf(&mut batch, dbref, CF_TX_META, &txid, &meta)?;
+        }
+
+        for (outpoint, spending_txid) in &consensus.spent_outpoints {
+            Rocks::batch_put_cf(
+                &mut batch,
+                dbref,
+                CF_SPENT_OUTPOINTS,
+                outpoint,
+                spending_txid,
+            )?;
+        }
+        for (outpoint, role) in &consensus.output_roles {
+            Rocks::batch_put_cf(
+                &mut batch,
+                dbref,
+                CF_UTXO_ROLES,
+                outpoint,
+                &[role.as_byte()],
+            )?;
+        }
+        Rocks::batch_put_cf(
+            &mut batch,
+            dbref,
+            CF_META,
+            KEY_UTXO_SUPPLY_UNITS,
+            &consensus.utxo_supply_units.to_le_bytes(),
+        )?;
+        Rocks::batch_put_cf(
+            &mut batch,
+            dbref,
+            CF_META,
+            KEY_ISSUED_SUPPLY_UNITS,
+            &consensus.issued_supply_units.to_le_bytes(),
+        )?;
+        Rocks::batch_put_cf(
+            &mut batch,
+            dbref,
+            CF_META,
+            KEY_UTXO_COUNT,
+            &consensus.utxo_count.to_le_bytes(),
+        )?;
+        Rocks::batch_put_cf(
+            &mut batch,
+            dbref,
+            CF_META,
+            KEY_CREATOR_RELEASED_UNITS,
+            &consensus.creator_released_units.to_le_bytes(),
+        )?;
+        Rocks::batch_put_cf(
+            &mut batch,
+            dbref,
+            CF_META,
+            KEY_VALIDATOR_RELEASED_UNITS,
+            &consensus.validator_released_units.to_le_bytes(),
+        )?;
+
+        if block.header.height == 1 {
+            self.persist_chain_identity(&mut batch, block.header.chain_id, &bh)?;
         }
 
         Rocks::batch_put_cf(

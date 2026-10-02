@@ -28,6 +28,7 @@ impl Default for MempoolLimits {
 pub struct Mempool {
     map: Mutex<HashMap<[u8; 32], Vec<u8>>>,
     bytes: Mutex<usize>,
+    spends: Mutex<HashMap<([u8; 32], u32), [u8; 32]>>,
     limits: MempoolLimits,
 }
 
@@ -36,6 +37,7 @@ impl Mempool {
         Self {
             map: Mutex::new(HashMap::new()),
             bytes: Mutex::new(0),
+            spends: Mutex::new(HashMap::new()),
             limits,
         }
     }
@@ -54,6 +56,13 @@ impl Mempool {
 
     pub fn has(&self, txid: &[u8; 32]) -> bool {
         self.map.lock().unwrap().contains_key(txid)
+    }
+
+    pub fn has_input_conflict(&self, tx: &Transaction) -> bool {
+        let spends = self.spends.lock().unwrap();
+        tx.inputs
+            .iter()
+            .any(|input| spends.contains_key(&(input.prev_txid, input.vout)))
     }
 
     pub fn txids(&self) -> Vec<[u8; 32]> {
@@ -81,15 +90,18 @@ impl Mempool {
             );
         }
 
-        {
-            let m = self.map.lock().unwrap();
-            if m.contains_key(&id) {
-                anyhow::bail!("mempool: duplicate tx");
-            }
-        }
-
         let mut m = self.map.lock().unwrap();
         let mut used = self.bytes.lock().unwrap();
+        let mut spends = self.spends.lock().unwrap();
+
+        if m.contains_key(&id) {
+            anyhow::bail!("mempool: duplicate tx");
+        }
+        for input in &tx.inputs {
+            if spends.contains_key(&(input.prev_txid, input.vout)) {
+                anyhow::bail!("mempool: input already spent by another pending transaction");
+            }
+        }
 
         if m.len() >= self.limits.max_txs {
             anyhow::bail!("mempool: full (max_txs)");
@@ -99,6 +111,9 @@ impl Mempool {
         }
 
         *used += wire.len();
+        for input in &tx.inputs {
+            spends.insert((input.prev_txid, input.vout), id);
+        }
         m.insert(id, wire);
         Ok(id)
     }
@@ -107,12 +122,41 @@ impl Mempool {
         self.map.lock().unwrap().get(txid).cloned()
     }
 
+    pub fn evict_block(&self, block: &acp_crypto::Block) {
+        let mut to_remove = std::collections::HashSet::new();
+        {
+            let spends = self.spends.lock().unwrap();
+            for tx in &block.txs {
+                if let Ok(txid) = tx.txid() {
+                    to_remove.insert(txid);
+                }
+                for input in &tx.inputs {
+                    if let Some(txid) = spends.get(&(input.prev_txid, input.vout)) {
+                        to_remove.insert(*txid);
+                    }
+                }
+            }
+        }
+        for txid in to_remove {
+            let _ = self.remove(&txid);
+        }
+    }
+
     /// Remove a tx by txid (e.g. after it was included in a block). Returns the wire if present.
     pub fn remove(&self, txid: &[u8; 32]) -> Option<Vec<u8>> {
         let mut m = self.map.lock().unwrap();
         let mut used = self.bytes.lock().unwrap();
+        let mut spends = self.spends.lock().unwrap();
         if let Some(wire) = m.remove(txid) {
             *used = used.saturating_sub(wire.len());
+            if let Ok(tx) = Transaction::from_wire(&wire) {
+                for input in tx.inputs {
+                    let key = (input.prev_txid, input.vout);
+                    if spends.get(&key) == Some(txid) {
+                        spends.remove(&key);
+                    }
+                }
+            }
             Some(wire)
         } else {
             None

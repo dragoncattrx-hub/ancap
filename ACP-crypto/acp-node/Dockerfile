@@ -13,16 +13,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
+COPY Cargo.toml Cargo.lock /build/
 COPY acp-crypto /build/acp-crypto
+COPY acp-mobile-ffi /build/acp-mobile-ffi
+COPY acp-wallet /build/acp-wallet
 COPY acp-node /build/acp-node
 
-WORKDIR /build/acp-node
-RUN cargo build --release
+RUN cargo build --release --locked -p acp-node --bin acp-node \
+    && cargo build --release --locked -p acp-wallet --example build_and_submit_genesis
 
 FROM builder AS runtime
 
 RUN mkdir -p /opt/acp/bin /etc/acp \
-    && cp /build/acp-node/target/release/acp-node /opt/acp/bin/acp-node
+    && cp /build/target/release/acp-node /opt/acp/bin/acp-node \
+    && cp /build/target/release/examples/build_and_submit_genesis \
+        /opt/acp/bin/build-and-submit-genesis
 
 ENTRYPOINT ["/opt/acp/bin/acp-node"]
 CMD []

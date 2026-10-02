@@ -8,6 +8,18 @@ use crate::chain::Chain;
 use crate::mempool::Mempool;
 use crate::storage::db::KvDb;
 
+fn format_acp_units(units: u64) -> String {
+    let whole = units / acp_crypto::UNITS_PER_ACP;
+    let fraction = units % acp_crypto::UNITS_PER_ACP;
+    if fraction == 0 {
+        whole.to_string()
+    } else {
+        format!("{whole}.{fraction:08}")
+            .trim_end_matches('0')
+            .to_string()
+    }
+}
+
 fn tx_json_decoded(
     tx: &Transaction,
     wire_bytes: &[u8],
@@ -139,6 +151,51 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
         "getblockcount" => {
             let h = ctx.chain.storage.best_height()?;
             Ok(json!(h))
+        }
+
+        "gettxoutsetinfo" => {
+            let height = ctx.chain.storage.best_height()?;
+            if height == 0 {
+                let max = acp_crypto::BASE_SUPPLY_ACP
+                    .checked_mul(acp_crypto::UNITS_PER_ACP)
+                    .ok_or_else(|| anyhow::anyhow!("base supply overflow"))?;
+                return Ok(json!({
+                    "initialized": false,
+                    "height": 0,
+                    "max_supply_units": max.to_string(),
+                    "max_supply_acp": format_acp_units(max),
+                    "issued_supply_units": "0",
+                    "issued_supply_acp": "0",
+                    "utxo_supply_units": "0",
+                    "utxo_supply_acp": "0",
+                    "burned_fee_units": "0",
+                    "burned_fee_acp": "0",
+                    "utxo_count": 0,
+                    "supply_invariant_ok": true,
+                }));
+            }
+            let info = ctx.chain.storage.supply_info()?;
+            let burned = info
+                .issued_supply_units
+                .saturating_sub(info.utxo_supply_units);
+            let invariant_ok = info.issued_supply_units == info.max_supply_units
+                && info.utxo_supply_units <= info.issued_supply_units;
+            Ok(json!({
+                "initialized": true,
+                "height": height,
+                "max_supply_units": info.max_supply_units.to_string(),
+                "max_supply_acp": format_acp_units(info.max_supply_units),
+                "issued_supply_units": info.issued_supply_units.to_string(),
+                "issued_supply_acp": format_acp_units(info.issued_supply_units),
+                "utxo_supply_units": info.utxo_supply_units.to_string(),
+                "utxo_supply_acp": format_acp_units(info.utxo_supply_units),
+                "burned_fee_units": burned.to_string(),
+                "burned_fee_acp": format_acp_units(burned),
+                "utxo_count": info.utxo_count,
+                "creator_released_units": info.creator_released_units.to_string(),
+                "validator_released_units": info.validator_released_units.to_string(),
+                "supply_invariant_ok": invariant_ok,
+            }))
         }
 
         "getbestblockhash" => {
@@ -4324,58 +4381,13 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
                 }));
             }
 
-            #[cfg(feature = "enforced-creator-vesting")]
-            {
-                let now_time = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|d| d.as_secs())
-                    .unwrap_or(0);
-                if let Err(e) = crate::vesting::validate_tx_creator_vesting(
-                    &ctx.chain.storage,
-                    &ctx.mempool,
-                    &tx,
-                    now_time,
-                ) {
-                    return Ok(json!({
-                        "accepted": false,
-                        "reason": e.to_string()
-                    }));
-                }
-            }
-
-            let txid = match tx.txid() {
-                Ok(id) => id,
-                Err(e) => {
-                    return Ok(json!({
-                        "accepted": false,
-                        "reason": format!("txid error: {e}")
-                    }))
-                }
-            };
-
-            if ctx.mempool.has(&txid) {
-                return Ok(json!({
-                    "accepted": false,
-                    "txid": TxHex::encode_txid(&txid),
-                    "reason": "duplicate tx (mempool)"
-                }));
-            }
-            if ctx.chain.storage.get_tx_wire(&txid).ok().flatten().is_some() {
-                return Ok(json!({
-                    "accepted": false,
-                    "txid": TxHex::encode_txid(&txid),
-                    "reason": "duplicate tx (disk)"
-                }));
-            }
-
-            match ctx.mempool.put(&tx) {
+            match ctx.chain.accept_mempool_tx(&ctx.mempool, &tx) {
                 Ok(id) => Ok(json!({
                     "accepted": true,
                     "txid": TxHex::encode_txid(&id)
                 })),
                 Err(e) => Ok(json!({
                     "accepted": false,
-                    "txid": TxHex::encode_txid(&txid),
                     "reason": e.to_string()
                 }))
             }
@@ -4425,7 +4437,7 @@ pub fn handle(ctx: &RpcCtx, method: &str, params: &serde_json::Value) -> Result<
                 }));
             }
 
-            match ctx.chain.submit_block(&block) {
+            match ctx.chain.submit_block_and_evict(&ctx.mempool, &block) {
                 Ok(h) => {
                     if let Some(ref urls) = ctx.config.peer_rpc_urls {
                         let block_hex_relay = block_hex.to_string();

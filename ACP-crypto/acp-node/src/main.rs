@@ -7,6 +7,7 @@ use tracing_subscriber::FmtSubscriber;
 
 mod chain;
 mod config;
+mod consensus;
 mod exports;
 mod mempool;
 mod miner;
@@ -16,7 +17,6 @@ mod storage;
 mod sync;
 mod util;
 mod vesting;
-mod emission;
 
 use crate::config::{FileConfig, NodeConfig};
 use crate::rpc::handlers::RpcCtx;
@@ -96,18 +96,7 @@ async fn main() -> anyhow::Result<()> {
             }
         }
     }
-    let mut cfg = load_config_from_env(cfg);
-    if cfg.miner_reward_address.is_none() {
-        match emission::load_or_create_local_miner_reward_address(&cfg.data_dir) {
-            Ok(addr) => {
-                info!("auto miner_reward_address resolved: {}", addr);
-                cfg.miner_reward_address = Some(addr);
-            }
-            Err(e) => {
-                tracing::warn!("failed to auto-resolve miner reward address: {}", e);
-            }
-        }
-    }
+    let cfg = load_config_from_env(cfg);
 
     info!(
         "ACP node starting (chain_id={}, data_dir={})",
@@ -116,9 +105,11 @@ async fn main() -> anyhow::Result<()> {
 
     let rocks = Rocks::open(&cfg.data_dir)?;
     let storage = Storage::new(rocks);
+    storage.ensure_consensus_ready()?;
     info!("{}", crate::vesting::env_diagnostics());
     info!("{}", crate::vesting::diagnostic_line(&storage));
-    let chain = Chain::new(cfg.chain_id, storage);
+    storage.ensure_chain_identity(cfg.chain_id)?;
+    let chain = Chain::new(cfg.chain_id, storage)?;
     let mempool = Mempool::new(crate::mempool::MempoolLimits::default());
 
     let creator_vesting_build = if cfg!(feature = "enforced-creator-vesting") {
@@ -126,7 +117,9 @@ async fn main() -> anyhow::Result<()> {
     } else {
         "off (default; bulk/dev OK)"
     };
-    let node_version = format!("acp-node/0.0.3 (creator_vesting={creator_vesting_build})");
+    let node_version = format!(
+        "acp-node/0.1.0 (stateful_utxo=on, hard_cap=210000000, creator_vesting={creator_vesting_build})"
+    );
     let ctx = std::sync::Arc::new(RpcCtx {
         chain,
         mempool,
