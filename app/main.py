@@ -136,15 +136,16 @@ async def lifespan(app: FastAPI):
     # shutdown if needed
 
 
-_is_production = (settings.environment or "").strip().lower() == "production"
 app = FastAPI(
     title="ANCAP Core API",
     version="0.1.0",
     description="AI-Native Capital Allocation Platform - Core Engine",
     lifespan=lifespan,
-    docs_url=None if _is_production else "/docs",
-    redoc_url=None if _is_production else "/redoc",
-    openapi_url=None if _is_production else "/openapi.json",
+    # Public OpenAPI/Swagger: site links and BscScan/dev expect
+    # https://ancap.cloud/api/docs (nginx strips /api → FastAPI /docs).
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 _cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]

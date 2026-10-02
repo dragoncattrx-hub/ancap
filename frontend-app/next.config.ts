@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
       { source: "/w", destination: "/", permanent: true },
       { source: "/w/", destination: "/", permanent: true },
       { source: "/w/:path+", destination: "/:path+", permanent: true },
+      // Common aliases / legacy paths used in listings and old links
+      { source: "/tokenomics", destination: "/acp-supply", permanent: true },
+      { source: "/proof", destination: "/proof-center", permanent: true },
+      { source: "/market", destination: "/markets", permanent: true },
     ];
   },
   // Fresh Docker builds get new chunk filenames.
