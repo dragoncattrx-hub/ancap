@@ -1,6 +1,6 @@
 # ANCAP Finance Model
 
-Last updated: 2026-09-12. Source of truth for platform monetization, fee routing, and the project treasury.
+Last updated: 2026-10-02. Source of truth for platform monetization, fee routing, and the project treasury.
 
 ## 1. Revenue streams and take rates
 
@@ -62,24 +62,25 @@ Expenses are debited from the same account (staking rewards, referral rewards, f
 - Seed phrase + keystore: operator-held in `Desktop/Sicret/project-treasury-wallet.txt` and
   `project-treasury-keystore.json` (NEVER committed; `Sicret/` is gitignored).
 
-## 4b. Where all finances live (2026-07-02 regenesis)
+## 4b. Where all finances live (2026-10-02 hard-cap recovery)
 
 | Layer | Location | What |
 |---|---|---|
 | **User/platform ledger** | Postgres `ancap` — tables `accounts`, `ledger_events` | Platform balances users see (deposits, fees, stakes, transfers). **Not wiped** on chain regenesis. |
-| **On-chain UTXOs** | `acp-node` data dir `Sicret/acp/` (bind-mount) | Real ACP coins. After regenesis v2: genesis tx at height 1. |
-| **Genesis treasury (~207M)** | `acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl` in `Sicret/genesis-v2/genesis-treasury.keystore.json` + `genesis-treasury-wallet.txt` | Spendable operator pool (replaces lost 209M from broken genesis). Regenesis v2 accepted 2026-07-02. |
-| **Hot wallet** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` — keystore `Sicret/custodial-hot.keystore.json` (PQC; mnemonic alone insufficient) | 1M ACP genesis alloc; custodial withdrawals. See `docs/ACP_WALLET_ROLES.md`. |
-| **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` — keystore `Desktop/Sicret/project-treasury-keystore.json` | 1M ACP; miner emission target (`ACP_MINER_REWARD_ADDRESS`). |
-| **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` — `Sicret/bridge-bsc/acp-reserve-keystore.json` | 301K ACP; backs wACP on BSC. |
-| **User on-chain** | `user_acp_wallets.address` | Each user with positive ledger balance gets matching on-chain alloc in genesis v2. |
-| **Validator emission** | Protocol reserve (not a UTXO); unlocked ~10.5M/year | Flows to `ACP_MINER_REWARD_ADDRESS` (project treasury) via miner blocks. |
+| **On-chain UTXOs** | `acp-node` data dir `Sicret/acp/` (bind-mount) | Stateful UTXO consensus; exact 210M issuance cap. |
+| **Canonical genesis buckets** | Creator / Validator / Public / Ecosystem keystores under `Sicret/` | Four outputs totalling exactly 210M ACP (33/50/12/5). |
+| **Hot wallet** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` — keystore `Sicret/custodial-hot.keystore.json` | Operational float funded from Ecosystem; never extra issuance. |
+| **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` — keystore `Sicret/project-treasury-keystore.json` | Operational float funded from Ecosystem. |
+| **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` — `Sicret/bridge-bsc/acp-reserve-keystore.json` | ACP backing funded from Public & Liquidity plus Ecosystem; live BSC wACP liability + 999 ACP fee buffer. |
+| **User on-chain** | `user_acp_wallets.address` | Personal UTXOs; platform ledger liabilities remain backed by the hot float. |
+| **Validator rewards** | 105M genesis reserve UTXO | Released at up to 10.5M ACP/year by ordinary signed spends; no zero-prevout mint. |
 | **Stakes** | Ledger `stake_escrow` accounts only | 150,600 ACP staked — ledger-only, not duplicated on-chain. |
 
 **Keystore rule (fixed 2026-07-02):** hybrid PQC wallets require `keystore_json` (KeystoreV3) to spend.
 Mnemonic alone cannot recover the address. All genesis/miner/receive wallet tools now persist keystore.
 
-- Regenesis tool: `ACP-crypto/acp-wallet/examples/build_and_submit_genesis_v2.rs`
+- Recovery script: `scripts/regenesis-v3-hard-cap.sh`
+- Incident evidence: `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`
 - Operator backup before regenesis: `Sicret/backups/20260702T131509Z/`
 
 ## 4c. Project treasury (continued)

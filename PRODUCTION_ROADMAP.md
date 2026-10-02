@@ -23,6 +23,12 @@ Fixed decisions:
 
 Reality note: this section is a capability snapshot, not a claim that the whole project is release-complete. The main remaining tails are security / CI / prod-hardening, finishing the mobile wallet to a real device-ready release, and monetization depth beyond the first ACP-first loop.
 
+### ACP 210M hard-cap recovery (2026-10-02)
+- Pre-recovery chain supply was **832,187,477.05255227 ACP** (three accepted double-spends + synthetic validator outputs). Wallet headlines above 210M mixed that inflation with a stale Redis UTXO index.
+- Node now resolves referenced UTXOs, rejects double-spends, and refuses empty-input minting. Miner packs fees only.
+- API fail-closes withdrawals unless `gettxoutsetinfo` reports issued = 210M. Bridge proof uses live BSC `totalSupply()` + 999 ACP fee buffer.
+- Recovery procedure: `scripts/regenesis-v3-hard-cap.sh`. Incident: `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`.
+
 ### ACP web wallet launch recovery (2026-09-29)
 - Balance API/UI partitioned into on-chain / platform ledger / staked / withdrawable / operator live (never design-as-live).
 - Address binding history + mobile indexer watchlist + DB-backed tx history + admin rescan.

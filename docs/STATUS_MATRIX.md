@@ -1,6 +1,6 @@
 # ANCAP Status Matrix
 
-> Status: active summary | Updated: 2026-09-12
+> Status: active summary | Updated: 2026-10-02
 > Primary source of truth: `MASTER_ROADMAP.md`
 > Purpose: remove confusion between roadmap/status documents and provide one compact view of what is done, what is partial, and what is next.
 
@@ -23,7 +23,7 @@ Rule: older/supporting documents can explain context, but they must not override
 
 ## 2. Top-line truth
 
-As of 2026-09-12, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `57099a0`: Stripe live adapter configured, welcome grant, vet-regen rails). **Humanitarian aid desk** (`/humanitarian`) is in-repo as ACP briefs + Red Cross / Red Crescent national-society listings — not a signed ICRC/IFRC contract. **Work-stop blockers: none.**
+As of 2026-10-02, the project is **not fully release-complete end-to-end**, but the **commerce + agent track** is shipped on production (build `57099a0`: Stripe live adapter configured, welcome grant, vet-regen rails). **Humanitarian aid desk** (`/humanitarian`) is in-repo as ACP briefs + Red Cross / Red Crescent national-society listings — not a signed ICRC/IFRC contract. **Work-stop blockers: none.** ACP hard cap is **210,000,000**; pre-recovery v2 inflation and stale index headlines above that cap are documented in `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`.
 
 The core platform is largely built. Active remaining work (not blockers):
 

@@ -1,7 +1,7 @@
 # ANCAP Master Roadmap
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-09-12
+> Created: 2026-05-23 | Last updated: 2026-10-02
 
 ## Hardening + deploy wave (2026-07-01)
 
@@ -1186,7 +1186,7 @@ Security and ops hardening completed in this audit:
 | R12 | **AETERNA longevity** | DNA vault + ACP-paid genomic/longevity workflows + licensed partner rails (Sequencing.com import) | Eternal-life division; see `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md` |
 | R13 | **Lunar land trading** | Science-tagged lunar parcel registry + ACP interest desk (NASA–IBM LFM themes) | Speculative registry claims only; see `docs/LUNAR_LAND_TRADING_ROADMAP.md` |
 
-**ACP chain note:** Lean v1.4 packs fee-prioritized mempool txs (up to 512 / 2 MB) on a 5s miner interval. Idle heartbeat (~60s) advances height with emission-only blocks when configured — no PoW energy burn. See `docs/ACP_LEAN_CHAIN.md`.
+**ACP chain note:** Lean v1.4 packs fee-prioritized mempool txs (up to 512 / 2 MB) on a 5s miner interval. The assembler never mints; validator rewards are signed spends from the 105M genesis reserve. Hard cap is exactly 210,000,000 ACP. Recovery from the 2026-10-02 double-spend inflation: `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`. See `docs/ACP_LEAN_CHAIN.md`.
 
 ---
 

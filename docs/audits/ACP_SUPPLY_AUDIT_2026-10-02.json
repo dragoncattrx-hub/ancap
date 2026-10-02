@@ -1,0 +1,168 @@
+{
+  "tip": 33962,
+  "tx_count": 33985,
+  "genesis_units": 21000000000000000,
+  "emission_units": 5653705258127,
+  "utxo_supply_units": 83218747705255227,
+  "utxo_supply_acp": "832187477.05255227",
+  "protocol_issued_units": 21005653705258127,
+  "fees_actual_units": 2000,
+  "utxo_count": 33981,
+  "max_supply_units": 83218747705255227,
+  "max_height": 33962,
+  "unknown_input_count": 3,
+  "amount_mismatch_count": 0,
+  "double_spend_count": 3,
+  "inflation_tx_count": 3,
+  "inflation_units": 62213093999999100,
+  "low_fee_count": 0,
+  "first_unknown": [
+    {
+      "height": 10,
+      "txid": "ba08ba6eafdf79371054b5b8143988faab1167f9cafc8531411f43067292016a",
+      "outpoint": "d6545d1e97974e0c17446b4a26da03aa985834432b423f26b0f6cf8e92a06c00:1",
+      "declared": 20684297999999800
+    },
+    {
+      "height": 32871,
+      "txid": "50da5ef78fdc68f4dc51ffa7c2dcaeb5de29dab7cb3efb5a2fadc8ddc23eb88e",
+      "outpoint": "9219f79a3fda6c1343e3fa625dfb4db867e397d45a517611018de25b908ae58c:0",
+      "declared": 20764397999999800
+    },
+    {
+      "height": 32874,
+      "txid": "9c2f851b4353497fade855074b081772f928fe7c56852b029913b0c9d4f3a8bc",
+      "outpoint": "9219f79a3fda6c1343e3fa625dfb4db867e397d45a517611018de25b908ae58c:0",
+      "declared": 20764397999999800
+    }
+  ],
+  "first_mismatch": [],
+  "first_inflation": [
+    {
+      "height": 10,
+      "txid": "ba08ba6eafdf79371054b5b8143988faab1167f9cafc8531411f43067292016a",
+      "outputs": 20684297999999700,
+      "actual_inputs": 0,
+      "minted": 20684297999999700,
+      "declared_inputs": 20684297999999800
+    },
+    {
+      "height": 32871,
+      "txid": "50da5ef78fdc68f4dc51ffa7c2dcaeb5de29dab7cb3efb5a2fadc8ddc23eb88e",
+      "outputs": 20764397999999700,
+      "actual_inputs": 0,
+      "minted": 20764397999999700,
+      "declared_inputs": 20764397999999800
+    },
+    {
+      "height": 32874,
+      "txid": "9c2f851b4353497fade855074b081772f928fe7c56852b029913b0c9d4f3a8bc",
+      "outputs": 20764397999999700,
+      "actual_inputs": 0,
+      "minted": 20764397999999700,
+      "declared_inputs": 20764397999999800
+    }
+  ],
+  "first_double": [
+    {
+      "height": 10,
+      "txid": "ba08ba6eafdf79371054b5b8143988faab1167f9cafc8531411f43067292016a",
+      "outpoint": "d6545d1e97974e0c17446b4a26da03aa985834432b423f26b0f6cf8e92a06c00:1"
+    },
+    {
+      "height": 32871,
+      "txid": "50da5ef78fdc68f4dc51ffa7c2dcaeb5de29dab7cb3efb5a2fadc8ddc23eb88e",
+      "outpoint": "9219f79a3fda6c1343e3fa625dfb4db867e397d45a517611018de25b908ae58c:0"
+    },
+    {
+      "height": 32874,
+      "txid": "9c2f851b4353497fade855074b081772f928fe7c56852b029913b0c9d4f3a8bc",
+      "outpoint": "9219f79a3fda6c1343e3fa625dfb4db867e397d45a517611018de25b908ae58c:0"
+    }
+  ],
+  "top_balances": [
+    {
+      "address": "acp1qr3au4sstqfktvcs4wd0turnkeerc3pgdstvqwut",
+      "units": 58306692100568678,
+      "acp": "583066921.00568678"
+    },
+    {
+      "address": "acp1qp69rhaq4k8lgfwdqynqq5uva7uvswne8qq6g5um",
+      "units": 10500000000000000,
+      "acp": "105000000"
+    },
+    {
+      "address": "acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl",
+      "units": 6930000000000000,
+      "acp": "69300000"
+    },
+    {
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "units": 3725000665905028,
+      "acp": "37250006.65905028"
+    },
+    {
+      "address": "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz",
+      "units": 2600099999999900,
+      "acp": "26000999.999999"
+    },
+    {
+      "address": "acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf",
+      "units": 1050000000000000,
+      "acp": "10500000"
+    },
+    {
+      "address": "acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902",
+      "units": 105653472305213,
+      "acp": "1056534.72305213"
+    },
+    {
+      "address": "acp1qr9tqlpr83ncvex536k0h0kxxyl7zkd0ngm44ywf",
+      "units": 666100000000,
+      "acp": "6661"
+    },
+    {
+      "address": "acp1qz06ucs5zemu8mrdftp5gg8ckmevks0wqvhek4wa",
+      "units": 500000000000,
+      "acp": "5000"
+    },
+    {
+      "address": "acp1qztrjhavpc6f3vhxlg04gfeeqlltrwtjrygy0d5k",
+      "units": 66600000000,
+      "acp": "666"
+    },
+    {
+      "address": "acp1qpj54yrltxljjp5rwzd40hpxkwvlq24azuc7xdxd",
+      "units": 66600000000,
+      "acp": "666"
+    },
+    {
+      "address": "acp1qrtuzja28v72gera5s45h3ltxcxhvzqa2vmxhkhw",
+      "units": 1000000000,
+      "acp": "10"
+    },
+    {
+      "address": "acp1qq69wvq2f0f0gk9tmezvtxtfmu946vgcpc5dlm8x",
+      "units": 1000000000,
+      "acp": "10"
+    },
+    {
+      "address": "acp1qqm7gtlvz5tlh4nkcjjyd7xqhnayttv5hsltrdlf",
+      "units": 166476407,
+      "acp": "1.66476407"
+    },
+    {
+      "address": "acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl",
+      "units": 1,
+      "acp": "0.00000001"
+    }
+  ],
+  "audit_scope": "full active chain heights 1..33962 before hard-cap recovery",
+  "hard_cap_units": 21000000000000000,
+  "hard_cap_acp": "210000000",
+  "protocol_issued_acp": "210056537.05258127",
+  "emission_acp": "56537.05258127",
+  "inflation_acp": "622130939.999991",
+  "excess_units": 62218747705255227,
+  "excess_acp": "622187477.05255227"
+}

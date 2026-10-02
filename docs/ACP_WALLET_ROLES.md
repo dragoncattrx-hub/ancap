@@ -1,13 +1,13 @@
 # ACP wallet roles and tokenomics (operator reference)
 
-Last updated: 2026-07-13.
+Last updated: 2026-10-02.
 
 ## Official tokenomics (210M ACP, protocol)
 
 | Bucket | Share | ACP | On-chain form |
 |---|---:|---:|---|
 | Creator vesting | 33% | 69,300,000 | Vesting contract / dedicated wallet |
-| Validator emission reserve | 50% | 105,000,000 | Protocol accounting (not a spendable UTXO) |
+| Validator emission reserve | 50% | 105,000,000 | Locked genesis UTXO; released by signed spends |
 | Public & liquidity | 12% | 25,200,000 | Treasury / LP wallets |
 | Ecosystem grants | 5% | 10,500,000 | Grants wallet |
 
@@ -21,7 +21,7 @@ Annual validator payout: **10.5M ACP/year** from the 105M reserve (not new mint)
 |---|---|---|---|
 | **Bridge reserve** | `acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz` | `Sicret/bridge-bsc/acp-reserve-keystore.json` | Custodial sweep, genesis dumps |
 | **Custodial hot** | `acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9` | `Sicret/custodial-hot.keystore.json` → `/run/secrets/custodial-hot.keystore.json` (`ACP_CUSTODIAL_HOT_KEYSTORE_FILE`) | wACP backing / bridge reserve spends |
-| **Genesis treasury** | `acp1qzmlenphy56gv38j2x4yf4xe4qv4w89l3cpzmrdl` | `Sicret/genesis-v2/genesis-treasury.keystore.json` | Bridge reserve |
+| **Public & Liquidity** | `acp1qqla8waukrudkleau9n6gzj9c58ufyfxaulvwumm` | `Sicret/public-liquidity.keystore.json` | Untracked issuance |
 | **Project treasury** | `acp1qpw9nstpx5vtmqxdxmmud25dk0ae4s6a7cs7n902` | `Sicret/project-treasury-keystore.json` | Bridge reserve |
 | **Bridge release hot** | `acp1qq805ke8uggeszjcnyeru8wcjded7qt7g5sescpc` | `Sicret/bridge-bsc/acp-release-hot-mnemonic.txt` | wACP backing |
 
@@ -37,18 +37,31 @@ Recommended env split:
 - `ACP_CUSTODIAL_HOT_KEYSTORE_FILE` — custodial hot (`acp1qzfdkq...`)
 - `ACP_RELEASE_HOT_MNEMONIC_FILE` — BSC→ACP release wallet
 
-## What broke (2026-07-13 sweep)
+## Supply incident and v3 recovery (2026-10-02)
 
-1. **Bridge reserve emptied** while **800,001 wACP** remains on BSC → `reserve_health: critical`.
-2. **~210M ACP** moved to custodial hot, but **custodial hot keystore is missing** on the server → funds are not spendable.
-3. **Genesis v2** did not persist custodial hot keystore; mnemonic in `activity-wallets-seeds.txt` derives a **different** PQC address.
-4. **Regenesis v2** used a simplified layout (genesis treasury ~207M) instead of the official 33/50/12/5 wallet split.
+The v2 node did not resolve transaction inputs against live UTXOs. Three
+double-spends plus synthetic validator outputs raised actual unspent supply to
+`832,187,477.05255227 ACP`. A stale cross-regenesis API index separately showed
+the incorrect `2,538,291,192.32 ACP` figure.
+
+Recovery v3 restores the official four-output 210M genesis, archives the old
+RocksDB, funds operational wallets from Public & Liquidity and Ecosystem, and activates
+stateful input/ownership/double-spend/cap checks. See
+[`ACP_SUPPLY_INCIDENT_2026-10-02.md`](ACP_SUPPLY_INCIDENT_2026-10-02.md).
 
 ## Invariants (enforce in scripts and CI)
 
 ```
 bridge_reserve_acp >= wacp_total_supply_acp   # backing ratio >= 1
+bridge_reserve_units >= ceil(wacp_totalSupply_wei / 10^10) + 99_900_000_000
+issued_supply_units == 21_000_000_000_000_000
+utxo_supply_units <= issued_supply_units
+post_genesis_issuance_units == 0
 ```
+
+The `99_900_000_000`-unit bridge margin is the 999 ACP reverse-payout fee
+buffer. The liability source is the wACP contract's live BSC `totalSupply()`,
+not only the platform's bridge-operation rows.
 
 Before any transfer **from** bridge reserve:
 
@@ -56,40 +69,18 @@ Before any transfer **from** bridge reserve:
 curl -s -H 'User-Agent: ancap-backend/1.0' https://ancap.cloud/api/v1/bridge/wacp/reserve-proof
 ```
 
-Never run `scripts/sweep-acp-to-hot.sh` against bridge reserve when `backing_ratio < 1` would result.
+Never run `scripts/sweep-acp-to-hot.sh` against bridge reserve when
+`backing_ratio < 1` would result.
 
-## Recovery plan
-
-### Immediate (bridge)
-
-1. Locate **custodial hot keystore** (`KeystoreV3` for `acp1qzfdkq...`).
-2. Upload to server: `/run/secrets/custodial-hot.keystore.json`
-3. Run: `bash scripts/restore-bridge-reserve.sh 800999.999999`
-4. Verify `GET /api/v1/bridge/wacp/reserve-proof` → `backing_ratio >= 1`, `reserve_health: healthy`
-5. Optionally `BRIDGE_RAIL_PAUSED=true` until step 4 passes.
-
-### Medium term (tokenomics alignment)
-
-Regenesis **v3** should allocate genesis outputs to official buckets using keystores under `Desktop/ACP/wallets/`:
+## Canonical v3 bucket keys
 
 | Bucket | Keystore |
 |---|---|
 | Creator | `creator.keystore.json` → `acp1qrfw3d50jd4864vxhatuknhw65jwv463ccr6flsl` |
-| Validator reserve marker | `validator-reserve.keystore.json` |
+| Validator reserve | `validator-reserve.keystore.json` |
 | Public & liquidity | `public-liquidity.keystore.json` |
-| Ecosystem | `ecosystem-grants.keystore.json` → `acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf` (migrated 2026-07-13 from custodial hot; superseded genesis slot `acp1qrpavez2...`) |
-| Bridge reserve | `bridge-reserve.keystore.json` |
-| Operator float | custodial hot keystore (generated + saved at genesis time) |
+| Ecosystem | `ecosystem-grants.keystore.json` → `acp1qq9t4lf4z7lprt7a6nr682cl02f5tcyh45stakdf` |
 
-`build_and_submit_genesis_v2.rs` should **require** `ACP_HOT_KEYSTORE_FILE` and verify address match before submit.
-
-### Redistribution after hot keystore recovery
-
-| Destination | Amount (ACP) | Purpose |
-|---|---:|---|
-| Bridge reserve | 801,000 | wACP backing |
-| Project treasury | 1,000,000 | Miner rewards target |
-| Genesis treasury | ~207,643,981 | Operator pool per genesis v2 |
-| Bridge reserve (genesis slot) | 301,000 | Only if not already covered by 801k line |
-
-Exact amounts: read live balances + `reserve-proof` before moving.
+Operational hot, project, and bridge balances are ordinary outputs funded from
+Public & Liquidity or Ecosystem. They must never be added to the four genesis
+allocations when calculating total supply.

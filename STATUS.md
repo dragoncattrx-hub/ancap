@@ -1,6 +1,6 @@
 # ANCAP Status
 
-> Updated: 2026-09-30
+> Updated: 2026-10-02
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
@@ -8,6 +8,8 @@
 ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
 **Work-stop blockers: none.**
+
+**ACP supply (2026-10-02):** wallet figures such as `1,532,370,736.69` / `2,538,291,192.32` ACP were not protocol issuance. Replay of v2 heights 1–33,962 found genesis 210M + 56,537.05 synthetic validator + 622,130,939.999991 double-spend inflation = **832,187,477.05255227** unspent ACP. The UI also mixed stale UTXO-index rows across chain resets. Recovery code enforces a 210,000,000 ACP hard cap, rejects double-spends, and stops post-genesis minting. Controlled regenesis v3: `scripts/regenesis-v3-hard-cap.sh` + `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`.
 
 **ACP “mining” clarification:** there is **no PoW mining pool**. The lean-chain miner is a fee-packed block assembler (see `docs/ACP_LEAN_CHAIN.md`). Staking bootstrap emission is ledger staking, not hash mining. Do not market “mine ACP” as energy-intensive PoW.
 

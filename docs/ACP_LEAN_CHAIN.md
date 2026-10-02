@@ -9,7 +9,7 @@
 |-------|------------------------|-------------------|
 | Security | Post-quantum roadmaps (Lean Ethereum / hash-based aggregates), multi-client diversity | **Hybrid Ed25519 + Dilithium2** signing plus experimental **X-Wing draft-10** off-chain envelopes |
 | Speed | Solana ~1k+ real TPS; ETH L1 zkEVM / parallel exec; L2 blobs | **5s target**, **fee-packed** blocks up to **512 txs / 2 MB**, design hint ~**100 TPS** |
-| Energy | ETH Merge cut ~99.9% vs PoW; Cambridge ranks PoS intensity | **No PoW** — ultra-light assembler; idle **heartbeat ~60s** only |
+| Energy | ETH Merge cut ~99.9% vs PoW; Cambridge ranks PoS intensity | **No PoW** — ultra-light assembler; idle minutes produce **no new coins** |
 
 ACP is not trying to out-hash Bitcoin or out-Sealevel Solana overnight. It optimizes for **AI workflow settlement**: quantum-aware keys, low ops energy, predictable packed throughput.
 
@@ -22,7 +22,7 @@ status remains experimental pending independent review; see
 
 - Multi-tx **fee-prioritized packing** (`acp-node` miner)
 - Default `ACP_MINER_INTERVAL_SECS=5` (matches `TARGET_BLOCK_TIME_SEC`)
-- Throttled **heartbeat** emission blocks when idle (`ACP_MINER_HEARTBEAT_*`)
+- Idle assembler skips empty mempools (`ACP_MINER_HEARTBEAT_ENABLED=false`); no post-genesis mint
 - `getnetworkinfo` exposes lean profile fields
 - Platform: `GET /v1/acp/explorer/efficiency` + lean block on explorer/ACP landing
 
@@ -30,8 +30,7 @@ status remains experimental pending independent review; see
 
 ```
 ACP_MINER_INTERVAL_SECS=5
-ACP_MINER_HEARTBEAT_ENABLED=true
-ACP_MINER_HEARTBEAT_EVERY_N=12
+ACP_MINER_HEARTBEAT_ENABLED=false
 ACP_MINER_MAX_TXS_PER_BLOCK=512
 ```
 
