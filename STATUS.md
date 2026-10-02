@@ -9,7 +9,7 @@ ANCAP is **largely built**, but it is **not fully release-complete end-to-end**.
 
 **Work-stop blockers: none.**
 
-**ACP supply (2026-10-02):** wallet figures such as `1,532,370,736.69` / `2,538,291,192.32` ACP were not protocol issuance. Replay of v2 heights 1–33,962 found genesis 210M + 56,537.05 synthetic validator + 622,130,939.999991 double-spend inflation = **832,187,477.05255227** unspent ACP. The UI also mixed stale UTXO-index rows across chain resets. Recovery code enforces a 210,000,000 ACP hard cap, rejects double-spends, and stops post-genesis minting. Controlled regenesis v3: `scripts/regenesis-v3-hard-cap.sh` + `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`.
+**ACP supply (2026-10-02):** wallet figures such as `1,532,370,736.69` / `2,538,291,192.32` ACP were not protocol issuance. Replay of v2 heights 1–33,962 found genesis 210M + 56,537.05 synthetic validator + 622,130,939.999991 double-spend inflation = **832,187,477.05255227** unspent ACP. The UI also mixed stale UTXO-index rows across chain resets. **Regenesis v3 is live** on `ancap.cloud`: `gettxoutsetinfo` reports issued **210,000,000 ACP**, invariant ok, UTXO supply **209,999,999.999989** after 0.000011 ACP fees, height 12, genesis `78be2f72e8cf3bb41b0baa6fead9b40eb58be2f57e6a21a026d08ae8e8f6d8ce`. Recovery: `scripts/regenesis-v3-hard-cap.sh` + `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`.
 
 **ACP “mining” clarification:** there is **no PoW mining pool**. The lean-chain miner is a fee-packed block assembler (see `docs/ACP_LEAN_CHAIN.md`). Staking bootstrap emission is ledger staking, not hash mining. Do not market “mine ACP” as energy-intensive PoW.
 

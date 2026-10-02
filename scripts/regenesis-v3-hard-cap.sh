@@ -121,7 +121,11 @@ test -n "$BRIDGE_PUBLIC_ACP" && test -n "$BRIDGE_ECOSYSTEM_ACP"
 echo "bridge split Public=${BRIDGE_PUBLIC_ACP} Ecosystem=${BRIDGE_ECOSYSTEM_ACP}"
 
 echo "== Build strict node/API images before stopping the old chain"
-"${COMPOSE[@]}" build acp-node api
+if test "${SKIP_IMAGE_BUILD:-0}" = "1"; then
+  echo "skip-build (SKIP_IMAGE_BUILD=1)"
+else
+  "${COMPOSE[@]}" build acp-node api
+fi
 
 echo "== Stop and archive the corrupt v2 chain"
 "${COMPOSE[@]}" stop acp-node
@@ -195,7 +199,12 @@ transfer_from_bucket() {
     --to "$address" \
     --amount-acp "$amount")"
   echo "$result"
-  echo "$result" | python3 -c 'import json,sys; assert json.load(sys.stdin).get("accepted") is True' || {
+  echo "$result" | python3 -c 'import json,sys
+p=json.load(sys.stdin)
+ok = p.get("accepted") is True or (
+    isinstance(p.get("result"), dict) and p["result"].get("accepted") is True
+)
+assert ok' || {
     echo "funding transaction rejected" >&2
     exit 1
   }

@@ -54,6 +54,17 @@ new input instead of resolving an unspent output.
   liability up to ACP's 8-decimal units, and requires a 999 ACP fee buffer.
 - The old v2 RocksDB is archived before controlled regenesis v3.
 
+## Live recovery (2026-10-02)
+
+Production `gettxoutsetinfo` after regenesis v3:
+
+- genesis hash `78be2f72e8cf3bb41b0baa6fead9b40eb58be2f57e6a21a026d08ae8e8f6d8ce`
+- height 12
+- issued 210,000,000 ACP
+- UTXO supply 209,999,999.999989 ACP
+- burned fees 0.000011 ACP
+- `supply_invariant_ok=true`
+
 The recovery preserves non-operator end-user outputs listed in
 [`audits/ACP_REGENESIS_V3_MIGRATION_2026-10-02.json`](audits/ACP_REGENESIS_V3_MIGRATION_2026-10-02.json).
 Inflated change outputs and obsolete v2 operator allocations are excluded.
