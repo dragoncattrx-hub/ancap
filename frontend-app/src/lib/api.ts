@@ -2097,16 +2097,34 @@ export const acpExplorer = {
   async efficiency() {
     return apiFetch("/acp/explorer/efficiency");
   },
-  async blocks(limit = 10) {
-    return apiFetch(`/acp/explorer/blocks?limit=${encodeURIComponent(String(limit))}`);
+  async search(q: string) {
+    return apiFetch(`/acp/explorer/search?q=${encodeURIComponent(q)}`);
   },
-  async getTx(txid: string, view: "redacted" | "full" = "redacted") {
+  async blocks(limit = 12, beforeHeight?: number | null) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (beforeHeight != null) params.set("before_height", String(beforeHeight));
+    return apiFetch(`/acp/explorer/blocks?${params.toString()}`);
+  },
+  async getBlock(id: string) {
+    return apiFetch(`/acp/explorer/block/${encodeURIComponent(id)}`);
+  },
+  async getTx(txid: string, view: "redacted" | "full" = "full") {
     return apiFetch(
       `/acp/explorer/tx/${encodeURIComponent(txid)}?view=${encodeURIComponent(view)}`
     );
   },
-  async getAddress(address: string) {
-    return apiFetch(`/acp/explorer/address/${encodeURIComponent(address)}`);
+  async getAddress(address: string, historyLimit = 50, historyOffset = 0) {
+    const params = new URLSearchParams({
+      history_limit: String(historyLimit),
+      history_offset: String(historyOffset),
+    });
+    return apiFetch(`/acp/explorer/address/${encodeURIComponent(address)}?${params.toString()}`);
+  },
+  async mempool() {
+    return apiFetch("/acp/explorer/mempool");
+  },
+  async stats() {
+    return apiFetch("/acp/explorer/stats");
   },
 };
 

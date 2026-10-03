@@ -3420,3 +3420,52 @@ class DatingReport(Base):
     target_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     reason = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
+class AcpExplorerIndexerState(Base):
+    """Watermark for public ACP explorer full-chain index."""
+
+    __tablename__ = "acp_explorer_indexer_state"
+
+    id = Column(Integer, primary_key=True, default=1)
+    last_scanned_height = Column(Integer, nullable=False, default=0)
+    last_scanned_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class AcpExplorerBlock(Base):
+    __tablename__ = "acp_explorer_blocks"
+
+    height = Column(Integer, primary_key=True)
+    hash = Column(String(128), nullable=False, index=True)
+    time = Column(BigInteger, nullable=True)
+    tx_count = Column(Integer, nullable=False, default=0)
+    size = Column(Integer, nullable=True)
+
+
+class AcpExplorerTx(Base):
+    __tablename__ = "acp_explorer_txs"
+
+    txid = Column(String(128), primary_key=True)
+    block_height = Column(Integer, nullable=True, index=True)
+    block_hash = Column(String(128), nullable=True)
+    block_time = Column(BigInteger, nullable=True)
+    fee_units = Column(BigInteger, nullable=False, default=0)
+    input_count = Column(Integer, nullable=False, default=0)
+    output_count = Column(Integer, nullable=False, default=0)
+
+
+class AcpExplorerAddressEvent(Base):
+    __tablename__ = "acp_explorer_address_events"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    address = Column(String(128), nullable=False, index=True)
+    txid = Column(String(128), nullable=False, index=True)
+    direction = Column(String(8), nullable=False)
+    amount_units = Column(BigInteger, nullable=False, default=0)
+    vout = Column(Integer, nullable=True)
+    vin = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True, index=True)
+
+    __table_args__ = (
+        Index("ix_acp_explorer_addr_events_addr_height", "address", "height"),
+    )

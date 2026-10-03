@@ -515,6 +515,12 @@ async def _run_all_jobs(session: DbSession) -> dict:
     except Exception as exc:
         utxo_index = {"ok": False, "error": str(exc)[:200]}
     try:
+        from app.services.acp_explorer_index import acp_explorer_index_tick
+
+        explorer_index = await acp_explorer_index_tick(session, max_blocks=80)
+    except Exception as exc:
+        explorer_index = {"ok": False, "error": str(exc)[:200]}
+    try:
         from app.api.routers.wallet_acp import _schedule_chain_scan_warm
 
         _schedule_chain_scan_warm()
@@ -545,6 +551,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "wacp_liquidity": wacp_liquidity,
         "mobile_indexer": mobile_indexer,
         "acp_utxo_index": utxo_index,
+        "acp_explorer_index": explorer_index,
         "chain_scan_warm": chain_scan_warm,
     }
 

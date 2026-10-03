@@ -58,17 +58,90 @@ def test_explorer_blocks_ok(client):
         mock_rpc.side_effect = [
             2,
             "hash-2",
-            {"tx": ["tx-a", "tx-b"]},
+            {"tx": ["tx-a", "tx-b"], "time": 100, "size": 200},
             "hash-1",
-            {"tx": ["genesis"]},
+            {"tx": ["genesis"], "time": 50, "size": 100},
         ]
         res = client.get("/v1/acp/explorer/blocks?limit=2")
     assert res.status_code == 200, res.text
     body = res.json()
     assert body["block_height"] == 2
-    assert body["items"] == [
-        {"height": 2, "hash": "hash-2", "tx_count": 2},
-        {"height": 1, "hash": "hash-1", "tx_count": 1},
-    ]
+    assert body["items"][0]["height"] == 2
+    assert body["items"][0]["hash"] == "hash-2"
+    assert body["items"][0]["tx_count"] == 2
+    assert body["next_before_height"] == 0
     assert mock_rpc.await_args_list[1].args == ("getblockhash", {"height": 2})
     assert mock_rpc.await_args_list[2].args == ("getblock", {"blockhash": "hash-2", "verbose": True})
+
+
+def test_explorer_search_height(client):
+    res = client.get("/v1/acp/explorer/search?q=17")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["type"] == "block_height"
+    assert body["canonical_path"] == "/explorer/block/17"
+
+
+def test_explorer_search_address(client):
+    addr = "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz"
+    res = client.get(f"/v1/acp/explorer/search?q={addr}")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["type"] == "address"
+    assert body["canonical_path"] == f"/explorer/address/{addr}"
+
+
+def test_explorer_search_hex_as_tx(client):
+    txid = "a" * 64
+    with patch("app.api.routers.acp_explorer.acp_rpc_call", new_callable=AsyncMock) as mock_rpc:
+        mock_rpc.return_value = {"txid": txid}
+        res = client.get(f"/v1/acp/explorer/search?q={txid}")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["type"] == "tx"
+    assert body["canonical_path"] == f"/explorer/tx/{txid}"
+
+
+def test_explorer_block_by_height(client):
+    with patch("app.api.routers.acp_explorer.acp_rpc_call", new_callable=AsyncMock) as mock_rpc:
+        mock_rpc.side_effect = [
+            "hash-3",
+            {
+                "height": 3,
+                "tx": [{"txid": "aa" * 32}, {"txid": "bb" * 32}],
+                "header": {"time": 123, "prev_hash": "hash-2"},
+                "size": 400,
+            },
+            5,
+            "hash-4",
+        ]
+        res = client.get("/v1/acp/explorer/block/3")
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["height"] == 3
+    assert body["hash"] == "hash-3"
+    assert body["tx_count"] == 2
+    assert body["next_hash"] == "hash-4"
+
+
+def test_explorer_mempool_ok(client):
+    with patch("app.api.routers.acp_explorer.acp_rpc_call", new_callable=AsyncMock) as mock_rpc:
+        mock_rpc.side_effect = [
+            {"size": 2, "bytes": 100},
+            ["tx1", "tx2"],
+            {"feerate": "1"},
+        ]
+        res = client.get("/v1/acp/explorer/mempool")
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["info"]["size"] == 2
+    assert body["txids"] == ["tx1", "tx2"]
+
+
+def test_classify_explorer_query_unit():
+    from app.services.acp_explorer_search import classify_explorer_query
+
+    assert classify_explorer_query("42")["type"] == "block_height"
+    assert classify_explorer_query("acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz")["type"] == "address"
+    assert classify_explorer_query("f" * 64)["type"] == "tx"
+    assert classify_explorer_query("???")["type"] == "unknown"

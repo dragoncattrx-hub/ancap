@@ -85,6 +85,7 @@ const explorePublicGroups: NavGroup[] = [
   {
     titleKey: "nav.groupTrust",
     items: [
+      { label: "ACP Explorer", href: "/explorer", i18nKey: "nav.explorer" },
       { label: "See the path", href: "/#vision", i18nKey: "nav.vision" },
       { label: "Clear prices", href: "/pricing", i18nKey: "nav.pricing" },
       { label: "Read the thesis", href: "/whitepaper", i18nKey: "nav.whitepaper" },
@@ -155,6 +156,7 @@ const exploreAuthGroups: NavGroup[] = [
       { label: "Access", href: "/access", i18nKey: "nav.access" },
       { label: "Prove trust", href: "/reputation", i18nKey: "nav.reputation" },
       { label: "Ledger", href: "/ledger", i18nKey: "nav.ledger" },
+      { label: "ACP Explorer", href: "/explorer", i18nKey: "nav.explorer" },
       { label: "Proof Center", href: "/proof-center", i18nKey: "nav.proofCenter" },
       { label: "Chain Receipts", href: "/chain-receipts", i18nKey: "nav.chainReceipts" },
       { label: "Read the thesis", href: "/whitepaper", i18nKey: "nav.whitepaper" },

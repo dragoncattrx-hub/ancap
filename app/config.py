@@ -415,7 +415,7 @@ class Settings(BaseSettings):
     bridge_bsc_confirmations: int = 18
     bridge_operator_secret: str | None = None
     bsc_explorer_base: str = "https://bscscan.com"
-    acp_explorer_tx_base: str = "https://ancap.cloud/acp/tx"
+    acp_explorer_tx_base: str = "https://ancap.cloud/explorer/tx"
     turnstile_site_key: str = ""
 
     # sACP — Stable ACP (USD-targeted, ACP-collateralized); docs/STABLECOIN_SACP_SPEC.md
