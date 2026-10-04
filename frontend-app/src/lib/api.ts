@@ -687,6 +687,18 @@ export const counselDesk = {
   },
 };
 
+export const starlinkInstallDesk = {
+  async catalog() {
+    return apiFetch("/starlink-install/catalog");
+  },
+  async quote(body: { service_id: string; region?: string | null; payment_currency?: string }) {
+    return apiFetch("/starlink-install/quote", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+};
+
 export const quantumSimDesk = {
   async catalog() {
     return apiFetch("/quantum-sim/catalog");
