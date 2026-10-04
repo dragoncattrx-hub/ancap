@@ -4,12 +4,19 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import desc, func, select
 
 from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import ClaimCode, MerchantAccount, PaymentLink, RampWaitlistEntry
+from app.schemas.helio import HelioAdapterStatusPublic, HelioWebhookAck
+from app.services.helio_commerce import (
+    helio_public_status,
+    parse_helio_json_body,
+    summarize_helio_webhook,
+    verify_helio_webhook_signature,
+)
 from app.services.merchant_pay import get_or_create_merchant_account
 
 router = APIRouter(prefix="/commerce", tags=["Commerce"])
@@ -123,6 +130,30 @@ async def list_ramp_waitlist(session: DbSession, _admin: str = Depends(require_p
             for row in rows
         ]
     }
+
+
+@router.get("/helio/status", response_model=HelioAdapterStatusPublic)
+async def helio_adapter_status():
+    """Public checkout config for /buy-acp — never returns secret keys."""
+    return helio_public_status()
+
+
+@router.post("/helio/webhook", response_model=HelioWebhookAck)
+async def helio_paylink_webhook(
+    request: Request,
+    x_signature: str | None = Header(default=None, alias="X-Signature"),
+):
+    """Verify MoonPay Commerce pay-link webhooks (HMAC-SHA256 sharedToken)."""
+    raw = await request.body()
+    if not verify_helio_webhook_signature(raw, x_signature):
+        raise HTTPException(status_code=401, detail="Invalid Helio webhook signature")
+    payload = parse_helio_json_body(raw)
+    meta = summarize_helio_webhook(payload)
+    return HelioWebhookAck(
+        status="ok",
+        event=meta.get("event"),
+        transaction_id=meta.get("transaction_id"),
+    )
 
 
 @router.get("/metrics")

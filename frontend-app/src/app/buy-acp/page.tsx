@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
+import { HelioCheckoutPanel } from "@/components/HelioCheckoutPanel";
 
 export const metadata = {
   title: "Buy ACP | Crypto-first top-up",
   description:
-    "Get ACP via wACP bridge, credits invoice, mobile Exchange, or optional Stripe — then spend on workflows, API, and marketplace.",
+    "Get ACP via wACP bridge, credits invoice, MoonPay Commerce, or optional Stripe — then spend on workflows, API, and marketplace.",
 };
 
 const V3_POOL = "0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1";
@@ -17,7 +18,8 @@ export default function BuyAcpPage() {
         <h1 className="text-3xl font-semibold">Buy ACP</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
           ACP is the accounting unit for workflows, API spend, exchange tickets, and merchant checkout.
-          Bridge wrap: <strong>1 ACP ↔ 10 wACP</strong>. Prefer crypto rails first — card (Stripe) is optional.
+          Bridge wrap: <strong>1 ACP ↔ 10 wACP</strong>. Prefer crypto rails first — card adapters are
+          optional.
         </p>
         <p className="mt-3 text-sm leading-7 text-white/55">
           There is no fixed web &quot;$1 ACP / USDT TRC-20&quot; sale. Use bridge or credits on web; USDT→ACP
@@ -80,6 +82,17 @@ export default function BuyAcpPage() {
 
         <section className="mt-10 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">
+            MoonPay Commerce checkout
+          </h2>
+          <p className="text-sm leading-7 text-white/55">
+            Pay with card or crypto via MoonPay Commerce (Helio). Default quote currency is USDC; ACP
+            ledger credit is confirmed after webhook / desk settle.
+          </p>
+          <HelioCheckoutPanel />
+        </section>
+
+        <section className="mt-10 space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">
             2. Spend ACP (platform profit)
           </h2>
           <p className="text-sm leading-7 text-white/55">
@@ -120,7 +133,7 @@ export default function BuyAcpPage() {
 
         <section className="mt-10 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-white/55">
-            Optional fiat adapter
+            Optional Stripe adapter
           </h2>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -137,11 +150,6 @@ export default function BuyAcpPage() {
             </Link>
           </div>
         </section>
-
-        <div className="mt-10 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-5 text-sm text-amber-100/90">
-          Partner stablecoin ramps (MoonPay / Transak / Ramp) stay on the waitlist. ANCAP does not operate as
-          a VASP — licensed partners handle geo/KYC when those rails go live.
-        </div>
       </main>
     </div>
   );

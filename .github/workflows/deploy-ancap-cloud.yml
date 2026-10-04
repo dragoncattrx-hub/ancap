@@ -50,11 +50,15 @@ jobs:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          HELIO_PUBLIC_KEY: ${{ secrets.HELIO_PUBLIC_KEY }}
+          HELIO_SECRET_KEY: ${{ secrets.HELIO_SECRET_KEY }}
+          HELIO_PAYLINK_ID: ${{ secrets.HELIO_PAYLINK_ID }}
+          HELIO_WEBHOOK_SHARED_TOKEN: ${{ secrets.HELIO_WEBHOOK_SHARED_TOKEN }}
         with:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
-          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY,STRIPE_WEBHOOK_SECRET
+          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY,STRIPE_WEBHOOK_SECRET,HELIO_PUBLIC_KEY,HELIO_SECRET_KEY,HELIO_PAYLINK_ID,HELIO_WEBHOOK_SHARED_TOKEN
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           # acp-node release cargo build routinely exceeds 45–60m on the VPS when cold;
           # keep command_timeout high enough for api+frontend+acp-node in one compose build.
@@ -146,6 +150,35 @@ jobs:
               fi
             else
               echo "== Stripe GitHub secrets incomplete; card top-up stays fail-closed (503)"
+            fi
+
+            if [ -n "${HELIO_PUBLIC_KEY:-}" ] && [ -n "${HELIO_SECRET_KEY:-}" ] && [ -n "${HELIO_PAYLINK_ID:-}" ]; then
+              echo "== sync MoonPay Commerce / Helio keys into host .env (values redacted)"
+              touch .env
+              for var in HELIO_PUBLIC_KEY HELIO_SECRET_KEY HELIO_PAYLINK_ID HELIO_WEBHOOK_SHARED_TOKEN; do
+                eval "val=\${$var:-}"
+                if [ -n "$val" ]; then
+                  if grep -q "^${var}=" .env; then
+                    sed -i "s|^${var}=.*|${var}=${val}|" .env
+                  else
+                    printf '%s=%s\n' "$var" "$val" >> .env
+                  fi
+                fi
+              done
+              if ! grep -q '^HELIO_NETWORK=' .env; then
+                printf 'HELIO_NETWORK=main\n' >> .env
+              fi
+              if ! grep -q '^HELIO_PRIMARY_PAYMENT_METHOD=' .env; then
+                printf 'HELIO_PRIMARY_PAYMENT_METHOD=fiat\n' >> .env
+              fi
+              if ! grep -q '^HELIO_DEFAULT_AMOUNT=' .env; then
+                printf 'HELIO_DEFAULT_AMOUNT=10\n' >> .env
+              fi
+              if ! grep -q '^HELIO_CURRENCY_HINT=' .env; then
+                printf 'HELIO_CURRENCY_HINT=USDC\n' >> .env
+              fi
+            else
+              echo "== Helio GitHub secrets incomplete; /buy-acp MoonPay Commerce checkout stays disabled"
             fi
 
             echo "== ensure PLATFORM_ADMIN_EMAILS includes operator"

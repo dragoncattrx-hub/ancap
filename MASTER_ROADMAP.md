@@ -668,7 +668,11 @@ Exit criteria: satisfied - local, origin, and public Cloudflare-routed responses
 
 **Not a work-stop blocker.** First ACP-first revenue loop is live (paid workflows, marketplace, subscriptions, paid API, claim codes, merchant pay). Remaining work is depth + conversion friction — not “monetization missing.”
 
-ACP acquisition path (2026-09-11): `/buy-acp` leads with USDT swap desk + bridge + credits invoice; Stripe remains optional. Mobile Exchange auth-settle links USDT→ACP tickets to the swap desk rail.
+ACP acquisition path (2026-10-04): `/buy-acp` leads with bridge + credits + **MoonPay Commerce (Helio) checkout** + spend CTAs; Stripe optional. Mobile Exchange auth-settle for USDT→ACP. V3 Pancake bootstrap `0xe626…f5e1` published as shallow; checkout oracle stays on V2 until `WACP_ORACLE_USE_V3` + quote smoke (`docs/GOLDEN_PATH_ACP_SPEND.md`, `docs/HELIO_MOONPAY_COMMERCE.md`).
+
+### 4.0b MoonPay Commerce / Helio checkout [HIGH]
+
+Status: [~] Adapter shipped: env `HELIO_*`, `GET /v1/commerce/helio/status`, signed `POST /v1/commerce/helio/webhook`, `/buy-acp` `@heliofi/checkout-react` widget, deploy sync via GitHub secrets. Pay Link created for USDC (dynamic). Remaining: live checkout smoke + operator ACP ledger credit from webhook (auto-credit not wired).
 
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 

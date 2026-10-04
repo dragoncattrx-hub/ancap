@@ -30,4 +30,4 @@ Checkout oracle stays on **V2** until `WACP_ORACLE_USE_V3=true` after quote smok
 - Welcome grant (100 ACP) is **not** counted as revenue
 - Next: weekly fee recycle check (`python scripts/wacp/fee_recycle_check.py`)
 
-Related: [FINANCE_MODEL.md](./FINANCE_MODEL.md), [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md), [/buy-acp](https://ancap.cloud/buy-acp).
+Related: [FINANCE_MODEL.md](./FINANCE_MODEL.md), [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md), [HELIO_MOONPAY_COMMERCE.md](./HELIO_MOONPAY_COMMERCE.md), [/buy-acp](https://ancap.cloud/buy-acp).

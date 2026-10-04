@@ -37,6 +37,7 @@ from app.jobs.reputation_tick import reputation_tick
 from app.jobs.staking_rewards_tick import staking_rewards_tick
 from app.schemas import DecisionLogPublic
 from app.services.cache import redis_ping
+from app.services.helio_commerce import helio_is_configured
 from app.services.stripe_payments import SUPPORTED_STRIPE_CURRENCIES, stripe_is_configured
 from app.services.graph_enforcement_preview import build_graph_enforcement_preview
 from app.services.ledger import check_ledger_invariant, is_ledger_invariant_halted, set_ledger_invariant_halted
@@ -278,6 +279,13 @@ async def health_full(session: DbSession):
         "configured": stripe_is_configured(),
         "webhook_secret_present": bool((settings.stripe_webhook_secret or "").strip()),
         "currencies": list(SUPPORTED_STRIPE_CURRENCIES),
+    }
+    checks["helio"] = {
+        "ok": True,
+        "configured": helio_is_configured(),
+        "paylink_present": bool((settings.helio_paylink_id or "").strip()),
+        "webhook_secret_present": bool((settings.helio_webhook_shared_token or "").strip()),
+        "network": (settings.helio_network or "main").strip() or "main",
     }
 
     status = "ok" if all(bool(item.get("ok")) for item in checks.values()) else "degraded"

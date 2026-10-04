@@ -6,7 +6,8 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=()",
+    // MoonPay Commerce / Helio checkout may use Payment Request for card rails.
+    value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://embed.hel.io" "https://buy.moonpay.com")',
   },
   {
     key: "Content-Security-Policy",
@@ -18,17 +19,19 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://embed.hel.io https://*.hel.io https://*.moonpay.com",
       // http://127.0.0.1:* / localhost:* keep local + GitHub E2E (API on :8001) unblocked;
       // production browsers still talk HTTPS (covered by https:).
       "connect-src 'self' https: wss: http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*",
-      "frame-src https://challenges.cloudflare.com",
+      "frame-src https://challenges.cloudflare.com https://embed.hel.io https://*.hel.io https://*.moonpay.com https://buy.moonpay.com",
+      "child-src https://embed.hel.io https://*.hel.io https://*.moonpay.com",
     ].join("; "),
   },
 ];
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@heliofi/checkout-react"],
   // Avoid one slow SSR page (e.g. tokenomics RPC) killing the whole Docker build.
   staticPageGenerationTimeout: 180,
   async headers() {

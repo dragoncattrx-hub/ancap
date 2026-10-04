@@ -499,6 +499,16 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_api_base: str = "https://api.stripe.com/v1"
 
+    # MoonPay Commerce / Helio (https://moonpay.hel.io/developer) — never commit real keys
+    helio_public_key: str = ""
+    helio_secret_key: str = ""
+    helio_paylink_id: str = ""
+    helio_webhook_shared_token: str = ""
+    helio_network: str = "main"  # widget: main | test
+    helio_primary_payment_method: str = "fiat"  # fiat | crypto
+    helio_default_amount: str = "10"
+    helio_currency_hint: str = "USDC"
+
     # CoinGecko market data (indicative only; never commit real keys)
     coingecko_enabled: bool = True
     coingecko_api_key: str = ""
