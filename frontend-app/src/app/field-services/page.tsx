@@ -61,7 +61,7 @@ type Quote = {
 
 type PayChoice = "ACP" | "wACP" | "USDT";
 
-const VALID_GROUPS = new Set(["starlink", "it", "cameras", "solar"]);
+const VALID_GROUPS = new Set(["starlink", "it", "cameras", "solar", "space"]);
 
 function FieldServicesInner() {
   const { t } = useLanguage();
@@ -166,7 +166,14 @@ function FieldServicesInner() {
               <Link href="#services" className="btn btn-primary">
                 {t("fieldServicesPage.servicesCta")}
               </Link>
-              <Link href={catalog?.legal_href || "/legal/field-services"} className="btn btn-ghost">
+              <Link
+                href={
+                  groupFilter === "space"
+                    ? "/legal/space-ai-datacenter"
+                    : catalog?.legal_href || "/legal/field-services"
+                }
+                className="btn btn-ghost"
+              >
                 {t("fieldServicesPage.legalCta")}
               </Link>
               <Link href="/buy-acp" className="btn btn-ghost">

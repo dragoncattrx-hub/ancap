@@ -82,6 +82,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/counsel", key: "counselLink" },
     { href: "/legal/starlink-install", key: "starlinkInstallLink" },
     { href: "/legal/field-services", key: "fieldServicesLink" },
+    { href: "/legal/space-ai-datacenter", key: "spaceAiDatacenterLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
@@ -146,6 +147,7 @@ export function LegalHubView() {
     { href: "/legal/counsel", title: "counselLink", body: "hubCardCounsel" },
     { href: "/legal/starlink-install", title: "starlinkInstallLink", body: "hubCardStarlinkInstall" },
     { href: "/legal/field-services", title: "fieldServicesLink", body: "hubCardFieldServices" },
+    { href: "/legal/space-ai-datacenter", title: "spaceAiDatacenterLink", body: "hubCardSpaceAiDatacenter" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -927,6 +929,47 @@ export function FieldServicesLegalView() {
           {" · "}
           <Link href="/legal/starlink-install" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
             /legal/starlink-install
+          </Link>
+          {" · "}
+          <Link href="/legal/space-ai-datacenter" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/space-ai-datacenter
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function SpaceAiDatacenterLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-indigo-300/20 bg-indigo-400/[0.06]"
+      kicker={t("legal.spaceAiDatacenterKicker")}
+      title={t("legal.spaceAiDatacenterTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.spaceAiDatacenterIntro")}`}
+      actions={<LegalNavPills current="/legal/space-ai-datacenter" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.sa${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.sa${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link
+            href="/field-services?group=space"
+            className="text-sky-200 underline decoration-sky-400/40 underline-offset-4"
+          >
+            /field-services?group=space
+          </Link>
+          {" · "}
+          <Link href="/legal/field-services" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/field-services
           </Link>
         </p>
       </section>

@@ -4,10 +4,10 @@ type Tree = { [key: string]: string | Tree };
 export const fieldServicesByLang: Record<Language, Tree> = {
   en: {
     kicker: "SERVICES · FIELD · ACP",
-    title: "Field services — Starlink, IT, cameras, solar",
-    lead: "Order real-world installs through ancap.cloud. Germany / NRW first. Pay with ACP, wACP, or USDT via /buy-acp.",
+    title: "Field services — Starlink, IT, cameras, solar, orbital AI",
+    lead: "Order real-world installs and orbital AI data-center placement literacy through ancap.cloud. Germany / NRW first. Pay with ACP, wACP, or USDT via /buy-acp.",
     compliance:
-      "ANCAP is not an equipment reseller. Partners perform physical work. Electrical / height safety stay with customer and partner. Not a Jobcenter / AVGS funding promise.",
+      "ANCAP is not an equipment reseller and not a launch provider. Partners perform physical / orbital work. Electrical / height / spectrum / launch stay with customer and licensed partners. Not a Jobcenter / AVGS funding promise. Not an AGI/ASI-in-space claim.",
     groupsTitle: "Service group",
     groupAll: "All groups",
     servicesCta: "Browse services",
@@ -41,10 +41,10 @@ export const fieldServicesByLang: Record<Language, Tree> = {
   },
   ru: {
     kicker: "УСЛУГИ · FIELD · ACP",
-    title: "Выездные услуги — Starlink, IT, камеры, solar",
-    lead: "Заказ реальных установок на ancap.cloud. Сначала Germany / NRW. Оплата ACP, wACP или USDT через /buy-acp.",
+    title: "Выездные услуги — Starlink, IT, камеры, solar, орбитальный AI",
+    lead: "Заказ реальных установок и literacy размещения AI data-center на орбите на ancap.cloud. Сначала Germany / NRW. Оплата ACP, wACP или USDT через /buy-acp.",
     compliance:
-      "ANCAP не реселлер оборудования. Работы выполняет партнёр. Электрика / высота — клиент и партнёр. Не обещание Jobcenter / AVGS.",
+      "ANCAP не реселлер оборудования и не launch-провайдер. Работы выполняет партнёр. Электрика / высота / спектр / запуск — клиент и лицензированные партнёры. Не обещание Jobcenter / AVGS. Не заявление об AGI/ASI в космосе.",
     groupsTitle: "Группа услуг",
     groupAll: "Все группы",
     servicesCta: "Смотреть услуги",
@@ -77,10 +77,10 @@ export const fieldServicesByLang: Record<Language, Tree> = {
   },
   uk: {
     kicker: "ПОСЛУГИ · FIELD · ACP",
-    title: "Виїзні послуги — Starlink, IT, камери, solar",
-    lead: "Замовлення реальних установок на ancap.cloud. Спочатку Germany / NRW. Оплата ACP, wACP або USDT через /buy-acp.",
+    title: "Виїзні послуги — Starlink, IT, камери, solar, орбітальний AI",
+    lead: "Замовлення реальних установок і literacy розміщення AI data-center на орбіті на ancap.cloud. Спочатку Germany / NRW. Оплата ACP, wACP або USDT через /buy-acp.",
     compliance:
-      "ANCAP не реселер обладнання. Роботи виконує партнер. Електрика / висота — клієнт і партнер. Не обіцянка Jobcenter / AVGS.",
+      "ANCAP не реселер обладнання і не launch-провайдер. Роботи виконує партнер. Електрика / висота / спектр / запуск — клієнт і ліцензовані партнери. Не обіцянка Jobcenter / AVGS. Не заява про AGI/ASI в космосі.",
     groupsTitle: "Група послуг",
     groupAll: "Усі групи",
     servicesCta: "Дивитися послуги",
@@ -113,10 +113,10 @@ export const fieldServicesByLang: Record<Language, Tree> = {
   },
   de: {
     kicker: "SERVICES · FIELD · ACP",
-    title: "Field Services — Starlink, IT, Kameras, Solar",
-    lead: "Reale Installationen ueber ancap.cloud bestellen. Zuerst Germany / NRW. Zahlen mit ACP, wACP oder USDT ueber /buy-acp.",
+    title: "Field Services — Starlink, IT, Kameras, Solar, orbital AI",
+    lead: "Reale Installationen und orbitale AI-Data-Center Placement-Literacy ueber ancap.cloud. Zuerst Germany / NRW. Zahlen mit ACP, wACP oder USDT ueber /buy-acp.",
     compliance:
-      "ANCAP ist kein Hardware-Reseller. Partner fuehren die Arbeit aus. Elektro / Hoehe bleiben bei Kunde und Partner. Keine Jobcenter-/AVGS-Foerderzusage.",
+      "ANCAP ist kein Hardware-Reseller und kein Launch-Provider. Partner fuehren physische / orbitale Arbeit aus. Elektro / Hoehe / Spektrum / Launch bleiben bei Kunde und lizenzierten Partnern. Keine Jobcenter-/AVGS-Foerderzusage. Kein AGI/ASI-im-Weltraum-Claim.",
     groupsTitle: "Leistungsgruppe",
     groupAll: "Alle Gruppen",
     servicesCta: "Leistungen ansehen",
@@ -151,9 +151,10 @@ export const fieldServicesByLang: Record<Language, Tree> = {
   },
   "zh-Hant": {
     kicker: "服務 · FIELD · ACP",
-    title: "現場服務 — Starlink、IT、攝影機、太陽能",
-    lead: "透過 ancap.cloud 訂購真實安裝。德國 / NRW 優先。以 ACP、wACP 或經 /buy-acp 的 USDT 支付。",
-    compliance: "ANCAP 非設備經銷商。實體工作由夥伴執行。電力／高空安全由客戶與夥伴負責。非 Jobcenter / AVGS 資助承諾。",
+    title: "現場服務 — Starlink、IT、攝影機、太陽能、軌道 AI",
+    lead: "透過 ancap.cloud 訂購真實安裝與軌道 AI 資料中心配置素養。德國 / NRW 優先。以 ACP、wACP 或經 /buy-acp 的 USDT 支付。",
+    compliance:
+      "ANCAP 非設備經銷商，亦非發射服務商。實體／軌道工作由夥伴執行。電力／高空／頻譜／發射由客戶與持照夥伴負責。非 Jobcenter / AVGS 資助承諾。非宣稱太空中運行 AGI/ASI。",
     groupsTitle: "服務分組",
     groupAll: "全部分組",
     servicesCta: "瀏覽服務",

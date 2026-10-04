@@ -1367,6 +1367,71 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         receipt_items=["workflow_slug", "price_snapshot", "status_timeline"],
         tags=["field-services", "panels", "mount", "nrw"],
     ),
+    WorkflowTemplatePublic(
+        slug="space-ai-orbit-intake",
+        title="Field services — Orbital AI data-center placement (LEO / MEO)",
+        category="FieldServices",
+        summary="Orbit AI data-center placement coordination literacy — €12,003 catalog face.",
+        description=(
+            "Settles ACP/wACP for LEO / MEO AI compute / data-center placement coordination "
+            "(catalog face €12,003 = €12,000 + €3 platform fee). ANCAP is not a launch provider, "
+            "not SpaceX, and does not grant orbital slots or spectrum. Licensed partners perform "
+            "any physical / regulatory work. Not an AGI/ASI-in-space claim."
+        ),
+        price=Money(amount="12003", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=180,
+        preview_items=["Orbit class intake (LEO/MEO)", "Partner match", "Escrow reserve"],
+        output_items=[
+            "Orbital AI DC intake brief",
+            "Partner handoff",
+            "Non-claim checklist (no launch ticket / no slot grant / no AGI guarantee)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "region_hint", "service_id", "status_timeline"],
+        tags=["field-services", "space", "orbital", "ai-datacenter", "leo"],
+    ),
+    WorkflowTemplatePublic(
+        slug="space-ai-beyond-orbit",
+        title="Field services — Beyond-orbit AI data-center placement",
+        category="FieldServices",
+        summary="GEO / cislunar / deep-space AI DC coordination literacy — €28,003 catalog face.",
+        description=(
+            "Catalog face €28,003 = €28,000 + €3 fee. Partner literacy for beyond-LEO AI data-center "
+            "concepts. Export controls, spectrum, and launch manifests remain with licensed partners "
+            "and the customer. Not a lunar land deed or Outer Space Treaty sovereignty claim."
+        ),
+        price=Money(amount="28003", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=210,
+        preview_items=["Beyond-orbit class intake", "Partner match", "Escrow reserve"],
+        output_items=["Beyond-orbit AI DC brief", "Partner handoff", "Non-claim checklist", "Proof receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "status_timeline"],
+        tags=["field-services", "space", "cislunar", "ai-datacenter"],
+    ),
+    WorkflowTemplatePublic(
+        slug="space-ai-superintel-architecture",
+        title="Field services — Orbital superintelligence architecture brief",
+        category="FieldServices",
+        summary="Sealed orbital / beyond-orbit superintelligence architecture literacy — €48,003 catalog face.",
+        description=(
+            "Catalog face €48,003 = €48,000 + €3 fee. High-assurance partner brief for sealed orbital "
+            "edge / HSM control-plane themes framed as 'superintelligence' hosting literacy. "
+            "ANCAP does not claim to operate AGI or ASI in space today."
+        ),
+        price=Money(amount="48003", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=240,
+        preview_items=["Threat / assurance intake", "Partner match", "Escrow reserve"],
+        output_items=[
+            "Superintelligence orbital architecture brief",
+            "Partner handoff",
+            "Non-claim checklist (no AGI/ASI operation claim)",
+            "Proof receipt",
+        ],
+        receipt_items=["workflow_slug", "price_snapshot", "status_timeline"],
+        tags=["field-services", "space", "superintelligence", "orbital-edge"],
+    ),
 
     WorkflowTemplatePublic(
         slug="stardust-extreme-weather-monitor",

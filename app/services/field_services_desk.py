@@ -1,7 +1,7 @@
-"""Field services hub — Starlink / IT / cameras / solar (Germany / NRW first).
+"""Field services hub — Starlink / IT / cameras / solar / orbital AI (Germany / NRW first).
 
 ANCAP is a payment and coordination platform. Partners perform physical work.
-Not an equipment reseller; not a Jobcenter / AVGS funding guarantee.
+Not an equipment reseller; not a launch provider; not a Jobcenter / AVGS funding guarantee.
 """
 from __future__ import annotations
 
@@ -31,6 +31,9 @@ SERVICE_IDS: dict[str, str] = {
     "solar-balcony-install": "a8000008-0000-4000-8000-000000000031",
     "solar-panel-service": "a8000008-0000-4000-8000-000000000032",
     "panel-other-mount": "a8000008-0000-4000-8000-000000000033",
+    "space-ai-orbit-intake": "a8000008-0000-4000-8000-000000000041",
+    "space-ai-beyond-orbit": "a8000008-0000-4000-8000-000000000042",
+    "space-ai-superintel-architecture": "a8000008-0000-4000-8000-000000000043",
 }
 
 WORKFLOW_CATALOG_EUR: dict[str, str] = {
@@ -52,6 +55,9 @@ WORKFLOW_CATALOG_EUR: dict[str, str] = {
     "solar-balcony-install": "253",
     "solar-panel-service": "123",
     "panel-other-mount": "153",
+    "space-ai-orbit-intake": "12003",
+    "space-ai-beyond-orbit": "28003",
+    "space-ai-superintel-architecture": "48003",
 }
 
 
@@ -272,6 +278,49 @@ def _services() -> list[dict[str, Any]]:
                 "not equipment sales by ANCAP."
             ),
         },
+        # Orbital / space AI data centers (partner literacy + coordination)
+        {
+            "id": "space-ai-orbit-intake",
+            "group_id": "space",
+            "review_target_id": SERVICE_IDS["space-ai-orbit-intake"],
+            "label": "Orbital AI data-center placement (LEO / MEO)",
+            "price_eur": "12000",
+            "workflow_slug": "space-ai-orbit-intake",
+            "regions": ["de-nrw", "de", "eu-eea-uk"],
+            "blurb": (
+                "Partner literacy and ACP-paid coordination for placing AI compute / data-center "
+                "payload concepts on Earth orbit (LEO / MEO). Not a SpaceX / launch ticket; not a "
+                "sovereign orbital slot grant."
+            ),
+        },
+        {
+            "id": "space-ai-beyond-orbit",
+            "group_id": "space",
+            "review_target_id": SERVICE_IDS["space-ai-beyond-orbit"],
+            "label": "Beyond-orbit AI data-center placement (GEO / cislunar)",
+            "price_eur": "28000",
+            "workflow_slug": "space-ai-beyond-orbit",
+            "regions": ["de-nrw", "de", "eu-eea-uk"],
+            "blurb": (
+                "Architecture and partner coordination for AI data-center concepts beyond LEO "
+                "(GEO / cislunar / deep-space staging literacy). Launch, spectrum, and export "
+                "controls remain with licensed partners and the customer."
+            ),
+        },
+        {
+            "id": "space-ai-superintel-architecture",
+            "group_id": "space",
+            "review_target_id": SERVICE_IDS["space-ai-superintel-architecture"],
+            "label": "Orbital superintelligence AI-center architecture brief",
+            "price_eur": "48000",
+            "workflow_slug": "space-ai-superintel-architecture",
+            "regions": ["de-nrw", "de", "eu-eea-uk"],
+            "blurb": (
+                "High-assurance partner brief for sealed orbital / beyond-orbit 'superintelligence' "
+                "compute architecture literacy — sealed edge, HSM control plane themes. Not a claim "
+                "that ANCAP operates AGI/ASI in space today."
+            ),
+        },
     ]
 
 
@@ -280,18 +329,20 @@ def catalog(*, group_id: str | None = None) -> dict[str, Any]:
     if group_id:
         services = [s for s in services if s.get("group_id") == group_id]
     return {
-        "title": "Field services — real-world installs with ACP",
+        "title": "Field services — real-world and orbital installs with ACP",
         "tagline": (
-            "Starlink, IT devices, CCTV cameras, and solar / panel mounts through ancap.cloud. "
-            "Pay with ACP, wACP, or USDT (via /buy-acp). Germany / NRW first."
+            "Starlink, IT, CCTV, solar / panels, and orbital AI data-center placement literacy "
+            "through ancap.cloud. Pay with ACP, wACP, or USDT (via /buy-acp). Germany / NRW first."
         ),
         "compliance_note": (
             "ANCAP is a payment and coordination platform — not an official Starlink / equipment "
-            "reseller, not Telekom, and not a Jobcenter employment guarantee. Physical work is "
-            "performed by independently qualified partners. Building permits, electrical work, "
-            "and roof / height safety remain with the customer and the partner. Crypto payments "
-            "require your own eligibility self-attestation. AVGS / Jobcenter funding is decided "
-            "solely by the agency."
+            "reseller, not Telekom, not a launch provider (SpaceX or otherwise), and not a Jobcenter "
+            "employment guarantee. Physical and orbital work is performed by independently qualified "
+            "partners. Building permits, electrical work, roof / height safety, spectrum, export "
+            "controls, and launch manifests remain with the customer and licensed partners. Crypto "
+            "payments require your own eligibility self-attestation. AVGS / Jobcenter funding is "
+            "decided solely by the agency. Orbital SKUs are partner literacy / coordination — not a "
+            "promise of AGI/ASI in space or a sovereign orbital slot."
         ),
         "legal_href": "/legal/field-services",
         "service_fee_eur": str(SERVICE_FEE_EUR),
@@ -317,6 +368,11 @@ def catalog(*, group_id: str | None = None) -> dict[str, Any]:
                 "id": "solar",
                 "label": "Solar & panels",
                 "blurb": "Balcony PV, solar service, and other panel mount coordination.",
+            },
+            {
+                "id": "space",
+                "label": "Orbital AI / space",
+                "blurb": "AI data-center placement on orbit and beyond — partner literacy + ACP desk.",
             },
         ],
         "regions": _regions(),

@@ -15,7 +15,7 @@ Public URLs (after deploy):
 
 ## What to show Jobcenter
 
-1. Open `/starlink-install` (redirects to `/field-services?group=starlink`) — region chips **NRW / Deutschland / EU**, EUR price list, live ACP/wACP quote. Hub also lists IT / cameras / solar groups.
+1. Open `/starlink-install` (redirects to `/field-services?group=starlink`) — region chips **NRW / Deutschland / EU**, EUR price list, live ACP/wACP quote. Hub also lists IT / cameras / solar / **orbital AI** groups (`?group=space`, legal `/legal/space-ai-datacenter`).
 2. Open `/legal/starlink-install` or `/legal/field-services` — honest framing: not Starlink Inc., not Telekom, not equipment reseller, not AVGS guarantee.
 3. Optional: create a real ACP checkout on `starlink-standard` and keep the run receipt / proof center link.
 

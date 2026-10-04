@@ -982,7 +982,45 @@ export const legalByLang: Record<Language, Tree> = {
     fs9Body:
       "Primary coverage is Germany / NRW, then Deutschland, then selected EU corridors. ANCAP does not guarantee signal quality, device longevity, camera coverage, solar yield, or uninterrupted service after install.",
     fs10Title: "10. Contact",
-    fs10Body: "Questions: legal@ancap.cloud. Product: /field-services. Starlink-specific notice: /legal/starlink-install.",
+    fs10Body:
+      "Questions: legal@ancap.cloud. Product: /field-services. Starlink: /legal/starlink-install. Orbital AI: /legal/space-ai-datacenter.",
+
+    spaceAiDatacenterLink: "Orbital AI data centers",
+    hubCardSpaceAiDatacenter:
+      "ACP/wACP-paid orbital / beyond-orbit AI data-center placement literacy — not a launch ticket, not SpaceX, not an AGI/ASI-in-space claim.",
+    spaceAiDatacenterKicker: "Legal / Orbital AI data-center desk",
+    spaceAiDatacenterTitle: "Orbital AI data centers — legal notice",
+    spaceAiDatacenterIntro:
+      "4 October 2026. ANCAP coordinates payment and partner literacy for orbital and beyond-orbit AI data-center concepts — it does not launch rockets or operate AGI/ASI in space.",
+    sa1Title: "1. Platform role",
+    sa1Body:
+      "ANCAP settles ACP/wACP for intake, escrow, and partner handoff related to orbital / beyond-orbit AI compute and data-center placement literacy. ANCAP is a software/payment platform, not a launch provider, satellite operator, or national space agency.",
+    sa2Title: "2. Not a launch provider",
+    sa2Body:
+      "ANCAP is not SpaceX, Rocket Lab, Arianespace, or any launch integrator. Paying for a desk SKU does not purchase a launch seat, rideshare slot, or payload manifest.",
+    sa3Title: "3. Partner performs regulated work",
+    sa3Body:
+      "Any physical hardware, integration, spectrum filing, export-control compliance, or launch coordination is performed by independently qualified licensed partners. ANCAP does not personally perform orbital operations as the platform operator.",
+    sa4Title: "4. No orbital slot or sovereignty grant",
+    sa4Body:
+      "These SKUs do not confer orbital slots, ITU filings, sovereignty, or rights under the Outer Space Treaty or national space statutes. Lunar / cislunar themes are literacy and coordination only.",
+    sa5Title: "5. No AGI / ASI operation claim",
+    sa5Body:
+      "'Superintelligence' naming is architecture literacy for high-assurance sealed compute concepts. ANCAP does not claim to operate artificial general or superintelligence systems in space or on Earth today.",
+    sa6Title: "6. Export controls and spectrum",
+    sa6Body:
+      "ITAR/EAR-class controls, dual-use rules, radio spectrum, and ground-station licensing remain the responsibility of the customer and licensed partners. ANCAP does not provide export-control legal advice.",
+    sa7Title: "7. Crypto payment eligibility",
+    sa7Body:
+      "Paying with ACP, wACP, or ramping via USDT requires your own eligibility self-attestation under applicable German / EU law. ANCAP does not provide tax or regulatory advice.",
+    sa8Title: "8. Escrow and settlement",
+    sa8Body:
+      "MVP escrow is ledger-based workflow reserve/capture. Dual customer–provider release and richer job status are planned; until then operator capture follows documented run completion.",
+    sa9Title: "9. No Jobcenter / AVGS guarantee; no outcome guarantee",
+    sa9Body:
+      "This desk describes a business service model. It does not promise Jobcenter approval, AVGS funding, employment status, successful launch, uptime, or compute performance in orbit.",
+    sa10Title: "10. Contact",
+    sa10Body: "Questions: legal@ancap.cloud. Product: /field-services?group=space. Shared field desk: /legal/field-services.",
 
     darkMatterLink: "Dark matter auction",
     hubCardDarkMatter: "Symbolic ACP cosmology titles for dark-matter halo / filament / detector literacy — not physical DM ownership.",
@@ -2322,7 +2360,45 @@ export const legalByLang: Record<Language, Tree> = {
     fs9Body:
       "Приоритет Germany / NRW, затем DE, затем выбранные EU-коридоры. ANCAP не гарантирует сигнал, срок службы устройств, покрытие камер, solar yield или бесперебойность после установки.",
     fs10Title: "10. Контакты",
-    fs10Body: "Вопросы: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install.",
+    fs10Body:
+      "Вопросы: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install. Орбитальный AI: /legal/space-ai-datacenter.",
+
+    spaceAiDatacenterLink: "Орбитальные AI data-center",
+    hubCardSpaceAiDatacenter:
+      "Оплата literacy размещения AI data-center на орбите / beyond-orbit в ACP/wACP — не launch-билет, не SpaceX, не заявление об AGI/ASI в космосе.",
+    spaceAiDatacenterKicker: "Юридическое / Orbital AI data-center desk",
+    spaceAiDatacenterTitle: "Орбитальные AI data-center — юридическое уведомление",
+    spaceAiDatacenterIntro:
+      "4 октября 2026. ANCAP координирует оплату и partner literacy для орбитальных и beyond-orbit AI data-center концепций — не запускает ракеты и не оперирует AGI/ASI в космосе.",
+    sa1Title: "1. Роль платформы",
+    sa1Body:
+      "ANCAP принимает ACP/wACP за intake, escrow и передачу партнёру по literacy размещения AI compute / data-center на орбите. ANCAP — ПО/платёжная платформа, не launch-провайдер и не космическое агентство.",
+    sa2Title: "2. Не launch-провайдер",
+    sa2Body:
+      "ANCAP не SpaceX, Rocket Lab, Arianespace и не интегратор запусков. Оплата SKU не покупает место на ракете, rideshare или payload manifest.",
+    sa3Title: "3. Регулируемые работы выполняет партнёр",
+    sa3Body:
+      "Железо, интеграция, спектр, export-control и координация запуска — зона лицензированных партнёров. ANCAP как оператор платформы не выполняет орбитальные операции лично.",
+    sa4Title: "4. Нет орбитального слота и суверенитета",
+    sa4Body:
+      "SKU не дают орбитальных слотов, ITU-заявок, суверенитета или прав по Outer Space Treaty. Лунные / cislunar темы — literacy и координация.",
+    sa5Title: "5. Нет заявления об AGI / ASI",
+    sa5Body:
+      "Название «superintelligence» — architecture literacy для sealed compute. ANCAP не заявляет, что оперирует AGI или ASI в космосе или на Земле сегодня.",
+    sa6Title: "6. Export controls и спектр",
+    sa6Body:
+      "ITAR/EAR, dual-use, радиоспектр и наземные станции остаются зоной клиента и лицензированных партнёров. ANCAP не даёт export-control юридических советов.",
+    sa7Title: "7. Крипто-платежи",
+    sa7Body:
+      "Оплата ACP/wACP или ramp через USDT требует вашей собственной аттестации eligibility по DE/EU праву.",
+    sa8Title: "8. Escrow и расчёт",
+    sa8Body:
+      "MVP escrow — ledger reserve/capture. Двойной релиз планируется; до этого capture после документированного завершения run.",
+    sa9Title: "9. Нет гарантии Jobcenter / AVGS и результата",
+    sa9Body:
+      "Desk описывает бизнес-модель. Не обещает AVGS, успешный запуск, uptime или compute performance на орбите.",
+    sa10Title: "10. Контакты",
+    sa10Body: "Вопросы: legal@ancap.cloud. Продукт: /field-services?group=space. Общий desk: /legal/field-services.",
 
     darkMatterLink: "Аукцион тёмной материи",
     hubCardDarkMatter: "Символические ACP-титулы космологии тёмной материи (halo / filament / детекторы) — не владение физической ТМ.",
@@ -3609,7 +3685,45 @@ export const legalByLang: Record<Language, Tree> = {
     fs9Body:
       "Пріоритет Germany / NRW, далі DE, далі обрані EU-коридори. ANCAP не гарантує сигнал, строк служби пристроїв, покриття камер, solar yield чи безперебійність після встановлення.",
     fs10Title: "10. Контакти",
-    fs10Body: "Питання: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install.",
+    fs10Body:
+      "Питання: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install. Орбітальний AI: /legal/space-ai-datacenter.",
+
+    spaceAiDatacenterLink: "Орбітальні AI data-center",
+    hubCardSpaceAiDatacenter:
+      "Оплата literacy розміщення AI data-center на орбіті / beyond-orbit в ACP/wACP — не launch-квиток, не SpaceX, не заява про AGI/ASI в космосі.",
+    spaceAiDatacenterKicker: "Юридичне / Orbital AI data-center desk",
+    spaceAiDatacenterTitle: "Орбітальні AI data-center — юридичне повідомлення",
+    spaceAiDatacenterIntro:
+      "4 жовтня 2026. ANCAP координує оплату і partner literacy для орбітальних і beyond-orbit AI data-center концепцій — не запускає ракети і не оперує AGI/ASI в космосі.",
+    sa1Title: "1. Роль платформи",
+    sa1Body:
+      "ANCAP приймає ACP/wACP за intake, escrow і передачу партнеру щодо literacy розміщення AI compute / data-center на орбіті. ANCAP — ПЗ/платіжна платформа, не launch-провайдер і не космічне агентство.",
+    sa2Title: "2. Не launch-провайдер",
+    sa2Body:
+      "ANCAP не SpaceX, Rocket Lab, Arianespace і не інтегратор запусків. Оплата SKU не купує місце на ракеті, rideshare або payload manifest.",
+    sa3Title: "3. Регульовані роботи виконує партнер",
+    sa3Body:
+      "Залізо, інтеграція, спектр, export-control і координація запуску — зона ліцензованих партнерів. ANCAP як оператор платформи не виконує орбітальні операції особисто.",
+    sa4Title: "4. Немає орбітального слота і суверенітету",
+    sa4Body:
+      "SKU не дають орбітальних слотів, ITU-заявок, суверенітету чи прав за Outer Space Treaty. Місячні / cislunar теми — literacy і координація.",
+    sa5Title: "5. Немає заяви про AGI / ASI",
+    sa5Body:
+      "Назва «superintelligence» — architecture literacy для sealed compute. ANCAP не заявляє, що оперує AGI або ASI в космосі чи на Землі сьогодні.",
+    sa6Title: "6. Export controls і спектр",
+    sa6Body:
+      "ITAR/EAR, dual-use, радіоспектр і наземні станції залишаються зоною клієнта та ліцензованих партнерів.",
+    sa7Title: "7. Крипто-платежі",
+    sa7Body:
+      "Оплата ACP/wACP або ramp через USDT потребує вашої власної атестації eligibility за DE/EU правом.",
+    sa8Title: "8. Escrow і розрахунок",
+    sa8Body:
+      "MVP escrow — ledger reserve/capture. Подвійний реліз планується; до цього capture після документованого завершення run.",
+    sa9Title: "9. Немає гарантії Jobcenter / AVGS і результату",
+    sa9Body:
+      "Desk описує бізнес-модель. Не обіцяє AVGS, успішний запуск, uptime чи compute performance на орбіті.",
+    sa10Title: "10. Контакти",
+    sa10Body: "Питання: legal@ancap.cloud. Продукт: /field-services?group=space. Спільний desk: /legal/field-services.",
 
     darkMatterLink: "Аукціон темної матерії",
     hubCardDarkMatter: "Символічні ACP-титули космології темної матерії (halo / filament / детектори) — не володіння фізичною ТМ.",
@@ -4892,7 +5006,45 @@ export const legalByLang: Record<Language, Tree> = {
     fs9Body:
       "Schwerpunkt Germany / NRW, dann DE, dann ausgewaehlte EU-Korridore. ANCAP garantiert keine Signalqualitaet, Geraetelanglebigkeit, Kamerabdeckung, Solarertrag oder unterbrechungsfreien Betrieb.",
     fs10Title: "10. Kontakt",
-    fs10Body: "Fragen: legal@ancap.cloud. Produkt: /field-services. Starlink: /legal/starlink-install.",
+    fs10Body:
+      "Fragen: legal@ancap.cloud. Produkt: /field-services. Starlink: /legal/starlink-install. Orbital AI: /legal/space-ai-datacenter.",
+
+    spaceAiDatacenterLink: "Orbitale AI-Data-Center",
+    hubCardSpaceAiDatacenter:
+      "ACP/wACP-bezahlte Orbit-/Beyond-Orbit AI-Data-Center Placement-Literacy — kein Launch-Ticket, kein SpaceX, kein AGI/ASI-im-Weltraum-Claim.",
+    spaceAiDatacenterKicker: "Recht / Orbital-AI-Data-Center-Desk",
+    spaceAiDatacenterTitle: "Orbitale AI-Data-Center — Rechtshinweis",
+    spaceAiDatacenterIntro:
+      "4. Oktober 2026. ANCAP koordiniert Zahlung und Partner-Literacy fuer orbitale und Beyond-Orbit AI-Data-Center-Konzepte — startet keine Raketen und betreibt kein AGI/ASI im Weltraum.",
+    sa1Title: "1. Plattformrolle",
+    sa1Body:
+      "ANCAP verrechnet ACP/wACP fuer Intake, Escrow und Partner-Handoff zu orbitaler / Beyond-Orbit AI-Compute- und Data-Center-Placement-Literacy. ANCAP ist Software-/Zahlungsplattform, kein Launch-Provider und keine Raumfahrtbehoerde.",
+    sa2Title: "2. Kein Launch-Provider",
+    sa2Body:
+      "ANCAP ist nicht SpaceX, Rocket Lab, Arianespace oder ein Launch-Integrator. Die Zahlung fuer ein Desk-SKU kauft keinen Launch-Sitz, keinen Rideshare-Slot und kein Payload-Manifest.",
+    sa3Title: "3. Partner fuehrt regulierte Arbeit aus",
+    sa3Body:
+      "Hardware, Integration, Spektrum, Exportkontrolle und Launch-Koordination liegen bei unabhaengigen lizenzierten Partnern. ANCAP als Plattformbetreiber fuehrt keine Orbitaloperationen personlich aus.",
+    sa4Title: "4. Kein Orbitalslot und keine Souveraenitaet",
+    sa4Body:
+      "Diese SKUs verleihen keine Orbitalslots, ITU-Filings, Souveraenitaet oder Rechte nach dem Outer Space Treaty. Mond-/Cislunar-Themen sind Literacy und Koordination.",
+    sa5Title: "5. Kein AGI-/ASI-Betriebsclaim",
+    sa5Body:
+      "«Superintelligence» ist Architecture-Literacy fuer sealed high-assurance Compute. ANCAP behauptet nicht, heute AGI oder ASI im Weltraum oder auf der Erde zu betreiben.",
+    sa6Title: "6. Exportkontrolle und Spektrum",
+    sa6Body:
+      "ITAR/EAR, Dual-Use, Funkspektrum und Bodenstationen bleiben Verantwortung von Kunde und lizenzierten Partnern. ANCAP gibt keine Exportkontroll-Rechtsberatung.",
+    sa7Title: "7. Krypto-Zahlungsberechtigung",
+    sa7Body:
+      "Zahlung mit ACP/wACP oder Ramp ueber USDT erfordert Ihre eigene Eligibility-Selbsterklaerung nach DE/EU-Recht.",
+    sa8Title: "8. Escrow und Settlement",
+    sa8Body:
+      "MVP-Escrow ist ledger-basiertes Workflow-Reserve/Capture. Doppel-Release ist geplant; bis dahin Capture nach dokumentiertem Run-Abschluss.",
+    sa9Title: "9. Keine Jobcenter-/AVGS-Garantie; keine Ergebnisgarantie",
+    sa9Body:
+      "Dieser Desk beschreibt ein Geschaeftsmodell. Er verspricht keine AVGS-Foerderung, keinen erfolgreichen Launch, keine Uptime und keine Orbit-Compute-Performance.",
+    sa10Title: "10. Kontakt",
+    sa10Body: "Fragen: legal@ancap.cloud. Produkt: /field-services?group=space. Gemeinsamer Desk: /legal/field-services.",
 
     darkMatterLink: "Dunkle-Materie-Auktion",
     hubCardDarkMatter: "Symbolische ACP-Kosmologie-Titel für Halo/Filament/Detektor-Literacy — kein physisches DM-Eigentum.",
@@ -6162,7 +6314,42 @@ export const legalByLang: Record<Language, Tree> = {
     fs9Body:
       "優先德國／NRW，其次全德，再為選定歐盟走廊。ANCAP 不保證訊號品質、裝置壽命、攝影涵蓋、太陽能產量或安裝後不中斷服務。",
     fs10Title: "10. 聯絡",
-    fs10Body: "問題：legal@ancap.cloud。產品：/field-services。Starlink：/legal/starlink-install。",
+    fs10Body:
+      "問題：legal@ancap.cloud。產品：/field-services。Starlink：/legal/starlink-install。軌道 AI：/legal/space-ai-datacenter。",
+
+    spaceAiDatacenterLink: "軌道 AI 資料中心",
+    hubCardSpaceAiDatacenter:
+      "以 ACP/wACP 支付的軌道／超軌道 AI 資料中心配置素養——非發射票、非 SpaceX、非宣稱太空運行 AGI/ASI。",
+    spaceAiDatacenterKicker: "法律／軌道 AI 資料中心 desk",
+    spaceAiDatacenterTitle: "軌道 AI 資料中心 — 法律聲明",
+    spaceAiDatacenterIntro:
+      "2026 年 10 月 4 日。ANCAP 協調軌道與超軌道 AI 資料中心概念的付款與夥伴素養——不發射火箭，亦不在太空營運 AGI/ASI。",
+    sa1Title: "1. 平台角色",
+    sa1Body:
+      "ANCAP 以 ACP/wACP 結算軌道／超軌道 AI 運算與資料中心配置素養的 intake、託管與夥伴交接。ANCAP 是軟體／支付平台，非發射服務商或太空機構。",
+    sa2Title: "2. 非發射服務商",
+    sa2Body:
+      "ANCAP 非 SpaceX、Rocket Lab、Arianespace 或任何發射整合商。支付 desk SKU 不購買發射座位、rideshare 或 payload manifest。",
+    sa3Title: "3. 由夥伴執行受規管工作",
+    sa3Body:
+      "任何硬體、整合、頻譜申請、出口管制或發射協調由獨立合格持照夥伴執行。ANCAP 作為平台營運者不親自執行軌道操作。",
+    sa4Title: "4. 無軌道槽位或主權授予",
+    sa4Body:
+      "這些 SKU 不授予軌道槽位、ITU 申請、主權或外層空間條約下之權利。月球／地月系主題僅為素養與協調。",
+    sa5Title: "5. 無 AGI／ASI 營運主張",
+    sa5Body:
+      "「superintelligence」命名為高保證密封運算架構素養。ANCAP 不主張今日在太空或地球營運 AGI 或 ASI。",
+    sa6Title: "6. 出口管制與頻譜",
+    sa6Body:
+      "ITAR／EAR、兩用物項、無線電頻譜與地面站許可仍由客戶與持照夥伴負責。ANCAP 不提供出口管制法律建議。",
+    sa7Title: "7. 加密支付資格",
+    sa7Body: "以 ACP／wACP 支付或經 USDT 轉換，需依德國／歐盟法律自行聲明資格。",
+    sa8Title: "8. 託管與結算",
+    sa8Body: "MVP 託管為帳本式 workflow reserve／capture。雙向釋放規劃中；在此之前於記錄完整之 run 完成後 capture。",
+    sa9Title: "9. 無 Jobcenter／AVGS 保證；無結果保證",
+    sa9Body: "本 desk 描述商業服務模式。不承諾 AVGS、成功發射、正常運行時間或軌道運算效能。",
+    sa10Title: "10. 聯絡",
+    sa10Body: "問題：legal@ancap.cloud。產品：/field-services?group=space。共用 desk：/legal/field-services。",
 
     darkMatterLink: "暗物質拍賣",
     hubCardDarkMatter: "暗物質暈／纖維／探測器素養的象徵性 ACP 宇宙學標題——非實體暗物質所有權。",

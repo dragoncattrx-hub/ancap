@@ -15,7 +15,9 @@ def test_field_services_catalog_groups(client):
     assert body["service_fee_eur"] == "3"
 
     group_ids = {g["id"] for g in body["groups"]}
-    assert group_ids == {"starlink", "it", "cameras", "solar"}
+    assert group_ids == {"starlink", "it", "cameras", "solar", "space"}
+    note_l = body["compliance_note"].lower()
+    assert "launch" in note_l or "orbital" in note_l or "spacex" in note_l
 
     ids = {s["id"] for s in body["services"]}
     for expected in (
@@ -24,6 +26,9 @@ def test_field_services_catalog_groups(client):
         "cam-cctv-install",
         "solar-balcony-install",
         "panel-other-mount",
+        "space-ai-orbit-intake",
+        "space-ai-beyond-orbit",
+        "space-ai-superintel-architecture",
     ):
         assert expected in ids
 
@@ -34,6 +39,7 @@ def test_field_services_catalog_groups(client):
     assert "it-pc-setup" in by_group["it"]
     assert "cam-nvr-config" in by_group["cameras"]
     assert "solar-panel-service" in by_group["solar"]
+    assert "space-ai-orbit-intake" in by_group["space"]
 
 
 def test_field_services_catalog_filter_group(client):
@@ -87,6 +93,33 @@ def test_field_services_quote_unknown(client):
     assert r.status_code == 400
 
 
+def test_field_services_quote_space_orbit(client):
+    r = client.post(
+        "/v1/field-services/quote",
+        json={"service_id": "space-ai-orbit-intake", "region": "de-nrw", "payment_currency": "ACP"},
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert Decimal(body["installation_fee_eur"]) == Decimal("12000")
+    assert Decimal(body["service_fee_eur"]) == Decimal("3")
+    assert Decimal(body["total_eur"]) == Decimal("12003")
+    assert body["group_id"] == "space"
+    assert body["workflow_slug"] == "space-ai-orbit-intake"
+
+
+def test_field_services_catalog_filter_space(client):
+    r = client.get("/v1/field-services/catalog", params={"group": "space"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["services"]
+    assert all(s["group_id"] == "space" for s in body["services"])
+    assert {s["id"] for s in body["services"]} >= {
+        "space-ai-orbit-intake",
+        "space-ai-beyond-orbit",
+        "space-ai-superintel-architecture",
+    }
+
+
 def test_field_services_workflow_templates():
     from app.services.workflow_execution import WORKFLOW_TEMPLATES
 
@@ -103,12 +136,17 @@ def test_field_services_workflow_templates():
         "solar-balcony-install",
         "solar-panel-service",
         "panel-other-mount",
+        "space-ai-orbit-intake",
+        "space-ai-beyond-orbit",
+        "space-ai-superintel-architecture",
     ):
         assert expected in slugs
     prices = {t.slug: t.price.amount for t in field}
     assert prices["it-pc-setup"] == "123"
     assert prices["cam-maintenance"] == "78"
     assert prices["panel-other-mount"] == "153"
+    assert prices["space-ai-orbit-intake"] == "12003"
+    assert prices["space-ai-superintel-architecture"] == "48003"
     for t in field:
         assert "ACP" in t.accepted_currencies
         assert "wACP" in t.accepted_currencies
