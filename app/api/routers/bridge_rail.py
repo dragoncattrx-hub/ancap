@@ -76,6 +76,10 @@ def _num_to_str(value: object) -> str:
 
 WACP_PAIR_ADDRESS = "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601"
 WACP_PAIR_URL = "https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601"
+WACP_V3_POOL_ADDRESS = "0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1"
+WACP_V3_POOL_URL = (
+    "https://pancakeswap.finance/liquidity/pool/bsc/0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1"
+)
 WACP_SWAP_URL = "https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402"
 WACP_LIQUIDITY_TX = "0x82458ec2b17e5aa58201a625169e493bb5ce8159487d66846906d9de69587503"
 WACP_FIRST_SWAP_BUY_TX = "0xe6b867346d6acfdef7e0a34c457dd48c9bf572c7e0aa94224c705dc83c1a504c"
@@ -93,13 +97,13 @@ def _public_docs() -> dict[str, str]:
         "listing_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
         "liquidity_v3_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
         "v2_pair": WACP_PAIR_URL,
+        "golden_path_spend": "https://ancap.cloud/buy-acp",
     }
-    v3_url = (s.wacp_v3_pool_url or "").strip()
-    if v3_url:
-        docs["v3_pool"] = v3_url
-    elif (s.wacp_v3_pool or "").strip():
-        pool = (s.wacp_v3_pool or "").strip().lower()
-        docs["v3_pool"] = f"https://pancakeswap.finance/liquidity/pool/bsc/{pool}"
+    v3_url = (s.wacp_v3_pool_url or "").strip() or WACP_V3_POOL_URL
+    docs["v3_pool"] = v3_url
+    docs["v3_pool_address"] = (s.wacp_v3_pool or "").strip().lower() or WACP_V3_POOL_ADDRESS
+    docs["v3_bootstrap_shallow"] = "true"
+    docs["oracle_use_v3"] = "true" if getattr(s, "wacp_oracle_use_v3", False) else "false"
     return docs
 
 

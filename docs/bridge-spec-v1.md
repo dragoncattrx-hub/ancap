@@ -4,6 +4,13 @@
 
 Bridge native ACP value into a BSC-side wrapped token (`wACP`) with operator-controlled minting, reserve-backed accountability, and clear status / audit surfaces.
 
+### Wrap ratio (cutover 2026-10-04)
+
+- **1 ACP ↔ 10 wACP** (locked in `app/services/bridge_decimal.py` as `WACP_PER_ACP = 10`).
+- Conversion uses ACP 8 decimals ↔ wACP 18 decimals with scale `10^11` (`10^10` decimal pad × 10).
+- Pre-cutover mints used 1:1 (`10^10` scale). Reverse redeem after cutover pays **1 ACP per 10 wACP** for all burns (legacy disclosure in `/legal/risk` and `/legal/market-data`).
+- Pause bridge during deploy; unpause only after reserve proof is healthy under the new liability math.
+
 ## 2. Scope
 
 v1 includes:

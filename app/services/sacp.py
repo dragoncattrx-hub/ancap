@@ -104,7 +104,7 @@ def public_status() -> dict:
     reserve = (getattr(settings, "sacp_reserve_acp_address", None) or "").strip()
     notes: list[str] = [
         "sACP is USD-targeted and ACP-collateralized. It is not a guaranteed fiat redemption.",
-        "Distinct from wACP (1:1 ACP wrap) and from partner USDC/USDT ramps.",
+        "Distinct from wACP (1 ACP ↔ 10 wACP wrap) and from partner USDC/USDT ramps.",
     ]
     if not contract:
         notes.append("Production sACP contract is not configured yet — set SACP_CONTRACT after DeploySacp.s.sol.")

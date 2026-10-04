@@ -3,8 +3,8 @@
 Official wACP/USDT pool (PancakeSwap V2 / GeckoTerminal):
 https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601
 
-ACP is 1:1 with wACP on the bridge. USD stickers are the retail face;
-ACP checkout amounts = usd_sticker / wacp_usd (oracle).
+Bridge doctrine (2026-10-04): **1 ACP ↔ 10 wACP**.
+ACP USD spot ≈ 10 × wACP DEX USD; checkout ACP = usd_sticker / acp_usd.
 """
 
 from __future__ import annotations
@@ -17,14 +17,28 @@ from typing import Any
 import httpx
 
 from app.config import get_settings
+from app.services.bridge_decimal import WACP_PER_ACP, acp_usd_from_wacp_usd
 
 OFFICIAL_WACP_POOL_V2 = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
+# PancakeSwap V3 wACP/USDT 0.25% — bootstrap / shallow (not oracle until gated).
+OFFICIAL_WACP_POOL_V3 = "0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1"
 OFFICIAL_WACP_POOL = OFFICIAL_WACP_POOL_V2  # backward-compatible alias
 
 
-def _official_pool_for_oracle() -> str:
+def _configured_v3_pool() -> str:
     s = get_settings()
     v3 = (getattr(s, "wacp_v3_pool", None) or "").strip().lower()
+    if v3 and re.fullmatch(r"0x[a-f0-9]{40}", v3):
+        return v3
+    return OFFICIAL_WACP_POOL_V3
+
+
+def _official_pool_for_oracle() -> str:
+    """Checkout oracle pool. Stays on V2 until WACP_ORACLE_USE_V3=true."""
+    s = get_settings()
+    if not bool(getattr(s, "wacp_oracle_use_v3", False)):
+        return OFFICIAL_WACP_POOL_V2
+    v3 = _configured_v3_pool()
     if v3 and re.fullmatch(r"0x[a-f0-9]{40}", v3):
         return v3
     return OFFICIAL_WACP_POOL_V2
@@ -100,9 +114,12 @@ def get_cached_wacp_usd(*, allow_stale: bool = True) -> Decimal | None:
 
 def oracle_meta() -> dict[str, Any]:
     pool = _official_pool_for_oracle()
+    s = get_settings()
     return {
         "pool": pool,
         "pool_v2_reference": OFFICIAL_WACP_POOL_V2,
+        "pool_v3_bootstrap": _configured_v3_pool(),
+        "oracle_use_v3": bool(getattr(s, "wacp_oracle_use_v3", False)),
         "source": _ORACLE.get("source") or "none",
         "price_usd": _ORACLE.get("price"),
         "cached_at": _ORACLE.get("at"),
@@ -164,7 +181,7 @@ def usdt_to_acp_desk_rate(*, wacp_usd: Decimal | None = None) -> Decimal:
     """ACP per 1 USDT for desk/exchange quotes.
 
     Emergency pin: set WACP_ORACLE_PIN_DESK=true and keep USDT_TRC20_TO_ACP_RATE.
-    Otherwise rate = 1 / wacp_usd (1 ACP ≈ 1 wACP ≈ spot USD).
+    Otherwise rate = 1 / (WACP_PER_ACP * wacp_usd) — 1 ACP ≈ 10 wACP ≈ 10× spot USD.
     """
     settings = get_settings()
     if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
@@ -178,7 +195,8 @@ def usdt_to_acp_desk_rate(*, wacp_usd: Decimal | None = None) -> Decimal:
             return pinned
         spot = _FALLBACK_WACP_USD
 
-    rate = (Decimal("1") / spot).quantize(_Q_RATE, rounding=ROUND_HALF_UP)
+    acp_spot = acp_usd_from_wacp_usd(spot)
+    rate = (Decimal("1") / acp_spot).quantize(_Q_RATE, rounding=ROUND_HALF_UP)
     min_rate = _to_dec(getattr(settings, "usdt_trc20_acp_rate_min", None) or "1") or Decimal("1")
     max_rate = _to_dec(getattr(settings, "usdt_trc20_acp_rate_max", None) or "1000000000000") or Decimal(
         "1000000000000"
@@ -205,14 +223,18 @@ def catalog_amount_to_usd_sticker(catalog_amount: Decimal | str) -> Decimal:
 
 
 def usd_to_acp(usd: Decimal | str, *, wacp_usd: Decimal | None = None) -> Decimal:
-    """Convert USD sticker to ACP amount (ceil to 0.01 ACP)."""
+    """Convert USD sticker to ACP amount (ceil to 0.01 ACP).
+
+    Uses ACP USD = WACP_PER_ACP × wACP DEX USD (bridge 1↔10).
+    """
     sticker = _to_dec(usd) or Decimal("0")
     if sticker <= 0:
         return Decimal("0")
     spot = wacp_usd or get_cached_wacp_usd(allow_stale=True) or _FALLBACK_WACP_USD
     if spot <= 0:
         spot = _FALLBACK_WACP_USD
-    raw = sticker / spot
+    acp_spot = acp_usd_from_wacp_usd(spot)
+    raw = sticker / acp_spot
     return raw.quantize(_Q_ACP, rounding=ROUND_CEILING)
 
 

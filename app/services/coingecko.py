@@ -208,11 +208,12 @@ def platform_indicative_rows(
 ) -> list[dict[str, Any]]:
     """ACP / wACP / sACP indicative USD context (not settlement).
 
-    When a live/oracle wACP spot exists, ACP tracks it 1:1 (bridge doctrine).
+    When a live/oracle wACP spot exists, ACP USD = 10 × wACP (bridge 1 ACP ↔ 10 wACP).
     """
     if (vs or "usd").lower() != "usd":
         return []
     from app.services import market_economy as me
+    from app.services.bridge_decimal import WACP_PER_ACP, acp_usd_from_wacp_usd
 
     settings = get_settings()
     acp_per_usdt = me.usdt_to_acp_desk_rate(wacp_usd=wacp_usd)
@@ -220,9 +221,15 @@ def platform_indicative_rows(
         acp_per_usdt = Decimal("1")
     usdt = usdt_usd if usdt_usd is not None else Decimal("1")
     desk_acp_usd = (usdt / acp_per_usdt).quantize(Decimal("0.00000001"))
-    wacp_price = wacp_usd if wacp_usd is not None and wacp_usd > 0 else desk_acp_usd
-    # Bridge doctrine: 1 ACP ↔ 1 wACP — display the same USD spot when oracle is live.
-    acp_usd = wacp_price if wacp_usd is not None and wacp_usd > 0 else desk_acp_usd
+    wacp_price = wacp_usd if wacp_usd is not None and wacp_usd > 0 else (
+        desk_acp_usd / Decimal(WACP_PER_ACP)
+    )
+    # Bridge doctrine: 1 ACP ↔ 10 wACP.
+    acp_usd = (
+        acp_usd_from_wacp_usd(wacp_price)
+        if wacp_usd is not None and wacp_usd > 0
+        else desk_acp_usd
+    )
     _ = settings  # reserved for future desk flags
     vs_u = "USD"
     return [
@@ -253,8 +260,8 @@ async def fetch_market_board(*, vs: str = "usd") -> dict[str, Any]:
         status = "partial"
     notes = list(cg.get("notes") or [])
     notes = [
-        "ACP tracks official wACP DEX spot 1:1 (bridge doctrine) when oracle is live; "
-        "USDT→ACP desk uses 1/wacp_usd. sACP soft-peg target ≈ 1 USD. Indicative only — not investment advice.",
+        "ACP USD ≈ 10 × official wACP DEX spot (bridge 1 ACP ↔ 10 wACP) when oracle is live; "
+        "USDT→ACP desk uses 1/(10×wacp_usd). sACP soft-peg target ≈ 1 USD. Indicative only — not investment advice.",
         f"wACP spot source: {wacp_source}. Official pool: {_OFFICIAL_POOL}. "
         "See docs/MARKET_ALIGNED_ECONOMY.md and /legal/market-data.",
         *notes,

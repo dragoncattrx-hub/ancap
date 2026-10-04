@@ -5,8 +5,9 @@ export const bridgeByLang: Record<Language, Tree> = {
   en: {
     loading: "Loading…",
     title: "ACP → BSC (wACP)",
-    leadBefore: "Operator-backed clearing rail. See",
+    leadBefore: "Operator-backed clearing rail. Wrap ratio 1 ACP ↔ 10 wACP. See",
     leadAfter: "in the ANCAP repository.",
+    wrapRatio: "1 ACP ↔ 10 wACP",
     specLink: "docs/bridge-spec-v1.md",
     refresh: "Refresh",
     refreshing: "Refreshing...",
@@ -39,7 +40,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Sign in",
     signInIntent: "to register an intent.",
     intentHint:
-      "Creates PENDING_DEPOSIT. Then send the EXACT ACP amount to the reserve address below. Watcher confirms deposit and operator mints wACP.",
+      "Creates PENDING_DEPOSIT. Send the EXACT ACP amount to the reserve address. Watcher confirms; mint pays 10 wACP per 1 ACP.",
     depositStepTitle: "Required after intent",
     depositStepBody:
       "Send exactly the intent amount of native ACP to the reserve address. Wrong amount will not match. Status stays PENDING_DEPOSIT until the on-chain deposit is detected.",
@@ -53,7 +54,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     redeemTitle: "Redeem request (BSC → ACP)",
     signInRedeem: "to register a redeem request.",
     redeemHint:
-      "Creates a row in PENDING_BURN. Next live step is user burn via gateway request, then operator/watcher confirms and sends ACP payout.",
+      "Creates PENDING_BURN. Burn wACP via gateway; payout is 1 ACP per 10 wACP (floor). Operator/watcher confirms ACP send.",
     acpPayout: "ACP payout address",
     amountWacp: "Amount (wACP)",
     quoteFloor: "ACP payout floor:",
@@ -69,8 +70,9 @@ export const bridgeByLang: Record<Language, Tree> = {
   ru: {
     loading: "Загрузка…",
     title: "ACP → BSC (wACP)",
-    leadBefore: "Операторский клиринговый рейл. См.",
+    leadBefore: "Операторский клиринговый рейл. Курс 1 ACP ↔ 10 wACP. См.",
     leadAfter: "в репозитории ANCAP.",
+    wrapRatio: "1 ACP ↔ 10 wACP",
     specLink: "docs/bridge-spec-v1.md",
     refresh: "Обновить",
     refreshing: "Обновление...",
@@ -103,7 +105,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Войти",
     signInIntent: "чтобы зарегистрировать intent.",
     intentHint:
-      "Создаёт PENDING_DEPOSIT. Затем отправьте ТОЧНУЮ сумму ACP на резервный адрес ниже. Watcher подтвердит депозит, оператор сминтит wACP.",
+      "Создаёт PENDING_DEPOSIT. Отправьте ТОЧНУЮ сумму ACP на резерв. Mint: 10 wACP за 1 ACP.",
     depositStepTitle: "Обязательно после intent",
     depositStepBody:
       "Отправьте ровно сумму intent в native ACP на резервный адрес. Другая сумма не сматчится. Статус останется PENDING_DEPOSIT, пока депозит не найден в цепи.",
@@ -117,7 +119,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     redeemTitle: "Запрос redeem (BSC → ACP)",
     signInRedeem: "чтобы зарегистрировать redeem.",
     redeemHint:
-      "Создаёт строку в PENDING_BURN. Далее пользователь сжигает через gateway request, затем оператор/watcher подтверждает и отправляет выплату ACP.",
+      "Создаёт PENDING_BURN. Burn через gateway; выплата 1 ACP за 10 wACP (floor). Оператор/watcher подтверждает.",
     acpPayout: "Адрес выплаты ACP",
     amountWacp: "Сумма (wACP)",
     quoteFloor: "Пол выплаты ACP:",
@@ -133,8 +135,9 @@ export const bridgeByLang: Record<Language, Tree> = {
   uk: {
     loading: "Завантаження…",
     title: "ACP → BSC (wACP)",
-    leadBefore: "Операторський кліринговий рейл. Див.",
+    leadBefore: "Операторський кліринговий рейл. Курс 1 ACP ↔ 10 wACP. Див.",
     leadAfter: "у репозиторії ANCAP.",
+    wrapRatio: "1 ACP ↔ 10 wACP",
     specLink: "docs/bridge-spec-v1.md",
     refresh: "Оновити",
     refreshing: "Оновлення...",
@@ -167,7 +170,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Увійти",
     signInIntent: "щоб зареєструвати intent.",
     intentHint:
-      "Створює PENDING_DEPOSIT. Далі надішліть ТОЧНУ суму ACP на резервну адресу нижче. Watcher підтвердить депозит, оператор зминтить wACP.",
+      "Створює PENDING_DEPOSIT. Надішліть ТОЧНУ суму ACP на резерв. Mint: 10 wACP за 1 ACP.",
     depositStepTitle: "Обовʼязково після intent",
     depositStepBody:
       "Надішліть рівно суму intent у native ACP на резервну адресу. Інша сума не зматчиться.",
@@ -181,7 +184,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     redeemTitle: "Запит redeem (BSC → ACP)",
     signInRedeem: "щоб зареєструвати redeem.",
     redeemHint:
-      "Створює рядок у PENDING_BURN. Далі користувач спалює через gateway request, потім оператор/watcher підтверджує й надсилає виплату ACP.",
+      "Створює PENDING_BURN. Burn через gateway; виплата 1 ACP за 10 wACP (floor). Оператор/watcher підтверджує.",
     acpPayout: "Адреса виплати ACP",
     amountWacp: "Сума (wACP)",
     quoteFloor: "Підлога виплати ACP:",
@@ -197,8 +200,9 @@ export const bridgeByLang: Record<Language, Tree> = {
   de: {
     loading: "Laden…",
     title: "ACP → BSC (wACP)",
-    leadBefore: "Betreiber-gestützte Clearing-Rail. Siehe",
+    leadBefore: "Betreiber-gestützte Clearing-Rail. Kurs 1 ACP ↔ 10 wACP. Siehe",
     leadAfter: "im ANCAP-Repository.",
+    wrapRatio: "1 ACP ↔ 10 wACP",
     specLink: "docs/bridge-spec-v1.md",
     refresh: "Aktualisieren",
     refreshing: "Aktualisiere...",
@@ -231,7 +235,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     signIn: "Anmelden",
     signInIntent: "um einen Intent zu registrieren.",
     intentHint:
-      "Registriert PENDING_DEPOSIT. Senden Sie danach den EXAKTEN ACP-Betrag an die Reserve-Adresse unten.",
+      "Registriert PENDING_DEPOSIT. Exakten ACP-Betrag an Reserve senden. Mint: 10 wACP je 1 ACP.",
     depositStepTitle: "Pflicht nach Intent",
     depositStepBody:
       "Senden Sie genau den Intent-Betrag als natives ACP an die Reserve-Adresse. Andere Beträge matchen nicht.",
@@ -245,7 +249,7 @@ export const bridgeByLang: Record<Language, Tree> = {
     redeemTitle: "Redeem-Anfrage (BSC → ACP)",
     signInRedeem: "um eine Redeem-Anfrage zu registrieren.",
     redeemHint:
-      "Erstellt eine Zeile in PENDING_BURN. Nächster Live-Schritt: Nutzer-Burn über Gateway-Request, dann bestätigt Operator/Watcher und sendet ACP-Auszahlung.",
+      "Erstellt PENDING_BURN. Gateway-Burn; Auszahlung 1 ACP je 10 wACP (Floor). Operator/Watcher bestätigt.",
     acpPayout: "ACP-Auszahlungsadresse",
     amountWacp: "Betrag (wACP)",
     quoteFloor: "ACP-Auszahlungs-Floor:",
@@ -261,8 +265,9 @@ export const bridgeByLang: Record<Language, Tree> = {
   "zh-Hant": {
     loading: "載入中…",
     title: "ACP → BSC (wACP)",
-    leadBefore: "營運者支援的清算軌道。請見",
+    leadBefore: "營運者支援的清算軌道。兌換比率 1 ACP ↔ 10 wACP。請見",
     leadAfter: "於 ANCAP 儲存庫。",
+    wrapRatio: "1 ACP ↔ 10 wACP",
     specLink: "docs/bridge-spec-v1.md",
     refresh: "重新整理",
     refreshing: "重新整理中...",
@@ -294,7 +299,8 @@ export const bridgeByLang: Record<Language, Tree> = {
     intentTitle: "新建意圖（ACP → BSC）",
     signIn: "登入",
     signInIntent: "以註冊意圖。",
-    intentHint: "建立 PENDING_DEPOSIT。接著將精確 ACP 數量轉入下方儲備地址。",
+    intentHint:
+      "建立 PENDING_DEPOSIT。請將精確 ACP 數量轉入儲備地址。監視器確認後依 1 ACP → 10 wACP 鑄造。",
     depositStepTitle: "建立意圖後必做",
     depositStepBody: "請將與意圖完全相同的原生 ACP 轉入儲備地址；金額不符將無法匹配。",
     cancelPending: "取消未付款意圖",
@@ -306,7 +312,8 @@ export const bridgeByLang: Record<Language, Tree> = {
     submitting: "提交中…",
     redeemTitle: "贖回請求（BSC → ACP）",
     signInRedeem: "以註冊贖回請求。",
-    redeemHint: "在 PENDING_BURN 建立一列。下一步為使用者經 gateway 請求銷毀，再由營運者／監視器確認並發送 ACP 撥款。",
+    redeemHint:
+      "建立 PENDING_BURN。經 gateway 銷毀 wACP；撥款為每 10 wACP → 1 ACP（向下取整）。營運者／監視器確認後發送 ACP。",
     acpPayout: "ACP 撥款地址",
     amountWacp: "金額（wACP）",
     quoteFloor: "ACP 撥款下限：",

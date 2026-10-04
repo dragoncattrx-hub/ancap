@@ -1,6 +1,6 @@
 # ACP / wACP Crypto-Asset Whitepaper
 
-Last updated: 2026-10-02  
+Last updated: 2026-10-04  
 Canonical public page: https://ancap.cloud/whitepaper/acp  
 BscScan / token-update whitepaper URL: https://ancap.cloud/whitepaper/acp  
 Project whitepaper: https://ancap.cloud/whitepaper
@@ -8,9 +8,9 @@ Project whitepaper: https://ancap.cloud/whitepaper
 ACP is the primary ANCAP platform asset for paid AI-workflow execution, platform credits,
 creator earnings, paid API metering, and proof receipts.
 
-**wACP** is the official wrapped ACP token on **BNB Smart Chain (BSC)**. It is a 1:1
-bridge-backed representation of ACP for EVM wallets, DEX pairs, and explorer listings.
-It is **not** a separate native supply.
+**wACP** is the official wrapped ACP token on **BNB Smart Chain (BSC)**. Bridge ratio
+**1 ACP ↔ 10 wACP** (cutover 2026-10-04). It is a reserve-backed representation of ACP for
+EVM wallets, DEX pairs, and explorer listings. It is **not** a separate native supply.
 
 ## Official BSC identities
 

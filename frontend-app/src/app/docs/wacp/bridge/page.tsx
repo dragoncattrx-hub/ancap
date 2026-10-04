@@ -17,9 +17,14 @@ export default function WacpBridgeDocsPage() {
               <span className="badge badge-active">ACP ↔ BSC</span>
             </div>
             <p style={{ color: "var(--text-muted)", lineHeight: 1.75 }}>
-              The live direction today is ACP → BSC minting: user creates an ACP → wACP bridge intent, sends ACP to the reserve path, the backend waits for
-              confirmations, then submits the BSC mint transaction for wACP. The reverse redeem direction BSC → ACP is part of the intended bridge design,
-              Reverse BSC → ACP redeem is live in runtime (burn detection, payout submission, ACP confirmation, reconciliation — all operational).
+              Wrap ratio (cutover 2026-10-04): <strong style={{ color: "var(--text)" }}>1 ACP ↔ 10 wACP</strong>.
+              Forward: lock ACP → mint 10× wACP. Reverse: burn 10 wACP → redeem 1 ACP (floor; dust remainder stays on BSC).
+              Pre-cutover mints used 1:1 — redeem after cutover follows the new ratio (see{" "}
+              <a href="/legal/risk">/legal/risk</a>).
+            </p>
+            <p style={{ color: "var(--text-muted)", lineHeight: 1.75 }}>
+              Forward ACP → BSC: create intent, send ACP to reserve, wait for confirmations, BSC mint.
+              Reverse BSC → ACP redeem is live (burn detection, payout submission, ACP confirmation, reconciliation).
             </p>
             <ol style={{ lineHeight: 1.9, color: "var(--text-muted)" }}>
               <li>Create bridge intent</li>
@@ -33,7 +38,11 @@ export default function WacpBridgeDocsPage() {
               <strong style={{ color: "var(--text)" }}>Reverse rail status:</strong> BSC → ACP redeem is live. The backend detects `ReleaseRequested` burns, submits ACP payouts, and confirms on-chain. Reconciliation tracks outstanding liabilities. Admin endpoints require platform-admin auth + `X-Bridge-Operator-Secret`.
             </div>
             <div style={{ marginTop: 16, color: "var(--text-muted)", lineHeight: 1.75 }}>
-              Current public market bootstrap: <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" target="_blank" rel="noreferrer">wACP/USDT PancakeSwap V2 pool</a>.
+              Markets:{" "}
+              <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1" target="_blank" rel="noreferrer">V3 bootstrap (shallow)</a>
+              {" · "}
+              <a href="https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601" target="_blank" rel="noreferrer">V2 reference / oracle</a>
+              . Spend path: <a href="/buy-acp">/buy-acp</a>.
             </div>
           </div>
         </main>

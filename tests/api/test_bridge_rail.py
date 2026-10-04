@@ -94,12 +94,13 @@ def test_wacp_exact_public_paths_ok(client):
 
 
 def test_quote_bsc_to_acp_floor_and_remainder(client):
+    # 1.0000000001 wACP at 1 ACP ↔ 10 wACP → floor 0.1 ACP, dust remainder in wei
     r = client.post("/v1/bridge/quote/bsc-to-acp", json={"amount_wacp": "1.0000000001"})
     assert r.status_code == 200, r.text
     data = r.json()
     assert data["amount_wacp_wei"] == "1000000000100000000"
-    assert data["acp_smallest_floor"] == "100000000"
-    assert data["acp_amount_floor"] == "1"
+    assert data["acp_smallest_floor"] == "10000000"
+    assert data["acp_amount_floor"] == "0.1"
     assert data["remainder_wacp_wei"] == "100000000"
 
 
@@ -148,9 +149,10 @@ def test_wacp_reserve_proof_live_balance_path(client, monkeypatch):
         wallet_acp._require_acp_rpc_url = original_require
         wallet_acp._run_walletd = original_run
 
+    # 1e18 wei = 1 wACP → 0.1 ACP liability under 1↔10 wrap
     assert data.acp_reserve_balance_smallest == "200000000"
-    assert data.wacp_total_supply_acp_smallest == "100000000"
-    assert data.backing_ratio == "2"
+    assert data.wacp_total_supply_acp_smallest == "10000000"
+    assert data.backing_ratio == "20"
     assert data.status == "healthy"
     assert data.reserve_health == "healthy"
 
@@ -172,7 +174,7 @@ def test_create_redeem_intent_bsc_to_acp(client, monkeypatch):
     assert data["direction"] == "bsc_to_acp"
     assert data["status"] == "PENDING_BURN"
     assert data["amount_wacp_wei"] == "1000000000100000000"
-    assert data["amount_acp_smallest"] == "100000000"
+    assert data["amount_acp_smallest"] == "10000000"
     assert data["remainder_wacp_wei"] == "100000000"
     assert data["bsc_tx_hash_burn"] is None
 
@@ -799,10 +801,11 @@ def test_admin_reverse_liability_summary(client, monkeypatch):
     assert int(data["counts_by_status"].get("BURN_CONFIRMED", 0)) >= 1
     assert int(data["counts_by_status"].get("ACP_PAYOUT_SENT", 0)) >= 1
     assert int(data["counts_by_status"].get("DISPUTED", 0)) >= 1
-    assert int(data["total_confirmed_burn_acp_smallest"]) >= 50000000
-    assert int(data["total_payout_sent_acp_smallest"]) >= 75000000
-    assert int(data["total_disputed_acp_smallest"]) >= 100000000
-    assert int(data["outstanding_operator_liability_acp_smallest"]) >= 225000000
+    # 0.5 / 0.75 / 1.0 wACP → 0.05 / 0.075 / 0.1 ACP under 1↔10
+    assert int(data["total_confirmed_burn_acp_smallest"]) >= 5000000
+    assert int(data["total_payout_sent_acp_smallest"]) >= 7500000
+    assert int(data["total_disputed_acp_smallest"]) >= 10000000
+    assert int(data["outstanding_operator_liability_acp_smallest"]) >= 22500000
 
 
 def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
@@ -868,10 +871,11 @@ def test_acp_watcher_confirms_reverse_payout_and_completes(client, monkeypatch):
                     "decoded": {
                         "confirmations": 5,
                         "vout": [
-                            {"recipient_address": payload["user_acp_address"], "amount": 125000000},
+                            # 1.25 wACP → 0.125 ACP = 12_500_000 smallest at 1↔10
+                            {"recipient_address": payload["user_acp_address"], "amount": 12500000},
                             {
                                 "recipient_address": "acp1qreserve0000000000000000000000000000000",
-                                "amount": 875000000,
+                                "amount": 87500000,
                             },
                         ],
                     }
@@ -1104,7 +1108,7 @@ def test_admin_forward_bind_deposit(client, monkeypatch):
     create = client.post("/v1/bridge/intents/acp-to-bsc", json=payload)
     assert create.status_code == 200, create.text
     op_id = create.json()["id"]
-    deposit_txid = "86468f2ab46ed4d681bb15bad67760c1e1d8537c32b12d47afcc8f2c9227f44c"
+    deposit_txid = f"86468f2ab46ed4d681bb15bad67760c1e1d8537c32b12d47afcc8f2c{uuid.uuid4().hex[:8]}"
 
     import app.services.bridge_acp_watcher as acp_watcher
 

@@ -35,7 +35,7 @@ export default function SacpRisksPage() {
               decentralization. Pause and gateway key risk apply.
             </li>
             <li>
-              <strong>Not wACP.</strong> Confusing sACP with wACP (1:1 ACP wrap) or with partner USDC/USDT can
+              <strong>Not wACP.</strong> Confusing sACP with wACP (1 ACP ↔ 10 wACP wrap) or with partner USDC/USDT can
               cause wrong expectations about backing and redemption.
             </li>
             <li>

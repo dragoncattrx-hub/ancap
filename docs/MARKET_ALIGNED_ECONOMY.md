@@ -4,11 +4,12 @@ Status: **live on ancap.cloud** after deploy of this doc's companion code.
 
 ## Doctrine
 
-- Bridge: **1 ACP ↔ 1 wACP**.
-- USD spot for both: official PancakeSwap V2 pool via GeckoTerminal  
+- Bridge (cutover 2026-10-04): **1 ACP ↔ 10 wACP**.
+- wACP USD spot: official PancakeSwap V2 pool via GeckoTerminal  
   `0xf391ca2bcbab93afa23326ebf1e35db950841601`  
   https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601
-- Catalog sells **pleasant USD stickers**; checkout charges **ACP = ceil(usd_sticker / wacp_usd)**.
+- ACP USD spot ≈ **10 × wACP USD** (bridge ratio).
+- Catalog sells **pleasant USD stickers**; checkout charges **ACP = ceil(usd_sticker / (10 × wacp_usd))**.
 - High historical ACP faces (&gt; 10_000) scale to USD by `/1000` (e.g. 1_000_000 → $1000).
 
 ## Oracle
@@ -16,7 +17,7 @@ Status: **live on ancap.cloud** after deploy of this doc's companion code.
 - Service: `app/services/market_economy.py`
 - Endpoint preference: official pool `base_token_price_usd`, then token price, then stale cache, then soft fallback.
 - Clamp: `WACP_ORACLE_MIN_USD` / `WACP_ORACLE_MAX_USD`
-- Desk USDT→ACP: `1 / wacp_usd` unless `WACP_ORACLE_PIN_DESK=true` (then `USDT_TRC20_TO_ACP_RATE`)
+- Desk USDT→ACP: `1 / (10 × wacp_usd)` unless `WACP_ORACLE_PIN_DESK=true` (then `USDT_TRC20_TO_ACP_RATE`)
 
 ## Earnings
 

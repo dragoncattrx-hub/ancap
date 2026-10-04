@@ -6,7 +6,7 @@ ANCAP is an ACP-first AI workflow platform. Users, crypto teams, creators, and A
 
 Key identities:
 - ACP = platform accounting unit (1:1 with itself)
-- wACP = wrapped ACP on BSC
+- wACP = wrapped ACP on BSC (**1 ACP ↔ 10 wACP** as of 2026-10-04; `app/services/bridge_decimal.py`)
 - sACP = Stable ACP — USD-targeted, ACP-collateralized commerce stablecoin on BSC (`docs/STABLECOIN_SACP_SPEC.md`); distinct from wACP and partner USDC/USDT
 - ACP-crypto/ = Rust chain/wallet source of truth (sibling to this repo)
 - ancap-mobile/ = React Native Expo wallet (sibling or submodule)

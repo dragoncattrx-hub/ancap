@@ -329,7 +329,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "Unlock ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "LIVE SPOT TICKER",
-      marketTickerNote: "ACP tracks official wACP DEX spot 1:1 (GeckoTerminal pool). BTC–SOL via CoinGecko. Indicative only — not investment advice.",
+      marketTickerNote: "ACP USD ≈ 10 × official wACP DEX spot (bridge 1 ACP ↔ 10 wACP; GeckoTerminal). BTC–SOL via CoinGecko. Indicative only — not investment advice.",
       marketTickerLegal: "Market data disclosure",
     },
     galaxy: {
@@ -880,7 +880,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "Открой ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "БЕГУЩАЯ СТРОКА КУРСОВ",
-      marketTickerNote: "ACP следует официальному DEX-курсу wACP 1:1 (пул GeckoTerminal). BTC–SOL через CoinGecko. Ориентир — не инвестрекомендация.",
+      marketTickerNote: "USD ACP ≈ 10 × официальный DEX-курс wACP (мост 1 ACP ↔ 10 wACP; GeckoTerminal). BTC–SOL через CoinGecko. Ориентир — не инвестрекомендация.",
       marketTickerLegal: "Раскрытие по рыночным данным",
     },
     galaxy: {
@@ -1431,7 +1431,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "Відкрий ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "БІГУЧИЙ РЯДОК КУРСІВ",
-      marketTickerNote: "ACP / wACP / sACP — орієнтовні курси платформи; BTC–SOL через CoinGecko. Не settlement і не інвестрекомендація.",
+      marketTickerNote: "USD ACP ≈ 10 × DEX-курс wACP (міст 1 ACP ↔ 10 wACP). BTC–SOL через CoinGecko. Орієнтир — не settlement і не інвестрекомендація.",
       marketTickerLegal: "Розкриття щодо ринкових даних",
     },
     galaxy: {
@@ -1982,7 +1982,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "ANCAP-API freischalten",
       swaggerApi: "Swagger API",
       marketTickerTitle: "LIVE-KURS-TICKER",
-      marketTickerNote: "ACP / wACP / sACP sind plattforminterne indikative Kurse; BTC–SOL via CoinGecko. Keine Settlement-Kurse, keine Anlageberatung.",
+      marketTickerNote: "ACP-USD ≈ 10 × offizieller wACP-DEX-Kurs (Bridge 1 ACP ↔ 10 wACP). BTC–SOL via CoinGecko. Indikativ — keine Settlement-Kurse, keine Anlageberatung.",
       marketTickerLegal: "Marktdaten-Hinweis",
     },
     galaxy: {
@@ -2533,7 +2533,7 @@ export const translations: Record<Language, TranslationTree> = {
       ctaApi: "解鎖 ANCAP API",
       swaggerApi: "Swagger API",
       marketTickerTitle: "即時行情跑馬燈",
-      marketTickerNote: "ACP / wACP / sACP 為平台參考價；BTC–SOL 來自 CoinGecko。非結算匯率，亦非投資建議。",
+      marketTickerNote: "ACP USD ≈ 10 × 官方 wACP DEX 現貨（橋接 1 ACP ↔ 10 wACP；GeckoTerminal）。BTC–SOL 來自 CoinGecko。僅供參考，非投資建議。",
       marketTickerLegal: "市場數據揭露",
     },
     galaxy: {

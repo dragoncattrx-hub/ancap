@@ -11,7 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import BridgeAuditEvent, BridgeOperation, BridgeReserveSnapshot
-from app.services.bridge_decimal import _SCALE
+from app.services.bridge_decimal import (
+    WACP_PER_ACP,
+    _SCALE,
+    acp_smallest_to_wacp_wei,
+    matches_recorded_wrap,
+)
 
 
 _REVERSE_LIABILITY_STATUSES = ("BURN_CONFIRMED", "ACP_PAYOUT_SENT", "DISPUTED")
@@ -112,7 +117,11 @@ async def _write_reserve_snapshot(session: AsyncSession, payload: dict) -> None:
 
 
 async def run_reconciliation(session: AsyncSession) -> dict:
-    """Compare completed forward mint accounting and expose reverse outstanding liability totals."""
+    """Compare completed forward mint accounting and expose reverse outstanding liability totals.
+
+    Per-op amounts may match current 1:10 wrap or legacy 1:1 (pre-2026-10-04 cutover).
+    Aggregate implied uses current scale; legacy_ops_count explains residual delta.
+    """
     settings = get_settings()
     if not settings.bridge_rail_enabled:
         return {"skipped": True}
@@ -129,7 +138,23 @@ async def run_reconciliation(session: AsyncSession) -> dict:
     total_wacp_wei = int(row[1] or 0)
     implied_wacp = int(Decimal(total_acp_smallest) * _SCALE)
     delta = total_wacp_wei - implied_wacp
-    ok = delta == 0
+
+    ops_q = await session.execute(
+        select(BridgeOperation.amount_acp_smallest, BridgeOperation.amount_wacp_wei).where(
+            BridgeOperation.direction == "acp_to_bsc",
+            BridgeOperation.status == "COMPLETED",
+        )
+    )
+    legacy_ops = 0
+    bad_ops = 0
+    for acp_s, wacp_w in ops_q.all():
+        a = int(acp_s or 0)
+        w = int(wacp_w or 0)
+        if not matches_recorded_wrap(a, w):
+            bad_ops += 1
+        elif w != acp_smallest_to_wacp_wei(a):
+            legacy_ops += 1
+    ok = bad_ops == 0
 
     reverse_row = (
         await session.execute(
@@ -165,6 +190,9 @@ async def run_reconciliation(session: AsyncSession) -> dict:
         "implied_wacp_wei_from_acp": implied_wacp,
         "delta_wacp_wei": delta,
         "ok": ok,
+        "wacp_per_acp": WACP_PER_ACP,
+        "legacy_1to1_ops_count": legacy_ops,
+        "bad_ops_count": bad_ops,
         "reverse_outstanding_liability_acp_smallest": reverse_outstanding_acp_smallest,
         "reverse_outstanding_liability_wacp_wei": reverse_outstanding_wacp_wei,
         "reverse_completed_acp_smallest": reverse_completed_acp_smallest,

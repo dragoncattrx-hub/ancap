@@ -42,6 +42,7 @@ Reference docs:
 Official wrapped token:
 - contract: `WACP`
 - network: `BSC mainnet`
+- bridge ratio: **1 ACP ↔ 10 wACP** (cutover 2026-10-04; see [bridge-spec-v1.md](./bridge-spec-v1.md))
 - address: `0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402`
 - explorer: <https://bscscan.com/address/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402>
 - source: [contracts/bridge-bsc/src/WACP.sol](../contracts/bridge-bsc/src/WACP.sol)
@@ -75,8 +76,10 @@ Use these together with the addresses above:
 
 ### PancakeSwap markets (wACP / USDT)
 
-- **V2 canonical (thin reference):** `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601` — [pool UI](https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601)
-- **V3 primary:** set in production env `WACP_V3_POOL` after deployment; playbook [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md)
+- **V2 canonical (thin reference / checkout oracle):** `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601` — [pool UI](https://pancakeswap.finance/liquidity/pool/bsc/0xF391ca2bcBaB93Afa23326ebF1e35DB950841601)
+- **V3 bootstrap (shallow, 0.25%):** `0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1` — [pool UI](https://pancakeswap.finance/liquidity/pool/bsc/0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1)
+- **Oracle gate:** keep `WACP_ORACLE_USE_V3=false` until quote smoke ($100/$250/$500) is acceptable — playbook [WACP_LIQUIDITY_V3_PLAYBOOK.md](./WACP_LIQUIDITY_V3_PLAYBOOK.md)
+- Spend → fee path: [GOLDEN_PATH_ACP_SPEND.md](./GOLDEN_PATH_ACP_SPEND.md)
 - wACP on BSC uses **18 decimals** ([WACP.sol](../contracts/bridge-bsc/src/WACP.sol))
 
 ## Fast verification flow

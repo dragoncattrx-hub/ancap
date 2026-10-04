@@ -250,11 +250,11 @@ def build_assets() -> list[ExchangeAssetPublic]:
             availability="live" if bridge_live else "beta",
             direction="both",
             rail="bridge",
-            quote_mode="bridge_1_1",
+            quote_mode="bridge_1_10",
             unit="wACP",
             decimals=18,
             network="bsc",
-            note="1:1 bridge rail with reserve proof. Mint/redeem via bridge intents.",
+            note="Bridge 1 ACP ↔ 10 wACP with reserve proof. Mint/redeem via bridge intents.",
             metadata={"pair_hint": "wACP/USDT on PancakeSwap"},
         ),
         ExchangeAssetPublic(

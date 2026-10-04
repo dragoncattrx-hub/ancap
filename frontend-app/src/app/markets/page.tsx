@@ -8,6 +8,9 @@ import { SiteLegalFooter } from "@/components/legal/LegalViews";
 import {
   WACP_BSC_CONTRACT,
   WACP_SYMBOL,
+  WACP_USDT_BSC,
+  WACP_V2_POOL,
+  WACP_V3_POOL,
   getWacpLogoUrl,
 } from "@/lib/wacpToken";
 
@@ -27,28 +30,44 @@ type ListingsPayload = {
 
 const FALLBACK: Placement[] = [
   {
+    id: "pancakeswap_v3",
+    name: "PancakeSwap V3 (bootstrap)",
+    status: "live",
+    fee: "free",
+    url: `https://pancakeswap.finance/liquidity/pool/bsc/${WACP_V3_POOL}`,
+    how: "Shallow concentrated wACP/USDT 0.25% — discovery only; checkout oracle stays on V2",
+  },
+  {
     id: "dextools",
     name: "DexTools",
     status: "live",
     fee: "free_index_paid_profile",
-    url: "https://www.dextools.io/app/en/bnb/pair-explorer/0xf391ca2bcbab93afa23326ebf1e35db950841601",
+    url: `https://www.dextools.io/app/en/bnb/pair-explorer/${WACP_V2_POOL.toLowerCase()}`,
     how: "Auto-indexed — use CA in Coin/DexTools promo forms",
   },
   {
     id: "pancakeswap",
-    name: "PancakeSwap V2",
+    name: "PancakeSwap V2 (reference / oracle)",
     status: "live",
     fee: "free",
-    url: `https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=${WACP_BSC_CONTRACT}`,
-    how: "Permissionless trade-by-address",
+    url: `https://pancakeswap.finance/swap?inputCurrency=${WACP_USDT_BSC}&outputCurrency=${WACP_BSC_CONTRACT}`,
+    how: "Thin canonical micro-market; platform USD oracle reference",
   },
   {
     id: "geckoterminal",
     name: "GeckoTerminal",
     status: "live",
     fee: "free",
-    url: "https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601",
-    how: "CoinGecko DEX terminal",
+    url: `https://www.geckoterminal.com/bsc/pools/${WACP_V2_POOL.toLowerCase()}`,
+    how: "CoinGecko DEX terminal (V2 reference)",
+  },
+  {
+    id: "geckoterminal_v3",
+    name: "GeckoTerminal V3",
+    status: "live",
+    fee: "free",
+    url: `https://www.geckoterminal.com/bsc/pools/${WACP_V3_POOL}`,
+    how: "V3 bootstrap pool chart",
   },
   {
     id: "bscscan",
@@ -179,6 +198,18 @@ export default function MarketsPage() {
             </Link>
             <Link href="/docs/wacp/metamask" className="btn btn-ghost">
               MetaMask guide
+            </Link>
+            <Link href="/buy-acp" className="btn btn-ghost">
+              Buy → spend ACP
+            </Link>
+            <Link href="/ai/workflows" className="btn btn-ghost">
+              Workflows
+            </Link>
+            <Link href="/developers" className="btn btn-ghost">
+              Paid API
+            </Link>
+            <Link href="/marketplace" className="btn btn-ghost">
+              Marketplace
             </Link>
           </div>
         </div>

@@ -8,14 +8,16 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.services.market_economy import OFFICIAL_WACP_POOL_V3, _configured_v3_pool
 from app.services.wacp_mint_envelope import compute_mint_envelope
 
 logger = logging.getLogger(__name__)
 
 
 async def wacp_liquidity_monitor_tick(session: AsyncSession) -> dict[str, Any]:
-    """Lightweight monitor: mint envelope + configured V3 pool presence."""
+    """Lightweight monitor: mint envelope + V3 bootstrap pool + fee-recycle gate."""
     from app.api.routers.bridge_rail import _live_reserve_proof_payload
+    from app.services.wacp_fee_recycle import fee_recycle_eligibility
 
     reserve = await _live_reserve_proof_payload(session)
     envelope = compute_mint_envelope(
@@ -25,7 +27,7 @@ async def wacp_liquidity_monitor_tick(session: AsyncSession) -> dict[str, Any]:
     )
 
     s = get_settings()
-    v3_pool = (s.wacp_v3_pool or "").strip().lower()
+    v3_pool = _configured_v3_pool() or OFFICIAL_WACP_POOL_V3
     out: dict[str, Any] = {
         "ok": reserve.reserve_health in {"healthy", "degraded"},
         "reserve_health": reserve.reserve_health,
@@ -33,11 +35,19 @@ async def wacp_liquidity_monitor_tick(session: AsyncSession) -> dict[str, Any]:
         "max_additional_mint_acp_smallest": envelope.max_additional_mint_acp_smallest,
         "v3_pool_configured": bool(v3_pool),
         "v3_pool": v3_pool or None,
+        "v3_bootstrap_shallow": True,
+        "oracle_use_v3": bool(getattr(s, "wacp_oracle_use_v3", False)),
         "infinity_gate": {
             "eligible": False,
             "reason": "Requires sustained organic V3 volume per WACP_LIQUIDITY_V3_PLAYBOOK §28",
         },
     }
+
+    try:
+        out["fee_recycle"] = await fee_recycle_eligibility(session)
+    except Exception as exc:
+        logger.warning("wacp_fee_recycle_tick_failed: %s", exc)
+        out["fee_recycle"] = {"eligible": False, "error": str(exc)[:200]}
 
     if v3_pool and s.bridge_bsc_rpc_url:
         try:

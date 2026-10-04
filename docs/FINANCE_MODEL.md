@@ -99,3 +99,21 @@ Mnemonic alone cannot recover the address. All genesis/miner/receive wallet tool
 All rates are env-overridable (see `app/config.py`): `ORDER_FEE_PERCENT`, `RUN_FEE_PERCENT`,
 `LISTING_FEE_PERCENT`, `REFERRAL_SIGNUP_BONUS_ACP`, `REFERRAL_COMMISSION_SHARE_RATE`.
 Change in `.env` / compose environment and restart the API — no code change needed.
+
+## 6b. Bridge wrap ratio (2026-10-04)
+
+- **1 ACP ↔ 10 wACP** (`WACP_PER_ACP` in `app/services/bridge_decimal.py`).
+- ACP indicative USD ≈ 10 × wACP DEX USD for checkout / desk quotes.
+- Pre-cutover wraps were 1:1; after cutover redeem is 10 wACP → 1 ACP (disclosed in legal).
+- Spec: [bridge-spec-v1.md](./bridge-spec-v1.md).
+
+## 7. Fee → V3 liquidity recycle (operator cadence)
+
+After real platform spend produces ledger revenue (not welcome grants):
+
+1. Confirm golden path: [GOLDEN_PATH_ACP_SPEND.md](./GOLDEN_PATH_ACP_SPEND.md).
+2. Run `python scripts/wacp/fee_recycle_check.py` (or read `wacp_liquidity.fee_recycle` from jobs tick).
+3. If `eligible: true`, approve a fee tranche → wrap to wACP → **Add Liquidity** on V3 bootstrap pool `0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1` (human-signed).
+4. Keep `WACP_ORACLE_USE_V3=false` until quote smoke passes.
+
+Threshold: `WACP_FEE_RECYCLE_MIN_REVENUE_ACP` (default `50`). Never mint wACP into the pool; never wash trade.

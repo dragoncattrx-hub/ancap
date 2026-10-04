@@ -1,35 +1,48 @@
 type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
-type Tree = { [key: string]: string | Tree };
+type Tree = { [key: string]: string };
 
 export const marketRateBarByLang: Record<Language, Tree> = {
   en: {
-    label: "Live spot",
-    oneToOne: "1:1 wACP",
+    label: "Live rates",
+    loading: "Loading rates…",
+    error: "Rates unavailable",
+    oneToOne: "1 ACP = 10 wACP",
     gecko: "GeckoTerminal",
-    legal: "Disclosure",
+    legal: "Market data",
   },
   ru: {
-    label: "Живой курс",
-    oneToOne: "1:1 wACP",
+    label: "Живые курсы",
+    loading: "Загрузка курсов…",
+    error: "Курсы недоступны",
+    oneToOne: "1 ACP = 10 wACP",
     gecko: "GeckoTerminal",
-    legal: "Раскрытие",
+    legal: "Рыночные данные",
   },
   uk: {
-    label: "Живий курс",
-    oneToOne: "1:1 wACP",
+    label: "Живі курси",
+    loading: "Завантаження курсів…",
+    error: "Курси недоступні",
+    oneToOne: "1 ACP = 10 wACP",
     gecko: "GeckoTerminal",
-    legal: "Розкриття",
+    legal: "Ринкові дані",
   },
   de: {
-    label: "Live-Kurs",
-    oneToOne: "1:1 wACP",
+    label: "Live-Kurse",
+    loading: "Kurse werden geladen…",
+    error: "Kurse nicht verfügbar",
+    oneToOne: "1 ACP = 10 wACP",
     gecko: "GeckoTerminal",
-    legal: "Hinweis",
+    legal: "Marktdaten",
   },
   "zh-Hant": {
     label: "即時匯率",
-    oneToOne: "1:1 wACP",
+    loading: "載入匯率…",
+    error: "匯率不可用",
+    oneToOne: "1 ACP = 10 wACP",
     gecko: "GeckoTerminal",
-    legal: "揭露",
+    legal: "市場數據",
   },
 };
+
+/** @deprecated use marketRateBarByLang */
+export const marketRateBar = marketRateBarByLang;

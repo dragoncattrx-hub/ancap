@@ -393,9 +393,17 @@ class Settings(BaseSettings):
     bridge_dry_run: bool = True
     bridge_bsc_rpc_url: str = ""
     bridge_wacp_contract: str = ""
-    wacp_v3_pool: str = ""
-    wacp_v3_pool_url: str = ""
+    # Bootstrap V3 pool address (monitor + public docs). Does NOT switch the
+    # checkout oracle unless wacp_oracle_use_v3=true (thin pool = manipulable).
+    wacp_v3_pool: str = "0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1"
+    wacp_v3_pool_url: str = (
+        "https://pancakeswap.finance/liquidity/pool/bsc/0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1"
+    )
     wacp_v3_position_nft: str = ""
+    # Keep false until quote_smoke $100/$250/$500 slippage is acceptable.
+    wacp_oracle_use_v3: bool = False
+    # Minimum platform ledger revenue (ACP, 7d) before fee→V3 recycle is eligible.
+    wacp_fee_recycle_min_revenue_acp: str = "50"
     bridge_gateway_contract: str = ""
     # Public transparency flags (do not hardcode true in API responses).
     bridge_bsc_contract_verified: bool = True

@@ -22,8 +22,10 @@ export default function WacpDocsOverviewPage() {
                 <span className="badge badge-active">Public docs</span>
               </div>
               <p style={{ color: "var(--text-muted)", lineHeight: 1.75, marginTop: 16, maxWidth: 900 }}>
-                wACP is the BNB Smart Chain representation of ACP. This documentation set is the public trust layer for bridge users:
-                what the asset is, how reserve backing is supposed to work, what contracts are official, and what risks remain.
+                wACP is the BNB Smart Chain representation of ACP. Bridge ratio{" "}
+                <strong style={{ color: "var(--text)" }}>1 ACP ↔ 10 wACP</strong> (cutover 2026-10-04).
+                This documentation set is the public trust layer for bridge users: what the asset is, how reserve
+                backing works, what contracts are official, and what risks remain.
               </p>
             </div>
           </section>

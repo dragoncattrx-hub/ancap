@@ -26,7 +26,7 @@ export default function SacpDocsOverviewPage() {
             </div>
             <p style={{ color: "var(--text-muted)", lineHeight: 1.75, marginTop: 16, maxWidth: 900 }}>
               sACP is ANCAP&apos;s commerce stablecoin: USD-targeted and ACP-collateralized on BNB Smart Chain.
-              It is not the same as ACP (accounting unit) or wACP (1:1 ACP wrap), and it is not a guaranteed
+              It is not the same as ACP (accounting unit) or wACP (1 ACP ↔ 10 wACP wrap), and it is not a guaranteed
               fiat redemption product.
             </p>
           </div>
