@@ -699,6 +699,19 @@ export const starlinkInstallDesk = {
   },
 };
 
+export const fieldServicesDesk = {
+  async catalog(group?: string | null) {
+    const q = group ? `?group=${encodeURIComponent(group)}` : "";
+    return apiFetch(`/field-services/catalog${q}`);
+  },
+  async quote(body: { service_id: string; region?: string | null; payment_currency?: string }) {
+    return apiFetch("/field-services/quote", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+};
+
 export const quantumSimDesk = {
   async catalog() {
     return apiFetch("/quantum-sim/catalog");

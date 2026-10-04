@@ -81,6 +81,7 @@ function LegalNavPills({ current }: { current?: string }) {
     { href: "/legal/humanitarian", key: "humanitarianLink" },
     { href: "/legal/counsel", key: "counselLink" },
     { href: "/legal/starlink-install", key: "starlinkInstallLink" },
+    { href: "/legal/field-services", key: "fieldServicesLink" },
     { href: "/legal/cyber-defense", key: "cyberLink", accent: true },
     { href: "/legal/clarity-act", key: "clarityLink", accent: true },
   ] as const;
@@ -144,6 +145,7 @@ export function LegalHubView() {
     { href: "/legal/humanitarian", title: "humanitarianLink", body: "hubCardHumanitarian" },
     { href: "/legal/counsel", title: "counselLink", body: "hubCardCounsel" },
     { href: "/legal/starlink-install", title: "starlinkInstallLink", body: "hubCardStarlinkInstall" },
+    { href: "/legal/field-services", title: "fieldServicesLink", body: "hubCardFieldServices" },
     { href: "/legal/cyber-defense", title: "cyberLink", body: "hubCardCyber" },
     { href: "/legal/clarity-act", title: "clarityLink", body: "hubCardClarity" },
     { href: "/compliance", title: "complianceLink", body: "hubCardCompliance" },
@@ -885,8 +887,46 @@ export function StarlinkInstallLegalView() {
       <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
         <p>
           Product:{" "}
-          <Link href="/starlink-install" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
-            /starlink-install
+          <Link href="/field-services?group=starlink" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /field-services?group=starlink
+          </Link>
+          {" · "}
+          <Link href="/legal/field-services" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/field-services
+          </Link>
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+export function FieldServicesLegalView() {
+  const { t } = useLanguage();
+  return (
+    <LegalShell
+      kickerClass="border-sky-300/20 bg-sky-400/[0.06]"
+      kicker={t("legal.fieldServicesKicker")}
+      title={t("legal.fieldServicesTitle")}
+      intro={`${t("legal.lastUpdated")} ${t("legal.fieldServicesIntro")}`}
+      actions={<LegalNavPills current="/legal/field-services" />}
+    >
+      <section className="mt-6 grid gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <article key={n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-xl font-semibold tracking-[-0.02em]">{t(`legal.fs${n}Title`)}</h2>
+            <p className="mt-3 text-sm leading-7 text-white/70">{t(`legal.fs${n}Body`)}</p>
+          </article>
+        ))}
+      </section>
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/70">
+        <p>
+          Product:{" "}
+          <Link href="/field-services" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /field-services
+          </Link>
+          {" · "}
+          <Link href="/legal/starlink-install" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4">
+            /legal/starlink-install
           </Link>
         </p>
       </section>

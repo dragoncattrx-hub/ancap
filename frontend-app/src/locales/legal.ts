@@ -944,7 +944,45 @@ export const legalByLang: Record<Language, Tree> = {
     si9Body:
       "ANCAP does not guarantee signal quality, ISP throughput, weather immunity, landlord approval, or uninterrupted service after install.",
     si10Title: "10. Contact",
-    si10Body: "Questions: legal@ancap.cloud. Product: /starlink-install.",
+    si10Body:
+      "Questions: legal@ancap.cloud. Product: /field-services?group=starlink (legacy /starlink-install redirects). Shared desk legal: /legal/field-services.",
+
+    fieldServicesLink: "Field services",
+    hubCardFieldServices:
+      "ACP/wACP-paid field installs — Starlink, IT devices, CCTV, solar / panel mounts (Germany / NRW first). Not an equipment reseller; not a Jobcenter funding promise.",
+    fieldServicesKicker: "Legal / Field services desk",
+    fieldServicesTitle: "Field services — legal notice",
+    fieldServicesIntro:
+      "4 October 2026. ANCAP coordinates payment and partner handoff for Starlink, IT, cameras, and solar / panel field work — it does not sell hardware as a reseller.",
+    fs1Title: "1. Platform role",
+    fs1Body:
+      "ANCAP settles ACP/wACP for field-service intake and escrow coordination, then hands off to independently qualified partners. ANCAP is a software/payment platform, not a telecom, IT retailer, CCTV vendor, or solar EPC.",
+    fs2Title: "2. Not an equipment reseller",
+    fs2Body:
+      "ANCAP is not an official reseller of Starlink, PC/laptop brands, camera vendors, or PV manufacturers. Kits, devices, and panels are sold by third parties — not by ANCAP.",
+    fs3Title: "3. Partner performs the work",
+    fs3Body:
+      "Physical installation, configuration, electrical work, roof / height work, and on-site maintenance are performed by the partner. ANCAP does not personally perform field labor as the platform operator.",
+    fs4Title: "4. Permits, electrical, and height safety",
+    fs4Body:
+      "Building permits, landlord consent, electrical connection, grid registration, and height / roof safety remain the responsibility of the customer and/or licensed trades engaged by the partner.",
+    fs5Title: "5. Solar and other panels",
+    fs5Body:
+      "Solar / balcony PV and other panel SKUs are partner literacy and install coordination only. ANCAP does not guarantee yield, feed-in tariffs, or grid approval.",
+    fs6Title: "6. Crypto payment eligibility",
+    fs6Body:
+      "Paying with ACP, wACP, or ramping via USDT requires your own eligibility self-attestation under applicable German / EU law. ANCAP does not provide tax or regulatory advice.",
+    fs7Title: "7. Escrow and settlement",
+    fs7Body:
+      "MVP escrow is ledger-based workflow reserve/capture. Dual customer–provider release and richer job status are planned; until then operator capture follows documented run completion.",
+    fs8Title: "8. No Jobcenter / AVGS guarantee",
+    fs8Body:
+      "This desk describes a business service model. It does not promise Jobcenter approval, AVGS funding, employment status, or any agency decision. Funding decisions remain solely with the competent authority.",
+    fs9Title: "9. Geography and no outcome guarantee",
+    fs9Body:
+      "Primary coverage is Germany / NRW, then Deutschland, then selected EU corridors. ANCAP does not guarantee signal quality, device longevity, camera coverage, solar yield, or uninterrupted service after install.",
+    fs10Title: "10. Contact",
+    fs10Body: "Questions: legal@ancap.cloud. Product: /field-services. Starlink-specific notice: /legal/starlink-install.",
 
     darkMatterLink: "Dark matter auction",
     hubCardDarkMatter: "Symbolic ACP cosmology titles for dark-matter halo / filament / detector literacy — not physical DM ownership.",
@@ -2246,7 +2284,45 @@ export const legalByLang: Record<Language, Tree> = {
     si9Body:
       "ANCAP не гарантирует качество сигнала, скорость ISP, устойчивость к погоде, согласие арендодателя или бесперебойную работу после монтажа.",
     si10Title: "10. Контакты",
-    si10Body: "Вопросы: legal@ancap.cloud. Продукт: /starlink-install.",
+    si10Body:
+      "Вопросы: legal@ancap.cloud. Продукт: /field-services?group=starlink (legacy /starlink-install). Общий desk: /legal/field-services.",
+
+    fieldServicesLink: "Выездные услуги",
+    hubCardFieldServices:
+      "Оплата выездных установок в ACP/wACP — Starlink, IT, CCTV, solar / панели (Germany / NRW). Не реселлер оборудования; не обещание Jobcenter.",
+    fieldServicesKicker: "Юридическое / Field services desk",
+    fieldServicesTitle: "Выездные услуги — юридическое уведомление",
+    fieldServicesIntro:
+      "4 октября 2026. ANCAP координирует оплату и передачу партнёру для Starlink, IT, камер и solar / панелей — не продаёт оборудование как реселлер.",
+    fs1Title: "1. Роль платформы",
+    fs1Body:
+      "ANCAP принимает ACP/wACP за intake и escrow, затем передаёт независимому партнёру. ANCAP — ПО/платёжная платформа, не телеком, не IT-ритейл, не CCTV-вендор и не solar-EPC.",
+    fs2Title: "2. Не реселлер оборудования",
+    fs2Body:
+      "ANCAP не официальный реселлер Starlink, ПК/ноутбуков, камер или PV. Комплекты и панели продают третьи стороны.",
+    fs3Title: "3. Работы выполняет партнёр",
+    fs3Body:
+      "Монтаж, настройка, электрика, высота и обслуживание выполняет партнёр. ANCAP как оператор платформы не выполняет полевые работы лично.",
+    fs4Title: "4. Разрешения, электрика, высота",
+    fs4Body:
+      "Baugenehmigung, согласие арендодателя, подключение к сети и безопасность на высоте остаются зоной клиента и/или лицензированных мастеров партнёра.",
+    fs5Title: "5. Solar и прочие панели",
+    fs5Body:
+      "SKU solar / balcony и прочих панелей — literacy и координация монтажа партнёром. ANCAP не гарантирует выработку, тарифы feed-in или одобрение сети.",
+    fs6Title: "6. Крипто-платежи",
+    fs6Body:
+      "Оплата ACP/wACP или ramp через USDT требует вашей собственной аттестации eligibility по DE/EU праву. ANCAP не даёт налоговых советов.",
+    fs7Title: "7. Escrow и расчёт",
+    fs7Body:
+      "MVP escrow — ledger reserve/capture workflow. Двойной релиз и расширенный job status планируются; до этого capture после документированного завершения run.",
+    fs8Title: "8. Нет гарантии Jobcenter / AVGS",
+    fs8Body:
+      "Desk описывает бизнес-модель. Он не обещает одобрение Jobcenter, AVGS, статус занятости или решение ведомства.",
+    fs9Title: "9. География и отсутствие гарантии результата",
+    fs9Body:
+      "Приоритет Germany / NRW, затем DE, затем выбранные EU-коридоры. ANCAP не гарантирует сигнал, срок службы устройств, покрытие камер, solar yield или бесперебойность после установки.",
+    fs10Title: "10. Контакты",
+    fs10Body: "Вопросы: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install.",
 
     darkMatterLink: "Аукцион тёмной материи",
     hubCardDarkMatter: "Символические ACP-титулы космологии тёмной материи (halo / filament / детекторы) — не владение физической ТМ.",
@@ -3495,7 +3571,45 @@ export const legalByLang: Record<Language, Tree> = {
     si9Body:
       "ANCAP не гарантує якість сигналу, швидкість ISP, стійкість до погоди чи безперебійну роботу після монтажу.",
     si10Title: "10. Контакти",
-    si10Body: "Питання: legal@ancap.cloud. Продукт: /starlink-install.",
+    si10Body:
+      "Питання: legal@ancap.cloud. Продукт: /field-services?group=starlink (legacy /starlink-install). Спільний desk: /legal/field-services.",
+
+    fieldServicesLink: "Виїзні послуги",
+    hubCardFieldServices:
+      "Оплата виїзних установок в ACP/wACP — Starlink, IT, CCTV, solar / панелі (Germany / NRW). Не реселер обладнання; не обіцянка Jobcenter.",
+    fieldServicesKicker: "Юридичне / Field services desk",
+    fieldServicesTitle: "Виїзні послуги — юридичне повідомлення",
+    fieldServicesIntro:
+      "4 жовтня 2026. ANCAP координує оплату і передачу партнеру для Starlink, IT, камер і solar / панелей — не продає обладнання як реселер.",
+    fs1Title: "1. Роль платформи",
+    fs1Body:
+      "ANCAP приймає ACP/wACP за intake і escrow, потім передає незалежному партнеру. ANCAP — ПЗ/платіжна платформа, не телеком, не IT-ритейл, не CCTV-вендор і не solar-EPC.",
+    fs2Title: "2. Не реселер обладнання",
+    fs2Body:
+      "ANCAP не офіційний реселер Starlink, ПК/ноутбуків, камер або PV. Комплекти і панелі продають треті сторони.",
+    fs3Title: "3. Роботи виконує партнер",
+    fs3Body:
+      "Монтаж, налаштування, електрика, висота й обслуговування виконує партнер. ANCAP як оператор платформи не виконує польові роботи особисто.",
+    fs4Title: "4. Дозволи, електрика, висота",
+    fs4Body:
+      "Baugenehmigung, згода орендодавця, підключення до мережі й безпека на висоті залишаються зоною клієнта та/або ліцензованих майстрів партнера.",
+    fs5Title: "5. Solar та інші панелі",
+    fs5Body:
+      "SKU solar / balcony та інших панелей — literacy і координація монтажу партнером. ANCAP не гарантує виробіток, тарифи feed-in або схвалення мережі.",
+    fs6Title: "6. Крипто-платежі",
+    fs6Body:
+      "Оплата ACP/wACP або ramp через USDT потребує вашої власної атестації eligibility за DE/EU правом. ANCAP не дає податкових порад.",
+    fs7Title: "7. Escrow і розрахунок",
+    fs7Body:
+      "MVP escrow — ledger reserve/capture workflow. Подвійний реліз і розширений job status плануються; до цього capture після документованого завершення run.",
+    fs8Title: "8. Немає гарантії Jobcenter / AVGS",
+    fs8Body:
+      "Desk описує бізнес-модель. Він не обіцяє схвалення Jobcenter, AVGS, статус зайнятості чи рішення відомства.",
+    fs9Title: "9. Географія та відсутність гарантії результату",
+    fs9Body:
+      "Пріоритет Germany / NRW, далі DE, далі обрані EU-коридори. ANCAP не гарантує сигнал, строк служби пристроїв, покриття камер, solar yield чи безперебійність після встановлення.",
+    fs10Title: "10. Контакти",
+    fs10Body: "Питання: legal@ancap.cloud. Продукт: /field-services. Starlink: /legal/starlink-install.",
 
     darkMatterLink: "Аукціон темної матерії",
     hubCardDarkMatter: "Символічні ACP-титули космології темної матерії (halo / filament / детектори) — не володіння фізичною ТМ.",
@@ -4740,7 +4854,45 @@ export const legalByLang: Record<Language, Tree> = {
     si9Body:
       "ANCAP garantiert keine Signalqualitaet, ISP-Durchsatz, Wetterfestigkeit, Vermieterzustimmung oder unterbrechungsfreien Betrieb nach der Installation.",
     si10Title: "10. Kontakt",
-    si10Body: "Fragen: legal@ancap.cloud. Produkt: /starlink-install.",
+    si10Body:
+      "Fragen: legal@ancap.cloud. Produkt: /field-services?group=starlink (legacy /starlink-install). Gemeinsamer Desk: /legal/field-services.",
+
+    fieldServicesLink: "Field Services",
+    hubCardFieldServices:
+      "ACP/wACP-bezahlte Vor-Ort-Installationen — Starlink, IT, CCTV, Solar / Paneele (Germany / NRW). Kein Hardware-Reseller; keine Jobcenter-Foerderzusage.",
+    fieldServicesKicker: "Recht / Field-Services-Desk",
+    fieldServicesTitle: "Field Services — Rechtshinweis",
+    fieldServicesIntro:
+      "4. Oktober 2026. ANCAP koordiniert Zahlung und Partner-Handoff fuer Starlink, IT, Kameras und Solar / Paneele — kein Hardware-Reseller.",
+    fs1Title: "1. Plattformrolle",
+    fs1Body:
+      "ANCAP verrechnet ACP/wACP fuer Intake und Escrow und uebergibt an unabhaengige Partner. ANCAP ist Software-/Zahlungsplattform, kein Telko, IT-Haendler, CCTV-Vendor oder Solar-EPC.",
+    fs2Title: "2. Kein Hardware-Reseller",
+    fs2Body:
+      "ANCAP ist kein offizieller Reseller von Starlink, PCs/Laptops, Kameras oder PV. Kits und Paneele verkaufen Dritte.",
+    fs3Title: "3. Partner fuehrt die Arbeit aus",
+    fs3Body:
+      "Montage, Konfiguration, Elektro, Hoehe und Wartung fuehrt der Partner aus. ANCAP als Plattformbetreiber leistet keine Vor-Ort-Arbeit personlich.",
+    fs4Title: "4. Genehmigungen, Elektro, Hoehe",
+    fs4Body:
+      "Baugenehmigung, Vermieterzustimmung, Netzanschluss und Hoehensicherheit bleiben bei Kunde und/oder lizenzierten Gewerken des Partners.",
+    fs5Title: "5. Solar und andere Paneele",
+    fs5Body:
+      "Solar-/Balkon- und andere Panel-SKUs sind Partner-Literacy und Installationskoordination. ANCAP garantiert keinen Ertrag, keine Einspeisetarife und keine Netzfreigabe.",
+    fs6Title: "6. Krypto-Zahlungsberechtigung",
+    fs6Body:
+      "Zahlung mit ACP/wACP oder Ramp ueber USDT erfordert Ihre eigene Eligibility-Selbsterklaerung nach DE/EU-Recht. ANCAP gibt keine Steuerberatung.",
+    fs7Title: "7. Escrow und Settlement",
+    fs7Body:
+      "MVP-Escrow ist ledger-basiertes Workflow-Reserve/Capture. Doppel-Release und reicherer Job-Status sind geplant; bis dahin Capture nach dokumentiertem Run-Abschluss.",
+    fs8Title: "8. Keine Jobcenter-/AVGS-Garantie",
+    fs8Body:
+      "Dieser Desk beschreibt ein Geschaeftsmodell. Er verspricht keine Jobcenter-Zusage, AVGS-Foerderung, Beschaeftigungsstatus oder Behoerdenentscheidung.",
+    fs9Title: "9. Geografie und keine Ergebnisgarantie",
+    fs9Body:
+      "Schwerpunkt Germany / NRW, dann DE, dann ausgewaehlte EU-Korridore. ANCAP garantiert keine Signalqualitaet, Geraetelanglebigkeit, Kamerabdeckung, Solarertrag oder unterbrechungsfreien Betrieb.",
+    fs10Title: "10. Kontakt",
+    fs10Body: "Fragen: legal@ancap.cloud. Produkt: /field-services. Starlink: /legal/starlink-install.",
 
     darkMatterLink: "Dunkle-Materie-Auktion",
     hubCardDarkMatter: "Symbolische ACP-Kosmologie-Titel für Halo/Filament/Detektor-Literacy — kein physisches DM-Eigentum.",
@@ -5972,7 +6124,45 @@ export const legalByLang: Record<Language, Tree> = {
     si9Title: "9. 無結果保證",
     si9Body: "ANCAP 不保證訊號品質、ISP 吞吐量、天候耐受、房東核准或安裝後不中斷服務。",
     si10Title: "10. 聯絡",
-    si10Body: "問題：legal@ancap.cloud。產品：/starlink-install。",
+    si10Body:
+      "問題：legal@ancap.cloud。產品：/field-services?group=starlink（legacy /starlink-install）。共用 desk：/legal/field-services。",
+
+    fieldServicesLink: "現場服務",
+    hubCardFieldServices:
+      "以 ACP/wACP 支付的現場安裝 — Starlink、IT、CCTV、太陽能／面板（德國 / NRW 優先）。非設備經銷商；非 Jobcenter 資助承諾。",
+    fieldServicesKicker: "法律／現場服務 desk",
+    fieldServicesTitle: "現場服務 — 法律聲明",
+    fieldServicesIntro:
+      "2026 年 10 月 4 日。ANCAP 協調 Starlink、IT、攝影機與太陽能／面板的付款與夥伴交接 — 不以經銷商身份販售硬體。",
+    fs1Title: "1. 平台角色",
+    fs1Body:
+      "ANCAP 以 ACP/wACP 結算現場服務 intake 與託管協調，再交接給獨立合格夥伴。ANCAP 是軟體／支付平台，非電信、IT 零售、CCTV 廠商或太陽能 EPC。",
+    fs2Title: "2. 非設備經銷商",
+    fs2Body:
+      "ANCAP 非 Starlink、PC／筆電、攝影機或 PV 之官方經銷商。套件與面板由第三方銷售。",
+    fs3Title: "3. 由夥伴執行工作",
+    fs3Body:
+      "實體安裝、設定、電力、高空與維護由夥伴執行。ANCAP 作為平台營運者不親自從事現場勞動。",
+    fs4Title: "4. 許可、電力與高空安全",
+    fs4Body:
+      "建築許可、房東同意、電網接線與高空／屋頂安全仍由客戶及／或夥伴聘用之持照工匠負責。",
+    fs5Title: "5. 太陽能與其他面板",
+    fs5Body:
+      "太陽能／陽台與其他面板 SKU 僅為夥伴素養與安裝協調。ANCAP 不保證發電量、饋電費率或電網核准。",
+    fs6Title: "6. 加密支付資格",
+    fs6Body:
+      "以 ACP／wACP 支付或經 USDT 轉換，需依德國／歐盟法律自行聲明資格。ANCAP 不提供稅務或法規建議。",
+    fs7Title: "7. 託管與結算",
+    fs7Body:
+      "MVP 託管為帳本式 workflow reserve／capture。雙向釋放與更豐富工單狀態規劃中；在此之前於記錄完整之 run 完成後由營運方 capture。",
+    fs8Title: "8. 無 Jobcenter／AVGS 保證",
+    fs8Body:
+      "本 desk 描述商業服務模式。不承諾 Jobcenter 核准、AVGS 資助、就業身分或任何機關決定。",
+    fs9Title: "9. 地理範圍與無結果保證",
+    fs9Body:
+      "優先德國／NRW，其次全德，再為選定歐盟走廊。ANCAP 不保證訊號品質、裝置壽命、攝影涵蓋、太陽能產量或安裝後不中斷服務。",
+    fs10Title: "10. 聯絡",
+    fs10Body: "問題：legal@ancap.cloud。產品：/field-services。Starlink：/legal/starlink-install。",
 
     darkMatterLink: "暗物質拍賣",
     hubCardDarkMatter: "暗物質暈／纖維／探測器素養的象徵性 ACP 宇宙學標題——非實體暗物質所有權。",

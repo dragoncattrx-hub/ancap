@@ -3,6 +3,7 @@ import { aeternaByLang } from "./aeterna";
 import { agencyByLang } from "./agency";
 import { counselByLang } from "./counsel";
 import { starlinkByLang } from "./starlink";
+import { fieldServicesByLang } from "./fieldServices";
 import { startupsByLang } from "./startups";
 import { lunarByLang } from "./lunar";
 import { faunaByLang } from "./fauna";
@@ -157,6 +158,7 @@ export const translations: Record<Language, TranslationTree> = {
       humanitarian: "Help now",
       counsel: "Counsel anywhere",
       starlinkInstall: "Starlink install",
+      fieldServices: "Field services",
       agency: "Scale with agents",
       lunar: "Claim the Moon",
       stardust: "Own the weather",
@@ -514,6 +516,7 @@ export const translations: Record<Language, TranslationTree> = {
     agencyPage: agencyByLang.en,
     counselPage: counselByLang.en,
     starlinkPage: starlinkByLang.en,
+    fieldServicesPage: fieldServicesByLang.en,
     startupsPage: startupsByLang.en,
     lunarPage: lunarByLang.en,
     faunaPage: faunaByLang.en,
@@ -710,6 +713,7 @@ export const translations: Record<Language, TranslationTree> = {
       humanitarian: "Помоги сейчас",
       counsel: "Юрист везде",
       starlinkInstall: "Установка Starlink",
+      fieldServices: "Выездные услуги",
       agency: "Масштаб с агентами",
       lunar: "Заяви Луну",
       stardust: "Погода в руки",
@@ -1067,6 +1071,7 @@ export const translations: Record<Language, TranslationTree> = {
     agencyPage: agencyByLang.ru,
     counselPage: counselByLang.ru,
     starlinkPage: starlinkByLang.ru,
+    fieldServicesPage: fieldServicesByLang.ru,
     startupsPage: startupsByLang.ru,
     lunarPage: lunarByLang.ru,
     faunaPage: faunaByLang.ru,
@@ -1263,6 +1268,7 @@ export const translations: Record<Language, TranslationTree> = {
       humanitarian: "Допоможи зараз",
       counsel: "Юрист всюди",
       starlinkInstall: "Встановлення Starlink",
+      fieldServices: "Виїзні послуги",
       agency: "Масштаб з агентами",
       lunar: "Заяви Місяць",
       stardust: "Погода в руки",
@@ -1620,6 +1626,7 @@ export const translations: Record<Language, TranslationTree> = {
     agencyPage: agencyByLang.uk,
     counselPage: counselByLang.uk,
     starlinkPage: starlinkByLang.uk,
+    fieldServicesPage: fieldServicesByLang.uk,
     startupsPage: startupsByLang.uk,
     lunarPage: lunarByLang.uk,
     faunaPage: faunaByLang.uk,
@@ -1816,6 +1823,7 @@ export const translations: Record<Language, TranslationTree> = {
       humanitarian: "Jetzt helfen",
       counsel: "Recht überall",
       starlinkInstall: "Starlink-Installation",
+      fieldServices: "Field Services",
       agency: "Mit Agents skalieren",
       lunar: "Mond beanspruchen",
       stardust: "Wetter in der Hand",
@@ -2173,6 +2181,7 @@ export const translations: Record<Language, TranslationTree> = {
     agencyPage: agencyByLang.de,
     counselPage: counselByLang.de,
     starlinkPage: starlinkByLang.de,
+    fieldServicesPage: fieldServicesByLang.de,
     startupsPage: startupsByLang.de,
     lunarPage: lunarByLang.de,
     faunaPage: faunaByLang.de,
@@ -2369,6 +2378,7 @@ export const translations: Record<Language, TranslationTree> = {
       humanitarian: "立刻援助",
       counsel: "全球律師",
       starlinkInstall: "Starlink 安裝",
+      fieldServices: "現場服務",
       agency: "代理人擴張",
       lunar: "宣告月球",
       stardust: "掌握天氣",
@@ -2726,6 +2736,7 @@ export const translations: Record<Language, TranslationTree> = {
     agencyPage: agencyByLang["zh-Hant"],
     counselPage: counselByLang["zh-Hant"],
     starlinkPage: starlinkByLang["zh-Hant"],
+    fieldServicesPage: fieldServicesByLang["zh-Hant"],
     startupsPage: startupsByLang["zh-Hant"],
     lunarPage: lunarByLang["zh-Hant"],
     faunaPage: faunaByLang["zh-Hant"],

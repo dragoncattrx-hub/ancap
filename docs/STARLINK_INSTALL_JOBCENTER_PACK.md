@@ -4,16 +4,19 @@ Public URLs (after deploy):
 
 | Surface | URL |
 | --- | --- |
-| Product (DE-first) | https://ancap.cloud/starlink-install |
-| Legal notice | https://ancap.cloud/legal/starlink-install |
+| Field services hub | https://ancap.cloud/field-services |
+| Product (DE-first Starlink group) | https://ancap.cloud/field-services?group=starlink |
+| Legacy Jobcenter URL (redirects) | https://ancap.cloud/starlink-install |
+| Legal notice (Starlink) | https://ancap.cloud/legal/starlink-install |
+| Legal notice (full hub) | https://ancap.cloud/legal/field-services |
 | ACP / USDT ramp | https://ancap.cloud/buy-acp |
 | Workflow checkout (standard) | https://ancap.cloud/ai/run/starlink-standard |
 | Intake alias | https://ancap.cloud/ai/run/starlink-install-intake |
 
 ## What to show Jobcenter
 
-1. Open `/starlink-install` — region chips **NRW / Deutschland / EU**, EUR price list, live ACP/wACP quote.
-2. Open `/legal/starlink-install` — honest framing: not Starlink Inc., not Telekom, not AVGS guarantee.
+1. Open `/starlink-install` (redirects to `/field-services?group=starlink`) — region chips **NRW / Deutschland / EU**, EUR price list, live ACP/wACP quote. Hub also lists IT / cameras / solar groups.
+2. Open `/legal/starlink-install` or `/legal/field-services` — honest framing: not Starlink Inc., not Telekom, not equipment reseller, not AVGS guarantee.
 3. Optional: create a real ACP checkout on `starlink-standard` and keep the run receipt / proof center link.
 
 ## API smoke
