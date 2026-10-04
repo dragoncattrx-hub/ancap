@@ -74,6 +74,14 @@ class BridgeStatusResponse(BaseModel):
 class BridgeReserveSummaryResponse(BaseModel):
     total_acp_smallest_locked_intent: str
     total_wacp_wei_completed_mints: str
+    # Human-readable displays (ACP 8dp / wACP 18dp) for UI — raw fields kept for machines.
+    total_acp_display: str = "0"
+    total_wacp_display: str = "0"
+    wacp_per_acp: int = 10
+    ops_note: str = (
+        "DB ledger of bridge forward ops only. Pre-cutover wraps may be 1:1; "
+        "treasury/Gate A mints appear in on-chain supply (reserve-proof), not here."
+    )
     operations_pending: int
     operations_completed: int
 

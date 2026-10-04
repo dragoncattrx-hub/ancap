@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
-import { bridgeRail } from "@/lib/api";
+import { bridgeRail, wacpPublic } from "@/lib/api";
 import { buildAcpTxHref } from "@/lib/acpExplorer";
 
 /** Canonical spec in the public ANCAP repo (same path as local `docs/`). */
@@ -33,9 +33,46 @@ type BridgeStatus = {
 type ReserveSummary = {
   total_acp_smallest_locked_intent: string;
   total_wacp_wei_completed_mints: string;
+  total_acp_display?: string;
+  total_wacp_display?: string;
+  wacp_per_acp?: number;
+  ops_note?: string;
   operations_pending: number;
   operations_completed: number;
 };
+
+type ReserveProof = {
+  acp_reserve_balance_smallest?: string;
+  wacp_total_supply_wei?: string;
+  wacp_total_supply_acp_smallest?: string;
+  backing_ratio?: string | null;
+  reserve_health?: string;
+  notes?: string[];
+};
+
+function formatAcpFromSmallest(raw: string | undefined): string {
+  if (!raw) return "—";
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return raw;
+  return (n / 1e8).toLocaleString("en-US", { maximumFractionDigits: 8 });
+}
+
+function formatWacpFromWei(raw: string | undefined): string {
+  if (!raw) return "—";
+  // Avoid float overflow for large wei — use BigInt when possible.
+  try {
+    const wei = BigInt(raw);
+    const whole = wei / 10n ** 18n;
+    const frac = wei % 10n ** 18n;
+    const fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+    const wholeStr = whole.toLocaleString("en-US");
+    return fracStr ? `${wholeStr}.${fracStr}` : wholeStr;
+  } catch {
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return raw;
+    return (n / 1e18).toLocaleString("en-US", { maximumFractionDigits: 8 });
+  }
+}
 
 type OpRow = {
   id: string;
@@ -71,6 +108,7 @@ export default function BridgeAcpBscPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [status, setStatus] = useState<BridgeStatus | null>(null);
   const [reserve, setReserve] = useState<ReserveSummary | null>(null);
+  const [proof, setProof] = useState<ReserveProof | null>(null);
   const [intents, setIntents] = useState<OpRow[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -91,11 +129,17 @@ export default function BridgeAcpBscPage() {
         } catch {
           setReserve(null);
         }
+        try {
+          setProof((await wacpPublic.reserveProof()) as ReserveProof);
+        } catch {
+          setProof(null);
+        }
         if (isAuthenticated) {
           setIntents((await bridgeRail.listMyIntents(50)) as OpRow[]);
         }
       } else {
         setReserve(null);
+        setProof(null);
         setIntents([]);
       }
     } catch (e: unknown) {
@@ -315,15 +359,57 @@ export default function BridgeAcpBscPage() {
               </dl>
             </section>
 
+            {proof ? (
+              <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
+                <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.liveReserveTitle")}</h2>
+                <p className="mt-1 text-xs text-zinc-500">{t("bridgePage.wrapRatio")}</p>
+                <ul className="mt-3 list-inside list-disc text-sm text-zinc-400">
+                  <li>
+                    {t("bridgePage.liveReserveAcp")}{" "}
+                    <span className="font-mono text-zinc-200">{formatAcpFromSmallest(proof.acp_reserve_balance_smallest)} ACP</span>
+                  </li>
+                  <li>
+                    {t("bridgePage.liveReserveWacp")}{" "}
+                    <span className="font-mono text-zinc-200">{formatWacpFromWei(proof.wacp_total_supply_wei)} wACP</span>
+                  </li>
+                  <li>
+                    {t("bridgePage.liveReserveLiability")}{" "}
+                    <span className="font-mono text-zinc-200">{formatAcpFromSmallest(proof.wacp_total_supply_acp_smallest)} ACP</span>
+                  </li>
+                  <li>
+                    {t("bridgePage.liveReserveBacking")}{" "}
+                    <span className="font-mono text-zinc-200">{proof.backing_ratio ?? "—"}</span>
+                  </li>
+                  <li>
+                    {t("bridgePage.liveReserveHealth")}{" "}
+                    <span className="font-mono text-zinc-200">{proof.reserve_health ?? "—"}</span>
+                  </li>
+                </ul>
+              </section>
+            ) : null}
+
             {reserve ? (
               <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
                 <h2 className="text-lg font-medium text-zinc-200">{t("bridgePage.reserveTitle")}</h2>
                 <ul className="mt-3 list-inside list-disc text-sm text-zinc-400">
-                  <li>{t("bridgePage.reserveAcpTotal")} {reserve.total_acp_smallest_locked_intent}</li>
-                  <li>{t("bridgePage.reserveWacpTotal")} {reserve.total_wacp_wei_completed_mints}</li>
+                  <li>
+                    {t("bridgePage.reserveAcpTotal")}{" "}
+                    <span className="font-mono text-zinc-200">
+                      {reserve.total_acp_display ?? formatAcpFromSmallest(reserve.total_acp_smallest_locked_intent)} ACP
+                    </span>
+                  </li>
+                  <li>
+                    {t("bridgePage.reserveWacpTotal")}{" "}
+                    <span className="font-mono text-zinc-200">
+                      {reserve.total_wacp_display ?? formatWacpFromWei(reserve.total_wacp_wei_completed_mints)} wACP
+                    </span>
+                  </li>
                   <li>{t("bridgePage.reservePending")} {reserve.operations_pending}</li>
                   <li>{t("bridgePage.reserveCompleted")} {reserve.operations_completed}</li>
                 </ul>
+                <p className="mt-3 text-xs text-zinc-500">
+                  {reserve.ops_note || t("bridgePage.reserveOpsNote")}
+                </p>
               </section>
             ) : null}
 

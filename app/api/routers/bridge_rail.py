@@ -691,9 +691,26 @@ async def bridge_reserve_summary(session: AsyncSession = Depends(get_db)):
             BridgeOperation.status == "COMPLETED",
         )
     )
+    from app.services.bridge_decimal import (
+        ACP_DECIMALS,
+        WACP_DECIMALS,
+        WACP_PER_ACP,
+        display_acp_from_smallest,
+    )
+
+    acp_smallest = int(total_acp or 0)
+    wacp_wei = int(total_wacp or 0)
+    acp_display = format(display_acp_from_smallest(acp_smallest), f".{ACP_DECIMALS}f")
+    wacp_display = format(
+        Decimal(wacp_wei) / (Decimal(10) ** WACP_DECIMALS),
+        f".{WACP_DECIMALS}f",
+    )
     return BridgeReserveSummaryResponse(
-        total_acp_smallest_locked_intent=str(int(total_acp or 0)),
-        total_wacp_wei_completed_mints=str(int(total_wacp or 0)),
+        total_acp_smallest_locked_intent=str(acp_smallest),
+        total_wacp_wei_completed_mints=str(wacp_wei),
+        total_acp_display=acp_display,
+        total_wacp_display=wacp_display,
+        wacp_per_acp=WACP_PER_ACP,
         operations_pending=int(pending or 0),
         operations_completed=int(completed or 0),
     )
