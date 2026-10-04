@@ -67,7 +67,7 @@ function FieldServicesInner() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const initialGroup = useMemo(() => {
-    const g = (searchParams.get("group") || "").trim().toLowerCase();
+    const g = (searchParams?.get("group") || "").trim().toLowerCase();
     return VALID_GROUPS.has(g) ? g : "all";
   }, [searchParams]);
 
