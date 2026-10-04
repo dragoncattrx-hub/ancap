@@ -249,7 +249,7 @@ def test_smart_pay_execute_receipt_and_recover(client):
     assert recovered["txRefs"][0]["role"] == "payment"
     assert recovered["txRefs"][0]["network"] == "acp"
     assert recovered["txRefs"][0]["txid"] == "fixture-tx-alpha"
-    assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/fixture-tx-alpha"
+    assert recovered["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/explorer/tx/fixture-tx-alpha"
 
     recovered_receipt_res = client.get(
         f"/v1/mobile/smart-pay/payments/{execution_id}/receipt?sessionToken={session_token}",
@@ -258,7 +258,7 @@ def test_smart_pay_execute_receipt_and_recover(client):
     assert recovered_receipt_res.status_code == 200
     recovered_receipt = recovered_receipt_res.json()
     assert recovered_receipt["txRefs"][0]["txid"] == "fixture-tx-alpha"
-    assert recovered_receipt["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/acp/tx/fixture-tx-alpha"
+    assert recovered_receipt["txRefs"][0]["explorerUrl"] == "https://ancap.cloud/explorer/tx/fixture-tx-alpha"
 
 
 def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_are_known(client):
@@ -313,7 +313,7 @@ def test_smart_pay_recover_multi_step_route_stays_pending_until_all_route_txs_ar
         "role": "bridge",
         "network": "acp",
         "txid": "fixture-bridge",
-        "explorerUrl": "https://ancap.cloud/acp/tx/fixture-bridge",
+        "explorerUrl": "https://ancap.cloud/explorer/tx/fixture-bridge",
         "routeStepIndex": 1,
     }
     assert partial["txRefs"][1] == {
@@ -648,7 +648,7 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
             "role": "payment",
             "network": "acp",
             "txid": "fixture-tx-alpha",
-            "explorerUrl": "https://ancap.cloud/acp/tx/fixture-tx-alpha",
+            "explorerUrl": "https://ancap.cloud/explorer/tx/fixture-tx-alpha",
             "routeStepIndex": 1,
         }
     ]
@@ -672,7 +672,7 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
             "role": "payment",
             "network": "acp",
             "txid": "fixture-tx-alpha",
-            "explorerUrl": "https://ancap.cloud/acp/tx/fixture-tx-alpha",
+            "explorerUrl": "https://ancap.cloud/explorer/tx/fixture-tx-alpha",
             "routeStepIndex": 1,
         }
     ]
@@ -687,7 +687,7 @@ def test_smart_pay_recover_deduplicates_known_txs_case_insensitively(client):
             "role": "payment",
             "network": "acp",
             "txid": "fixture-tx-alpha",
-            "explorerUrl": "https://ancap.cloud/acp/tx/fixture-tx-alpha",
+            "explorerUrl": "https://ancap.cloud/explorer/tx/fixture-tx-alpha",
             "routeStepIndex": 1,
         }
     ]

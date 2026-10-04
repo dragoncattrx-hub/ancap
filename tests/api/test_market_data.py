@@ -111,7 +111,9 @@ async def test_fetch_market_board_acp_tracks_wacp(monkeypatch):
     assert symbols[:3] == ["ACP", "wACP", "sACP"]
     acp = next(p for p in data["prices"] if p["symbol"] == "ACP")
     wacp = next(p for p in data["prices"] if p["symbol"] == "wACP")
-    assert float(acp["price"]) == float(wacp["price"]) == 0.00042
+    # Bridge 1 ACP ↔ 10 wACP: ACP USD = 10 × wACP DEX USD.
+    assert float(wacp["price"]) == 0.00042
+    assert float(acp["price"]) == 0.0042
     sacp = next(p for p in data["prices"] if p["symbol"] == "sACP")
     assert float(sacp["price"]) == 1.0
     get_settings.cache_clear()
@@ -159,7 +161,8 @@ async def test_wacp_geckoterminal_official_pool(monkeypatch):
     assert float(wacp["price"]) == 0.00042
     assert any("geckoterminal" in n for n in board["notes"])
     rate = market_economy.usdt_to_acp_desk_rate()
-    assert rate == (Decimal("1") / Decimal("0.00042")).quantize(Decimal("0.00000001"))
+    # ACP per USDT = 1 / (10 × wACP USD).
+    assert rate == (Decimal("1") / Decimal("0.0042")).quantize(Decimal("0.00000001"))
     get_settings.cache_clear()
 
 
@@ -177,7 +180,7 @@ async def test_quote_catalog_acp_from_usd_sticker(monkeypatch):
     acp, sticker, spot = market_economy.quote_catalog_acp("349")
     assert sticker == Decimal("349.00")
     assert spot == Decimal("0.000002")
-    assert acp == Decimal("174500000.00")  # ceil(349 / 0.000002)
+    assert acp == Decimal("17450000.00")  # ceil(349 / (10 × 0.000002))
     monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "true")
     get_settings.cache_clear()
 

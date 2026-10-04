@@ -31,6 +31,7 @@ QuoteMode = Literal[
     "indicative",
     "rfq",
     "bridge_1_1",
+    "bridge_1_10",
     "stable_peg",
     "market_feed",
 ]
