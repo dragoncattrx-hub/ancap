@@ -148,6 +148,12 @@ export default function BuyAcpPage() {
             >
               Pricing
             </Link>
+            <Link
+              href="/cards"
+              className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85"
+            >
+              Physical card / Apple Pay waitlist
+            </Link>
           </div>
         </section>
       </main>

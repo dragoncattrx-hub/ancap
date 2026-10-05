@@ -23,6 +23,13 @@ export default function CompliancePage() {
             <strong className="text-white">On-ramps:</strong> Card and stablecoin ramps are provided by licensed partners subject to geo/KYC tiers (see COMPLIANCE_ONRAMP_MATRIX).
           </li>
           <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <strong className="text-white">Physical card / Apple Pay:</strong> future licensed-issuer track only. WebID (or equivalent) is a KYC/KYB partner slot — ANCAP does not issue payment cards.{" "}
+            <Link href="/cards" className="text-sky-200 underline decoration-sky-400/40 underline-offset-4 hover:text-sky-100">
+              Join the waitlist
+            </Link>
+            .
+          </li>
+          <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
             <strong className="text-white">Bridge risk:</strong> Cross-chain transfers carry smart-contract and custody risk. Verify contract addresses on official docs only.
           </li>
           <li className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -58,6 +65,9 @@ export default function CompliancePage() {
           </Link>
           <Link href="/compliance/mica" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
             MiCA overview
+          </Link>
+          <Link href="/cards" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
+            Card / Apple Pay waitlist
           </Link>
           <Link href="/whitepaper/acp" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">
             ACP whitepaper

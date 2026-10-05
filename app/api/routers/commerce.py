@@ -11,12 +11,14 @@ from sqlalchemy import desc, func, select
 from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import ClaimCode, MerchantAccount, PaymentLink, RampWaitlistEntry
 from app.schemas.helio import HelioAdapterStatusPublic, HelioWebhookAck
+from app.schemas.webid import WebIdAdapterStatusPublic
 from app.services.helio_commerce import (
     helio_public_status,
     parse_helio_json_body,
     summarize_helio_webhook,
     verify_helio_webhook_signature,
 )
+from app.services.webid_kyc import webid_public_status
 from app.services.merchant_pay import get_or_create_merchant_account
 
 router = APIRouter(prefix="/commerce", tags=["Commerce"])
@@ -136,6 +138,12 @@ async def list_ramp_waitlist(session: DbSession, _admin: str = Depends(require_p
 async def helio_adapter_status():
     """Public checkout config for /buy-acp — never returns secret keys."""
     return helio_public_status()
+
+
+@router.get("/webid/status", response_model=WebIdAdapterStatusPublic)
+async def webid_adapter_status():
+    """Public WebID KYC partner-slot status — never returns secrets; never claims card issuing."""
+    return webid_public_status()
 
 
 @router.post("/helio/webhook", response_model=HelioWebhookAck)

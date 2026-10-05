@@ -4,6 +4,8 @@
 
 ACP is a **utility / accounting asset** for workflow fees, API spend, merchant checkout, and platform credits. ANCAP is **not** a VASP; fiat and stablecoin on-ramps are provided by licensed partners.
 
+Future **physical spend card / Apple Pay** is a separate licensed-issuer track. WebID (or equivalent) may supply KYC/KYB only — see [WEBID_KYC_AND_CARD_ISSUING_PATH.md](./WEBID_KYC_AND_CARD_ISSUING_PATH.md). Public waitlist: `/cards`.
+
 ## Asset messaging (MiCA-safe)
 
 | Rule | Implementation |
@@ -18,7 +20,9 @@ ACP is a **utility / accounting asset** for workflow fees, API spend, merchant c
 |--------|----------------|----------|-----|----------|--------|
 | Card → credits | Stripe | Partner KYC | EU + supported Stripe regions | 2–5% | Live E2E verify `[~]` |
 | USDC/USDT widget | MoonPay / Transak / Ramp | Partner KYC | Per partner matrix | 1–3% markup | Waitlist / compliance review |
+| MoonPay Commerce checkout | Helio / MoonPay Commerce | Partner KYC | Per partner matrix | Partner schedule | Live widget `[~]` desk settle |
 | wACP bridge | On-chain + reserve dashboard | Wallet self-custody | Global (user responsibility) | Network gas | Live with trust stub `/reserves` |
+| Physical card / Apple Pay | Licensed BaaS/EMI + WebID KYC slot | Future WebID (or equiv.) | EU-first (planned) | TBD | Waitlist `/cards` — **ANCAP does not issue cards** |
 | P2P / OTC | **Not offered** | — | — | — | Avoid |
 
 ## Geo & sanctions

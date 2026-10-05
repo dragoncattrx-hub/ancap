@@ -40,6 +40,35 @@ def test_ramp_waitlist_signup(client):
     assert body["status"] in {"registered", "already_registered"}
 
 
+def test_ramp_waitlist_physical_card_apple_pay(client):
+    response = client.post(
+        "/v1/commerce/ramp-waitlist",
+        json={
+            "email": f"cards_{uuid4().hex[:8]}@example.com",
+            "interest": "physical_card_apple_pay",
+            "region": "DE",
+            "notes": "future licensed issuer interest",
+        },
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["status"] in {"registered", "already_registered"}
+    assert "id" in body
+
+
+def test_webid_status_public_fail_closed(client):
+    response = client.get("/v1/commerce/webid/status")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["configured"] is False
+    assert body["issues_cards"] is False
+    assert body["apple_pay_ready"] is False
+    assert body["role"] == "kyc_partner_slot"
+    assert body["waitlist_interest"] == "physical_card_apple_pay"
+    assert "client_secret" not in body
+    assert "WEBID_CLIENT_SECRET" not in str(body)
+
+
 def test_stripe_adapter_status_public(client):
     response = client.get("/v1/payments/stripe/status", headers={"Authorization": ""})
     assert response.status_code == 200, response.text

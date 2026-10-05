@@ -674,6 +674,10 @@ ACP acquisition path (2026-10-04): `/buy-acp` leads with bridge + credits + **Mo
 
 Status: [~] Adapter shipped: env `HELIO_*`, `GET /v1/commerce/helio/status`, signed `POST /v1/commerce/helio/webhook`, `/buy-acp` `@heliofi/checkout-react` widget, deploy sync via GitHub secrets. Pay Link created for USDC (dynamic). Remaining: live checkout smoke + operator ACP ledger credit from webhook (auto-credit not wired).
 
+### 4.0c WebID KYC slot + physical card / Apple Pay waitlist [MEDIUM]
+
+Status: [x] P0 — docs (`docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`), `/cards` waitlist (`interest=physical_card_apple_pay`), fail-closed `GET /v1/commerce/webid/status` (`issues_cards=false`). WebID is KYC/KYB only; plastic + Apple Pay need a separate licensed BaaS/EMI after counsel. P1 sandbox API and P2 issuer track remain open.
+
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 
 Status: [~] Core backend, schema, migration, deploy-env plumbing, and wallet credits UI are now implemented and passing repo checks. **Repo automated webhook→ledger E2E is closed** (`docs/STRIPE_AUTOMATED_E2E_EVIDENCE.md`, `pytest tests/api/test_payments.py -q`). Remaining operator follow-up before marking 4.1 fully done (not a work-stop blocker; ACP-first loop is live): live Stripe Dashboard checkout + saved-card operator verification (`docs/stripe-verification-2026-07-02.md` Run B).
@@ -1301,7 +1305,7 @@ Execution detail: **`docs/ANCAP_COMMERCE_ROADMAP.md`** (90-day commerce + AI age
 | Days 15–30 | **Shipped in repo** | Merchant dashboard + CSV, claim codes MVP, Workflow Store 2.0 bundles, creator payout UI |
 | Days 31–60 | **Shipped in repo** | MCP server (`mcp-server/`), paid API challenge/settle/consume, `/mcp` docs |
 | Days 61–90 | **Partial** | Payment scanner API + parse UX; embedded wallet / Business treasury UI stubs; full reserves dashboard → ongoing |
-| Ongoing | **Shipped in repo** | `/compliance`, `docs/COMPLIANCE_ONRAMP_MATRIX.md`, MiCA-safe messaging |
+| Ongoing | **Shipped in repo** | `/compliance`, `/cards` waitlist, `docs/COMPLIANCE_ONRAMP_MATRIX.md`, `docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`, MiCA-safe messaging |
 
 ---
 

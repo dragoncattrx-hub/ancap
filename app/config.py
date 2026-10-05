@@ -509,6 +509,13 @@ class Settings(BaseSettings):
     helio_default_amount: str = "10"
     helio_currency_hint: str = "USDC"
 
+    # WebID KYC/KYB partner slot (https://webid-solutions.com/en/) — never commit real keys.
+    # Does NOT issue payment cards or Apple Pay; see docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md.
+    webid_enabled: bool = False
+    webid_api_base: str = ""
+    webid_client_id: str = ""
+    webid_client_secret: str = ""
+
     # CoinGecko market data (indicative only; never commit real keys)
     coingecko_enabled: bool = True
     coingecko_api_key: str = ""
